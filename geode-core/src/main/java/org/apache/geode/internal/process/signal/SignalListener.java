@@ -18,6 +18,7 @@ package org.apache.geode.internal.process.signal;
 import java.util.EventListener;
 
 /**
+ * <p>
  * The SignalListener class...
  * </p>
  * 
@@ -26,7 +27,5 @@ import java.util.EventListener;
  */
 @SuppressWarnings("unused")
 public interface SignalListener extends EventListener {
-
   void handle(SignalEvent event);
-
 }

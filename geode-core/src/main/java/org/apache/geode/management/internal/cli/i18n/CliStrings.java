@@ -36,6 +36,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 
+import java.text.MessageFormat;
+
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -43,8 +45,6 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-
-import java.text.MessageFormat;
 
 /**
  * - * Contains 'String' constants used as key to the Localized strings to be used in classes under
@@ -140,7 +140,7 @@ public class CliStrings {
   public static final String TOPIC_GFSH__DESC = "The Geode Shell";
   public static final String TOPIC_SHARED_CONFIGURATION = "Cluster Configuration";
   public static final String TOPIC_SHARED_CONFIGURATION_HELP =
-      "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfshs command are persisted to the locator hosting the cluster configuration service.";
+      "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfsh command are persisted to the locator hosting the cluster configuration service.";
   public static final String TOPIC_LOGS = "Logs";
   public static final String TOPIC_LOGS__DESC = "Generate log contents as per the need";
   public static final String TOPIC_CLIENT = "Client";
@@ -150,7 +150,7 @@ public class CliStrings {
    * ********* String Constants other than command name, options & help ******
    * *************************************************************************/
 
-  public static final String DESKSTOP_APP_RUN_ERROR_MESSAGE =
+  public static final String DESKTOP_APP_RUN_ERROR_MESSAGE =
       "Running desktop applications is not supported on %1$s.";
   public static final String GEODE_HOME_NOT_FOUND_ERROR_MESSAGE =
       "The GEODE environment variable was not defined.  Please set the GEODE environment variable to the directory where GEODE is installed.";
@@ -203,7 +203,7 @@ public class CliStrings {
   public static final String NO_CLIENT_FOUND = "No client found on this server";
   public static final String NO_CLIENT_FOUND_WITH_CLIENT_ID =
       "No client found with client-id : {0}";
-  public static final String ACTION_SUCCCEEDED_ON_MEMBER = "{0} on following members.";
+  public static final String ACTION_SUCCEEDED_ON_MEMBER = "{0} on following members.";
   public static final String OCCURRED_ON_MEMBERS = "Occurred on members";
   public static final String SHARED_CONFIGURATION_NOT_STARTED =
       "Cluster configuration service is enabled but has not started yet.";
@@ -216,8 +216,8 @@ public class CliStrings {
   public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
   public static final String GFSHPARSER__MSG__VALUE_REQUIRED_FOR_OPTION_0 =
       "Value is required for parameter \"{0}\"";
-  public static final String GFSHPARSER__MSG__AMBIGIOUS_COMMAND_0_FOR_ASSISTANCE_USE_1_OR_HINT_HELP =
-      "Ambigious command \"{0}\" (for assistance press \"{1}\" or type \"hint\" or \"help <command name>\" & then hit ENTER)";
+  public static final String GFSHPARSER__MSG__AMBIGUOUS_COMMAND_0_FOR_ASSISTANCE_USE_1_OR_HINT_HELP =
+      "Ambiguous command \"{0}\" (for assistance press \"{1}\" or type \"hint\" or \"help <command name>\" & then hit ENTER)";
   public static final String GFSHPARSER__MSG__COMMAND_ARGUMENT_0_IS_REQUIRED_USE_HELP =
       "Command parameter \"{0}\" is required. Use \"help <command name>\" for assistance.";
   public static final String GFSHPARSER__MSG__COMMAND_OPTION_0_IS_REQUIRED_USE_HELP =
@@ -291,7 +291,7 @@ public class CliStrings {
       "Together with --initial-capacity, sets the parameters on the underlying java.util.ConcurrentHashMap used for storing region entries. This must be a floating point number between 0 and 1, inclusive.";
   public static final String ALTER_DISK_STORE__COMPRESSOR = "compressor";
   public static final String ALTER_DISK_STORE__COMPRESSOR__HELP =
-      "The fully-qualifed class name of the Compressor to use when compressing region entry values. A value of 'none' will remove the Compressor.";
+      "The fully-qualified class name of the Compressor to use when compressing region entry values. A value of 'none' will remove the Compressor.";
   public static final String ALTER_DISK_STORE__STATISTICS__ENABLED = "enable-statistics";
   public static final String ALTER_DISK_STORE__STATISTICS__ENABLED__HELP =
       "Whether to enable statistics. Valid values are: true and false.";
@@ -374,18 +374,19 @@ public class CliStrings {
           + ". \"{0}\" is not valid.";
   public static final String ALTER_REGION__MSG__REGION_0_ALTERED_ON_1 =
       "Region \"{0}\" altered on \"{1}\"";
-  public static final String ALTER_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String ALTER_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
       "Could not find class \"{0}\" specified for \"{1}\".";
-  public static final String ALTER_REGION__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String ALTER_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
       "Could not instantiate class \"{0}\" specified for \"{1}\".";
   public static final String ALTER_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
       "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
-  public static final String ALTER_REGION__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String ALTER_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
       "Could not access class \"{0}\" specified for \"{1}\".";
   public static final String ALTER_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_EVICTIONMAX_0_IS_NOT_VALID =
       "Specify 0 or a positive integer value for " + CliStrings.ALTER_REGION__EVICTIONMAX
           + ".  \"{0}\" is not valid.";
-  public static final String ALTER_REGION__MSG__REGION_DOESNT_EXIST_0 = "Region doesn't exist: {0}";
+  public static final String ALTER_REGION__MSG__REGION_DOES_NOT_EXIST_0 =
+      "Region doesn't exist: {0}";
 
   public static final String ALTER_RUNTIME_CONFIG = "alter runtime";
   public static final String ALTER_RUNTIME_CONFIG__HELP =
@@ -488,7 +489,7 @@ public class CliStrings {
       "Name of the disk store to be compacted.";
   public static final String COMPACT_DISK_STORE__GROUP__HELP =
       "Group(s) of members that will perform disk compaction. If no group is specified the disk store will be compacted by all members.";
-  public static final String COMPACT_DISK_STORE__DISKSTORE_0_DOESNOT_EXIST =
+  public static final String COMPACT_DISK_STORE__DISKSTORE_0_DOES_NOT_EXIST =
       "Disk store \"{0}\" does not exist.";
   public static final String COMPACT_DISK_STORE__MSG__FOR_GROUP = " for group(s) \"{0}\"";
   public static final String COMPACT_DISK_STORE__NO_MEMBERS_FOUND_IN_SPECIFED_GROUP =
@@ -514,7 +515,7 @@ public class CliStrings {
   public static final String COMPACT_OFFLINE_DISK_STORE__J = "J";
   public static final String COMPACT_OFFLINE_DISK_STORE__J__HELP =
       "Arguments passed to the Java Virtual Machine performing the compact operation on the disk store.";
-  public static final String COMPACT_OFFLINE_DISK_STORE__MSG__DISKSTORE_0_DOESNOT_EXIST =
+  public static final String COMPACT_OFFLINE_DISK_STORE__MSG__DISKSTORE_0_DOES_NOT_EXIST =
       "Disk store \"{0}\" does not exist.";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__COMPACTION_ATTEMPTED_BUT_NOTHING_TO_COMPACT =
       "Attempted to compact disk store, but there was nothing to do.";
@@ -583,7 +584,7 @@ public class CliStrings {
       "The gfsecurity.properties file for configuring gfsh to connect to the Locator/Manager. The file's path can be absolute or relative to gfsh directory.";
   public static final String CONNECT__USE_SSL = "use-ssl";
   public static final String CONNECT__USE_SSL__HELP =
-      "Whether to use SSL for communication with Locator and/or JMX Manager. If set to \"true\", will also read \"gfsecurity.properties\". SSL Options take precedence over proeprties file. If none are specified, defaults will be used. The default value for this options is \"false\".";
+      "Whether to use SSL for communication with Locator and/or JMX Manager. If set to \"true\", \"gfsecurity.properties\" will also be read. SSL Options take precedence over the properties file. If none are specified, defaults will be used. The default value for this options is \"false\".";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_AT_0 =
       "Connecting to Manager at {0} ..";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_HTTP_SERVICE_AT_0 =
@@ -665,13 +666,13 @@ public class CliStrings {
       "Group(s) of members on which queue will be created. If no group is specified the queue will be created on all members.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__ERROR_WHILE_CREATING_REASON_0 =
       "An error occurred while creating the queue: {0}";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
       "Could not access class \"{0}\" specified for \"{1}\".";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
       "Could not instantiate class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_ASYNC_EVENT_QUEUE__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
       "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
-  public static final String CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
       "Could not find class \"{0}\" specified for \"{1}\".";
 
   /* 'create disk-store' command */
@@ -927,7 +928,7 @@ public class CliStrings {
           + PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT + ").";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH =
       "Specify a valid " + CliStrings.CREATE_REGION__REGION;
-  public static final String CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOESNOT_EXIST =
+  public static final String CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST =
       "Parent region for \"{0}\" doesn't exist. ";
   public static final String CREATE_REGION__MSG__GROUPS_0_ARE_INVALID =
       "Group(s) \"{0}\" are invalid.";
@@ -969,18 +970,18 @@ public class CliStrings {
   public static final String CREATE_REGION__MSG__ONLY_ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_CAN_BE_SPECIFIED =
       "Only one of " + CREATE_REGION__REGIONSHORTCUT + " & " + CREATE_REGION__USEATTRIBUTESFROM
           + " can be specified.";
-  public static final String CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_IS_REQUIRED =
+  public static final String CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED =
       "One of \"" + CREATE_REGION__REGIONSHORTCUT + "\" or \"" + CREATE_REGION__USEATTRIBUTESFROM
           + "\" is required.";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND =
       "Specify a valid region path for {0}. Region {1} not found.";
-  public static final String CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
       "Could not find class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
       "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
-  public static final String CREATE_REGION__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
       "Could not instantiate class \"{0}\" specified for \"{1}\".";
-  public static final String CREATE_REGION__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
       "Could not access class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_REGION__MSG__EXPIRATION_ACTION_0_IS_NOT_VALID =
       "Expiration action \"{0}\" is not valid.";
@@ -1009,11 +1010,11 @@ public class CliStrings {
       "\"{0}\" is not a Partitioned Region.";
   public static final String CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION =
       CREATE_REGION__COLOCATEDWITH + " \"{0}\" is not a Partitioned Region.";
-  public static final String CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_DOESNOT_EXIST =
+  public static final String CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_DOES_NOT_EXIST =
       CREATE_REGION__COLOCATEDWITH + " \"{0}\" does not exists.";
   public static final String CREATE_REGION__MSG__REDUNDANT_COPIES_SHOULD_BE_ONE_OF_0123 =
       CREATE_REGION__REDUNDANTCOPIES + " \"{0}\" is not valid. It should be one of 0, 1, 2, 3.";
-  public static final String CREATE_REGION__MSG__COULDNOT_LOAD_REGION_ATTRIBUTES_FOR_SHORTCUT_0 =
+  public static final String CREATE_REGION__MSG__COULD_NOT_LOAD_REGION_ATTRIBUTES_FOR_SHORTCUT_0 =
       "Could not load Region Attributes for a valid " + CREATE_REGION__REGIONSHORTCUT
           + "={0}. Please check logs for any errors.";
   public static final String CREATE_REGION__MSG__0_IS_A_PR_CANNOT_HAVE_SUBREGIONS =
@@ -1035,16 +1036,16 @@ public class CliStrings {
   public static final String CREATE_REGION__MSG__PARTITION_RESOLVER_ONLY_FOR_REGION_TYPE_PARTITION =
       "partition resolver property is only applicable to PARTITION region type";
 
-  public static final String CREATE_REGION_PARTITION_RESOLVER__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_REGION_PARTITION_RESOLVER__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
       "Could not find class \"{0}\" specified for \"{1}\".";
 
   public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
       "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
 
-  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
       "Could not instantiate class \"{0}\" specified for \"{1}\".";
 
-  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
       "Could not access class \"{0}\" specified for \"{1}\".";
 
   public static final String CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER =
@@ -1233,7 +1234,7 @@ public class CliStrings {
 
   public static final String DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID =
       "Region path \"{0}\" is not valid.";
-  public static final String DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE =
+  public static final String DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE =
       "Could not find a Region with Region path \"{0}\" in this Geode cluster. If region was recently created, please wait for at least {1} to allow the associated Management resources to be federated.";
   public static final String DESTROY_REGION__MSG__AND_ITS_SUBREGIONS = "and its subregions";
   public static final String DESTROY_REGION__MSG__REGION_0_1_DESTROYED =
@@ -1242,7 +1243,7 @@ public class CliStrings {
       "Error occurred while destroying region \"{0}\". Reason: {1}";
   public static final String DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1 =
       "Unknown result while destroying region \"{0}\". Reason: {1}";
-  public static final String DESTROY_REGION__MSG__COULDNOT_FIND_MEMBER_WITH_REGION_0 =
+  public static final String DESTROY_REGION__MSG__COULD_NOT_FIND_MEMBER_WITH_REGION_0 =
       "Could not find a Geode member which hosts a region with Region path \"{0}\"";
   public static final String DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY =
       "Please specify region path for the region to be destroyed.";
@@ -1264,13 +1265,6 @@ public class CliStrings {
   public static final String ECHO__STR__HELP =
       "String to be echoed. For example, \"SYS_USER variable is set to ${SYS_USER}\".";
   public static final String ECHO__MSG__NO_GFSH_INSTANCE = "Could not get GFSH Instance";
-
-  /* 'encrypt password' command */
-  public static final String ENCRYPT = "encrypt password";
-  public static final String ENCRYPT__HELP =
-      "Encrypt a password for use in data source configuration.";
-  public static final String ENCRYPT_STRING = "password";
-  public static final String ENCRYPT_STRING__HELP = "Password to be encrypted.";
 
   /* 'execute function' command */
   public static final String EXECUTE_FUNCTION = "execute function";
@@ -1333,7 +1327,7 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_MEMBER_1_ON_REGION_2_DETAILS_3 =
       "While executing function : {0} on member : {1} one region : {2} error occurred : {3}";
   public static final String EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION =
-      "Filters for executing on \"member\"/\"mebers of group\" is not supported.";
+      "Filters for executing on \"member\"/\"members of group\" is not supported.";
 
   /* exit command */
   public static final String EXIT = "exit";
@@ -1373,7 +1367,7 @@ public class CliStrings {
   public static final String EXPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found";
   public static final String EXPORT_DATA__REGION__NOT__FOUND = "Region {0} not found";
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
-      "Data succesfully exported from region : {0} to file : {1} on host : {2}";
+      "Data successfully exported from region : {0} to file : {1} on host : {2}";
 
   /* export logs command */
   public static final String EXPORT_LOGS = "export logs";
@@ -1438,7 +1432,7 @@ public class CliStrings {
       "Group of members whose stack trace will be exported.";
   public static final String EXPORT_STACKTRACE_ALL_STACKS = "all-stacks";
   public static final String EXPORT_STACKTRACE_ALL_STACKS__HELP =
-      "When set to true exports all the stackstraces.";
+      "When set to true exports all the stacktraces.";
   public static final String EXPORT_STACKTRACE__FILE = "file";
   public static final String EXPORT_STACKTRACE__FILE__HELP =
       "Name of the file to which the stack traces will be written.";
@@ -1602,7 +1596,8 @@ public class CliStrings {
   public static final String DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS = "Primary Servers";
   public static final String DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS = "Secondary Servers";
   public static final String DESCRIBE_CLIENT_COLUMN_CPU = "CPU";
-  public static final String DESCRIBE_CLIENT_COLUMN_LISTNER_CALLS = "Number of Cache Listner Calls";
+  public static final String DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS =
+      "Number of Cache Listener Calls";
   public static final String DESCRIBE_CLIENT_COLUMN_GETS = "Number of Gets";
   public static final String DESCRIBE_CLIENT_COLUMN_MISSES = "Number of Misses";
   public static final String DESCRIBE_CLIENT_COLUMN_PUTS = "Number of Puts";
@@ -1614,7 +1609,7 @@ public class CliStrings {
   public static final String DESCRIBE_CLIENT_COLUMN_DURABLE = "Is Durable";
   public static final String DESCRIBE_CLIENT_MIN_CONN = "Minimum Connections";
   public static final String DESCRIBE_CLIENT_MAX_CONN = "Maximum Connections";
-  public static final String DESCRIBE_CLIENT_REDUDANCY = "Redudancy";
+  public static final String DESCRIBE_CLIENT_REDUNDANCY = "Redundancy";
   public static final String DESCRIBE_CLIENT_CQs = "Num of CQs";
 
 
@@ -1729,7 +1724,7 @@ public class CliStrings {
       "Group of members on which to run the netstat command.";
   public static final String NETSTAT__FILE = "file";
   public static final String NETSTAT__FILE__HELP =
-      "Text file to which output from the netstat command will be written. A \".txt\" extention will be added if it's not already a part of the specified name.";
+      "Text file to which output from the netstat command will be written. A \".txt\" extension will be added if it's not already a part of the specified name.";
   public static final String NETSTAT__WITHLSOF = "with-lsof";
   public static final String NETSTAT__WITHLSOF__HELP =
       "Whether lsof (list open files) command output should also be displayed. Not applicable for \"Microsoft Windows(TM)\" hosts.";
@@ -1795,12 +1790,10 @@ public class CliStrings {
           + "\" variable." + " Page size will default to the value stored in the \""
           + Gfsh.ENV_APP_COLLECTION_LIMIT + "\" variable.";
   public static final String QUERY__QUERY = "query";
-  public static final String QUERY__STEPNAME = "step-name";
-  public static final String QUERY__STEPNAME__DEFAULTVALUE = "ALL";
   public static final String QUERY__INTERACTIVE = "interactive";
   public static final String QUERY__QUERY__HELP = "The OQL string.";
   public static final String QUERY__INTERACTIVE__HELP =
-      "Whether or not this query is interactive. If false then all results will be displayed at once.";
+      "Deprecated. This option has no effect, but is kept around to maintain backwards compatibility with existing scripts.";
   public static final String QUERY__MSG__QUERY_EMPTY = "Query is either empty or Null";
   public static final String QUERY__MSG__INVALID_QUERY = "Query is invalid due for error : <{0}>";
   public static final String QUERY__MSG__REGIONS_NOT_FOUND =
@@ -1855,9 +1848,9 @@ public class CliStrings {
   public static final String REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS =
       "Distributed system has no regions that can be rebalanced";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception =
-      "Excpetion occurred while rebalancing on member : {0} . Exception is ";
+      "Exception occurred while rebalancing on member : {0} . Exception is ";
   public static final String REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1 =
-      "Excpetion occurred while rebalancing on member : {0} . Exception is : {1}";
+      "Exception occurred while rebalancing on member : {0} . Exception is : {1}";
   public static final String REBALANCE__MSG__ERROR_IN_RETRIEVING_MBEAN =
       "Could not retrieve MBean for region : {0}";
   public static final String REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1 =
@@ -1871,8 +1864,8 @@ public class CliStrings {
       "Rebalance will continue in background";
   public static final String REBALANCE__MSG__REGION_NOT_ASSOCIATED_WITH_MORE_THAN_ONE_MEMBER =
       "No regions associated with more than 1 members";
-  public static final String REBALANCE__MSG__EXCEPTION_OCCRED_WHILE_REBALANCING_0 =
-      "Exception occurred while rebelancing. Reason : {0}";
+  public static final String REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0 =
+      "Exception occurred while rebalancing. Reason : {0}";
 
   /* remove command */
   public static final String REMOVE = "remove";
@@ -1897,7 +1890,7 @@ public class CliStrings {
   public static final String REMOVE__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
   public static final String REMOVE__MSG__KEY_NOT_FOUND_REGION = "Key is not present in the region";
   public static final String REMOVE__MSG__CLEARED_ALL_CLEARS = "Cleared all keys in the region";
-  public static final String REMOVE__MSG__CLEAREALL_NOT_SUPPORTED_FOR_PARTITIONREGION =
+  public static final String REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION =
       "Option --" + REMOVE__ALL + " is not supported on partitioned region";
 
   /* resume gateway-sender */
@@ -1961,7 +1954,7 @@ public class CliStrings {
       + "3. APP_LAST_EXIT_STATUS            Numeric value for last command exit status. One of: 0 (success), 1 (error), 2 (crash) (read only)\n"
       + "4. APP_COLLECTION_LIMIT            Number of items in the embedded collection of a result to be iterated. Valid values are: 1-100.\n"
       + "5. APP_QUERY_RESULTS_DISPLAY_MODE  How command results should be shown. Valid values are: table and catalog.\n"
-      + "6. APP_QUIET_EXECUTION.            Whether commands should be excuted in quiet mode. Valid values are: true and false.\n";
+      + "6. APP_QUIET_EXECUTION.            Whether commands should be executed in quiet mode. Valid values are: true and false.\n";
 
   /* 'sh' command */
   public static final String SH = "sh";
@@ -2063,7 +2056,7 @@ public class CliStrings {
   public static final String SHUTDOWN__MSG__CAN_NOT_SHUTDOWN_WITHIN_TIMEOUT =
       "Could not shutdown within timeout. Shutdown will continue in background";
   public static final String SHUTDOWN__MSG__NO_DATA_NODE_FOUND =
-      "No data node found for stopping. Please specify --shutdown-locators option if you want locators to be stopped";
+      "No data node found for stopping. Please specify --include-locators option if you want locators to be stopped";
 
   public static final String SHUTDOWN_TIMEDOUT =
       "Shutdown command timedout. Please manually check node status";
@@ -2207,12 +2200,12 @@ public class CliStrings {
       "The fully qualified class name of GatewayTransportFilter to be added to the GatewaySender. ";
   public static final String CREATE_GATEWAYSENDER__MSG__GATEWAYSENDER_0_CREATED_ON_1 =
       "GatewaySender \"{0}\" created on \"{1}\"";
-  public static final String CREATE_GATEWAYSENDER__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_GATEWAYSENDER__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
       "Could not instantiate class \"{0}\" specified for \"{1}\".";
-  public static final String CREATE_GATEWAYSENDER__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
+  public static final String CREATE_GATEWAYSENDER__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
       "Could not access class \"{0}\" specified for \"{1}\".";
 
-  /* stop gateway-reciver */
+  /* stop gateway-receiver */
   public static final String START_GATEWAYSENDER = "start gateway-sender";
   public static final String START_GATEWAYSENDER__HELP =
       "Start the Gateway Sender on a member or members.";
@@ -2239,7 +2232,7 @@ public class CliStrings {
 
 
 
-  /* start gfmon command */
+  /* start pulse command */
   public static final String START_PULSE = "start pulse";
   public static final String START_PULSE__ERROR =
       "An error occurred while launching Geode Pulse - %1$s";
@@ -2600,11 +2593,11 @@ public class CliStrings {
 
   public static final String START_SERVER__MAX__CONNECTIONS = "max-connections";
   public static final String START_SERVER__MAX__CONNECTIONS__HELP =
-      "Sets the maxium number of client connections allowed. When the maximum is reached the cache server will stop accepting connections";
+      "Sets the maximum number of client connections allowed. When the maximum is reached the cache server will stop accepting connections";
 
   public static final String START_SERVER__MAX__THREADS = "max-threads";
   public static final String START_SERVER__MAX__THREADS__HELP =
-      "Sets the maxium number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection";
+      "Sets the maximum number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection";
 
   public static final String START_SERVER__MAX__MESSAGE__COUNT = "max-message-count";
   public static final String START_SERVER__MAX__MESSAGE__COUNT__HELP =
@@ -2706,7 +2699,7 @@ public class CliStrings {
   public static final String STATUS_SERVER__PID__HELP =
       "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
 
-  /* stop gateway-reciver */
+  /* stop gateway-receiver */
   public static final String STOP_GATEWAYRECEIVER = "stop gateway-receiver";
   public static final String STOP_GATEWAYRECEIVER__HELP =
       "Stop the Gateway Receiver on a member or members.";
@@ -2799,12 +2792,12 @@ public class CliStrings {
   public static final String UPGRADE_OFFLINE_DISK_STORE__J = "J";
   public static final String UPGRADE_OFFLINE_DISK_STORE__J__HELP =
       "Arguments passed to the Java Virtual Machine performing the upgrade operation on the disk store.";
-  public static final String UPGRADE_OFFLINE_DISK_STORE__DISKSTORE_0_DOESNOT_EXIST =
+  public static final String UPGRADE_OFFLINE_DISK_STORE__DISKSTORE_0_DOES_NOT_EXIST =
       "Disk store \"{0}\" does not exist.";
   public static final String UPGRADE_OFFLINE_DISK_STORE__UPGRADE_ATTEMPTED_BUT_NOTHING_TO_UPGRADE =
       "Upgradation was attempted but nothing to upgrade.";
   public static final String UPGRADE_OFFLINE_DISK_STORE__ERROR_WHILE_UPGRADATION_REASON_0 =
-      "Error occurred while perfoming disk store upgrade. Reason: \"{0}\"";
+      "Error occurred while performing disk store upgrade. Reason: \"{0}\"";
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_LOCATE_0_DISKSTORE_IN_1 =
       "Cannot locate disk store \"{0}\" in directory : \"{1}\"";
   public static final String UPGRADE_OFFLINE_DISK_STORE__MSG__DISKSTORE_IN_USE_COMPACT_DISKSTORE_CAN_BE_USED =
@@ -2921,7 +2914,7 @@ public class CliStrings {
   public static final String GATEWAY_RECEIVER_IS_NOT_RUNNING_ON_MEMBER_0 =
       "GatewayReceiver is not running on member {0}";
   public static final String GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER =
-      "GatewaySenders or GatewayRecievers are not available in cluster";
+      "GatewaySenders or GatewayReceivers are not available in cluster";
   public static final String GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1 =
       "Could not invoke start gateway sender {0} operation on members due to {1}";
   public static final String GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1 =
@@ -3017,9 +3010,9 @@ public class CliStrings {
   public static final String COUNT_DURABLE_CQ_EVENTS__NO__CQS__REGISTERED =
       "No cq's registered on this member";
   public static final String COUNT_DURABLE_CQ_EVENTS__SUBSCRIPTION__QUEUE__SIZE__CQ =
-      "subcription-queue-size for durable-cq : \"{0}\".";
+      "subscription-queue-size for durable-cq : \"{0}\".";
   public static final String COUNT_DURABLE_CQ_EVENTS__SUBSCRIPTION__QUEUE__SIZE__CLIENT =
-      "subcription-queue-size for durable-client : \"{0}\".";
+      "subscription-queue-size for durable-client : \"{0}\".";
 
   /***
    * Cluster Configuration commands
@@ -3187,6 +3180,6 @@ public class CliStrings {
   }
 
 
-  public static final String IGNORE_INTERCEPTORS = "ignoreInterCeptors";
+  public static final String IGNORE_INTERCEPTORS = "ignoreInterceptors";
 
 }

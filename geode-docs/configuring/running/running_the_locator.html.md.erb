@@ -35,7 +35,7 @@ You can run the locator standalone or embedded within another Geode process. Run
 
 Locator configuration and log files have the following properties:
 
--   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR files (`$GEMFIRE/lib/locator-dependencies.jar`) into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify `$GEMFIRE/lib/locator-dependencies.jar` inside the command used to launch the locator process. For more information on CLASSPATH settings in Geode, see [CLASSPATH Settings for Geode Processes](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
+-   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR file `lib/geode-dependencies.jar` into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify this JAR file inside the command used to launch the locator process. For more information on CLASSPATH settings in Geode, see [CLASSPATH Settings for Geode Processes](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
 -   Locators are members of the distributed system just like any other member. In terms of `mcast-port` and `locators` configuration, a locator should be configured in the same manner as a server. Therefore, if there are two other locators in the distributed system, each locator should reference the other locators (just like a server member would). For example:
 
     ``` pre
@@ -76,16 +76,7 @@ Use the following guidelines to start the locator:
         gfsh> start locator --name=locator2 --bind-address=192.0.2.0 --port=13489
         ```
 
-    -   Start the locator using the `main` method in the `org.apache.geode.distributed.LocatorLauncher` class and the Java executable. For example:
-
-        ``` pre
-        working/directory/of/Locator/process$java -server \
-         -classpath "$GEMFIRE/lib/locator-dependencies.jar:/path/to/application/classes.jar" \
-         org.apache.geode.distributed.LocatorLauncher start Locator1 --port=11235 \
-          --redirect-output
-        ```
-
-        Specifically, you use the `LocatorLauncher` class API to run an embedded Locator service in Java application processes that you have created. The directory where you execute the java command becomes the working directory for the locator process.
+    -   Start the locator using the `main` method in the `org.apache.geode.distributed.LocatorLauncher` class and the Java executable. Specifically, you use the `LocatorLauncher` class API to run an embedded Locator service in Java application processes that you have created. The directory where you execute the java command becomes the working directory for the locator process.
 
     -   When starting up multiple locators, do not start them up in parallel (in other words, simultaneously). As a best practice, you should wait approximately 30 seconds for the first locator to complete startup before starting any other locators. To check the successful startup of a locator, check for locator log files. To view the uptime of a running locator, you can use the `gfsh status locator` command.
 
@@ -172,7 +163,7 @@ Use the following guidelines to start the locator:
 
         ``` pre
         /working/directory/of/MyApplication$ java \
-         -server -classpath "$GEMFIRE/lib/locator-dependencies.jar:/path/to/application/classes.jar" \
+         -server -classpath "path/to/installation/lib/geode-dependencies.jar:/path/to/application/classes.jar" \
          example.MyApplication Locator1 11235
         ```
 
@@ -218,7 +209,7 @@ Java Version: 1.7.0_65
 Log File: /home/user/locator1/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
  -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+Class-Path: /Users/username/apache_geode/lib/geode-dependencies.jar
 
 Cluster configuration service is up and running.
 ```

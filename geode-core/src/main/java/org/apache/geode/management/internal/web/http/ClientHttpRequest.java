@@ -20,13 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.internal.lang.Filter;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.util.CollectionUtils;
-import org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper;
-import org.apache.geode.management.internal.web.domain.Link;
-import org.apache.geode.management.internal.web.util.UriUtils;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -36,6 +29,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
+
+import org.apache.geode.internal.lang.Filter;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.util.UriUtils;
 
 /**
  * The ClientHttpRequest class is an abstraction modeling an HTTP request sent by a client and
@@ -283,15 +282,6 @@ public class ClientHttpRequest implements HttpRequest {
               new Filter<Map.Entry<String, List<Object>>>() {
                 @Override
                 public boolean accept(final Map.Entry<String, List<Object>> entry) {
-                  // GEODE-1469: since stepArgs has json string in there, we will need to encode it
-                  // so that it won't interfere with the expand() call afterwards
-                  if (entry.getKey().contains(CLIMultiStepHelper.STEP_ARGS)) {
-                    List<Object> stepArgsList = entry.getValue();
-                    if (stepArgsList != null) {
-                      String stepArgs = (String) stepArgsList.remove(0);
-                      stepArgsList.add(UriUtils.encode(stepArgs));
-                    }
-                  }
                   return !pathVariables.contains(entry.getKey());
                 }
               });

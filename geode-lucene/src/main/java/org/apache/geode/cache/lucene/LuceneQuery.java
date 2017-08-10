@@ -22,7 +22,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
-import org.apache.geode.internal.cache.PrimaryBucketException;
 
 /**
  * <p>

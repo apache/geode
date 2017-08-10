@@ -70,7 +70,7 @@ public interface LockServiceMXBean {
   /**
    * Requests that this member become the granter.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   void becomeLockGrantor();
 
   /**

@@ -40,3 +40,5 @@ jar {
   }
   baseName = 'geode-modules-session'
 }
+
+disableMavenPublishing()

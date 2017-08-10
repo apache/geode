@@ -16,6 +16,11 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -422,6 +427,21 @@ public class DiskStoreFactoryJUnitTest {
     cache.close();
     // if test passed clean up files
     removeFiles(diskStore);
+  }
+
+  @Test
+  public void failedDiskStoreInitialRecoveryCleansUpDiskStore() {
+    DiskStoreFactory dsf = cache.createDiskStoreFactory();
+    DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
+    doThrow(RuntimeException.class).when(diskStore).doInitialRecovery();
+    boolean threwException = false;
+    try {
+      ((DiskStoreFactoryImpl) dsf).initializeDiskStore(diskStore);
+    } catch (RuntimeException e) {
+      threwException = true;
+    }
+    assertTrue(threwException);
+    verify(diskStore, times(1)).close();
   }
 
   // setDiskDirs and setDiskDirsAndSizes are tested in DiskRegionIllegalArguementsJUnitTest

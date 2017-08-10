@@ -126,36 +126,37 @@ public class FilterProfile implements DataSerializableFixedID {
    * The keys in which clients are interested. This is a map keyed on client id, with a HashSet of
    * the interested keys as the values.
    */
-  private final Map<Object, Set> keysOfInterest = new CopyOnWriteHashMap<>();
+  private final CopyOnWriteHashMap<Object, Set> keysOfInterest = new CopyOnWriteHashMap<>();
 
-  private final Map<Object, Set> keysOfInterestInv = new CopyOnWriteHashMap<>();
+  private final CopyOnWriteHashMap<Object, Set> keysOfInterestInv = new CopyOnWriteHashMap<>();
 
   /**
    * The patterns in which clients are interested. This is a map keyed on client id, with a HashMap
    * (key name to compiled pattern) as the values.
    */
-  private final Map<Object, Map<Object, Pattern>> patternsOfInterest = new CopyOnWriteHashMap<>();
+  private final CopyOnWriteHashMap<Object, Map<Object, Pattern>> patternsOfInterest =
+      new CopyOnWriteHashMap<>();
 
-  private final Map<Object, Map<Object, Pattern>> patternsOfInterestInv =
+  private final CopyOnWriteHashMap<Object, Map<Object, Pattern>> patternsOfInterestInv =
       new CopyOnWriteHashMap<>();
 
   /**
    * The filtering classes in which clients are interested. This is a map keyed on client id, with a
    * HashMap (key name to {@link InterestFilter}) as the values.
    */
-  private final Map<Object, Map> filtersOfInterest = new CopyOnWriteHashMap<>();
+  private final CopyOnWriteHashMap<Object, Map> filtersOfInterest = new CopyOnWriteHashMap<>();
 
-  private final Map<Object, Map> filtersOfInterestInv = new CopyOnWriteHashMap<>();
+  private final CopyOnWriteHashMap<Object, Map> filtersOfInterestInv = new CopyOnWriteHashMap<>();
 
   /**
    * Set of clients that we have ALL_KEYS interest for and who want updates
    */
-  private final Set<Long> allKeyClients = new CopyOnWriteHashSet<>();
+  private final CopyOnWriteHashSet<Long> allKeyClients = new CopyOnWriteHashSet<>();
 
   /**
    * Set of clients that we have ALL_KEYS interest for and who want invalidations
    */
-  private final Set<Long> allKeyClientsInv = new CopyOnWriteHashSet<>();
+  private final CopyOnWriteHashSet<Long> allKeyClientsInv = new CopyOnWriteHashSet<>();
 
   /**
    * The region associated with this profile
@@ -171,7 +172,7 @@ public class FilterProfile implements DataSerializableFixedID {
   AtomicInteger cqCount;
 
   /** CQs that are registered on the remote node **/
-  private final Map cqs = new CopyOnWriteHashMap();
+  private final CopyOnWriteHashMap<String, ServerCQ> cqs = new CopyOnWriteHashMap<>();
 
   /* the ID of the member that this profile describes */
   private DistributedMember memberID;
@@ -1500,24 +1501,26 @@ public class FilterProfile implements DataSerializableFixedID {
 
   public void toData(DataOutput out) throws IOException {
     InternalDataSerializer.invokeToData(((InternalDistributedMember) memberID), out);
-    InternalDataSerializer.writeSetOfLongs(this.allKeyClients, this.clientMap.hasLongID, out);
-    DataSerializer.writeHashMap(this.keysOfInterest, out);
-    DataSerializer.writeHashMap(this.patternsOfInterest, out);
-    DataSerializer.writeHashMap(this.filtersOfInterest, out);
+    InternalDataSerializer.writeSetOfLongs(this.allKeyClients.getSnapshot(),
+        this.clientMap.hasLongID, out);
+    DataSerializer.writeHashMap(this.keysOfInterest.getSnapshot(), out);
+    DataSerializer.writeHashMap(this.patternsOfInterest.getSnapshot(), out);
+    DataSerializer.writeHashMap(this.filtersOfInterest.getSnapshot(), out);
 
-    InternalDataSerializer.writeSetOfLongs(this.allKeyClientsInv, this.clientMap.hasLongID, out);
-    DataSerializer.writeHashMap(this.keysOfInterestInv, out);
-    DataSerializer.writeHashMap(this.patternsOfInterestInv, out);
-    DataSerializer.writeHashMap(this.filtersOfInterestInv, out);
+    InternalDataSerializer.writeSetOfLongs(this.allKeyClientsInv.getSnapshot(),
+        this.clientMap.hasLongID, out);
+    DataSerializer.writeHashMap(this.keysOfInterestInv.getSnapshot(), out);
+    DataSerializer.writeHashMap(this.patternsOfInterestInv.getSnapshot(), out);
+    DataSerializer.writeHashMap(this.filtersOfInterestInv.getSnapshot(), out);
 
     // Write CQ info.
-    Map theCQs = this.cqs;
+    Map<String, ServerCQ> theCQs = this.cqs.getSnapshot();
     int size = theCQs.size();
     InternalDataSerializer.writeArrayLength(size, out);
-    for (Iterator it = theCQs.entrySet().iterator(); it.hasNext();) {
-      Map.Entry entry = (Map.Entry) it.next();
-      String name = (String) entry.getKey();
-      ServerCQ cq = (ServerCQ) entry.getValue();
+    for (Iterator<Map.Entry<String, ServerCQ>> it = theCQs.entrySet().iterator(); it.hasNext();) {
+      Map.Entry<String, ServerCQ> entry = it.next();
+      String name = entry.getKey();
+      ServerCQ cq = entry.getValue();
       DataSerializer.writeString(name, out);
       InternalDataSerializer.invokeToData(cq, out);
     }

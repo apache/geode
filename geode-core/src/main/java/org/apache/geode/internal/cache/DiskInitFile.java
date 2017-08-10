@@ -14,6 +14,34 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -21,10 +49,13 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
@@ -52,34 +83,6 @@ import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.logging.log4j.Logger;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Does all the IF file work for a DiskStoreImpl.
@@ -95,6 +98,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   public static final byte IF_EOF_ID = 0;
   public static final byte END_OF_RECORD_ID = 21;
   static final int OPLOG_FILE_ID_REC_SIZE = 1 + 8 + 1;
+
+  private final ReentrantLock lock = new ReentrantLock();
 
   /**
    * Written to IF Byte Format: 8: leastSigBits of UUID 8: mostSigBits of UUID 1: EndOfRecordMarker
@@ -381,11 +386,19 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   transient private boolean gotEOF;
 
-  /**
-   * Lock used to synchronize access to the init file. This is a lock rather than a synchronized
-   * block because the backup tool needs to acquire this lock.
-   */
-  private final BackupLock lock = new BackupLock();
+  private void lock(boolean useBackupLock) {
+    if (useBackupLock) {
+      getDiskStore().getBackupLock().lock();
+    }
+    this.lock.lock();
+  }
+
+  private void unlock(boolean useBackupLock) {
+    if (useBackupLock) {
+      getDiskStore().getBackupLock().unlock();
+    }
+    this.lock.unlock();
+  }
 
   private void recoverFromFailedCompaction() {
     File tmpFile = getTempFile();
@@ -530,11 +543,11 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   private int liveRegions = 0; // added for bug 41618
 
   public boolean hasLiveRegions() {
-    lock.lock(false);
+    lock(false);
     try {
       return this.liveRegions > 0;
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
@@ -817,7 +830,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   DiskRegionView takeDiskRegionByName(String name) {
-    lock.lock(false);
+    lock(false);
     try {
       DiskRegionView result = this.drMapByName.remove(name);
       if (result != null) {
@@ -825,16 +838,16 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
       return result;
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
   Map<Long, PlaceHolderDiskRegion> getDRMap() {
-    lock.lock(false);
+    lock(false);
     try {
       return new HashMap<Long, PlaceHolderDiskRegion>(drMap);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
@@ -843,7 +856,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       DiskRegionStats stats, CancelCriterion cancel, DiskExceptionHandler exceptionHandler,
       RegionAttributes ra, EnumSet<DiskRegionFlag> flags, String partitionName,
       int startingBucketId, Compressor compressor, boolean offHeap) {
-    lock.lock(false);
+    lock(true);
     try {
       // need to call the constructor and addDiskRegion while synced
       DiskRegion result = new DiskRegion(dsi, name, isBucket, isPersistBackup, overflowEnabled,
@@ -852,21 +865,21 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       dsi.addDiskRegion(result);
       return result;
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   DiskRegionView getDiskRegionByName(String name) {
-    lock.lock(false);
+    lock(false);
     try {
       return this.drMapByName.get(name);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
   DiskRegionView getDiskRegionByPrName(String name) {
-    lock.lock(false);
+    lock(false);
     try {
       for (PlaceHolderDiskRegion dr : this.drMapByName.values()) {
         if (dr.isBucket()) {
@@ -877,7 +890,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
       return null;
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
@@ -1249,7 +1262,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   private void saveInstantiator(int id, String instantiatorClassName,
       String instantiatedClassName) {
-    lock.lock();
+    lock(true);
     try {
       if (!this.compactInProgress && this.instIds.contains(id)) {
         // instantiator already written to disk so just return
@@ -1273,7 +1286,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
               .toLocalizedString(ex),
           this.parent);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -1308,7 +1321,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Write the specified DataSerializer to the file.
    */
   private void saveDataSerializer(DataSerializer ds) {
-    lock.lock();
+    lock(true);
     try {
       if (!this.compactInProgress && this.dsIds.contains(ds.getId())) {
         // dataSerializer already written to disk so just return
@@ -1327,7 +1340,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
               .toLocalizedString(ex),
           this.parent);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -1412,7 +1425,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   private static final double COMPACT_RATIO = 0.5;
 
   private void compactIfNeeded() {
-    lock.lock(false);
+    lock(true);
     try {
       if (this.compactInProgress)
         return;
@@ -1428,7 +1441,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     } catch (IOException ignore) {
       return;
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -1441,7 +1454,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   private void compact() {
-    lock.lock(false);
+    lock(true);
     this.compactInProgress = true;
     try {
       try {
@@ -1501,16 +1514,16 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
     } finally {
       this.compactInProgress = false;
-      lock.unlock();
+      unlock(true);
     }
   }
 
   public void copyTo(File targetDir) throws IOException {
-    lock.lock(false);
+    lock(false);
     try {
       FileUtils.copyFileToDirectory(this.ifFile, targetDir);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
@@ -1569,7 +1582,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Write all live data to the init file
    */
   private void writeLiveData() {
-    lock.lock(false);
+    lock(true);
     try {
       this.ifLiveRecordCount = 0;
       this.ifTotalRecordCount = 0;
@@ -1594,7 +1607,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
             this.ifTotalRecordCount);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -1646,7 +1659,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   private void writeDiskStoreId() {
-    lock.lock();
+    lock(true);
     try {
       ByteBuffer bb = getIFWriteBuffer(1 + 6 + 1);
       bb.put(OPLOG_MAGIC_SEQ_ID);
@@ -1669,7 +1682,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
       throw dae;
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -1916,7 +1929,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   void closeRegion(DiskRegionView dr) {
-    lock.lock();
+    lock(true);
     try {
       this.parent.rmById(dr.getId()); // fix for bug 41334
       PlaceHolderDiskRegion phdr = new PlaceHolderDiskRegion(dr);
@@ -1924,12 +1937,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       this.drMapByName.put(dr.getName(), phdr);
       // @todo make sure we only have one instance of the region for this name
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void clearRegion(DiskRegionView dr, long clearOplogEntryId) {
-    lock.lock();
+    lock(true);
     try {
       if (clearOplogEntryId != DiskStoreImpl.INVALID_ID) {
         this.ifTotalRecordCount++;
@@ -1945,7 +1958,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         writeIFRecord(IFREC_CLEAR_REGION_ID, dr, clearOplogEntryId);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -1953,7 +1966,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Clear the region using an RVV.
    */
   void clearRegion(DiskRegion dr, RegionVersionVector rvv) {
-    lock.lock();
+    lock(true);
     try {
       this.ifTotalRecordCount++;
       if (dr.getClearRVV() == null) {
@@ -1964,7 +1977,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       dr.setClearRVV(rvv);
       writeClearRecord(dr, rvv);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
 
   }
@@ -2001,7 +2014,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   void createRegion(DiskRegionView drv) {
-    lock.lock();
+    lock(true);
     try {
       if (!drv.isRecreated()) {
         writeIFRecord(IFREC_CREATE_REGION_ID, drv, drv.getName());
@@ -2015,24 +2028,24 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void beginDestroyRegion(DiskRegionView dr) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         cmnBeginDestroyRegion(dr);
         writeIFRecord(IFREC_BEGIN_DESTROY_REGION_ID, dr);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void endDestroyRegion(DiskRegionView dr) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         cmnEndDestroyRegion(dr);
@@ -2043,127 +2056,127 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void beginDestroyDataStorage(DiskRegionView dr) {
-    lock.lock();
+    lock(true);
     try {
       assert regionStillCreated(dr);
       cmnBeginPartialDestroyRegion(dr);
       writeIFRecord(IFREC_BEGIN_PARTIAL_DESTROY_REGION_ID, dr);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void endDestroyDataStorage(DiskRegionView dr) {
-    lock.lock();
+    lock(true);
     try {
       assert regionStillCreated(dr);
       cmnEndPartialDestroyRegion(dr);
       writeIFRecord(IFREC_END_PARTIAL_DESTROY_REGION_ID, dr);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   public void createPersistentPR(String name, PRPersistentConfig config) {
-    lock.lock();
+    lock(true);
     try {
       if (cmnPRCreate(name, config)) {
         writePRCreate(name, config);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   public void destroyPersistentPR(String name) {
-    lock.lock();
+    lock(true);
     try {
       if (cmnPRDestroy(name)) {
         writePRDestroy(name);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   public PRPersistentConfig getPersistentPR(String name) {
-    lock.lock(false);
+    lock(false);
     try {
       return prMap.get(name);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
   public Map<String, PRPersistentConfig> getAllPRs() {
-    lock.lock(false);
+    lock(false);
     try {
       return new HashMap<String, PRPersistentConfig>(prMap);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
   void crfCreate(long oplogId) {
-    lock.lock(false);
+    lock(true);
     try {
       cmnCrfCreate(oplogId);
       writeIFRecord(IFREC_CRF_CREATE, oplogId);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void drfCreate(long oplogId) {
-    lock.lock(false);
+    lock(true);
     try {
       cmnDrfCreate(oplogId);
       writeIFRecord(IFREC_DRF_CREATE, oplogId);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void krfCreate(long oplogId) {
-    lock.lock(false);
+    lock(true);
     try {
       cmnKrfCreate(oplogId);
       writeIFRecord(IFREC_KRF_CREATE, oplogId);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void crfDelete(long oplogId) {
-    lock.lock(false);
+    lock(true);
     try {
       if (cmnCrfDelete(oplogId)) {
         // call writeIFRecord AFTER cmnCrfDelete to fix bug 41505
         writeIFRecord(IFREC_CRF_DELETE, oplogId);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void drfDelete(long oplogId) {
-    lock.lock(false);
+    lock(true);
     try {
       if (cmnDrfDelete(oplogId)) {
         writeIFRecord(IFREC_DRF_DELETE, oplogId);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   int getOrCreateCanonicalId(Object object) {
-    lock.lock(false);
+    lock(true);
     try {
       int id = canonicalIdHolder.getId(object);
       if (id <= 0) {
@@ -2172,21 +2185,21 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
       return id;
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   Object getCanonicalObject(int id) {
-    lock.lock(false);
+    lock(false);
     try {
       return canonicalIdHolder.getObject(id);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
   void close() {
-    lock.lock();
+    lock(true);
     try {
       if (this.closed)
         return;
@@ -2203,17 +2216,17 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         basicDestroy();
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void destroy() {
-    lock.lock();
+    lock(true);
     try {
       close();
       basicDestroy();
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -2229,31 +2242,31 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
 
   void addMyInitializingPMID(DiskRegionView dr, PersistentMemberID pmid) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         cmnAddMyInitializingPMID(dr, pmid);
         writePMIDRecord(IFREC_MY_MEMBER_INITIALIZING_ID, dr, pmid, false);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void markInitialized(DiskRegionView dr) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         writeIFRecord(IFREC_MY_MEMBER_INITIALIZED_ID, dr);
         cmnMarkInitialized(dr);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void addOnlinePMID(DiskRegionView dr, PersistentMemberID pmid) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         if (dr.addOnlineMember(pmid)) {
@@ -2264,12 +2277,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void addOfflinePMID(DiskRegionView dr, PersistentMemberID pmid) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         if (dr.addOfflineMember(pmid)) {
@@ -2280,12 +2293,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void addOfflineAndEqualPMID(DiskRegionView dr, PersistentMemberID pmid) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         if (dr.addOfflineAndEqualMember(pmid)) {
@@ -2296,12 +2309,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
   void rmPMID(DiskRegionView dr, PersistentMemberID pmid) {
-    lock.lock();
+    lock(true);
     try {
       if (regionStillCreated(dr)) {
         if (dr.rmOnlineMember(pmid) || dr.rmOfflineMember(pmid) || dr.rmEqualMember(pmid)) {
@@ -2312,7 +2325,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -2323,7 +2336,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       return;
     }
 
-    lock.lock();
+    lock(true);
     try {
       if (cmnRevokeDiskStoreId(revokedPattern)) {
         // we now have two records to gc (this one and the live one we removed).
@@ -2332,7 +2345,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         writeRevokedMember(revokedPattern);
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -2340,12 +2353,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Get the set of members known to be revoked
    */
   public Set<PersistentMemberPattern> getRevokedIDs() {
-    lock.lock(false);
+    lock(false);
     try {
       // Return a copy of the set, because we modify it in place.
       return new HashSet<PersistentMemberPattern>(this.revokedMembers);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
 
   }
@@ -2354,21 +2367,21 @@ public class DiskInitFile implements DiskInitFileInterpreter {
    * Return true if the given dr is still created in this IF.
    */
   boolean regionStillCreated(DiskRegionView dr) {
-    lock.lock(false);
+    lock(false);
     try {
       return getDiskRegionById(dr.getId()) != null;
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
   boolean regionExists(long drId) {
-    lock.lock(false);
+    lock(false);
     try {
       // @todo make drMap concurrent so this call can be fast
       return this.drMap.containsKey(drId);
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
@@ -2386,11 +2399,11 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   }
 
   Collection<DiskRegionView> getKnown() {
-    lock.lock(false);
+    lock(false);
     try {
       return new ArrayList<DiskRegionView>(this.drMap.values());
     } finally {
-      lock.unlock();
+      unlock(false);
     }
   }
 
@@ -2585,7 +2598,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   public void destroyPRRegion(String prName) {
     ArrayList<PlaceHolderDiskRegion> buckets = new ArrayList<PlaceHolderDiskRegion>();
-    lock.lock();
+    lock(true);
     try {
       for (PlaceHolderDiskRegion dr : this.drMapByName.values()) {
         if (dr.isBucket()) {
@@ -2595,7 +2608,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         }
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
     for (PlaceHolderDiskRegion dr : buckets) {
       endDestroyRegion(dr);
@@ -2612,7 +2625,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       String offHeapOption, boolean printToConsole) {
     StringBuffer sb = new StringBuffer();
     ArrayList<PlaceHolderDiskRegion> buckets = new ArrayList<PlaceHolderDiskRegion>();
-    lock.lock();
+    lock(true);
     try {
       for (PlaceHolderDiskRegion dr : this.drMapByName.values()) {
         if (dr.isBucket()) {
@@ -2633,7 +2646,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         printInfo = false;
       }
     } finally {
-      lock.unlock();
+      unlock(true);
     }
     return sb.toString();
   }
@@ -2642,13 +2655,13 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       String lruLimitOption, String concurrencyLevelOption, String initialCapacityOption,
       String loadFactorOption, String compressorClassNameOption, String statisticsEnabledOption,
       String offHeapOption, boolean printToConsole) {
-    lock.lock();
+    lock(true);
     try {
       return basicModifyRegion(false, drv, lruOption, lruActionOption, lruLimitOption,
           concurrencyLevelOption, initialCapacityOption, loadFactorOption,
           compressorClassNameOption, statisticsEnabledOption, offHeapOption, printToConsole);
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 
@@ -2770,20 +2783,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     return message;
   }
 
-  public void lockForBackup() {
-    lock.lockForBackup();
-  }
-
-  public void unlockForBackup() {
-    lock.unlockForBackup();
-  }
-
-  public void setBackupThread(Thread thread) {
-    lock.setBackupThread(thread);
-  }
-
   private void writeGemfireVersion(Version version) {
-    lock.lock();
+    lock(true);
     try {
       ByteBuffer bb = getIFWriteBuffer(1 + 3 + 1);
       bb.put(IFREC_GEMFIRE_VERSION);
@@ -2799,7 +2800,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       }
       throw dae;
     } finally {
-      lock.unlock();
+      unlock(true);
     }
   }
 }

@@ -18,7 +18,20 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
@@ -40,18 +53,6 @@ import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
@@ -84,13 +85,13 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Rule
-  public ServerStarterRule server = ServerStarterRule.createWithoutTemporaryWorkingDir()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/clientServer.json")
-      .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
-      .withProperty("security-pdx", this.pdxPersistent + "").withJMXManager()
-      .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
+          .withProperty("security-pdx", this.pdxPersistent + "").withJMXManager()
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testRegionGet() {

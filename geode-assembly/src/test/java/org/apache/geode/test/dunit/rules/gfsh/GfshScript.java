@@ -16,30 +16,47 @@ package org.apache.geode.test.dunit.rules.gfsh;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 
 public class GfshScript {
   private final String[] commands;
-  private Integer timeout;
-  private TimeUnit timeoutTimeUnit;
+  private String name = new ThreePhraseGenerator().generate('-');
+  private TimeUnit timeoutTimeUnit = TimeUnit.MINUTES;
+  private int timeout = 1;
   private boolean awaitQuietly = false;
-  private Integer expectedExitValue;
+  private int expectedExitValue = 0;
+  private List<String> extendedClasspath = new ArrayList<>();
 
   public GfshScript(String... commands) {
     this.commands = commands;
   }
 
+  /**
+   * By default, this GfshScript will await at most 2 minutes and will expect success.
+   */
   public static GfshScript of(String... commands) {
     return new GfshScript(commands);
   }
 
+  public GfshScript withName(String name) {
+    this.name = name;
+
+    return this;
+  }
 
   public GfshScript expectExitCode(int expectedExitCode) {
     this.expectedExitValue = expectedExitCode;
 
     return this;
+  }
+
+  public GfshScript expectFailure() {
+    return expectExitCode(1);
   }
 
   /**
@@ -57,6 +74,16 @@ public class GfshScript {
     return this;
   }
 
+  public List<String> getExtendedClasspath() {
+    return extendedClasspath;
+  }
+
+  public GfshScript addToClasspath(String classpath) {
+    extendedClasspath.add(classpath);
+
+    return this;
+  }
+
   /**
    * Will cause the thread that executes {@link GfshScript#awaitIfNecessary} to wait, if necessary,
    * until the subprocess executing this Gfsh script has terminated, or the specified waiting time
@@ -68,16 +95,14 @@ public class GfshScript {
     return awaitAtMost(timeout, timeUnit);
   }
 
+  public GfshScript awaitQuietly() {
+    this.awaitQuietly = true;
 
-  protected ProcessBuilder toProcessBuilder(Path gfshPath, File workingDir) {
-    String[] gfshCommands = new String[commands.length + 1];
-    gfshCommands[0] = gfshPath.toAbsolutePath().toString();
+    return this;
+  }
 
-    for (int i = 0; i < commands.length; i++) {
-      gfshCommands[i + 1] = "-e " + commands[i];
-    }
-
-    return new ProcessBuilder(gfshCommands).inheritIO().directory(workingDir);
+  public GfshExecution execute(GfshRule gfshRule) {
+    return gfshRule.execute(this);
   }
 
   protected void awaitIfNecessary(Process process) {
@@ -87,9 +112,7 @@ public class GfshScript {
       awaitLoudly(process);
     }
 
-    if (expectedExitValue != null) {
-      assertThat(process.exitValue()).isEqualTo(expectedExitValue);
-    }
+    assertThat(process.exitValue()).isEqualTo(expectedExitValue);
   }
 
   private void awaitQuietly(Process process) {
@@ -120,5 +143,13 @@ public class GfshScript {
 
   private boolean shouldAwaitLoudly() {
     return shouldAwait() && !awaitQuietly;
+  }
+
+  public String[] getCommands() {
+    return commands;
+  }
+
+  public String getName() {
+    return name;
   }
 }

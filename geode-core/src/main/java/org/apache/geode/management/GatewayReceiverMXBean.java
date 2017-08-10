@@ -18,6 +18,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -89,13 +90,15 @@ public interface GatewayReceiverMXBean {
   /**
    * Starts the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   void start() throws Exception;
 
   /**
    * Stops the gateway receiver.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.GATEWAY)
   void stop() throws Exception;
 
   /**

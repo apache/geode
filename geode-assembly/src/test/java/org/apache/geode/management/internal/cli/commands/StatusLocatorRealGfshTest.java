@@ -14,37 +14,31 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.test.dunit.rules.gfsh.GfshRule;
-import org.apache.geode.test.dunit.rules.gfsh.GfshScript;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.dunit.rules.gfsh.GfshRule;
+import org.apache.geode.test.dunit.rules.gfsh.GfshScript;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(DistributedTest.class)
+@Category(AcceptanceTest.class)
 public class StatusLocatorRealGfshTest {
   @Rule
   public GfshRule gfshRule = new GfshRule();
 
   @Test
   public void statusLocatorSucceedsWhenConnected() throws Exception {
-    gfshRule.execute(GfshScript.of("start locator --name=locator1").awaitAtMost(1, TimeUnit.MINUTES)
-        .expectExitCode(0));
+    GfshScript.of("start locator --name=locator1").execute(gfshRule);
 
-    gfshRule.execute(GfshScript.of("connect", "status locator --name=locator1")
-        .awaitAtMost(1, TimeUnit.MINUTES).expectExitCode(0));
+    GfshScript.of("connect", "status locator --name=locator1").execute(gfshRule);
   }
 
   @Test
   public void statusLocatorFailsWhenNotConnected() throws Exception {
-    gfshRule.execute(GfshScript.of("start locator --name=locator1").awaitAtMost(1, TimeUnit.MINUTES)
-        .expectExitCode(0));
+    GfshScript.of("start locator --name=locator1").withName("start locator").execute(gfshRule);
 
-    gfshRule.execute(GfshScript.of("status locator --name=locator1")
-        .awaitAtMost(1, TimeUnit.MINUTES).expectExitCode(1));
+    GfshScript.of("status locator --name=locator1").withName("status locator").expectFailure()
+        .execute(gfshRule);
   }
 }

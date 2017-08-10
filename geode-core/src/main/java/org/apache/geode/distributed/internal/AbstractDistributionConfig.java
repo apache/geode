@@ -16,20 +16,6 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.InvalidValueException;
-import org.apache.geode.UnmodifiableException;
-import org.apache.geode.internal.AbstractConfig;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.memcached.GemFireMemcachedServer;
-
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -42,6 +28,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.InvalidValueException;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.internal.AbstractConfig;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.memcached.GemFireMemcachedServer;
+
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
  * configuration file.
@@ -53,6 +56,8 @@ import java.util.StringTokenizer;
 @SuppressWarnings("deprecation")
 public abstract class AbstractDistributionConfig extends AbstractConfig
     implements DistributionConfig {
+
+  private static final Logger logger = LogService.getLogger();
 
   protected Object checkAttribute(String attName, Object value) {
     // first check to see if this attribute is modifiable, this also checks if the attribute is a
@@ -274,9 +279,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         hostAddress = InetAddress.getByName(host);
 
       } catch (UnknownHostException ex) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_UNKNOWN_LOCATOR_HOST_0
-                .toLocalizedString(host));
+        logger.warn("Unknown locator host: " + host);
       }
 
       locatorsb.append(host);
@@ -1045,7 +1048,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Location of the Java keystore file containing the collection of CA certificates trusted by jmx manager.");
     m.put(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD,
         "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
-
     m.put(JMX_MANAGER_PORT,
         "The port the jmx manager will listen on. Default is \"" + DEFAULT_JMX_MANAGER_PORT
             + "\". Set to zero to disable GemFire's creation of a jmx listening port.");
@@ -1213,6 +1215,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_TRUSTSTORE,
         "Location of the Java keystore file containing the collection of trusted certificates.");
     m.put(SSL_TRUSTSTORE_PASSWORD, "Password to unlock the truststore.");
+    m.put(SSL_TRUSTSTORE_TYPE,
+        "For Java truststore file format, this property has the value jks (or JKS).");
     m.put(SSL_DEFAULT_ALIAS, "The default certificate alias to be used in a multi-key keystore");
     m.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION,
         "This property determines is the HTTP service with use mutual ssl authentication.");

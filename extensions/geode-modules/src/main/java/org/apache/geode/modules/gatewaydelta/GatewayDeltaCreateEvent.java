@@ -62,14 +62,6 @@ public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
     DataSerializer.writeByteArray(this.gatewayDelta, out);
   }
 
-  public static void registerInstantiator(int id) {
-    Instantiator.register(new Instantiator(GatewayDeltaCreateEvent.class, id) {
-      public DataSerializable newInstance() {
-        return new GatewayDeltaCreateEvent();
-      }
-    });
-  }
-
   public String toString() {
     return new StringBuilder().append("GatewayDeltaCreateEvent[").append("regionName=")
         .append(this.regionName).append("; key=").append(this.key).append("; gatewayDelta=")

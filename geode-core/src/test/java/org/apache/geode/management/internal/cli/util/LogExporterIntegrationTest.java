@@ -19,18 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.Sets;
-
-import org.apache.geode.management.internal.cli.functions.ExportLogsFunctionIntegrationTest;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.logging.log4j.Level;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,11 +26,23 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+import org.apache.logging.log4j.Level;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.management.internal.cli.functions.ExportLogsFunctionIntegrationTest;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+
 @Category(IntegrationTest.class)
 public class LogExporterIntegrationTest {
 
   @Rule
-  public ServerStarterRule server = new ServerStarterRule();
+  public ServerStarterRule server = new ServerStarterRule().withWorkingDir();
 
   private LogExporter logExporter;
 
@@ -113,7 +113,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(LOG_FILE, logsFile.toString());
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
+    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
@@ -124,7 +124,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
+    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test
@@ -134,7 +134,7 @@ public class LogExporterIntegrationTest {
     properties.setProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString());
     server.withProperties(properties).startServer();
 
-    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
+    ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp(server.getCache());
   }
 
   @Test

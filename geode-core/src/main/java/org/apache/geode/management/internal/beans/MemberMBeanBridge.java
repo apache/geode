@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
+import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.io.File;
 import java.io.IOException;
@@ -1341,7 +1341,7 @@ public class MemberMBeanBridge {
     return getMemberLevelStatistic(StatsKey.GET_INITIAL_IMAGE_TIME).longValue();
   }
 
-  public int getInitialImagesInProgres() {
+  public int getInitialImagesInProgress() {
     return getMemberLevelStatistic(StatsKey.GET_INITIAL_IMAGES_INPROGRESS).intValue();
   }
 

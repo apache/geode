@@ -18,6 +18,30 @@ package org.apache.geode.distributed.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Array;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -516,6 +540,10 @@ public class InternalDistributedSystem extends DistributedSystem
     return this.securityService;
   }
 
+  public void setSecurityService(SecurityService securityService) {
+    this.securityService = securityService;
+  }
+
   /**
    * Registers a listener to the system
    * 
@@ -817,8 +845,8 @@ public class InternalDistributedSystem extends DistributedSystem
                                                                                      // Appenders
               this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and
                                       // Appenders
-              locId.getHost(), locId.getHostnameForClients(), this.originalConfig.toProperties(),
-              false);
+              locId.getHost().getAddress(), locId.getHostnameForClients(),
+              this.originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);
@@ -1567,7 +1595,7 @@ public class InternalDistributedSystem extends DistributedSystem
       if (addr != null && addr.trim().length() > 0) {
         canonical.append(addr);
       } else {
-        canonical.append(locId.getHost().getHostAddress());
+        canonical.append(locId.getHostName());
       }
       canonical.append("[");
       canonical.append(String.valueOf(locId.getPort()));
@@ -1797,7 +1825,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[]) statsList.toArray(new Statistics[0]);
+    return statsList.toArray(new Statistics[0]);
   }
 
   // StatisticsFactory methods
@@ -1829,7 +1857,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   public FunctionStats getFunctionStats(String textId) {
-    FunctionStats stats = (FunctionStats) functionExecutionStatsMap.get(textId);
+    FunctionStats stats = functionExecutionStatsMap.get(textId);
     if (stats == null) {
       stats = new FunctionStats(this, textId);
       FunctionStats oldStats = functionExecutionStatsMap.putIfAbsent(textId, stats);
@@ -2165,9 +2193,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * @param resource the actual resource object.
    */
   private void notifyResourceEventListeners(ResourceEvent event, Object resource) {
-    for (Iterator<ResourceEventsListener> iter = resourceListeners.iterator(); iter.hasNext();) {
+    for (ResourceEventsListener listener : resourceListeners) {
       try {
-        ResourceEventsListener listener = (ResourceEventsListener) iter.next();
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
         // ignore
@@ -2302,7 +2329,7 @@ public class InternalDistributedSystem extends DistributedSystem
               boolean isDurableClient = false;
 
               if (dca != null) {
-                isDurableClient = ((dca.getId() == null || dca.getId().isEmpty()) ? false : true);
+                isDurableClient = (!(dca.getId() == null || dca.getId().isEmpty()));
               }
 
               ((InternalDistributedSystem) ds).disconnect(false,
@@ -2426,10 +2453,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return false;
     }
     boolean newDsConnected = (rds == null || !rds.isConnected());
-    if (!newDsConnected) {
-      return false;
-    }
-    return true;
+    return newDsConnected;
   }
 
 
@@ -2753,7 +2777,7 @@ public class InternalDistributedSystem extends DistributedSystem
         if (newDM instanceof DistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
-          if (((DistributionManager) newDM).getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
+          if (newDM.getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
             try {
               CacheConfig config = new CacheConfig();
               if (cacheXML != null) {

@@ -14,7 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
@@ -44,9 +48,6 @@ import org.apache.geode.management.internal.cli.exceptions.CreateSubregionExcept
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Set;
 
 /**
  *
@@ -83,7 +84,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
         resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,
             CliStrings.format(
                 CliStrings.CREATE_REGION__MSG__SKIPPING_0_REGION_PATH_1_ALREADY_EXISTS,
-                new Object[] {memberNameOrId, regionCreateArgs.getRegionPath()})));
+                memberNameOrId, regionCreateArgs.getRegionPath())));
         return;
       }
     }
@@ -109,7 +110,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     } catch (RegionExistsException e) {
       String exceptionMsg =
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_PATH_0_ALREADY_EXISTS_ON_1,
-              new Object[] {regionCreateArgs.getRegionPath(), memberNameOrId});
+              regionCreateArgs.getRegionPath(), memberNameOrId);
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
     } catch (CreateSubregionException e) {
       resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
@@ -149,7 +150,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       parentRegion = cache.getRegion(parentRegionPath);
       if (parentRegion == null) {
         throw new IllegalArgumentException(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOESNOT_EXIST,
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST,
                 new Object[] {regionPath}));
       }
 
@@ -164,7 +165,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     // One of Region Shortcut OR Use Attributes From has to be given
     if (regionShortcut == null && useAttributesFrom == null) {
       throw new IllegalArgumentException(
-          CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_IS_REQUIRED);
+          CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED);
     }
 
     boolean isPartitioned = false;
@@ -183,7 +184,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
               cache.listRegionAttributes());
         }
         throw new IllegalStateException(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__COULDNOT_LOAD_REGION_ATTRIBUTES_FOR_SHORTCUT_0,
+            CliStrings.CREATE_REGION__MSG__COULD_NOT_LOAD_REGION_ATTRIBUTES_FOR_SHORTCUT_0,
             regionShortcut));
       }
     } else {
@@ -379,7 +380,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       Region<Object, Object> colocatedWithRegion = cache.getRegion(colocatedWith);
       if (colocatedWithRegion == null) {
         throw new IllegalArgumentException(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_DOESNOT_EXIST, colocatedWith));
+            CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_DOES_NOT_EXIST, colocatedWith));
       }
       if (!colocatedWithRegion.getAttributes().getDataPolicy().withPartitioning()) {
         throw new IllegalArgumentException(CliStrings.format(
@@ -428,12 +429,12 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       return (Class<PartitionResolver>) ClassPathLoader.getLatest().forName(className);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_REGION_PARTITION_RESOLVER__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {className, neededFor}), e);
+          CliStrings.CREATE_REGION_PARTITION_RESOLVER__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+          className, neededFor), e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          new Object[] {className, neededFor}), e);
+          className, neededFor), e);
     }
   }
 
@@ -442,12 +443,12 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       return klass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
+          klass, neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_REGION__MSG__PARTITION_RESOLVER__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
+          klass, neededFor), e);
     }
   }
 

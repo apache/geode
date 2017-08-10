@@ -80,25 +80,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   private Queue preInitQueue;
   private final Object preInitQueueMonitor = new Object();
 
-  /**
-   * Used by to generate redundancy loss alert only once even if more than one bucket or PR has lost
-   * redundancy. lowRedundancyFlags[0] is true if any bucket in this partitioned region has lower
-   * than configured redundancy. lowRedundancyFlags[1] is true if a warning has been generated for
-   * the current actual redundancy of this partitioned region. The caller must synchronize on
-   * lowRedundancyFlags in order to maintain atomicity of overall redundancy status and alert.
-   */
-  private final boolean[] lowRedundancyFlags = new boolean[2];
-
   private ConcurrentHashMap<Integer, Set<ServerBucketProfile>> clientBucketProfilesMap;
-
-  /**
-   * Caller must synchronize on the return value.
-   * 
-   * @return the low redundancy flags for this partitioned region
-   */
-  public boolean[] getLowRedundancyFlags() {
-    return lowRedundancyFlags;
-  }
 
   private RegionAdvisor(PartitionedRegion region) {
     super(region);

@@ -4002,6 +4002,16 @@ public class DiskStoreImpl implements DiskStore {
 
   private final HashMap<String, LRUStatistics> prlruStatMap = new HashMap<String, LRUStatistics>();
 
+  /**
+   * Lock used to synchronize access to the init file. This is a lock rather than a synchronized
+   * block because the backup tool needs to acquire this lock.
+   */
+  private final BackupLock backupLock = new BackupLock();
+
+  public BackupLock getBackupLock() {
+    return backupLock;
+  }
+
   LRUStatistics getOrCreatePRLRUStats(PlaceHolderDiskRegion dr) {
     String prName = dr.getPrName();
     LRUStatistics result = null;
@@ -4046,14 +4056,14 @@ public class DiskStoreImpl implements DiskStore {
     // level operations, we will need to be careful
     // to block them *before* they are put in the async
     // queue
-    getDiskInitFile().lockForBackup();
+    getBackupLock().lockForBackup();
   }
 
   /**
    * Release the lock that is preventing operations on this disk store during the backup process.
    */
   public void releaseBackupLock() {
-    getDiskInitFile().unlockForBackup();
+    getBackupLock().unlockForBackup();
   }
 
   /**
@@ -4063,7 +4073,7 @@ public class DiskStoreImpl implements DiskStore {
    */
   public void startBackup(File targetDir, BackupInspector baselineInspector,
       RestoreScript restoreScript) throws IOException {
-    getDiskInitFile().setBackupThread(Thread.currentThread());
+    getBackupLock().setBackupThread();
     boolean done = false;
     try {
       for (;;) {
@@ -4613,32 +4623,6 @@ public class DiskStoreImpl implements DiskStore {
       }
     }
     return false;
-  }
-
-  private void stopDiskStoreTaskPool() {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Stopping DiskStoreTaskPool");
-    }
-    shutdownPool(diskStoreTaskPool);
-
-    // Allow the delayed writes to complete
-    delayedWritePool.shutdown();
-    try {
-      delayedWritePool.awaitTermination(1, TimeUnit.SECONDS);
-    } catch (InterruptedException ignore) {
-      Thread.currentThread().interrupt();
-    }
-  }
-
-  private void shutdownPool(ThreadPoolExecutor pool) {
-    // All the regions have already been closed
-    // so this pool shouldn't be doing anything.
-    List<Runnable> l = pool.shutdownNow();
-    for (Runnable runnable : l) {
-      if (l instanceof DiskStoreTask) {
-        ((DiskStoreTask) l).taskCancelled();
-      }
-    }
   }
 
   public void writeRVVGC(DiskRegion dr, LocalRegion region) {

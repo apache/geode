@@ -27,6 +27,28 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
@@ -47,27 +69,6 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 /**
  * The LuceneIndexCommandsJUnitTest class is a test suite of test cases testing the contract and
@@ -275,9 +276,9 @@ public class LuceneIndexCommandsJUnitTest {
 
     TabularResultData data = (TabularResultData) result.getResultData();
 
-    assertEquals(Arrays.asList("C", "B", "A"), data.retrieveAllValues("key"));
+    assertEquals(Arrays.asList("A", "B", "C"), data.retrieveAllValues("key"));
     assertEquals(Arrays.asList("Result1", "Result1", "Result1"), data.retrieveAllValues("value"));
-    assertEquals(Arrays.asList("1.1", "1.2", "1.3"), data.retrieveAllValues("score"));
+    assertEquals(Arrays.asList("1.3", "1.2", "1.1"), data.retrieveAllValues("score"));
   }
 
   @Ignore
@@ -366,7 +367,7 @@ public class LuceneIndexCommandsJUnitTest {
 
     TabularResultData data = (TabularResultData) result.getResultData();
 
-    assertEquals(Arrays.asList("C", "B", "A"), data.retrieveAllValues("key"));
+    assertEquals(Arrays.asList("A", "B", "C"), data.retrieveAllValues("key"));
   }
 
   @Test

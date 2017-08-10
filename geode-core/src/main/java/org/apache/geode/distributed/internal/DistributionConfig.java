@@ -17,16 +17,6 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.Config;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.memcached.GemFireMemcachedServer;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -37,6 +27,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
@@ -4819,6 +4819,25 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttribute(type = String.class)
   String SSL_TRUSTSTORE_PASSWORD_NAME = SSL_TRUSTSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_TYPE} property.
+   */
+  @ConfigAttributeGetter(name = SSL_TRUSTSTORE_TYPE)
+  String getSSLTrustStoreType();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_TRUSTSTORE_TYPE} property.
+   */
+  @ConfigAttributeSetter(name = SSL_TRUSTSTORE_TYPE)
+  void setSSLTrustStoreType(String trustStoreType);
+
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_TRUSTSTORE_TYPE} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_TRUSTSTORE_TYPE_NAME = SSL_TRUSTSTORE_TYPE;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION}

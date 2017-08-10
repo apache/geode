@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
@@ -50,10 +51,11 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   private final boolean isPossibleDuplicate;
 
-  public RegionFunctionContextImpl(final String functionId, final Region dataSet, final Object args,
-      final Set<?> routingObjects, final Map<String, LocalDataSet> colocatedLocalDataMap,
-      Set<Integer> localBucketSet, ResultSender<?> resultSender, boolean isPossibleDuplicate) {
-    super(functionId, args, resultSender);
+  public RegionFunctionContextImpl(final Cache cache, final String functionId, final Region dataSet,
+      final Object args, final Set<?> routingObjects,
+      final Map<String, LocalDataSet> colocatedLocalDataMap, Set<Integer> localBucketSet,
+      ResultSender<?> resultSender, boolean isPossibleDuplicate) {
+    super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
     this.filter = routingObjects;
     this.colocatedLocalDataMap = colocatedLocalDataMap;

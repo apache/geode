@@ -1,0 +1,82 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+syntax = "proto3";
+package org.apache.geode.protocol.protobuf;
+
+import "google/protobuf/any.proto";
+import "region_API.proto";
+import "server_API.proto";
+import "basicTypes.proto";
+
+message Message {
+    MessageHeader messageHeader = 1;
+    oneof messageType {
+        Request request = 2;
+        Response response = 3;
+    }
+}
+
+message MessageHeader {
+    int32 correlationId = 1;
+    MetaData metadata = 2;
+}
+
+message Request {
+    CallbackArguments callbackArg = 1;
+    oneof requestAPI {
+        PutRequest putRequest = 2;
+        GetRequest getRequest = 3;
+        PutAllRequest putAllRequest = 4;
+        GetAllRequest getAllRequest = 5;
+        RemoveRequest removeRequest = 6;
+        RemoveAllRequest removeAllRequest = 7;
+
+        CreateRegionRequest createRegionRequest = 21;
+        DestroyRegionRequest destroyRegionRequest = 22;
+
+//        PingRequest pingRequest = 41;
+        GetAvailableServersRequest getAvailableServersRequest = 42;
+        GetRegionNamesRequest getRegionNamesRequest = 43;
+        GetRegionRequest getRegionRequest = 44;
+
+    }
+}
+
+message Response {
+    oneof responseAPI {
+        PutResponse putResponse = 2;
+        GetResponse getResponse = 3;
+        PutAllResponse putAllResponse = 4;
+        GetAllResponse getAllResponse = 5;
+        RemoveResponse removeResponse = 6;
+        RemoveAllResponse removeAllResponse = 7;
+
+        ErrorResponse errorResponse = 13;
+
+        CreateRegionResponse createRegionResponse = 20;
+        DestroyRegionResponse destroyRegionResponse = 21;
+
+//        PingResponse pingResponse = 41;
+        GetAvailableServersResponse getAvailableServersResponse = 42;
+        GetRegionNamesResponse getRegionNamesResponse = 43;
+        GetRegionResponse getRegionResponse = 44;
+    }
+}
+
+message MetaData {
+    int32 numberOfMetadata = 1;
+    map<int32, google.protobuf.Any> metaDataEntries = 2;
+}

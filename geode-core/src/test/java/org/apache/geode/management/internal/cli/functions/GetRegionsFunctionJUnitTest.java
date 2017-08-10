@@ -14,7 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,17 +23,11 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -44,13 +39,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest({CacheFactory.class})
 public class GetRegionsFunctionJUnitTest {
 
   TestResultSender testResultSender = new TestResultSender();
@@ -58,8 +49,7 @@ public class GetRegionsFunctionJUnitTest {
   Set<Region<?, ?>> subregions = new HashSet<>();
   @Mock
   private RegionAttributes regionAttributes;
-  @Mock
-  private AuthorizeRequest authzRequest;
+
   @Mock
   private LocalRegion region;
   @Mock
@@ -81,9 +71,7 @@ public class GetRegionsFunctionJUnitTest {
     when(this.cache.getDistributedSystem()).thenReturn(mock(InternalDistributedSystem.class));
     when(this.cache.getResourceManager()).thenReturn(this.internalResourceManager);
     when(functionContext.getResultSender()).thenReturn(testResultSender);
-
-    PowerMockito.mockStatic(CacheFactory.class);
-    when(CacheFactory.getAnyInstance()).thenReturn(cache);
+    when(functionContext.getCache()).thenReturn(cache);
   }
 
   @Test

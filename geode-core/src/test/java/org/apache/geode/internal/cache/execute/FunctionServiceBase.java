@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -70,6 +71,19 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
    * Return the number of members the function is expected to execute on
    */
   public abstract int numberOfExecutions();
+
+  @Test
+  public void functionContextGetCacheIsNotNullAndOpen() {
+    ResultCollector rc = getExecution().execute((context) -> {
+      Cache cache = context.getCache();
+      assertNotNull(cache);
+      assertFalse(cache.isClosed());
+      context.getResultSender().lastResult("done");
+    });
+    List<String> results = (List<String>) rc.getResult();
+    assertEquals(numberOfExecutions(), results.size());
+    results.stream().forEach(element -> assertEquals("done", element));
+  }
 
   @Test
   public void defaultCollectorReturnsSingleResult() {

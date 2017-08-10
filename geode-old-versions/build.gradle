@@ -38,7 +38,9 @@ def addTestSource(def source, def geodeVersion) {
 // Add sourceSets for backwards compatibility, rolling upgrade, and
 // pdx testing.
 addTestSource('test100', '1.0.0-incubating')
+addTestSource('test110', '1.1.0')
 addTestSource('test111', '1.1.1')
+addTestSource('test120', '1.2.0')
 
 def generatedResources = "$buildDir/generated-resources/main"
 

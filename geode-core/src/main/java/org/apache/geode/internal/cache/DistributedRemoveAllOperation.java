@@ -891,7 +891,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         dispatchElidedEvent(rgn, ev);
         this.appliedOperation = false;
       } finally {
-        if (ev.getVersionTag() != null && !ev.getVersionTag().isRecorded()) {
+        if (ev.hasValidVersionTag() && !ev.getVersionTag().isRecorded()) {
           if (rgn.getVersionVector() != null) {
             rgn.getVersionVector().recordVersion(getSender(), ev.getVersionTag());
           }

@@ -25,7 +25,7 @@ package org.apache.geode.cache;
  * 
  * @see AttributesFactory#setCacheListener
  * @see RegionAttributes#getCacheListener
- * @see AttributesMutator#setCacheListener
+ * @see AttributesMutator#addCacheListener
  * @deprecated this feature is scheduled to be removed
  */
 public interface RegionRoleListener<K, V> extends CacheListener<K, V> {

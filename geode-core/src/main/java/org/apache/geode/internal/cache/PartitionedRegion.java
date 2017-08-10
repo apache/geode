@@ -569,6 +569,10 @@ public class PartitionedRegion extends LocalRegion
     }
   };
 
+  PartitionedRegionRedundancyTracker getRedundancyTracker() {
+    return redundancyTracker;
+  }
+
 
   public static class PRIdMap extends HashMap {
     private static final long serialVersionUID = 3667357372967498179L;
@@ -713,6 +717,8 @@ public class PartitionedRegion extends LocalRegion
 
   private AbstractGatewaySender parallelGatewaySender = null;
 
+  private final PartitionedRegionRedundancyTracker redundancyTracker;
+
   /**
    * Constructor for a PartitionedRegion. This has an accessor (Region API) functionality and
    * contains a datastore for actual storage. An accessor can act as a local cache by having a local
@@ -754,6 +760,8 @@ public class PartitionedRegion extends LocalRegion
     // getScope is overridden to return the correct scope.
     // this.scope = Scope.LOCAL;
     this.redundantCopies = regionAttributes.getPartitionAttributes().getRedundantCopies();
+    this.redundancyTracker = new PartitionedRegionRedundancyTracker(this.totalNumberOfBuckets,
+        this.redundantCopies, this.prStats, getFullPath());
     this.prStats.setConfiguredRedundantCopies(
         regionAttributes.getPartitionAttributes().getRedundantCopies());
     this.prStats.setLocalMaxMemory(
@@ -3082,7 +3090,6 @@ public class PartitionedRegion extends LocalRegion
       EntryEventImpl clientEvent, boolean returnTombstones)
       throws TimeoutException, CacheLoaderException {
     validateKey(key);
-    validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForNoAccess();
     discoverJTA();
@@ -3473,11 +3480,12 @@ public class PartitionedRegion extends LocalRegion
             execution.isForwardExceptions(), function, localBucketSet);
 
     if (localKeys != null) {
-      final RegionFunctionContextImpl prContext = new RegionFunctionContextImpl(function.getId(),
-          PartitionedRegion.this, execution.getArgumentsForMember(getMyId().getId()),
-          localKeys, ColocationHelper
-              .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
-          localBucketSet, resultSender, execution.isReExecute());
+      final RegionFunctionContextImpl prContext =
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
+              execution.getArgumentsForMember(getMyId().getId()),
+              localKeys, ColocationHelper
+                  .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
+              localBucketSet, resultSender, execution.isReExecute());
       if (logger.isDebugEnabled()) {
         logger.debug("FunctionService: Executing on local node with keys.{}", localKeys);
       }
@@ -3612,7 +3620,7 @@ public class PartitionedRegion extends LocalRegion
               execution.getServerResultSender(), true, false, execution.isForwardExceptions(),
               function, buckets);
       final FunctionContext context =
-          new RegionFunctionContextImpl(function.getId(), PartitionedRegion.this,
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
               execution.getArgumentsForMember(localVm.getId()), routingKeys, ColocationHelper
                   .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, buckets),
               buckets, resultSender, execution.isReExecute());
@@ -3743,7 +3751,7 @@ public class PartitionedRegion extends LocalRegion
     // execute locally and collect the result
     if (isSelf && this.dataStore != null) {
       final RegionFunctionContextImpl prContext =
-          new RegionFunctionContextImpl(function.getId(), PartitionedRegion.this,
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
               execution.getArgumentsForMember(getMyId().getId()), null, ColocationHelper
                   .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
               localBucketSet, resultSender, execution.isReExecute());
@@ -3839,7 +3847,7 @@ public class PartitionedRegion extends LocalRegion
     // execute locally and collect the result
     if (isSelf && this.dataStore != null) {
       final RegionFunctionContextImpl prContext =
-          new RegionFunctionContextImpl(function.getId(), PartitionedRegion.this,
+          new RegionFunctionContextImpl(cache, function.getId(), PartitionedRegion.this,
               execution.getArgumentsForMember(getMyId().getId()), null, ColocationHelper
                   .constructAndGetAllColocatedLocalDataSet(PartitionedRegion.this, localBucketSet),
               localBucketSet, resultSender, execution.isReExecute());
@@ -5448,16 +5456,11 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void createEventTracker() {
-    // PR buckets maintain their own trackers. None is needed at this level
-  }
-
-  @Override
-  public VersionTag findVersionTagForClientEvent(EventID eventId) {
+  public VersionTag findVersionTagForEvent(EventID eventId) {
     if (this.dataStore != null) {
       Set<Map.Entry<Integer, BucketRegion>> bucketMap = this.dataStore.getAllLocalBuckets();
       for (Map.Entry<Integer, BucketRegion> entry : bucketMap) {
-        VersionTag result = entry.getValue().findVersionTagForClientEvent(eventId);
+        VersionTag result = entry.getValue().findVersionTagForEvent(eventId);
         if (result != null) {
           return result;
         }

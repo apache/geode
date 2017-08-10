@@ -89,6 +89,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   protected final RegionAdvisor regionAdvisor;
 
+  private final BucketRedundancyTracker redundancyTracker;
+
   /**
    * The bucket primary will be holding this distributed lock. Protected by synchronized(this).
    */
@@ -128,25 +130,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   static private final Random myRand = new Random();
 
   /**
-   * Used by {@link #updateRedundancy()} to determine if stat change is required. Access and
-   * mutation are done while synchronized on this advisor.
-   * 
-   * @guarded.By this
-   */
-  private boolean redundancySatisfied = true;
-
-  /**
-   * Used by {@link #incLowRedundancyBucketCount(int)} to determine if redundancy for this bucket
-   * has ever been satisfied. Only buckets which lose redundancy after having redundancy will
-   * generate a redundancy loss alert.
-   * <p>
-   * Access and mutation are done while synchronized on this advisor.
-   * 
-   * @guarded.By this
-   */
-  private boolean redundancyEverSatisfied = false;
-
-  /**
    * A read/write lock to prevent making this bucket not primary while a write is in progress on the
    * bucket.
    */
@@ -159,8 +142,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * region.
    */
   private BucketAdvisor parentAdvisor;
-
-  private volatile int redundancy = -1;
 
   /**
    * The member that is responsible for choosing the primary for this bucket. While this field is
@@ -188,6 +169,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     super(bucket);
     this.regionAdvisor = regionAdvisor;
     this.pRegion = this.regionAdvisor.getPartitionedRegion();
+    this.redundancyTracker =
+        new BucketRedundancyTracker(pRegion.getRedundantCopies(), pRegion.getRedundancyTracker());
     resetParentAdvisor(bucket.getId());
   }
 
@@ -362,64 +345,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   void removeBucket() {
     setHosting(false);
-  }
-
-  /**
-   * Increment or decrement lowRedundancyBucketCount stat and generate alert only once per loss of
-   * redundancy for PR but only if redundancy has ever been satisfied.
-   * <p>
-   * Caller must synchronize on this BucketAdvisor.
-   * 
-   * @param val the value to increment or decrement by
-   * @guarded.By this
-   */
-  private void incLowRedundancyBucketCount(int val) {
-    final int HAS_LOW_REDUNDANCY = 0;
-    final int ALREADY_GENERATED_WARNING = 1;
-
-    final PartitionedRegionStats stats = getPartitionedRegionStats();
-    final boolean[] lowRedundancyFlags = this.regionAdvisor.getLowRedundancyFlags();
-    final int configuredRedundancy = this.pRegion.getRedundantCopies();
-
-    synchronized (lowRedundancyFlags) {
-      stats.incLowRedundancyBucketCount(val);
-
-      if (stats.getLowRedundancyBucketCount() == 0) {
-        // all buckets are fully redundant
-        lowRedundancyFlags[HAS_LOW_REDUNDANCY] = false; // reset
-        lowRedundancyFlags[ALREADY_GENERATED_WARNING] = false; // reset
-        stats.setActualRedundantCopies(configuredRedundancy);
-      }
-
-      else {
-        // one or more buckets are not fully redundant
-        int numBucketHosts = getBucketRedundancy() + 1;
-        int actualRedundancy = Math.max(numBucketHosts - 1, 0); // zero or more
-
-        if (actualRedundancy < stats.getActualRedundantCopies()) {
-          // need to generate an alert for this lower actual redundancy
-          lowRedundancyFlags[ALREADY_GENERATED_WARNING] = false;
-        }
-
-        if (!lowRedundancyFlags[HAS_LOW_REDUNDANCY]
-            || !lowRedundancyFlags[ALREADY_GENERATED_WARNING]) {
-          // either we have lower redundancy or we never generated an alert
-
-          lowRedundancyFlags[HAS_LOW_REDUNDANCY] = true;
-          stats.setActualRedundantCopies(actualRedundancy);
-
-          // this bucket will only generate alert if redundancyEverSatisfied
-          if (!lowRedundancyFlags[ALREADY_GENERATED_WARNING] && this.redundancyEverSatisfied) {
-
-            lowRedundancyFlags[ALREADY_GENERATED_WARNING] = true;
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.BucketAdvisor_REDUNDANCY_HAS_DROPPED_BELOW_0_CONFIGURED_COPIES_TO_1_ACTUAL_COPIES_FOR_2,
-                new Object[] {Integer.valueOf(configuredRedundancy),
-                    Integer.valueOf(actualRedundancy), this.pRegion.getFullPath()}));
-          }
-        }
-      }
-    }
   }
 
   /**
@@ -1007,10 +932,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       wasPrimary = isPrimary();
       super.close();
       this.requestPrimaryState(CLOSED);
-      if (!this.redundancySatisfied) {
-        incLowRedundancyBucketCount(-1);
-        this.redundancySatisfied = true;
-      }
+      this.redundancyTracker.closeBucket();
       this.localProfile = null;
     }
     if (wasPrimary) {
@@ -1797,32 +1719,14 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   }
 
   /**
-   * Determine if there has been a change in redundancy and alter the lowRedundancyBucketCount stat
-   * as needed.
-   * 
-   * Also updates a counter used to track the redundancy of this member
-   * 
-   * @return current number of hosts for this bucket
-   * @see #redundancySatisfied
-   * @see PartitionedRegionStats#incLowRedundancyBucketCount(int)
-   * @guarded.By this
+   * Get the current number of bucket hosts and update the redundancy statistics for the region
+   *
+   * @return number of current bucket hosts
    */
   private int updateRedundancy() {
-    int desiredRedundancy = this.pRegion.getRedundantCopies();
     int numBucketHosts = getNumInitializedBuckets();
-    if (isClosed()) {
-      return numBucketHosts;
-    }
-    int actualRedundancy = numBucketHosts - 1;
-    this.redundancy = actualRedundancy;
-    if (this.redundancySatisfied && numBucketHosts > 0 && actualRedundancy < desiredRedundancy) {
-      incLowRedundancyBucketCount(1);
-      this.redundancySatisfied = false;
-    } else if (!this.redundancySatisfied && numBucketHosts > 0
-        && actualRedundancy >= desiredRedundancy) {
-      incLowRedundancyBucketCount(-1);
-      this.redundancySatisfied = true;
-      this.redundancyEverSatisfied = true;
+    if (!isClosed()) {
+      redundancyTracker.updateStatistics(numBucketHosts);
     }
     return numBucketHosts;
   }
@@ -1882,7 +1786,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @return current number of hosts of this bucket ; -1 if there are no hosts
    */
   public int getBucketRedundancy() {
-    return redundancy;
+    return redundancyTracker.getCurrentRedundancy();
   }
 
   public Set<InternalDistributedMember> adviseInitialized() {

@@ -480,7 +480,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (!typeRegistryInUse || this.idToType == null) {
       return;
     }
-    checkAllowed(true, hasPersistentRegions());
+    checkAllowed(true, this.cache.hasPersistentRegion());
   }
 
   public void creatingPersistentRegion() {
@@ -514,8 +514,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (typeRegistryInUse) {
       return;
     } else {
-      boolean hasPersistentRegions = hasPersistentRegions();
-      checkAllowed(hasGatewaySender(), hasPersistentRegions);
+      checkAllowed(hasGatewaySender(), this.cache.hasPersistentRegion());
 
       for (Pool pool : PoolManager.getAll().values()) {
         if (!((PoolImpl) pool).isUsedByGateway()) {
@@ -529,17 +528,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  public boolean hasPersistentRegions() {
-    Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
-    boolean hasPersistentRegions = false;
-    for (DiskStore store : diskStores) {
-      hasPersistentRegions |= ((DiskStoreImpl) store).hasPersistedData();
-    }
-    return hasPersistentRegions;
-  }
-
-  private void checkAllowed(boolean hasGatewaySender, boolean hasDiskStore) {
-    if (hasDiskStore && !cache.getPdxPersistent()) {
+  private void checkAllowed(boolean hasGatewaySender, boolean hasPersistentRegion) {
+    if (hasPersistentRegion && !cache.getPdxPersistent()) {
       throw new PdxInitializationException(
           "The PDX metadata must be persistent in a member that has persistent data. See CacheFactory.setPdxPersistent.");
     }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -37,20 +38,20 @@ public class FunctionContextImpl implements FunctionContext {
 
   private String functionId = null;
 
+  private Cache cache = null;
+
   private ResultSender resultSender = null;
 
   private final boolean isPossDup;
 
-  public FunctionContextImpl(final String functionId, final Object args,
+  public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
       ResultSender resultSender) {
-    this.functionId = functionId;
-    this.args = args;
-    this.resultSender = resultSender;
-    this.isPossDup = false;
+    this(cache, functionId, args, resultSender, false);
   }
 
-  public FunctionContextImpl(final String functionId, final Object args, ResultSender resultSender,
-      boolean isPossibleDuplicate) {
+  public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
+      ResultSender resultSender, boolean isPossibleDuplicate) {
+    this.cache = cache;
     this.functionId = functionId;
     this.args = args;
     this.resultSender = resultSender;
@@ -95,6 +96,11 @@ public class FunctionContextImpl implements FunctionContext {
 
   public boolean isPossibleDuplicate() {
     return this.isPossDup;
+  }
+
+  @Override
+  public Cache getCache() {
+    return cache;
   }
 
 }

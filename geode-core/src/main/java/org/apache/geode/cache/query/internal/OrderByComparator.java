@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -28,9 +27,8 @@ import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
- * A generic comparator class which compares two Object/StructImpl according to their sort criterion
- * specified in order by clause
- * 
+ * A generic comparator class which compares two Object/StructImpl according to their sort criteria
+ * specified in order by clause.
  */
 public class OrderByComparator implements Comparator {
   private final ObjectType objType;
@@ -45,78 +43,44 @@ public class OrderByComparator implements Comparator {
   }
 
   /**
-   * Yogesh : This methods evaluates sort criteria and returns a ArrayList of Object[] arrays of
-   * evaluated criteria
+   * This method evaluates sort criteria and returns an ArrayList of Object[] arrays of the
+   * evaluated criteria.
    * 
-   * @param value
-   * @return Object[]
+   * @param value the criteria to be evaluated.
+   * @return an Object array of Object arrays of the evaluated criteria.
    */
   protected Object[] evaluateSortCriteria(Object value) {
-
-    CompiledSortCriterion csc;
     Object[] array = null;
     if (orderByAttrs != null) {
       array = new Object[orderByAttrs.size()];
-      Iterator orderiter = orderByAttrs.iterator();
       int i = 0;
-      while (orderiter.hasNext()) {
-        csc = (CompiledSortCriterion) orderiter.next();
-        Object[] arr = new Object[2];
-        arr[0] = csc.evaluate(value, context);
-        arr[1] = Boolean.valueOf(csc.getCriterion());
+      for (CompiledSortCriterion csc : orderByAttrs) {
+        Object[] arr = {csc.evaluate(value, context), csc.getCriterion()};
         array[i++] = arr;
       }
-
     }
     return array;
   }
 
+  /**
+   * This method evaluates sort criteria and returns the resulting integer value of comparing the
+   * two objects passed into it based on these criteria.
+   *
+   * @param value1 the first object to be compared.
+   * @param value2 the second object to be compared.
+   * @return a negative integer, zero, or a positive integer if the first argument is less than,
+   *         equal to, or greater than the second, based on the evaluated sort criteria.
+   */
   protected int evaluateSortCriteria(Object value1, Object value2) {
     int result = -1;
-    CompiledSortCriterion csc;
     if (orderByAttrs != null) {
-      Iterator orderiter = orderByAttrs.iterator();
-      while (orderiter.hasNext()) {
-        csc = (CompiledSortCriterion) orderiter.next();
+      for (CompiledSortCriterion csc : orderByAttrs) {
         Object sortCriteriaForValue1 = csc.evaluate(value1, context);
         Object sortCriteriaForValue2 = csc.evaluate(value2, context);
-
-        if (sortCriteriaForValue1 == null || sortCriteriaForValue2 == null) {
-          if (sortCriteriaForValue1 == null) {
-            result = (sortCriteriaForValue2 == null ? 0 : -1);
-          } else {
-            result = 1;
-          }
-        } else if (sortCriteriaForValue1 == QueryService.UNDEFINED
-            || sortCriteriaForValue2 == QueryService.UNDEFINED) {
-          if (sortCriteriaForValue1 == QueryService.UNDEFINED) {
-            result = (sortCriteriaForValue2 == QueryService.UNDEFINED ? 0 : -1);
-          } else {
-            result = 1;
-          }
-        } else {
-          if (sortCriteriaForValue1 instanceof Number && sortCriteriaForValue2 instanceof Number) {
-            double diff = ((Number) sortCriteriaForValue1).doubleValue()
-                - ((Number) sortCriteriaForValue2).doubleValue();
-            result = diff > 0 ? 1 : diff < 0 ? -1 : 0;
-          } else {
-            if (sortCriteriaForValue1 instanceof PdxString
-                && sortCriteriaForValue2 instanceof String) {
-              sortCriteriaForValue2 = new PdxString((String) sortCriteriaForValue2);
-            } else if (sortCriteriaForValue2 instanceof PdxString
-                && sortCriteriaForValue1 instanceof String) {
-              sortCriteriaForValue1 = new PdxString((String) sortCriteriaForValue1);
-            }
-            result = ((Comparable) sortCriteriaForValue1).compareTo(sortCriteriaForValue2);
-          }
-
-        }
-
-        if (result == 0) {
-          continue;
-        } else {
-          if (Boolean.valueOf(csc.getCriterion())) {
-            result = (result * (-1));
+        result = compareHelperMethod(sortCriteriaForValue1, sortCriteriaForValue2);
+        if (result != 0) {
+          if (csc.getCriterion()) {
+            result *= -1;
           }
           break;
         }
@@ -137,89 +101,35 @@ public class OrderByComparator implements Comparator {
    *         Comparator.
    */
   public int compare(Object obj1, Object obj2) {
-    int result = -1;
+    int result;
     if (obj1 == null && obj2 == null) {
       return 0;
     }
     assert !(obj1 instanceof VMCachedDeserializable || obj2 instanceof VMCachedDeserializable);
-
     if ((this.objType.isStructType() && obj1 instanceof Object[] && obj2 instanceof Object[])
-        || !this.objType.isStructType()) { // obj1 instanceof Object && obj2
-                                           // instanceof Object){
-      if ((result = evaluateSortCriteria(obj1, obj2)) != 0) {
+        || !this.objType.isStructType()) {
+      if (((result = evaluateSortCriteria(obj1, obj2)) != 0) && (orderByAttrs != null)) {
         return result;
       }
-
-      QueryObserver observer = QueryObserverHolder.getInstance();
-      if (observer != null) {
-        observer.orderByColumnsEqual();
+      if (QueryObserverHolder.getInstance() != null) {
+        QueryObserverHolder.getInstance().orderByColumnsEqual();
       }
-      // The comparable fields are equal, so we check if the overall keys are
-      // equal or not
+      // Comparable fields are equal - check if overall keys are equal
       if (this.objType.isStructType()) {
         int i = 0;
         for (Object o1 : (Object[]) obj1) {
           Object o2 = ((Object[]) obj2)[i++];
-
-          // Check for null value.
-          if (o1 == null || o2 == null) {
-            if (o1 == null) {
-              if (o2 == null) {
-                continue;
-              }
-              return -1;
-            } else {
-              return 1;
-            }
-          } else if (o1 == QueryService.UNDEFINED || o2 == QueryService.UNDEFINED) {
-            if (o1 == QueryService.UNDEFINED) {
-              if (o2 == QueryService.UNDEFINED) {
-                continue;
-              }
-              return -1;
-            } else {
-              return 1;
-            }
-          }
-
-          if (o1 instanceof Comparable) {
-            final int rslt;
-            if (o1 instanceof Number && o2 instanceof Number) {
-              double diff = ((Number) o1).doubleValue() - ((Number) o2).doubleValue();
-              rslt = diff > 0 ? 1 : diff < 0 ? -1 : 0;
-            } else {
-              if (o1 instanceof PdxString && o2 instanceof String) {
-                o2 = new PdxString((String) o2);
-              } else if (o2 instanceof PdxString && o1 instanceof String) {
-                o1 = new PdxString((String) o1);
-              }
-              rslt = ((Comparable) o1).compareTo(o2);
-            }
-            if (rslt == 0) {
-              continue;
-            } else {
-              return rslt;
-            }
-          } else if (!o1.equals(o2)) {
-            return -1;
+          result = compareHelperMethod(o1, o2);
+          if (result != 0) {
+            return result;
           }
         }
         return 0;
       } else {
-        if (obj1 instanceof PdxString && obj2 instanceof String) {
-          obj2 = new PdxString((String) obj2);
-        } else if (obj2 instanceof PdxString && obj1 instanceof String) {
-          obj1 = new PdxString((String) obj1);
-        }
-
-        if (obj1 instanceof Comparable) {
-          return ((Comparable) obj1).compareTo(obj2);
-        } else {
-          return obj1.equals(obj2) ? 0 : -1;
-        }
+        return compareTwoStrings(obj1, obj2);
       }
     }
-    return -1;
+    throw new ClassCastException(); // throw exception if args can't be compared w/this comparator
   }
 
   void addEvaluatedSortCriteria(Object row, ExecutionContext context)
@@ -228,4 +138,56 @@ public class OrderByComparator implements Comparator {
     // No op
   }
 
+  private int compareHelperMethod(Object obj1, Object obj2) {
+    if (obj1 == null || obj2 == null) {
+      return compareIfOneOrMoreNull(obj1, obj2);
+    } else if (obj1 == QueryService.UNDEFINED || obj2 == QueryService.UNDEFINED) {
+      return compareIfOneOrMoreQueryServiceUndefined(obj1, obj2);
+    } else {
+      return compareTwoObjects(obj1, obj2);
+    }
+  }
+
+  private int compareIfOneOrMoreNull(Object obj1, Object obj2) {
+    if (obj1 == null) {
+      return obj2 == null ? 0 : -1;
+    } else {
+      return 1;
+    }
+  }
+
+  private int compareIfOneOrMoreQueryServiceUndefined(Object obj1, Object obj2) {
+    if (obj1 == QueryService.UNDEFINED) {
+      return obj2 == QueryService.UNDEFINED ? 0 : -1;
+    } else {
+      return 1;
+    }
+  }
+
+  private int compareTwoObjects(Object obj1, Object obj2) {
+    if (obj1 instanceof Number && obj2 instanceof Number) {
+      return compareTwoNumbers(obj1, obj2);
+    } else {
+      return compareTwoStrings(obj1, obj2);
+    }
+  }
+
+  private int compareTwoNumbers(Object obj1, Object obj2) {
+    Number num1 = (Number) obj1;
+    Number num2 = (Number) obj2;
+    return Double.compare(num1.doubleValue(), num2.doubleValue());
+  }
+
+  private int compareTwoStrings(Object obj1, Object obj2) {
+    if (obj1 instanceof PdxString && obj2 instanceof String) {
+      obj2 = new PdxString((String) obj2);
+    } else if (obj2 instanceof PdxString && obj1 instanceof String) {
+      obj1 = new PdxString((String) obj1);
+    }
+    if (obj1 instanceof Comparable) {
+      return ((Comparable) obj1).compareTo(obj2);
+    } else {
+      return obj1.equals(obj2) ? 0 : -1;
+    }
+  }
 }

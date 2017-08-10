@@ -14,9 +14,17 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.execCLISteps;
+import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.Shell;
+import org.springframework.shell.event.ParseResult;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
+
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
@@ -29,19 +37,9 @@ import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.multistep.MultiStepCommand;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.NotAuthorizedException;
-import org.springframework.shell.core.ExecutionStrategy;
-import org.springframework.shell.core.Shell;
-import org.springframework.shell.event.ParseResult;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.Method;
-import java.nio.file.Path;
-import java.util.Map;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in GemFire SHell (gfsh).
@@ -76,11 +74,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     Result result = null;
     Method method = parseResult.getMethod();
     try {
-      // Check if it's a multi-step command
-      MultiStepCommand cmd = method.getAnnotation(MultiStepCommand.class);
-      if (cmd != null) {
-        return execCLISteps(cmd, logWrapper, shell, parseResult);
-      }
 
       // check if it's a shell only command
       if (isShellOnly(method)) {

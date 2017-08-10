@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import java.util.Map;
+
 import javax.management.ObjectName;
 
 import org.apache.geode.cache.DiskStore;
@@ -24,6 +25,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management operations for a
@@ -76,7 +78,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 public interface DistributedSystemMXBean {
 
   /**
-   * Returns the ID of thie DistributedSystem. allow anyone to access this method
+   * Returns the ID of the DistributedSystem. allow anyone to access this method
    *
    * @return The DistributedSystem ID or -1 if not set.
    */
@@ -319,8 +321,9 @@ public interface DistributedSystemMXBean {
    * @param diskStoreId UUID of the disk store to remove
    * @return True if the request is successful, false otherwise.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  boolean revokeMissingDiskStores(String diskStoreId) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
+  boolean revokeMissingDiskStores(String diskStoreId);
 
   /**
    * Returns a list of details for disk stores which have been determined to be unavailable during
@@ -520,7 +523,7 @@ public interface DistributedSystemMXBean {
   long getJVMPauses();
 
   /**
-   * This API is used to query data from GemFire system. This returns a JSON formated String having
+   * This API is used to query data from GemFire system. This returns a JSON formatted String having
    * data and it's type. Type and value of data makes an array , type preceding the value.
    * 
    * e.g. {"result":[["java.lang.String","v"],["java.lang.String","b"]]}
@@ -547,7 +550,7 @@ public interface DistributedSystemMXBean {
    *        mandatory to give this input barring join queries on PR. If member list is not provided
    *        query will be for the whole cluster.
    * @param limit result set limit. If not set or 0 is passed default limit of 1000 will be set.
-   * @return a JSON formated string containing data and its type
+   * @return a JSON formatted string containing data and its type
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   String queryData(String queryString, String members, int limit) throws Exception;
@@ -597,7 +600,8 @@ public interface DistributedSystemMXBean {
    */
   int getQueryResultSetLimit();
 
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   void setQueryResultSetLimit(int queryResultSetLimit);
 
   /**
@@ -607,6 +611,7 @@ public interface DistributedSystemMXBean {
    */
   int getQueryCollectionsDepth();
 
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   void setQueryCollectionsDepth(int queryCollectionsDepth);
 }

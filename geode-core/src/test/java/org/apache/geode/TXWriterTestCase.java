@@ -113,7 +113,7 @@ public class TXWriterTestCase {
 
   void installCacheListenerAndWriter() {
     AttributesMutator<String, String> mutator = this.region.getAttributesMutator();
-    mutator.setCacheListener(new CacheListenerAdapter<String, String>() {
+    mutator.addCacheListener(new CacheListenerAdapter<String, String>() {
       @Override
       public void close() {
         cbCount++;

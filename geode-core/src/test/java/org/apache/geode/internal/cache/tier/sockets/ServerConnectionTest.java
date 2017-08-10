@@ -26,24 +26,38 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Locale;
 
 @Category(UnitTest.class)
 public class ServerConnectionTest {
+
+  /**
+   * This test assumes Locale is in English. Before the test, change the locale of Locale and
+   * StringId to English and restore the original locale after the test.
+   */
+  @Rule
+  public final RestoreLocaleRule restoreLocale =
+      new RestoreLocaleRule(Locale.ENGLISH, l -> StringId.setLocale(l));
+
   @Mock
   private Message requestMsg;
 
@@ -57,7 +71,7 @@ public class ServerConnectionTest {
   private ServerConnection serverConnection;
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     AcceptorImpl acceptor = mock(AcceptorImpl.class);
 
     InetAddress inetAddress = mock(InetAddress.class);
@@ -69,8 +83,8 @@ public class ServerConnectionTest {
     InternalCache cache = mock(InternalCache.class);
     SecurityService securityService = mock(SecurityService.class);
 
-    serverConnection = new ServerConnection(socket, cache, null, null, 0, 0, null,
-        Acceptor.PRIMARY_SERVER_TO_CLIENT, acceptor, securityService);
+    serverConnection = ServerConnectionFactory.makeServerConnection(socket, cache, null, null, 0, 0,
+        null, Acceptor.PRIMARY_SERVER_TO_CLIENT, acceptor, securityService);
     MockitoAnnotations.initMocks(this);
   }
 

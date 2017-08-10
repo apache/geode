@@ -14,20 +14,18 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
@@ -37,11 +35,9 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.MBeanUtil;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
 import org.apache.geode.management.RegionMXBean;
-
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -49,6 +45,8 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This is for testing remote Cluster
@@ -77,13 +75,12 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int punePort = (Integer) puneLocator.invoke(() -> TestRemoteClusterDUnitTest.getLocatorPort());
+    int dsIdPort = puneLocator.invoke(() -> TestRemoteClusterDUnitTest.getLocatorPort());
 
-    Integer nyPort =
-        (Integer) nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, punePort));
+    Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
-    puneSender.invoke(() -> WANTestBase.createCache(punePort));
-    managing.invoke(() -> WANTestBase.createManagementCache(punePort));
+    puneSender.invoke(() -> WANTestBase.createCache(dsIdPort));
+    managing.invoke(() -> WANTestBase.createManagementCache(dsIdPort));
     startManagingNode(managing);
 
     puneSender
@@ -115,8 +112,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
     stopGatewaySender(puneSender);
     startGatewaySender(puneSender);
 
-    DistributedMember puneMember =
-        (DistributedMember) puneSender.invoke(() -> TestRemoteClusterDUnitTest.getMember());
+    DistributedMember puneMember = puneSender.invoke(() -> TestRemoteClusterDUnitTest.getMember());
 
     checkRemoteClusterStatus(managing, puneMember);
 
@@ -146,10 +142,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
             Cache cache = GemFireCacheImpl.getInstance();
             final ManagementService service = ManagementService.getManagementService(cache);
             final DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
-            if (dsBean != null) {
-              return true;
-            }
-            return false;
+            return dsBean != null;
           }
 
           @Override
@@ -164,7 +157,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
         Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
         LogWriterUtils.getLogWriter().info("Ds Map is: " + dsMap.size());
         assertNotNull(dsMap);
-        assertEquals(true, dsMap.size() > 0 ? true : false);
+        assertEquals(true, dsMap.size() > 0);
       }
     };
     vm.invoke(checkProxySender);

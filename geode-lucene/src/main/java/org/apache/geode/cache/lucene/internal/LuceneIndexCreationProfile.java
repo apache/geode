@@ -16,7 +16,6 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServiceProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.lucene.analysis.Analyzer;

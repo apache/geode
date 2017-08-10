@@ -16,48 +16,40 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.mockito.Mockito.spy;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CommandManager;
-import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.remote.RemoteExecutionStrategy;
-import org.junit.rules.ExternalResource;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.util.ReflectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.rules.ExternalResource;
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.event.ParseResult;
+import org.springframework.util.ReflectionUtils;
+
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+
 public class GfshParserRule extends ExternalResource {
 
   private GfshParser parser;
   private CommandManager commandManager;
-  private GfshParseResult parseResult;
 
   @Override
   public void before() {
     commandManager = new CommandManager();
     parser = new GfshParser(commandManager);
-    parseResult = null;
   }
 
   public GfshParseResult parse(String command) {
     return parser.parse(command);
   }
 
-  public <T> T spyCommand(String command) {
-    parseResult = parse(command);
-    T spy = (T) spy(parseResult.getInstance());
-    return spy;
-  }
-
-  public <T> Result executeLastCommandWithInstance(T instance) {
-    return (Result) ReflectionUtils.invokeMethod(parseResult.getMethod(), instance,
+  public <T> CommandResult executeCommandWithInstance(T instance, String command) {
+    ParseResult parseResult = parse(command);
+    return (CommandResult) ReflectionUtils.invokeMethod(parseResult.getMethod(), instance,
         parseResult.getArguments());
   }
 

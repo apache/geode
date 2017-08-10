@@ -71,7 +71,7 @@ public class TestLogWriterFactory extends Assert {
           } else {
             firstMsgWarning = true;
             firstMsg = LocalizedStrings.InternalDistributedSystem_COULD_NOT_RENAME_0_TO_1
-                .toLocalizedString(new Object[] {logFile, oldMain});
+                .toLocalizedString(logFile, oldMain);
           }
         }
       }
@@ -114,7 +114,7 @@ public class TestLogWriterFactory extends Assert {
     }
     if (logConfig && logger.configEnabled()) {
       logger.convertToLogWriterI18n().config(
-          LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
+          LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATION_0,
           config.toLoggerString());
     }
 

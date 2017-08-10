@@ -20,6 +20,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management functionality for a
@@ -158,7 +159,8 @@ public interface MemberMXBean {
    * 
    * @return A list of names of the disk stores that were compacted.
    */
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.DISK)
   String[] compactAllDiskStores();
 
   /**
@@ -295,7 +297,7 @@ public interface MemberMXBean {
   /**
    * Returns whether this member has at least one GatewaySender.
    * 
-   * @return True if this member has at least one GatwaySender, false otherwise.
+   * @return True if this member has at least one GatewaySender, false otherwise.
    */
   boolean hasGatewaySender();
 
@@ -317,7 +319,7 @@ public interface MemberMXBean {
   /**
    * Returns whether this member has at least one GatewayReceiver.
    * 
-   * @return True if this member has at least one GatwayReceiver, false otherwise.
+   * @return True if this member has at least one GatewayReceiver, false otherwise.
    */
   boolean hasGatewayReceiver();
 
@@ -570,7 +572,7 @@ public interface MemberMXBean {
   float getFunctionExecutionRate();
 
   /**
-   * Returns the number of currently executing functions that will return resutls.
+   * Returns the number of currently executing functions that will return results.
    */
   int getNumRunningFunctionsHavingResults();
 
@@ -662,8 +664,17 @@ public interface MemberMXBean {
 
   /**
    * Returns the number of initial images in progress.
+   * 
+   * @deprecated as typo in name has been corrected: use
+   *             {@link MemberMXBean#getInitialImagesInProgress} instead.
    */
+  @Deprecated
   int getInitialImagesInProgres();
+
+  /**
+   * Returns the number of initial images in progress.
+   */
+  int getInitialImagesInProgress();
 
   /**
    * Returns the total amount of time spent performing a "get initial image" operation when creating
@@ -834,7 +845,7 @@ public interface MemberMXBean {
   int getOffHeapFragmentation();
 
   /**
-   * Returns the total time spent compacting in millseconds.
+   * Returns the total time spent compacting in milliseconds.
    */
   long getOffHeapCompactionTime();
 }

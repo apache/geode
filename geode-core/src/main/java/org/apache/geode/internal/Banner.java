@@ -59,7 +59,7 @@ public class Banner {
   static void print(PrintWriter out, String args[]) {
     Map sp = new TreeMap((Properties) System.getProperties().clone()); // fix for 46822
     int processId = -1;
-    final String SEPERATOR =
+    final String SEPARATOR =
         "---------------------------------------------------------------------------";
     try {
       processId = OSProcess.getId();
@@ -80,7 +80,7 @@ public class Banner {
 
     final String productName = GemFireVersion.getProductName();
 
-    out.println(SEPERATOR);
+    out.println(SEPARATOR);
 
     out.println("  ");
     out.println("  Licensed to the Apache Software Foundation (ASF) under one or more");
@@ -100,7 +100,7 @@ public class Banner {
     out.println("  under the License.");
     out.println("  ");
 
-    out.println(SEPERATOR);
+    out.println(SEPARATOR);
 
     GemFireVersion.print(out);
 
@@ -153,7 +153,7 @@ public class Banner {
       out.println("Log4J 2 Configuration:");
       out.println("    " + LogService.getConfigInformation());
     }
-    out.println(SEPERATOR);
+    out.println(SEPARATOR);
   }
 
   /**

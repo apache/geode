@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -21,9 +20,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.security.SimpleTestSecurityManager;
@@ -32,27 +41,23 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.Properties;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClusterConfigWithSecurityDUnitTest {
-  public String clusterConfigZipPath;
+
+  private String clusterConfigZipPath;
+  private MemberVM locator0;
+  private Properties locatorProps;
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
   public GfshShellConnectionRule connector = new GfshShellConnectionRule();
-
-  MemberVM locator0;
-  Properties locatorProps;
 
   @Before
   public void before() throws Exception {
@@ -64,8 +69,8 @@ public class ClusterConfigWithSecurityDUnitTest {
   }
 
   @Test
-  @Ignore("GEODE-2315")
-  public void testSecurityPropsInheritance() throws Exception {
+  @Ignore("Fails until GEODE-2315 is implemented")
+  public void testSecurityPropsInheritanceOnLocator() throws Exception {
     locatorProps.clear();
     locatorProps.setProperty(LOCATORS, "localhost[" + locator0.getPort() + "]");
     locatorProps.setProperty("security-username", "cluster");
@@ -104,14 +109,32 @@ public class ClusterConfigWithSecurityDUnitTest {
     });
   }
 
+  @Test // fails due to GEODE-3062
+  public void testSecurityPropsInheritanceOnServer() throws Exception {
+    Properties serverProps = new Properties();
+    serverProps.setProperty(LOCATORS, "localhost[" + locator0.getPort() + "]");
+    serverProps.setProperty("security-username", "cluster");
+    serverProps.setProperty("security-password", "cluster");
+    MemberVM server = lsRule.startServerVM(1, serverProps);
+
+    // cluster config specifies a security-manager so integrated security should be enabled
+    server.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Properties properties = cache.getDistributedSystem().getSecurityProperties();
+      assertThat(properties.getProperty(SECURITY_MANAGER))
+          .isEqualTo(SimpleTestSecurityManager.class.getName());
+      assertThat(cache.getSecurityService().isIntegratedSecurity()).isTrue();
+    });
+  }
+
   private String buildSecureClusterConfigZip() throws Exception {
-    File clusterDir = lsRule.getTempFolder().newFolder("cluster");
+    File clusterDir = temporaryFolder.newFolder("cluster");
     File clusterSubDir = new File(clusterDir, "cluster");
 
     String clusterProperties = "mcast-port=0\n" + "log-file-size-limit=8000\n"
         + "security-manager=org.apache.geode.example.security.ExampleSecurityManager";
     FileUtils.writeStringToFile(new File(clusterSubDir, "cluster.properties"), clusterProperties);
-    File clusterZip = new File(lsRule.getTempFolder().getRoot(), "cluster_config_security.zip");
+    File clusterZip = new File(temporaryFolder.getRoot(), "cluster_config_security.zip");
     ZipUtils.zipDirectory(clusterDir.getCanonicalPath(), clusterZip.getCanonicalPath());
     FileUtils.deleteDirectory(clusterDir);
     return clusterZip.getCanonicalPath();

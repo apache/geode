@@ -20,6 +20,20 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -33,6 +47,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.DiskStoreObserver;
@@ -57,19 +72,6 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-
-import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * This class is the base class for all distributed tests using JUnit 4.
@@ -210,8 +212,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
         }
       } else {
         Properties activeProps = system.getProperties();
-        for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-          Map.Entry entry = (Map.Entry) iter.next();
+        for (Map.Entry<Object, Object> objectObjectEntry : props.entrySet()) {
+          Map.Entry entry = objectObjectEntry;
           String key = (String) entry.getKey();
           String value = (String) entry.getValue();
           if (!value.equals(activeProps.getProperty(key))) {
@@ -600,6 +602,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     RegionTestCase.preSnapshotRegion = null;
     SocketCreator.resetHostNameCache();
     SocketCreator.resolve_dns = true;
+    TcpClient.clearStaticData();
 
     // clear system properties -- keep alphabetized
     System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");

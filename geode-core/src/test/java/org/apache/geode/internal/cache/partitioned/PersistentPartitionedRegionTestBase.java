@@ -387,6 +387,8 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
   protected void createCoLocatedPR(VM vm, int setRedundantCopies,
       boolean setPersistenceAdvisorObserver) {
     vm.invoke(() -> {
+      String dsName = "colacatedpr";
+
       Cache cache = getCache();
 
       // Wait for both nested PRs to be created
@@ -422,9 +424,9 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
 
       // Create region.
       try {
-        DiskStore ds = cache.findDiskStore("disk");
+        DiskStore ds = cache.findDiskStore(dsName);
         if (ds == null) {
-          ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+          ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create(dsName);
         }
 
         // Parent Region
@@ -433,7 +435,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
         AttributesFactory af = new AttributesFactory();
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-        af.setDiskStoreName("disk");
+        af.setDiskStoreName(dsName);
         cache.createRegion(PR_REGION_NAME, af.create());
 
         // Colocated region
@@ -442,7 +444,7 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
         af = new AttributesFactory();
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-        af.setDiskStoreName("disk");
+        af.setDiskStoreName(dsName);
         cache.createRegion(PR_CHILD_REGION_NAME, af.create());
 
         // Count down on region create.

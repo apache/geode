@@ -14,9 +14,8 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import java.util.concurrent.Callable;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,14 +25,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
-import java.util.concurrent.Callable;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 
 /**
  * The DataCommandsController class implements GemFire Management REST API web service endpoints for
  * the Gfsh Data Commands.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.DataCommands
+ * @see org.apache.geode.management.internal.cli.commands.ExportDataCommand
+ * @see org.apache.geode.management.internal.cli.commands.GetCommand
+ * @see org.apache.geode.management.internal.cli.commands.ImportDataCommand
+ * @see org.apache.geode.management.internal.cli.commands.LocateEntryCommand
+ * @see org.apache.geode.management.internal.cli.commands.PutCommand
+ * @see org.apache.geode.management.internal.cli.commands.RebalanceCommand
+ * @see org.apache.geode.management.internal.cli.commands.RemoveCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable
@@ -185,8 +192,6 @@ public class DataCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/regions/data/query")
   public Callable<ResponseEntity<String>> query(final WebRequest request,
       @RequestParam(CliStrings.QUERY__QUERY) final String oql,
-      @RequestParam(value = CliStrings.QUERY__STEPNAME,
-          defaultValue = CliStrings.QUERY__STEPNAME__DEFAULTVALUE) final String stepName,
       @RequestParam(value = CliStrings.QUERY__INTERACTIVE,
           defaultValue = "true") final Boolean interactive) {
     // logRequest(request);
@@ -194,7 +199,6 @@ public class DataCommandsController extends AbstractCommandsController {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.QUERY);
 
     command.addOption(CliStrings.QUERY__QUERY, decode(oql));
-    command.addOption(CliStrings.QUERY__STEPNAME, stepName);
     command.addOption(CliStrings.QUERY__INTERACTIVE,
         String.valueOf(Boolean.TRUE.equals(interactive)));
 

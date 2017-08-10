@@ -66,22 +66,3 @@ public class GfshConsoleReader extends GfeConsoleReader {
     return password;
   }
 }
-
-// package org.apache.geode.management.internal.cli.util;
-//
-// import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
-//
-// public class GfshConsoleReader extends GfeConsoleReader {
-//
-// public boolean isSupported() {
-// return false;
-// }
-//
-// public String readLine(String textToPrompt) {
-// throw new UnsupportedOperationException("readLine() not supported for GfshConsoleReader");
-// }
-//
-// public char[] readPassword(String textToPrompt) {
-// throw new UnsupportedOperationException("readPassword() not supported for GfshConsoleReader");
-// }
-// }

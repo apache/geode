@@ -19,6 +19,7 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -326,8 +327,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   @Override
   public boolean fillInValue(LocalRegion region,
-      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) InitialImageOperation.Entry entry,
-      ByteArrayDataInput in, DM mgr) {
+      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in, DM mgr,
+      final Version version) {
 
     // starting default value
     entry.setSerialized(false);
@@ -362,7 +363,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
           entry.value = tmp;
         } else {
           try {
-            HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+            HeapDataOutputStream hdos = new HeapDataOutputStream(version);
             BlobHelper.serializeTo(tmp, hdos);
             hdos.trim();
             entry.value = hdos;
@@ -386,7 +387,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         }
       }
       try {
-        HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+        HeapDataOutputStream hdos = new HeapDataOutputStream(version);
         BlobHelper.serializeTo(preparedValue, hdos);
         hdos.trim();
         entry.value = hdos;

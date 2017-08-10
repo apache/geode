@@ -33,3 +33,5 @@ dependencies {
   testCompile project(path: ':geode-junit')
   testCompile files(project(':geode-core').sourceSets.test.output)
 }
+
+disableMavenPublishing()

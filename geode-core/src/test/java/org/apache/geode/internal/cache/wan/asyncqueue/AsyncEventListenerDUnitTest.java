@@ -14,9 +14,48 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
+import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
+import org.apache.geode.internal.cache.wan.PossibleDuplicateAsyncEventListener;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,42 +68,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.wan.GatewayEventFilter;
-import org.apache.geode.cache.wan.GatewayQueueEvent;
-import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
-import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.persistence.PartitionOfflineException;
-import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.awaitility.Awaitility;
 
 @Category(DistributedTest.class)
 public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
@@ -1728,6 +1731,99 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     });
   }
 
+  @Test
+  public void testParallelAsyncEventQueueWithPossibleDuplicateEvents() {
+    // Set disable move primaries on start up
+    vm1.invoke(() -> setDisableMovePrimary());
+    vm2.invoke(() -> setDisableMovePrimary());
+
+    try {
+      // Create locator
+      Integer lnPort = (Integer) vm0.invoke(() -> createFirstLocatorWithDSId(1));
+
+      // Create cache and async event queue in member 1
+      String aeqId = "ln";
+      vm1.invoke(() -> createCache(lnPort));
+      vm1.invoke(() -> createAsyncEventQueue(aeqId, true, 100, 1, false, false, null, true,
+          "PossibleDuplicateAsyncEventListener"));
+
+      // Create region with async event queue in member 1
+      String regionName = getTestMethodName() + "_PR";
+      vm1.invoke(
+          () -> createPRWithRedundantCopyWithAsyncEventQueue(regionName, aeqId, isOffHeap()));
+
+      // Do puts so that all primaries are in member 1
+      int numPuts = 30;
+      vm1.invoke(() -> doPuts(regionName, numPuts));
+
+      // Create cache and async event queue in member 2
+      vm2.invoke(() -> createCache(lnPort));
+      vm2.invoke(() -> createAsyncEventQueue(aeqId, true, 100, 1, false, false, null, true,
+          "PossibleDuplicateAsyncEventListener"));
+
+      // Create region with paused async event queue in member 2
+      vm2.invoke(
+          () -> createPRWithRedundantCopyWithAsyncEventQueue(regionName, aeqId, isOffHeap()));
+      vm2.invoke(() -> pauseAsyncEventQueue(aeqId));
+
+      // Close cache in member 1 (all AEQ buckets will fail over to member 2)
+      vm1.invoke(() -> closeCache());
+
+      // Start processing async event queue in member 2
+      vm2.invoke(() -> resumeAsyncEventQueue(aeqId));
+      vm2.invoke(() -> startProcessingAsyncEvents(aeqId));
+
+      // Wait for queue to be empty
+      vm2.invoke(() -> waitForAsyncQueueToGetEmpty(aeqId));
+
+      // Verify all events were processed in member 2
+      vm2.invoke(() -> verifyAsyncEventProcessing(aeqId, numPuts));
+    } finally {
+      // Clear disable move primaries on start up
+      vm1.invoke(() -> clearDisableMovePrimary());
+      vm2.invoke(() -> clearDisableMovePrimary());
+    }
+  }
+
+  public static void setDisableMovePrimary() {
+    System.setProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP", "true");
+  }
+
+  public static void clearDisableMovePrimary() {
+    System.clearProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP");
+  }
+
+  public static void startProcessingAsyncEvents(String aeqId) {
+    // Get the async event listener
+    PossibleDuplicateAsyncEventListener listener = getPossibleDuplicateAsyncEventListener(aeqId);
+
+    // Start processing waiting events
+    listener.startProcessingEvents();
+  }
+
+  public static void verifyAsyncEventProcessing(String aeqId, int numEvents) {
+    // Get the async event listener
+    PossibleDuplicateAsyncEventListener listener = getPossibleDuplicateAsyncEventListener(aeqId);
+
+    // Verify all events were processed
+    assertEquals(numEvents, listener.getTotalEvents());
+
+    // Verify all events are possibleDuplicate
+    assertEquals(numEvents, listener.getTotalPossibleDuplicateEvents());
+  }
+
+  private static PossibleDuplicateAsyncEventListener getPossibleDuplicateAsyncEventListener(
+      String aeqId) {
+    // Get the async event queue
+    AsyncEventQueue aeq = cache.getAsyncEventQueue(aeqId);
+    assertNotNull(aeq);
+
+    // Get and return the async event listener
+    AsyncEventListener aeqListener = aeq.getAsyncEventListener();
+    assertTrue(aeqListener instanceof PossibleDuplicateAsyncEventListener);
+    return (PossibleDuplicateAsyncEventListener) aeqListener;
+  }
+
   private void createPersistentPartitionRegion() {
     AttributesFactory fact = new AttributesFactory();
 
@@ -1745,18 +1841,78 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
         .setPersistent(true).setParallel(true).create("ln", new MyAsyncEventListener());
   }
 
+  public void testParallelAsyncEventQueueMovePrimaryAndMoveItBackDuringDispatching() {
+    Integer lnPort =
+        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+
+    String regionName = getTestMethodName() + "_PR";
+    vm1.invoke(createCacheRunnable(lnPort));
+    vm2.invoke(createCacheRunnable(lnPort));
+
+    SerializableRunnableIF createPartitionedRegion = () -> {
+      AttributesFactory fact = new AttributesFactory();
+      PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+      pfact.setTotalNumBuckets(1);
+      pfact.setRedundantCopies(1);
+      fact.setPartitionAttributes(pfact.create());
+      Region r =
+          cache.createRegionFactory(fact.create()).addAsyncEventQueueId("ln").create(regionName);
+
+    };
+
+    final DistributedMember member1 =
+        vm1.invoke(() -> cache.getDistributedSystem().getDistributedMember());
+    final DistributedMember member2 =
+        vm2.invoke(() -> cache.getDistributedSystem().getDistributedMember());
+
+
+    // Create a PR with 1 bucket in vm1. Pause the sender and put some data in it
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", true, 100, 10, false,
+        false, null, false, new PrimaryMovingAsyncEventListener(member2)));
+    vm1.invoke(createPartitionedRegion);
+    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln"));
+    vm1.invoke(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_PR", 113));
+
+    // Create the PR in vm2. This will create a redundant copy, but will be the secondary
+    vm2.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", true, 100, 10, false,
+        false, null, false, new PrimaryMovingAsyncEventListener(member1)));
+    vm2.invoke(createPartitionedRegion);
+    // do a rebalance just to make sure we have restored redundancy
+    vm2.invoke(() -> {
+      cache.getResourceManager().createRebalanceFactory().start().getResults();
+    });
+
+    // Resume the AEQ. This should trigger the primary to move to vm2, which will then move it back
+    vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
+
+    Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).until(() -> getBucketMoved(vm1, "ln"));
+    Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).until(() -> getBucketMoved(vm2, "ln"));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty("ln"));
+    vm2.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty("ln"));
+
+    Set<Object> allKeys = new HashSet<Object>();
+    allKeys.addAll(getKeysSeen(vm1, "ln"));
+    allKeys.addAll(getKeysSeen(vm2, "ln"));
+
+    final Set<Long> expectedKeys =
+        LongStream.range(0, 113).mapToObj(Long::valueOf).collect(Collectors.toSet());
+    assertEquals(expectedKeys, allKeys);
+
+  }
+
   private static Set<Object> getKeysSeen(VM vm, String asyncEventQueueId) {
     return vm.invoke(() -> {
-      final BucketMovingAsyncEventListener listener =
-          (BucketMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
+      final AbstractMovingAsyncEventListener listener =
+          (AbstractMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
       return listener.keysSeen;
     });
   }
 
   private static boolean getBucketMoved(VM vm, String asyncEventQueueId) {
     return vm.invoke(() -> {
-      final BucketMovingAsyncEventListener listener =
-          (BucketMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
+      final AbstractMovingAsyncEventListener listener =
+          (AbstractMovingAsyncEventListener) getAsyncEventListener(asyncEventQueueId);
       return listener.moved;
     });
   }
@@ -1792,40 +1948,43 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     }
   }
 
-  private static class BucketMovingAsyncEventListener implements AsyncEventListener {
-    private final DistributedMember destination;
-    private boolean moved;
-    private Set<Object> keysSeen = new HashSet<Object>();
+  private static final class BucketMovingAsyncEventListener
+      extends AbstractMovingAsyncEventListener {
 
     public BucketMovingAsyncEventListener(final DistributedMember destination) {
-      this.destination = destination;
+      super(destination);
     }
 
     @Override
-    public boolean processEvents(final List<AsyncEvent> events) {
-      if (!moved) {
-
-        AsyncEvent event1 = events.get(0);
-        moveBucket(destination, event1.getKey());
-        moved = true;
-        return false;
-      }
-
-      events.stream().map(AsyncEvent::getKey).forEach(keysSeen::add);
-      return true;
-    }
-
-    @Override
-    public void close() {
-
-    }
-
-    private static void moveBucket(final DistributedMember destination, final Object key) {
+    protected void move(final AsyncEvent event1) {
+      Object key = event1.getKey();
       Region<Object, Object> region = cache.getRegion(getTestMethodName() + "_PR");
       DistributedMember source = cache.getDistributedSystem().getDistributedMember();
       PartitionRegionHelper.moveBucketByKey(region, source, destination, key);
     }
   }
+
+  private static final class PrimaryMovingAsyncEventListener
+      extends AbstractMovingAsyncEventListener {
+
+    public PrimaryMovingAsyncEventListener(final DistributedMember destination) {
+      super(destination);
+    }
+
+    @Override
+    protected void move(final AsyncEvent event1) {
+      Object key = event1.getKey();
+      PartitionedRegion region = (PartitionedRegion) event1.getRegion();
+      DistributedMember source = cache.getDistributedSystem().getDistributedMember();
+
+      BecomePrimaryBucketResponse response =
+          BecomePrimaryBucketMessage.send((InternalDistributedMember) destination, region,
+              region.getKeyInfo(key).getBucketId(), true);
+      assertNotNull(response);
+      assertTrue(response.waitForResponse());
+    }
+  }
+
 
 
 }

@@ -148,7 +148,12 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
 
   @Override
   public int getInitialImagesInProgres() {
-    return bridge.getInitialImagesInProgres();
+    return getInitialImagesInProgress();
+  }
+
+  @Override
+  public int getInitialImagesInProgress() {
+    return bridge.getInitialImagesInProgress();
   }
 
 

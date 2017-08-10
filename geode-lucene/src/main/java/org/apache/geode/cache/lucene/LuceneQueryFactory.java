@@ -78,7 +78,7 @@ public interface LuceneQueryFactory {
 
   /**
    * <p>
-   * Create a query based on a programatically constructed Lucene {@link Query}. This can be used
+   * Create a query based on a programmatically constructed Lucene {@link Query}. This can be used
    * for queries that are not covered by {@link StandardQueryParser}, such as range queries.
    * </p>
    * <p>

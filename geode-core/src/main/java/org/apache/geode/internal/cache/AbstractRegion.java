@@ -856,42 +856,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   }
 
   @Override
-  public CacheListener setCacheListener(CacheListener aListener) {
-    checkReadiness();
-    CacheListener[] oldListeners;
-    synchronized (this.clSync) {
-      oldListeners = this.cacheListeners;
-      if (oldListeners != null && oldListeners.length > 1) {
-        throw new IllegalStateException(
-            LocalizedStrings.AbstractRegion_MORE_THAN_ONE_CACHE_LISTENER_EXISTS
-                .toLocalizedString());
-      }
-      this.cacheListeners = new CacheListener[] {aListener};
-    }
-    // moved the following out of the sync for bug 34512
-    CacheListener result = null;
-    if (oldListeners != null && oldListeners.length > 0) {
-      if (oldListeners.length == 1) {
-        result = oldListeners[0];
-      }
-      for (CacheListener oldListener : oldListeners) {
-        if (aListener != oldListener) {
-          closeCacheCallback(oldListener);
-        }
-      }
-      if (aListener == null) {
-        cacheListenersChanged(false);
-      }
-    } else { // we have no old listeners
-      if (aListener != null) {
-        // we have added a new listener
-        cacheListenersChanged(true);
-      }
-    }
-    return result;
-  }
-
-  @Override
   public void addGatewaySenderId(String gatewaySenderId) {
     getGatewaySenderIds().add(gatewaySenderId);
     setAllGatewaySenderIds();

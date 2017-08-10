@@ -425,7 +425,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     Region region = null;
     try {
       region = cache.getRegion("root").getSubregion(regionName);
-      region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(
+      region.getAttributesMutator().addCacheListener(new CertifiableTestCacheListener(
           org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
     } catch (Exception e) {
       fail("Failed to get Region.", e);

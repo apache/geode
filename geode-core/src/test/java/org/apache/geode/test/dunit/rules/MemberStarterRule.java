@@ -27,66 +27,95 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.security.SecurityManager;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.junit.rules.ExternalResource;
+import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.SecurityManager;
 
 /**
  * the abstract class that's used by LocatorStarterRule and ServerStarterRule to avoid code
  * duplication.
  */
 public abstract class MemberStarterRule<T> extends ExternalResource implements Member {
-  protected transient TemporaryFolder temporaryFolder;
   protected String oldUserDir;
 
+  protected transient TemporaryFolder temporaryFolder;
   protected File workingDir;
   protected int memberPort = -1;
   protected int jmxPort = -1;
   protected int httpPort = -1;
 
   protected String name;
+  protected boolean logFile = false;
   protected Properties properties = new Properties();
 
   protected boolean autoStart = false;
 
   public MemberStarterRule() {
-    this(null);
-  }
-
-  public MemberStarterRule(File workDir) {
-    workingDir = workDir;
     oldUserDir = System.getProperty("user.dir");
-    if (workingDir == null) {
-      temporaryFolder = new TemporaryFolder();
-      try {
-        temporaryFolder.create();
-      } catch (IOException e) {
-        throw new RuntimeException(e.getMessage(), e);
-      }
-      workingDir = temporaryFolder.getRoot().getAbsoluteFile();
-    }
 
-    System.setProperty("user.dir", workingDir.toString());
     // initial values
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
   }
 
+  public T withWorkingDir(File workingDir) {
+    this.workingDir = workingDir;
+    if (workingDir != null) {
+      System.setProperty("user.dir", workingDir.toString());
+    }
+    return (T) this;
+  }
+
+  /**
+   * create a working dir using temporaryFolder. Use with caution, this sets "user.dir" system
+   * property that not approved by JDK
+   */
+  public T withWorkingDir() {
+    temporaryFolder = new TemporaryFolder();
+    try {
+      temporaryFolder.create();
+    } catch (IOException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+    withWorkingDir(temporaryFolder.getRoot().getAbsoluteFile());
+    return (T) this;
+  }
+
+  /**
+   * All the logs are written in the logfile instead on the console. this is usually used with
+   * withWorkingDir so that logs are accessible and will be cleaned up afterwards.
+   */
+  public T withLogFile() {
+    this.logFile = true;
+    return (T) this;
+  }
+
   @Override
   public void after() {
+    // invoke stopMember() first and then ds.disconnect
     stopMember();
+
+    DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+    if (ds != null) {
+      ds.disconnect();
+    }
+
+    if (temporaryFolder != null) {
+      temporaryFolder.delete();
+    }
+
     if (oldUserDir == null) {
       System.clearProperty("user.dir");
     } else {
       System.setProperty("user.dir", oldUserDir);
-    }
-    if (temporaryFolder != null) {
-      temporaryFolder.delete();
     }
   }
 
@@ -115,8 +144,6 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
   public T withName(String name) {
     this.name = name;
     properties.setProperty(NAME, name);
-    // if log-file is not already set
-    properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath().toString());
     return (T) this;
   }
 
@@ -177,6 +204,12 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
       // this will make sure we have all the missing properties, but it won't override
       // the existing properties
       withJMXManager(false);
+    }
+
+    // if caller wants the logs being put into a file instead of in console output
+    // do it here since only here, we can guarantee the name is present
+    if (logFile) {
+      properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath());
     }
   }
 

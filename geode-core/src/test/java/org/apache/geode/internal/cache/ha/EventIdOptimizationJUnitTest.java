@@ -16,12 +16,19 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -162,6 +169,33 @@ public class EventIdOptimizationJUnitTest {
     int expectedLength = 2 + 4 + 8;
     writeReadAndVerifyOptimizedByteArray(ID_VALUE_INT, ID_VALUE_LONG, expectedLength);
     writeReadAndVerifyOptimizedByteArray(ID_VALUE_LONG, ID_VALUE_INT, expectedLength);
+  }
+
+  @Test
+  public void testEventIDForGEODE100Member() throws IOException, ClassNotFoundException {
+    InternalDistributedMember distributedMember = new InternalDistributedMember("localhost", 10999);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
+    distributedMember.writeEssentialData(hdos);
+    byte[] memberBytes = hdos.toByteArray();
+    EventID eventID = new EventID(memberBytes, 1, 1);
+
+
+    HeapDataOutputStream hdos90 = new HeapDataOutputStream(256, Version.GFE_90);
+    VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, Version.GFE_90);
+
+    eventID.toData(dop);
+
+    ByteArrayInputStream bais = new ByteArrayInputStream(hdos90.toByteArray());
+
+
+    VersionedDataInputStream dataInputStream = new VersionedDataInputStream(bais, Version.GFE_90);
+
+    EventID eventID2 = new EventID();
+    eventID2.fromData(dataInputStream);
+
+    assertEquals(distributedMember, eventID2.getDistributedMember(Version.GFE_90));
+
+    assertEquals(memberBytes.length + 17, eventID2.getMembershipID().length);
   }
 
   /**

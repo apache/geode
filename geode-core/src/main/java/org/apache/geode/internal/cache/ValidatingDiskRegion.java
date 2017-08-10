@@ -27,6 +27,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.lru.EnableLRU;
@@ -339,7 +340,8 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     }
 
     @Override
-    public boolean fillInValue(LocalRegion r, Entry entry, ByteArrayDataInput in, DM mgr) {
+    public boolean fillInValue(LocalRegion r, Entry entry, ByteArrayDataInput in, DM mgr,
+        final Version version) {
       // TODO Auto-generated method stub
       return false;
     }

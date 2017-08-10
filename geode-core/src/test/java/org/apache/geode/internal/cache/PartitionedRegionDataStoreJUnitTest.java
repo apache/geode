@@ -224,4 +224,30 @@ public class PartitionedRegionDataStoreJUnitTest {
       regionAck.put(new Integer(key), "foo");
     }
   }
+
+  @Test
+  public void doesNotCreateBucketIfOverMemoryLimit() {
+    final int numMBytes = 5;
+    final PartitionedRegion regionAck = (PartitionedRegion) new RegionFactory()
+        .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0)
+            .setLocalMaxMemory(numMBytes).create())
+        .create(this.regionName);
+
+    boolean createdBucket =
+        regionAck.getDataStore().handleManageBucketRequest(1, Integer.MAX_VALUE, null, false);
+    assertFalse(createdBucket);
+  }
+
+  @Test
+  public void createsBucketWhenForcedIfOverMemoryLimit() {
+    final int numMBytes = 5;
+    final PartitionedRegion regionAck = (PartitionedRegion) new RegionFactory()
+        .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0)
+            .setLocalMaxMemory(numMBytes).create())
+        .create(this.regionName);
+
+    boolean createdBucket =
+        regionAck.getDataStore().handleManageBucketRequest(1, Integer.MAX_VALUE, null, true);
+    assertTrue(createdBucket);
+  }
 }

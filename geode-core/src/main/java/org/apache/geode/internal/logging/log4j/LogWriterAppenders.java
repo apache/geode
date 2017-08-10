@@ -40,14 +40,14 @@ public class LogWriterAppenders {
     MAIN(false), SECURITY(true);
     private final boolean isSecure;
 
-    private Identifier(final boolean isSecure) {
+    Identifier(final boolean isSecure) {
       this.isSecure = isSecure;
     }
 
     public boolean isSecure() {
       return this.isSecure;
     }
-  };
+  }
 
   private static Map<Identifier, LogWriterAppender> appenders =
       new HashMap<Identifier, LogWriterAppender>();
@@ -151,7 +151,7 @@ public class LogWriterAppenders {
         } else {
           firstMsgWarning = true;
           firstMsg = LocalizedStrings.InternalDistributedSystem_COULD_NOT_RENAME_0_TO_1
-              .toLocalizedString(new Object[] {logFile, oldMain});
+              .toLocalizedString(logFile, oldMain);
         }
       }
     }
@@ -220,7 +220,7 @@ public class LogWriterAppenders {
     if (logConfig) {
       if (!isLoner) {
         // LOG:CONFIG: changed from config to info
-        logWriter.info(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
+        logWriter.info(LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATION_0,
             config.toLoggerString());
       }
     }

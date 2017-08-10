@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
@@ -22,19 +21,21 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
-import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.File;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.util.Properties;
+import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
-  protected MemberVM locator;
+
+  private MemberVM locator;
 
   @Before
   public void before() throws Exception {
@@ -78,7 +79,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
   }
 
   private MemberVM startLocatorWithLoadCCFromDir() throws Exception {
-    File locatorDir = lsRule.getTempFolder().newFolder("locator-0");
+    File locatorDir = new File(lsRule.getWorkingDirRoot(), "vm0");
     File configDir = new File(locatorDir, "cluster_config");
 
     // The unzip should yield a cluster config directory structure like:

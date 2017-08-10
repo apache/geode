@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 @Category(DistributedTest.class)
 public class ConcurrentDeployDUnitTest {
@@ -64,9 +65,9 @@ public class ConcurrentDeployDUnitTest {
     AsyncInvocation gfsh2Invocation = gfsh2.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
     AsyncInvocation gfsh3Invocation = gfsh3.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
 
-    gfsh1Invocation.await();
-    gfsh2Invocation.await();
-    gfsh3Invocation.await();
+    gfsh1Invocation.await(5, TimeUnit.MINUTES);
+    gfsh2Invocation.await(5, TimeUnit.MINUTES);
+    gfsh3Invocation.await(5, TimeUnit.MINUTES);
   }
 
   @After

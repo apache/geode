@@ -14,7 +14,21 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.json.JSONArray;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -24,16 +38,13 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
-import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.StructImpl;
@@ -46,36 +57,14 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.DataCommands;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult.SelectResultRow;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper;
-import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
-import org.json.JSONArray;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @since GemFire 7.0
@@ -87,10 +76,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   private boolean optimizeForWrite = false;
 
-  protected static final String SELECT_STEP_DISPLAY = "SELECT_DISPLAY";
-  protected static final String SELECT_STEP_MOVE = "SELECT_PAGE_MOVE";
-  protected static final String SELECT_STEP_END = "SELECT_END";
-  protected static final String SELECT_STEP_EXEC = "SELECT_EXEC";
   private static final int NESTED_JSON_LENGTH = 20;
 
   @Override
@@ -423,7 +408,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
               CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
         } else {
           return DataCommandResult.createRemoveInfoResult(key, null, null,
-              CliStrings.REMOVE__MSG__CLEAREALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
+              CliStrings.REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
         }
       }
     }
@@ -799,7 +784,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   }
 
 
-
   /**
    * Returns a sorted list of all region full paths found in the specified cache.
    * 
@@ -831,236 +815,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     }
     Collections.sort(list);
     return list;
-  }
-
-  static DataCommandResult cachedResult = null;
-
-  public static class SelectDisplayStep extends CLIMultiStepHelper.LocalStep {
-
-    public SelectDisplayStep(Object[] arguments) {
-      super(SELECT_STEP_DISPLAY, arguments);
-    }
-
-    @Override
-    public Result exec() {
-      boolean interactive = (Boolean) commandArguments[2];
-      GfJsonObject args = CLIMultiStepHelper.getStepArgs();
-      int startCount = args.getInt(DataCommandResult.QUERY_PAGE_START);
-      int endCount = args.getInt(DataCommandResult.QUERY_PAGE_END);
-      int rows = args.getInt(DataCommandResult.NUM_ROWS); // returns Zero if no rows added so it
-      // works.
-      boolean flag = args.getBoolean(DataCommandResult.RESULT_FLAG);
-      CommandResult commandResult = CLIMultiStepHelper.getDisplayResultFromArgs(args);
-      Gfsh.println();
-      while (commandResult.hasNextLine()) {
-        Gfsh.println(commandResult.nextLine());
-      }
-
-      if (flag) {
-        boolean paginationNeeded = startCount < rows && endCount < rows && interactive;
-        if (paginationNeeded) {
-          while (true) {
-            String message = ("Press n to move to next page, q to quit and p to previous page : ");
-            try {
-              String step = Gfsh.getCurrentInstance().interact(message);
-              if ("n".equals(step)) {
-                int nextStart = startCount + getPageSize();
-                return CLIMultiStepHelper.createBannerResult(
-                    new String[] {DataCommandResult.QUERY_PAGE_START,
-                        DataCommandResult.QUERY_PAGE_END,},
-                    new Object[] {nextStart, (nextStart + getPageSize())}, SELECT_STEP_MOVE);
-              } else if ("p".equals(step)) {
-                int nextStart = startCount - getPageSize();
-                if (nextStart < 0) {
-                  nextStart = 0;
-                }
-                return CLIMultiStepHelper.createBannerResult(
-                    new String[] {DataCommandResult.QUERY_PAGE_START,
-                        DataCommandResult.QUERY_PAGE_END},
-                    new Object[] {nextStart, (nextStart + getPageSize())}, SELECT_STEP_MOVE);
-              } else if ("q".equals(step)) {
-                return CLIMultiStepHelper.createBannerResult(new String[] {}, new Object[] {},
-                    SELECT_STEP_END);
-              } else {
-                Gfsh.println("Unknown option ");
-              }
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-          }
-        }
-      }
-      return CLIMultiStepHelper.createBannerResult(new String[] {}, new Object[] {},
-          SELECT_STEP_END);
-    }
-  }
-
-  public static class SelectMoveStep extends CLIMultiStepHelper.RemoteStep {
-
-    private static final long serialVersionUID = 1L;
-
-    public SelectMoveStep(Object[] arguments) {
-      super(SELECT_STEP_MOVE, arguments);
-    }
-
-    @Override
-    public Result exec() {
-      GfJsonObject args = CLIMultiStepHelper.getStepArgs();
-      int startCount = args.getInt(DataCommandResult.QUERY_PAGE_START);
-      int endCount = args.getInt(DataCommandResult.QUERY_PAGE_END);
-      return cachedResult.pageResult(startCount, endCount, SELECT_STEP_DISPLAY);
-    }
-  }
-
-  public static class SelectExecStep extends CLIMultiStepHelper.RemoteStep {
-    private static final Logger logger = LogService.getLogger();
-
-    private static final long serialVersionUID = 1L;
-
-    public SelectExecStep(Object[] arguments) {
-      super(DataCommandFunction.SELECT_STEP_EXEC, arguments);
-    }
-
-    @Override
-    public Result exec() {
-      String remainingQuery = (String) commandArguments[0];
-      boolean interactive = (Boolean) commandArguments[2];
-      DataCommandResult result = _select(remainingQuery);
-      int endCount = 0;
-      DataCommandFunction.cachedResult = result;
-      if (interactive) {
-        endCount = DataCommandFunction.getPageSize();
-      } else {
-        if (result.getSelectResult() != null) {
-          endCount = result.getSelectResult().size();
-        }
-      }
-      if (interactive) {
-        return result.pageResult(0, endCount, DataCommandFunction.SELECT_STEP_DISPLAY);
-      } else {
-        return CLIMultiStepHelper.createBannerResult(new String[] {}, new Object[] {},
-            DataCommandFunction.SELECT_STEP_END);
-      }
-    }
-
-    public DataCommandResult _select(String query) {
-      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-      DataCommandResult dataResult;
-
-      if (StringUtils.isEmpty(query)) {
-        dataResult = DataCommandResult.createSelectInfoResult(null, null, -1, null,
-            CliStrings.QUERY__MSG__QUERY_EMPTY, false);
-        return dataResult;
-      }
-
-      Object array[] = DataCommands.replaceGfshEnvVar(query, CommandExecutionContext.getShellEnv());
-      query = (String) array[1];
-      query = addLimit(query);
-
-      @SuppressWarnings("deprecation")
-      QCompiler compiler = new QCompiler();
-      Set<String> regionsInQuery;
-      try {
-        CompiledValue compiledQuery = compiler.compileQuery(query);
-        Set<String> regions = new HashSet<>();
-        compiledQuery.getRegionsInQuery(regions, null);
-
-        // authorize data read on these regions
-        for (String region : regions) {
-          cache.getSecurityService().authorizeRegionRead(region);
-        }
-
-        regionsInQuery = Collections.unmodifiableSet(regions);
-        if (regionsInQuery.size() > 0) {
-          Set<DistributedMember> members =
-              DataCommands.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);
-          if (members != null && members.size() > 0) {
-            DataCommandFunction function = new DataCommandFunction();
-            DataCommandRequest request = new DataCommandRequest();
-            request.setCommand(CliStrings.QUERY);
-            request.setQuery(query);
-            Subject subject = cache.getSecurityService().getSubject();
-            if (subject != null) {
-              request.setPrincipal(subject.getPrincipal());
-            }
-            dataResult = DataCommands.callFunctionForRegion(request, function, members);
-            dataResult.setInputQuery(query);
-            return dataResult;
-          } else {
-            return DataCommandResult.createSelectInfoResult(null, null, -1, null, CliStrings.format(
-                CliStrings.QUERY__MSG__REGIONS_NOT_FOUND, regionsInQuery.toString()), false);
-          }
-        } else {
-          return DataCommandResult.createSelectInfoResult(null, null, -1, null,
-              CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY,
-                  "Region mentioned in query probably missing /"),
-              false);
-        }
-      } catch (QueryInvalidException qe) {
-        logger.error("{} Failed Error {}", query, qe.getMessage(), qe);
-        return DataCommandResult.createSelectInfoResult(null, null, -1, null,
-            CliStrings.format(CliStrings.QUERY__MSG__INVALID_QUERY, qe.getMessage()), false);
-      }
-    }
-
-    private String addLimit(String query) {
-      if (StringUtils.containsIgnoreCase(query, " limit")
-          || StringUtils.containsIgnoreCase(query, " count(")) {
-        return query;
-      }
-      return query + " limit " + DataCommandFunction.getFetchSize();
-    }
-  }
-
-  public static class SelectQuitStep extends CLIMultiStepHelper.RemoteStep {
-
-    public SelectQuitStep(Object[] arguments) {
-      super(SELECT_STEP_END, arguments);
-    }
-
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public Result exec() {
-      boolean interactive = (Boolean) commandArguments[2];
-      GfJsonObject args = CLIMultiStepHelper.getStepArgs();
-      DataCommandResult dataResult = cachedResult;
-      cachedResult = null;
-      if (interactive) {
-        return CLIMultiStepHelper.createEmptyResult("END");
-      } else {
-        CompositeResultData rd = dataResult.toSelectCommandResult();
-        SectionResultData section = rd.addSection(CLIMultiStepHelper.STEP_SECTION);
-        section.addData(CLIMultiStepHelper.NEXT_STEP_NAME, "END");
-        return ResultBuilder.buildResult(rd);
-      }
-    }
-  }
-
-  public static int getPageSize() {
-    int pageSize = -1;
-    Map<String, String> session;
-    if (Gfsh.getCurrentInstance() != null) {
-      session = Gfsh.getCurrentInstance().getEnv();
-    } else {
-      session = CommandExecutionContext.getShellEnv();
-    }
-    if (session != null) {
-      String size = session.get(Gfsh.ENV_APP_COLLECTION_LIMIT);
-      if (StringUtils.isEmpty(size)) {
-        pageSize = Gfsh.DEFAULT_APP_COLLECTION_LIMIT;
-      } else {
-        pageSize = Integer.parseInt(size);
-      }
-    }
-    if (pageSize == -1) {
-      pageSize = Gfsh.DEFAULT_APP_COLLECTION_LIMIT;
-    }
-    return pageSize;
-  }
-
-  static int getFetchSize() {
-    return CommandExecutionContext.getShellFetchSize();
   }
 
   public static String getLogMessage(QueryObserver observer, long startTime, String query) {

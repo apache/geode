@@ -61,7 +61,7 @@ public class TXFailoverCommand extends BaseCommand {
     if (logger.isDebugEnabled()) {
       logger.debug("TX: Transaction {} from {} is failing over to this server", uniqId, client);
     }
-    TXId txId = new TXId(client, uniqId);
+    TXId txId = createTXId(client, uniqId);
     TXManagerImpl mgr = (TXManagerImpl) serverConnection.getCache().getCacheTransactionManager();
     mgr.waitForCompletingTransaction(txId); // in case it's already completing here in another
                                             // thread
@@ -91,6 +91,10 @@ public class TXFailoverCommand extends BaseCommand {
           logger.debug(
               "TX: txState is not local, bootstrapping PeerTXState stub for targetNode: {}",
               hostingMember);
+        }
+        // GEODE-3310 set the target node in the tx
+        if (tx.getTarget() == null) {
+          tx.setTarget(hostingMember);
         }
         // inject the real deal
         tx.setLocalTXState(new PeerTXStateStub(tx, hostingMember, client));
@@ -125,6 +129,10 @@ public class TXFailoverCommand extends BaseCommand {
     }
     writeReply(clientMessage, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
+  }
+
+  TXId createTXId(InternalDistributedMember client, int uniqId) {
+    return new TXId(client, uniqId);
   }
 
 }

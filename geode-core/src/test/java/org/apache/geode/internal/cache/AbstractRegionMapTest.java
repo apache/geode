@@ -15,7 +15,9 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.when;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
@@ -187,4 +190,49 @@ public class AbstractRegionMapTest {
       initialize(owner, new Attributes(), null, false);
     }
   }
+
+  private static class TxTestableAbstractRegionMap extends AbstractRegionMap {
+
+    public LocalRegion owner;
+
+    protected TxTestableAbstractRegionMap() {
+      super(null);
+      this.owner = mock(LocalRegion.class);
+      when(this.owner.getCache()).thenReturn(mock(InternalCache.class));
+      when(this.owner.isAllEvents()).thenReturn(true);
+      when(this.owner.isInitialized()).thenReturn(true);
+      initialize(owner, new Attributes(), null, false);
+    }
+  }
+
+  @Test
+  public void txApplyInvalidateDoesNotInvalidateRemovedToken() throws RegionClearedException {
+    TxTestableAbstractRegionMap arm = new TxTestableAbstractRegionMap();
+
+    Object key = "key";
+    Object newValue = "value";
+    arm.txApplyPut(Operation.CREATE, key, newValue, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class),
+        mock(EventID.class), null, null, null, null, null, null, 1);
+    RegionEntry re = arm.getEntry(key);
+    assertNotNull(re);
+
+    Token[] removedTokens =
+        {Token.REMOVED_PHASE2, Token.REMOVED_PHASE1, Token.DESTROYED, Token.TOMBSTONE};
+
+    for (Token token : removedTokens) {
+      verifyTxApplyInvalidate(arm, key, re, token);
+    }
+
+  }
+
+  private void verifyTxApplyInvalidate(TxTestableAbstractRegionMap arm, Object key, RegionEntry re,
+      Token token) throws RegionClearedException {
+    re.setValue(arm.owner, token);
+    arm.txApplyInvalidate(key, Token.INVALID, false,
+        new TXId(mock(InternalDistributedMember.class), 1), mock(TXRmtEvent.class), false,
+        mock(EventID.class), null, null, null, null, null, null, 1);
+    assertEquals(re.getValueAsToken(), token);
+  }
+
 }

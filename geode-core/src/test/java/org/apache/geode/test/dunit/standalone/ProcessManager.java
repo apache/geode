@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 
 import java.io.BufferedReader;
@@ -30,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
@@ -90,12 +92,17 @@ public class ProcessManager {
     }
 
     // TODO - delete directory contents, preferably with commons io FileUtils
-    Process process = Runtime.getRuntime().exec(cmd, null, workingDir);
-    pendingVMs++;
-    ProcessHolder holder = new ProcessHolder(process);
-    processes.put(vmNum, holder);
-    linkStreams(version, vmNum, holder, process.getErrorStream(), System.err);
-    linkStreams(version, vmNum, holder, process.getInputStream(), System.out);
+    try {
+      Process process = Runtime.getRuntime().exec(cmd, null, workingDir);
+      pendingVMs++;
+      ProcessHolder holder = new ProcessHolder(process);
+      processes.put(vmNum, holder);
+      linkStreams(version, vmNum, holder, process.getErrorStream(), System.err);
+      linkStreams(version, vmNum, holder, process.getInputStream(), System.out);
+    } catch (RuntimeException | Error t) {
+      t.printStackTrace();
+      throw t;
+    }
   }
 
   public void validateVersion(String version) {
@@ -133,6 +140,7 @@ public class ProcessManager {
       ProcessHolder holder = processes.remove(vmNum);
       holder.kill();
       holder.getProcess().waitFor();
+      System.out.println("Old process for vm_" + vmNum + " has exited");
       launchVM(version, vmNum, true);
     } catch (InterruptedException | IOException e) {
       throw new RuntimeException("Unable to restart VM " + vmNum, e);
@@ -141,10 +149,11 @@ public class ProcessManager {
 
   private void linkStreams(final String version, final int vmNum, final ProcessHolder holder,
       final InputStream in, final PrintStream out) {
+    final String vmName = "[" + VM.getVMName(version, vmNum) + "] ";
+    System.out.println("linking IO streams for " + vmName);
     Thread ioTransport = new Thread() {
       public void run() {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String vmName = "[" + VM.getVMName(version, vmNum) + "] ";
         try {
           String line = reader.readLine();
           while (line != null) {
@@ -172,11 +181,32 @@ public class ProcessManager {
   private String[] buildJavaCommand(int vmNum, int namingPort, String version) {
     String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
     String dunitClasspath = System.getProperty("java.class.path");
+    String separator = File.separator;
     String classPath;
-    if (!VersionManager.isCurrentVersion(version)) {
-      classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
-    } else {
+    if (VersionManager.isCurrentVersion(version)) {
       classPath = dunitClasspath;
+    } else {
+      // remove current-version product classes and resources from the classpath
+      String buildDir = separator + "geode-core" + separator + "build" + separator;
+
+      String mainClasses = buildDir + "classes" + separator + "main";
+      dunitClasspath = removeFromPath(dunitClasspath, mainClasses);
+
+      String mainResources = buildDir + "resources" + separator + "main";
+      dunitClasspath = removeFromPath(dunitClasspath, mainResources);
+
+      String generatedResources = buildDir + "generated-resources" + separator + "main";
+      dunitClasspath = removeFromPath(dunitClasspath, generatedResources);
+
+      buildDir = separator + "geode-common" + separator + "build" + separator + "classes"
+          + separator + "main";
+      dunitClasspath = removeFromPath(dunitClasspath, buildDir);
+
+      buildDir = separator + "geode-json" + separator + "build" + separator + "classes" + separator
+          + "main";
+      dunitClasspath = removeFromPath(dunitClasspath, buildDir);
+
+      classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     }
 
     // String tmpDir = System.getProperty("java.io.tmpdir");
@@ -192,7 +222,8 @@ public class ProcessManager {
     ArrayList<String> cmds = new ArrayList<String>();
     cmds.add(cmd);
     cmds.add("-classpath");
-    classPath = removeJREJars(classPath);
+    String jreLib = separator + "jre" + separator + "lib" + separator;
+    classPath = removeFromPath(classPath, jreLib);
     cmds.add(classPath);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
@@ -208,6 +239,8 @@ public class ProcessManager {
       // detection should create a separate locator that has it enabled
       cmds.add(
           "-D" + DistributionConfig.GEMFIRE_PREFIX + ENABLE_NETWORK_PARTITION_DETECTION + "=false");
+      cmds.add(
+          "-D" + DistributionConfig.GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing=true");
     }
     cmds.add("-D" + LOG_LEVEL + "=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {
@@ -233,13 +266,12 @@ public class ProcessManager {
     return rst;
   }
 
-  private String removeJREJars(String classpath) {
+  private String removeFromPath(String classpath, String partialPath) {
     String[] jars = classpath.split(File.pathSeparator);
     StringBuilder sb = new StringBuilder(classpath.length());
-    String jreLib = File.separator + "jre" + File.separator + "lib" + File.separator;
     Boolean firstjar = true;
     for (String jar : jars) {
-      if (!jar.contains(jreLib)) {
+      if (!jar.contains(partialPath)) {
         if (!firstjar) {
           sb.append(File.pathSeparator);
         }

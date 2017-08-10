@@ -18,12 +18,13 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management functionality for a {@link CacheServer}.
  * 
  * <p>
- * The will be one CacheServermBean per {@link CacheServer} started in GemFire node.
+ * The will be one CacheServerMBean per {@link CacheServer} started in GemFire node.
  * 
  * <p>
  * ObjectName for this MBean is GemFire:service=CacheServer,port={0},type=Member,member={1}
@@ -84,7 +85,7 @@ public interface CacheServerMXBean {
   int getMaxConnections();
 
   /**
-   * Returns the maxium number of threads allowed in this CacheServer to service client requests.
+   * Returns the maximum number of threads allowed in this CacheServer to service client requests.
    */
   int getMaxThreads();
 
@@ -305,7 +306,8 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   void stopContinuousQuery(String queryName) throws Exception;
 
   /**
@@ -317,7 +319,8 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   void closeAllContinuousQuery(String regionName) throws Exception;
 
 
@@ -330,7 +333,8 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
   void closeContinuousQuery(String queryName) throws Exception;
 
 
@@ -366,7 +370,7 @@ public interface CacheServerMXBean {
    * Shows a list of client with their queue statistics. Client queue statistics shown in this
    * method are the following
    * 
-   * eventsEnqued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
+   * eventsEnqueued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
    * 
    * @return an array of ClientQueueDetail
@@ -379,7 +383,7 @@ public interface CacheServerMXBean {
    * Shows queue statistics of the given client. Client queue statistics shown in this method are
    * the following
    * 
-   * eventsEnqued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
+   * eventsEnqueued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
    * 
    * @param clientId the ID of client which is returned by the attribute ClientIds

@@ -16,6 +16,12 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.junit.Assert.*;
 
+import java.net.InetAddress;
+
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -25,6 +31,28 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, ClientServerTest.class})
 public class ThreadIdentifierJUnitTest {
+
+  @Test
+  public void testEqualsIgnoresUUIDBytes() throws Exception {
+    InternalDistributedMember id = new InternalDistributedMember(InetAddress.getLocalHost(), 1234);
+    id.setVersionObjectForTest(Version.GFE_90);
+    byte[] memberIdBytes = EventID.getMembershipId(new ClientProxyMembershipID(id));
+    byte[] memberIdBytesWithoutUUID = new byte[memberIdBytes.length - (2 * 8 + 1)];// UUID bytes +
+                                                                                   // weight byte
+    System.arraycopy(memberIdBytes, 0, memberIdBytesWithoutUUID, 0,
+        memberIdBytesWithoutUUID.length);
+    ThreadIdentifier threadIdWithUUID = new ThreadIdentifier(memberIdBytes, 1);
+    ThreadIdentifier threadIdWithoutUUID = new ThreadIdentifier(memberIdBytesWithoutUUID, 1);
+    assertEquals(threadIdWithoutUUID, threadIdWithUUID);
+    assertEquals(threadIdWithUUID, threadIdWithoutUUID);
+    assertEquals(threadIdWithoutUUID.hashCode(), threadIdWithUUID.hashCode());
+
+    EventID eventIDWithUUID = new EventID(memberIdBytes, 1, 1);
+    EventID eventIDWithoutUUID = new EventID(memberIdBytesWithoutUUID, 1, 1);
+    assertEquals(eventIDWithUUID, eventIDWithoutUUID);
+    assertEquals(eventIDWithoutUUID, eventIDWithUUID);
+    assertEquals(eventIDWithoutUUID.hashCode(), eventIDWithUUID.hashCode());
+  }
 
   @Test
   public void testPutAllId() {

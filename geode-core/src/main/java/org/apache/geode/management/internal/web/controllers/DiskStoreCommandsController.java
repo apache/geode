@@ -14,9 +14,8 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import java.util.concurrent.Callable;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.concurrent.Callable;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 
 /**
  * The DiskStoreCommandsController class implements GemFire Management REST API web service
@@ -107,7 +108,7 @@ public class DiskStoreCommandsController extends AbstractCommandsController {
       @RequestParam(value = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT,
           defaultValue = "90") final Float diskUsageWarningPercentage,
       @RequestParam(value = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT,
-          defaultValue = "99") final Integer diskUsageCriticalPercentage,
+          defaultValue = "99") final Float diskUsageCriticalPercentage,
       @RequestParam(value = CliStrings.GROUP, required = false) final String[] groups) {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
 

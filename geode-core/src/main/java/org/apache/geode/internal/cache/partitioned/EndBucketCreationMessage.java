@@ -90,6 +90,11 @@ public class EndBucketCreationMessage extends PartitionMessage {
   }
 
   @Override
+  public boolean canParticipateInTransaction() {
+    return false;
+  }
+
+  @Override
   protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
       long startTime) throws ForceReattemptException {
 

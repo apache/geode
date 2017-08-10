@@ -46,6 +46,7 @@ import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.SecurityManager;
 
 /**
  * Security service with SecurityManager and an optional PostProcessor.
@@ -54,7 +55,7 @@ public class IntegratedSecurityService implements SecurityService {
   private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
   private final PostProcessor postProcessor;
-  private final org.apache.geode.security.SecurityManager securityManager;
+  private final SecurityManager securityManager;
 
   /**
    * this creates a security service using a SecurityManager
@@ -72,11 +73,13 @@ public class IntegratedSecurityService implements SecurityService {
     this.postProcessor = postProcessor;
   }
 
+  @Override
   public PostProcessor getPostProcessor() {
     return this.postProcessor;
   }
 
-  public org.apache.geode.security.SecurityManager getSecurityManager() {
+  @Override
+  public SecurityManager getSecurityManager() {
     return this.securityManager;
   }
 
@@ -187,6 +190,7 @@ public class IntegratedSecurityService implements SecurityService {
     return threadState;
   }
 
+  @Override
   public void authorizeClusterManage() {
     authorize(Resource.CLUSTER, Operation.MANAGE, Target.ALL, ResourcePermission.ALL);
   }
@@ -266,16 +270,24 @@ public class IntegratedSecurityService implements SecurityService {
     authorize(Resource.DATA, Operation.READ, regionName, key);
   }
 
+  @Override
   public void authorize(Resource resource, Operation operation, Target target, String key) {
     authorize(resource, operation, target.getName(), key);
   }
 
+  @Override
   public void authorize(Resource resource, Operation operation, Target target) {
     authorize(resource, operation, target, ResourcePermission.ALL);
   }
 
+  @Override
   public void authorize(Resource resource, Operation operation, String target, String key) {
     authorize(new ResourcePermission(resource, operation, target, key));
+  }
+
+  @Override
+  public void authorize(Resource resource, Operation operation, String target) {
+    authorize(new ResourcePermission(resource, operation, target, ResourcePermission.ALL));
   }
 
   @Override
@@ -300,7 +312,7 @@ public class IntegratedSecurityService implements SecurityService {
   @Override
   public void close() {
     if (this.securityManager != null) {
-      securityManager.close();
+      this.securityManager.close();
     }
     if (this.postProcessor != null) {
       this.postProcessor.close();

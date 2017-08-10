@@ -24,8 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * The LauncherLifecycleCommandsController class implements REST API calls for the Gfsh Launcher
  * Lifecycle commands.
  * <p/>
- * 
- * @see org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands
+ *
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable

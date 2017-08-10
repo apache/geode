@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
@@ -21,6 +20,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -33,17 +41,11 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDistributionDUnitTest {
+
   private static final String REPLICATE_REGION = "ReplicateRegion1";
   private static final String PARTITION_REGION = "PartitionRegion1";
   private static final String INDEX1 = "ID1";
@@ -51,6 +53,9 @@ public class ClusterConfigDistributionDUnitTest {
   private static final String AsyncEventQueue1 = "Q1";
 
   private MemberVM locator;
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -66,7 +71,6 @@ public class ClusterConfigDistributionDUnitTest {
     // start a server so that we can execute data commands that requires at least a server running
     lsRule.startServerVM(1, locator.getPort());
   }
-
 
   @Test
   public void testIndexAndAsyncEventQueueCommands() throws Exception {
@@ -87,7 +91,6 @@ public class ClusterConfigDistributionDUnitTest {
 
     String asyncEventQueueJarPath = createAsyncEventQueueJar();
     gfshConnector.executeAndVerifyCommand("deploy --jar=" + asyncEventQueueJarPath);
-
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, AsyncEventQueue1);
@@ -138,10 +141,9 @@ public class ClusterConfigDistributionDUnitTest {
     });
   }
 
-
   private String createAsyncEventQueueJar() throws IOException {
-    String queueCommandsJarName = this.lsRule.getTempFolder().getRoot().getCanonicalPath()
-        + File.separator + "testEndToEndSC-QueueCommands.jar";
+    String queueCommandsJarName = temporaryFolder.getRoot().getCanonicalPath() + File.separator
+        + "testEndToEndSC-QueueCommands.jar";
     final File jarFile = new File(queueCommandsJarName);
 
     ClassBuilder classBuilder = new ClassBuilder();

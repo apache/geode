@@ -81,19 +81,19 @@ public interface AuthInitialize extends CacheCallback {
    * 
    * @return the credentials to be used for the given <code>server</code>
    *
-   * @deprecated since Geode 1.0, use getCredentials(Properties). When using Integrated security,
-   *             all members, peer/client will use the same credentials.
+   *         When using Integrated security, all members, peer/client will use the same credentials.
+   *         but we still need to use these params to support the old authenticator
    */
-  @Deprecated
   Properties getCredentials(Properties securityProps, DistributedMember server, boolean isPeer)
       throws AuthenticationFailedException;
 
   /**
-   * Implement this since Geode1.0
-   * 
+   *
    * @param securityProps
    * @return the credentials to be used. It needs to contain "security-username" and
    *         "security-password"
+   * @deprecated As of Geode 1.3, please implement getCredentials(Properties, DistributedMember,
+   *             boolean)
    */
   default Properties getCredentials(Properties securityProps) {
     return getCredentials(securityProps, null, true);

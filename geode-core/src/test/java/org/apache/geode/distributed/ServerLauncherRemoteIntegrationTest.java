@@ -14,9 +14,16 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,6 +37,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.AbstractLauncher.Status;
@@ -38,6 +49,7 @@ import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -54,9 +66,6 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.process.ProcessWrapper;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Integration tests for launching a Server in a forked process.
@@ -1445,7 +1454,7 @@ public class ServerLauncherRemoteIntegrationTest
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main exiting...");
 
         // -System.out.println("exiting");
-        System.exit(0);
+        ExitCode.NORMAL.doSystemExit();
       } catch (Throwable t) {
         logWriter.info(ServerLauncherForkingProcess.class.getSimpleName() + "#main error: " + t, t);
         System.exit(-1);

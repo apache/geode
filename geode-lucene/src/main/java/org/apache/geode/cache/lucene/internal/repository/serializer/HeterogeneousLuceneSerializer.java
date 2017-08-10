@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;

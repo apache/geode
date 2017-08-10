@@ -26,4 +26,9 @@ public interface Locator {
    */
   void installView(NetView v);
 
+  /**
+   * informs the locator that this process is becoming the membership coordinator
+   */
+  void setIsCoordinator(boolean isCoordinator);
+
 }

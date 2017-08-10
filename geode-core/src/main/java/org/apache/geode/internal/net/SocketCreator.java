@@ -14,32 +14,6 @@
  */
 package org.apache.geode.internal.net;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.internal.InetAddressUtil;
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.ClientSocketFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.GfeConsoleReaderFactory;
-import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
-import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.util.ArgumentRedactor;
-import org.apache.geode.internal.util.PasswordUtil;
-import org.apache.logging.log4j.Logger;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.BindException;
@@ -75,6 +49,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attribute;
@@ -96,6 +71,33 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.ClientSocketFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.ConnectionWatcher;
+import org.apache.geode.internal.GfeConsoleReaderFactory;
+import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
+import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.util.ArgumentRedactor;
+import org.apache.geode.internal.util.PasswordUtil;
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
@@ -262,7 +264,7 @@ public class SocketCreator {
   /**
    * Constructs new SocketCreator instance.
    */
-  SocketCreator(final SSLConfig sslConfig) {
+  public SocketCreator(final SSLConfig sslConfig) {
     this.sslConfig = sslConfig;
     initialize();
   }
@@ -294,7 +296,7 @@ public class SocketCreator {
    * hits and duplicate strings
    */
   public static synchronized String getHostName(InetAddress addr) {
-    String result = (String) hostNames.get(addr);
+    String result = hostNames.get(addr);
     if (result == null) {
       result = addr.getHostName();
       hostNames.put(addr, result);
@@ -307,7 +309,7 @@ public class SocketCreator {
    * hits and duplicate strings
    */
   public static synchronized String getCanonicalHostName(InetAddress addr, String hostName) {
-    String result = (String) hostNames.get(addr);
+    String result = hostNames.get(addr);
     if (result == null) {
       hostNames.put(addr, hostName);
       return hostName;
@@ -434,14 +436,8 @@ public class SocketCreator {
             throw new GemFireConfigException(
                 "SSL properties are empty, but a console is not available");
           }
-          if (key.toLowerCase().contains("password")) {
-            char[] password = consoleReader.readPassword("Please enter " + key + ": ");
-            env.put(key, PasswordUtil.encrypt(new String(password), false));
-          } else {
-            String val = consoleReader.readLine("Please enter " + key + ": ");
-            env.put(key, val);
-          }
-
+          String val = consoleReader.readLine("Please enter " + key + ": ");
+          env.put(key, val);
         }
       }
     }
@@ -727,7 +723,7 @@ public class SocketCreator {
       } catch (BindException e) {
         BindException throwMe =
             new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                .toLocalizedString(new Object[] {bindAddr, Integer.valueOf(nport)}));
+                .toLocalizedString(bindAddr, Integer.valueOf(nport)));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -784,7 +780,7 @@ public class SocketCreator {
       } catch (BindException e) {
         BindException throwMe =
             new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                .toLocalizedString(new Object[] {bindAddr, Integer.valueOf(nport)}));
+                .toLocalizedString(bindAddr, Integer.valueOf(nport)));
         throwMe.initCause(e);
         throw throwMe;
       }

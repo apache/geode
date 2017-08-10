@@ -30,6 +30,10 @@ Delete or unregister functions, remove indexes, disk stores and regions.
 
     Destroy or unregister a function.
 
+-   **[destroy gateway-sender](#destroy-gs)**
+
+    Destroy a gateway sender.
+
 -   **[destroy index](#topic_D00219CCD6F64C1582A0802AC5CDF3F3)**
 
     Destroy or remove the specified index.
@@ -106,6 +110,50 @@ destroy function --id=value [--group=value] [--member=value]
 (1) destroy function --id=InterestCalculations
 (2) destroy function --id=InterestCalculations --member=server1
 (3) destroy function --id=InterestCalculations --group=Group1
+```
+
+## <a id="destroy-gs" class="no-quick-link"></a>destroy gateway-sender
+
+Destroy a gateway sender that is no longer used by a region.
+
+The default is for the gateway sender to be destroyed on all members.
+
+No region may be attached to the gateway sender to be destroyed.
+If a region is still attached, the system issues an error message
+similar to:
+
+``` pre
+ERROR: The GatewaySender ParallelGatewaySender{id=ln,remoteDsId=2,isRunning =false}
+could not be destroyed as it is still used by region(s).
+```
+Remove the gateway sender from the region with a command
+similar to:
+
+``` pre
+gfsh>alter region --name=regionA --gateway-sender-id=""
+```
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+destroy gateway-sender --id=value [--group=value(,value)*]
+  [--member=value(,value)*]
+```
+
+**Parameters, destroy gateway-sender:**
+
+| Name                                           | Description                                                                                |
+|------------------------------------------------|--------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-id</span>     | *Required.* Unique gateway sender identifier. Use the `list gateways` command to obtain the ID. |
+| <span class="keyword parmname">\\-\\-group</span> | One or more groups of members from which this gateway sender will be destroyed.       |
+| <span class="keyword parmname">&#8209;&#8209;member</span> | Name or ID of the member from which this gateway sender will be destroyed.   |
+
+**Example Commands:**
+
+``` pre
+destroy gateway-sender --id=SiteASender
 ```
 
 ## <a id="topic_D00219CCD6F64C1582A0802AC5CDF3F3" class="no-quick-link"></a>destroy index

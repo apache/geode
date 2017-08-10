@@ -12,12 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -27,13 +31,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
@@ -51,28 +48,13 @@ import java.util.Properties;
  * use {@link LocatorServerStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
+
   private transient InternalCache cache;
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;
   private boolean pdxPersistent = false;
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
-
-  /**
-   * Default constructor, if used, the rule will create a temporary folder as the server's working
-   * dir, and will delete it when the test is done.
-   */
-  public ServerStarterRule() {}
-
-  /**
-   * if constructed this way, the rule won't be deleting the workingDir after the test is done. It's
-   * the caller's responsibility to delete it.
-   * 
-   * @param workingDir: the working dir this server should be writing the artifacts to.
-   */
-  public ServerStarterRule(File workingDir) {
-    super(workingDir);
-  }
 
   public InternalCache getCache() {
     return cache;
@@ -93,29 +75,28 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     }
   }
 
-  /**
-   * By default, the ServerStartRule dynamically changes the "user.dir" system property to point to
-   * a temporary folder. The Path API caches the first value of "user.dir" that it sees, and this
-   * can result in a stale cached value of "user.dir" which points to a directory that no longer
-   * exists, causing later tests to fail. By passing in the real value of "user.dir", we avoid these
-   * problems.
-   */
-  public static ServerStarterRule createWithoutTemporaryWorkingDir() {
-    return new ServerStarterRule(new File(System.getProperty("user.dir")));
-  }
-
   @Override
   public void stopMember() {
+    // stop CacheServer and then close cache -- cache.close() will stop any running CacheServers
+    if (server != null) {
+      try {
+        server.stop();
+      } catch (Exception e) {
+      } finally {
+        server = null;
+      }
+    }
+
     // make sure this cache is the one currently open. A server cache can be recreated due to
     // importing a new set of cluster configuration.
     cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
-      cache.close();
-      cache = null;
-    }
-    if (server != null) {
-      server.stop();
-      server = null;
+      try {
+        cache.close();
+      } catch (Exception e) {
+      } finally {
+        cache = null;
+      }
     }
   }
 
@@ -123,7 +104,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     pdxPersistent = true;
     return this;
   }
-
 
 
   public ServerStarterRule withEmbeddedLocator() {

@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Properties;
 
@@ -71,6 +72,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
       Map<String, String> sslConfigProps) throws IOException {
     Properties distributionConfigProps = new Properties();
     InetAddress networkAddress = InetAddress.getByName(locatorHost);
+    InetSocketAddress inetSockAddr = new InetSocketAddress(networkAddress, locatorPort);
 
     try {
       if (sslConfigProps != null) {
@@ -78,8 +80,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
       }
 
       TcpClient client = new TcpClient(new DistributionConfigImpl(distributionConfigProps));
-      Object responseFromServer =
-          client.requestToServer(networkAddress, locatorPort, SINGLETON, msTimeout);
+      Object responseFromServer = client.requestToServer(inetSockAddr, SINGLETON, msTimeout, true);
 
       return (JmxManagerLocatorResponse) responseFromServer;
     } catch (ClassNotFoundException unexpected) {

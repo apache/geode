@@ -126,14 +126,14 @@ In this step you create a region with the `gfsh` command line utility. Regions a
     regionA
     ```
 
-3.  List the members of your cluster. The locator and cache servers you started appear in the list:
+3.  List the members of your cluster. The locator and cache server you started appear in the list:
 
     ``` pre
     gfsh>list members
       Name   | Id
     -------- | ---------------------------------------
-    locator1 | ubuntu(locator1:3529:locator)<v0>:59926
-    server1  | ubuntu(server1:3883)<v1>:65390
+    locator1 | 192.0.2.0(locator1:3529:locator)<v0>:59926
+    server1  | 192.0.2.0(server1:3883)<v1>:65390
     ```
 
 4.  To view specifics about a region, type the following:
@@ -420,8 +420,8 @@ In this step you restart the cache servers in parallel. Because the data is pers
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true
     -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true
     -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /home/username/Apache_Geode_Linux/lib/gemfire.jar:
-    /home/username/Apache_Geode_Linux/lib/server-dependencies.jar
+    Class-Path: /home/username/Apache_Geode_Linux/lib/geode-core-1.0.0.jar:
+    /home/username/Apache_Geode_Linux/lib/geode-dependencies.jar
     ```
 
 5.  Verify that the locator and two servers are running:

@@ -14,12 +14,6 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.DateFormatter;
-
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
@@ -45,6 +39,13 @@ import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.DateFormatter;
 
 /**
  * StatArchiveReader provides APIs to read statistic snapshots from an archive file.
@@ -222,7 +223,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     String archiveName = null;
     if (args.length > 1) {
       System.err.println("Usage: [archiveName]");
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     } else if (args.length == 1) {
       archiveName = args[0];
     } else {
@@ -826,11 +827,6 @@ public class StatArchiveReader implements StatArchiveFormat {
       if (values.length == 0) {
         return new long[0];
       }
-      // for (int i=0; i < values.length; i++) {
-      // System.out.println("DEBUG: inst# " + i + " has "
-      // + values[i].getRawAbsoluteTimeStamps().length
-      // + " timestamps");
-      // }
       long[] valueTimeStamps = values[0].getRawAbsoluteTimeStamps();
       int tsCount = valueTimeStamps.length + 1;
       long[] ourTimeStamps = new long[(tsCount * 2) + 1];
@@ -867,8 +863,6 @@ public class StatArchiveReader implements StatArchiveFormat {
             ourIdx++; // never put the next timestamp at this index
             while (!closer(tsToInsert, ourTimeStamps[ourIdx - 1], ourTimeStamps[ourIdx])
                 && !mustInsert(j, valueTimeStamps, ourTimeStamps[ourIdx])) {
-              // System.out.println("DEBUG: skipping mergeTs[" + (ourIdx-1) + "]="
-              // + tsAtInsertPoint + " because it was closer to the next one");
               ourIdx++; // it is closer to the next one so skip forward on more
             }
           } else {
@@ -880,22 +874,6 @@ public class StatArchiveReader implements StatArchiveFormat {
               endRunIdx++;
             }
             int numToCopy = endRunIdx - j;
-            // System.out.println("DEBUG: tsToInsert=" + tsToInsert
-            // + " tsAtInsertPoint=" + tsAtInsertPoint
-            // + " timeDelta=" + timeDelta
-            // + " vDelta=" + (Math.abs(tsToInsert-tsAtInsertPoint)/2)
-            // + " numToCopy=" + numToCopy);
-            // if (j > 0) {
-            // System.out.println("DEBUG: prevTsToInsert=" + valueTimeStamps[j-1]);
-            // }
-            // if (ourIdx > 0) {
-            // System.out.println("DEBUG ourTimeStamps[" + (ourIdx-1) + "]=" +
-            // ourTimeStamps[ourIdx-1]);
-            // }
-
-            // if (numToCopy > 1) {
-            // System.out.println("DEBUG: endRunTs=" + valueTimeStamps[endRunIdx-1]);
-            // }
             if (tsCount + numToCopy > ourTimeStamps.length) {
               // grow our timestamp array
               long[] tmp = new long[(tsCount + numToCopy) * 2];
@@ -916,84 +894,16 @@ public class StatArchiveReader implements StatArchiveFormat {
             // skip over all inserted elements
             j += numToCopy;
           }
-          // System.out.println("DEBUG: inst #" + i
-          // + " valueTs[" + (j-1) + "]=" + tsToInsert
-          // + " found/inserted at"
-          // + " mergeTs[" + (ourIdx-1) + "]=" + ourTimeStamps[ourIdx-1]);
         }
       }
-      // for (int i=0; i < tsCount; i++) {
-      // System.out.println("DEBUG: mergedTs[" + i + "]=" + ourTimeStamps[i]);
-      // if (i > 0 && ourTimeStamps[i] <= ourTimeStamps[i-1]) {
-      // System.out.println("DEBUG: ERROR ts was not greater than previous");
-      // }
-      // }
-      // Now make one more pass over all the timestamps and make sure they
-      // will all fit into the current merged timestamps in ourTimeStamps
-      // boolean changed;
-      // do {
-      // changed = false;
-      // for (int i=0; i < values.length; i++) {
-      // valueTimeStamps = values[i].getRawAbsoluteTimeStamps();
-      // if (valueTimeStamps.length == 0) {
-      // continue;
-      // }
-      // int ourIdx = 0;
-      // for (int j=0; j < valueTimeStamps.length; j++) {
-      // while ((ourIdx < (tsCount-1))
-      // && !isClosest(valueTimeStamps[j], ourTimeStamps, ourIdx)) {
-      // ourIdx++;
-      // }
-      // if (ourIdx == (tsCount-1)) {
-      // // we are at the end so we need to append all our remaining stamps
-      // [j..valueTimeStamps.length-1]
-      // // and then reappend the Long.MAX_VALUE that
-      // // is currently at tsCount-1
-      // int numToCopy = valueTimeStamps.length - j;
-      // if (tsCount+numToCopy > ourTimeStamps.length) {
-      // // grow our timestamp array
-      // long[] tmp = new long[tsCount+numToCopy+1];
-      // System.arraycopy(ourTimeStamps, 0, tmp, 0, tsCount);
-      // ourTimeStamps = tmp;
-      // }
-      // System.arraycopy(valueTimeStamps, j,
-      // ourTimeStamps, ourIdx,
-      // numToCopy);
-      // tsCount += numToCopy;
-      // ourTimeStamps[tsCount-1] = Long.MAX_VALUE;
-      // //changed = true;
-      // System.out.println("DEBUG: had to add " + numToCopy
-      // + " timestamps for inst#" + i + " starting at index " + j + " starting with ts=" +
-      // valueTimeStamps[j]);
-      // break; // our of the for j loop since we just finished off this guy
-      // } else {
-      // ourIdx++;
-      // }
-      // }
-      // }
-      // } while (changed);
-      // remove the max ts we added
       tsCount--;
       {
         int startIdx = 0;
         int endIdx = tsCount - 1;
         if (startTime != -1) {
-          // for (int i=0; i < tsCount; i++) {
-          // if (ourTimeStamps[i] >= startTime) {
-          // break;
-          // }
-          // startIdx++;
-          // }
           Assert.assertTrue(ourTimeStamps[startIdx] >= startTime);
         }
         if (endTime != -1) {
-          // endIdx = startIdx-1;
-          // for (int i=startIdx; i < tsCount; i++) {
-          // if (ourTimeStamps[i] >= endTime) {
-          // break;
-          // }
-          // endIdx++;
-          // }
           Assert.assertTrue(endIdx == startIdx - 1 || ourTimeStamps[endIdx] < endTime);
         }
         tsCount = (endIdx - startIdx) + 1;
@@ -1036,7 +946,6 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     private double[] getRawSnapshots(long[] ourTimeStamps) {
       double[] result = new double[ourTimeStamps.length];
-      // System.out.println("DEBUG: producing " + result.length + " values");
       if (result.length > 0) {
         for (int i = 0; i < values.length; i++) {
           long[] valueTimeStamps = values[i].getRawAbsoluteTimeStamps();
@@ -1046,19 +955,11 @@ public class StatArchiveReader implements StatArchiveFormat {
           if (values[i].isTrimmedLeft() && valueSnapshots.length > 0) {
             currentValue = valueSnapshots[0];
           }
-          // System.out.println("DEBUG: inst#" + i + " has " + valueSnapshots.length + " values");
           for (int j = 0; j < valueSnapshots.length; j++) {
-            // System.out.println("DEBUG: Doing v with"
-            // + " vTs[" + j + "]=" + valueTimeStamps[j]
-            // + " at mergeTs[" + curIdx + "]=" + ourTimeStamps[curIdx]);
             while (!isClosest(valueTimeStamps[j], ourTimeStamps, curIdx)) {
               if (descriptor.isCounter()) {
                 result[curIdx] += currentValue;
               }
-              // System.out.println("DEBUG: skipping curIdx=" + curIdx
-              // + " valueTimeStamps[" + j + "]=" + valueTimeStamps[j]
-              // + " ourTimeStamps[" + curIdx + "]=" + ourTimeStamps[curIdx]
-              // + " ourTimeStamps[" + (curIdx+1) + "]=" + ourTimeStamps[curIdx+1]);
 
               curIdx++;
             }
@@ -1104,11 +1005,6 @@ public class StatArchiveReader implements StatArchiveFormat {
           if (filter == FILTER_PERSEC) {
             long timeDelta = timestamps[i + 1] - timestamps[i];
             result[i] = valueDelta / (timeDelta / 1000.0);
-            // if (result[i] > valueDelta) {
-            // System.out.println("DEBUG: timeDelta was " + timeDelta + " ms.");
-            // System.out.println("DEBUG: valueDelta was " + valueDelta);
-            // System.out.println("DEBUG: valueDelta/sec was " + result[i]);
-            // }
           } else {
             result[i] = valueDelta;
           }
@@ -2176,7 +2072,6 @@ public class StatArchiveReader implements StatArchiveFormat {
    */
   public static class ResourceType {
     private boolean loaded;
-    // private final int id;
     private final String name;
     private String desc;
     private final StatDescriptor[] stats;
@@ -2193,7 +2088,6 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     protected ResourceType(int id, String name, int statCount) {
       this.loaded = false;
-      // this.id = id;
       this.name = name;
       this.desc = null;
       this.stats = new StatDescriptor[statCount];
@@ -2202,7 +2096,6 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     protected ResourceType(int id, String name, String desc, int statCount) {
       this.loaded = true;
-      // this.id = id;
       this.name = name;
       this.desc = desc;
       this.stats = new StatDescriptor[statCount];
@@ -2252,9 +2145,6 @@ public class StatArchiveReader implements StatArchiveFormat {
       }
     }
 
-    // private int getId() {
-    // return this.id;
-    // }
     /**
      * Returns the name of this resource type.
      */
@@ -2468,7 +2358,6 @@ public class StatArchiveReader implements StatArchiveFormat {
   public static class ResourceInst {
     private final boolean loaded;
     private final StatArchiveFile archive;
-    // private final int uniqueId;
     private final ResourceType type;
     private final String name;
     private final long id;
@@ -2537,7 +2426,6 @@ public class StatArchiveReader implements StatArchiveFormat {
         ResourceType type, boolean loaded) {
       this.loaded = loaded;
       this.archive = archive;
-      // this.uniqueId = uniqueId;
       this.name = name;
       this.id = id;
       Assert.assertTrue(type != null);
@@ -3098,7 +2986,6 @@ public class StatArchiveReader implements StatArchiveFormat {
             return true;
           }
         }
-        // System.out.println("DEBUG: don't load type=" + typeName);
         return false;
       }
     }
@@ -3116,7 +3003,6 @@ public class StatArchiveReader implements StatArchiveFormat {
             return true;
           }
         }
-        // System.out.println("DEBUG: don't load stat=" + stat.getName());
         stat.unload();
         return false;
       }
@@ -3143,8 +3029,6 @@ public class StatArchiveReader implements StatArchiveFormat {
             }
           }
         }
-        // System.out.println("DEBUG: don't load instance=" + textId);
-        // type.unload();
         return false;
       }
     }
@@ -3284,9 +3168,6 @@ public class StatArchiveReader implements StatArchiveFormat {
     }
 
     private int readResourceInstId() throws IOException {
-      /*
-       * if (this.archiveVersion <= 1) { return dataIn.readInt(); }
-       */
       int token = dataIn.readUnsignedByte();
       if (token <= MAX_BYTE_RESOURCE_INST_ID) {
         return token;

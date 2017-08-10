@@ -19,23 +19,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Configure whether and how redundancy is recovered in a partition region after a member joins.
+This section covers configuring whether and how redundancy is
+recovered in a partitioned region, after a member joins.
 
 <a id="set_join_redundancy_recovery__section_D6FB0D69CC454B53B9CF1E656A44465C"></a>
 Use the partition attribute `startup-recovery-delay` to specify member join redundancy recovery.
 
-| startup-recovery-delay partition attribute | Effect following a member join                                                                                                                                                                                               |
+| value of `startup-recovery-delay`            | Effect following a member join                                                                                                                                                                                               |
 |--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -1                                         | No automatic recovery of redundancy after a new member comes online. If you use this and the default `recovery-delay` setting, you can only recover redundancy by kicking off rebalancing through a cacheserver or API call. |
-| long greater than or equal to **0**        | Number of milliseconds to wait after a member joins before before recovering redundancy. The default is 0 (zero), which causes immediate redundancy recovery whenever a new partitioned region host joins.                   |
+| -1                                         | No automatic recovery of redundancy after a new member comes online. With this value and the default `recovery-delay` setting, redundancy recovery is only achieved by a rebalance operation. |
+| long >= 0 | Number of milliseconds to wait after a member joins before recovering redundancy. The default is 0 (zero), which causes immediate redundancy recovery whenever a member that hosts the partitioned region joins. |
 
-Setting this to a value higher than the default of 0 allows multiple new members to join before redundancy recovery kicks in. With the multiple members present during recovery, the system will spread redundancy recovery among them. With no delay, if multiple members are started in close succession, the system may choose only the first member started for most or all of the redundancy recovery.
+Setting `startup-recovery-delay` to a value higher than the 
+default of 0 allows multiple new members to join before 
+redundancy recovery begins.
+With the multiple members present during recovery,
+the system will spread redundancy recovery among them.
+With no delay, if multiple members are started in close succession,
+the system may choose only the first member started for most or all
+of the redundancy recovery.
 
 **Note:**
-Satisfying redundancy is not the same as adding capacity. If redundancy is satisfied, new members do not take buckets until you invoke a rebalance.
+Satisfying redundancy is not the same as adding capacity.
+If redundancy is satisfied, new members do not take buckets
+until the invocation of a rebalance operation.
 
-**Note:**
-With parallel recovery introduced in version 8.2, redundancy may be recovered more quickly than in previous versions. For this reason, it is even more important to configure `startup-recovery-delay` to an appropriate value if you intend to restart multiple members at once. Set `startup-recovery-delay` to a value that ensures all members are up and available *before* redundancy recovery kicks in.
+The parallel recovery implementation recovers quickly.
+For this reason,
+it is even more important to configure `startup-recovery-delay`
+to an appropriate value when restarting multiple members
+at the same time.
+Set `startup-recovery-delay` to a value that ensures all members
+are up and available *before* redundancy recovery kicks in.
 
 Set join redundancy recovery using one of the following:
 

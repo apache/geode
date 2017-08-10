@@ -14,7 +14,21 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
@@ -26,6 +40,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexF
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
+import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -43,20 +58,9 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * The LuceneIndexCommands class encapsulates all Geode shell (Gfsh) commands related to Lucene
@@ -81,10 +85,11 @@ public class LuceneIndexCommands implements GfshCommand {
   @CliCommand(value = LuceneCliStrings.LUCENE_LIST_INDEX,
       help = LuceneCliStrings.LUCENE_LIST_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listIndex(@CliOption(key = LuceneCliStrings.LUCENE_LIST_INDEX__STATS,
       specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = LuceneCliStrings.LUCENE_LIST_INDEX__STATS__HELP) final boolean stats) {
+
+    getSecurityService().authorize(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET);
 
     try {
       return toTabularResult(getIndexListing(), stats);
@@ -116,7 +121,7 @@ public class LuceneIndexCommands implements GfshCommand {
         (List<Set<LuceneIndexDetails>>) resultsCollector.getResult();
 
     List<LuceneIndexDetails> sortedResults =
-        results.stream().flatMap(set -> set.stream()).sorted().collect(Collectors.toList());
+        results.stream().flatMap(Collection::stream).sorted().collect(Collectors.toList());
     LinkedHashSet<LuceneIndexDetails> uniqResults = new LinkedHashSet<>();
     uniqResults.addAll(sortedResults);
     sortedResults.clear();
@@ -158,6 +163,9 @@ public class LuceneIndexCommands implements GfshCommand {
     }
   }
 
+  /**
+   * On the server, we also verify the resource operation permissions CLUSTER:WRITE:DISK
+   */
   @CliCommand(value = LuceneCliStrings.LUCENE_CREATE_INDEX,
       help = LuceneCliStrings.LUCENE_CREATE_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
@@ -178,14 +186,17 @@ public class LuceneIndexCommands implements GfshCommand {
     Result result;
     XmlEntity xmlEntity = null;
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
+    // Every lucene index potentially writes to disk.
+    getSecurityService().authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
+
     try {
       final InternalCache cache = getCache();
+
       // trim fields for any leading trailing spaces.
-      String[] trimmedFields =
-          Arrays.stream(fields).map(field -> field.trim()).toArray(size -> new String[size]);
+      String[] trimmedFields = Arrays.stream(fields).map(String::trim).toArray(String[]::new);
       LuceneIndexInfo indexInfo =
           new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers);
+
       final ResultCollector<?, ?> rc =
           this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
       final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
@@ -224,7 +235,6 @@ public class LuceneIndexCommands implements GfshCommand {
   @CliCommand(value = LuceneCliStrings.LUCENE_DESCRIBE_INDEX,
       help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeIndex(
       @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
           help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__NAME__HELP) final String indexName,
@@ -232,6 +242,9 @@ public class LuceneIndexCommands implements GfshCommand {
       @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_DESCRIBE_INDEX__REGION_HELP) final String regionPath) {
+
+    getSecurityService().authorize(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET);
+
     try {
       LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath);
       return toTabularResult(getIndexDetails(indexInfo), true);
@@ -256,14 +269,15 @@ public class LuceneIndexCommands implements GfshCommand {
     final ResultCollector<?, ?> rc =
         executeFunctionOnRegion(describeIndexFunction, indexInfo, true);
     final List<LuceneIndexDetails> funcResults = (List<LuceneIndexDetails>) rc.getResult();
-    return funcResults.stream().filter(indexDetails -> indexDetails != null)
-        .collect(Collectors.toList());
+    return funcResults.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 
+  /**
+   * Internally, we verify the resource operation permissions DATA:READ:[RegionName]
+   */
   @CliCommand(value = LuceneCliStrings.LUCENE_SEARCH_INDEX,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.WRITE)
   public Result searchIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
 
@@ -283,6 +297,9 @@ public class LuceneIndexCommands implements GfshCommand {
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY,
           unspecifiedDefaultValue = "false",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly) {
+
+    getSecurityService().authorizeRegionRead(regionPath);
+
     try {
       LuceneQueryInfo queryInfo =
           new LuceneQueryInfo(indexName, regionPath, queryString, defaultField, limit, keysOnly);
@@ -297,6 +314,8 @@ public class LuceneIndexCommands implements GfshCommand {
       throw e;
     } catch (IllegalArgumentException e) {
       return ResultBuilder.createInfoResult(e.getMessage());
+    } catch (GemFireSecurityException e) {
+      throw e;
     } catch (Throwable t) {
       SystemFailure.checkFailure();
       getCache().getLogger().info(t);
@@ -314,6 +333,7 @@ public class LuceneIndexCommands implements GfshCommand {
       @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_DESTROY_INDEX__REGION_HELP) final String regionPath) {
+
     if (StringUtils.isBlank(regionPath) || regionPath.equals(Region.SEPARATOR)) {
       return ResultBuilder.createInfoResult(
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__REGION_CANNOT_BE_EMPTY));
@@ -324,7 +344,7 @@ public class LuceneIndexCommands implements GfshCommand {
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
     }
 
-    getCache().getSecurityService().authorizeRegionManage(regionPath);
+    getSecurityService().authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
 
     Result result;
     try {
@@ -528,14 +548,14 @@ public class LuceneIndexCommands implements GfshCommand {
     final List<Set<LuceneSearchResults>> functionResults =
         (List<Set<LuceneSearchResults>>) rc.getResult();
 
-    return functionResults.stream().flatMap(set -> set.stream()).sorted()
+    return functionResults.stream().flatMap(Collection::stream).sorted()
         .collect(Collectors.toList());
   }
 
   private Result getResults(int fromIndex, int toIndex, boolean keysonly) throws Exception {
     final TabularResultData data = ResultBuilder.createTabularResultData();
     for (int i = fromIndex; i < toIndex; i++) {
-      if (!searchResults.get(i).getExeptionFlag()) {
+      if (!searchResults.get(i).getExceptionFlag()) {
         data.accumulate("key", searchResults.get(i).getKey());
         if (!keysonly) {
           data.accumulate("value", searchResults.get(i).getValue());

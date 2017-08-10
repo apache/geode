@@ -374,8 +374,7 @@ public class ServerHandShakeProcessor {
         clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
       } catch (UnsupportedVersionException uve) {
         // Allows higher version of wan site to connect to server
-        if (connection.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY
-            && !(clientVersionOrdinal == Version.NOT_SUPPORTED_ORDINAL)) {
+        if (connection.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY) {
           return Acceptor.VERSION;
         } else {
           SocketAddress sa = socket.getRemoteSocketAddress();
