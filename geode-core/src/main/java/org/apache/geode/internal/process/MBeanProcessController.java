@@ -19,8 +19,6 @@ import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.util.Properties;
 import java.util.Set;
 

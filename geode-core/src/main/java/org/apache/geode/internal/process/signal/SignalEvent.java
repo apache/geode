@@ -12,19 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.process.signal;
 
 import java.util.EventObject;
 
 /**
  * The SignalEvent class...
- * </p>
- * 
+ *
  * @see java.util.EventObject
+ *
  * @since GemFire 7.0
  */
-@SuppressWarnings("unused")
 public class SignalEvent extends EventObject {
 
   private final Signal signal;
@@ -36,16 +34,15 @@ public class SignalEvent extends EventObject {
   }
 
   public Signal getSignal() {
-    return this.signal;
+    return signal;
   }
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
+    StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
     buffer.append("{ signal = ").append(getSignal());
     buffer.append(", source = ").append(getSource());
     buffer.append("}");
     return buffer.toString();
   }
-
 }

@@ -12,17 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.process.signal;
 
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Signals defined in the enumerated type were based on Open BSD and the IBM JVM...
- * </p>
- * 
- * @see org.apache.geode.internal.process.signal.SignalType
+ *
  * @since GemFire 7.0
+ *
  * @see <a href=
  *      "http://www.fromdual.com/operating-system-signals">http://www.fromdual.com/operating-system-signals</a>
  * @see <a href=
@@ -30,7 +28,6 @@ import org.apache.commons.lang.StringUtils;
  * @see <a href=
  *      "http://publib.boulder.ibm.com/infocenter/java7sdk/v7r0/index.jsp?topic=%2Fcom.ibm.java.aix.70.doc%2Fuser%2Fsighand.html">http://publib.boulder.ibm.com/infocenter/java7sdk/v7r0/index.jsp?topic=%2Fcom.ibm.java.aix.70.doc%2Fuser%2Fsighand.html</a>
  */
-@SuppressWarnings("unused")
 public enum Signal {
   SIGHUP(1, "HUP", SignalType.INTERRUPT, "Hang up. JVM exits normally."),
   SIGINT(2, "INT", SignalType.INTERRUPT, "Interactive attention (CTRL-C). JVM exits normally."),
@@ -93,18 +90,8 @@ public enum Signal {
   }
 
   public static Signal valueOfName(final String name) {
-    for (final Signal signal : values()) {
+    for (Signal signal : values()) {
       if (signal.getName().equalsIgnoreCase(name)) {
-        return signal;
-      }
-    }
-
-    return null;
-  }
-
-  public static Signal valueOfNumber(final int number) {
-    for (final Signal signal : values()) {
-      if (signal.getNumber() == number) {
         return signal;
       }
     }
@@ -132,5 +119,4 @@ public enum Signal {
   public String toString() {
     return "SIG".concat(getName());
   }
-
 }
