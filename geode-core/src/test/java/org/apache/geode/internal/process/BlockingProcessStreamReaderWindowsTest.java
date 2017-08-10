@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.process;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.lang.SystemUtils.isWindows;
+import static org.apache.geode.internal.process.ProcessStreamReader.ReadingMode.BLOCKING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -54,14 +55,14 @@ public class BlockingProcessStreamReaderWindowsTest
   private ExecutorService futures;
 
   @Before
-  public void before() {
+  public void setUp() throws Exception {
     assumeTrue(isWindows());
 
     futures = Executors.newSingleThreadExecutor();
   }
 
   @After
-  public void after() {
+  public void tearDown() throws Exception {
     if (futures != null) {
       assertThat(futures.shutdownNow()).isEmpty();
     }
@@ -70,7 +71,7 @@ public class BlockingProcessStreamReaderWindowsTest
   @Test
   public void hangsOnWindows() throws Exception {
     // arrange
-    givenRunningProcess();
+    givenRunningProcessWithStreamReaders(ProcessSleeps.class);
 
     // act
     Future<Boolean> future = futures.submit(() -> {
@@ -81,24 +82,12 @@ public class BlockingProcessStreamReaderWindowsTest
     });
 
     // assert
-    assertThatThrownBy(() -> future.get(HANG_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+    assertThatThrownBy(() -> future.get(HANG_TIMEOUT_SECONDS, SECONDS))
         .isInstanceOf(TimeoutException.class);
   }
 
-  private void givenRunningProcess() throws IOException {
-    // arrange
-    process = new ProcessBuilder(
-        createCommandLine(AbstractProcessStreamReaderIntegrationTest.ProcessSleeps.class)).start();
-    stdout = new ProcessStreamReader.Builder(process).inputStream(process.getInputStream()).build()
-        .start();
-    stderr = new ProcessStreamReader.Builder(process).inputStream(process.getErrorStream()).build()
-        .start();
-
-    // act
-    assertThat(process.isAlive()).isTrue();
-
-    // assert
-    await().until(() -> assertThat(stdout.isRunning()).isTrue());
-    await().until(() -> assertThat(stderr.isRunning()).isTrue());
+  @Override
+  protected ReadingMode getReadingMode() {
+    return BLOCKING;
   }
 }

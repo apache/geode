@@ -16,15 +16,22 @@ package org.apache.geode.internal.process;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.After;
+import org.junit.Before;
 
+import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.internal.util.StopWatch;
 
 /**
@@ -33,7 +40,7 @@ import org.apache.geode.internal.util.StopWatch;
 public abstract class AbstractProcessStreamReaderIntegrationTest {
 
   /** Timeout to join to a running ProcessStreamReader thread */
-  protected static final int READER_JOIN_TIMEOUT_MILLIS = 20 * 1000;
+  private static final int READER_JOIN_TIMEOUT_MILLIS = 20 * 1000;
 
   /** Sleep timeout for {@link ProcessSleeps} instead of sleeping Long.MAX_VALUE */
   private static final int PROCESS_FAIL_SAFE_TIMEOUT_MILLIS = 10 * 60 * 1000;
@@ -47,6 +54,15 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   protected Process process;
   protected ProcessStreamReader stderr;
   protected ProcessStreamReader stdout;
+
+  private StringBuffer stdoutBuffer;
+  private StringBuffer stderrBuffer;
+
+  @Before
+  public void setUpAbstractProcessStreamReaderIntegrationTest() {
+    stdoutBuffer = new StringBuffer();
+    stderrBuffer = new StringBuffer();
+  }
 
   @After
   public void afterProcessStreamReaderTestCase() throws Exception {
@@ -68,6 +84,70 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
     }
   }
 
+  protected abstract ReadingMode getReadingMode();
+
+  protected void assertThatProcessAndReadersStopped() throws InterruptedException {
+    assertThatProcessAndReadersStoppedWithExitValue(0);
+  }
+
+  protected void assertThatProcessAndReadersStoppedWithExitValue(final int exitValue)
+      throws InterruptedException {
+    assertThat(process.exitValue()).isEqualTo(exitValue);
+    assertThat(stdout.join(READER_JOIN_TIMEOUT_MILLIS).isRunning()).isFalse();
+    assertThat(stderr.join(READER_JOIN_TIMEOUT_MILLIS).isRunning()).isFalse();
+  }
+
+  protected void assertThatProcessAndReadersDied() throws InterruptedException {
+    assertThat(process.exitValue()).isGreaterThan(0);
+    assertThat(stdout.join(READER_JOIN_TIMEOUT_MILLIS).isRunning()).isFalse();
+    assertThat(stderr.join(READER_JOIN_TIMEOUT_MILLIS).isRunning()).isFalse();
+  }
+
+  protected void assertThatProcessIsAlive(final Process process) {
+    assertThat(process.isAlive()).isTrue();
+  }
+
+  protected void assertThatStdErrContains(final String value) {
+    assertThat(stderrBuffer.toString()).contains(value);
+  }
+
+  protected void assertThatStdErrContainsExactly(final String value) {
+    assertThat(stderrBuffer.toString()).isEqualTo(value);
+  }
+
+  protected void assertThatStdOutContainsExactly(final String value) {
+    assertThat(stdoutBuffer.toString()).isEqualTo(value);
+  }
+
+  protected void givenRunningProcessWithStreamReaders(final Class<?> mainClass) {
+    givenStartedProcess(mainClass);
+
+    assertThat(process.isAlive()).isTrue();
+
+    await().until(() -> assertThat(stdout.isRunning()).isTrue());
+    await().until(() -> assertThat(stderr.isRunning()).isTrue());
+  }
+
+  private void givenStartedProcess(final Class<?> mainClass) {
+    try {
+      process = new ProcessBuilder(createCommandLine(mainClass)).start();
+      stdout = buildProcessStreamReader(process.getInputStream(), getReadingMode());
+      stderr = buildProcessStreamReader(process.getErrorStream(), getReadingMode());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  protected void givenStartedProcessWithStreamListeners(final Class<?> mainClass) {
+    try {
+      process = new ProcessBuilder(createCommandLine(mainClass)).start();
+      stdout = buildProcessStreamReader(process.getInputStream(), getReadingMode(), stdoutBuffer);
+      stderr = buildProcessStreamReader(process.getErrorStream(), getReadingMode(), stderrBuffer);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   protected ConditionFactory await() {
     return Awaitility.await().atMost(WAIT_FOR_READER_IS_RUNNING_TIMEOUT_MILLIS, MILLISECONDS);
   }
@@ -83,6 +163,26 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
     commandLine.add(clazz.getName());
 
     return commandLine.toArray(new String[commandLine.size()]);
+  }
+
+  protected void waitUntilProcessStops() {
+    await().until(() -> assertThat(isProcessAlive(process)).isFalse());
+  }
+
+  private ProcessStreamReader buildProcessStreamReader(final InputStream stream,
+      final ReadingMode mode) {
+    return new ProcessStreamReader.Builder(process).inputStream(stream).readingMode(mode).build()
+        .start();
+  }
+
+  private ProcessStreamReader buildProcessStreamReader(final InputStream stream,
+      final ReadingMode mode, final StringBuffer buffer) {
+    ProcessStreamReader.Builder builder =
+        new ProcessStreamReader.Builder(process).inputStream(stream).readingMode(mode);
+    if (buffer != null) {
+      builder.inputListener(buffer::append);
+    }
+    return builder.build().start();
   }
 
   private static String getClassPath() {

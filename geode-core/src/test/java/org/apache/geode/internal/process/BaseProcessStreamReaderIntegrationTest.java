@@ -14,17 +14,18 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.Test;
 
+/**
+ * Integration tests that should be executed under both {@link ProcessStreamReader.ReadingMode}s.
+ */
 public abstract class BaseProcessStreamReaderIntegrationTest
     extends AbstractProcessStreamReaderIntegrationTest {
 
   @Test
   public void processLivesAfterClosingStreams() throws Exception {
     // arrange
-    process = new ProcessBuilder(createCommandLine(ProcessSleeps.class)).start();
+    givenRunningProcessWithStreamReaders(ProcessSleeps.class);
 
     // act
     process.getErrorStream().close();
@@ -32,20 +33,19 @@ public abstract class BaseProcessStreamReaderIntegrationTest
     process.getInputStream().close();
 
     // assert
-    assertThat(process.isAlive()).isTrue();
+    assertThatProcessIsAlive(process);
   }
 
   @Test
   public void processTerminatesWhenDestroyed() throws Exception {
     // arrange
-    process = new ProcessBuilder(createCommandLine(ProcessSleeps.class)).start();
-    assertThat(process.isAlive()).isTrue();
+    givenRunningProcessWithStreamReaders(ProcessSleeps.class);
 
     // act
-    process.destroy();
+    process.destroy(); // results in SIGTERM which usually has an exit code 143
 
     // assert
-    await().until(() -> assertThat(process.isAlive()).isFalse());
-    assertThat(process.exitValue()).isNotEqualTo(0);
+    waitUntilProcessStops();
+    assertThatProcessAndReadersDied();
   }
 }

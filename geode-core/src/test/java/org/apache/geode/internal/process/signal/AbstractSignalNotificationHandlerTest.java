@@ -400,6 +400,7 @@ public class AbstractSignalNotificationHandlerTest {
   }
 
   private static class TestSignalNotificationHandler extends AbstractSignalNotificationHandler {
+    // nothing here
   }
 
 }
