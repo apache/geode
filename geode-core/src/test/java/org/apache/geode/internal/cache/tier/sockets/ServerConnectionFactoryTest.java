@@ -15,13 +15,14 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
@@ -36,18 +37,22 @@ import static org.mockito.Mockito.when;
  * We don't test the path where the service providing protobufProtocolHandler is actually present,
  * because it lives outside this module, and all the integration tests from that module will test
  * the newclient protocol happy path.
- *
+ * <p>
  * What we are concerned with is making sure that everything stays the same when the feature flag
  * isn't set, and that we at least try to load the service when the feature flag is true.
  */
 @Category(UnitTest.class)
 public class ServerConnectionFactoryTest {
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   /**
    * Safeguard that we won't create the new client protocol object unless the feature flag is
    * enabled.
    */
   @Test(expected = IOException.class)
-  public void newClientProtocolFailsWithoutSystemPropertySet() throws Exception {
+  public void newClientProtocolFailsWithoutSystemPropertySet() throws IOException {
     ServerConnection serverConnection =
         serverConnectionMockedExceptForCommunicationMode(Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
 
@@ -58,14 +63,10 @@ public class ServerConnectionFactoryTest {
    *         module, and when this unit test is run, that module won't be present.
    */
   @Test(expected = ServiceLoadingFailureException.class)
-  public void newClientProtocolFailsWithSystemPropertySet() throws Exception {
-    try {
-      System.setProperty("geode.feature-protobuf-protocol", "true");
-      ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
-          Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
-    } finally {
-      System.clearProperty("geode.feature-protobuf-protocol");
-    }
+  public void newClientProtocolFailsWithSystemPropertySet() throws IOException {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+    ServerConnection serverConnection =
+        serverConnectionMockedExceptForCommunicationMode(Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
   }
 
   @Test
@@ -86,29 +87,25 @@ public class ServerConnectionFactoryTest {
   @Test
   public void makeServerConnectionForOldProtocolWithFeatureFlagEnabled() throws IOException {
     System.setProperty("geode.feature-protobuf-protocol", "true");
-    try {
-      byte[] communicationModes =
-          new byte[] {Acceptor.CLIENT_TO_SERVER, Acceptor.PRIMARY_SERVER_TO_CLIENT,
-              Acceptor.SECONDARY_SERVER_TO_CLIENT, Acceptor.GATEWAY_TO_GATEWAY,
-              Acceptor.MONITOR_TO_SERVER, Acceptor.SUCCESSFUL_SERVER_TO_CLIENT,
-              Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, Acceptor.CLIENT_TO_SERVER_FOR_QUEUE,};
+    byte[] communicationModes =
+        new byte[] {Acceptor.CLIENT_TO_SERVER, Acceptor.PRIMARY_SERVER_TO_CLIENT,
+            Acceptor.SECONDARY_SERVER_TO_CLIENT, Acceptor.GATEWAY_TO_GATEWAY,
+            Acceptor.MONITOR_TO_SERVER, Acceptor.SUCCESSFUL_SERVER_TO_CLIENT,
+            Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, Acceptor.CLIENT_TO_SERVER_FOR_QUEUE,};
 
-      for (byte communicationMode : communicationModes) {
-        ServerConnection serverConnection =
-            serverConnectionMockedExceptForCommunicationMode(communicationMode);
-        assertTrue(serverConnection instanceof LegacyServerConnection);
-      }
-    } finally {
-      System.clearProperty("geode.feature-protobuf-protocol");
+    for (byte communicationMode : communicationModes) {
+      ServerConnection serverConnection =
+          serverConnectionMockedExceptForCommunicationMode(communicationMode);
+      assertTrue(serverConnection instanceof LegacyServerConnection);
     }
   }
 
-  private static ServerConnection serverConnectionMockedExceptForCommunicationMode(
-      byte communicationMode) throws IOException {
+  private ServerConnection serverConnectionMockedExceptForCommunicationMode(byte communicationMode)
+      throws IOException {
     Socket socketMock = mock(Socket.class);
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
 
-    return ServerConnectionFactory.makeServerConnection(socketMock, mock(InternalCache.class),
+    return new ServerConnectionFactory().makeServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "", communicationMode,
         mock(AcceptorImpl.class), mock(SecurityService.class));
   }

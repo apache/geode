@@ -303,6 +303,8 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
 
   private final SecurityService securityService;
 
+  private final ServerConnectionFactory serverConnectionFactory;
+
   /**
    * Initializes this acceptor thread to listen for connections on the given port.
    *
@@ -324,13 +326,15 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
       int socketBufferSize, int maximumTimeBetweenPings, InternalCache internalCache,
       int maxConnections, int maxThreads, int maximumMessageCount, int messageTimeToLive,
       ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver,
-      List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay) throws IOException {
+      List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay,
+      ServerConnectionFactory serverConnectionFactory) throws IOException {
     this.securityService = internalCache.getSecurityService();
     this.bindHostName = calcBindHostName(internalCache, bindHostName);
     this.connectionListener = listener == null ? new ConnectionListenerAdapter() : listener;
     this.notifyBySubscription = notifyBySubscription;
     this.isGatewayReceiver = isGatewayReceiver;
     this.gatewayTransportFilters = transportFilter;
+    this.serverConnectionFactory = serverConnectionFactory;
     {
       int tmp_maxConnections = maxConnections;
       if (tmp_maxConnections < MINIMUM_MAX_CONNECTIONS) {
@@ -1243,13 +1247,13 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
 
       crHelper.checkCancelInProgress(null); // throws
 
-      Socket s = null;
+      Socket socket = null;
       try {
-        s = serverSock.accept();
+        socket = serverSock.accept();
         crHelper.checkCancelInProgress(null); // throws
 
         // Optionally enable SO_KEEPALIVE in the OS network protocol.
-        s.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
+        socket.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
 
         // The synchronization below was added to prevent close from being
         // called
@@ -1265,22 +1269,22 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
 
         synchronized (this.syncLock) {
           if (!isRunning()) {
-            closeSocket(s);
+            closeSocket(socket);
             break;
           }
         }
         this.loggedAcceptError = false;
 
-        handOffNewClientConnection(s);
+        handOffNewClientConnection(socket, serverConnectionFactory);
       } catch (InterruptedIOException e) { // Solaris only
-        closeSocket(s);
+        closeSocket(socket);
         if (isRunning()) {
           if (logger.isDebugEnabled()) {
             logger.debug("Aborted due to interrupt: {}", e);
           }
         }
       } catch (IOException e) {
-        closeSocket(s);
+        closeSocket(socket);
         if (isRunning()) {
           if (!this.loggedAcceptError) {
             this.loggedAcceptError = true;
@@ -1291,10 +1295,10 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
           // try {Thread.sleep(3000);} catch (InterruptedException ie) {}
         }
       } catch (CancelException e) {
-        closeSocket(s);
+        closeSocket(socket);
         throw e;
       } catch (Exception e) {
-        closeSocket(s);
+        closeSocket(socket);
         if (isRunning()) {
           logger.fatal(LocalizedMessage
               .create(LocalizedStrings.AcceptorImpl_CACHE_SERVER_UNEXPECTED_EXCEPTION, e));
@@ -1303,20 +1307,20 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
     }
   }
 
-
   /**
    * Hand off a new client connection to the thread pool that processes handshakes. If all the
    * threads in this pool are busy then the hand off will block until a thread is available. This
    * blocking is good because it will throttle the rate at which we create new connections.
    */
-  private void handOffNewClientConnection(final Socket s) {
+  private void handOffNewClientConnection(final Socket socket,
+      final ServerConnectionFactory serverConnectionFactory) {
     try {
       this.stats.incAcceptsInProgress();
       this.hsPool.execute(new Runnable() {
         public void run() {
           boolean finished = false;
           try {
-            handleNewClientConnection(s);
+            handleNewClientConnection(socket, serverConnectionFactory);
             finished = true;
           } catch (RegionDestroyedException rde) {
             // aborted due to disconnect - bug 42273
@@ -1343,7 +1347,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
             }
           } finally {
             if (!finished) {
-              closeSocket(s);
+              closeSocket(socket);
             }
             if (isRunning()) {
               AcceptorImpl.this.stats.decAcceptsInProgress();
@@ -1352,7 +1356,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
         }
       });
     } catch (RejectedExecutionException rejected) {
-      closeSocket(s);
+      closeSocket(socket);
       if (isRunning()) {
         this.stats.decAcceptsInProgress();
         logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_UNEXPECTED, rejected));
@@ -1389,7 +1393,8 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
     return this.clientServerCnxCount.get();
   }
 
-  protected void handleNewClientConnection(final Socket socket) throws IOException {
+  protected void handleNewClientConnection(final Socket socket,
+      final ServerConnectionFactory serverConnectionFactory) throws IOException {
     // Read the first byte. If this socket is being used for 'client to server'
     // communication, create a ServerConnection. If this socket is being used
     // for 'server to client' communication, send it to the CacheClientNotifier
@@ -1468,7 +1473,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
       }
     }
 
-    ServerConnection serverConn = ServerConnectionFactory.makeServerConnection(socket, this.cache,
+    ServerConnection serverConn = serverConnectionFactory.makeServerConnection(socket, this.cache,
         this.crHelper, this.stats, AcceptorImpl.handShakeTimeout, this.socketBufferSize,
         communicationModeStr, communicationMode, this, this.securityService);
 
