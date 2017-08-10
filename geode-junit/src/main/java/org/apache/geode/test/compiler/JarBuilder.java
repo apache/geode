@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
-import org.assertj.core.api.Assertions;
-
 
 /**
  * This class accepts java source code in the format of .java source files or strings containing the
@@ -75,6 +73,14 @@ import org.assertj.core.api.Assertions;
  **/
 public class JarBuilder {
   private final JavaCompiler javaCompiler = new JavaCompiler();
+
+  /**
+   * Adds the given jarFile to the classpath that will be used for compilation by the buildJar
+   * methods.
+   */
+  public void addToClasspath(File jarFile) {
+    javaCompiler.addToClasspath(jarFile);
+  }
 
   public void buildJarFromClassNames(File outputJarFile, String... classNames) throws IOException {
     UncompiledSourceCode[] uncompiledSourceCodes = Arrays.stream(classNames)

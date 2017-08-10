@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.Collection;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -93,6 +94,22 @@ public class FunctionScannerTest {
     assertThat(functionsFoundInJar).containsExactlyInAnyOrder(
         "org.apache.geode.management.internal.deployment.ConcreteExtendsAbstractImplementsFunction",
         "org.apache.geode.management.internal.deployment.AbstractImplementsFunction");
+  }
+
+  @Test
+  @Ignore("Fails due to GEODE-3429")
+  public void registerFunctionHierarchySplitAcrossTwoJars() throws Exception {
+    File sourceFileOne = loadTestResource("AbstractImplementsFunction.java");
+    File abstractJar = new File(temporaryFolder.getRoot(), "abstract.jar");
+    jarBuilder.buildJar(abstractJar, sourceFileOne);
+
+    jarBuilder.addToClasspath(abstractJar);
+    File sourceFileTwo = loadTestResource("AnnotatedFunction.java");
+
+    jarBuilder.buildJar(outputJar, sourceFileTwo);
+    Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
+    assertThat(functionsFoundInJar).containsExactlyInAnyOrder(
+        "org.apache.geode.management.internal.deployment.AnnotatedFunction");
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {

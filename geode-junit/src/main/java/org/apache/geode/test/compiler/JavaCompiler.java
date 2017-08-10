@@ -32,10 +32,16 @@ import org.apache.commons.io.FileUtils;
 
 public class JavaCompiler {
   private File tempDir;
+  private String classpath;
 
   public JavaCompiler() {
     this.tempDir = Files.createTempDir();
     tempDir.deleteOnExit();
+    this.classpath = System.getProperty("java.class.path");
+  }
+
+  public void addToClasspath(File jarFile) {
+    classpath += File.pathSeparator + jarFile.getAbsolutePath();
   }
 
   public List<CompiledSourceCode> compile(File... sourceFiles) throws IOException {
@@ -57,8 +63,9 @@ public class JavaCompiler {
     File temporarySourcesDirectory = createSubdirectory(tempDir, "sources");
     File temporaryClassesDirectory = createSubdirectory(tempDir, "classes");
 
-    List<String> options = Stream.of("-d", temporaryClassesDirectory.getAbsolutePath(),
-        "-classpath", System.getProperty("java.class.path")).collect(toList());
+    List<String> options =
+        Stream.of("-d", temporaryClassesDirectory.getAbsolutePath(), "-classpath", classpath)
+            .collect(toList());
 
     try {
       for (UncompiledSourceCode sourceCode : uncompiledSources) {

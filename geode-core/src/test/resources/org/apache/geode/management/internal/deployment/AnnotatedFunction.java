@@ -16,18 +16,8 @@ package org.apache.geode.management.internal.deployment;
 
 import org.apache.geode.cache.execute.FunctionContext;
 
-public class AbstractFunction implements Function {
+public class AnnotatedFunction extends AbstractImplementsFunction {
   public void execute(FunctionContext context) {
-    context.getResultSender().lastResult("ConcreteResult");
-  }
-
-  public static abstract class AbstractImplementsFunction implements Function {
-    public abstract void execute(FunctionContext context);
-  }
-
-  public static class Concrete extends AbstractImplementsFunction {
-    public void execute(FunctionContext context) {
-      context.getResultSender().lastResult("ConcreteResult");
-    }
+    context.getResultSender().lastResult("AnnotatedFunctionResult");
   }
 }
