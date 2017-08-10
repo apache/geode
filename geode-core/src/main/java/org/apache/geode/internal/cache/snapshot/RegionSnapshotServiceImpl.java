@@ -338,6 +338,10 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
   private void exportOnMember(File snapshot, SnapshotFormat format, SnapshotOptions<K, V> options)
       throws IOException {
+    if (!snapshot.getName().endsWith(SNAPSHOT_FILE_EXTENSION)) {
+      throw new IllegalArgumentException("Failure to export snapshot: "
+          + snapshot.getCanonicalPath() + " is not a valid .gfd file");
+    }
     LocalRegion local = getLocalRegion(region);
     Exporter<K, V> exp = createExporter(region, options);
 

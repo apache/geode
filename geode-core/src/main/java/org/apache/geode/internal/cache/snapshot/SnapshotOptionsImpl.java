@@ -103,4 +103,13 @@ public class SnapshotOptionsImpl<K, V> implements SnapshotOptions<K, V> {
     }
     return mapper;
   }
+
+  @Override
+  public String toString() {
+    StringBuffer buf = new StringBuffer();
+    buf.append("SnapshotOptionsImpl@").append(System.identityHashCode(this)).append(": ")
+        .append("parallel=").append(parallel).append("; invokeCallbacks=").append(invokeCallbacks)
+        .append("; filter=").append(filter).append("; mapper=").append(mapper);
+    return buf.toString();
+  }
 }
