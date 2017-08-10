@@ -16,6 +16,7 @@ package org.apache.geode.internal.admin;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.security.KeyStore;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -33,11 +34,11 @@ public class SSLConfig {
   private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
   private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private String keystore = DistributionConfig.DEFAULT_SSL_KEYSTORE;
-  private String keystoreType = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
+  private String keystoreType = KeyStore.getDefaultType();
   private String keystorePassword = DistributionConfig.DEFAULT_SSL_KEYSTORE_PASSWORD;
   private String truststore = DistributionConfig.DEFAULT_SSL_TRUSTSTORE;
   private String truststorePassword = DistributionConfig.DEFAULT_SSL_TRUSTSTORE_PASSWORD;
-  private String truststoreType = DistributionConfig.DEFAULT_CLUSTER_SSL_KEYSTORE_TYPE;
+  private String truststoreType = KeyStore.getDefaultType();
   private String alias = null;
   private SecurableCommunicationChannel securableCommunicationChannel = null;
 
