@@ -157,23 +157,28 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see java.net.URL
    */
   protected static Properties loadGemFireProperties(final URL url) {
-    final Properties properties = new Properties();
+    if (url == null) {
+      return new Properties();
+    }
+    Properties properties = new Properties();
 
-    if (url != null) {
-      try {
-        properties.load(new FileReader(new File(url.toURI())));
-      } catch (IOException | URISyntaxException handled) {
-        // not in the file system, try the classpath
-        try {
-          properties.load(
-              AbstractLauncher.class.getResourceAsStream(DistributedSystem.getPropertiesFile()));
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
-        }
-      }
+    try {
+      properties.load(new FileReader(new File(url.toURI())));
+    } catch (IOException | URISyntaxException handled) {
+      // not in the file system, try the classpath
+      loadGemFirePropertiesFromClassPath(properties);
     }
 
     return properties;
+  }
+
+  private static void loadGemFirePropertiesFromClassPath(Properties properties) {
+    try {
+      properties
+          .load(AbstractLauncher.class.getResourceAsStream(DistributedSystem.getPropertiesFile()));
+    } catch (IOException | NullPointerException handled) {
+      // leave the properties empty
+    }
   }
 
   /**
