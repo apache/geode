@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,8 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM geode/base:0.1
-MAINTAINER Geode Community <dev@geode.apache.org>
+# This script exists so that this container can bind mount local volumes
+# and create files with the same userid as is launching the docker container.
+# Typical usage would be:
+# LOCAL_USER_ID=`id -u $USER` docker run -ti apachegeode/build
 
-LABEL Vendor="Apache Geode"
-LABEL version=unstable
+USER_ID=${LOCAL_USER_ID:-9001}
+
+useradd --shell /bin/bash -u $USER_ID -o -c "" -m build
+export HOME=/home/build
+
+exec /usr/local/bin/gosu build "$@"
