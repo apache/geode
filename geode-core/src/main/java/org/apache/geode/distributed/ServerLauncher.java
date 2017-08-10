@@ -817,7 +817,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
             LocalizedStrings.Launcher_Command_START_PID_UNAVAILABLE_ERROR_MESSAGE.toLocalizedString(
                 getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
             e);
-      } catch (RuntimeException|Error e) {
+      } catch (RuntimeException | Error e) {
         failOnStart(e);
         throw e;
       } catch (Exception e) {
@@ -1078,8 +1078,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return ServerState.fromJson(statusJson);
     } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(handled, "Failed to connect to server with process id " + getPid());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|InterruptedException|TimeoutException handled) {
+      return createNoResponseState(handled,
+          "Failed to connect to server with process id " + getPid());
+    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
+        | InterruptedException | TimeoutException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with server with process id " + getPid());
     }
@@ -1105,12 +1107,14 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return ServerState.fromJson(statusJson);
     } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(handled, "Failed to connect to server with process id " + parsedPid);
+      return createNoResponseState(handled,
+          "Failed to connect to server with process id " + parsedPid);
     } catch (FileNotFoundException handled) {
       // could not find pid file
       return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|TimeoutException handled) {
+    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
+        | TimeoutException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with server with process id " + parsedPid);
     } catch (InterruptedException handled) {
@@ -1188,8 +1192,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return new ServerState(this, Status.STOPPED);
     } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(handled, "Failed to connect to server with process id " + getPid());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
+          "Failed to connect to server with process id " + getPid());
+    } catch (IOException | MBeanInvocationFailedException
+        | UnableToControlProcessException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with server with process id " + getPid());
     }
@@ -1215,12 +1221,14 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return new ServerState(this, Status.STOPPED);
     } catch (ConnectionFailedException handled) {
       // failed to attach to server JVM
-      return createNoResponseState(handled, "Failed to connect to server with process id " + parsedPid);
+      return createNoResponseState(handled,
+          "Failed to connect to server with process id " + parsedPid);
     } catch (FileNotFoundException handled) {
       // could not find pid file
       return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+    } catch (IOException | MBeanInvocationFailedException
+        | UnableToControlProcessException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with server with process id " + parsedPid);
     } catch (InterruptedException handled) {
@@ -1232,8 +1240,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return createNoResponseState(handled, "Failed to find usable process id within file "
           + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
     } catch (TimeoutException handled) {
-      return createNoResponseState(handled, "Timed out trying to find usable process id within file "
-          + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
+      return createNoResponseState(handled,
+          "Timed out trying to find usable process id within file "
+              + ProcessType.SERVER.getPidFileName() + " in " + getWorkingDirectory());
     }
   }
 
@@ -2612,8 +2621,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       if (system != null) {
         final File logFile = system.getConfig().getLogFile();
         if (logFile != null && logFile.isFile()) {
-          final String logFileCanonicalPath =
-              tryGetCanonicalPathElseGetAbsolutePath(logFile);
+          final String logFileCanonicalPath = tryGetCanonicalPathElseGetAbsolutePath(logFile);
           if (isNotBlank(logFileCanonicalPath)) {
             return logFileCanonicalPath;
           }

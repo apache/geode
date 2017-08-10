@@ -219,29 +219,6 @@ class MBeanProcessController implements ProcessController {
   }
 
   /**
-   * Ensures that the other process identifies itself by the same pid used by this stopper to
-   * connect to that process. NOT USED EXCEPT IN TEST.
-   * 
-   * @return true if the pid matches
-   * 
-   * @throws IllegalStateException if the other process identifies itself by a different pid
-   * @throws IOException if a communication problem occurred when accessing the
-   *         MBeanServerConnection
-   * @throws PidUnavailableException if parsing the pid from the RuntimeMXBean name fails
-   */
-  boolean checkPidMatches() throws IllegalStateException, IOException, PidUnavailableException {
-    RuntimeMXBean proxy = ManagementFactory.newPlatformMXBeanProxy(this.server,
-        ManagementFactory.RUNTIME_MXBEAN_NAME, RuntimeMXBean.class);
-    int remotePid = ProcessUtils.identifyPid(proxy.getName());
-    if (remotePid != this.pid) {
-      throw new IllegalStateException(
-          "Process has different pid '" + remotePid + "' than expected pid '" + this.pid + "'");
-    } else {
-      return true;
-    }
-  }
-
-  /**
    * Uses the Attach API to connect to the local process and ensures that it has loaded the JMX
    * management agent. The JMXServiceURL identifying the local connector address for the JMX agent
    * in the process is returned.

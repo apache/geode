@@ -670,7 +670,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             LocalizedStrings.Launcher_Command_START_PID_UNAVAILABLE_ERROR_MESSAGE.toLocalizedString(
                 getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
             e);
-      } catch (Error|RuntimeException e) {
+      } catch (Error | RuntimeException e) {
         failOnStart(e);
         throw e;
       } catch (Exception e) {
@@ -899,8 +899,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return LocatorState.fromJson(statusJson);
     } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(handled, "Failed to connect to locator with process id " + getPid());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|TimeoutException handled) {
+      return createNoResponseState(handled,
+          "Failed to connect to locator with process id " + getPid());
+    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
+        | TimeoutException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + getPid());
     } catch (InterruptedException handled) {
@@ -939,12 +941,14 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return LocatorState.fromJson(statusJson);
     } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(handled, "Failed to connect to locator with process id " + parsedPid);
+      return createNoResponseState(handled,
+          "Failed to connect to locator with process id " + parsedPid);
     } catch (FileNotFoundException handled) {
       // could not find pid file
       return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException|TimeoutException handled) {
+    } catch (IOException | MBeanInvocationFailedException | UnableToControlProcessException
+        | TimeoutException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + parsedPid);
     } catch (PidUnavailableException e) {
@@ -1037,8 +1041,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return new LocatorState(this, Status.STOPPED);
     } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(handled, "Failed to connect to locator with process id " + getPid());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+      return createNoResponseState(handled,
+          "Failed to connect to locator with process id " + getPid());
+    } catch (IOException | MBeanInvocationFailedException
+        | UnableToControlProcessException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + getPid());
     }
@@ -1064,12 +1070,14 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return new LocatorState(this, Status.STOPPED);
     } catch (ConnectionFailedException handled) {
       // failed to attach to locator JVM
-      return createNoResponseState(handled, "Failed to connect to locator with process id " + parsedPid);
+      return createNoResponseState(handled,
+          "Failed to connect to locator with process id " + parsedPid);
     } catch (FileNotFoundException handled) {
       // could not find pid file
       return createNoResponseState(handled, "Failed to find process file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
-    } catch (IOException|MBeanInvocationFailedException|UnableToControlProcessException handled) {
+    } catch (IOException | MBeanInvocationFailedException
+        | UnableToControlProcessException handled) {
       return createNoResponseState(handled,
           "Failed to communicate with locator with process id " + parsedPid);
     } catch (InterruptedException handled) {
@@ -1081,8 +1089,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return createNoResponseState(handled, "Failed to find usable process id within file "
           + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
     } catch (TimeoutException handled) {
-      return createNoResponseState(handled, "Timed out trying to find usable process id within file "
-          + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
+      return createNoResponseState(handled,
+          "Timed out trying to find usable process id within file "
+              + ProcessType.LOCATOR.getPidFileName() + " in " + getWorkingDirectory());
     }
   }
 
@@ -1131,7 +1140,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public ObjectName getNamePattern() {
       try {
         return ObjectName.getInstance("GemFire:type=Member,*");
-      } catch (MalformedObjectNameException|NullPointerException handled) {
+      } catch (MalformedObjectNameException | NullPointerException handled) {
         return null;
       }
     }
@@ -1840,7 +1849,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     private final String name;
 
     Command(final String name, final String... options) {
-      assert !isBlank(name) : "The name of the locator launcher command must be specified!";
+      assert isNotBlank(name) : "The name of the locator launcher command must be specified!";
       this.name = name;
       this.options = (options != null ? Collections.unmodifiableList(Arrays.asList(options))
           : Collections.<String>emptyList());
@@ -2038,8 +2047,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         final File logFile = locator.getLogFile();
 
         if (logFile != null && logFile.isFile()) {
-          final String logFileCanonicalPath =
-              tryGetCanonicalPathElseGetAbsolutePath(logFile);
+          final String logFileCanonicalPath = tryGetCanonicalPathElseGetAbsolutePath(logFile);
           if (isNotBlank(logFileCanonicalPath)) { // this is probably not need but a
                                                   // safe
             // check none-the-less.
