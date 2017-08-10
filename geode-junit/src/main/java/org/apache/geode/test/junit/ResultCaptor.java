@@ -12,16 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.web.http;
 
-/**
- * The HttpMethod enum is an enumeration of all HTTP methods (POST, GET, PUT, DELETE, HEADERS, etc).
- * <p/>
- * 
- * @since GemFire 8.0
- */
-@SuppressWarnings("unused")
-public enum HttpMethod {
-  CONNECT, DELETE, GET, HEAD, OPTIONS, POST, PUT, TRACE
+package org.apache.geode.test.junit;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+public class ResultCaptor<T> implements Answer {
+  private T result = null;
+
+  public T getResult() {
+    return result;
+  }
+
+  @Override
+  public T answer(InvocationOnMock invocationOnMock) throws Throwable {
+    result = (T) invocationOnMock.callRealMethod();
+    return result;
+  }
 
 }

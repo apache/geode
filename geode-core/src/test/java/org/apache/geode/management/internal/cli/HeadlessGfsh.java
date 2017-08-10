@@ -14,14 +14,6 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import jline.console.ConsoleReader;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.shell.GfshConfig;
-import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.event.ShellStatus.Status;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -36,6 +28,15 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
+
+import jline.console.ConsoleReader;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.event.ShellStatus.Status;
+
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.shell.GfshConfig;
+import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
 
 
 /**
@@ -152,6 +153,10 @@ public class HeadlessGfsh implements ResultHandler {
 
   public void terminate() {
     shell.terminate();
+  }
+
+  public Gfsh getGfsh() {
+    return shell;
   }
 
   public boolean isConnectedAndReady() {
@@ -286,6 +291,7 @@ public class HeadlessGfsh implements ResultHandler {
      */
     @Override
     public void logSevere(String message, Throwable t) {
+      t.printStackTrace();
       super.logSevere(message, t);
       errorString = message;
       hasError = true;

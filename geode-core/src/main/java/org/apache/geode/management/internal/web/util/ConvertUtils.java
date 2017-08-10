@@ -14,17 +14,18 @@
  */
 package org.apache.geode.management.internal.web.util;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.web.io.MultipartFileResourceAdapter;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.web.io.MultipartFileResourceAdapter;
 
 /**
  * The ConvertUtils class is a support class for performing conversions used by the GemFire web
@@ -52,27 +53,27 @@ public abstract class ConvertUtils {
    * @see org.apache.geode.management.internal.cli.CliUtil#bytesToNames(byte[][])
    */
   public static Resource[] convert(final byte[][] fileData) {
-    if (fileData != null) {
-      final String[] fileNames = CliUtil.bytesToNames(fileData);
-      final byte[][] fileContent = CliUtil.bytesToData(fileData);
-
-      final List<Resource> resources = new ArrayList<Resource>(fileNames.length);
-
-      for (int index = 0; index < fileNames.length; index++) {
-        final String filename = fileNames[index];
-        resources.add(new ByteArrayResource(fileContent[index],
-            String.format("Contents of JAR file (%1$s).", filename)) {
-          @Override
-          public String getFilename() {
-            return filename;
-          }
-        });
-      }
-
-      return resources.toArray(new Resource[resources.size()]);
+    if (fileData == null) {
+      return new Resource[0];
     }
 
-    return new Resource[0];
+    final String[] fileNames = CliUtil.bytesToNames(fileData);
+    final byte[][] fileContent = CliUtil.bytesToData(fileData);
+
+    final List<Resource> resources = new ArrayList<Resource>(fileNames.length);
+
+    for (int index = 0; index < fileNames.length; index++) {
+      final String filename = fileNames[index];
+      resources.add(new ByteArrayResource(fileContent[index],
+          String.format("Contents of JAR file (%1$s).", filename)) {
+        @Override
+        public String getFilename() {
+          return filename;
+        }
+      });
+    }
+
+    return resources.toArray(new Resource[resources.size()]);
   }
 
   /**
@@ -89,17 +90,15 @@ public abstract class ConvertUtils {
    * @see org.springframework.web.multipart.MultipartFile
    */
   public static byte[][] convert(final MultipartFile... files) throws IOException {
-    if (files != null) {
-      final List<Resource> resources = new ArrayList<Resource>(files.length);
-
-      for (final MultipartFile file : files) {
-        resources.add(new MultipartFileResourceAdapter(file));
-      }
-
-      return convert(resources.toArray(new Resource[resources.size()]));
+    if (files == null) {
+      return new byte[0][];
     }
 
-    return new byte[0][];
+    final List<Resource> resources = new ArrayList<Resource>(files.length);
+    for (final MultipartFile file : files) {
+      resources.add(new MultipartFileResourceAdapter(file));
+    }
+    return convert(resources.toArray(new Resource[resources.size()]));
   }
 
   /**
@@ -116,23 +115,22 @@ public abstract class ConvertUtils {
    * @see org.springframework.core.io.Resource
    */
   public static byte[][] convert(final Resource... resources) throws IOException {
-    if (resources != null) {
-      final List<byte[]> fileData = new ArrayList<byte[]>(resources.length * 2);
-
-      for (final Resource resource : resources) {
-        if (StringUtils.isBlank(resource.getFilename())) {
-          throw new IllegalArgumentException(String.format(
-              "The filename of Resource (%1$s) must be specified!", resource.getDescription()));
-        }
-
-        fileData.add(resource.getFilename().getBytes());
-        fileData.add(IOUtils.toByteArray(resource.getInputStream()));
-      }
-
-      return fileData.toArray(new byte[fileData.size()][]);
+    if (resources == null) {
+      return new byte[0][];
     }
 
-    return new byte[0][];
-  }
+    final List<byte[]> fileData = new ArrayList<byte[]>(resources.length * 2);
 
+    for (final Resource resource : resources) {
+      if (StringUtils.isBlank(resource.getFilename())) {
+        throw new IllegalArgumentException(String.format(
+            "The filename of Resource (%1$s) must be specified!", resource.getDescription()));
+      }
+
+      fileData.add(resource.getFilename().getBytes());
+      fileData.add(IOUtils.toByteArray(resource.getInputStream()));
+    }
+
+    return fileData.toArray(new byte[fileData.size()][]);
+  }
 }

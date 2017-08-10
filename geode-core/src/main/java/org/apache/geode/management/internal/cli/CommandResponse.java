@@ -14,13 +14,13 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import java.nio.file.Path;
 import java.text.DateFormat;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- * 
  * @since GemFire 7.0
  */
 public class CommandResponse {
@@ -35,10 +35,18 @@ public class CommandResponse {
   private final String debugInfo;
   private final Data data;
   private final boolean failedToPersist;
+  private final String fileToDownload;
 
   CommandResponse(String sender, String contentType, int status, String page, String tokenAccessor,
       String debugInfo, String header, GfJsonObject content, String footer,
       boolean failedToPersist) {
+    this(sender, contentType, status, page, tokenAccessor, debugInfo, header, content, footer,
+        failedToPersist, null);
+  }
+
+  CommandResponse(String sender, String contentType, int status, String page, String tokenAccessor,
+      String debugInfo, String header, GfJsonObject content, String footer, boolean failedToPersist,
+      Path fileToDownload) {
     this.sender = sender;
     this.contentType = contentType;
     this.status = status;
@@ -49,6 +57,11 @@ public class CommandResponse {
     this.when = DateFormat.getInstance().format(new java.util.Date());
     this.version = GemFireVersion.getGemFireVersion();
     this.failedToPersist = failedToPersist;
+    if (fileToDownload != null) {
+      this.fileToDownload = fileToDownload.toString();
+    } else {
+      this.fileToDownload = null;
+    }
   }
 
   // For de-serializing
@@ -63,6 +76,7 @@ public class CommandResponse {
     this.when = jsonObject.getString("when");
     this.version = jsonObject.getString("version");
     this.failedToPersist = jsonObject.getBoolean("failedToPersist");
+    this.fileToDownload = jsonObject.getString("fileToDownload");
   }
 
   /**
@@ -98,6 +112,10 @@ public class CommandResponse {
    */
   public String getPage() {
     return page;
+  }
+
+  public String getFileToDownload() {
+    return fileToDownload;
   }
 
   /**

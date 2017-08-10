@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -36,9 +35,8 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -60,10 +58,7 @@ public class MultiUserDUnitTest {
   @Before
   public void setup() throws Exception {
     Properties properties = new Properties();
-    properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
-    properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
-    properties.put("security-json",
-        "org/apache/geode/management/internal/security/cacheServer.json");
+    properties.put(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     server = lsRule.startServerAsJmxManager(0, properties);
   }
 
@@ -76,21 +71,21 @@ public class MultiUserDUnitTest {
 
     // set up vm_1 as a gfsh vm, data-reader will login and log out constantly in this vm until the
     // test is done.
-    VM vm1 = Host.getHost(0).getVM(1);
+    VM vm1 = lsRule.getVM(1);
     AsyncInvocation vm1Invoke = vm1.invokeAsync("run as data-reader", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "data-reader", "1234567");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "dataRead", "dataRead");
 
       Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
       gfsh.close();
     });
 
-    VM vm2 = Host.getHost(0).getVM(2);
+    VM vm2 = lsRule.getVM(2);
     // set up vm_2 as a gfsh vm, and then connect as "stranger" and try to execute the commands and
     // assert errors comes back are NotAuthorized
     AsyncInvocation vm2Invoke = vm2.invokeAsync("run as guest", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "stranger", "1234567");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "guest", "guest");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
@@ -110,14 +105,13 @@ public class MultiUserDUnitTest {
         assertEquals("Not an expected result: " + result.toString(),
             ResultBuilder.ERRORCODE_UNAUTHORIZED,
             ((ErrorResultData) result.getResultData()).getErrorCode());
-
       }
       gfsh.close();
       LogService.getLogger().info("vm 2 done!");
     });
 
 
-    VM vm3 = Host.getHost(0).getVM(3);
+    VM vm3 = lsRule.getVM(3);
     IgnoredException
         .addIgnoredException("java.lang.IllegalArgumentException: Region doesnt exist: {0}", vm3);
     IgnoredException.addIgnoredException("java.lang.ClassNotFoundException: myApp.myListener", vm3);
@@ -126,7 +120,7 @@ public class MultiUserDUnitTest {
     // commands and assert we don't get a NotAuthorized Exception
     AsyncInvocation vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "super-user", "1234567");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "data,cluster", "data,cluster");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {

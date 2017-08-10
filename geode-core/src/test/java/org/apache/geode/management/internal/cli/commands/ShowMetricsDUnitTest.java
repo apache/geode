@@ -22,7 +22,6 @@ import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Properties;
 
 import javax.management.ObjectName;
@@ -46,7 +45,7 @@ import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.remote.CommandProcessor;
+import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -100,9 +99,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
         WaitCriterion wc = createMBeanWaitCriterion(1, "", null, 0);
         waitForCriterion(wc, 5000, 500, true);
-        CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor
-            .createCommandStatement("show metrics", Collections.EMPTY_MAP).process();
+        OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
+        Result result = OnlineCommandProcessor.executeCommand("show metrics");
         String resultStr = commandResultToString((CommandResult) result);
         getLogWriter().info(resultStr);
         assertEquals(resultStr, true, result.getStatus().equals(Status.OK));
@@ -150,10 +148,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
         WaitCriterion wc = createMBeanWaitCriterion(2, regionName, null, 0);
         waitForCriterion(wc, 5000, 500, true);
-        CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor
-            .createCommandStatement("show metrics --region=REGION1", Collections.EMPTY_MAP)
-            .process();
+        OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
+        Result result = OnlineCommandProcessor.executeCommand("show metrics --region=REGION1");
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
         return resultAsString;
@@ -257,9 +253,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
             + distributedMember.getId() + " --" + CliStrings.SHOW_METRICS__CACHESERVER__PORT + "="
             + cacheServerPort + " --" + CliStrings.SHOW_METRICS__FILE + "=" + exportFileName;
 
-        CommandProcessor commandProcessor = new CommandProcessor();
-        Result result =
-            commandProcessor.createCommandStatement(command, Collections.EMPTY_MAP).process();
+        OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
+        Result result = OnlineCommandProcessor.executeCommand(command);
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
         assertTrue(result.hasIncomingFiles());
@@ -300,11 +295,9 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
         WaitCriterion wc = createMBeanWaitCriterion(4, regionName, distributedMember, 0);
         waitForCriterion(wc, 5000, 500, true);
-        CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor
-            .createCommandStatement("show metrics --region=" + regionName + " --member="
-                + distributedMember.getName() + " --file=" + exportFileName, Collections.EMPTY_MAP)
-            .process();
+        OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
+        Result result = OnlineCommandProcessor.executeCommand("show metrics --region=" + regionName
+            + " --member=" + distributedMember.getName() + " --file=" + exportFileName);
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
         assertTrue(result.hasIncomingFiles());
@@ -343,11 +336,10 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
         WaitCriterion wc = createMBeanWaitCriterion(4, regionName, distributedMember, 0);
         waitForCriterion(wc, 5000, 500, true);
-        CommandProcessor commandProcessor = new CommandProcessor();
-        Result result = commandProcessor.createCommandStatement(
+        OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
+        Result result = OnlineCommandProcessor.executeCommand(
             "show metrics --region=" + regionName + " --member=" + distributedMember.getName()
-                + " --file=" + exportFileName + " --categories=region,eviction",
-            Collections.EMPTY_MAP).process();
+                + " --file=" + exportFileName + " --categories=region,eviction");
         String resultAsString = commandResultToString((CommandResult) result);
         assertEquals(resultAsString, true, result.getStatus().equals(Status.OK));
         assertTrue(result.hasIncomingFiles());

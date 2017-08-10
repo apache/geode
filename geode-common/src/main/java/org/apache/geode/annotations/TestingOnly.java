@@ -12,26 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.web.http;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+package org.apache.geode.annotations;
 
-import org.apache.geode.management.internal.web.domain.Link;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
-@Category(UnitTest.class)
-public class ClientHttpRequestTest {
+@Documented
+@Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
+public @interface TestingOnly {
 
-  @Test
-  public void shouldBeMockable() throws Exception {
-    ClientHttpRequest mockClientHttpRequest = mock(ClientHttpRequest.class);
-    Link mockLink = mock(Link.class);
-
-    when(mockClientHttpRequest.getLink()).thenReturn(mockLink);
-
-    assertThat(mockClientHttpRequest.getLink()).isSameAs(mockLink);
-  }
+  /** Optional description */
+  String value() default "";
 }

@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +29,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
@@ -62,6 +64,8 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private boolean connected = false;
   private IgnoredException ignoredException;
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private File workingDir;
+
 
   public GfshShellConnectionRule() {
     try {
@@ -79,8 +83,8 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   @Override
   protected void before(Description description) throws Throwable {
-    this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
-        temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
+    workingDir = temporaryFolder.newFolder("gfsh_files");
+    this.gfsh = new HeadlessGfsh(getClass().getName(), 30, workingDir.getAbsolutePath());
     ignoredException =
         addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
 
@@ -138,7 +142,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       endpoint = "localhost[" + port + "]";
       connectCommand.addOption(CliStrings.CONNECT__LOCATOR, endpoint);
     } else if (type == PortType.http) {
-      endpoint = "http://localhost:" + port + "/gemfire/v1";
+      endpoint = "http://localhost:" + port + "/geode-mgmt/v1";
       connectCommand.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
       connectCommand.addOption(CliStrings.CONNECT__URL, endpoint);
     } else {
@@ -156,7 +160,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     // when we connect too soon, we would get "Failed to retrieve RMIServer stub:
     // javax.naming.CommunicationException [Root exception is java.rmi.NoSuchObjectException: no
     // such object in table]" Exception.
-    // can not use Awaitility here because it starts another thead, but the Gfsh instance is in a
+    // can not use Awaitility here because it starts another thread, but the Gfsh instance is in a
     // threadLocal variable, See Gfsh.getExistingInstance()
     CommandResult result = null;
     for (int i = 0; i < 50; i++) {
@@ -194,8 +198,12 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     gfsh = null;
   }
 
-  public HeadlessGfsh getGfsh() {
+  public HeadlessGfsh getHeadlessGfsh() {
     return gfsh;
+  }
+
+  public Gfsh getGfsh() {
+    return gfsh.getGfsh();
   }
 
   public CommandResult executeCommand(String command) throws Exception {
@@ -230,9 +238,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    assertThat(result.getStatus())
-        .describedAs("Failure in command: " + command + "\n Result " + result)
-        .isEqualTo(Result.Status.OK);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     return result;
   }
 
@@ -243,6 +249,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public boolean isConnected() {
     return connected;
+  }
+
+  public File getWorkingDir() {
+    return workingDir;
   }
 
   public enum PortType {

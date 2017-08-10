@@ -19,6 +19,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.shell.core.CommandMarker;
+
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandRequest;
@@ -27,16 +32,12 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.shell.core.CommandMarker;
 
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
  */
 @Category(UnitTest.class)
-public class GfshExecutionStrategyJUnitTest {
+public class GfshExecutionStrategyTest {
   private static final String COMMAND1_SUCESS = "Command1 Executed successfully";
   private static final String COMMAND2_SUCESS = "Command2 Executed successfully";
 

@@ -69,7 +69,7 @@ public class ArgumentRedactor {
    * Single value: "password=secret" or "--password=secret" Multiple values: "-Dflag -Dkey=value
    * --classpath=."
    * 
-   * @param line The input to be parsed
+   * @param line The argument input to be parsed
    * @return A redacted string that has sensitive information obscured.
    */
   public static String redact(String line) {
@@ -104,6 +104,10 @@ public class ArgumentRedactor {
       redacted.append(" ");
     }
     return redacted.toString().trim();
+  }
+
+  public static String redactScriptLine(String line) {
+    return line.replaceAll("password=[\\S]+", "password=********");
   }
 
   /**

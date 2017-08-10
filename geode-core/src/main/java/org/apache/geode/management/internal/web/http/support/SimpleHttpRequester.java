@@ -17,11 +17,8 @@ package org.apache.geode.management.internal.web.http.support;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
-
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.NotAuthorizedException;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +29,10 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
+
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
 
 
 /**
@@ -54,13 +55,9 @@ public class SimpleHttpRequester {
 
   private String pwd;
 
-  private Map<String, String> securityProperties;
+  private Properties securityProperties;
 
-  /**
-   * Default constructor to create an instance of the SimpleHttpRequester class using the default
-   * connection timeout of 30 seconds.
-   */
-  public SimpleHttpRequester(Gfsh gfsh, Map<String, String> securityProperties) {
+  public SimpleHttpRequester(final Gfsh gfsh, Properties securityProperties) {
     this(gfsh, DEFAULT_CONNECT_TIMEOUT, securityProperties);
   }
 
@@ -72,7 +69,7 @@ public class SimpleHttpRequester {
    *        establishing the HTTP connection to the HTTP server.
    */
   public SimpleHttpRequester(final Gfsh gfsh, final int connectTimeout,
-      Map<String, String> securityProperties) {
+      Properties securityProperties) {
     final SimpleClientHttpRequestFactory clientHttpRequestFactory =
         new SimpleClientHttpRequestFactory();
 
@@ -238,11 +235,9 @@ public class SimpleHttpRequester {
   protected HttpEntity<?> getRequestEntity() {
     HttpHeaders requestHeaders = new HttpHeaders();
     if (this.securityProperties != null) {
-      requestHeaders.setAll(securityProperties);
+      requestHeaders.setAll((Map) securityProperties);
     }
-
     HttpEntity<?> requestEntity = new HttpEntity(requestHeaders);
-
     return requestEntity;
 
   }

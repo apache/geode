@@ -71,7 +71,7 @@ import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.remote.CommandProcessor;
+import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.Host;
@@ -157,8 +157,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       config.setArchiveFileSizeLimit(1000);
 
       String command = CliStrings.DESCRIBE_CONFIG + " --member=" + controllerName;
-      CommandProcessor cmdProcessor = new CommandProcessor();
-      cmdProcessor.createCommandStatement(command, Collections.EMPTY_MAP).process();
+      OnlineCommandProcessor cmdProcessor = new OnlineCommandProcessor();
+      cmdProcessor.executeCommand(command);
 
       CommandResult cmdResult = executeCommand(command);
 
@@ -327,9 +327,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(true, config.getStatisticSamplingEnabled());
     assertEquals(10, config.getLogDiskSpaceLimit());
 
-    CommandProcessor commandProcessor = new CommandProcessor();
-    Result result =
-        commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
+    OnlineCommandProcessor onlineCommandProcessor = new OnlineCommandProcessor();
+    Result result = onlineCommandProcessor.executeCommand("alter runtime", Collections.EMPTY_MAP);
   }
 
   @Test

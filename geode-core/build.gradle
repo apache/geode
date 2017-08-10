@@ -140,6 +140,8 @@ dependencies {
   testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
   testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
   testCompile 'redis.clients:jedis:' + project.'jedis.version'
+  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+
 
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'

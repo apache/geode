@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -41,7 +40,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.lang.Initializer;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.cli.CliMetaData;
@@ -60,10 +58,8 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.management.internal.web.domain.LinkIndex;
 import org.apache.geode.management.internal.web.http.support.SimpleHttpRequester;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
-import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class ConnectCommand implements GfshCommand {
@@ -250,23 +246,11 @@ public class ConnectCommand implements GfshCommand {
         }
       }
 
-      // This is so that SSL termination results in https URLs being returned
-      String query = (url.startsWith("https")) ? "?scheme=https" : "";
+      // this triggers the authentication check
+      new SimpleHttpRequester(gfsh, CONNECT_LOCATOR_TIMEOUT_MS, gfProperties)
+          .exchange(url.concat("/ping"), String.class);
 
-      LogWrapper.getInstance().warning(String.format(
-          "Sending HTTP request for Link Index at (%1$s)...", url.concat("/index").concat(query)));
-
-      LinkIndex linkIndex =
-          new SimpleHttpRequester(gfsh, CONNECT_LOCATOR_TIMEOUT_MS, (Map) gfProperties)
-              .exchange(url.concat("/index").concat(query), LinkIndex.class);
-
-      LogWrapper.getInstance()
-          .warning(String.format("Received Link Index (%1$s)", linkIndex.toString()));
-
-      HttpOperationInvoker operationInvoker =
-          new RestHttpOperationInvoker(linkIndex, gfsh, url, (Map) gfProperties);
-
-      Initializer.init(operationInvoker);
+      HttpOperationInvoker operationInvoker = new HttpOperationInvoker(gfsh, url, gfProperties);
       gfsh.setOperationInvoker(operationInvoker);
 
       LogWrapper.getInstance()

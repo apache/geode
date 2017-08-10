@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.apache.geode.internal.cache.InternalCache;
@@ -23,23 +22,23 @@ import org.apache.geode.management.cli.CommandServiceException;
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
 
+/**
+ * @deprecated since 1.3 use OnlineCommandProcessor directly
+ */
+
 public class MemberCommandService extends CommandService {
   private final Object modLock = new Object();
 
   private InternalCache cache;
-  private CommandProcessor commandProcessor;
+  private OnlineCommandProcessor onlineCommandProcessor;
 
   public MemberCommandService(InternalCache cache) throws CommandServiceException {
     this.cache = cache;
     try {
-      this.commandProcessor = new CommandProcessor(cache.getDistributedSystem().getProperties(),
-          cache.getSecurityService());
-    } catch (ClassNotFoundException e) {
+      this.onlineCommandProcessor = new OnlineCommandProcessor(
+          cache.getDistributedSystem().getProperties(), cache.getSecurityService());
+    } catch (Exception e) {
       throw new CommandServiceException("Could not load commands.", e);
-    } catch (IOException e) {
-      throw new CommandServiceException("Could not load commands.", e);
-    } catch (IllegalStateException e) {
-      throw new CommandServiceException(e.getMessage(), e);
     }
   }
 
@@ -48,19 +47,21 @@ public class MemberCommandService extends CommandService {
   }
 
   public Result processCommand(String commandString, Map<String, String> env) {
-    return createCommandStatement(commandString, env).process();
+    return onlineCommandProcessor.executeCommand(commandString, env, null);
   }
 
+  @Deprecated
   public CommandStatement createCommandStatement(String commandString) {
     return this.createCommandStatement(commandString, EMPTY_ENV);
   }
 
+  @Deprecated
   public CommandStatement createCommandStatement(String commandString, Map<String, String> env) {
     if (!isUsable()) {
       throw new IllegalStateException("Cache instance is not available.");
     }
     synchronized (modLock) {
-      return commandProcessor.createCommandStatement(commandString, env);
+      return new CommandStatementImpl(commandString, env, onlineCommandProcessor);
     }
   }
 

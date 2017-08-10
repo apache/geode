@@ -19,10 +19,12 @@ import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,9 +48,20 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 @SuppressWarnings("serial")
 public class ShellCommandsDUnitTest extends CliCommandTestBase {
 
+  private static final long serialVersionUID = 1L;
+
+  private transient LocatorLauncher locatorLauncher;
+
   @Override
   public final void postSetUpCliCommandTestBase() throws Exception {
     getDefaultShell();
+  }
+
+  @After
+  public void after() throws Exception {
+    if (locatorLauncher != null) {
+      locatorLauncher.stop();
+    }
   }
 
   protected CommandResult connectToLocator(final int locatorPort) {
@@ -79,32 +92,27 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
 
     assertTrue(workingDirectory.isDirectory());
 
-    final LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().setBindAddress(null)
-        .setForce(true).setMemberName(pathname).setPort(locatorPort)
+    locatorLauncher = new LocatorLauncher.Builder().setBindAddress(null).setForce(true)
+        .setMemberName(pathname).setPort(locatorPort)
         .setWorkingDirectory(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectory))
         .build();
 
     assertNotNull(locatorLauncher);
     assertEquals(locatorPort, locatorLauncher.getPort().intValue());
 
-    try {
-      // fix for bug 46729
-      locatorLauncher.start();
+    // fix for bug 46729
+    locatorLauncher.start();
 
-      final LocatorState locatorState =
-          locatorLauncher.waitOnStatusResponse(60, 10, TimeUnit.SECONDS);
+    final LocatorState locatorState =
+        locatorLauncher.waitOnStatusResponse(60, 10, TimeUnit.SECONDS);
 
-      assertNotNull(locatorState);
-      assertEquals(Status.ONLINE, locatorState.getStatus());
+    assertThat(locatorState).isNotNull();
+    assertThat(locatorState.getStatus()).isEqualTo(Status.ONLINE);
 
-      final Result result = connectToLocator(locatorPort);
+    final Result result = connectToLocator(locatorPort);
 
-      assertNotNull(result);
-      assertEquals(Result.Status.OK, result.getStatus());
-    } finally {
-      assertEquals(Status.STOPPED, locatorLauncher.stop().getStatus());
-      assertEquals(Status.NOT_RESPONDING, locatorLauncher.status().getStatus());
-    }
+    assertThat(result).isNotNull();
+    assertThat(result.getStatus()).as("Result is not OK: " + result).isEqualTo(Result.Status.OK);
   }
 
   @Test

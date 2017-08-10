@@ -14,6 +14,35 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.JMX;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
@@ -27,38 +56,9 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import javax.management.JMX;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common
@@ -292,7 +292,7 @@ public abstract class AbstractCommandsController {
    * @see java.net.URI
    * @see org.springframework.web.servlet.support.ServletUriComponentsBuilder
    */
-  protected /* static */ URI toUri(final String path, final String scheme) {
+  public static URI toUri(final String path, final String scheme) {
     return ServletUriComponentsBuilder.fromCurrentContextPath().path(REST_API_VERSION).path(path)
         .scheme(scheme).build().toUri();
   }
@@ -503,120 +503,6 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Adds the named option to the command String to be processed if the named option has value or
-   * the named option is present in the HTTP request.
-   * 
-   * @param request the WebRequest object encapsulating the details (headers, request parameters and
-   *        message body) of the user HTTP request.
-   * @param command the Gfsh command String to append options and process.
-   * @param optionName the name of the command option.
-   * @param optionValue the value for the named command option.
-   * @see #hasValue(Object)
-   * @see #hasValue(String[])
-   * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
-   * @see org.springframework.web.context.request.WebRequest
-   */
-  protected void addCommandOption(final WebRequest request, final CommandStringBuilder command,
-      final String optionName, final Object optionValue) {
-    assertNotNull(command, "The command to append options to cannot be null!");
-    assertNotNull(optionName, "The name of the option to add to the command cannot be null!");
-
-    if (hasValue(optionValue)) {
-      final String optionValueString = (optionValue instanceof String[]
-          ? StringUtils.join((String[]) optionValue, StringUtils.COMMA_DELIMITER)
-          : String.valueOf(optionValue));
-      command.addOption(optionName, optionValueString);
-    } else if (request != null && request.getParameterMap().containsKey(optionName)) {
-      command.addOption(optionName);
-    } else {
-      // do nothing!
-    }
-  }
-
-  /**
-   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
-   * Gfsh performs validation of the command during parsing before sending the command to the
-   * Manager for processing.
-   *
-   * @param command a String value containing a valid command String as would be entered by the user
-   *        in Gfsh.
-   * @return a result of the command execution as a String, typically marshalled in JSON to be
-   *         serialized back to Gfsh.
-   * @see org.apache.geode.management.internal.cli.shell.Gfsh
-   * @see LoginHandlerInterceptor#getEnvironment()
-   * @see #getEnvironment()
-   * @see #processCommand(String, java.util.Map, byte[][])
-   */
-  protected String processCommand(final String command) {
-    return processCommand(command, getEnvironment(), null);
-  }
-
-  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command) {
-    return getProcessCommandCallable(command, getEnvironment(), null);
-  }
-
-  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command,
-      final Map<String, String> environment, final byte[][] fileData) {
-    Callable callable = new Callable<ResponseEntity<String>>() {
-      @Override
-      public ResponseEntity<String> call() throws Exception {
-        String result = null;
-        try {
-          result = processCommand(command, environment, fileData);
-        } catch (NotAuthorizedException ex) {
-          return new ResponseEntity<String>(ex.getMessage(), HttpStatus.FORBIDDEN);
-        } catch (Exception ex) {
-          return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<String>(result, HttpStatus.OK);
-      }
-    };
-    return getCache().getSecurityService().associateWith(callable);
-  }
-
-  /**
-   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
-   * Gfsh performs validation of the command during parsing before sending the command to the
-   * Manager for processing.
-   * 
-   * @param command a String value containing a valid command String as would be entered by the user
-   *        in Gfsh.
-   * @param fileData is a two-dimensional byte array containing the pathnames and contents of file
-   *        data streamed to the Manager, usually for the 'deploy' Gfsh command.
-   * @return a result of the command execution as a String, typically marshalled in JSON to be
-   *         serialized back to Gfsh.
-   * @see org.apache.geode.management.internal.cli.shell.Gfsh
-   * @see LoginHandlerInterceptor#getEnvironment()
-   * @see #getEnvironment()
-   * @see #processCommand(String, java.util.Map, byte[][])
-   */
-  protected String processCommand(final String command, final byte[][] fileData) {
-    return processCommand(command, getEnvironment(), fileData);
-  }
-
-  /**
-   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
-   * Gfsh performs validation of the command during parsing before sending the command to the
-   * Manager for processing.
-   * 
-   * @param command a String value containing a valid command String as would be entered by the user
-   *        in Gfsh.
-   * @param environment a Map containing any environment configuration settings to be used by the
-   *        Manager during command execution. For example, when executing commands originating from
-   *        Gfsh, the key/value pair (APP_NAME=gfsh) is a specified mapping in the "environment.
-   *        Note, it is common for the REST API to act as a bridge, or an adapter between Gfsh and
-   *        the Manager, and thus need to specify this key/value pair mapping.
-   * @return a result of the command execution as a String, typically marshalled in JSON to be
-   *         serialized back to Gfsh.
-   * @see org.apache.geode.management.internal.cli.shell.Gfsh
-   * @see LoginHandlerInterceptor#getEnvironment()
-   * @see #processCommand(String, java.util.Map, byte[][])
-   */
-  protected String processCommand(final String command, final Map<String, String> environment) {
-    return processCommand(command, environment, null);
-  }
-
-  /**
    * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
    * Gfsh performs validation of the command during parsing before sending the command to the
    * Manager for processing.
@@ -636,9 +522,9 @@ public abstract class AbstractCommandsController {
    */
   protected String processCommand(final String command, final Map<String, String> environment,
       final byte[][] fileData) {
-    logger.info(LogMarker.CONFIG,
+    logger.debug(LogMarker.CONFIG,
         "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
-        environment, (fileData != null));
+        environment, (fileData != null && fileData.length > 0));
     return getManagingMemberMXBean().processCommand(command, environment,
         ArrayUtils.toByteArray(fileData));
   }

@@ -25,6 +25,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.shell.event.ParseResult;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
@@ -82,18 +83,9 @@ public class GfshParseResult extends ParseResult {
       } else {
         argumentAsString = argument.toString();
       }
-      // need to quote the argument with single quote if it contains white space.
-      // these will be used for the http request parameters, when turned into the
-      // commands again, the options will be quoted.
-      if (argumentAsString.contains(" ")) {
-        if (argumentAsString.contains("'")) {
-          argumentAsString = "\"" + argumentAsString + "\"";
-        } else {
-          argumentAsString = "'" + argumentAsString + "'";
-        }
-      }
-      // this always uses the first variation of the option as the key, so all the controllers
-      // should use this as the parameter key
+
+      // this maps are used for easy access of option values in String form.
+      // It's used in tests and validation of option values in pre-execution
       paramValueStringMap.put(cliOption.key()[0], argumentAsString);
     }
   }
@@ -105,11 +97,14 @@ public class GfshParseResult extends ParseResult {
     return userInput;
   }
 
+  @TestingOnly
   public String getParamValue(String param) {
     return paramValueStringMap.get(param);
   }
 
   /**
+   * Used only in tests and command pre-execution for validating arguments
+   * 
    * @return the unmodifiable paramValueStringMap
    */
   public Map<String, String> getParamValueStrings() {

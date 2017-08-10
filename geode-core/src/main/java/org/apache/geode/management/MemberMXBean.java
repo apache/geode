@@ -209,7 +209,8 @@ public interface MemberMXBean {
   String processCommand(String commandString, Map<String, String> env);
 
   /**
-   * Executes a command on the member.
+   * Executes a command on the member. this is the method that's used by the HttpOperationInvoker
+   * and JmxOperationInvoker
    * 
    * @param commandString Command to be execute.
    * @param env Environmental properties to use during command execution.

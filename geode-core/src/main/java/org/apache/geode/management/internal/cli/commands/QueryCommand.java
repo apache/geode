@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -77,8 +76,6 @@ public class QueryCommand implements GfshCommand {
       return dataResult;
     }
 
-    Object array[] = replaceGfshEnvVar(query, CommandExecutionContext.getShellEnv());
-    query = (String) array[1];
     boolean limitAdded = false;
 
     if (!StringUtils.containsIgnoreCase(query, " limit")
@@ -178,32 +175,5 @@ public class QueryCommand implements GfshCommand {
       }
       return result;
     }
-  }
-
-  private static Object[] replaceGfshEnvVar(String query, Map<String, String> gfshEnvVarMap) {
-    boolean done = false;
-    int startIndex = 0;
-    int replacedVars = 0;
-    while (!done) {
-      int index1 = query.indexOf("${", startIndex);
-      if (index1 == -1) {
-        break;
-      }
-      int index2 = query.indexOf("}", index1);
-      if (index2 == -1) {
-        break;
-      }
-      String var = query.substring(index1 + 2, index2);
-      String value = gfshEnvVarMap.get(var);
-      if (value != null) {
-        query = query.replaceAll("\\$\\{" + var + "\\}", value);
-        replacedVars++;
-      }
-      startIndex = index2 + 1;
-      if (startIndex >= query.length()) {
-        done = true;
-      }
-    }
-    return new Object[] {replacedVars, query};
   }
 }

@@ -202,7 +202,7 @@ public class GfshParserParsingTest {
     Map<String, String> params = parseParams(input, "startLocator");
 
     assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("'-Dgemfire.http-service-port= 8080'");
+    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port= 8080");
   }
 
   @Test
@@ -321,6 +321,6 @@ public class GfshParserParsingTest {
   public void testValueOfJsonWithSpaceAndOuterQuotes() throws Exception {
     String command = "put --key=\"('name' : 'id')\" --value=456 --region=/test";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("key")).isEqualTo("\"('name' : 'id')\"");
+    assertThat(result.getParamValue("key")).isEqualTo("('name' : 'id')");
   }
 }
