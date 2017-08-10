@@ -1012,6 +1012,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(ENFORCE_UNIQUE_HOST, "Whether to require partitioned regions to put "
         + "redundant copies of data on different physical machines");
 
+    m.put(PROTOBUF_PROTOCOL_AUTHENTICATION_MODE,
+        "The authentication mode for the protobuf protocol.");
+
     m.put(REDUNDANCY_ZONE, "The zone that this member is in. When this is set, "
         + "partitioned regions will not put two copies of the same data in the same zone.");
 

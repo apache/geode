@@ -439,6 +439,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String redundancyZone = DistributionConfig.DEFAULT_REDUNDANCY_ZONE;
 
+  private String protobufProtocolAuthenticationMode =
+      DistributionConfig.DEFAULT_PROTOBUF_PROTOCOL_AUTHENTICATION_MODE;
+
   /**
    * holds the ssl properties specified in gfsecurity.properties
    */
@@ -725,6 +728,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.deltaPropagation = other.getDeltaPropagation();
     this.distributedSystemId = other.getDistributedSystemId();
     this.redundancyZone = other.getRedundancyZone();
+    this.protobufProtocolAuthenticationMode = other.getProtobufProtocolAuthenticationMode();
     this.enforceUniqueHost = other.getEnforceUniqueHost();
     this.sslProperties = other.getSSLProperties();
     this.clusterSSLProperties = other.getClusterSSLProperties();
@@ -2393,6 +2397,14 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   public void setRedundancyZone(String redundancyZone) {
     this.redundancyZone = (String) redundancyZone;
 
+  }
+
+  public String getProtobufProtocolAuthenticationMode() {
+    return protobufProtocolAuthenticationMode;
+  }
+
+  public void setProtobufProtocolAuthenticationMode(String protobufProtocolAuthenticationMode) {
+    this.protobufProtocolAuthenticationMode = protobufProtocolAuthenticationMode;
   }
 
   public void setSSLProperty(String attName, String attValue) {

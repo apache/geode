@@ -19,6 +19,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.SecurityManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,8 @@ import java.net.Socket;
 public class GenericProtocolServerConnection extends ServerConnection {
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
   private final ClientProtocolMessageHandler messageHandler;
+  private final SecurityManager securityManager;
+  private final StreamAuthenticator authenticator;
 
   /**
    * Creates a new <code>GenericProtocolServerConnection</code> that processes messages received
@@ -39,10 +42,12 @@ public class GenericProtocolServerConnection extends ServerConnection {
   public GenericProtocolServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
       byte communicationMode, Acceptor acceptor, ClientProtocolMessageHandler newClientProtocol,
-      SecurityService securityService) {
+      SecurityService securityService, StreamAuthenticator authenticator) {
     super(s, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr, communicationMode,
         acceptor, securityService);
+    securityManager = securityService.getSecurityManager();
     this.messageHandler = newClientProtocol;
+    this.authenticator = authenticator;
   }
 
   @Override
@@ -52,7 +57,11 @@ public class GenericProtocolServerConnection extends ServerConnection {
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
 
-      messageHandler.receiveMessage(inputStream, outputStream, this.getCache());
+      if (!authenticator.isAuthenticated()) {
+        authenticator.receiveMessage(inputStream, outputStream, securityManager);
+      } else {
+        messageHandler.receiveMessage(inputStream, outputStream, this.getCache());
+      }
     } catch (IOException e) {
       logger.warn(e);
       this.setFlagProcessMessagesAsFalse(); // TODO: better shutdown.

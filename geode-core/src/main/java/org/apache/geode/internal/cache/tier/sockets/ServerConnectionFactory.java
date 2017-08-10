@@ -32,6 +32,8 @@ import javax.management.ServiceNotFoundException;
 public class ServerConnectionFactory {
   private static ClientProtocolMessageHandler protobufProtocolHandler;
   private static final Object protocolLoadLock = new Object();
+  private static Class<? extends StreamAuthenticator> authenticatorClass;
+  private static final Object streamAuthenticatorLoadLock = new Object();
 
   private static ClientProtocolMessageHandler findClientProtocolMessageHandler() {
     if (protobufProtocolHandler != null) {
@@ -63,6 +65,31 @@ public class ServerConnectionFactory {
     }
   }
 
+  private static Class<? extends StreamAuthenticator> findStreamAuthenticator(
+      String implementationID) {
+    if (authenticatorClass != null) {
+      return authenticatorClass;
+    }
+
+    synchronized (streamAuthenticatorLoadLock) {
+      if (authenticatorClass != null) {
+        return authenticatorClass;
+      }
+
+      ServiceLoader<StreamAuthenticator> loader = ServiceLoader.load(StreamAuthenticator.class);
+
+      for (StreamAuthenticator classInstance : loader) {
+        if (implementationID.equals(classInstance.implementationID())) {
+          return classInstance.getClass();
+        }
+      }
+
+      throw new ServiceLoadingFailureException(
+          "Could not find implementation for StreamAuthenticator with implementation ID "
+              + implementationID);
+    }
+  }
+
   public static ServerConnection makeServerConnection(Socket s, InternalCache c,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
@@ -72,9 +99,15 @@ public class ServerConnectionFactory {
         throw new IOException("Acceptor received unknown communication mode: " + communicationMode);
       } else {
         protobufProtocolHandler = findClientProtocolMessageHandler();
-        return new GenericProtocolServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,
-            communicationModeStr, communicationMode, acceptor, protobufProtocolHandler,
-            securityService);
+        authenticatorClass = findStreamAuthenticator(
+            c.getInternalDistributedSystem().getConfig().getProtobufProtocolAuthenticationMode());
+        try {
+          return new GenericProtocolServerConnection(s, c, helper, stats, hsTimeout,
+              socketBufferSize, communicationModeStr, communicationMode, acceptor,
+              protobufProtocolHandler, securityService, authenticatorClass.newInstance());
+        } catch (InstantiationException | IllegalAccessException ex) {
+          throw new RuntimeException("Couldn't instantiate StreamAuthenticator implementation", ex);
+        }
       }
     } else {
       return new LegacyServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,

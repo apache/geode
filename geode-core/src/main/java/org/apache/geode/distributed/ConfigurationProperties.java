@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.redis.GeodeRedisServer;
 
 /**
@@ -1377,6 +1378,18 @@ public interface ConfigurationProperties {
    * <U>Default</U>: ""
    */
   String NAME = "name";
+  /**
+   * The authentication mode for the protobuf client-server protocol.
+   *
+   * </p>
+   * <U>Description</U>: Specifies the authentication mode used by the geode-protobuf module.
+   * </p>
+   * <U>Default</U>: "NOOP"
+   * </p>
+   * <U>Allowed values</U>: "NOOP" "SIMPLE"
+   */
+  @Experimental
+  String PROTOBUF_PROTOCOL_AUTHENTICATION_MODE = "protobuf-protocol-authentication-mode";
   /**
    * The static String definition of the <i>"redundancy-zone"</i> property <a
    * name="redundancy-zone"/a>
