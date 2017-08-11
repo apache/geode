@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
-import org.apache.geode.internal.cache.Token;
 
 /**
  * A substitution filter which throws away the value of the entry and replaces it with an empty

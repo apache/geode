@@ -20,14 +20,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Properties;
+
+import org.assertj.core.api.ThrowableAssert;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.assertj.core.api.ThrowableAssert;
-
-import java.util.Properties;
 
 public class SecurityTestUtil {
 

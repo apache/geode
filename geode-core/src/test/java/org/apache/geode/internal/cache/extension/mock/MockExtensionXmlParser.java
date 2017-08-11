@@ -44,7 +44,7 @@ public class MockExtensionXmlParser extends AbstractXmlParser {
   public static final String PREFIX = "mock";
 
   @Override
-  public String getNamspaceUri() {
+  public String getNamespaceUri() {
     return NAMESPACE;
   }
 

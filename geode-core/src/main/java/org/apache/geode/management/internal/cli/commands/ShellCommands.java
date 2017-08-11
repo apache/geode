@@ -25,10 +25,7 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -38,7 +35,6 @@ import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
@@ -62,52 +58,43 @@ import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
  * @since GemFire 7.0
  */
 public class ShellCommands implements GfshCommand {
+  static Properties loadProperties(URL url) {
+    Properties properties = new Properties();
 
-  /* package-private */
-  static Map<String, String> loadPropertiesFromURL(URL gfSecurityPropertiesUrl) {
-    Map<String, String> propsMap = Collections.emptyMap();
-
-    if (gfSecurityPropertiesUrl != null) {
-      InputStream inputStream = null;
-      try {
-        Properties props = new Properties();
-        inputStream = gfSecurityPropertiesUrl.openStream();
-        props.load(inputStream);
-        if (!props.isEmpty()) {
-          Set<String> jmxSpecificProps = new HashSet<String>();
-          propsMap = new LinkedHashMap<String, String>();
-          Set<Entry<Object, Object>> entrySet = props.entrySet();
-          for (Entry<Object, Object> entry : entrySet) {
-
-            String key = (String) entry.getKey();
-            if (key.endsWith(DistributionConfig.JMX_SSL_PROPS_SUFFIX)) {
-              key =
-                  key.substring(0, key.length() - DistributionConfig.JMX_SSL_PROPS_SUFFIX.length());
-              jmxSpecificProps.add(key);
-
-              propsMap.put(key, (String) entry.getValue());
-            } else if (!jmxSpecificProps.contains(key)) {// Prefer properties ending with "-jmx"
-              // over default SSL props.
-              propsMap.put(key, (String) entry.getValue());
-            }
-          }
-          props.clear();
-          jmxSpecificProps.clear();
-        }
-      } catch (IOException io) {
-        throw new RuntimeException(
-            CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
-                CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath())),
-            io);
-      } finally {
-        IOUtils.close(inputStream);
-      }
+    if (url == null) {
+      return properties;
     }
-    return propsMap;
+
+    try (InputStream inputStream = url.openStream()) {
+      properties.load(inputStream);
+    } catch (IOException io) {
+      throw new RuntimeException(
+          CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
+              CliUtil.decodeWithDefaultCharSet(url.getPath())),
+          io);
+    }
+
+    return properties;
   }
 
-  // Copied from DistributedSystem.java
-  public static URL getFileUrl(String fileName) {
+  static Properties loadProperties(File propertyFile) {
+    try {
+      return loadProperties(propertyFile.toURI().toURL());
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(
+          CliStrings.format("Failed to load configuration properties from pathname (%1$s)!",
+              propertyFile.getAbsolutePath()),
+          e);
+    }
+  }
+
+  /**
+   * try to find the file in the current dir or the user home or the classpath in this order
+   * 
+   * @param fileName the name of the file
+   * @return URL if the file is found, otherwise null
+   */
+  public static URL searchFile(String fileName) {
     File file = new File(fileName);
 
     if (file.exists()) {

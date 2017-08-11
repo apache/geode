@@ -28,7 +28,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 
 /**
- * A file that is stored in a gemfire region.
+ * A file that is stored in a Apache Geode region.
  */
 public class File implements DataSerializableFixedID {
 

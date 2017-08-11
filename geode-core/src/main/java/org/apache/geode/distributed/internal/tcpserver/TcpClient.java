@@ -24,9 +24,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -36,7 +36,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -70,6 +72,12 @@ public class TcpClient {
    */
   public TcpClient() {
     this(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
+  }
+
+  public TcpClient(Properties properties) {
+    SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(properties,
+        SecurableCommunicationChannel.LOCATOR);
+    this.socketCreator = new SocketCreator(sslConfig);
   }
 
   /**
@@ -310,7 +318,7 @@ public class TcpClient {
         Object readObject = DataSerializer.readObject(in);
         if (!(readObject instanceof VersionResponse)) {
           throw new LocatorCancelException(
-              "Unrecognisable response received: object is null. This could be the result of trying to connect a non-SSL-enabled locator to an SSL-enabled locator.");
+              "Unrecognisable response received: This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
         }
         VersionResponse response = (VersionResponse) readObject;
         if (response != null) {

@@ -16,8 +16,6 @@ package org.apache.geode.management.internal.cli;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-import java.io.IOException;
-
 /**
  * Semi-complete implementation of {@link CliAroundInterceptor} for convenience for implementors.
  * 
@@ -66,7 +64,7 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
     return gfsh != null && !gfsh.isQuietMode() && !gfsh.isHeadlessMode();
   }
 
-  protected String interact(String message) throws IOException {
+  protected String interact(String message) {
     return Gfsh.getCurrentInstance().interact(message);
   }
 
@@ -83,18 +81,12 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
 
     Response response = null;
     do {
-      try {
-        String userInput = interact(message);
+      String userInput = interact(message);
 
-        if (isNullOrEmpty(userInput)) {
-          return defaultResponse;
-        }
-        response = Response.fromString(userInput);
-
-      } catch (IOException ioex) {
-        severe("Could not read user response", ioex);
-        // What can you do except try again???
+      if (isNullOrEmpty(userInput)) {
+        return defaultResponse;
       }
+      response = Response.fromString(userInput);
 
     } while (response == null);
 

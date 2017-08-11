@@ -475,14 +475,14 @@ public class Gfsh extends JLineShell {
     return signalHandler;
   }
 
-  public String readPassword(String textToPrompt) throws IOException {
+  public String readPassword(String textToPrompt) {
     if (isHeadlessMode && isQuietMode())
       return null;
 
     return readWithMask(textToPrompt, '*');
   }
 
-  public String readText(String textToPrompt) throws IOException {
+  public String readText(String textToPrompt) {
     if (isHeadlessMode && isQuietMode())
       return null;
 
@@ -618,12 +618,20 @@ public class Gfsh extends JLineShell {
     return success;
   }
 
-  public String interact(String textToPrompt) throws IOException {
-    return reader.readLine(textToPrompt);
+  public String interact(String textToPrompt) {
+    try {
+      return reader.readLine(textToPrompt);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public String readWithMask(String textToPrompt, Character mask) throws IOException {
-    return reader.readLine(textToPrompt, mask);
+  public String readWithMask(String textToPrompt, Character mask) {
+    try {
+      return reader.readLine(textToPrompt, mask);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

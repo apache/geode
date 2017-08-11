@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneQueryException;
@@ -47,9 +46,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Category(UnitTest.class)
 public class LuceneQueryImplJUnitTest {

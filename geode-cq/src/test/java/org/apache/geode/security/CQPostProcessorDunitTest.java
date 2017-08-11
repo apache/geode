@@ -15,6 +15,9 @@
 
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
@@ -22,11 +25,21 @@ import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqEvent;
@@ -34,16 +47,13 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
@@ -75,9 +85,6 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
     client1.invoke(() -> {
       ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
-
-
-
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 
@@ -112,6 +119,47 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
       region.put("key6", "value6");
     });
 
+  }
+
+  @Test
+  public void testMultiUserPostProcess() {
+    String query = "select * from /" + REGION_NAME;
+    client1.invoke(() -> {
+      Properties props = new Properties();
+      props.setProperty(LOCATORS, "");
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(SECURITY_CLIENT_AUTH_INIT,
+          UserPasswordAuthInit.class.getName() + ".create");
+      ClientCacheFactory factory = new ClientCacheFactory(props);
+
+      factory.addPoolServer("localhost", server.getPort());
+      factory.setPoolThreadLocalConnections(false);
+      factory.setPoolMinConnections(5);
+      factory.setPoolSubscriptionEnabled(true);
+      factory.setPoolMultiuserAuthentication(true);
+
+
+      ClientCache clientCache = factory.create();
+      Region region =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+      Pool pool = PoolManager.find(region);
+
+      Properties userProps = new Properties();
+      userProps.setProperty("security-username", "super-user");
+      userProps.setProperty("security-password", "1234567");
+      ProxyCache cache =
+          (ProxyCache) clientCache.createAuthenticatedView(userProps, pool.getName());
+
+      QueryService qs = cache.getQueryService();
+
+      CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
+
+      CqAttributes cqa = cqAttributesFactory.create();
+
+      // Create the CqQuery
+      CqQuery cq = qs.newCq("CQ1", query, cqa, true);
+      cq.execute();
+    });
   }
 
 }

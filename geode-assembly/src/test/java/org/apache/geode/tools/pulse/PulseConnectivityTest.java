@@ -15,26 +15,35 @@
 
 package org.apache.geode.tools.pulse;
 
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Properties;
+
+import org.apache.http.HttpResponse;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.test.dunit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.http.HttpResponse;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-
+@RunWith(Parameterized.class)
 @Category(IntegrationTest.class)
-public class PulseVerificationTest {
-
-  @ClassRule
-  public static LocatorStarterRule locator =
-      new LocatorStarterRule().withJMXManager().withAutoStart();
+public class PulseConnectivityTest {
+  @Rule
+  public LocatorStarterRule locator = new LocatorStarterRule().withJMXManager();
 
   @Rule
   public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
@@ -42,19 +51,39 @@ public class PulseVerificationTest {
   @Rule
   public HttpClientRule client = new HttpClientRule(locator::getHttpPort);
 
+  @Parameterized.Parameter
+  public static String jmxBindAddress;
+
+  @Parameterized.Parameters(name = "JMXBindAddress: {0}")
+  public static Collection<String> bindAddresses() throws Exception {
+    String nonDefaultJmxBindAddress = InetAddress.getLocalHost().getHostName();
+    if ("localhost".equals(nonDefaultJmxBindAddress)) {
+      nonDefaultJmxBindAddress = InetAddress.getLocalHost().getHostAddress();
+    }
+
+    return Arrays.asList(new String[] {"localhost", nonDefaultJmxBindAddress});
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    Properties locatorProperties = new Properties();
+    if (!"localhost".equals(jmxBindAddress))
+      locatorProperties.setProperty(JMX_MANAGER_BIND_ADDRESS, jmxBindAddress);
+    locator.withProperties(locatorProperties).startLocator();
+  }
+
   @Test
-  public void loginWithIncorrectPassword() throws Exception {
+  public void testLogin() throws Exception {
     HttpResponse response = client.loginToPulse("admin", "wrongPassword");
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(302);
     assertThat(response.getFirstHeader("Location").getValue())
         .contains("/pulse/login.html?error=BAD_CREDS");
-
     client.loginToPulseAndVerify("admin", "admin");
   }
 
   @Test
   public void testConnectToJmx() throws Exception {
-    pulse.useJmxPort(locator.getJmxPort());
+    pulse.useJmxManager(jmxBindAddress, locator.getJmxPort());
     Cluster cluster = pulse.getRepository().getCluster("admin", null);
     assertThat(cluster.isConnectedFlag()).isTrue();
     assertThat(cluster.getServerCount()).isEqualTo(0);

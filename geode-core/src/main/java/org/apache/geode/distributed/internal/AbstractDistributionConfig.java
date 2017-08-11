@@ -16,7 +16,21 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.UnmodifiableException;
@@ -30,19 +44,6 @@ import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.memcached.GemFireMemcachedServer;
-import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -1047,7 +1048,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Location of the Java keystore file containing the collection of CA certificates trusted by jmx manager.");
     m.put(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD,
         "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
-
     m.put(JMX_MANAGER_PORT,
         "The port the jmx manager will listen on. Default is \"" + DEFAULT_JMX_MANAGER_PORT
             + "\". Set to zero to disable GemFire's creation of a jmx listening port.");
@@ -1215,6 +1215,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_TRUSTSTORE,
         "Location of the Java keystore file containing the collection of trusted certificates.");
     m.put(SSL_TRUSTSTORE_PASSWORD, "Password to unlock the truststore.");
+    m.put(SSL_TRUSTSTORE_TYPE,
+        "For Java truststore file format, this property has the value jks (or JKS).");
     m.put(SSL_DEFAULT_ALIAS, "The default certificate alias to be used in a multi-key keystore");
     m.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION,
         "This property determines is the HTTP service with use mutual ssl authentication.");

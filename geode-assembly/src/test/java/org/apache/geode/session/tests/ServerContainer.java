@@ -368,7 +368,7 @@ public abstract class ServerContainer {
       attributes.put("port", Integer.toString(locatorPort));
 
       ContainerInstall.editXMLFile(getSystemProperty("cache-xml-file"), "locator", "pool",
-          attributes);
+          attributes, true);
     } else {
       setSystemProperty("locators", locatorAddress + "[" + locatorPort + "]");
     }

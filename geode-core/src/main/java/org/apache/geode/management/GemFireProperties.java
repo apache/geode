@@ -607,6 +607,7 @@ public class GemFireProperties {
   private String sslKeyStoreType;
   private String sslKeyStorePassword;
   private String sslTrustStore;
+  private String sslTrustStoreType;
   private String sslTrustStorePassword;
   private boolean sslWebServiceRequireAuthentication;
   private String sslDefaultAlias;
@@ -1810,6 +1811,14 @@ public class GemFireProperties {
 
   public void setSSLTrustStorePassword(final String sslTrustStorePassword) {
     this.sslTrustStorePassword = sslTrustStorePassword;
+  }
+
+  public String getSSLTrustStoreType() {
+    return sslTrustStoreType;
+  }
+
+  public void setSSLTrustStoreType(final String sslTrustStoreType) {
+    this.sslTrustStoreType = sslTrustStoreType;
   }
 
   public boolean getSSLWebServiceRequireAuthentication() {

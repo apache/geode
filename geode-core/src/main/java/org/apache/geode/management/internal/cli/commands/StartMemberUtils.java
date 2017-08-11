@@ -83,16 +83,17 @@ public class StartMemberUtils {
   }
 
   static void addGemFirePropertyFile(final List<String> commandLine,
-      final String gemfirePropertiesPathname) {
-    if (org.apache.geode.internal.lang.StringUtils.isNotBlank(gemfirePropertiesPathname)) {
-      commandLine.add("-DgemfirePropertyFile=" + gemfirePropertiesPathname);
+      final File gemfirePropertiesFile) {
+    if (gemfirePropertiesFile != null) {
+      commandLine.add("-DgemfirePropertyFile=" + gemfirePropertiesFile.getAbsolutePath());
     }
   }
 
   static void addGemFireSecurityPropertyFile(final List<String> commandLine,
-      final String gemfireSecurityPropertiesPathname) {
-    if (org.apache.geode.internal.lang.StringUtils.isNotBlank(gemfireSecurityPropertiesPathname)) {
-      commandLine.add("-DgemfireSecurityPropertyFile=" + gemfireSecurityPropertiesPathname);
+      final File gemfireSecurityPropertiesFile) {
+    if (gemfireSecurityPropertiesFile != null) {
+      commandLine
+          .add("-DgemfireSecurityPropertyFile=" + gemfireSecurityPropertiesFile.getAbsolutePath());
     }
   }
 

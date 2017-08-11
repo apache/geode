@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal.filesystem;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import org.apache.geode.Statistics;
