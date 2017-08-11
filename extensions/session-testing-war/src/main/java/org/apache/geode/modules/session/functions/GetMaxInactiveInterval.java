@@ -13,24 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.modules.session.internal.filter.util;
+package org.apache.geode.modules.session.functions;
 
-import javax.servlet.http.HttpSession;
+import java.util.function.Function;
 
-/**
- */
-public class ThreadLocalSession {
-  private static ThreadLocal<HttpSession> threadLocal = new ThreadLocal<HttpSession>();
+import javax.servlet.http.HttpServletRequest;
 
-  public static HttpSession get() {
-    return threadLocal.get();
-  }
+import org.apache.geode.modules.session.SessionCountingListener;
 
-  public static void set(HttpSession session) {
-    threadLocal.set(session);
-  }
-
-  public static void remove() {
-    threadLocal.remove();
+public class GetMaxInactiveInterval implements Function<HttpServletRequest, String> {
+  @Override
+  public String apply(final HttpServletRequest request) {
+    return Integer.toString(request.getSession().getMaxInactiveInterval());
   }
 }

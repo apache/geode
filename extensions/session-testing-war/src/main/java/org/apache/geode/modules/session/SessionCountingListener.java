@@ -12,28 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.modules.session;
 
-package org.apache.geode.modules.session.internal.filter;
-
-import org.apache.geode.modules.session.filter.SessionCachingFilter;
-
-import javax.servlet.http.HttpSession;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-public class HttpSessionListenerImpl2 extends AbstractListener implements HttpSessionListener {
+public class SessionCountingListener extends ListenerStoredInSessionContext
+    implements HttpSessionListener {
+  private final AtomicInteger sessionCount = new AtomicInteger();
+  private final AtomicInteger sessionCreates = new AtomicInteger();
+  private final AtomicInteger sessionDestroys = new AtomicInteger();
 
   @Override
-  public void sessionCreated(HttpSessionEvent se) {
-    events.add(ListenerEventType.SESSION_CREATED);
-    latch.countDown();
+  public void sessionCreated(final HttpSessionEvent se) {
+    sessionCount.incrementAndGet();
+    sessionCreates.incrementAndGet();
   }
 
   @Override
-  public void sessionDestroyed(HttpSessionEvent se) {
-    HttpSession gfeSession = SessionCachingFilter.getWrappingSession(se.getSession());
-    assert (gfeSession != null);
-    events.add(ListenerEventType.SESSION_DESTROYED);
-    latch.countDown();
+  public void sessionDestroyed(final HttpSessionEvent se) {
+    sessionCount.decrementAndGet();
+    sessionDestroys.incrementAndGet();
+  }
+
+  public int getSessionCreates() {
+    return sessionCreates.get();
+  }
+
+  public int getSessionDestroys() {
+    return sessionDestroys.get();
   }
 }

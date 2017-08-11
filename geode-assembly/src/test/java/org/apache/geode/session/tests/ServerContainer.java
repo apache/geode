@@ -174,17 +174,19 @@ public abstract class ServerContainer {
           + " failed to start because it is currently " + container.getState());
 
     LocalConfiguration config = getConfiguration();
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
     // Set container ports from available ports
     config.setProperty(ServletPropertySet.PORT, Integer.toString(ports[0]));
     config.setProperty(GeneralPropertySet.RMI_PORT, Integer.toString(ports[1]));
     config.setProperty(TomcatPropertySet.AJP_PORT, Integer.toString(ports[2]));
     config.setProperty(GeneralPropertySet.PORT_OFFSET, "0");
+    config.setProperty(GeneralPropertySet.START_JVMARGS,
+        "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + ports[3]);
     container.setConfiguration(config);
 
-    try {
-      logger.info("Starting container " + description);
 
+    try {
+      logger.info("Starting container " + description + "RMI Port: " + ports[3]);
       // Writes settings to the expected form (either XML or WAR file)
       writeSettings();
       // Start the container through cargo

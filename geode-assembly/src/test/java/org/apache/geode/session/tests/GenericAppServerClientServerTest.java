@@ -15,11 +15,26 @@
 package org.apache.geode.session.tests;
 
 import org.junit.Before;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.modules.session.functions.GetSessionCount;
+import org.apache.geode.modules.util.RegionHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpSession;
 
 /**
  * Extends the {@link CargoTestBase} class to support client server tests of generic app servers
@@ -27,6 +42,9 @@ import org.apache.geode.test.dunit.VM;
  * Currently being used to test Jetty 9 containers in client server mode.
  */
 public abstract class GenericAppServerClientServerTest extends CargoTestBase {
+
+  protected VM serverVM;
+
   /**
    * Starts the server for the client containers to connect to while testing.
    */
@@ -34,15 +52,65 @@ public abstract class GenericAppServerClientServerTest extends CargoTestBase {
   public void startServers() throws InterruptedException {
     // Setup host
     Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    // Start server in VM
-    vm0.invoke(() -> {
+    serverVM = host.getVM(0);
+    serverVM.invoke(() -> {
       Cache cache = getCache();
       // Add cache server
       CacheServer server = cache.addCacheServer();
       server.setPort(0);
       // Start the server in this VM
       server.start();
+    });
+  }
+
+  /**
+   * Test that we don't leave native sessions in the container, wasting memory
+   */
+  @Test
+  public void shouldNotLeaveNativeSessionInContainer()
+      throws IOException, URISyntaxException, InterruptedException {
+    manager.startAllInactiveContainers();
+
+    String key = "value_testSessionExpiration";
+    String value = "Foo";
+
+    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    Client.Response resp = client.set(key, value);
+    String cookie = resp.getSessionCookie();
+
+    for (int i = 0; i < manager.numContainers(); i++) {
+      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
+      resp = client.get(key);
+
+      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
+      assertEquals(value, resp.getResponse());
+    }
+
+    for (int i = 0; i < manager.numContainers(); i++) {
+      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
+      resp = client.executionFunction(GetSessionCount.class);
+      assertEquals("Should have 0 native sessions", "0", resp.getResponse());
+    }
+  }
+
+  @Override
+  protected void verifySessionIsRemoved(String key) throws IOException, URISyntaxException {
+    serverVM.invoke(() -> {
+      Cache cache = getCache();
+      Region region = cache.getRegion("gemfire_modules_sessions");
+      Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> assertEquals(0, region.size()));
+    });
+    super.verifySessionIsRemoved(key);
+  }
+
+  @Override
+  protected void verifyMaxInactiveInterval(int expected) throws IOException, URISyntaxException {
+    super.verifyMaxInactiveInterval(expected);
+    serverVM.invoke(() -> {
+      Cache cache = getCache();
+      Region<Object, HttpSession> region =
+          cache.<Object, HttpSession>getRegion("gemfire_modules_sessions");
+      region.values().forEach(session -> assertEquals(expected, session.getMaxInactiveInterval()));
     });
   }
 }

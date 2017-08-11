@@ -15,6 +15,7 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -56,19 +57,9 @@ public interface SessionManager {
   /**
    * Create a new session, wrapping a container session.
    *
-   * @param nativeSession
    * @return the HttpSession object
    */
-  public HttpSession wrapSession(HttpSession nativeSession);
-
-  /**
-   * Get the wrapped (GemFire) session from a native session id. This method would typically be used
-   * from within session/http event listeners which receive the original session id.
-   *
-   * @param nativeId
-   * @return the wrapped GemFire session which maps the native session
-   */
-  public HttpSession getWrappingSession(String nativeId);
+  public HttpSession wrapSession(ServletContext context, int maxInactiveInterval);
 
   /**
    * Destroy the session associated with the given id.
@@ -76,14 +67,6 @@ public interface SessionManager {
    * @param id The id of the session to destroy.
    */
   public void destroySession(String id);
-
-  /**
-   * Destroy the session associated with a given native session
-   *
-   * @param id the id of the native session
-   * @return the corresponding Gemfire session which wrapped the native session and was destroyed.
-   */
-  public String destroyNativeSession(String id);
 
   /**
    * Returns the cookie name used to hold the session id. By default this is JSESSIONID.

@@ -66,6 +66,8 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
    */
   protected String jvmOwnerId;
 
+  protected long creationTime;
+
   /**
    * {@inheritDoc}
    */
@@ -116,6 +118,16 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
   @Override
   public int getMaxIntactiveInterval() {
     return maxInactiveInterval;
+  }
+
+  @Override
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  @Override
+  public void setCreationTime(long creationTime) {
+    this.creationTime = creationTime;
   }
 
   @Override

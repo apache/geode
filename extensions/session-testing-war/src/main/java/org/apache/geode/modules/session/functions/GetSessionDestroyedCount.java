@@ -12,25 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.modules.session;
 
-/**
- * Basic commands to pass to our test servlet
- */
-public enum QueryCommand {
+package org.apache.geode.modules.session.functions;
 
-  SET,
+import org.apache.geode.modules.session.SessionCountingListener;
 
-  SET_MAX_INACTIVE,
+import java.util.function.Function;
+import javax.servlet.http.HttpServletRequest;
 
-  GET,
-
-  REMOVE,
-
-  INVALIDATE,
-
-  UNKNOWN,
-
-  FUNCTION;
-
+public class GetSessionDestroyedCount implements Function<HttpServletRequest, String> {
+  @Override
+  public String apply(final HttpServletRequest request) {
+    SessionCountingListener listener = (SessionCountingListener) request.getSession()
+        .getServletContext().getAttribute(SessionCountingListener.class.getName());
+    return String.valueOf(listener.getSessionDestroys());
+  }
 }
