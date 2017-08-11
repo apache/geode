@@ -57,6 +57,7 @@ import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ClientQueueDetail;
 import org.apache.geode.management.ServerLoadData;
 import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
 import org.apache.geode.management.internal.beans.stats.StatsKey;
@@ -101,7 +102,7 @@ public class CacheServerBridge extends ServerBridge {
     }
   }
 
-  public CacheServerBridge(CacheServer cacheServer, InternalCache cache) {
+  public CacheServerBridge(final InternalCache cache, final CacheServer cacheServer) {
     super(cacheServer);
     this.cacheServer = cacheServer;
     this.cache = cache;
@@ -110,7 +111,18 @@ public class CacheServerBridge extends ServerBridge {
     initializeCacheServerStats();
   }
 
-  // Dummy constructor for testing purpose only TODO why is this public then?
+  // For testing only
+  public CacheServerBridge(final InternalCache cache, final CacheServer cacheServer,
+      final AcceptorImpl acceptor, final MBeanStatsMonitor monitor) {
+    super(acceptor, monitor);
+    this.cacheServer = cacheServer;
+    this.cache = cache;
+    this.qs = cache.getQueryService();
+
+    initializeCacheServerStats();
+  }
+
+  // For testing only
   public CacheServerBridge() {
     super();
     initializeCacheServerStats();
@@ -648,7 +660,7 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   public int getNumSubscriptions() {
-    Map clientProxyMembershipIDMap = InternalClientMembership.getClientQueueSizes();
+    Map clientProxyMembershipIDMap = InternalClientMembership.getClientQueueSizes(cache);
     return clientProxyMembershipIDMap.keySet().size();
   }
 

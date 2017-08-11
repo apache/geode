@@ -62,7 +62,7 @@ public class LuceneSearchResults<K, V> implements Comparable<LuceneSearchResults
     return Float.compare(getScore(), searchResults.getScore()) * -1;
   }
 
-  public boolean getExeptionFlag() {
+  public boolean getExceptionFlag() {
     return exceptionFlag;
   }
 

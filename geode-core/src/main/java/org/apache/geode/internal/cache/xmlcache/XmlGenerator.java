@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Interface for configuration XML generators. Used by {@link CacheXmlGenerator} to generate
- * entities defined in the XML Namespace returned by {@link #getNamspaceUri()} .
+ * entities defined in the XML Namespace returned by {@link #getNamespaceUri()} .
  * 
  *
  * @since GemFire 8.1
@@ -32,7 +32,7 @@ public interface XmlGenerator<T> {
    * @return XML Namespace.
    * @since GemFire 8.1
    */
-  String getNamspaceUri();
+  String getNamespaceUri();
 
   // TODO jbarrett - investigate new logging.
   // /**

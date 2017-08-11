@@ -18,16 +18,15 @@ import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +49,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -62,6 +62,9 @@ import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
+import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorImpl;
+import org.apache.geode.internal.cache.partitioned.rebalance.ExplicitMoveDirector;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
@@ -137,7 +140,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   @Test
-  public void testBasicPRTransactionNonColatedFunction0() {
+  public void testBasicPRTransactionNonColocatedFunction0() {
     basicPRTXInNonColocatedFunction(0);
   }
 
@@ -542,11 +545,11 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   protected void basicPRTXWithOpOnMovedBucket(Op op, int bucketRedundancy, DistributedMember dm1,
       DistributedMember dm2) {
     // First transaction.
-    TransactionId txId = (TransactionId) dataStore1.invoke(beginTx());
+    TransactionId txId = dataStore1.invoke(() -> beginTx(false));
     dataStore1.invoke(resumeTx(op, txId, dm1, dm2));
 
     // Second one. Will go through different path (using TXState or TXStateStub)
-    txId = (TransactionId) dataStore1.invoke(beginTx());
+    txId = dataStore1.invoke(() -> beginTx(false));
     dataStore1.invoke(resumeTx(op, txId, dm1, dm2));
   }
 
@@ -560,21 +563,18 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     };
   }
 
-  @SuppressWarnings({"rawtypes", "serial"})
-  private SerializableCallable beginTx() {
-    return new SerializableCallable("begin tx") {
-      @Override
-      public Object call() {
-        PartitionedRegion pr = (PartitionedRegion) basicGetCache()
-            .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
-        CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
-        CustId cust1 = new CustId(1);
-        mgr.begin();
-        Object value = pr.get(cust1);
-        assertNotNull(value);
-        return mgr.suspend();
-      }
-    };
+  private TransactionId beginTx(boolean doPut) {
+    PartitionedRegion pr = (PartitionedRegion) basicGetCache()
+        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+    CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
+    CustId cust1 = new CustId(1);
+    mgr.begin();
+    Object value = pr.get(cust1);
+    assertNotNull(value);
+    if (doPut) {
+      pr.put(cust1, "bar");
+    }
+    return mgr.suspend();
   }
 
   @SuppressWarnings("serial")
@@ -1150,6 +1150,60 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             + perfTxTime.longValue() + " Nanos, difference :" + diff + " percentDifference:"
             + percentDiff);
 
+  }
+
+  @Test
+  public void testCommitToFailAfterPrimaryBucketMoved() {
+    basicPRTXCommitToFailAfterPrimaryBucketMoved(1);
+  }
+
+  /**
+   * Test commit fail after the transactional node no longer hosts the primary bucket of the
+   * operations executed in the transaction.
+   *
+   * @param redundantBuckets redundant buckets for colocated PRs
+   */
+  protected void basicPRTXCommitToFailAfterPrimaryBucketMoved(int redundantBuckets) {
+    setupColocatedRegions(redundantBuckets);
+
+    InternalDistributedMember dm1 = (InternalDistributedMember) dataStore1.invoke(getDM());
+    InternalDistributedMember dm2 = (InternalDistributedMember) dataStore2.invoke(getDM());
+
+    TransactionId txId = dataStore1.invoke(() -> beginTx(true));
+    dataStore1.invoke(() -> movePrimaryBucket(dm1, dm2));
+    dataStore1.invoke(() -> resumeTxAfterPrimaryMoved(txId));
+
+  }
+
+  private void movePrimaryBucket(InternalDistributedMember dm1, InternalDistributedMember dm2) {
+    PartitionedRegion pr = (PartitionedRegion) basicGetCache()
+        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+    CustId cust1 = new CustId(1);
+    int bucketId = pr.getKeyInfo(cust1).getBucketId();
+    boolean isCust1LocalPrimary = pr.getBucketRegion(cust1).getBucketAdvisor().isPrimary();
+    InternalDistributedMember destination = isCust1LocalPrimary ? dm2 : dm1;
+    InternalDistributedMember source = isCust1LocalPrimary ? dm1 : dm2;
+
+    ExplicitMoveDirector director = new ExplicitMoveDirector(cust1, bucketId, source, destination,
+        pr.getCache().getDistributedSystem());
+    PartitionedRegionRebalanceOp rebalanceOp =
+        new PartitionedRegionRebalanceOp(pr, false, director, true, true);
+    BucketOperatorImpl operator = new BucketOperatorImpl(rebalanceOp);
+    boolean moved = operator.movePrimary(source, destination, bucketId);
+    if (!moved) {
+      fail("Not able to move primary bucket by invoking BucketOperatorImpl.movePrimary");
+    }
+  }
+
+  private void resumeTxAfterPrimaryMoved(TransactionId txId) {
+    PartitionedRegion pr = (PartitionedRegion) basicGetCache()
+        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+    CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
+
+    mgr.resume(txId);
+
+    catchException(mgr).commit();
+    assertTrue(caughtException() instanceof TransactionDataRebalancedException);
   }
 
   // Don't want to run the test twice

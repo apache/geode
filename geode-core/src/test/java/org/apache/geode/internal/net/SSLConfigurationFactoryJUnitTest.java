@@ -32,22 +32,24 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Properties;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class SSLConfigurationFactoryJUnitTest {
@@ -278,6 +280,27 @@ public class SSLConfigurationFactoryJUnitTest {
     sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.JMX);
     assertEquals(true, sslConfig.isRequireAuth());
     assertEquals(true, sslConfig.isEnabled());
+  }
+
+  @Test
+  public void setDistributionConfig() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
+    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+
+    SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.LOCATOR);
+    assertThat(sslConfig.isEnabled()).isTrue();
+    assertThat(sslConfig.getKeystore()).isEqualTo("someKeyStore");
+
+    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.JMX.getConstant());
+    properties.setProperty(SSL_KEYSTORE, "someOtherKeyStore");
+    sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(properties,
+        SecurableCommunicationChannel.LOCATOR);
+    assertThat(sslConfig.isEnabled()).isFalse();
+    assertThat(sslConfig.getKeystore()).isEqualTo("someOtherKeyStore");
   }
 
   private void assertSSLConfig(final Properties properties, final SSLConfig sslConfig,

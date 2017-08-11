@@ -26,12 +26,9 @@ import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.Query;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.GemFireCheckedException;
-import org.apache.geode.GemFireException;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
-import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;

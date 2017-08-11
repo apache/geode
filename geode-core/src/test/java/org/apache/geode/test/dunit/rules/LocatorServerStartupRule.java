@@ -95,8 +95,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   @Override
   protected void before() throws Throwable {
     restoreSystemProperties.before();
-    if (useTempWorkingDir())
+    if (useTempWorkingDir()) {
       tempWorkingDir.create();
+    }
     members = new MemberVM[4];
   }
 
@@ -104,8 +105,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   protected void after() {
     DUnitLauncher.closeAndCheckForSuspects();
     Arrays.stream(members).filter(Objects::nonNull).forEach(MemberVM::stopMember);
-    if (useTempWorkingDir())
+    if (useTempWorkingDir()) {
       tempWorkingDir.delete();
+    }
     restoreSystemProperties.after();
   }
 
@@ -129,8 +131,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
         File workingDirFile = createWorkingDirForMember(name);
         locatorStarter.withWorkingDir(workingDirFile);
       }
-      if (logFile)
+      if (logFile) {
         locatorStarter.withLogFile();
+      }
       locatorStarter.withProperties(properties).withAutoStart();
       locatorStarter.before();
       return locatorStarter;
@@ -165,8 +168,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
         File workingDirFile = createWorkingDirForMember(name);
         serverStarter.withWorkingDir(workingDirFile);
       }
-      if (logFile)
+      if (logFile) {
         serverStarter.withLogFile();
+      }
       serverStarter.withProperties(properties).withConnectionToLocator(locatorPort).withAutoStart();
       serverStarter.before();
       return serverStarter;
@@ -198,10 +202,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
         File workingDirFile = createWorkingDirForMember(name);
         serverStarter.withWorkingDir(workingDirFile);
       }
-      if (logFile)
+      if (logFile) {
         serverStarter.withLogFile();
-      serverStarter.withEmbeddedLocator().withProperties(properties).withName(name).withJMXManager()
-          .withAutoStart();
+      }
+      serverStarter.withEmbeddedLocator().withName(name).withJMXManager().withAutoStart();
       serverStarter.before();
       return serverStarter;
     });

@@ -25,11 +25,13 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Properties;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -46,10 +48,17 @@ public class StartLocatorCommandIntegrationTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+  private StartLocatorCommand spy;
+
+  @Before
+  public void before() throws Exception {
+    spy = Mockito.spy(StartLocatorCommand.class);
+    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
+  }
+
   @Test
   public void startLocatorWorksWithNoOptions() throws Exception {
-    StartLocatorCommand spy = spyOnStartLocatorCommand("start locator");
-    commandRule.executeLastCommandWithInstance(spy);
+    commandRule.executeCommandWithInstance(spy, "start locator");
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(spy).createStartLocatorCommandLine(any(), any(), any(),
@@ -65,11 +74,10 @@ public class StartLocatorCommandIntegrationTest {
     String startLocatorCommand = new CommandStringBuilder("start locator")
         .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
 
-    StartLocatorCommand spyCommand = spyOnStartLocatorCommand(startLocatorCommand);
-    commandRule.executeLastCommandWithInstance(spyCommand);
+    commandRule.executeCommandWithInstance(spy, startLocatorCommand);
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
-    verify(spyCommand).createStartLocatorCommandLine(any(), any(), any(),
+    verify(spy).createStartLocatorCommandLine(any(), any(), any(),
         gemfirePropertiesCaptor.capture(), any(), any(), any(), any(), any());
 
     Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
@@ -77,9 +85,4 @@ public class StartLocatorCommandIntegrationTest {
     assertThat(gemfireProperties.get(JMX_MANAGER_HOSTNAME_FOR_CLIENTS)).isEqualTo(FAKE_HOSTNAME);
   }
 
-  private StartLocatorCommand spyOnStartLocatorCommand(String command) {
-    StartLocatorCommand spy = commandRule.spyCommand(command);
-    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
-    return spy;
-  }
 }

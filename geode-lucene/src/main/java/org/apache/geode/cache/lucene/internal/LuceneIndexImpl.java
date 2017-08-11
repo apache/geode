@@ -138,12 +138,15 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
   }
 
-  protected void initializeAEQ(RegionAttributes attributes, String aeqId) {
+  protected void setupAEQ(RegionAttributes attributes, String aeqId) {
     if (!hasInitializedAEQ) {
-      repositoryManager = createRepositoryManager();
       createAEQ(attributes, aeqId);
       hasInitializedAEQ = true;
     }
+  }
+
+  protected void setupRepositoryManager() {
+    repositoryManager = createRepositoryManager();
   }
 
   protected abstract RepositoryManager createRepositoryManager();

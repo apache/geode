@@ -298,7 +298,7 @@ public class ConnectionTable {
         }
         // If connection.stopped is false, any connection cleanup thread will not yet have acquired
         // the receiver synchronization to remove the receiver. Therefore we can safely add it here.
-        if (!connection.isSocketClosed() || connection.stopped) {
+        if (!(connection.isSocketClosed() || connection.isReceiverStopped())) {
           this.receivers.add(connection);
         }
       }

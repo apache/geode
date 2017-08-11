@@ -19,6 +19,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
@@ -37,6 +38,7 @@ public class PutRequestOperationHandler
     Region region = cache.getRegion(regionName);
     if (region == null) {
       return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.REGION_NOT_FOUND.codeValue)
           .setMessage("Region passed by client did not exist: " + regionName).build());
     }
 
@@ -50,12 +52,17 @@ public class PutRequestOperationHandler
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
         return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+            .setErrorCode(ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue)
             .setMessage("invalid key or value type for region " + regionName).build());
       }
     } catch (UnsupportedEncodingTypeException ex) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder().setMessage(ex.getMessage()).build());
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
+          .setMessage(ex.getMessage()).build());
     } catch (CodecNotRegisteredForTypeException ex) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder().setMessage(ex.getMessage()).build());
+      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
+          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
+          .setMessage(ex.getMessage()).build());
     }
   }
 }

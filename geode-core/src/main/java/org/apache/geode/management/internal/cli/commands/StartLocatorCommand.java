@@ -17,17 +17,13 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -47,9 +43,7 @@ import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
@@ -100,12 +94,11 @@ public class StartLocatorCommand implements GfshCommand {
           help = CliStrings.START_LOCATOR__PORT__HELP) final Integer port,
       @CliOption(key = CliStrings.START_LOCATOR__DIR,
           help = CliStrings.START_LOCATOR__DIR__HELP) String workingDirectory,
-      @CliOption(key = CliStrings.START_LOCATOR__PROPERTIES,
-          optionContext = ConverterHint.FILE_PATH,
-          help = CliStrings.START_LOCATOR__PROPERTIES__HELP) String gemfirePropertiesPathname,
+      @CliOption(key = CliStrings.START_LOCATOR__PROPERTIES, optionContext = ConverterHint.FILE,
+          help = CliStrings.START_LOCATOR__PROPERTIES__HELP) File gemfirePropertiesFile,
       @CliOption(key = CliStrings.START_LOCATOR__SECURITY_PROPERTIES,
-          optionContext = ConverterHint.FILE_PATH,
-          help = CliStrings.START_LOCATOR__SECURITY_PROPERTIES__HELP) String gemfireSecurityPropertiesPathname,
+          optionContext = ConverterHint.FILE,
+          help = CliStrings.START_LOCATOR__SECURITY_PROPERTIES__HELP) File gemfireSecurityPropertiesFile,
       @CliOption(key = CliStrings.START_LOCATOR__INITIALHEAP,
           help = CliStrings.START_LOCATOR__INITIALHEAP__HELP) final String initialHeap,
       @CliOption(key = CliStrings.START_LOCATOR__MAXHEAP,
@@ -135,23 +128,16 @@ public class StartLocatorCommand implements GfshCommand {
 
       workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
 
-      gemfirePropertiesPathname = CliUtil.resolvePathname(gemfirePropertiesPathname);
-
-      if (StringUtils.isNotBlank(gemfirePropertiesPathname)
-          && !IOUtils.isExistingPathname(gemfirePropertiesPathname)) {
+      if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
-                gemfirePropertiesPathname));
+                gemfirePropertiesFile.getAbsolutePath()));
       }
 
-      gemfireSecurityPropertiesPathname =
-          CliUtil.resolvePathname(gemfireSecurityPropertiesPathname);
-
-      if (StringUtils.isNotBlank(gemfireSecurityPropertiesPathname)
-          && !IOUtils.isExistingPathname(gemfireSecurityPropertiesPathname)) {
+      if (gemfireSecurityPropertiesFile != null && !gemfireSecurityPropertiesFile.exists()) {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
-                gemfireSecurityPropertiesPathname));
+                gemfireSecurityPropertiesFile.getAbsolutePath()));
       }
 
       File locatorPidFile = new File(workingDirectory, ProcessType.LOCATOR.getPidFileName());
@@ -200,8 +186,8 @@ public class StartLocatorCommand implements GfshCommand {
       LocatorLauncher locatorLauncher = locatorLauncherBuilder.build();
 
       String[] locatorCommandLine = createStartLocatorCommandLine(locatorLauncher,
-          gemfirePropertiesPathname, gemfireSecurityPropertiesPathname, gemfireProperties,
-          classpath, includeSystemClasspath, jvmArgsOpts, initialHeap, maxHeap);
+          gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, classpath,
+          includeSystemClasspath, jvmArgsOpts, initialHeap, maxHeap);
 
       final Process locatorProcess = new ProcessBuilder(locatorCommandLine)
           .directory(new File(locatorLauncher.getWorkingDirectory())).start();
@@ -240,7 +226,7 @@ public class StartLocatorCommand implements GfshCommand {
                 new File(locatorLauncher.getWorkingDirectory()))),
             null);
 
-        locatorState = LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
+        LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
         do {
           if (locatorProcess.isAlive()) {
             Gfsh.print(".");
@@ -289,33 +275,39 @@ public class StartLocatorCommand implements GfshCommand {
       if (asyncStart) {
         infoResultData.addLine(
             String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, CliStrings.LOCATOR_TERM_NAME));
-      } else {
-        infoResultData.addLine(locatorState.toString());
-
-        String locatorHostName;
-        InetAddress bindAddr = locatorLauncher.getBindAddress();
-        if (bindAddr != null) {
-          locatorHostName = bindAddr.getCanonicalHostName();
-        } else {
-          locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(),
-              HostUtils.getLocalHost());
-        }
-
-        int locatorPort = Integer.parseInt(locatorState.getPort());
-
-        // AUTO-CONNECT
-        // If the connect succeeds add the connected message to the result,
-        // Else, ask the user to use the "connect" command to connect to the Locator.
-        if (shouldAutoConnect(connect)) {
-          doAutoConnect(locatorHostName, locatorPort, gemfirePropertiesPathname,
-              gemfireSecurityPropertiesPathname, infoResultData);
-        }
-        // Report on the state of the Shared Configuration service if enabled...
-        if (enableSharedConfiguration) {
-          infoResultData.addLine(
-              ClusterConfigurationStatusRetriever.fromLocator(locatorHostName, locatorPort));
-        }
+        return ResultBuilder.buildResult(infoResultData);
       }
+
+      infoResultData.addLine(locatorState.toString());
+      String locatorHostName;
+      InetAddress bindAddr = locatorLauncher.getBindAddress();
+      if (bindAddr != null) {
+        locatorHostName = bindAddr.getCanonicalHostName();
+      } else {
+        locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(),
+            HostUtils.getLocalHost());
+      }
+
+      int locatorPort = Integer.parseInt(locatorState.getPort());
+
+
+      ConnectCommand connectCommand = new ConnectCommand();
+      Properties configProperties = connectCommand.resolveSslProperties(getGfsh(), false,
+          gemfirePropertiesFile, gemfireSecurityPropertiesFile);
+
+      // AUTO-CONNECT
+      // If the connect succeeds add the connected message to the result,
+      // Else, ask the user to use the "connect" command to connect to the Locator.
+      if (shouldAutoConnect(connect)) {
+        doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
+      }
+
+      // Report on the state of the Shared Configuration service if enabled...
+      if (enableSharedConfiguration) {
+        infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
+            locatorPort, configProperties));
+      }
+
       return ResultBuilder.buildResult(infoResultData);
     } catch (IllegalArgumentException e) {
       String message = e.getMessage();
@@ -348,38 +340,29 @@ public class StartLocatorCommand implements GfshCommand {
   // With execute option (-e), there could be multiple commands which might presume that a prior
   // "start locator" has formed the connection.
   private boolean shouldAutoConnect(final boolean connect) {
-    return (connect && !(getGfsh() == null || isConnectedAndReady()));
+    return (connect && !isConnectedAndReady());
   }
 
   private void doAutoConnect(final String locatorHostname, final int locatorPort,
-      final String gemfirePropertiesPathname, final String gemfireSecurityPropertiesPathname,
-      final InfoResultData infoResultData) {
+      final Properties configurationProperties, final InfoResultData infoResultData) {
     boolean connectSuccess = false;
     boolean jmxManagerAuthEnabled = false;
     boolean jmxManagerSslEnabled = false;
-
-    Map<String, String> configurationProperties = loadConfigurationProperties(
-        gemfireSecurityPropertiesPathname, loadConfigurationProperties(gemfirePropertiesPathname));
-    Map<String, String> locatorConfigurationProperties = new HashMap<>(configurationProperties);
 
     String responseFailureMessage = null;
 
     for (int attempts = 0; (attempts < 10 && !connectSuccess); attempts++) {
       try {
         ConnectToLocatorResult connectToLocatorResult =
-            ShellCommands.connectToLocator(locatorHostname, locatorPort,
-                ShellCommands.getConnectLocatorTimeoutInMS() / 4, locatorConfigurationProperties);
+            ConnectCommand.connectToLocator(locatorHostname, locatorPort,
+                ConnectCommand.CONNECT_LOCATOR_TIMEOUT_MS / 4, configurationProperties);
 
         ConnectionEndpoint memberEndpoint = connectToLocatorResult.getMemberEndpoint();
 
         jmxManagerSslEnabled = connectToLocatorResult.isJmxManagerSslEnabled();
 
-        if (!jmxManagerSslEnabled) {
-          configurationProperties.clear();
-        }
-
         getGfsh().setOperationInvoker(new JmxOperationInvoker(memberEndpoint.getHost(),
-            memberEndpoint.getPort(), null, null, configurationProperties, null));
+            memberEndpoint.getPort(), configurationProperties));
 
         String shellAndLogMessage = CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
             "JMX Manager " + memberEndpoint.toString(false));
@@ -403,16 +386,9 @@ public class StartLocatorCommand implements GfshCommand {
         jmxManagerAuthEnabled = true;
         break; // no need to continue after AuthenticationFailedException
       } catch (SSLException ignore) {
-        if (ignore instanceof SSLHandshakeException) {
-          // try to connect again without SSL since the SSL handshake failed implying a plain text
-          // connection...
-          locatorConfigurationProperties.clear();
-        } else {
-          // another type of SSL error occurred (possibly a configuration issue); pass the buck...
-          getGfsh().logToFile(ignore.getMessage(), ignore);
-          responseFailureMessage = "Check your SSL configuration and try again.";
-          break;
-        }
+        // another type of SSL error occurred (possibly a configuration issue); pass the buck...
+        getGfsh().logToFile(ignore.getMessage(), ignore);
+        responseFailureMessage = "Check your SSL configuration and try again.";
       } catch (Exception ignore) {
         getGfsh().logToFile(ignore.getMessage(), ignore);
         responseFailureMessage = "Failed to connect; unknown cause: " + ignore.getMessage();
@@ -429,30 +405,6 @@ public class StartLocatorCommand implements GfshCommand {
       infoResultData.addLine(responseFailureMessage);
     }
 
-  }
-
-  private Map<String, String> loadConfigurationProperties(
-      final String configurationPropertiesPathname) {
-    return loadConfigurationProperties(configurationPropertiesPathname, null);
-  }
-
-  private Map<String, String> loadConfigurationProperties(
-      final String configurationPropertiesPathname, Map<String, String> configurationProperties) {
-    configurationProperties =
-        (configurationProperties != null ? configurationProperties : new HashMap<>());
-
-    if (IOUtils.isExistingPathname(configurationPropertiesPathname)) {
-      try {
-        configurationProperties.putAll(ShellCommands
-            .loadPropertiesFromURL(new File(configurationPropertiesPathname).toURI().toURL()));
-      } catch (MalformedURLException ignore) {
-        LogWrapper.getInstance()
-            .warning(String.format(
-                "Failed to load GemFire configuration properties from pathname (%1$s)!",
-                configurationPropertiesPathname), ignore);
-      }
-    }
-    return configurationProperties;
   }
 
   private void doOnConnectionFailure(final String locatorHostName, final int locatorPort,
@@ -481,7 +433,7 @@ public class StartLocatorCommand implements GfshCommand {
   }
 
   String[] createStartLocatorCommandLine(final LocatorLauncher launcher,
-      final String gemfirePropertiesPathname, final String gemfireSecurityPropertiesPathname,
+      final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
       final Properties gemfireProperties, final String userClasspath,
       final Boolean includeSystemClasspath, final String[] jvmArgsOpts, final String initialHeap,
       final String maxHeap) throws MalformedObjectNameException {
@@ -494,8 +446,8 @@ public class StartLocatorCommand implements GfshCommand {
         .add(getLocatorClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
 
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
-    StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesPathname);
-    StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesPathname);
+    StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
+    StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
     StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
     StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
     StartMemberUtils.addInitialHeap(commandLine, initialHeap);

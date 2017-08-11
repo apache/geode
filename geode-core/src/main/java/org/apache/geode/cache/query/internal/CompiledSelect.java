@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -171,7 +172,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // bind iterators in new scope in order to determine dependencies
     context.cachePut(scopeID, context.associateScopeID());
     context.newScope((Integer) context.cacheGet(scopeID));
@@ -225,7 +226,7 @@ public class CompiledSelect extends AbstractCompiledValue {
   }
 
   protected void doTreeTransformation(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     if (!this.transformationDone) {
       this.cachedElementTypeForOrderBy = prepareResultType(context);
       this.mapOrderByColumns(context);
@@ -238,7 +239,7 @@ public class CompiledSelect extends AbstractCompiledValue {
    * Transforms the group by clause into distinct order by clause, if possible
    */
   private void transformGroupByIfPossible(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // for time being assume that the group by cols are explicitly mentioned in proj
     if (this.groupBy != null) {
       List projAttribs = this.projAttrs;
@@ -306,7 +307,7 @@ public class CompiledSelect extends AbstractCompiledValue {
   }
 
   protected void modifyGroupByToOrderBy(boolean setDistinct, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     if (setDistinct) {
       this.distinct = setDistinct;
     }
@@ -321,7 +322,7 @@ public class CompiledSelect extends AbstractCompiledValue {
   }
 
   private void mapOrderByColumns(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     if (this.orderByAttrs != null) {
       Iterator<CompiledSortCriterion> iter = this.orderByAttrs.iterator();
       while (iter.hasNext()) {
@@ -347,7 +348,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   private void evalCanonicalizedExpressionForCSC(CompiledSortCriterion csc,
       ExecutionContext context, StringBuilder buffer)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     csc.getExpr().generateCanonicalizedExpression(buffer, context);
   }
 
@@ -402,7 +403,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
     try {
       // set flag to keep objects serialized for "select *" queries
-      if ((DefaultQuery) context.getQuery() != null) {
+      if (context.getQuery() != null) {
         ((DefaultQuery) context.getQuery()).keepResultsSerialized(this, context);
       }
       Iterator iter = iterators.iterator();
@@ -455,7 +456,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           int numInd = context.getAllIndependentIteratorsOfCurrentScope().size();
           // If order by clause is defined, then the first column should be the preferred index
           if (this.orderByAttrs != null && numInd == 1) {
-            CompiledSortCriterion csc = (CompiledSortCriterion) orderByAttrs.get(0);
+            CompiledSortCriterion csc = orderByAttrs.get(0);
             StringBuilder preferredIndexCondn = new StringBuilder();
             this.evalCanonicalizedExpressionForCSC(csc, context, preferredIndexCondn);
             context.cachePut(PREF_INDEX_COND, preferredIndexCondn.toString());
@@ -490,7 +491,7 @@ public class CompiledSelect extends AbstractCompiledValue {
               StringBuilder temp = null;
               if (this.orderByAttrs != null) {
                 temp = new StringBuilder();
-                CompiledSortCriterion csc = (CompiledSortCriterion) this.orderByAttrs.get(0);
+                CompiledSortCriterion csc = this.orderByAttrs.get(0);
                 this.evalCanonicalizedExpressionForCSC(csc, context, temp);
               }
 
@@ -557,7 +558,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       assert result != null;
       // drop duplicates if this is DISTINCT
       if (result instanceof SelectResults) {
-        SelectResults sr = (SelectResults) result;
+        SelectResults sr = result;
         CollectionType colnType = sr.getCollectionType();
         // if (this.distinct && colnType.allowsDuplicates()) {
         if (this.distinct) {
@@ -589,7 +590,7 @@ public class CompiledSelect extends AbstractCompiledValue {
          * If SelectResult size is zero then we need to put Integer for 0 count.
          */
         if (this.count) {
-          SelectResults res = (SelectResults) result;
+          SelectResults res = result;
 
           if ((this.distinct || evalAsFilters || countStartQueryResult == 0)) {
             // Retrun results as it is as distinct is applied
@@ -761,8 +762,8 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   // returns the number of elements added in the return ResultSet
   private int doNestedIterations(int level, SelectResults results, ExecutionContext context,
-      boolean evaluateWhereClause, int numElementsInResult) throws TypeMismatchException,
-      AmbiguousNameException, FunctionDomainException, NameResolutionException,
+      boolean evaluateWhereClause, int numElementsInResult)
+      throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException, CompiledSelect.NullIteratorException {
     List iterList = context.getCurrentIterators();
     if (level == iterList.size()) {
@@ -792,14 +793,14 @@ public class CompiledSelect extends AbstractCompiledValue {
         }
       }
       if (addToResults) {
-        int occurence =
+        int occurrence =
             applyProjectionAndAddToResultSet(context, results, this.orderByAttrs == null);
-        // If the occurence is greater than 1, then only in case of
+        // If the occurrence is greater than 1, then only in case of
         // non distinct query should it be treated as contributing to size
         // else duplication will be eliminated when making it distinct using
         // ResultsCollectionWrapper and we will fall short of limit
-        if (occurence == 1 || (occurence > 1 && !this.distinct)) {
-          // (Unique i.e first time occurence) or subsequent occurence
+        if (occurrence == 1 || (occurrence > 1 && !this.distinct)) {
+          // (Unique i.e first time occurrence) or subsequent occurrence
           // for non distinct query
           ++numElementsInResult;
         }
@@ -823,18 +824,17 @@ public class CompiledSelect extends AbstractCompiledValue {
       // #44807: select * query should not deserialize objects
       // In case of "select *" queries we can keep the results in serialized
       // form and send it to the client.
-      if ((DefaultQuery) context.getQuery() != null
-          && ((DefaultQuery) context.getQuery()).isKeepSerialized() && sr instanceof QRegion) {
+      if (context.getQuery() != null && ((DefaultQuery) context.getQuery()).isKeepSerialized()
+          && sr instanceof QRegion) {
         ((QRegion) sr).setKeepSerialized(true);
       }
 
       // Iterate through the data set.
-      Iterator cIter = sr.iterator();
-      while (cIter.hasNext()) {
+      for (Object aSr : sr) {
         // Check if query execution on this thread is canceled.
         QueryMonitor.isQueryExecutionCanceled();
 
-        Object currObj = cIter.next();
+        Object currObj = aSr;
         rIter.setCurrent(currObj);
         QueryObserver observer = QueryObserverHolder.getInstance();
         observer.beforeIterationEvaluation(rIter, currObj);
@@ -850,26 +850,19 @@ public class CompiledSelect extends AbstractCompiledValue {
   }
 
   private SelectResults applyProjectionOnCollection(SelectResults resultSet,
-      ExecutionContext context, boolean ignoreOrderBy)
-      throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
-      NameResolutionException, QueryInvocationTargetException {
+      ExecutionContext context, boolean ignoreOrderBy) throws TypeMismatchException,
+      FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
     List iterators = context.getCurrentIterators();
     if (projAttrs == null && (this.orderByAttrs == null || ignoreOrderBy)) {
-      // If the projection attribute is null( ie.e specified as *) &
-      // there is only one
-      // Runtime Iteratir we can return the set as it is.But if the proejction
-      // attribute is null & multiple Iterators are defined we need to rectify
-      // the
-      // the StructBag that is returned. It is to be noted that in case of
-      // single from clause
-      // where the from clause itself is defined as nested select query with
-      // multiple
-      // from clauses , the resultset returned will be a StructBag which we
-      // have to return
-      // as it is.
+      // If the projection attribute is null (ie specified as *) & there is only one Runtime
+      // Iterator we can return the set as it is. But if the projection attribute is null & multiple
+      // Iterators are defined we need to rectify the StructBag that is returned. It is to be noted
+      // that in case of single from clause where the from clause itself is defined as nested select
+      // query with multiple from clauses, the result set returned will be a StructBag which we have
+      // to return as it is.
       if (iterators.size() > 1) {
         StructType type = createStructTypeForNullProjection(iterators, context);
-        ((SelectResults) resultSet).setElementType(type);
+        resultSet.setElementType(type);
       }
 
       return resultSet;
@@ -880,11 +873,11 @@ public class CompiledSelect extends AbstractCompiledValue {
           && resultSet.getCollectionType().getElementType().isStructType();
       if (isStructType) {
         Iterator resultsIter = resultSet.iterator();
-        // Apply limit if there is no order by.
+        // Apply limit if there is no order by
         Integer limitValue = evaluateLimitValue(context, this.limit);
         while (((this.orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
             || (numElementsAdded < limitValue)) && resultsIter.hasNext()) {
-          // Check if query execution on this thread is canceled.
+          // Check if query execution on this thread is canceled
           QueryMonitor.isQueryExecutionCanceled();
 
           Object values[] = ((Struct) resultsIter.next()).getFieldValues();
@@ -893,7 +886,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           }
           int occurence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
           if (occurence == 1 || (occurence > 1 && !this.distinct)) {
-            // (Unique i.e first time occurence) or subsequent occurence
+            // (Unique i.e first time occurrence) or subsequent occurrence
             // for non distinct query
             ++numElementsAdded;
           }
@@ -901,15 +894,15 @@ public class CompiledSelect extends AbstractCompiledValue {
         // return pResultSet;
       } else if (iterators.size() == 1) {
         RuntimeIterator rIter = (RuntimeIterator) iterators.get(0);
-        Iterator resultsIter = ((SelectResults) resultSet).iterator();
+        Iterator resultsIter = resultSet.iterator();
         // Apply limit if there is no order by.
         Integer limitValue = evaluateLimitValue(context, this.limit);
         while (((this.orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
             || (numElementsAdded < limitValue)) && resultsIter.hasNext()) {
           rIter.setCurrent(resultsIter.next());
-          int occurence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
-          if (occurence == 1 || (occurence > 1 && !this.distinct)) {
-            // (Unique i.e first time occurence) or subsequent occurence
+          int occurrence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
+          if (occurrence == 1 || (occurrence > 1 && !this.distinct)) {
+            // (Unique i.e first time occurrence) or subsequent occurrence
             // for non distinct query
             ++numElementsAdded;
           }
@@ -923,81 +916,119 @@ public class CompiledSelect extends AbstractCompiledValue {
     }
   }
 
+  public enum DataContainerType {
+    // isOrdered, distinct, elementType.isStructType(), ignoreOrderBy
+    UNORDERED_DISTINCT_STRUCT(false, true, true, true),
+    UNORDERED_DISTINCT_RESULTS(false, true, false, true),
+    UNORDERED_INDISTINCT_STRUCT(false, false, true, true),
+    UNORDERED_INDISTINCT_RESULTS(false, false, false, true),
+
+    ORDERED_DISTINCT_STRUCT_IGNORED(true, true, true, true),
+    ORDERED_INDISTINCT_STRUCT_IGNORED(true, false, true, true),
+    ORDERED_DISTINCT_STRUCT_UNIGNORED(true, true, true, false),
+    ORDERED_INDISTINCT_STRUCT_UNIGNORED(true, false, true, false),
+    ORDERED_DISTINCT_RESULTS_IGNORED(true, true, false, true),
+    ORDERED_INDISTINCT_RESULTS_IGNORED(true, false, false, true),
+    ORDERED_DISTINCT_RESULTS_UNIGNORED(true, true, false, false),
+    ORDERED_INDISTINCT_RESULTS_UNIGNORED(true, false, false, false);
+
+    public static DataContainerType determineDataContainerType(boolean getOrdered,
+        boolean getDistinct, boolean getStructType, boolean getIgnoreOrderBy)
+        throws TypeMismatchException {
+      // if not isOrdered, then isIgnoreOrderBy is irrelevant
+      return Arrays.stream(DataContainerType.values()).filter(type -> type.isOrdered == getOrdered)
+          .filter(type -> type.isDistinct == getDistinct)
+          .filter(type -> type.isStructType == getStructType)
+          .filter(type -> type.isIgnoreOrderBy == getIgnoreOrderBy || !type.isOrdered).findFirst()
+          .orElseThrow(() -> new TypeMismatchException("Logical inconsistency in CompiledSelect"));
+    }
+
+    DataContainerType(boolean isOrdered, boolean isDistinct, boolean isStructType,
+        boolean isIgnoreOrderBy) {
+      this.isOrdered = isOrdered;
+      this.isDistinct = isDistinct;
+      this.isStructType = isStructType;
+      this.isIgnoreOrderBy = isIgnoreOrderBy;
+    }
+
+    private final boolean isOrdered, isDistinct, isStructType, isIgnoreOrderBy;
+  }
+
   private SelectResults prepareEmptyResultSet(ExecutionContext context, boolean ignoreOrderBy)
       throws TypeMismatchException, AmbiguousNameException {
-    // if no projection attributes or '*'as projection attribute
-    // & more than one/RunTimeIterator then create a StrcutSet.
-    // If attribute is null or '*' & only one RuntimeIterator then create a
-    // ResultSet.
-    // If single attribute is present without alias name , then create
-    // ResultSet
-    // Else if more than on attribute or single attribute with alias is
-    // present then return a StrcutSet
-    // create StructSet which will contain root objects of all iterators in
-    // from clause
-
+    // If no projection attributes or '*' as projection attribute & more than one/RunTimeIterator
+    // then create a StructSet.
+    // If attribute is null or '*' & only one RuntimeIterator then create a ResultSet.
+    // If single attribute is present without alias name, then create ResultSet.
+    // Else if more than on attribute or single attribute with alias is present then return a
+    // StructSet.
+    // Create StructSet which will contain root objects of all iterators in from clause.
     ObjectType elementType = this.cachedElementTypeForOrderBy != null
         ? this.cachedElementTypeForOrderBy : prepareResultType(context);
     SelectResults results;
-    if (this.distinct || !this.count) {
-      if (this.orderByAttrs != null) {
-        boolean nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
-        if (elementType.isStructType()) {
-          if (ignoreOrderBy) {
-            results = this.distinct ? new LinkedStructSet((StructTypeImpl) elementType)
-                : new SortedResultsBag(elementType, nullValuesAtStart);
 
-          } else {
-            OrderByComparator comparator = this.hasUnmappedOrderByCols
-                ? new OrderByComparatorUnmapped(this.orderByAttrs, (StructTypeImpl) elementType,
-                    context)
-                : new OrderByComparator(this.orderByAttrs, (StructTypeImpl) elementType, context);
-            results = this.distinct ? new SortedStructSet(comparator, (StructTypeImpl) elementType)
-                : new SortedStructBag(comparator, (StructType) elementType, nullValuesAtStart);
-
-          }
-        } else {
-          if (ignoreOrderBy) {
-            results =
-                this.distinct ? new LinkedResultSet() : new SortedResultsBag(nullValuesAtStart);
-
-          } else {
-            OrderByComparator comparator = this.hasUnmappedOrderByCols
-                ? new OrderByComparatorUnmapped(this.orderByAttrs, elementType, context)
-                : new OrderByComparator(this.orderByAttrs, elementType, context);
-            results = this.distinct ? new SortedResultSet(comparator)
-                : new SortedResultsBag(comparator, nullValuesAtStart);
-          }
-          results.setElementType(elementType);
-        }
-      } else {
-        if (this.distinct) {
-          if (elementType.isStructType()) {
-            results = new StructSet((StructType) elementType);
-          } else {
-            results = new ResultsSet(elementType);
-          }
-        } else {
-          if (elementType.isStructType()) {
-            results = new StructBag((StructType) elementType, context.getCachePerfStats());
-          } else {
-            results = new ResultsBag(elementType, context.getCachePerfStats());
-          }
-        }
-      }
-    } else {
-      // Shobhit: If its a 'COUNT' query and no End processing required Like for
-      // 'DISTINCT'
-      // we can directly keep count in ResultSet and ResultBag is good enough
-      // for that.
-      results =
-          new ResultsBag(new ObjectTypeImpl(Integer.class), 1 /*
-                                                               * initial capacity for count value
-                                                               */, context.getCachePerfStats());
+    if (!this.distinct && this.count) {
+      // Shobhit: If it's a 'COUNT' query and no End processing required Like for 'DISTINCT'
+      // we can directly keep count in ResultSet and ResultBag is good enough for that.
+      results = new ResultsBag(new ObjectTypeImpl(Integer.class), 1, context.getCachePerfStats());
       countStartQueryResult = 0;
-
+      return results;
     }
-    return results;
+
+    // Potential edge-case: Could this be non-null but empty?
+    boolean nullValuesAtStart = orderByAttrs != null && !orderByAttrs.get(0).getCriterion();
+    OrderByComparator comparator;
+    boolean isOrdered = this.orderByAttrs != null;
+
+    switch (DataContainerType.determineDataContainerType(isOrdered, distinct,
+        elementType.isStructType(), ignoreOrderBy)) {
+      case UNORDERED_DISTINCT_STRUCT:
+        return new StructSet((StructType) elementType);
+      case UNORDERED_DISTINCT_RESULTS:
+        return new ResultsSet(elementType);
+      case UNORDERED_INDISTINCT_STRUCT:
+        return new StructBag((StructType) elementType, context.getCachePerfStats());
+      case UNORDERED_INDISTINCT_RESULTS:
+        return new ResultsBag(elementType, context.getCachePerfStats());
+
+      case ORDERED_DISTINCT_STRUCT_IGNORED:
+        return new LinkedStructSet((StructTypeImpl) elementType);
+      case ORDERED_INDISTINCT_STRUCT_IGNORED:
+        return new SortedResultsBag(elementType, nullValuesAtStart);
+      case ORDERED_DISTINCT_STRUCT_UNIGNORED:
+        comparator = this.hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
+            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        return new SortedStructSet(comparator, (StructTypeImpl) elementType);
+      case ORDERED_INDISTINCT_STRUCT_UNIGNORED:
+        comparator = this.hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
+            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        return new SortedStructBag(comparator, (StructType) elementType, nullValuesAtStart);
+      case ORDERED_DISTINCT_RESULTS_IGNORED:
+        results = new LinkedResultSet();
+        results.setElementType(elementType);
+        return results;
+      case ORDERED_INDISTINCT_RESULTS_IGNORED:
+        results = new SortedResultsBag(nullValuesAtStart);
+        results.setElementType(elementType);
+        return results;
+      case ORDERED_DISTINCT_RESULTS_UNIGNORED:
+        comparator = this.hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
+            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        results = new SortedResultSet(comparator);
+        results.setElementType(elementType);
+        return results;
+      case ORDERED_INDISTINCT_RESULTS_UNIGNORED:
+        comparator = this.hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
+            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        results = new SortedResultsBag(comparator, nullValuesAtStart);
+        results.setElementType(elementType);
+        return results;
+    }
+    throw new TypeMismatchException("Logical inconsistency in CompiledSelect");
   }
 
   protected ObjectType prepareResultType(ExecutionContext context)
@@ -1278,7 +1309,7 @@ public class CompiledSelect extends AbstractCompiledValue {
               && !context.getCache().getPdxReadSerialized()) {
             values[i] = ((PdxInstance) values[i]).getObject();
           } else if (values[i] instanceof PdxString) {
-            values[i] = ((PdxString) values[i]).toString();
+            values[i] = values[i].toString();
           }
         }
       }
@@ -1415,11 +1446,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         // add UNDEFINED to results only for NOT EQUALS queries
         if (this.whereClause.getType() == COMPARISON) {
           int operator = ((Filter) this.whereClause).getOperator();
-          if ((operator != TOK_NE && operator != TOK_NE_ALT)) {
-            return false;
-          } else {
-            return true;
-          }
+          return operator == TOK_NE || operator == TOK_NE_ALT;
         } else {
           return false;
         }

@@ -19,14 +19,16 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.net.*;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a
@@ -36,10 +38,6 @@ import org.apache.geode.internal.net.*;
  *
  */
 public class JmxManagerLocatorRequest implements DataSerializableFixedID {
-
-  public JmxManagerLocatorRequest() {
-    super();
-  }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
@@ -69,36 +67,23 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
    *         have trouble communicating with it.
    */
   public static JmxManagerLocatorResponse send(String locatorHost, int locatorPort, int msTimeout,
-      Map<String, String> sslConfigProps) throws IOException {
-    Properties distributionConfigProps = new Properties();
+      Properties sslConfigProps) throws IOException, ClassNotFoundException {
     InetAddress networkAddress = InetAddress.getByName(locatorHost);
     InetSocketAddress inetSockAddr = new InetSocketAddress(networkAddress, locatorPort);
 
-    try {
-      if (sslConfigProps != null) {
-        distributionConfigProps.putAll(sslConfigProps);
-      }
+    // simply need to turn sslConfigProps into sslConfig for locator
+    SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(sslConfigProps,
+        SecurableCommunicationChannel.LOCATOR);
+    SocketCreator socketCreator = new SocketCreator(sslConfig);
+    TcpClient client = new TcpClient(socketCreator);
+    Object responseFromServer = client.requestToServer(inetSockAddr, SINGLETON, msTimeout, true);
 
-      TcpClient client = new TcpClient(new DistributionConfigImpl(distributionConfigProps));
-      Object responseFromServer = client.requestToServer(inetSockAddr, SINGLETON, msTimeout, true);
-
+    if (responseFromServer instanceof JmxManagerLocatorResponse)
       return (JmxManagerLocatorResponse) responseFromServer;
-    } catch (ClassNotFoundException unexpected) {
-      throw new IllegalStateException(unexpected);
-    } catch (ClassCastException unexpected) {
-      // FIXME - Abhishek: object read is type "int" instead of
-      // JmxManagerLocatorResponse when the Locator is using SSL & the request
-      // didn't use SSL -> this causes ClassCastException. Not sure how to make
-      // locator meaningful message
-      throw new IllegalStateException(unexpected);
-    } finally {
-      distributionConfigProps.clear();
+    else {
+      throw new LocatorCancelException(
+          "Unrecognisable response received: This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
     }
-  }
-
-  public static JmxManagerLocatorResponse send(String locatorHost, int locatorPort, int msTimeout)
-      throws IOException {
-    return send(locatorHost, locatorPort, msTimeout, null);
   }
 
   @Override

@@ -85,14 +85,14 @@ public class SessionReplicationIntegrationJUnitTest {
   @Before
   public void setUp() throws Exception {
 
-    Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"));
-
     File gemfireLogFile = new File(tmpdir.newFolder(), "gemfire_modules.log");
 
     request = HttpTester.newRequest();
 
     tester = new MyServletTester();
     tester.setContextPath("/test");
+
+    Assume.assumeFalse(System.getProperty("os.name").toLowerCase().contains("win"));
 
     filterHolder =
         tester.addFilter(SessionCachingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));

@@ -103,7 +103,7 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
     try {
       isDataRegionReady.await();
     } catch (InterruptedException e) {
-      throw new InternalGemFireError("Uable to create index repository", e);
+      throw new InternalGemFireError("Unable to create index repository", e);
     }
     IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
       try {

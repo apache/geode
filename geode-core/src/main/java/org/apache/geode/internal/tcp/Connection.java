@@ -3990,6 +3990,10 @@ public class Connection implements Runnable {
     return this.socket.isClosed() || !this.socket.isConnected();
   }
 
+  public boolean isReceiverStopped() {
+    return this.stopped;
+  }
+
   private boolean isSocketInUse() {
     return this.socketInUse;
   }

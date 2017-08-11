@@ -25,6 +25,9 @@ sections:
   subnav_template: geode-subnav
 
 template_variables:
+  product_name_long: Apache Geode
+  product_name: Geode
+  product_version: 1.2
   support_url: http://geode.apache.org/community
   product_url: http://geode.apache.org/
   book_title: Apache Geode Documentation
