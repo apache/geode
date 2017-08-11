@@ -60,6 +60,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Version;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
@@ -1221,6 +1222,7 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-3427 - intermittent CI failures
   public void testCoordinatorFindRequestSuccess() throws Exception {
     initMocks(false);
     HashSet<InternalDistributedMember> registrants = new HashSet<>();
