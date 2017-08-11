@@ -46,7 +46,7 @@ public class WanSnapshotJUnitTest extends SnapshotTestCase {
       region.put(i, new MyObject(i, "clienttest " + i));
     }
 
-    File snapshot = new File("wan.snapshot");
+    File snapshot = new File("wan.snapshot.gfd");
     region.getSnapshotService().save(snapshot, SnapshotFormat.GEMFIRE);
     region.clear();
 

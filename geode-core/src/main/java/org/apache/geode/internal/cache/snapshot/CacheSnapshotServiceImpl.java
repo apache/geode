@@ -15,10 +15,8 @@
 package org.apache.geode.internal.cache.snapshot;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Set;
 
 import org.apache.geode.admin.RegionNotFoundException;
 import org.apache.geode.cache.Region;
@@ -52,10 +50,20 @@ public class CacheSnapshotServiceImpl implements CacheSnapshotService {
     save(dir, format, createOptions());
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public void save(File dir, SnapshotFormat format, SnapshotOptions<Object, Object> options)
       throws IOException {
+    createDirectoryIfNeeded(dir);
+
+    for (Region<?, ?> region : cache.rootRegions()) {
+      for (Region<?, ?> subRegion : region.subregions(true)) {
+        saveRegion(subRegion, dir, format, options);
+      }
+      saveRegion(region, dir, format, options);
+    }
+  }
+
+  private void createDirectoryIfNeeded(File dir) throws IOException {
     if (!dir.exists()) {
       boolean created = dir.mkdirs();
       if (!created) {
@@ -63,37 +71,37 @@ public class CacheSnapshotServiceImpl implements CacheSnapshotService {
             LocalizedStrings.Snapshot_UNABLE_TO_CREATE_DIR_0.toLocalizedString(dir));
       }
     }
-
-    for (Region<?, ?> r : (Set<Region<?, ?>>) cache.rootRegions()) {
-      for (Region<?, ?> sub : r.subregions(true)) {
-        saveRegion(sub, dir, format, options);
-      }
-      saveRegion(r, dir, format, options);
-    }
   }
 
   @Override
   public void load(File dir, SnapshotFormat format) throws IOException, ClassNotFoundException {
-    File[] snapshots = dir.listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        return !pathname.isDirectory();
-      }
-    });
+    if (!dir.exists() || !dir.isDirectory()) {
+      throw new FileNotFoundException("Unable to load snapshot from " + dir.getCanonicalPath()
+          + " as the file does not exist or is not a directory");
+    }
+    File[] snapshotFiles = getSnapshotFiles(dir);
+    load(snapshotFiles, format, createOptions());
+  }
 
-    if (snapshots == null) {
+  private File[] getSnapshotFiles(File dir) throws IOException {
+    File[] snapshotFiles = dir.listFiles(pathname -> pathname.getName().endsWith(".gfd"));
+
+    if (snapshotFiles == null) {
+      throw new IOException("Unable to access " + dir.getCanonicalPath());
+    } else if (snapshotFiles.length == 0) {
       throw new FileNotFoundException(
           LocalizedStrings.Snapshot_NO_SNAPSHOT_FILES_FOUND_0.toLocalizedString(dir));
     }
-    load(snapshots, format, createOptions());
+
+    return snapshotFiles;
   }
 
   @Override
-  public void load(File[] snapshots, SnapshotFormat format, SnapshotOptions<Object, Object> options)
-      throws IOException, ClassNotFoundException {
+  public void load(File[] snapshotFiles, SnapshotFormat format,
+      SnapshotOptions<Object, Object> options) throws IOException, ClassNotFoundException {
 
-    for (File f : snapshots) {
-      GFSnapshotImporter in = new GFSnapshotImporter(f);
+    for (File file : snapshotFiles) {
+      GFSnapshotImporter in = new GFSnapshotImporter(file);
       try {
         byte version = in.getVersion();
         if (version == GFSnapshot.SNAP_VER_1) {
@@ -104,12 +112,12 @@ public class CacheSnapshotServiceImpl implements CacheSnapshotService {
         String regionName = in.getRegionName();
         Region<Object, Object> region = cache.getRegion(regionName);
         if (region == null) {
-          throw new RegionNotFoundException(
-              LocalizedStrings.Snapshot_COULD_NOT_FIND_REGION_0_1.toLocalizedString(regionName, f));
+          throw new RegionNotFoundException(LocalizedStrings.Snapshot_COULD_NOT_FIND_REGION_0_1
+              .toLocalizedString(regionName, file));
         }
 
         RegionSnapshotService<Object, Object> rs = region.getSnapshotService();
-        rs.load(f, format, options);
+        rs.load(file, format, options);
 
       } finally {
         in.close();
@@ -117,12 +125,12 @@ public class CacheSnapshotServiceImpl implements CacheSnapshotService {
     }
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   private void saveRegion(Region<?, ?> region, File dir, SnapshotFormat format,
       SnapshotOptions options) throws IOException {
-    RegionSnapshotService<?, ?> rs = region.getSnapshotService();
-    String name = "snapshot" + region.getFullPath().replace('/', '-');
+    RegionSnapshotService<?, ?> regionSnapshotService = region.getSnapshotService();
+    String name = "snapshot" + region.getFullPath().replace('/', '-')
+        + RegionSnapshotService.SNAPSHOT_FILE_EXTENSION;
     File f = new File(dir, name);
-    rs.save(f, format, options);
+    regionSnapshotService.save(f, format, options);
   }
 }

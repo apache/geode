@@ -328,6 +328,7 @@ org/apache/geode/internal/cache/persistence/OplogType,false,prefix:java/lang/Str
 org/apache/geode/internal/cache/persistence/PersistentMemberState,false
 org/apache/geode/internal/cache/snapshot/ClientExporter$ClientArgs,true,1,options:org/apache/geode/cache/snapshot/SnapshotOptions,prSingleHop:boolean,region:java/lang/String
 org/apache/geode/internal/cache/snapshot/ClientExporter$ProxyExportFunction,true,1
+org/apache/geode/internal/cache/snapshot/DefaultSnapshotFileMapper,false
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$1,true,1
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelArgs,true,1,file:java/io/File,format:org/apache/geode/cache/snapshot/SnapshotOptions$SnapshotFormat,options:org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelExportFunction,false
