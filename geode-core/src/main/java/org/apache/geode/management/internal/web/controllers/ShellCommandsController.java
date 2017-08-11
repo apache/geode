@@ -53,7 +53,18 @@ import org.apache.geode.management.internal.web.util.ConvertUtils;
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
  * 
- * @see org.apache.geode.management.internal.cli.commands.ShellCommands
+ * @see org.apache.geode.management.internal.cli.commands.ConnectCommand
+ * @see org.apache.geode.management.internal.cli.commands.DebugCommand
+ * @see org.apache.geode.management.internal.cli.commands.DescribeConnectionCommand
+ * @see org.apache.geode.management.internal.cli.commands.DisconnectCommand
+ * @see org.apache.geode.management.internal.cli.commands.EchoCommand
+ * @see org.apache.geode.management.internal.cli.commands.ExecuteScriptCommand
+ * @see org.apache.geode.management.internal.cli.commands.ExitCommand
+ * @see org.apache.geode.management.internal.cli.commands.HistoryCommand
+ * @see org.apache.geode.management.internal.cli.commands.SetVariableCommand
+ * @see org.apache.geode.management.internal.cli.commands.ShCommand
+ * @see org.apache.geode.management.internal.cli.commands.SleepCommand
+ * @see org.apache.geode.management.internal.cli.commands.VersionCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestBody

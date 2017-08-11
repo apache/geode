@@ -217,7 +217,7 @@ public class ConnectCommand implements GfshCommand {
     }
     for (File file : files) {
       if (file != null) {
-        properties.putAll(ShellCommands.loadProperties(file));
+        properties.putAll(ShellCommandsLoadProperties.loadProperties(file));
       }
     }
     return properties;
