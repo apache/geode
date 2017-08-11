@@ -12,13 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.process.signal;
 
 /**
  * The SignalType class...
- * </p>
- * 
+ *
  * @since GemFire 7.0
  */
 public enum SignalType {
@@ -38,7 +36,6 @@ public enum SignalType {
 
   @Override
   public String toString() {
-    return this.description;
+    return description;
   }
-
 }

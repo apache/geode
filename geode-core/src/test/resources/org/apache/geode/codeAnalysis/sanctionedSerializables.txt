@@ -201,6 +201,7 @@ org/apache/geode/cache/util/Gateway$OrderPolicy,false
 org/apache/geode/cache/wan/GatewaySender$OrderPolicy,false
 org/apache/geode/compression/CompressionException,true,4118639654597191235
 org/apache/geode/compression/SnappyCompressor,true,496609875302446099
+org/apache/geode/config/internal/ClusterConfigurationNotAvailableException,true,771319836094239284
 org/apache/geode/distributed/AbstractLauncher$Status,false,description:java/lang/String
 org/apache/geode/distributed/DistributedSystemDisconnectedException,true,-2484849299224086250
 org/apache/geode/distributed/FutureCancelledException,true,-4599338440381989844
@@ -249,7 +250,6 @@ org/apache/geode/internal/SystemAdmin$CombinedResources,false
 org/apache/geode/internal/admin/CompoundEntrySnapshot,true,5776382582897895718,allUserAttributes:java/util/Set,allValues:java/util/Set,hitRatio:float,hitRatioSum:double,hitResponders:long,lastAccessTime:long,lastModifiedTime:long,name:java/lang/Object,numHits:long,numMisses:long
 org/apache/geode/internal/admin/CompoundRegionSnapshot,true,6295026394298398004,allCacheLoaders:java/util/Set,allCacheWriters:java/util/Set,allCapControllers:java/util/Set,allConcLevels:java/util/Set,allCustomIdle:java/util/HashSet,allCustomTtl:java/util/HashSet,allDataPolicies:java/util/Set,allEntryIdleTimeout:java/util/Set,allEntryTtl:java/util/Set,allInitialCaps:java/util/Set,allKeyConstraints:java/util/Set,allListeners:java/util/Set,allLoadFactors:java/util/Set,allRegionIdleTimeout:java/util/Set,allRegionTtl:java/util/Set,allScopes:java/util/Set,allStatsEnabled:java/util/Set,allUserAttributes:java/util/Set,allValueConstraints:java/util/Set,hitRatio:float,hitRatioSum:double,hitResponders:long,lastAccessTime:long,lastModifiedTime:long,name:java/lang/String,numHits:long,numMisses:long
 org/apache/geode/internal/admin/StatAlert,true,5725457607122449170,definitionId:int,time:java/util/Date,values:java/lang/Number[]
-org/apache/geode/internal/admin/remote/DistributionLocatorId,true,6587390186971937865,bindAddress:java/lang/String,host:java/net/InetAddress,hostnameForClients:java/lang/String,peerLocator:boolean,port:int,serverLocator:boolean
 org/apache/geode/internal/admin/remote/EntryValueNodeImpl,false,fields:org/apache/geode/internal/admin/remote/EntryValueNodeImpl[],name:java/lang/String,primitive:boolean,primitiveVal:java/lang/Object,type:java/lang/String
 org/apache/geode/internal/cache/BucketAdvisor$SetFromMap,true,2454657854757543876,m:java/util/Map
 org/apache/geode/internal/cache/BucketNotFoundException,true,2898657229184289911
@@ -328,6 +328,7 @@ org/apache/geode/internal/cache/persistence/OplogType,false,prefix:java/lang/Str
 org/apache/geode/internal/cache/persistence/PersistentMemberState,false
 org/apache/geode/internal/cache/snapshot/ClientExporter$ClientArgs,true,1,options:org/apache/geode/cache/snapshot/SnapshotOptions,prSingleHop:boolean,region:java/lang/String
 org/apache/geode/internal/cache/snapshot/ClientExporter$ProxyExportFunction,true,1
+org/apache/geode/internal/cache/snapshot/DefaultSnapshotFileMapper,false
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$1,true,1
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelArgs,true,1,file:java/io/File,format:org/apache/geode/cache/snapshot/SnapshotOptions$SnapshotFormat,options:org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelExportFunction,false
@@ -358,6 +359,7 @@ org/apache/geode/internal/concurrent/CompactConcurrentHashSet2,true,724906924676
 org/apache/geode/internal/concurrent/CompactConcurrentHashSet2$Segment,true,2249069246763182397,loadFactor:float
 org/apache/geode/internal/concurrent/ConcurrentHashSet,true,-3338819662572203596,map:java/util/concurrent/ConcurrentHashMap
 org/apache/geode/internal/concurrent/LI,true,-6014738350371493969,className:java/lang/String,identityHashCode:int,lockedStackFrame:java/lang/StackTraceElement
+org/apache/geode/internal/config/ClusterConfigurationNotAvailableException,true,771319836094239284
 org/apache/geode/internal/datasource/AbstractDataSource,false,configProps:org/apache/geode/internal/datasource/ConfiguredDataSourceProperties,isActive:boolean,jdbcDriver:java/lang/String,loginTimeOut:int,password:java/lang/String,serverName:java/lang/String,url:java/lang/String,user:java/lang/String
 org/apache/geode/internal/datasource/AbstractPoolCache,false,INIT_LIMIT:int,MAX_LIMIT:int,activeConnections:int,configProps:org/apache/geode/internal/datasource/ConfiguredDataSourceProperties,connEventListner:java/util/EventListener,expirationTime:int,expiredConns:java/util/List,loginTimeOut:int,sleepTime:long,th:java/lang/Thread,timeOut:int,totalConnections:int
 org/apache/geode/internal/datasource/ConfiguredDataSourceProperties,true,1241739895646314739,connPoolDSClass:java/lang/String,expirationTime:int,initialPoolSize:int,jdbcDriver:java/lang/String,loginTimeOut:int,maxPoolSize:int,mcfClass:java/lang/String,password:java/lang/String,timeOut:int,txnType:java/lang/String,url:java/lang/String,user:java/lang/String,xadsClass:java/lang/String
@@ -540,9 +542,6 @@ org/apache/geode/management/internal/cli/functions/CreateDefinedIndexesFunction,
 org/apache/geode/management/internal/cli/functions/CreateDiskStoreFunction,true,1
 org/apache/geode/management/internal/cli/functions/CreateIndexFunction,true,1
 org/apache/geode/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
-org/apache/geode/management/internal/cli/functions/DataCommandFunction$SelectExecStep,true,1
-org/apache/geode/management/internal/cli/functions/DataCommandFunction$SelectMoveStep,true,1
-org/apache/geode/management/internal/cli/functions/DataCommandFunction$SelectQuitStep,true,1
 org/apache/geode/management/internal/cli/functions/DeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/DescribeDiskStoreFunction,false
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunction,true,1
@@ -594,9 +593,6 @@ org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
 org/apache/geode/management/internal/cli/json/GfJsonException,true,36449998984143318
-org/apache/geode/management/internal/cli/multistep/CLIMultiStepHelper$RemoteStep,false,commandArguments:java/lang/Object[],name:java/lang/String
-org/apache/geode/management/internal/cli/multistep/CLIMultiStepHelper$StepExecutionException,true,1,message:java/lang/String
-org/apache/geode/management/internal/cli/multistep/CLIStepExecption,false,result:org/apache/geode/management/cli/Result
 org/apache/geode/management/internal/cli/result/CommandResultException,true,1,result:org/apache/geode/management/cli/Result
 org/apache/geode/management/internal/cli/result/ResultDataException,true,3851919811942980944
 org/apache/geode/management/internal/cli/result/TableBuilder$Align,false

@@ -14,14 +14,15 @@
  */
 package org.apache.geode.internal.process;
 
+import static org.apache.commons.lang.Validate.notNull;
+
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Extracted from LogWriterImpl and changed to static.
- * 
  */
 public class StartupStatus {
   private static final Logger logger = LogService.getLogger();
@@ -29,14 +30,21 @@ public class StartupStatus {
   /** protected by static synchronized */
   private static StartupStatusListener listener;
 
+  private StartupStatus() {
+    // do nothing
+  }
+
   /**
    * Writes both a message and exception to this writer. If a startup listener is registered, the
    * message will be written to the listener as well to be reported to a user.
-   * 
+   *
    * @since GemFire 7.0
    */
-  public static synchronized void startup(StringId msgID, Object[] params) {
-    String message = msgID.toLocalizedString(params);
+  public static synchronized void startup(final StringId msgId, final Object... params) {
+    notNull(msgId, "Invalid msgId '" + msgId + "' specified");
+    notNull(params, "Invalid params '" + params + "' specified");
+
+    String message = msgId.toLocalizedString(params);
 
     if (listener != null) {
       listener.setStatus(message);
@@ -45,7 +53,7 @@ public class StartupStatus {
     logger.info(message);
   }
 
-  public static synchronized void setListener(StartupStatusListener listener) {
+  public static synchronized void setListener(final StartupStatusListener listener) {
     StartupStatus.listener = listener;
   }
 

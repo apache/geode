@@ -40,7 +40,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 
 @Category(DistributedTest.class)
 public class SnapshotByteArrayDUnitTest extends JUnit4CacheTestCase {
-  private final File snap = new File("snapshot-ops");
+  private final File snap = new File("snapshot-ops.gfd");
 
   public SnapshotByteArrayDUnitTest() {
     super();
