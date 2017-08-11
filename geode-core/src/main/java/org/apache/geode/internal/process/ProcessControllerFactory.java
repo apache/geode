@@ -69,7 +69,7 @@ public class ProcessControllerFactory {
   }
 
   public boolean isAttachAPIFound() {
-    if (this.disableAttachApi) {
+    if (disableAttachApi) {
       return false;
     }
     boolean found = false;

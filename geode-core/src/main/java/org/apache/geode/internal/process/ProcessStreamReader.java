@@ -168,12 +168,7 @@ public abstract class ProcessStreamReader implements Runnable {
     BLOCKING, NON_BLOCKING
   }
 
-  public static String waitAndCaptureProcessStandardOutputStream(final Process process) {
-    return waitAndCaptureProcessStandardOutputStream(process,
-        DEFAULT_PROCESS_OUTPUT_WAIT_TIME_MILLIS);
-  }
-
-  public static String waitAndCaptureProcessStandardOutputStream(final Process process,
+  private static String waitAndCaptureProcessStandardOutputStream(final Process process,
       final long waitTimeMilliseconds) {
     notNull(process, "Invalid process '" + process + "' specified");
 
@@ -222,7 +217,7 @@ public abstract class ProcessStreamReader implements Runnable {
 
   /**
    * Builds a ProcessStreamReader.
-   * 
+   *
    * @since GemFire 8.2
    */
   public static class Builder {

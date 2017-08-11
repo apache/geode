@@ -75,22 +75,21 @@ class MBeanProcessController implements ProcessController {
 
   @Override
   public int getProcessId() {
-    return this.pid;
+    return pid;
   }
 
   @Override
   public String status() throws UnableToControlProcessException, ConnectionFailedException,
       IOException, MBeanInvocationFailedException {
-    return status(this.arguments.getNamePattern(), this.arguments.getPidAttribute(),
-        this.arguments.getStatusMethod(), this.arguments.getAttributes(),
-        this.arguments.getValues());
+    return status(arguments.getNamePattern(), arguments.getPidAttribute(),
+        arguments.getStatusMethod(), arguments.getAttributes(), arguments.getValues());
   }
 
   @Override
   public void stop() throws UnableToControlProcessException, ConnectionFailedException, IOException,
       MBeanInvocationFailedException {
-    stop(this.arguments.getNamePattern(), this.arguments.getPidAttribute(),
-        this.arguments.getStopMethod(), this.arguments.getAttributes(), this.arguments.getValues());
+    stop(arguments.getNamePattern(), arguments.getPidAttribute(), arguments.getStopMethod(),
+        arguments.getAttributes(), arguments.getValues());
   }
 
   @Override
@@ -163,15 +162,15 @@ class MBeanProcessController implements ProcessController {
     connect();
     try {
       QueryExp constraint = buildQueryExp(pidAttribute, attributes, values);
-      Set<ObjectName> mbeanNames = this.server.queryNames(namePattern, constraint);
+      Set<ObjectName> mbeanNames = server.queryNames(namePattern, constraint);
 
       if (mbeanNames.isEmpty()) {
         throw new MBeanInvocationFailedException("Failed to find mbean matching '" + namePattern
-            + "' with attribute '" + pidAttribute + "' of value '" + this.pid + "'");
+            + "' with attribute '" + pidAttribute + "' of value '" + pid + "'");
       }
       if (mbeanNames.size() > 1) {
         throw new MBeanInvocationFailedException("Found more than one mbean matching '"
-            + namePattern + "' with attribute '" + pidAttribute + "' of value '" + this.pid + "'");
+            + namePattern + "' with attribute '" + pidAttribute + "' of value '" + pid + "'");
       }
 
       objectName = mbeanNames.iterator().next();
@@ -194,10 +193,10 @@ class MBeanProcessController implements ProcessController {
   private void connect() throws ConnectionFailedException, IOException {
     try {
       JMXServiceURL jmxUrl = getJMXServiceURL();
-      this.jmxc = JMXConnectorFactory.connect(jmxUrl);
-      this.server = this.jmxc.getMBeanServerConnection();
+      jmxc = JMXConnectorFactory.connect(jmxUrl);
+      server = jmxc.getMBeanServerConnection();
     } catch (AttachNotSupportedException e) {
-      throw new ConnectionFailedException("Failed to connect to process '" + this.pid + "'", e);
+      throw new ConnectionFailedException("Failed to connect to process '" + pid + "'", e);
     }
   }
 
@@ -205,15 +204,15 @@ class MBeanProcessController implements ProcessController {
    * Disconnects from the JMX agent in the local process.
    */
   private void disconnect() {
-    this.server = null;
-    if (this.jmxc != null) {
+    server = null;
+    if (jmxc != null) {
       try {
-        this.jmxc.close();
+        jmxc.close();
       } catch (IOException ignored) {
         // ignore
       }
     }
-    this.jmxc = null;
+    jmxc = null;
   }
 
   /**
@@ -228,7 +227,7 @@ class MBeanProcessController implements ProcessController {
    */
   private JMXServiceURL getJMXServiceURL() throws AttachNotSupportedException, IOException {
     String connectorAddress;
-    VirtualMachine vm = VirtualMachine.attach(String.valueOf(this.pid));
+    VirtualMachine vm = VirtualMachine.attach(String.valueOf(pid));
     try {
       Properties agentProps = vm.getAgentProperties();
       connectorAddress = agentProps.getProperty(PROPERTY_LOCAL_CONNECTOR_ADDRESS);
@@ -291,9 +290,9 @@ class MBeanProcessController implements ProcessController {
     QueryExp constraint;
     if (optionalAttributes != null) {
       constraint =
-          Query.and(optionalAttributes, Query.eq(Query.attr(pidAttribute), Query.value(this.pid)));
+          Query.and(optionalAttributes, Query.eq(Query.attr(pidAttribute), Query.value(pid)));
     } else {
-      constraint = Query.eq(Query.attr(pidAttribute), Query.value(this.pid));
+      constraint = Query.eq(Query.attr(pidAttribute), Query.value(pid));
     }
     return constraint;
   }
@@ -352,6 +351,6 @@ class MBeanProcessController implements ProcessController {
    */
   private Object invoke(final ObjectName objectName, final String method)
       throws InstanceNotFoundException, IOException, MBeanException, ReflectionException {
-    return this.server.invoke(objectName, method, PARAMS, SIGNATURE);
+    return server.invoke(objectName, method, PARAMS, SIGNATURE);
   }
 }

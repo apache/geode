@@ -48,11 +48,11 @@ class NonBlockingProcessStreamReader extends ProcessStreamReader {
   NonBlockingProcessStreamReader(final Builder builder) {
     super(builder);
 
-    continueReadingMillis = builder.continueReadingMillis;
-    continueReading = new StopWatch();
-    stringBuilder = new StringBuilder();
-    character = 0;
-    ready = false;
+    this.continueReadingMillis = builder.continueReadingMillis;
+    this.continueReading = new StopWatch();
+    this.stringBuilder = new StringBuilder();
+    this.character = 0;
+    this.ready = false;
   }
 
   @Override

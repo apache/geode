@@ -28,10 +28,6 @@ import org.apache.geode.internal.process.ProcessUtils.InternalProcessUtils;
  */
 class AttachProcessUtils implements InternalProcessUtils {
 
-  AttachProcessUtils() {
-    // nothing
-  }
-
   @Override
   public boolean isProcessAlive(final int pid) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");

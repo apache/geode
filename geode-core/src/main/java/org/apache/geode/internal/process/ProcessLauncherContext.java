@@ -126,14 +126,14 @@ public class ProcessLauncherContext {
   }
 
   private boolean redirectOutput() {
-    return this.redirectOutput;
+    return redirectOutput;
   }
 
   private Properties overriddenDefaults() {
-    return this.overriddenDefaults;
+    return overriddenDefaults;
   }
 
   private StartupStatusListener startupListener() {
-    return this.startupListener;
+    return startupListener;
   }
 }

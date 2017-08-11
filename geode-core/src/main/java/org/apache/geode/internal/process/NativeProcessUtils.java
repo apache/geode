@@ -28,19 +28,15 @@ class NativeProcessUtils implements InternalProcessUtils {
 
   private static final NativeCalls nativeCalls = NativeCalls.getInstance();
 
-  NativeProcessUtils() {
-    // nothing
-  }
-
   @Override
-  public boolean isProcessAlive(int pid) {
+  public boolean isProcessAlive(final int pid) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
 
     return nativeCalls.isProcessActive(pid);
   }
 
   @Override
-  public boolean killProcess(int pid) {
+  public boolean killProcess(final int pid) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
 
     return nativeCalls.killProcess(pid);

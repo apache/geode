@@ -76,7 +76,7 @@ class LocalProcessLauncher {
    * @return the process id (pid)
    */
   int getPid() {
-    return this.pid;
+    return pid;
   }
 
   /**
@@ -85,7 +85,7 @@ class LocalProcessLauncher {
    * @return the pid file
    */
   File getPidFile() {
-    return this.pidFile;
+    return pidFile;
   }
 
   /**
@@ -93,7 +93,7 @@ class LocalProcessLauncher {
    *
    */
   void close() {
-    this.pidFile.delete();
+    pidFile.delete();
   }
 
   /**
@@ -104,7 +104,7 @@ class LocalProcessLauncher {
    */
   void close(final boolean deletePidFileOnClose) {
     if (deletePidFileOnClose) {
-      this.pidFile.delete();
+      pidFile.delete();
     }
   }
 
@@ -117,35 +117,29 @@ class LocalProcessLauncher {
    * @throws IOException if unable to create or write to the file
    */
   private void writePid(final boolean force) throws FileAlreadyExistsException, IOException {
-    if (this.pidFile.exists()) {
+    if (pidFile.exists()) {
       if (!force) {
         checkOtherPid(readOtherPid());
       }
-      this.pidFile.delete();
+      pidFile.delete();
     }
 
-    assert !this.pidFile.exists();
-
-    File tempPidFile = new File(this.pidFile.getParent(), this.pidFile.getName() + ".tmp");
-    boolean created = tempPidFile.createNewFile();
-    assert created;
+    File tempPidFile = new File(pidFile.getParent(), pidFile.getName() + ".tmp");
+    tempPidFile.createNewFile();
 
     try (FileWriter writer = new FileWriter(tempPidFile)) {
-      writer.write(String.valueOf(this.pid));
+      writer.write(String.valueOf(pid));
       writer.flush();
     }
 
-    boolean renamed = tempPidFile.renameTo(this.pidFile);
-    this.pidFile.deleteOnExit();
-
-    assert renamed;
-    assert this.pidFile.exists();
+    tempPidFile.renameTo(pidFile);
+    pidFile.deleteOnExit();
   }
 
   private int readOtherPid() {
     int otherPid = 0;
     try {
-      otherPid = ProcessUtils.readPid(this.pidFile);
+      otherPid = ProcessUtils.readPid(pidFile);
     } catch (NumberFormatException | IOException ignore) {
       // suppress
     }
@@ -154,7 +148,7 @@ class LocalProcessLauncher {
 
   private void checkOtherPid(final int otherPid) throws FileAlreadyExistsException {
     if (ignoreIsPidAlive() || otherPid != 0 && isProcessAlive(otherPid)) {
-      throw new FileAlreadyExistsException("Pid file already exists: " + this.pidFile + " for "
+      throw new FileAlreadyExistsException("Pid file already exists: " + pidFile + " for "
           + (otherPid > 0 ? "process " + otherPid : "unknown process"));
     }
   }
@@ -166,6 +160,4 @@ class LocalProcessLauncher {
   private static boolean ignoreIsPidAlive() {
     return Boolean.getBoolean(PROPERTY_IGNORE_IS_PID_ALIVE);
   }
-
-
 }

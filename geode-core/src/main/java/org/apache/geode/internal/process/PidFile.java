@@ -82,25 +82,25 @@ public class PidFile {
    */
   public int readPid() throws IOException {
     String pidValue = null;
-    try (BufferedReader fileReader = new BufferedReader(new FileReader(this.pidFile))) {
+    try (BufferedReader fileReader = new BufferedReader(new FileReader(pidFile))) {
       pidValue = fileReader.readLine();
 
       int pid = Integer.parseInt(pidValue);
 
       if (pid < 1) {
         throw new IllegalArgumentException(
-            "Invalid pid '" + pid + "' found in " + this.pidFile.getCanonicalPath());
+            "Invalid pid '" + pid + "' found in " + pidFile.getCanonicalPath());
       }
 
       return pid;
     } catch (NumberFormatException ignored) {
       throw new IllegalArgumentException(
-          "Invalid pid '" + pidValue + "' found in " + this.pidFile.getCanonicalPath());
+          "Invalid pid '" + pidValue + "' found in " + pidFile.getCanonicalPath());
     }
   }
 
   File getFile() {
-    return this.pidFile;
+    return pidFile;
   }
 
 }

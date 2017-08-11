@@ -27,10 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
 import org.apache.geode.lang.AttachAPINotFoundException;
 
@@ -40,7 +37,6 @@ import org.apache.geode.lang.AttachAPINotFoundException;
  * @since GemFire 8.0
  */
 class FileProcessController implements ProcessController {
-  private static final Logger logger = LogService.getLogger();
 
   static final long DEFAULT_STATUS_TIMEOUT_MILLIS = 60 * 1000;
 
@@ -126,10 +122,7 @@ class FileProcessController implements ProcessController {
       // read the statusFile
       StringBuilder lines = new StringBuilder();
       try (BufferedReader reader = new BufferedReader(new FileReader(statusFile))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-          lines.append(line);
-        }
+        reader.lines().forEach(lines::append);
       } finally {
         statusRef.set(lines.toString());
       }

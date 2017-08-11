@@ -72,9 +72,9 @@ public class ControllableProcess {
     this.stopRequestFileWatchdog = stopRequestFileWatchdog;
     this.statusRequestFileWatchdog = statusRequestFileWatchdog;
 
-    deleteFiles(this.directory, processType);
-    this.stopRequestFileWatchdog.start();
-    this.statusRequestFileWatchdog.start();
+    deleteFiles(directory, processType);
+    stopRequestFileWatchdog.start();
+    statusRequestFileWatchdog.start();
   }
 
   /**
@@ -83,7 +83,7 @@ public class ControllableProcess {
    * @return the process id (PID)
    */
   public int getPid() {
-    return this.launcher.getPid();
+    return launcher.getPid();
   }
 
   /**
@@ -92,19 +92,19 @@ public class ControllableProcess {
    * @return the PID file
    */
   public File getPidFile() {
-    return this.launcher.getPidFile();
+    return launcher.getPidFile();
   }
 
   public File getDirectory() {
-    return this.directory;
+    return directory;
   }
 
   public void stop() {
     boolean interrupted = false;
     try {
-      interrupted = stop(this.statusRequestFileWatchdog);
-      interrupted = stop(this.stopRequestFileWatchdog) || interrupted;
-      this.launcher.close();
+      interrupted = stop(statusRequestFileWatchdog);
+      interrupted = stop(stopRequestFileWatchdog) || interrupted;
+      launcher.close();
     } finally {
       if (interrupted) {
         Thread.currentThread().interrupt();
@@ -115,9 +115,9 @@ public class ControllableProcess {
   public void stop(final boolean deletePidFileOnStop) {
     boolean interrupted = false;
     try {
-      interrupted = stop(this.statusRequestFileWatchdog);
-      interrupted = stop(this.stopRequestFileWatchdog) || interrupted;
-      this.launcher.close(deletePidFileOnStop);
+      interrupted = stop(statusRequestFileWatchdog);
+      interrupted = stop(stopRequestFileWatchdog) || interrupted;
+      launcher.close(deletePidFileOnStop);
     } finally {
       if (interrupted) {
         Thread.currentThread().interrupt();

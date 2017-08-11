@@ -50,31 +50,31 @@ class ControlFileWatchdog implements Runnable {
     notNull(requestHandler, "Invalid requestHandler '" + requestHandler + "' specified");
 
     this.directory = directory;
-    this.file = new File(this.directory, fileName);
+    this.file = new File(directory, fileName);
     this.requestHandler = requestHandler;
     this.stopAfterRequest = stopAfterRequest;
   }
 
   @Override
   public void run() {
-    try { // always set this.alive before stopping
+    try { // always set alive before stopping
       while (isAlive()) {
         doWork();
       }
     } finally {
       synchronized (this) {
-        this.alive = false;
+        alive = false;
       }
     }
   }
 
   private void doWork() {
     try { // handle handle exceptions
-      if (this.file.exists()) {
+      if (file.exists()) {
         try { // always check stopAfterRequest after handleRequest
           handleRequest();
         } finally {
-          if (this.stopAfterRequest) {
+          if (stopAfterRequest) {
             stopMe();
           }
         }
@@ -86,30 +86,30 @@ class ControlFileWatchdog implements Runnable {
     } catch (IOException ignored) {
       logger.error(
           "Unable to control process with {}. Please add tools.jar from JDK to classpath for improved process control.",
-          this.file);
+          file);
       // allow to loop around and check isAlive()
     }
   }
 
   private void handleRequest() throws IOException {
     try { // always delete file after invoking handler
-      this.requestHandler.handleRequest();
+      requestHandler.handleRequest();
     } finally {
       try {
-        this.file.delete();
+        file.delete();
       } catch (SecurityException e) {
-        logger.warn("Unable to delete {}", this.file, e);
+        logger.warn("Unable to delete {}", file, e);
       }
     }
   }
 
   void start() {
     synchronized (this) {
-      if (this.thread == null) {
-        this.thread = new Thread(this, createThreadName());
-        this.thread.setDaemon(true);
-        this.alive = true;
-        this.thread.start();
+      if (thread == null) {
+        thread = new Thread(this, createThreadName());
+        thread.setDaemon(true);
+        alive = true;
+        thread.start();
       }
     }
   }
@@ -117,13 +117,13 @@ class ControlFileWatchdog implements Runnable {
   void stop() throws InterruptedException {
     Thread stopping = null;
     synchronized (this) {
-      if (this.thread != null) {
-        this.alive = false;
-        if (this.thread != Thread.currentThread()) {
-          this.thread.interrupt();
-          stopping = this.thread;
+      if (thread != null) {
+        alive = false;
+        if (thread != Thread.currentThread()) {
+          thread.interrupt();
+          stopping = thread;
         }
-        this.thread = null;
+        thread = null;
       }
     }
     if (stopping != null) {
@@ -133,15 +133,15 @@ class ControlFileWatchdog implements Runnable {
 
   boolean isAlive() {
     synchronized (this) {
-      return this.alive;
+      return alive;
     }
   }
 
   private void stopMe() {
     synchronized (this) {
-      if (this.thread != null) {
-        this.alive = false;
-        this.thread = null;
+      if (thread != null) {
+        alive = false;
+        thread = null;
       }
     }
   }
@@ -150,16 +150,16 @@ class ControlFileWatchdog implements Runnable {
   public String toString() {
     StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append('@').append(System.identityHashCode(this)).append('{');
-    sb.append("directory=").append(this.directory);
-    sb.append(", file=").append(this.file);
-    sb.append(", alive=").append(this.alive); // not synchronized
-    sb.append(", stopAfterRequest=").append(this.stopAfterRequest);
+    sb.append("directory=").append(directory);
+    sb.append(", file=").append(file);
+    sb.append(", alive=").append(alive); // not synchronized
+    sb.append(", stopAfterRequest=").append(stopAfterRequest);
     return sb.append('}').toString();
   }
 
   private String createThreadName() {
     return getClass().getSimpleName() + '@' + Integer.toHexString(hashCode()) + " monitoring "
-        + this.file.getName();
+        + file.getName();
   }
 
   /**
