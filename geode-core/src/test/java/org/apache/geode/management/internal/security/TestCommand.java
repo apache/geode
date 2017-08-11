@@ -245,7 +245,7 @@ public class TestCommand {
 
     createTestCommand("list async-event-queues", clusterRead);
 
-    // RegionCommands
+    // DescribeRegionCommand, ListRegionCommand
     createTestCommand("describe region --name=value", clusterRead);
     createTestCommand("list regions", clusterRead);
 
@@ -278,8 +278,5 @@ public class TestCommand {
 
     // ShellCommand
     createTestCommand("disconnect");
-
-    // Misc commands
-    // createTestCommand("shutdown", clusterManage);
   }
 }
