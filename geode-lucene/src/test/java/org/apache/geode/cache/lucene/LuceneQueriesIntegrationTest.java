@@ -21,6 +21,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQuery
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -346,6 +347,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     try {
       result = luceneService.waitUntilFlushed(nonCreatedIndex, REGION_NAME, 60000,
           TimeUnit.MILLISECONDS);
+      fail(
+          "Should have got the exception because the queue does not exist for the non created index ");
     } catch (Exception ex) {
       assertEquals(ex.getMessage(),
           "java.lang.IllegalStateException: The AEQ does not exist for the index index2 region /index");
