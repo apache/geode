@@ -21,7 +21,11 @@ limitations under the License.
 
 Run queries against Geode regions.
 
-Run the specified OQL query as a single quoted string and displays results in pages allows to move between pages. If limit is not set in the query, then a default limit of 1000 (derived from GFSH environment variable APP\_FETCH\_SIZE) will be applied. Page size is derived from GFSH environment variable APP\_COLLECTION\_LIMIT (default value=20).
+If a limit restricting the result size is not set in the query,
+then a default limit of the gfsh environment variable `APP_FETCH_SIZE`
+will be applied.
+
+Surround the OQL query with single quote marks.
 
 **Note:**
 This command should not be executed from `gfsh` if the objects being queried contain cyclic references.
@@ -31,23 +35,17 @@ This command should not be executed from `gfsh` if the objects being queried con
 **Syntax:**
 
 ``` pre
-query --query=value [--step-name=value] [--interactive=value]
+query --query=value [--step-name=value] [--file=path/to/results/file]
 ```
 
 <a id="concept_89A129F729DF4D3B9056C8D9016AA760__table_ocr_gcg_2w"></a>
 
-| Name                                                | Description                                                                                               | Default Value |
-|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-query </span>      | *Required.* The OQL string.                                                                               |               |
-| <span class="keyword parmname">\\-\\-interactive</span> | Specifies whether or not this query is interactive. If false, then all results will be displayed at once. | true          |
+| Name                                                | Description                                                                                               |
+|-----------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-query </span>      | *Required.* The OQL string.                                                                               |
+| <span class="keyword parmname">\\-\\-file</span> | When specified, all query results are written to the specified file. An error is issued if the file already exists. |
 
 <span class="tablecap">Table 1. Query Parameters</span>
-
-**Example Commands:**
-
-``` pre
-query --query=value [--step-name=value] [--interactive=value]
-```
 
 **Sample Output:**
 
