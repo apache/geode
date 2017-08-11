@@ -43,7 +43,7 @@ public interface OperationInvoker {
    * @return true if there is an active connection, false otherwise.
    * @see #isReady()
    */
-  public boolean isConnected();
+  boolean isConnected();
 
   /**
    * Determines whether there is an active, current active connection ready for use.
@@ -52,7 +52,7 @@ public interface OperationInvoker {
    * @return true if this {@linkplain OperationInvoker} is ready for operation, false otherwise.
    * @see #isConnected()
    */
-  public boolean isReady();
+  boolean isReady();
 
   /**
    * Read the attribute identified by name from a remote resource identified by name.
@@ -62,7 +62,7 @@ public interface OperationInvoker {
    * @param attributeName name of the attribute to be fetched.
    * @return value of the named attribute on the remote resource.
    */
-  public Object getAttribute(String resourceName, String attributeName);
+  Object getAttribute(String resourceName, String attributeName);
 
   /**
    * Gets the identifier of the GemFire cluster.
@@ -70,7 +70,7 @@ public interface OperationInvoker {
    * 
    * @return an integer value indicating the identifier of the GemFire cluster.
    */
-  public int getClusterId();
+  int getClusterId();
 
   // TODO continue to add MXBean accessor methods as necessary for GemFire MXBeans used in Gfsh and
   // command classes...
@@ -82,7 +82,7 @@ public interface OperationInvoker {
    * @return a proxy instance of the GemFire Manager's DistributedSystem MXBean.
    * @see org.apache.geode.management.DistributedSystemMXBean
    */
-  public DistributedSystemMXBean getDistributedSystemMXBean();
+  DistributedSystemMXBean getDistributedSystemMXBean();
 
   /**
    * Gets a proxy to an MXBean on a remote MBeanServer.
@@ -95,7 +95,7 @@ public interface OperationInvoker {
    * @return a proxy to access the specified, remote MXBean.
    * @see javax.management.ObjectName
    */
-  public <T> T getMBeanProxy(ObjectName objectName, Class<T> mbeanInterface);
+  <T> T getMBeanProxy(ObjectName objectName, Class<T> mbeanInterface);
 
   /**
    * Invoke an operation identified by name on a remote resource identified by name with the given
@@ -109,8 +109,7 @@ public interface OperationInvoker {
    * @param signature an array containing the signature of the operation.
    * @return result of the operation invocation.
    */
-  public Object invoke(String resourceName, String operationName, Object[] params,
-      String[] signature);
+  Object invoke(String resourceName, String operationName, Object[] params, String[] signature);
 
   /**
    * This method searches the MBean server, based on the OperationsInvoker's JMX-based or other
@@ -126,7 +125,7 @@ public interface OperationInvoker {
    * @see javax.management.ObjectName
    * @see javax.management.QueryExp
    */
-  public Set<ObjectName> queryNames(ObjectName objectName, QueryExp queryExpression);
+  Set<ObjectName> queryNames(ObjectName objectName, QueryExp queryExpression);
 
   /**
    * Processes the requested command. Sends the command to the GemFire Manager for remote processing
@@ -137,11 +136,11 @@ public interface OperationInvoker {
    * @return the result of the command execution.
    * @see org.apache.geode.management.internal.cli.CommandRequest
    */
-  public Object processCommand(CommandRequest command);
+  Object processCommand(CommandRequest command);
 
   /**
    * Stops this {@linkplain OperationInvoker}
    */
-  public void stop();
+  void stop();
 
 }

@@ -206,7 +206,7 @@ public class SimpleExtensionPointJUnitTest {
   }
 
   private interface MockInterface {
-    public void method1();
+    void method1();
   }
 
   private static class MockImpl implements MockInterface, Extensible<MockInterface> {

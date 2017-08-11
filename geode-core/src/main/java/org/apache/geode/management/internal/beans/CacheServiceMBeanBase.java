@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.beans;
 
 public interface CacheServiceMBeanBase {
 
-  public String getId();
+  String getId();
 
-  public Class getInterfaceClass();
+  Class getInterfaceClass();
 }

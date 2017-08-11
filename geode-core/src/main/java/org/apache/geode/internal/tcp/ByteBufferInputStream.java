@@ -53,7 +53,7 @@ public class ByteBufferInputStream extends InputStream
    * 
    *
    */
-  public static interface ByteSource {
+  public interface ByteSource {
     int position();
 
     int limit();

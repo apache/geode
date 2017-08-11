@@ -23,26 +23,25 @@ import org.springframework.shell.core.annotation.CliOption;
  * @since GemFire 8.0
  */
 public interface ConverterHint {
-  public static final String DISABLE_STRING_CONVERTER = ":disable-string-converter";
-  public static final String DISKSTORE =
-      "geode.converter.cluster.diskstore" + DISABLE_STRING_CONVERTER;
-  public static final String FILE = "geode.converter.file";
-  public static final String FILE_PATH = "geode.converter.file.path" + DISABLE_STRING_CONVERTER;
-  public static final String HINT = "geode.converter.hint" + DISABLE_STRING_CONVERTER;
-  public static final String HELP = "geode.converter.help" + DISABLE_STRING_CONVERTER;
-  public static final String MEMBERGROUP = "geode.converter.member.groups";
+  String DISABLE_STRING_CONVERTER = ":disable-string-converter";
+  String DISKSTORE = "geode.converter.cluster.diskstore" + DISABLE_STRING_CONVERTER;
+  String FILE = "geode.converter.file";
+  String FILE_PATH = "geode.converter.file.path" + DISABLE_STRING_CONVERTER;
+  String HINT = "geode.converter.hint" + DISABLE_STRING_CONVERTER;
+  String HELP = "geode.converter.help" + DISABLE_STRING_CONVERTER;
+  String MEMBERGROUP = "geode.converter.member.groups";
   /** Hint to be used for all types of GemFire cluster members */
-  public static final String ALL_MEMBER_IDNAME = "geode.converter.all.member.idOrName";
+  String ALL_MEMBER_IDNAME = "geode.converter.all.member.idOrName";
   /** Hint to be used for all non locator GemFire cluster members */
-  public static final String MEMBERIDNAME = "geode.converter.member.idOrName";
+  String MEMBERIDNAME = "geode.converter.member.idOrName";
   /** Hint to be used for GemFire stand-alone locator members */
-  public static final String LOCATOR_MEMBER_IDNAME = "geode.converter.locatormember.idOrName";
+  String LOCATOR_MEMBER_IDNAME = "geode.converter.locatormember.idOrName";
   /** Hint to be used for configured locators for discovery */
-  public static final String LOCATOR_DISCOVERY_CONFIG = "geode.converter.locators.discovery.config";
-  public static final String REGION_PATH = "geode.converter.region.path" + DISABLE_STRING_CONVERTER;
-  public static final String INDEX_TYPE = "geode.converter.index.type";
-  public static final String GATEWAY_SENDER_ID = "geode.converter.gateway.senderid";
-  public static final String GATEWAY_RECEIVER_ID = "geode.converter.gateway.receiverid";
-  public static final String LOG_LEVEL = "geode.converter.log.levels" + DISABLE_STRING_CONVERTER;
+  String LOCATOR_DISCOVERY_CONFIG = "geode.converter.locators.discovery.config";
+  String REGION_PATH = "geode.converter.region.path" + DISABLE_STRING_CONVERTER;
+  String INDEX_TYPE = "geode.converter.index.type";
+  String GATEWAY_SENDER_ID = "geode.converter.gateway.senderid";
+  String GATEWAY_RECEIVER_ID = "geode.converter.gateway.receiverid";
+  String LOG_LEVEL = "geode.converter.log.levels" + DISABLE_STRING_CONVERTER;
 
 }

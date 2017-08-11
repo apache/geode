@@ -51,5 +51,5 @@ public interface CacheLoader<K, V> extends CacheCallback {
    *
    * @see Region#get(Object, Object) Region.get
    */
-  public V load(LoaderHelper<K, V> helper) throws CacheLoaderException;
+  V load(LoaderHelper<K, V> helper) throws CacheLoaderException;
 }

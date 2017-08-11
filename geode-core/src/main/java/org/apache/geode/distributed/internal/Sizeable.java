@@ -22,5 +22,5 @@ package org.apache.geode.distributed.internal;
 
 public interface Sizeable {
   /** returns the approximate size of this object */
-  public int getSize();
+  int getSize();
 }

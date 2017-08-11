@@ -69,6 +69,5 @@ public interface FixedPartitionResolver<K, V> extends PartitionResolver<K, V> {
    * @return partition-name associated with node which allows mapping of given data to user defined
    *         partition
    */
-  public String getPartitionName(EntryOperation<K, V> opDetails,
-      @Deprecated Set<String> targetPartitions);
+  String getPartitionName(EntryOperation<K, V> opDetails, @Deprecated Set<String> targetPartitions);
 }

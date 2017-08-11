@@ -3430,7 +3430,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static interface Operation {
+  private interface Operation {
 
     void execute(Region region, Integer key);
 

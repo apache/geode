@@ -32,8 +32,8 @@ package org.apache.geode.test.dunit;
  */
 public interface WaitCriterion {
 
-  public boolean done();
+  boolean done();
 
-  public String description();
+  String description();
 
 }

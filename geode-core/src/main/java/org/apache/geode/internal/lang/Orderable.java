@@ -35,6 +35,6 @@ public interface Orderable<T extends Comparable<T>> {
    * @return a value that is Comparable to other value of the same type and defines the relative
    *         order of this Object instance to it's peers.
    */
-  public T getOrder();
+  T getOrder();
 
 }

@@ -30,27 +30,27 @@ public interface LRUMapCallbacks {
    * is made. This will then perform the lru removals, or region.localDestroy() calls to make up for
    * the recent addition.
    */
-  public void lruUpdateCallback();
+  void lruUpdateCallback();
 
-  public void lruUpdateCallback(int n);
+  void lruUpdateCallback(int n);
 
   /**
    * Disables lruUpdateCallback in calling thread
    * 
    * @return false if it's already disabled
    */
-  public boolean disableLruUpdateCallback();
+  boolean disableLruUpdateCallback();
 
   /**
    * Enables lruUpdateCallback in calling thread
    */
-  public void enableLruUpdateCallback();
+  void enableLruUpdateCallback();
 
   /**
    * if an exception occurs between an LRUEntriesMap put and the call to lruUpdateCallback, then
    * this must be called to allow the thread to continue to work with other regions.
    */
-  public void resetThreadLocals();
+  void resetThreadLocals();
 
   /**
    * Return true if the lru has exceeded its limit and needs to evict. Note that this method is
@@ -58,12 +58,12 @@ public interface LRUMapCallbacks {
    * 
    * @param drv the disk region whose limit is checked
    */
-  public boolean lruLimitExceeded(DiskRegionView drv);
+  boolean lruLimitExceeded(DiskRegionView drv);
 
-  public void lruCloseStats();
+  void lruCloseStats();
 
   /**
    * Called when an entry is faulted in from disk.
    */
-  public void lruEntryFaultIn(LRUEntry entry);
+  void lruEntryFaultIn(LRUEntry entry);
 }

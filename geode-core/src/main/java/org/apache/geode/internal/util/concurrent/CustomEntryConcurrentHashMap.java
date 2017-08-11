@@ -258,7 +258,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
    * objects for each entry in the map.
    */
-  public static interface HashEntry<K, V> {
+  public interface HashEntry<K, V> {
 
     /**
      * Get the key object for this entry.
@@ -379,19 +379,19 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
    * objects by caller. This can be used, for example, to return GemFire RegionEntries directly.
    */
-  public static interface HashEntryCreator<K, V> {
+  public interface HashEntryCreator<K, V> {
 
     /**
      * Create a new
      * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
      * given the key, hash, value and next element.
      */
-    public HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next, V value);
+    HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next, V value);
 
     /**
      * Get the hashCode for given key object.
      */
-    public int keyHashCode(Object key, boolean compareValues);
+    int keyHashCode(Object key, boolean compareValues);
   }
 
   // End GemStone addition
@@ -1561,7 +1561,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @param <C> the type of context parameter passed to the creation/removal methods
    * @param <P> the type of extra parameter passed to the creation/removal methods
    */
-  public static interface MapCallback<K, V, C, P> {
+  public interface MapCallback<K, V, C, P> {
 
     /**
      * Create a new instance of the value object given the key and provided parameters for
@@ -1571,7 +1571,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * @param context any context in which this method has been invoked
      * @param createParams parameters, if any, required for construction of a new value object
      */
-    public V newValue(K key, C context, P createParams);
+    V newValue(K key, C context, P createParams);
 
     /**
      * Invoked when an existing value in map is read by the
@@ -1580,7 +1580,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * 
      * @param value the value read by create that will be returned
      */
-    public void oldValueRead(V value);
+    void oldValueRead(V value);
 
     /**
      * Check if the existing value should be removed by the
@@ -1590,7 +1590,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * @param context any context in which this method has been invoked
      * @param removeParams parameters, if any, to be passed for cleanup of the object
      */
-    public boolean doRemoveValue(V value, C context, P removeParams);
+    boolean doRemoveValue(V value, C context, P removeParams);
   }
 
   /**

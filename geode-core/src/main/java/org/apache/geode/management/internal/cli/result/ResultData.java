@@ -44,7 +44,7 @@ public interface ResultData {
 
   String getType();
 
-  public Status getStatus();
+  Status getStatus();
 
-  public void setStatus(final Status status);
+  void setStatus(final Status status);
 }

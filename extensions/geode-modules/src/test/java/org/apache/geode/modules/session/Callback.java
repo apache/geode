@@ -24,6 +24,6 @@ import java.io.IOException;
  */
 public interface Callback {
 
-  public void call(HttpServletRequest request, HttpServletResponse response)
+  void call(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException;
 }

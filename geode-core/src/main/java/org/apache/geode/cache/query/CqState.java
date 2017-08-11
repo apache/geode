@@ -27,26 +27,26 @@ public interface CqState {
   /**
    * Returns the state in string form.
    */
-  public String toString();
+  String toString();
 
   /**
    * Returns true if the CQ is in Running state.
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Returns true if the CQ is in Stopped state.
    */
-  public boolean isStopped();
+  boolean isStopped();
 
   /**
    * Returns true if the CQ is in Closed state.
    */
-  public boolean isClosed();
+  boolean isClosed();
 
   /**
    * Returns true if the CQ is in Closing state.
    */
-  public boolean isClosing();
+  boolean isClosing();
 
 }

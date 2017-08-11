@@ -33,17 +33,17 @@ public interface StatisticsType {
   /**
    * Returns the name of this statistics type
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns a description of this statistics type
    */
-  public String getDescription();
+  String getDescription();
 
   /**
    * Returns descriptions of the statistics that this statistics type gathers together
    */
-  public StatisticDescriptor[] getStatistics();
+  StatisticDescriptor[] getStatistics();
 
   /**
    * Returns the id of the statistic with the given name in this statistics instance.
@@ -51,7 +51,7 @@ public interface StatisticsType {
    * @throws IllegalArgumentException No statistic named <code>name</code> exists in this statistics
    *         instance.
    */
-  public int nameToId(String name);
+  int nameToId(String name);
 
   /**
    * Returns the descriptor of the statistic with the given name in this statistics instance.
@@ -59,6 +59,6 @@ public interface StatisticsType {
    * @throws IllegalArgumentException No statistic named <code>name</code> exists in this statistics
    *         instance.
    */
-  public StatisticDescriptor nameToDescriptor(String name);
+  StatisticDescriptor nameToDescriptor(String name);
 
 }

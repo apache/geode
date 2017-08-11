@@ -25,7 +25,7 @@ import org.apache.geode.internal.process.ProcessController.Arguments;
  * @since GemFire 8.0
  */
 interface FileControllerParameters extends Arguments {
-  public File getPidFile();
+  File getPidFile();
 
-  public File getWorkingDirectory();
+  File getWorkingDirectory();
 }

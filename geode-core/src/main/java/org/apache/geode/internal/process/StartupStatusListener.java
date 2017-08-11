@@ -24,5 +24,5 @@ public interface StartupStatusListener {
    * Report the current status of system startup. The status message reported to this method should
    * already be internationalized.
    */
-  public void setStatus(String status);
+  void setStatus(String status);
 }

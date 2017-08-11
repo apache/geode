@@ -198,8 +198,8 @@ public abstract class ProcessStreamReader implements Runnable {
   /**
    * Defines the callback for lines of output found in the stream.
    */
-  public static interface InputListener {
-    public void notifyInputLine(String line);
+  public interface InputListener {
+    void notifyInputLine(String line);
   }
 
   /** Default ReadingMode is BLOCKING */

@@ -25,5 +25,5 @@ public interface ByteBufferWriter {
    * interface will keep a reference to bb so callers should expect to give up ownership of bb and
    * should not modify it after calling this method.
    */
-  public void write(ByteBuffer bb);
+  void write(ByteBuffer bb);
 }

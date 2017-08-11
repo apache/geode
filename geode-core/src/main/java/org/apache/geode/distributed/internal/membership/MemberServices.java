@@ -43,7 +43,7 @@ public interface MemberServices {
    * @param version TODO
    * @return the new NetMember
    */
-  public abstract NetMember newNetMember(InetAddress i, int port, boolean splitBrainEnabled,
+  NetMember newNetMember(InetAddress i, int port, boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes payload, short version);
 
   /**
@@ -54,7 +54,7 @@ public interface MemberServices {
    * 
    * @return the new NetMember
    */
-  public abstract NetMember newNetMember(InetAddress i, int port);
+  NetMember newNetMember(InetAddress i, int port);
 
   /**
    * Return a new NetMember representing current host
@@ -63,7 +63,7 @@ public interface MemberServices {
    * @param p the membership port being used
    * @return the new member
    */
-  public abstract NetMember newNetMember(String s, int p);
+  NetMember newNetMember(String s, int p);
 
   /**
    * Create a new MembershipManager
@@ -75,7 +75,7 @@ public interface MemberServices {
    * 
    * @return a MembershipManager
    */
-  public abstract MembershipManager newMembershipManager(DistributedMembershipListener listener,
+  MembershipManager newMembershipManager(DistributedMembershipListener listener,
       DistributionConfig config, RemoteTransportConfig transport, DMStats stats,
       SecurityService securityService);
 
@@ -84,7 +84,7 @@ public interface MemberServices {
    * currently this is a test method but it ought to be used by InternalLocator to create the peer
    * location TcpHandler
    */
-  public abstract NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile,
-      String locatorString, boolean usePreferredCoordinators,
-      boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo);
+  NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile, String locatorString,
+      boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
+      LocatorStats stats, String securityUDPDHAlgo);
 }

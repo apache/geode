@@ -54,7 +54,7 @@ public interface Function<T> extends Identifiable<String> {
    * @return whether this function returns a Result back to the caller.
    * @since GemFire 6.0
    */
-  public default boolean hasResult() {
+  default boolean hasResult() {
     return true;
   }
 
@@ -68,7 +68,7 @@ public interface Function<T> extends Identifiable<String> {
    * @param context as created by {@link Execution}
    * @since GemFire 6.0
    */
-  public void execute(FunctionContext<T> context);
+  void execute(FunctionContext<T> context);
 
   /**
    * Return a unique function identifier, used to register the function with {@link FunctionService}
@@ -76,7 +76,7 @@ public interface Function<T> extends Identifiable<String> {
    * @return string identifying this function
    * @since GemFire 6.0
    */
-  public default String getId() {
+  default String getId() {
     return getClass().getCanonicalName();
   }
 
@@ -102,7 +102,7 @@ public interface Function<T> extends Identifiable<String> {
    * @since GemFire 6.0
    * @see FunctionService
    */
-  public default boolean optimizeForWrite() {
+  default boolean optimizeForWrite() {
     return false;
   }
 
@@ -114,7 +114,7 @@ public interface Function<T> extends Identifiable<String> {
    * 
    * @since GemFire 6.5
    */
-  public default boolean isHA() {
+  default boolean isHA() {
     return true;
   }
 

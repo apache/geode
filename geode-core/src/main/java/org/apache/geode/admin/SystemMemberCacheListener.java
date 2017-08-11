@@ -38,7 +38,7 @@ public interface SystemMemberCacheListener {
    * @see Cache#createRegion
    * @see Region#createSubregion
    */
-  public void afterRegionCreate(SystemMemberRegionEvent event);
+  void afterRegionCreate(SystemMemberRegionEvent event);
 
   /**
    * Invoked when a region is destroyed or closed in any node of distributed system.
@@ -53,7 +53,7 @@ public interface SystemMemberCacheListener {
    * @see Region#localDestroyRegion()
    * @see Region#destroyRegion()
    */
-  public void afterRegionLoss(SystemMemberRegionEvent event);
+  void afterRegionLoss(SystemMemberRegionEvent event);
 
   /**
    * Invoked after a cache is created in any node of a distributed system. Note that this callback
@@ -62,7 +62,7 @@ public interface SystemMemberCacheListener {
    * @param event describes the member that created the cache.
    * @see CacheFactory#create
    */
-  public void afterCacheCreate(SystemMemberCacheEvent event);
+  void afterCacheCreate(SystemMemberCacheEvent event);
 
   /**
    * Invoked after a cache is closed in any node of a distributed system. This callback is done
@@ -72,5 +72,5 @@ public interface SystemMemberCacheListener {
    * @param event describes the member that closed its cache.
    * @see Cache#close()
    */
-  public void afterCacheClose(SystemMemberCacheEvent event);
+  void afterCacheClose(SystemMemberCacheEvent event);
 }

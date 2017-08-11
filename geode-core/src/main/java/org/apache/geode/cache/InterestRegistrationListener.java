@@ -73,12 +73,12 @@ public interface InterestRegistrationListener extends CacheCallback {
    *
    * @param event the InterestRegistrationEvent
    */
-  public void afterRegisterInterest(InterestRegistrationEvent event);
+  void afterRegisterInterest(InterestRegistrationEvent event);
 
   /**
    * Handles an after unregister interest event.
    *
    * @param event the InterestRegistrationEvent
    */
-  public void afterUnregisterInterest(InterestRegistrationEvent event);
+  void afterUnregisterInterest(InterestRegistrationEvent event);
 }

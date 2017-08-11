@@ -24,7 +24,7 @@ import org.apache.geode.distributed.AbstractLauncher.ServiceState;
  * @since GemFire 8.0
  */
 public interface ControlNotificationHandler {
-  public void handleStop();
+  void handleStop();
 
-  public ServiceState<?> handleStatus();
+  ServiceState<?> handleStatus();
 }

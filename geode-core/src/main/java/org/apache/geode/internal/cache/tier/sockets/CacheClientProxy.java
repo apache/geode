@@ -3062,7 +3062,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   public interface TestHook {
-    public void doTestHook(String spot);
+    void doTestHook(String spot);
   }
 
   public static TestHook testHook;

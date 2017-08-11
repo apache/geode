@@ -21,6 +21,6 @@ package org.apache.geode.management.internal.security;
  */
 public interface AccessControlMXBean {
 
-  public boolean authorize(String resource, String permission);
+  boolean authorize(String resource, String permission);
 
 }

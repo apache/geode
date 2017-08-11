@@ -193,9 +193,9 @@ public abstract class LoggingPerformanceTestCase {
     assertTrue(this.logFile.exists());
   }
 
-  public static interface PerformanceLogger {
-    public void log(final String message);
+  public interface PerformanceLogger {
+    void log(final String message);
 
-    public boolean isEnabled();
+    boolean isEnabled();
   }
 }

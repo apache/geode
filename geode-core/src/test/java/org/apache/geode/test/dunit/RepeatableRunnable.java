@@ -23,6 +23,6 @@ package org.apache.geode.test.dunit;
 @Deprecated
 public interface RepeatableRunnable {
 
-  public void runRepeatingIfNecessary(long repeatTimeoutMs);
+  void runRepeatingIfNecessary(long repeatTimeoutMs);
 
 }

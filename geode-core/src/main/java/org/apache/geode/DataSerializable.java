@@ -79,7 +79,7 @@ public interface DataSerializable extends Serializable {
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
-  public void toData(DataOutput out) throws IOException;
+  void toData(DataOutput out) throws IOException;
 
   /**
    * Reads the state of this object as primitive data from the given <code>DataInput</code>.
@@ -87,7 +87,7 @@ public interface DataSerializable extends Serializable {
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException;
+  void fromData(DataInput in) throws IOException, ClassNotFoundException;
 
   //////////////////////// Inner Classes ////////////////////////
 
@@ -104,13 +104,13 @@ public interface DataSerializable extends Serializable {
    *
    * @see DataSerializer#writeObject(Object, DataOutput)
    */
-  public interface Replaceable {
+  interface Replaceable {
 
     /**
      * Replaces this object with another in the "output stream" written by
      * {@link DataSerializer#writeObject(Object, DataOutput)}.
      */
-    public Object replace() throws IOException;
+    Object replace() throws IOException;
   }
 
 }

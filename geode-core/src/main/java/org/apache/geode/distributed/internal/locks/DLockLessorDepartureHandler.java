@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.*;
  */
 public interface DLockLessorDepartureHandler {
 
-  public void handleDepartureOf(InternalDistributedMember owner, DLockGrantor grantor);
+  void handleDepartureOf(InternalDistributedMember owner, DLockGrantor grantor);
 
 }
 

@@ -431,12 +431,12 @@ public abstract class NativeCalls {
    * 
    * @since GemFire 8.0
    */
-  public static interface RehashServerOnSIGHUP {
+  public interface RehashServerOnSIGHUP {
 
     /**
      * Perform the actions required to "rehash" the server.
      */
-    public void rehash();
+    void rehash();
   }
 
   /**

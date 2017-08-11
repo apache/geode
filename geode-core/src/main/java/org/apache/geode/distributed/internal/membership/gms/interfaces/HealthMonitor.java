@@ -29,7 +29,7 @@ public interface HealthMonitor extends Service {
    * 
    * @param sender
    */
-  public void contactedBy(InternalDistributedMember sender);
+  void contactedBy(InternalDistributedMember sender);
 
   /**
    * initiate, asynchronously, suspicion that the member is no longer available
@@ -37,7 +37,7 @@ public interface HealthMonitor extends Service {
    * @param mbr
    * @param reason
    */
-  public void suspect(InternalDistributedMember mbr, String reason);
+  void suspect(InternalDistributedMember mbr, String reason);
 
   /**
    * Check on the health of the given member, initiating suspicion if it fails. Return true if the
@@ -47,17 +47,17 @@ public interface HealthMonitor extends Service {
    * @param reason the reason this check is being performed
    * @param initiateRemoval if the member should be removed if it is not available
    */
-  public boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval);
+  boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  public void memberShutdown(DistributedMember mbr, String reason);
+  void memberShutdown(DistributedMember mbr, String reason);
 
   /**
    * Returns the failure detection port for this member, or -1 if there is no such port
    */
-  public int getFailureDetectionPort();
+  int getFailureDetectionPort();
 
 }

@@ -21,5 +21,5 @@ package org.apache.geode.internal.admin.remote;
  * during their processing.
  */
 public interface Cancellable {
-  public void cancel();
+  void cancel();
 }

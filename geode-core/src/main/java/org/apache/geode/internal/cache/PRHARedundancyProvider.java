@@ -809,11 +809,11 @@ public class PRHARedundancyProvider {
   /**
    * Test observer to help reproduce #42429.
    */
-  public static interface EndBucketCreationObserver {
+  public interface EndBucketCreationObserver {
 
-    public void afterEndBucketCreationMessageSend(PartitionedRegion pr, int bucketId);
+    void afterEndBucketCreationMessageSend(PartitionedRegion pr, int bucketId);
 
-    public void afterEndBucketCreation(PartitionedRegion pr, int bucketId);
+    void afterEndBucketCreation(PartitionedRegion pr, int bucketId);
   }
 
   public void endBucketCreationLocally(int bucketId, InternalDistributedMember newPrimary) {

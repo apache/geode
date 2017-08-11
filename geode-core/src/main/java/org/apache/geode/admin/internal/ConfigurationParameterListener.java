@@ -25,6 +25,6 @@ import org.apache.geode.admin.ConfigurationParameter;
  *
  */
 public interface ConfigurationParameterListener {
-  public void configurationParameterValueChanged(ConfigurationParameter parm);
+  void configurationParameterValueChanged(ConfigurationParameter parm);
 }
 

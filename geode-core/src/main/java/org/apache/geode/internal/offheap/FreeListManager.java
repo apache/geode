@@ -388,7 +388,7 @@ public class FreeListManager {
     /**
      * Retrieves and removes the top of this stack, or returns {@code 0L} if this stack is empty.
      */
-    public long poll();
+    long poll();
   }
   /**
    * Manages an array of primitive longs. The array can grow.
