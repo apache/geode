@@ -100,7 +100,6 @@ public class Launcher {
     this.allowedCommandLineCommands.add(CliStrings.START_JCONSOLE);
     this.allowedCommandLineCommands.add(CliStrings.START_JVISUALVM);
     this.allowedCommandLineCommands.add(CliStrings.START_LOCATOR);
-    this.allowedCommandLineCommands.add(CliStrings.START_MANAGER);
     this.allowedCommandLineCommands.add(CliStrings.START_SERVER);
     this.allowedCommandLineCommands.add(CliStrings.START_VSD);
     this.allowedCommandLineCommands.add(CliStrings.STATUS_LOCATOR);

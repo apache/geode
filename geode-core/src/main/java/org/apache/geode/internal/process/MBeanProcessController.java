@@ -38,6 +38,9 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+
 /**
  * Controls a {@link ControllableProcess} using the Attach API to manipulate MBeans.
  * 

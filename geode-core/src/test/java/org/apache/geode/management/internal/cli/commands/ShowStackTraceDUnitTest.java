@@ -14,13 +14,24 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -32,10 +43,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
 /***
  * DUnit test for 'show stack-trace' command
@@ -256,7 +263,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     assertTrue(exportCommandResult.getStatus().equals(Status.OK));
     assertTrue(
         ((String) exportCommandResult.getResultData().getGfJsonObject().getJSONObject("content")
-            .getJSONArray("message").get(0)).contains("stack-trace(s) exported to file:"));
+            .getJSONArray("message").get(0)).contains("Stack-trace(s) exported to file:"));
 
   }
 }

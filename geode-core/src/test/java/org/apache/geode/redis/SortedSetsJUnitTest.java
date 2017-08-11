@@ -14,12 +14,26 @@
  */
 package org.apache.geode.redis;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.redis.GeodeRedisServer;
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -28,12 +42,10 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Tuple;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class SortedSetsJUnitTest {
