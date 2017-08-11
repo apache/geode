@@ -43,7 +43,7 @@ public class LogLevelInterceptorTest {
   @Before
   public void before() {
     interceptors.add(new ExportLogsInterceptor());
-    interceptors.add(new ConfigCommands.AlterRuntimeInterceptor());
+    interceptors.add(new AlterRuntimeInterceptor());
     interceptors.add(new ChangeLogLevelCommand.ChangeLogLevelCommandInterceptor());
 
     parseResult = Mockito.mock(GfshParseResult.class);
