@@ -54,8 +54,8 @@ public class StartServerCommandTest {
   public void testServerClasspathOrder() {
     String userClasspath = "/path/to/user/lib/app.jar:/path/to/user/classes";
     String expectedClasspath =
-        StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
-            .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
+        serverCommands.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
+            .concat(File.pathSeparator).concat(StartMemberCommand.CORE_DEPENDENCIES_JAR_PATHNAME);
     String actualClasspath = serverCommands.getServerClasspath(false, userClasspath);
     assertEquals(expectedClasspath, actualClasspath);
   }

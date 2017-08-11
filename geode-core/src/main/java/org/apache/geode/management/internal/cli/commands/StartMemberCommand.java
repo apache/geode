@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
  * @see StartLocatorCommand
  * @see StartServerCommand
  */
-public class StartMemberUtils {
+public class StartMemberCommand {
   public static final String GEODE_HOME = System.getenv("GEODE_HOME");
 
   private static final String JAVA_HOME = System.getProperty("java.home");
@@ -62,13 +62,13 @@ public class StartMemberUtils {
     return nameGenerator;
   }
 
-  static void setPropertyIfNotNull(Properties properties, String key, Object value) {
+  void setPropertyIfNotNull(Properties properties, String key, Object value) {
     if (key != null && value != null) {
       properties.setProperty(key, value.toString());
     }
   }
 
-  static String resolveWorkingDir(String userSpecifiedDir, String memberName) {
+  String resolveWorkingDir(String userSpecifiedDir, String memberName) {
     File workingDir =
         (userSpecifiedDir == null) ? new File(memberName) : new File(userSpecifiedDir);
     String workingDirPath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDir);
@@ -82,14 +82,13 @@ public class StartMemberUtils {
     return workingDirPath;
   }
 
-  static void addGemFirePropertyFile(final List<String> commandLine,
-      final File gemfirePropertiesFile) {
+  void addGemFirePropertyFile(final List<String> commandLine, final File gemfirePropertiesFile) {
     if (gemfirePropertiesFile != null) {
       commandLine.add("-DgemfirePropertyFile=" + gemfirePropertiesFile.getAbsolutePath());
     }
   }
 
-  static void addGemFireSecurityPropertyFile(final List<String> commandLine,
+  void addGemFireSecurityPropertyFile(final List<String> commandLine,
       final File gemfireSecurityPropertiesFile) {
     if (gemfireSecurityPropertiesFile != null) {
       commandLine
@@ -97,7 +96,7 @@ public class StartMemberUtils {
     }
   }
 
-  static void addGemFireSystemProperties(final List<String> commandLine,
+  void addGemFireSystemProperties(final List<String> commandLine,
       final Properties gemfireProperties) {
     for (final Object property : gemfireProperties.keySet()) {
       final String propertyName = property.toString();
@@ -109,20 +108,19 @@ public class StartMemberUtils {
     }
   }
 
-  static void addJvmArgumentsAndOptions(final List<String> commandLine,
-      final String[] jvmArgsOpts) {
+  void addJvmArgumentsAndOptions(final List<String> commandLine, final String[] jvmArgsOpts) {
     if (jvmArgsOpts != null) {
       commandLine.addAll(Arrays.asList(jvmArgsOpts));
     }
   }
 
-  static void addInitialHeap(final List<String> commandLine, final String initialHeap) {
+  void addInitialHeap(final List<String> commandLine, final String initialHeap) {
     if (org.apache.geode.internal.lang.StringUtils.isNotBlank(initialHeap)) {
       commandLine.add("-Xms" + initialHeap);
     }
   }
 
-  static void addMaxHeap(final List<String> commandLine, final String maxHeap) {
+  void addMaxHeap(final List<String> commandLine, final String maxHeap) {
     if (org.apache.geode.internal.lang.StringUtils.isNotBlank(maxHeap)) {
       commandLine.add("-Xmx" + maxHeap);
       commandLine.add("-XX:+UseConcMarkSweepGC");
@@ -131,7 +129,7 @@ public class StartMemberUtils {
     }
   }
 
-  static void addCurrentLocators(GfshCommand gfshCommand, final List<String> commandLine,
+  void addCurrentLocators(GfshCommand gfshCommand, final List<String> commandLine,
       final Properties gemfireProperties) throws MalformedObjectNameException {
     if (org.apache.geode.internal.lang.StringUtils
         .isBlank(gemfireProperties.getProperty(LOCATORS))) {
@@ -143,8 +141,7 @@ public class StartMemberUtils {
     }
   }
 
-  private static String getCurrentLocators(GfshCommand gfshCommand)
-      throws MalformedObjectNameException {
+  String getCurrentLocators(GfshCommand gfshCommand) throws MalformedObjectNameException {
     String delimitedLocators = "";
     try {
       if (gfshCommand.isConnectedAndReady()) {
@@ -170,7 +167,7 @@ public class StartMemberUtils {
     return delimitedLocators;
   }
 
-  public static int readPid(final File pidFile) {
+  int readPid(final File pidFile) {
     assert pidFile != null : "The file from which to read the process ID (pid) cannot be null!";
     if (pidFile.isFile()) {
       BufferedReader fileReader = null;
@@ -185,15 +182,15 @@ public class StartMemberUtils {
     return INVALID_PID;
   }
 
-  static String getJavaPath() {
+  String getJavaPath() {
     return new File(new File(JAVA_HOME, "bin"), "java").getPath();
   }
 
-  static String getSystemClasspath() {
+  String getSystemClasspath() {
     return System.getProperty("java.class.path");
   }
 
-  static String toClasspath(final boolean includeSystemClasspath, String[] jarFilePathnames,
+  String toClasspath(final boolean includeSystemClasspath, String[] jarFilePathnames,
       String... userClasspaths) {
     // gemfire jar must absolutely be the first JAR file on the CLASSPATH!!!
     StringBuilder classpath = new StringBuilder(getGemFireJarPath());
@@ -236,7 +233,7 @@ public class StartMemberUtils {
     return classpath.toString();
   }
 
-  static String getGemFireJarPath() {
+  String getGemFireJarPath() {
     String classpath = getSystemClasspath();
     String gemfireJarPath = GEODE_JAR_PATHNAME;
     for (String classpathElement : classpath.split(File.pathSeparator)) {
