@@ -201,7 +201,6 @@ org/apache/geode/cache/util/Gateway$OrderPolicy,false
 org/apache/geode/cache/wan/GatewaySender$OrderPolicy,false
 org/apache/geode/compression/CompressionException,true,4118639654597191235
 org/apache/geode/compression/SnappyCompressor,true,496609875302446099
-org/apache/geode/config/internal/ClusterConfigurationNotAvailableException,true,771319836094239284
 org/apache/geode/distributed/AbstractLauncher$Status,false,description:java/lang/String
 org/apache/geode/distributed/DistributedSystemDisconnectedException,true,-2484849299224086250
 org/apache/geode/distributed/FutureCancelledException,true,-4599338440381989844
@@ -328,7 +327,7 @@ org/apache/geode/internal/cache/persistence/OplogType,false,prefix:java/lang/Str
 org/apache/geode/internal/cache/persistence/PersistentMemberState,false
 org/apache/geode/internal/cache/snapshot/ClientExporter$ClientArgs,true,1,options:org/apache/geode/cache/snapshot/SnapshotOptions,prSingleHop:boolean,region:java/lang/String
 org/apache/geode/internal/cache/snapshot/ClientExporter$ProxyExportFunction,true,1
-org/apache/geode/internal/cache/snapshot/DefaultSnapshotFileMapper,false
+org/apache/geode/internal/cache/snapshot/ParallelSnapshotFileMapper,true,1
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$1,true,1
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelArgs,true,1,file:java/io/File,format:org/apache/geode/cache/snapshot/SnapshotOptions$SnapshotFormat,options:org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelExportFunction,false
