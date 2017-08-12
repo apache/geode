@@ -249,7 +249,7 @@ public class TestCommand {
     createTestCommand("describe region --name=value", clusterRead);
     createTestCommand("list regions", clusterRead);
 
-    // StatusClusterConfigServiceCommand
+    // StatusCommands
     createTestCommand("status cluster-config-service", clusterRead);
 
     // Shell Commands

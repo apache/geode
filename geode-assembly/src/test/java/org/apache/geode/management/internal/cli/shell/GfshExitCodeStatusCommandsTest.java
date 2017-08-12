@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.categories.AcceptanceTest;
 
 @Category(AcceptanceTest.class)
 @RunWith(JUnitParamsRunner.class)
-public class GfshExitCodeStatusClusterConfigServiceCommandTest {
+public class GfshExitCodeStatusCommandsTest {
   private static File toolsJar;
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
   private static final String memberControllerName = "member-controller";
