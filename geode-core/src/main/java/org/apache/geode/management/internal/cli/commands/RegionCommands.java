@@ -12,14 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -27,6 +28,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -36,23 +38,107 @@ import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.FixedPartitionAttributesInfo;
 import org.apache.geode.management.internal.cli.domain.RegionDescription;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
+import org.apache.geode.management.internal.cli.domain.RegionInformation;
 import org.apache.geode.management.internal.cli.functions.GetRegionDescriptionFunction;
+import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
-public class DescribeRegionCommand implements GfshCommand {
+/**
+ * Class containing implementation of commands based on region:
+ * <ul>
+ * <li>list region
+ * <li>describe region
+ * </ul>
+ * 
+ * @since GemFire 7.0
+ */
+public class RegionCommands implements GfshCommand {
+  private static final GetRegionsFunction getRegionsFunction = new GetRegionsFunction();
   private static final GetRegionDescriptionFunction getRegionDescription =
       new GetRegionDescriptionFunction();
 
+  @CliCommand(value = {CliStrings.LIST_REGION}, help = CliStrings.LIST_REGION__HELP)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  public Result listRegion(
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CliStrings.LIST_REGION__GROUP__HELP) String[] group,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          optionContext = ConverterHint.MEMBERIDNAME,
+          help = CliStrings.LIST_REGION__MEMBER__HELP) String[] memberNameOrId) {
+    Result result = null;
+    try {
+      Set<RegionInformation> regionInfoSet = new LinkedHashSet<>();
+      ResultCollector<?, ?> rc;
+
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
+
+      TabularResultData resultData = ResultBuilder.createTabularResultData();
+      rc = CliUtil.executeFunction(getRegionsFunction, null, targetMembers);
+
+      ArrayList<?> resultList = (ArrayList<?>) rc.getResult();
+
+      if (resultList != null) {
+
+        for (Object resultObj : resultList) {
+          if (resultObj != null) {
+            if (resultObj instanceof Object[]) {
+              Object[] resultObjectArray = (Object[]) resultObj;
+              for (Object regionInfo : resultObjectArray) {
+                if (regionInfo instanceof RegionInformation) {
+                  regionInfoSet.add((RegionInformation) regionInfo);
+                }
+              }
+            }
+          }
+        }
+
+        Set<String> regionNames = new TreeSet<>();
+
+        for (RegionInformation regionInfo : regionInfoSet) {
+          regionNames.add(regionInfo.getName());
+          Set<String> subRegionNames = regionInfo.getSubRegionNames();
+
+          regionNames.addAll(subRegionNames);
+        }
+
+        for (String regionName : regionNames) {
+          resultData.accumulate("List of regions", regionName);
+        }
+
+        if (!regionNames.isEmpty()) {
+          result = ResultBuilder.buildResult(resultData);
+
+        } else {
+          result = ResultBuilder.createInfoResult(CliStrings.LIST_REGION__MSG__NOT_FOUND);
+        }
+      }
+    } catch (FunctionInvocationTargetException e) {
+      result = ResultBuilder.createGemFireErrorResult(CliStrings
+          .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.LIST_REGION));
+    } catch (Exception e) {
+      result = ResultBuilder
+          .createGemFireErrorResult(CliStrings.LIST_REGION__MSG__ERROR + " : " + e.getMessage());
+    }
+    return result;
+  }
+
   @CliCommand(value = {CliStrings.DESCRIBE_REGION}, help = CliStrings.DESCRIBE_REGION__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_CONFIG})
-  @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
-      operation = ResourcePermission.Operation.READ)
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeRegion(
       @CliOption(key = CliStrings.DESCRIBE_REGION__NAME, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESCRIBE_REGION__NAME__HELP, mandatory = true) String regionName) {
@@ -124,7 +210,7 @@ public class DescribeRegionCommand implements GfshCommand {
             regionDescription.getCndRegionAttributes().put(RegionAttributesNames.SCOPE, scope);
           }
         }
-        CompositeResultData.SectionResultData regionSection = crd.addSection();
+        SectionResultData regionSection = crd.addSection();
         regionSection.addSeparator('-');
         regionSection.addData("Name", regionDescription.getName());
 
@@ -203,7 +289,7 @@ public class DescribeRegionCommand implements GfshCommand {
                 CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__PARTITION, ndPa, member,
                 memberNameAdded);
 
-            writeFixedPartitionAttributesToTable(table, fpaList, member, memberNameAdded);
+            writeFixedPartitionAttributesToTable(table, "", fpaList, member, memberNameAdded);
           }
         }
 
@@ -247,8 +333,9 @@ public class DescribeRegionCommand implements GfshCommand {
     }
   }
 
-  private void writeFixedPartitionAttributesToTable(TabularResultData table,
-      List<FixedPartitionAttributesInfo> fpaList, String member, boolean isMemberNameAdded) {
+  private boolean writeFixedPartitionAttributesToTable(TabularResultData table,
+      String attributeType, List<FixedPartitionAttributesInfo> fpaList, String member,
+      boolean isMemberNameAdded) {
 
     if (fpaList != null) {
       boolean isTypeAdded = false;
@@ -272,7 +359,7 @@ public class DescribeRegionCommand implements GfshCommand {
         fpaBuilder.append(fpa.getNumBuckets());
 
         if (!isTypeAdded) {
-          type = "";
+          type = attributeType;
           isTypeAdded = true;
         } else {
           type = blank;
@@ -289,6 +376,7 @@ public class DescribeRegionCommand implements GfshCommand {
       }
     }
 
+    return isMemberNameAdded;
   }
 
   private boolean writeAttributesToTable(TabularResultData table, String attributeType,
@@ -323,7 +411,7 @@ public class DescribeRegionCommand implements GfshCommand {
     return isMemberNameAdded;
   }
 
-  private void writeAttributeToTable(TabularResultData table, String member, String attributeType,
+  public void writeAttributeToTable(TabularResultData table, String member, String attributeType,
       String attributeName, String attributeValue) {
 
     final String blank = "";
@@ -349,9 +437,11 @@ public class DescribeRegionCommand implements GfshCommand {
     }
   }
 
+
   private void writeCommonAttributeToTable(TabularResultData table, String attributeType,
       String attributeName, String attributeValue) {
     final String blank = "";
+
     if (attributeValue != null) {
       String[] attributeValues = attributeValue.split(",");
       boolean isFirstValue = true;
@@ -366,6 +456,18 @@ public class DescribeRegionCommand implements GfshCommand {
           table.accumulate(CliStrings.DESCRIBE_REGION__ATTRIBUTE__NAME, blank);
           table.accumulate(CliStrings.DESCRIBE_REGION__ATTRIBUTE__VALUE, value);
         }
+      }
+    }
+  }
+
+  public void addChildSection(SectionResultData parentSection, Map<String, String> map,
+      String header) {
+    if (!map.isEmpty()) {
+      Set<String> attributes = map.keySet();
+      SectionResultData section = parentSection.addSection();
+      section.setHeader(header);
+      for (String attribute : attributes) {
+        section.addData(attribute, map.get(attribute));
       }
     }
   }

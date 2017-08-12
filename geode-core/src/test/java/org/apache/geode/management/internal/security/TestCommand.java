@@ -245,7 +245,7 @@ public class TestCommand {
 
     createTestCommand("list async-event-queues", clusterRead);
 
-    // DescribeRegionCommand, ListRegionCommand
+    // RegionCommands
     createTestCommand("describe region --name=value", clusterRead);
     createTestCommand("list regions", clusterRead);
 
