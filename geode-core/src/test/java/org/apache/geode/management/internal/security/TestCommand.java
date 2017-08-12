@@ -278,5 +278,8 @@ public class TestCommand {
 
     // ShellCommand
     createTestCommand("disconnect");
+
+    // Misc commands
+    // createTestCommand("shutdown", clusterManage);
   }
 }
