@@ -202,7 +202,7 @@ public class DurableClientCommands implements GfshCommand {
           help = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER__HELP,
           optionContext = ConverterHint.MEMBERIDNAME) final String[] memberNameOrId,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          help = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP__HELP,
+          help = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
 
     Result result;

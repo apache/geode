@@ -650,11 +650,10 @@ public class MiscellaneousCommands implements GfshCommand {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportStackTrace(@CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.EXPORT_STACKTRACE__MEMBER__HELP) String[] memberNameOrId,
+      help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_STACKTRACE__GROUP__HELP) String[] group,
+          optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.GROUP) String[] group,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__FILE,
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,

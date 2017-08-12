@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 import org.json.JSONArray;
 
 import org.apache.geode.cache.CacheFactory;
@@ -499,7 +502,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       return DataCommandResult.createLocateEntryResult(key, null, null,
           CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false);
     }
-
     List<Region> listOfRegionsStartingWithRegionPath = new ArrayList<>();
 
     if (recursive) {
@@ -631,8 +633,8 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       try {
         keyObject = getClassObject(key, keyClass);
       } catch (ClassNotFoundException e) {
-        return DataCommandResult.createPutResult(key, null, e,
-            CliStrings.format(CliStrings.PUT__MSG__KEY_NOT_FOUND_REGION, keyClass), false);
+        return DataCommandResult.createPutResult(key, null, null,
+            "ClassNotFoundException " + keyClass, false);
       } catch (IllegalArgumentException e) {
         return DataCommandResult.createPutResult(key, null, null,
             "Error in converting JSON " + e.getMessage(), false);

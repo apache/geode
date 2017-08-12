@@ -14,16 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -41,9 +33,19 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @since GemFire 7.0
@@ -100,8 +102,7 @@ public class MemberCommands implements GfshCommand {
   @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeMember(@CliOption(key = CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
-      optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.DESCRIBE_MEMBER__IDENTIFIER__HELP,
+      optionContext = ConverterHint.ALL_MEMBER_IDNAME, help = CliStrings.DESCRIBE_MEMBER__HELP,
       mandatory = true) String memberNameOrId) {
     Result result = null;
 

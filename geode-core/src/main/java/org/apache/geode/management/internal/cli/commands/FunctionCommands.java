@@ -364,7 +364,7 @@ public class FunctionCommands implements GfshCommand {
   // TODO: Add optioncontext for functionId
   public Result destroyFunction(
       @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,
-          help = CliStrings.DESTROY_FUNCTION__ID__HELP) String functionId,
+          help = CliStrings.DESTROY_FUNCTION__HELP) String functionId,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_FUNCTION__ONGROUPS__HELP) String[] groups,

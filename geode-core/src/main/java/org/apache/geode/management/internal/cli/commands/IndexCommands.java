@@ -269,7 +269,6 @@ public class IndexCommands implements GfshCommand {
         infoResult.addLine(
             CliStrings.format(CliStrings.CREATE_INDEX__EXPRESSION__MSG, indexedExpression));
         infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__REGIONPATH__MSG, regionPath));
-        infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__TYPE__MSG, indexType));
         infoResult.addLine(CliStrings.CREATE_INDEX__MEMBER__MSG);
 
         int num = 0;
@@ -588,7 +587,6 @@ public class IndexCommands implements GfshCommand {
       } else {
         // Group members by the exception thrown.
         final ErrorResultData erd = ResultBuilder.createErrorResultData();
-        erd.addLine(CliStrings.CREATE_DEFINED_INDEXES__FAILURE__MSG);
 
         final Set<String> exceptionMessages = indexOpFailMap.keySet();
 
