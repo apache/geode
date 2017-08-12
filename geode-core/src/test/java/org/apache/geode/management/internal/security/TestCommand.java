@@ -123,7 +123,7 @@ public class TestCommand {
     createTestCommand("list clients", clusterRead);
     createTestCommand("describe client --clientID=172.16.196.144", clusterRead);
 
-    // AlterRuntimeConfigCommand, DescribeConfigCommand, ExportConfigCommand (config commands)
+    // ConfigCommands
     createTestCommand("alter runtime", clusterManage);
     createTestCommand("describe config --member=Member1", clusterRead);
     createTestCommand("export config --member=member1", clusterRead);
