@@ -171,15 +171,14 @@ public class TestCommand {
     createTestCommand("alter disk-store --name=foo --region=xyz --disk-dirs=bar");
     createTestCommand("destroy disk-store --name=foo", clusterManageDisk);
 
-    // CloseDurableClientCommand, CloseDurableCQsCommand, CountDurableCQEventsCommand,
-    // ListDurableClientCQsCommand
+    // DurableClientCommands
     createTestCommand("close durable-client --durable-client-id=client1", clusterManageQuery);
     createTestCommand("close durable-cq --durable-client-id=client1 --durable-cq-name=cq1",
         clusterManageQuery);
     createTestCommand("show subscription-queue-size --durable-client-id=client1", clusterRead);
     createTestCommand("list durable-cqs --durable-client-id=client1", clusterRead);
 
-    // ExportImportSharedConfigurationCommands
+    // ExportIMportSharedConfigurationCommands
     createTestCommand("export cluster-configuration --zip-file-name=mySharedConfig.zip",
         clusterRead);
     createTestCommand("import cluster-configuration --zip-file-name=value.zip", clusterManage);
