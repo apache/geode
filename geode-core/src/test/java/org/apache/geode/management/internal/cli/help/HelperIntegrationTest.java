@@ -15,22 +15,16 @@
 
 package org.apache.geode.management.internal.cli.help;
 
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.HINT__MSG__TOPICS_AVAILABLE;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.HINT__MSG__UNKNOWN_TOPIC;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.TOPIC_CLIENT__DESC;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Method;
-
+import org.apache.geode.management.internal.cli.commands.GfshHelpCommands;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.management.internal.cli.commands.GfshHelpCommand;
-import org.apache.geode.management.internal.cli.commands.GfshHintCommand;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.lang.reflect.Method;
 
 @Category(IntegrationTest.class)
 public class HelperIntegrationTest {
@@ -39,20 +33,8 @@ public class HelperIntegrationTest {
   @BeforeClass
   public static void beforeClass() {
     helper = new Helper();
-  }
-
-  private void getHelpCommand() {
-    Method[] methods = GfshHelpCommand.class.getMethods();
-    for (Method method : methods) {
-      CliCommand cliCommand = method.getDeclaredAnnotation(CliCommand.class);
-      if (cliCommand != null) {
-        helper.addCommand(cliCommand, method);
-      }
-    }
-  }
-
-  private void getHintCommand() {
-    Method[] methods = GfshHintCommand.class.getMethods();
+    // use GfshHelpCommand for testing
+    Method[] methods = GfshHelpCommands.class.getMethods();
     for (Method method : methods) {
       CliCommand cliCommand = method.getDeclaredAnnotation(CliCommand.class);
       if (cliCommand != null) {
@@ -63,52 +45,19 @@ public class HelperIntegrationTest {
 
   @Test
   public void testHelpWithNoInput() {
-    getHelpCommand();
-    String testNoInput = helper.getHelp(null, -1);
-    String[] helpLines = testNoInput.split("\n");
-    assertThat(helpLines).hasSize(2);
+    String test = helper.getHelp(null, -1);
+    String[] helpLines = test.split("\n");
+    assertThat(helpLines).hasSize(4);
     assertThat(helpLines[0]).isEqualTo("help (Available)");
-    assertThat(helpLines[1]).isEqualTo(CliStrings.HELP__HELP);
+    assertThat(helpLines[2]).isEqualTo("hint (Available)");
   }
 
   @Test
   public void testHelpWithInput() {
-    getHelpCommand();
-    String testInput = helper.getHelp("help", -1);
-    String[] helpLines = testInput.split("\n");
+    String test = helper.getHelp("help", -1);
+    String[] helpLines = test.split("\n");
     assertThat(helpLines).hasSize(12);
     assertThat(helpLines[0]).isEqualTo("NAME");
     assertThat(helpLines[1]).isEqualTo("help");
-  }
-
-  @Test
-  public void testHelpWithInvalidInput() {
-    getHelpCommand();
-    String testInvalidInput = helper.getHelp("InvalidTopic", -1);
-    assertThat(testInvalidInput).isEqualTo("no help exists for this command.");
-  }
-
-  @Test
-  public void testHintWithNoInput() {
-    getHintCommand();
-    String testNoInput = helper.getHint(null);
-    String[] hintLines = testNoInput.split("\n");
-    assertThat(hintLines).hasSize(21);
-    assertThat(hintLines[0]).isEqualTo(HINT__MSG__TOPICS_AVAILABLE);
-  }
-
-  @Test
-  public void testHintWithInput() {
-    getHintCommand();
-    String testInput = helper.getHint("Client");
-    assertThat(testInput).contains(TOPIC_CLIENT__DESC);
-  }
-
-  @Test
-  public void testHintWithInvalidInput() {
-    getHintCommand();
-    String testInvalidInput = helper.getHint("InvalidTopic");
-    assertThat(testInvalidInput)
-        .isEqualTo(CliStrings.format(HINT__MSG__UNKNOWN_TOPIC, "InvalidTopic"));
   }
 }
