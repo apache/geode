@@ -128,7 +128,7 @@ public class TestCommand {
     createTestCommand("describe config --member=Member1", clusterRead);
     createTestCommand("export config --member=member1", clusterRead);
 
-    // CreateRegionCommand, AlterRegionCommand, DestroyRegionCommand
+    // CreateAlterDestroyRegionCommands
     createTestCommand("alter region --name=RegionA --eviction-max=5000", regionAManage);
     createTestCommand("create region --name=region12 --type=REPLICATE", dataManage);
     createTestCommand("create region --name=region123 --type=PARTITION_PERSISTENT", dataManage,

@@ -15,8 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.CreateRegionCommand.regionExists;
-import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -32,7 +31,8 @@ import org.apache.geode.test.dunit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class CreateRegionCommandTest {
+public class CreateAlterDestroyRegionCommandsTest {
+
   @Rule
   public GfshParserRule parser = new GfshParserRule();
 
@@ -40,19 +40,14 @@ public class CreateRegionCommandTest {
   public void testCreateRegionWithInvalidPartitionResolver() throws Exception {
     InternalCache cache = mock(InternalCache.class);
     DistributedSystemMXBean dsMBean = mock(DistributedSystemMXBean.class);
-    CreateRegionCommand spy = Mockito.spy(CreateRegionCommand.class);
+    CreateAlterDestroyRegionCommands spy = Mockito.spy(CreateAlterDestroyRegionCommands.class);
 
     doReturn(cache).when(spy).getCache();
     doReturn(dsMBean).when(spy).getDSMBean(cache);
 
     String command = "create region --name=region3 --type=PARTITION --partition-resolver=Foo";
+
     assertThatThrownBy(() -> parser.executeCommandWithInstance(spy, command))
         .hasMessageContaining("Foo is an invalid Partition Resolver");
-  }
-
-  @Test
-  public void testRegionExistsReturnsCorrectValue() throws Exception {
-    InternalCache cache = mock(InternalCache.class);
-    assertThat(regionExists(cache, null)).isFalse();
   }
 }
