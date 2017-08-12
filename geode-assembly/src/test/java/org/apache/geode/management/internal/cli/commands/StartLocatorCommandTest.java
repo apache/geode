@@ -56,9 +56,9 @@ public class StartLocatorCommandTest {
   public void testLocatorClasspathOrder() {
     String userClasspath = "/path/to/user/lib/app.jar:/path/to/user/classes";
     String expectedClasspath =
-        locatorCommands.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
+        StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
             .concat(File.pathSeparator).concat(System.getProperty("java.class.path"))
-            .concat(File.pathSeparator).concat(StartMemberCommand.CORE_DEPENDENCIES_JAR_PATHNAME);
+            .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     String actualClasspath = locatorCommands.getLocatorClasspath(true, userClasspath);
     assertEquals(expectedClasspath, actualClasspath);
   }

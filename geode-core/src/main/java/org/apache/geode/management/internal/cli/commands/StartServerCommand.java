@@ -48,7 +48,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceConstants;
 
-public class StartServerCommand extends StartMemberCommand implements GfshCommand {
+public class StartServerCommand implements GfshCommand {
   private static final String SERVER_TERM_NAME = "Server";
 
   @CliCommand(value = CliStrings.START_SERVER, help = CliStrings.START_SERVER__HELP)
@@ -181,7 +181,7 @@ public class StartServerCommand extends StartMemberCommand implements GfshComman
     try {
       if (StringUtils.isBlank(memberName)) {
         // when the user doesn't give us a name, we make one up!
-        memberName = getNameGenerator().generate('-');
+        memberName = StartMemberUtils.getNameGenerator().generate('-');
       }
 
       // prompt for password is username is specified in the command
@@ -195,7 +195,7 @@ public class StartServerCommand extends StartMemberCommand implements GfshComman
         }
       }
 
-      workingDirectory = resolveWorkingDir(workingDirectory, memberName);
+      workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
 
       cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
 
@@ -219,49 +219,56 @@ public class StartServerCommand extends StartMemberCommand implements GfshComman
 
       File serverPidFile = new File(workingDirectory, ProcessType.SERVER.getPidFileName());
 
-      readPid(serverPidFile);
+      final int oldPid = StartMemberUtils.readPid(serverPidFile);
 
       Properties gemfireProperties = new Properties();
 
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.BIND_ADDRESS, bindAddress);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.CACHE_XML_FILE,
-          cacheXmlPathname);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.ENABLE_TIME_STATISTICS,
-          enableTimeStatistics);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS, group);
-      setPropertyIfNotNull(gemfireProperties,
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.BIND_ADDRESS,
+          bindAddress);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.CACHE_XML_FILE, cacheXmlPathname);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.ENABLE_TIME_STATISTICS, enableTimeStatistics);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS,
+          group);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
           ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS, locators);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATOR_WAIT_TIME,
-          locatorWaitTime);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL, logLevel);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_ADDRESS,
-          mcastBindAddress);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT, mcastPort);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MEMCACHED_PORT,
-          memcachedPort);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MEMCACHED_PROTOCOL,
-          memcachedProtocol);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MEMCACHED_BIND_ADDRESS,
-          memcachedBindAddress);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PORT, redisPort);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_BIND_ADDRESS,
-          redisBindAddress);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PASSWORD,
-          redisPassword);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.STATISTIC_ARCHIVE_FILE,
-          statisticsArchivePathname);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.USE_CLUSTER_CONFIGURATION,
-          requestSharedConfiguration);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCK_MEMORY, lockMemory);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.OFF_HEAP_MEMORY_SIZE,
-          offHeapMemorySize);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.START_DEV_REST_API,
-          startRestApi);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.HTTP_SERVICE_PORT,
-          httpServicePort);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS,
-          httpServiceBindAddress);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS,
+          locators);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.LOCATOR_WAIT_TIME, locatorWaitTime);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL,
+          logLevel);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.MCAST_ADDRESS, mcastBindAddress);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT,
+          mcastPort);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.MEMCACHED_PORT, memcachedPort);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.MEMCACHED_PROTOCOL, memcachedProtocol);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.MEMCACHED_BIND_ADDRESS, memcachedBindAddress);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PORT,
+          redisPort);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.REDIS_BIND_ADDRESS, redisBindAddress);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.REDIS_PASSWORD, redisPassword);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.USE_CLUSTER_CONFIGURATION, requestSharedConfiguration);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCK_MEMORY,
+          lockMemory);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, offHeapMemorySize);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.START_DEV_REST_API, startRestApi);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
       // if username is specified in the command line, it will overwrite what's set in the
       // properties file
       if (StringUtils.isNotBlank(userName)) {
@@ -370,9 +377,9 @@ public class StartServerCommand extends StartMemberCommand implements GfshComman
         } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())
             && serverState.isStartingOrNotResponding());
       } finally {
-        stderrReader.stopAsync(PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop
-                                                                                 // will
-                                                                                 // close
+        stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop
+                                                                                                  // will
+                                                                                                  // close
         // ErrorStream
         getGfsh().getSignalHandler().unregisterListener(serverSignalListener);
       }
@@ -417,16 +424,16 @@ public class StartServerCommand extends StartMemberCommand implements GfshComman
       throws MalformedObjectNameException {
     List<String> commandLine = new ArrayList<>();
 
-    commandLine.add(getJavaPath());
+    commandLine.add(StartMemberUtils.getJavaPath());
     commandLine.add("-server");
     commandLine.add("-classpath");
     commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
 
-    addCurrentLocators(this, commandLine, gemfireProperties);
-    addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
-    addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
-    addGemFireSystemProperties(commandLine, gemfireProperties);
-    addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
+    StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
+    StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
+    StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
+    StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
+    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
 
     // NOTE asserting not equal to true rather than equal to false handles the null case and ensures
     // the user
@@ -435,8 +442,8 @@ public class StartServerCommand extends StartMemberCommand implements GfshComman
       addJvmOptionsForOutOfMemoryErrors(commandLine);
     }
 
-    addInitialHeap(commandLine, initialHeap);
-    addMaxHeap(commandLine, maxHeap);
+    StartMemberUtils.addInitialHeap(commandLine, initialHeap);
+    StartMemberUtils.addMaxHeap(commandLine, maxHeap);
 
     commandLine.add(
         "-D".concat(AbstractLauncher.SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY.concat("=true")));
@@ -544,9 +551,9 @@ public class StartServerCommand extends StartMemberCommand implements GfshComman
   String getServerClasspath(final boolean includeSystemClasspath, final String userClasspath) {
     List<String> jarFilePathnames = new ArrayList<>();
 
-    jarFilePathnames.add(CORE_DEPENDENCIES_JAR_PATHNAME);
+    jarFilePathnames.add(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
 
-    return toClasspath(includeSystemClasspath,
+    return StartMemberUtils.toClasspath(includeSystemClasspath,
         jarFilePathnames.toArray(new String[jarFilePathnames.size()]), userClasspath);
   }
 
