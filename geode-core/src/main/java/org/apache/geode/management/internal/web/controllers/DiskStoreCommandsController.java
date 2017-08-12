@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.cli.commands.ListDiskStoresCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 
@@ -33,21 +32,8 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
  * The DiskStoreCommandsController class implements GemFire Management REST API web service
  * endpoints for the Gfsh Disk Store Commands.
  * <p/>
- *
- * @see org.apache.geode.management.internal.cli.commands.AlterOfflineDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.BackupDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.CompactDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.CompactOfflineDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.CreateDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.DescribeDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.DescribeOfflineDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.DestroyDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.ExportOfflineDiskStoreCommand
- * @see ListDiskStoresCommand
- * @see org.apache.geode.management.internal.cli.commands.RevokeMissingDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.ShowMissingDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.UpgradeOfflineDiskStoreCommand
- * @see org.apache.geode.management.internal.cli.commands.ValidateDiskStoreCommand
+ * 
+ * @see org.apache.geode.management.internal.cli.commands.DiskStoreCommands
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.PathVariable

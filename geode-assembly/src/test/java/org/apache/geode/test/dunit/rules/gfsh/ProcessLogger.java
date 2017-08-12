@@ -36,14 +36,14 @@ public class ProcessLogger {
 
   private final Queue<String> stdOutLines = new ConcurrentLinkedQueue<>();
   private final Queue<String> stdErrorLines = new ConcurrentLinkedQueue<>();
+  private final StreamGobbler stdOutGobbler;
+  private final StreamGobbler stdErrGobbler;
 
   public ProcessLogger(Process process, String name) {
     this.logger = LOGGER_CONTEXT.getLogger(name);
 
-    StreamGobbler stdOutGobbler =
-        new StreamGobbler(process.getInputStream(), this::consumeInfoMessage);
-    StreamGobbler stdErrGobbler =
-        new StreamGobbler(process.getErrorStream(), this::consumeErrorMessage);
+    this.stdOutGobbler = new StreamGobbler(process.getInputStream(), this::consumeInfoMessage);
+    this.stdErrGobbler = new StreamGobbler(process.getErrorStream(), this::consumeErrorMessage);
 
     stdOutGobbler.startInNewThread();
     stdErrGobbler.startInNewThread();
@@ -84,7 +84,7 @@ public class ProcessLogger {
   }
 
   public List<String> getStdErrLines() {
-    return Lists.newArrayList(stdErrorLines.iterator());
+    return Lists.newArrayList(stdOutLines.iterator());
   }
 
 }

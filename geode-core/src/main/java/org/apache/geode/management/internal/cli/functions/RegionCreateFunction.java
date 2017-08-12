@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.commands.CreateRegionCommand;
+import org.apache.geode.management.internal.cli.commands.CreateAlterDestroyRegionCommands;
 import org.apache.geode.management.internal.cli.exceptions.CreateSubregionException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
@@ -100,9 +100,9 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       String localizedString =
           LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
       if (localizedString.equals(e.getMessage())) {
-        exceptionMsg = exceptionMsg + " "
-            + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
-                new Object[] {String.valueOf(CreateRegionCommand.PERSISTENT_OVERFLOW_SHORTCUTS)});
+        exceptionMsg = exceptionMsg + " " + CliStrings
+            .format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0, new Object[] {
+                String.valueOf(CreateAlterDestroyRegionCommands.PERSISTENT_OVERFLOW_SHORTCUTS)});
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, null/* do not log */));
     } catch (IllegalArgumentException e) {

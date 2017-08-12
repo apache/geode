@@ -15,12 +15,7 @@
 package org.apache.geode.management.internal.cli.commands.lifecycle;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_TERM_NAME;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.AbstractLauncher;
@@ -35,7 +30,10 @@ import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.shell.MXBeanProvider;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.concurrent.TimeUnit;
 
 public class StopLocatorCommand implements GfshCommand {
   private static final long WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS = 30 * 1000;
@@ -122,9 +120,5 @@ public class StopLocatorCommand implements GfshCommand {
     } finally {
       Gfsh.redirectInternalJavaLoggers();
     }
-  }
-
-  MemberMXBean getMemberMXBean(String member) throws IOException {
-    return MXBeanProvider.getMemberMXBean(member);
   }
 }
