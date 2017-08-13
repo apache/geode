@@ -405,10 +405,9 @@ public class GfshCommandJUnitTest {
     assertTrue(commandLine.isEmpty());
     startMemberCommand.addGemFirePropertyFile(commandLine, null);
     assertTrue(commandLine.isEmpty());
-    File file = new File("/path/to/gemfire.properties");
-    startMemberCommand.addGemFirePropertyFile(commandLine, file);
+    startMemberCommand.addGemFirePropertyFile(commandLine, new File("/path/to/gemfire.properties"));
     assertFalse(commandLine.isEmpty());
-    assertTrue(commandLine.contains("-DgemfirePropertyFile=" + file.getAbsolutePath()));
+    assertTrue(commandLine.contains("-DgemfirePropertyFile=/path/to/gemfire.properties"));
   }
 
 }
