@@ -57,7 +57,7 @@ import org.apache.geode.management.internal.cli.util.HostUtils;
 import org.apache.geode.management.internal.configuration.utils.ClusterConfigurationStatusRetriever;
 import org.apache.geode.security.AuthenticationFailedException;
 
-public class StartLocatorCommand extends StartMemberCommand implements GfshCommand {
+public class StartLocatorCommand implements GfshCommand {
   @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
@@ -123,10 +123,10 @@ public class StartLocatorCommand extends StartMemberCommand implements GfshComma
     try {
       if (StringUtils.isBlank(memberName)) {
         // when the user doesn't give us a name, we make one up!
-        memberName = getNameGenerator().generate('-');
+        memberName = StartMemberUtils.getNameGenerator().generate('-');
       }
 
-      workingDirectory = resolveWorkingDir(workingDirectory, memberName);
+      workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
 
       if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
         return ResultBuilder.createUserErrorResult(
@@ -142,28 +142,32 @@ public class StartLocatorCommand extends StartMemberCommand implements GfshComma
 
       File locatorPidFile = new File(workingDirectory, ProcessType.LOCATOR.getPidFileName());
 
-      final int oldPid = readPid(locatorPidFile);
+      final int oldPid = StartMemberUtils.readPid(locatorPidFile);
 
       Properties gemfireProperties = new Properties();
 
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS, group);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS, locators);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL, logLevel);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_ADDRESS,
-          mcastBindAddress);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT, mcastPort);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION,
-          enableSharedConfiguration);
-      setPropertyIfNotNull(gemfireProperties,
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS,
+          group);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS,
+          locators);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL,
+          logLevel);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.MCAST_ADDRESS, mcastBindAddress);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT,
+          mcastPort);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, enableSharedConfiguration);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
           ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
           loadSharedConfigurationFromDirectory);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.CLUSTER_CONFIGURATION_DIR,
-          clusterConfigDir);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.HTTP_SERVICE_PORT,
-          httpServicePort);
-      setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS,
-          httpServiceBindAddress);
-      setPropertyIfNotNull(gemfireProperties,
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.CLUSTER_CONFIGURATION_DIR, clusterConfigDir);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+          ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
+      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
           ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
 
       // read the OSProcess enable redirect system property here
@@ -254,7 +258,7 @@ public class StartLocatorCommand extends StartMemberCommand implements GfshComma
             && locatorState.isStartingOrNotResponding());
       } finally {
         // stop will close
-        stderrReader.stopAsync(PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS);
+        stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS);
 
         // ErrorStream
         getGfsh().getSignalHandler().unregisterListener(locatorSignalListener);
@@ -320,7 +324,6 @@ public class StartLocatorCommand extends StartMemberCommand implements GfshComma
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      t.printStackTrace();
       SystemFailure.checkFailure();
       String errorMessage = String.format(CliStrings.START_LOCATOR__GENERAL_ERROR_MESSAGE,
           StringUtils.defaultIfBlank(workingDirectory, memberName),
@@ -436,19 +439,19 @@ public class StartLocatorCommand extends StartMemberCommand implements GfshComma
       final String maxHeap) throws MalformedObjectNameException {
     List<String> commandLine = new ArrayList<>();
 
-    commandLine.add(getJavaPath());
+    commandLine.add(StartMemberUtils.getJavaPath());
     commandLine.add("-server");
     commandLine.add("-classpath");
     commandLine
         .add(getLocatorClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
 
-    addCurrentLocators(this, commandLine, gemfireProperties);
-    addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
-    addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
-    addGemFireSystemProperties(commandLine, gemfireProperties);
-    addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
-    addInitialHeap(commandLine, initialHeap);
-    addMaxHeap(commandLine, maxHeap);
+    StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
+    StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
+    StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
+    StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
+    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
+    StartMemberUtils.addInitialHeap(commandLine, initialHeap);
+    StartMemberUtils.addMaxHeap(commandLine, maxHeap);
 
     commandLine.add(
         "-D".concat(AbstractLauncher.SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY.concat("=true")));
@@ -489,7 +492,7 @@ public class StartLocatorCommand extends StartMemberCommand implements GfshComma
   }
 
   String getLocatorClasspath(final boolean includeSystemClasspath, final String userClasspath) {
-    return toClasspath(includeSystemClasspath, new String[] {CORE_DEPENDENCIES_JAR_PATHNAME},
-        userClasspath);
+    return StartMemberUtils.toClasspath(includeSystemClasspath,
+        new String[] {StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME}, userClasspath);
   }
 }

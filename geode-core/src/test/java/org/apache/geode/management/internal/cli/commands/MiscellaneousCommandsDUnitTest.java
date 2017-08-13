@@ -14,34 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.ThreadUtils;
@@ -49,22 +24,27 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.*;
 import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.ResultData;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 /**
- * DUnit class for testing gemfire function commands : GC, Shutdown
+ * Dunit class for testing gemfire function commands : GC, Shutdown
  */
 @Category(DistributedTest.class)
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
@@ -95,15 +75,20 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     String command = "gc --group=Group1";
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
-    String cmdResultStr = commandResultToString(cmdResult);
-    getLogWriter().info("testGCForGroup cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
-    assertEquals(Status.OK, cmdResult.getStatus());
-    if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
-      TabularResultData table = (TabularResultData) cmdResult.getResultData();
-      List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
-      assertEquals(true, memberNames.size() == 1);
+    if (cmdResult != null) {
+      String cmdResultStr = commandResultToString(cmdResult);
+      getLogWriter()
+          .info("testGCForGroup cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
+        TabularResultData table = (TabularResultData) cmdResult.getResultData();
+        List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
+        assertEquals(true, memberNames.size() == 1);
+      } else {
+        fail("testGCForGroup failed as CommandResult should be table type");
+      }
     } else {
-      fail("testGCForGroup failed as CommandResult should be table type");
+      fail("testGCForGroup failed as did not get CommandResult");
     }
   }
 
@@ -116,19 +101,23 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
   public void testGCForMemberID() {
     setUpJmxManagerOnVm0ThenConnect(null);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = vm1.invoke(this::getMemberId);
+    final String vm1MemberId = vm1.invoke(() -> getMemberId());
     String command = "gc --member=" + vm1MemberId;
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
-    String cmdResultStr = commandResultToString(cmdResult);
-    getLogWriter().info("testGCForMemberID cmdResultStr=" + cmdResultStr);
-    assertEquals(Status.OK, cmdResult.getStatus());
-    if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
-      TabularResultData table = (TabularResultData) cmdResult.getResultData();
-      List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
-      assertEquals(true, memberNames.size() == 1);
+    if (cmdResult != null) {
+      String cmdResultStr = commandResultToString(cmdResult);
+      getLogWriter().info("testGCForMemberID cmdResultStr=" + cmdResultStr);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
+        TabularResultData table = (TabularResultData) cmdResult.getResultData();
+        List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
+        assertEquals(true, memberNames.size() == 1);
+      } else {
+        fail("testGCForGroup failed as CommandResult should be table type");
+      }
     } else {
-      fail("testGCForGroup failed as CommandResult should be table type");
+      fail("testGCForCluster failed as did not get CommandResult");
     }
   }
 
@@ -139,7 +128,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       props.setProperty(LOG_FILE, "testShowLogDefault.log");
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = vm1.invoke(this::getMemberId);
+      final String vm1MemberId = vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId;
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -163,7 +152,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     try {
       setUpJmxManagerOnVm0ThenConnect(props);
       final VM vm1 = Host.getHost(0).getVM(0);
-      final String vm1MemberId = vm1.invoke(this::getMemberId);
+      final String vm1MemberId = vm1.invoke(() -> getMemberId());
       String command = "show log --member=" + vm1MemberId + " --lines=50";
       CommandResult cmdResult = executeCommand(command);
       if (cmdResult != null) {
@@ -185,20 +174,24 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     String command = "gc";
     CommandResult cmdResult = executeCommand(command);
     cmdResult.resetToFirstLine();
-    String cmdResultStr = commandResultToString(cmdResult);
-    getLogWriter()
-        .info("testGCForEntireCluster cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
-    assertEquals(Status.OK, cmdResult.getStatus());
-    if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
-      TabularResultData table = (TabularResultData) cmdResult.getResultData();
-      List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
-      assertEquals(3, memberNames.size());
+    if (cmdResult != null) {
+      String cmdResultStr = commandResultToString(cmdResult);
+      getLogWriter()
+          .info("testGCForEntireCluster cmdResultStr=" + cmdResultStr + "; cmdResult=" + cmdResult);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+      if (cmdResult.getType().equals(ResultData.TYPE_TABULAR)) {
+        TabularResultData table = (TabularResultData) cmdResult.getResultData();
+        List<String> memberNames = table.retrieveAllValues(CliStrings.GC__MSG__MEMBER_NAME);
+        assertEquals(3, memberNames.size());
+      } else {
+        fail("testGCForGroup failed as CommandResult should be table type");
+      }
     } else {
-      fail("testGCForGroup failed as CommandResult should be table type");
+      fail("testGCForGroup failed as did not get CommandResult");
     }
   }
 
-  private void setupForGC() {
+  void setupForGC() {
     disconnectAllFromDS();
 
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -314,6 +307,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
+
     String command = "shutdown --time-out=15";
     CommandResult cmdResult = executeCommand(command);
 
@@ -332,7 +326,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  private void setupForChangeLogLevel() {
+  void setupForChangeLogLelvel() {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
 
@@ -352,7 +346,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  private void setupForShutDown() {
+  void setupForShutDown() {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
 
@@ -373,7 +367,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  private void verifyShutDown() {
+  void verifyShutDown() {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
 
@@ -416,7 +410,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
 
-    setupForChangeLogLevel();
+    setupForChangeLogLelvel();
 
     String serverName1 = (String) vm0.invoke(new SerializableCallable() {
       @Override

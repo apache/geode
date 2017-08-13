@@ -40,14 +40,14 @@ import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.commands.CreateRegionCommand;
-import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
+import org.apache.geode.internal.hll.HyperLogLogPlus;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.commands.CreateAlterDestroyRegionCommands;
+import org.apache.geode.redis.GeodeRedisServer;
 
 /**
  * This class stands between {@link Executor} and {@link Cache#getRegion(String)}. This is needed
@@ -85,7 +85,8 @@ public class RegionProvider implements Closeable {
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap;
   private final ScheduledExecutorService expirationExecutor;
   private final RegionShortcut defaultRegionType;
-  private static final CreateRegionCommand createRegionCmd = new CreateRegionCommand();
+  private static final CreateAlterDestroyRegionCommands cliCmds =
+      new CreateAlterDestroyRegionCommands();
   private final ConcurrentHashMap<String, Lock> locks;
 
   public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
@@ -399,10 +400,10 @@ public class RegionProvider implements Closeable {
     if (r != null)
       return r;
     do {
-      Result result = createRegionCmd.createRegion(key, defaultRegionType, null, null, true, null,
+      Result result = cliCmds.createRegion(key, defaultRegionType, null, null, true, null, null,
           null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
           null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-          null, null, null);
+          null, null);
       r = cache.getRegion(key);
       if (result.getStatus() == Status.ERROR && r == null) {
         String err = "";

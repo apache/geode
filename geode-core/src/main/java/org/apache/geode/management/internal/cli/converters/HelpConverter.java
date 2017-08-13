@@ -14,20 +14,19 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.util.List;
-import java.util.Set;
-
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.CommandManagerAware;
+import org.apache.geode.management.internal.cli.commands.GfshHelpCommands;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.CommandManager;
-import org.apache.geode.management.internal.cli.CommandManagerAware;
-import org.apache.geode.management.internal.cli.commands.GfshHelpCommand;
+import java.util.List;
+import java.util.Set;
 
 /**
- * {@link Converter} for {@link GfshHelpCommand#obtainHelp(String)}
+ * {@link Converter} for {@link GfshHelpCommands#obtainHelp(String)}
  * 
  *
  * @since GemFire 7.0
@@ -49,12 +48,18 @@ public class HelpConverter implements Converter<String>, CommandManagerAware {
       completionCandidates.add(new Completion(string));
     }
 
-    return completionCandidates.size() > 0;
+    if (completionCandidates.size() > 0) {
+      return true;
+    }
+    return false;
   }
 
   @Override
   public boolean supports(Class<?> arg0, String optionContext) {
-    return String.class.isAssignableFrom(arg0) && optionContext.contains(ConverterHint.HELP);
+    if (String.class.isAssignableFrom(arg0) && optionContext.contains(ConverterHint.HELP)) {
+      return true;
+    }
+    return false;
   }
 
   @Override

@@ -14,25 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-
-import java.io.Serializable;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.*;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -40,6 +22,18 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.Properties;
+
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases
@@ -47,9 +41,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * </p>
  *
  * @see org.apache.geode.management.internal.cli.commands.CliCommandTestBase
- * @see ListDiskStoresCommand
- * @see org.apache.geode.management.internal.cli.commands.DescribeDiskStoreCommand
- *
+ * @see org.apache.geode.management.internal.cli.commands.DiskStoreCommands
  * @since GemFire 7.0
  */
 @Category(DistributedTest.class)

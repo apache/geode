@@ -15,11 +15,16 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,12 +33,14 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -45,8 +52,60 @@ public class GfshCommandIntegrationTest {
   public TestName testName = new TestName();
 
   @Test
+  public void workingDirDefaultsToMemberName() {
+    StartServerCommand startServer = new StartServerCommand();
+    String workingDir = StartMemberUtils.resolveWorkingDir(null, "server1");
+    assertThat(new File(workingDir)).exists();
+    assertThat(workingDir).endsWith("server1");
+  }
+
+  @Test
+  public void workingDirGetsCreatedIfNecessary() throws Exception {
+    File workingDir = temporaryFolder.newFolder("foo");
+    FileUtils.deleteQuietly(workingDir);
+    String workingDirString = workingDir.getAbsolutePath();
+
+    StartServerCommand startServer = new StartServerCommand();
+
+    String resolvedWorkingDir = StartMemberUtils.resolveWorkingDir(workingDirString, "server1");
+    assertThat(new File(resolvedWorkingDir)).exists();
+    assertThat(workingDirString).endsWith("foo");
+  }
+
+  @Test
+  public void testWorkingDirWithRelativePath() throws Exception {
+    Path relativePath = Paths.get("some").resolve("relative").resolve("path");
+    assertThat(relativePath.isAbsolute()).isFalse();
+
+    StartServerCommand startServer = new StartServerCommand();
+
+    String resolvedWorkingDir =
+        StartMemberUtils.resolveWorkingDir(relativePath.toString(), "server1");
+
+    assertThat(resolvedWorkingDir).isEqualTo(relativePath.toAbsolutePath().toString());
+  }
+
+  @Test
+  public void testReadPid() throws IOException {
+    final int expectedPid = 12345;
+
+    File folder = temporaryFolder.newFolder();
+    File pidFile =
+        new File(folder, getClass().getSimpleName() + "_" + testName.getMethodName() + ".pid");
+
+    assertTrue(pidFile.createNewFile());
+
+    pidFile.deleteOnExit();
+    writePid(pidFile, expectedPid);
+
+    final int actualPid = StartMemberUtils.readPid(pidFile);
+
+    assertEquals(expectedPid, actualPid);
+  }
+
+  @Test
   public void testGemFireCoreClasspath() throws IOException {
-    File coreDependenciesJar = new File(StartMemberCommand.CORE_DEPENDENCIES_JAR_PATHNAME);
+    File coreDependenciesJar = new File(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     assertNotNull(coreDependenciesJar);
     assertTrue(coreDependenciesJar + " is not a file", coreDependenciesJar.isFile());
     Collection<String> expectedJarDependencies =
@@ -108,5 +167,11 @@ public class GfshCommandIntegrationTest {
         missingExpectedJarDependenciesList.isEmpty());
   }
 
-
+  private void writePid(final File pidFile, final int pid) throws IOException {
+    final FileWriter fileWriter = new FileWriter(pidFile, false);
+    fileWriter.write(String.valueOf(pid));
+    fileWriter.write("\n");
+    fileWriter.flush();
+    IOUtils.close(fileWriter);
+  }
 }

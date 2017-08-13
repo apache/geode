@@ -233,7 +233,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
     writeToLog("Command Result :\n", resultAsString);
     assertTrue(Status.ERROR.equals(commandResult.getStatus()));
     assertTrue(resultAsString
-        .contains(CliStrings.format(CliStrings.DURABLE_CQ_CLIENT_NOT_FOUND, clientName)));
+        .contains(CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, clientName)));
   }
 
   private void writeToLog(String text, String resultAsString) {
@@ -350,7 +350,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
         ccf.addPoolServer(getServerHostName(server.getHost()), port);
         ccf.setPoolSubscriptionEnabled(true);
 
-        ClientCache cache = getClientCache(ccf);
+        ClientCache cache = (ClientCache) getClientCache(ccf);
       }
     });
   }
