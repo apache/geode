@@ -20,9 +20,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
+import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
@@ -45,29 +44,29 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
         new OperationContextRegistry());
   }
 
-  public void processOneMessage(InputStream inputStream, OutputStream outputStream, Cache cache)
-      throws InvalidProtocolMessageException, IOException {
+  @Override
+  public void receiveMessage(InputStream inputStream, OutputStream outputStream,
+      ExecutionContext executionContext) throws IOException {
+    try {
+      processOneMessage(inputStream, outputStream, executionContext);
+    } catch (InvalidProtocolMessageException e) {
+      throw new IOException(e);
+    }
+  }
+
+  private void processOneMessage(InputStream inputStream, OutputStream outputStream,
+      ExecutionContext executionContext) throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
     if (message == null) {
       throw new EOFException("Tried to deserialize protobuf message at EOF");
     }
 
     ClientProtocol.Request request = message.getRequest();
-    ClientProtocol.Response response = protobufOpsProcessor.process(request, cache);
+    ClientProtocol.Response response = protobufOpsProcessor.process(request, executionContext);
     ClientProtocol.MessageHeader responseHeader =
         ProtobufUtilities.createMessageHeaderForRequest(message);
     ClientProtocol.Message responseMessage =
         ProtobufUtilities.createProtobufResponse(responseHeader, response);
     protobufProtocolSerializer.serialize(responseMessage, outputStream);
-  }
-
-  @Override
-  public void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      InternalCache cache) throws IOException {
-    try {
-      processOneMessage(inputStream, outputStream, cache);
-    } catch (InvalidProtocolMessageException e) {
-      throw new IOException(e);
-    }
   }
 }

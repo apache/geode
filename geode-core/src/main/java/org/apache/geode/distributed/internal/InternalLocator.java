@@ -315,7 +315,6 @@ public class InternalLocator extends Locator implements ConnectListener {
 
       // TODO:GEODE-1243: this.server is now a TcpServer and it should store or return its non-zero
       // port in a variable to use here
-
       try {
         newLocator.startPeerLocation(startDistributedSystem);
         if (startDistributedSystem) {
@@ -500,7 +499,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     this.stats = new LocatorStats();
 
     this.server = new TcpServer(port, this.bindAddress, null, this.config, this.handler,
-        new DelayedPoolStatHelper(), group, this.toString());
+        new DelayedPoolStatHelper(), group, this.toString(), this);
   }
 
   // Reset the file names with the correct port number if startLocatorAndDS was called with port
@@ -636,7 +635,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   private void startDistributedSystem() throws UnknownHostException {
     InternalDistributedSystem existing = InternalDistributedSystem.getConnectedInstance();
-
     if (existing != null) {
       // LOG: changed from config to info
       logger.info(LocalizedMessage

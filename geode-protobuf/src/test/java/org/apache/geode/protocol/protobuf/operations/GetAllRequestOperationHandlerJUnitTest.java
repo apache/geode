@@ -17,7 +17,6 @@ package org.apache.geode.protocol.protobuf.operations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,13 +27,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.codec.StringCodec;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
@@ -80,9 +80,9 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsExpectedValuesForValidKeys()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
-    Result<RegionAPI.GetAllResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(true), cacheStub);
+      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+    Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(true), new ExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -99,10 +99,10 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void processReturnsNoEntriesForNoKeysRequested()
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    Result<RegionAPI.GetAllResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(false), cacheStub);
+  public void processReturnsNoEntriesForNoKeysRequested() throws UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+    Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(false), new ExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 

@@ -103,6 +103,10 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     this.stats = null;
   }
 
+  public LocatorLoadSnapshot getLoadSnapshot() {
+    return loadSnapshot;
+  }
+
   public ServerLocator(int port, InetAddress bindAddress, String hostNameForClients, File logFile,
       ProductUseLog productUseLogWriter, String memberName, InternalDistributedSystem ds,
       LocatorStats stats) throws IOException {

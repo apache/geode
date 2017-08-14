@@ -69,7 +69,7 @@ public class TcpServerJUnitTest {
 
     stats = new SimpleStats();
     server = new TcpServer(port, localhost, new Properties(), null, handler, stats,
-        Thread.currentThread().getThreadGroup(), "server thread");
+        Thread.currentThread().getThreadGroup(), "server thread", null);
     server.start();
   }
 

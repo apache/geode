@@ -15,8 +15,10 @@
 package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.serialization.SerializationService;
 
 /**
@@ -35,12 +37,19 @@ public class ProtobufOpsProcessor {
     this.operationContextRegistry = operationContextRegistry;
   }
 
-  public ClientProtocol.Response process(ClientProtocol.Request request, Cache cache) {
+  public ClientProtocol.Response process(ClientProtocol.Request request, ExecutionContext context) {
     ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
     OperationContext operationContext = operationContextRegistry.getOperationContext(requestType);
     ClientProtocol.Response.Builder builder;
-    Result result = operationContext.getOperationHandler().process(serializationService,
-        operationContext.getFromRequest().apply(request), cache);
+    Result result;
+    try {
+      result = operationContext.getOperationHandler().process(serializationService,
+          operationContext.getFromRequest().apply(request), context);
+    } catch (InvalidExecutionContextException e) {
+      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
+          "Invalid execution context found for operation."));
+    }
 
     builder = (ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
         operationContext.getToErrorResponse());
