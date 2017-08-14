@@ -19,8 +19,8 @@ set -e -x -u
 
 BASE_SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-export DOCKER_ENV_VERSION="0.1"
-export BASE_IMAGE_NAME="geode/base:${DOCKER_ENV_VERSION}"
+export DOCKER_ENV_VERSION="latest"
+export BASE_IMAGE_NAME="apachegeode/geode-build:${DOCKER_ENV_VERSION}"
 
 pushd ${BASE_SCRIPT_DIR}
 

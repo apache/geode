@@ -58,6 +58,7 @@ def dockerConfig = {
 
     argsInspect = { List args ->
       def javaHomeIdx = 0
+      def pathIdx = 0
       def i = args.iterator()
       def j = 0
       while (i.hasNext()) {
@@ -67,15 +68,16 @@ def dockerConfig = {
           if (x.startsWith('JAVA_HOME')) {
             javaHomeIdx = j
           }
+          if (x.startsWith('PATH')) {
+            pathIdx = j
+          }
         }
         j++
       }
 
-      // Remove JAVA_HOME env variable - it might not be the same as the container needs
-      if (javaHomeIdx > 0) {
-        args.removeAt(javaHomeIdx-1)
-        args.removeAt(javaHomeIdx-1)
-      }
+      // Remove JAVA_HOME and PATH env variables - they might not be the same as the container needs
+      args[javaHomeIdx] = 'JAVA_HOME_REMOVED='
+      args[pathIdx] = 'PATH_REMOVED='
 
       // Infer the index of this invocation
       def matcher = (args[args.size - 1] =~ /.*Executor (\d*).*/)
