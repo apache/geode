@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
@@ -97,7 +98,7 @@ public abstract class ContainerInstall {
 
   public ContainerInstall(String installDir, String downloadURL, ConnectionType connType,
       String moduleName) throws IOException {
-    this(installDir, downloadURL, connType, moduleName, null);
+    this(installDir, downloadURL, connType, moduleName, DEFAULT_MODULE_LOCATION);
   }
 
   /**
@@ -117,6 +118,8 @@ public abstract class ContainerInstall {
   public ContainerInstall(String installDir, String downloadURL, ConnectionType connType,
       String moduleName, String geodeModuleLocation) throws IOException {
     this.connType = connType;
+
+    clearPreviousInstall(installDir);
 
     logger.info("Installing container from URL " + downloadURL);
 
@@ -150,17 +153,12 @@ public abstract class ContainerInstall {
   /**
    * Cleans up the installation by deleting the extracted module and downloaded installation folders
    */
-  public void clearPreviousRuns() throws IOException {
-    File modulesFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR);
-    File installsFolder = new File(DEFAULT_INSTALL_DIR);
-
-    // Remove default modules extraction from previous runs
-    if (modulesFolder.exists()) {
-      FileUtils.deleteDirectory(modulesFolder);
-    }
-    // Remove default installs from previous runs
-    if (installsFolder.exists()) {
-      FileUtils.deleteDirectory(installsFolder);
+  public void clearPreviousInstall(String installDir) throws IOException {
+    File installFolder = new File(installDir);
+    // Remove installs from previous runs in the same folder
+    if (installFolder.exists()) {
+      logger.info("Deleting previous install folder " + installFolder.getAbsolutePath());
+      FileUtils.deleteDirectory(installFolder);
     }
   }
 
@@ -326,15 +324,21 @@ public abstract class ContainerInstall {
       }
     }
 
+    String extractedModulePath =
+        modulePath.getName().substring(0, modulePath.getName().length() - 4);
+    // Get the name of the new module folder within the extraction directory
+    File newModuleFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR + extractedModulePath);
+    // Remove any previous module folders extracted here
+    if (newModuleFolder.exists()) {
+      logger.info("Deleting previous modules directory " + newModuleFolder.getAbsolutePath());
+      FileUtils.deleteDirectory(newModuleFolder);
+    }
+
     // Unzip if it is a zip file
     if (archive) {
       if (!FilenameUtils.getExtension(modulePath.getAbsolutePath()).equals("zip")) {
         throw new IOException("Bad module archive " + modulePath);
       }
-
-      // Get the name of the new module folder within the extraction directory
-      File newModuleFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR
-          + modulePath.getName().substring(0, modulePath.getName().length() - 4));
 
       // Extract folder to location if not already there
       if (!newModuleFolder.exists()) {
