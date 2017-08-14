@@ -79,8 +79,6 @@ public class AuthenticationIntegrationTest {
     when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(true);
 
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.PROTOBUF_PROTOCOL_AUTHENTICATION_MODE_NAME,
-        authenticationMode);
     CacheFactory cacheFactory = new CacheFactory(properties);
     cacheFactory.set("mcast-port", "0"); // sometimes it isn't due to other tests.
 
@@ -94,6 +92,7 @@ public class AuthenticationIntegrationTest {
 
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
+    System.setProperty("geode.protocol-authentication-mode", authenticationMode);
     socket = new Socket("localhost", cacheServerPort);
 
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);

@@ -15,6 +15,7 @@
 
 package org.apache.geode.protocol.protobuf;
 
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -86,8 +87,11 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
   public void authenticationFails() throws IOException {
     assertFalse(protobufSimpleAuthenticator.isAuthenticated());
 
-    when(mockSecurityManager.authorize(securityPrincipal, new ResourcePermission(
-        ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ))).thenReturn(false);
+    Properties expectedAuthProperties = new Properties();
+    expectedAuthProperties.setProperty("username", TEST_USERNAME);
+    expectedAuthProperties.setProperty("password", TEST_PASSWORD);
+    when(mockSecurityManager.authenticate(expectedAuthProperties))
+        .thenThrow(new AuthenticationFailedException("BOOM!"));
 
     protobufSimpleAuthenticator.receiveMessage(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityManager);

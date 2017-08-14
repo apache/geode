@@ -2433,25 +2433,6 @@ public interface DistributionConfig extends Config, LogConfig {
   String getRedundancyZone();
 
   /**
-   * @since Geode 1.??? TODO FIXME
-   */
-  @ConfigAttribute(type = String.class)
-  String PROTOBUF_PROTOCOL_AUTHENTICATION_MODE_NAME = PROTOBUF_PROTOCOL_AUTHENTICATION_MODE;
-  String DEFAULT_PROTOBUF_PROTOCOL_AUTHENTICATION_MODE = "NOOP";
-
-  /**
-   * @since Geode 1.??? TODO FIXME
-   */
-  @ConfigAttributeSetter(name = PROTOBUF_PROTOCOL_AUTHENTICATION_MODE)
-  void setProtobufProtocolAuthenticationMode(String authenticationMode);
-
-  /**
-   * @since Geode 1.??? TODO FIXME
-   */
-  @ConfigAttributeGetter(name = PROTOBUF_PROTOCOL_AUTHENTICATION_MODE)
-  String getProtobufProtocolAuthenticationMode();
-
-  /**
    * @since GemFire 6.6.2
    */
   void setSSLProperty(String attName, String attValue);

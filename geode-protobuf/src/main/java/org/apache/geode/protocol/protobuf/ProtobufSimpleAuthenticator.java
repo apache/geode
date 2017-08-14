@@ -16,7 +16,6 @@ package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.internal.cache.tier.sockets.StreamAuthenticator;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 
 import java.io.EOFException;
@@ -43,20 +42,13 @@ public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
 
     try {
       Object principal = securityManager.authenticate(properties);
-      authenticated = securityManager.authorize(principal,
-          new ResourcePermission(ResourcePermission.Resource.DATA,
-              ResourcePermission.Operation.MANAGE))
-          && securityManager.authorize(principal,
-              new ResourcePermission(ResourcePermission.Resource.DATA,
-                  ResourcePermission.Operation.WRITE))
-          && securityManager.authorize(principal, new ResourcePermission(
-              ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ));
-      AuthenticationAPI.SimpleAuthenticationResponse.newBuilder().setAuthenticated(authenticated)
-          .build().writeDelimitedTo(outputStream);
+      authenticated = principal != null;
     } catch (AuthenticationFailedException e) {
-      AuthenticationAPI.SimpleAuthenticationResponse.newBuilder().setAuthenticated(false).build()
-          .writeDelimitedTo(outputStream);
+      authenticated = false;
     }
+
+    AuthenticationAPI.SimpleAuthenticationResponse.newBuilder().setAuthenticated(authenticated)
+        .build().writeDelimitedTo(outputStream);
   }
 
   @Override

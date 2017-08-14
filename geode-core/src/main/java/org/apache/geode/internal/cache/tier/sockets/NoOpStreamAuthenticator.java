@@ -25,10 +25,12 @@ import java.io.OutputStream;
  * returns true.
  */
 public class NoOpStreamAuthenticator implements StreamAuthenticator {
+
+
   @Override
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
       SecurityManager securityManager) throws IOException {
-    // do nothing.
+    // this method needs to do nothing as it is a pass-through implementation
   }
 
   @Override
