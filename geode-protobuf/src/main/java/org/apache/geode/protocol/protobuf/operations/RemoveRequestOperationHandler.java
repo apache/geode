@@ -18,10 +18,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
-import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
@@ -40,10 +40,11 @@ public class RemoveRequestOperationHandler
 
   @Override
   public Result<RegionAPI.RemoveResponse> process(SerializationService serializationService,
-      RegionAPI.RemoveRequest request, Cache cache) {
+      RegionAPI.RemoveRequest request, ExecutionContext executionContext)
+      throws InvalidExecutionContextException {
 
     String regionName = request.getRegionName();
-    Region region = cache.getRegion(regionName);
+    Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
       return Failure.of(ProtobufResponseUtilities
           .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));

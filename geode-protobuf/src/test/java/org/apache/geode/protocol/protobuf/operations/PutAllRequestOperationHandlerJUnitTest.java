@@ -15,6 +15,8 @@
 package org.apache.geode.protocol.protobuf.operations;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
@@ -66,12 +68,13 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void processInsertsMultipleValidEntriesInCache() throws UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, CodecAlreadyRegisteredForTypeException {
+  public void processInsertsMultipleValidEntriesInCache()
+      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException,
+      CodecAlreadyRegisteredForTypeException, InvalidExecutionContextException {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, true), cacheStub);
+        generateTestRequest(false, true), new ExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -85,7 +88,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true, true), cacheStub);
+        generateTestRequest(true, true), new ExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
@@ -104,7 +107,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, false), cacheStub);
+        generateTestRequest(false, false), new ExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 

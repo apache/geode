@@ -18,11 +18,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
-import org.apache.geode.cache.client.internal.AutoConnectionSourceImpl.UpdateLocatorListTask;
-import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
@@ -63,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -308,7 +304,7 @@ public class AutoConnectionSourceImplJUnitTest {
     startFakeLocator();
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
     TcpServer server2 = new TcpServer(secondPort, InetAddress.getLocalHost(), null, null, handler,
-        new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server");
+        new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server", null);
     server2.start();
 
     try {
@@ -392,7 +388,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
   private void startFakeLocator() throws UnknownHostException, IOException, InterruptedException {
     server = new TcpServer(port, InetAddress.getLocalHost(), null, null, handler, new FakeHelper(),
-        Thread.currentThread().getThreadGroup(), "Tcp Server");
+        Thread.currentThread().getThreadGroup(), "Tcp Server", null);
     server.start();
     Thread.sleep(500);
   }

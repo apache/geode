@@ -17,8 +17,9 @@ package org.apache.geode.protocol.protobuf.operations;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
@@ -32,8 +33,9 @@ public class GetRegionNamesRequestOperationHandler
 
   @Override
   public Result<RegionAPI.GetRegionNamesResponse> process(SerializationService serializationService,
-      RegionAPI.GetRegionNamesRequest request, Cache cache) {
-    Set<Region<?, ?>> regions = cache.rootRegions();
+      RegionAPI.GetRegionNamesRequest request, ExecutionContext executionContext)
+      throws InvalidExecutionContextException {
+    Set<Region<?, ?>> regions = executionContext.getCache().rootRegions();
     return Success.of(ProtobufResponseUtilities.createGetRegionNamesResponse(regions));
   }
 }
