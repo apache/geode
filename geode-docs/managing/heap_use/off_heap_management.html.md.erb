@@ -189,7 +189,7 @@ For example:
 
 ## <a id="managing-off-heap-memory__section_o4s_tg5_gv" class="no-quick-link"></a>Tuning Off-heap Memory Usage
 
-Geode collects statistics on off-heap memory usage which you can view with the gfsh `show metrics` command. See [Off-Heap (OffHeapMemoryStats)](../../reference/statistics/statistics_list.html#topic_ohc_tjk_w5) for a description of available off-heap statistics.
+Geode collects statistics on off-heap memory usage which you can view with the gfsh `show metrics` command. See [Off-Heap (OffHeapMemoryStats)](../../reference/statistics_list.html#topic_ohc_tjk_w5) for a description of available off-heap statistics.
 
 Off-heap memory is optimized, by default, for storing values of 128 KB in size. This figure is known as the "maximum optimized stored value size," which we will denote here by *maxOptStoredValSize*. If your data typically runs larger, you can enhance performance by increasing the OFF\_HEAP\_FREE\_LIST\_COUNT system parameter to a number larger than `maxOptStoredValSize/8`, where *maxOptStoredValSize* is expressed in KB (1024 bytes). So, the default values correspond to:
 
