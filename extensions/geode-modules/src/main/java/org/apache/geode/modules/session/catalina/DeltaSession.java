@@ -40,6 +40,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
@@ -50,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @SuppressWarnings("serial")
 public class DeltaSession extends StandardSession
@@ -531,7 +533,7 @@ public class DeltaSession extends StandardSession
     this.maxInactiveInterval = in.readInt();
     this.isNew = in.readBoolean();
     this.isValid = in.readBoolean();
-    this.attributes = readInAttributes(in);
+    readInAttributes(in);
     this.serializedPrincipal = DataSerializer.readByteArray(in);
 
     // Read the DeltaSession state
@@ -553,8 +555,30 @@ public class DeltaSession extends StandardSession
     }
   }
 
-  protected Map readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
-    return DataSerializer.readObject(in);
+  private void readInAttributes(DataInput in) throws IOException, ClassNotFoundException {
+    Map map = DataSerializer.readObject(in);
+    ConcurrentMap newMap = new ConcurrentHashMap();
+    newMap.putAll(map);
+    try {
+      Field field = getAttributesFieldObject();
+      field.setAccessible(true);
+      field.set(this, newMap);
+    } catch (NoSuchFieldException e) {
+      logError(e);
+    } catch (IllegalAccessException e) {
+      logError(e);
+    }
+  }
+
+  protected Field getAttributesFieldObject() throws NoSuchFieldException {
+    return StandardSession.class.getDeclaredField("attributes");
+  }
+
+  protected void logError(Exception e) {
+    if (getManager() != null) {
+      DeltaSessionManager mgr = (DeltaSessionManager) getManager();
+      mgr.getLogger().error(e);
+    }
   }
 
   @Override
@@ -573,17 +597,31 @@ public class DeltaSession extends StandardSession
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  protected Map<String, byte[]> getSerializedAttributes() {
+  protected ConcurrentMap<String, byte[]> getSerializedAttributes() {
     // Iterate the values and serialize them if necessary before sending them to the server. This
     // makes the application classes unnecessary on the server.
-    Map<String, byte[]> serializedAttributes = new ConcurrentHashMap<String, byte[]>();
-    for (Iterator i = this.attributes.entrySet().iterator(); i.hasNext();) {
+    ConcurrentMap<String, byte[]> serializedAttributes = new ConcurrentHashMap<>();
+    for (Iterator i = getAttributes().entrySet().iterator(); i.hasNext();) {
       Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
       Object value = entry.getValue();
       byte[] serializedValue = value instanceof byte[] ? (byte[]) value : serialize(value);
       serializedAttributes.put(entry.getKey(), serializedValue);
     }
     return serializedAttributes;
+  }
+
+  protected ConcurrentMap getAttributes() {
+    try {
+      Field field = getAttributesFieldObject();
+      field.setAccessible(true);
+      Map oldMap = (Map) field.get(this);
+      ConcurrentMap newMap = new ConcurrentHashMap();
+      newMap.putAll(oldMap);
+      return newMap;
+    } catch (Exception e) {
+      logError(e);
+    }
+    return null;
   }
 
   protected byte[] serialize(Object obj) {
