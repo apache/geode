@@ -14,6 +14,8 @@
  */
 package org.apache.geode.serialization;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * This interface converts a particular type to and from its binary representation.
  *
@@ -21,6 +23,7 @@ package org.apache.geode.serialization;
  *
  * @param <T> the type this codec knows how to convert
  */
+@Experimental
 public interface TypeCodec<T> {
   T decode(byte[] incoming);
 

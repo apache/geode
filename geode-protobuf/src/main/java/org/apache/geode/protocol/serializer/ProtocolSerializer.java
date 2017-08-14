@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 
 /**
@@ -25,6 +26,7 @@ import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
  * 
  * @param <T> The message type of the protocol.
  */
+@Experimental
 public interface ProtocolSerializer<T> {
   T deserialize(InputStream inputStream) throws InvalidProtocolMessageException;
 
