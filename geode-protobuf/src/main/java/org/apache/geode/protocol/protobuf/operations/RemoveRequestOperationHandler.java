@@ -28,6 +28,7 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,9 +43,8 @@ public class RemoveRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-          .setErrorCode(ProtocolErrorCode.REGION_NOT_FOUND.codeValue).setMessage("Region not found")
-          .build());
+      return Failure.of(ProtobufResponseUtilities
+          .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
     }
 
     try {

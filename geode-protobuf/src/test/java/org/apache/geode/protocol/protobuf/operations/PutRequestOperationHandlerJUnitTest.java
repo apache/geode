@@ -100,7 +100,7 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
-        result.getErrorMessage().getErrorCode());
+        result.getErrorMessage().getError().getErrorCode());
   }
 
   @Test
@@ -113,7 +113,7 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
-        result.getErrorMessage().getErrorCode());
+        result.getErrorMessage().getError().getErrorCode());
   }
 
   @Test
@@ -127,7 +127,7 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue,
-        result.getErrorMessage().getErrorCode());
+        result.getErrorMessage().getError().getErrorCode());
   }
 
   private RegionAPI.PutRequest generateTestRequest()

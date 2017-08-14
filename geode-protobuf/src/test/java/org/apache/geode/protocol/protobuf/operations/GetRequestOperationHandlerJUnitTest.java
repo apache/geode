@@ -92,7 +92,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
     Assert.assertTrue(response instanceof Failure);
     Assert.assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
-        response.getErrorMessage().getErrorCode());
+        response.getErrorMessage().getError().getErrorCode());
   }
 
   @Test
@@ -137,7 +137,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
     Assert.assertTrue(response instanceof Failure);
     Assert.assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
-        response.getErrorMessage().getErrorCode());
+        response.getErrorMessage().getError().getErrorCode());
   }
 
   private RegionAPI.GetRequest generateTestRequest(boolean missingRegion, boolean missingKey,

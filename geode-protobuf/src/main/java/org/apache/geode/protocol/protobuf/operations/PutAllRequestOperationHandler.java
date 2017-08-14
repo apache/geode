@@ -28,6 +28,8 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
+
+import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -79,9 +81,10 @@ public class PutAllRequestOperationHandler
   private BasicTypes.KeyedErrorResponse buildAndLogKeyedError(BasicTypes.Entry entry,
       ProtocolErrorCode errorCode, String message, Exception ex) {
     logger.error(message, ex);
-    BasicTypes.ErrorResponse errorResponse = BasicTypes.ErrorResponse.newBuilder()
-        .setErrorCode(errorCode.codeValue).setMessage(message).build();
-    return BasicTypes.KeyedErrorResponse.newBuilder().setKey(entry.getKey()).setError(errorResponse)
+
+    return BasicTypes.KeyedErrorResponse.newBuilder().setKey(entry.getKey())
+        .setError(
+            BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message))
         .build();
   }
 }
