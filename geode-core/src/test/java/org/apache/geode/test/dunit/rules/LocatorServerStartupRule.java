@@ -121,9 +121,15 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * 
    * @return VM locator vm
    */
-  public MemberVM<Locator> startLocatorVM(int index, Properties properties) throws Exception {
-    String name = "locator-" + index;
-    properties.setProperty(NAME, name);
+  public MemberVM<Locator> startLocatorVM(int index, Properties specifiedProperties)
+      throws Exception {
+    Properties properties = new Properties();
+    properties.putAll(specifiedProperties);
+
+    String defaultName = "locator-" + index;
+    properties.putIfAbsent(NAME, defaultName);
+    String name = properties.getProperty(NAME);
+
     VM locatorVM = getHost(0).getVM(index);
     Locator locator = locatorVM.invoke(() -> {
       locatorStarter = new LocatorStarterRule();
@@ -157,10 +163,15 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   /**
    * Starts a cache server with given properties
    */
-  public MemberVM startServerVM(int index, Properties properties, int locatorPort)
+  public MemberVM startServerVM(int index, Properties specifiedProperties, int locatorPort)
       throws IOException {
-    String name = "server-" + index;
-    properties.setProperty(NAME, name);
+    Properties properties = new Properties();
+    properties.putAll(specifiedProperties);
+
+    String defaultName = "server-" + index;
+    properties.putIfAbsent(NAME, defaultName);
+    String name = properties.getProperty(NAME);
+
     VM serverVM = getHost(0).getVM(index);
     Server server = serverVM.invoke(() -> {
       serverStarter = new ServerStarterRule();
