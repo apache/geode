@@ -24,7 +24,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
@@ -44,7 +46,11 @@ public class VersionManager {
   protected static void init() {
     instance = new VersionManager();
     final String fileName = "geodeOldVersionClasspaths.txt";
+    final String installLocations = "geodeOldVersionInstalls.txt";
     instance.findVersions(fileName);
+    instance.findInstalls(installLocations);
+    System.out
+        .println("VersionManager has loaded the following classpaths:\n" + instance.classPaths);
   }
 
   public static VersionManager getInstance() {
@@ -58,7 +64,7 @@ public class VersionManager {
    * for unit testing, this creates a VersionManager with paths loaded from the given file, which
    * may or may not exist. The instance is not retained
    */
-  protected static VersionManager getInstance(String classpathsFileName) {
+  protected static VersionManager getInstance(String classpathsFileName, String installFileName) {
     VersionManager result = new VersionManager();
     result.findVersions(classpathsFileName);
     return result;
@@ -70,6 +76,8 @@ public class VersionManager {
   private Map<String, String> classPaths = new HashMap<>();
 
   private List<String> testVersions = new ArrayList<String>(10);
+
+  private Map<String, String> installs = new HashMap();
 
   /**
    * Test to see if a version string is known to VersionManager. Versions are either CURRENT_VERSION
@@ -92,6 +100,11 @@ public class VersionManager {
    */
   public String getClasspath(String version) {
     return classPaths.get(version);
+  }
+
+
+  public String getInstall(String version) {
+    return installs.get(version);
   }
 
   /**
@@ -118,30 +131,57 @@ public class VersionManager {
 
   private void findVersions(String fileName) {
     // this file is created by the gradle task createClasspathsPropertiesFile
+    readVersionsFile(fileName, (version, path) -> {
+      Optional<String> parsedVersion = parseVersion(version);
+      if (parsedVersion.isPresent()) {
+        classPaths.put(parsedVersion.get(), path);
+        testVersions.add(parsedVersion.get());
+      }
+    });
+  }
+
+  private void findInstalls(String fileName) {
+    readVersionsFile(fileName, (version, install) -> {
+      Optional<String> parsedVersion = parseVersion(version);
+      if (parsedVersion.isPresent()) {
+        installs.put(parsedVersion.get(), install);
+      }
+    });
+  }
+
+  private Optional<String> parseVersion(String version) {
+    String parsedVersion = null;
+    if (version.startsWith("test") && version.length() >= "test".length()) {
+      if (version.equals("test")) {
+        parsedVersion = CURRENT_VERSION;
+      } else {
+        parsedVersion = version.substring("test".length());
+      }
+    }
+    return Optional.ofNullable(parsedVersion);
+  }
+
+  private void readVersionsFile(String fileName, BiConsumer<String, String> consumer) {
+    Properties props = readPropertiesFile(fileName);
+    props.forEach((k, v) -> {
+      consumer.accept(k.toString(), v.toString());
+    });
+  }
+
+  public Properties readPropertiesFile(String fileName) {
+    // this file is created by the gradle task createClasspathsPropertiesFile
     Properties props = new Properties();
     URL url = VersionManager.class.getResource("/" + fileName);
     if (url == null) {
       loadFailure = "VersionManager: unable to locate " + fileName + " in class-path";
-      return;
+      return props;
     }
     try (InputStream in = VersionManager.class.getResource("/" + fileName).openStream()) {
       props.load(in);
     } catch (IOException e) {
       loadFailure = "VersionManager: unable to read resource " + fileName;
-      return;
+      return props;
     }
-
-    for (Map.Entry<Object, Object> entry : props.entrySet()) {
-      String version = (String) entry.getKey();
-      if (version.startsWith("test") && version.length() >= "test".length()) {
-        if (version.equals("test")) {
-          version = CURRENT_VERSION;
-        } else {
-          version = version.substring("test".length());
-        }
-        classPaths.put(version, (String) entry.getValue());
-        testVersions.add(version);
-      }
-    }
+    return props;
   }
 }
