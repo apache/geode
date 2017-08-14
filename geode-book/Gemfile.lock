@@ -198,7 +198,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bookbindery
+  bookbindery (= 10.1.7)
   libv8 (= 3.16.14.7)
 
 BUNDLED WITH
