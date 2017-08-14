@@ -25,7 +25,6 @@ disableMavenPublishing()
 project.ext.installs = new Properties();
 
 def addOldVersion(def source, def geodeVersion) {
-//  def sourceSet =
   sourceSets.create(source, {
     compileClasspath += configurations.provided
     runtimeClasspath += configurations.provided
@@ -40,11 +39,6 @@ def addOldVersion(def source, def geodeVersion) {
   dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:$geodeVersion"
 
   project.ext.installs.setProperty(source, "$buildDir/apache-geode-${geodeVersion}")
-
-//  task "downloadZipFile${source}" (type: Download) {
-//    src "http://apache.mirrors.ionfish.org/geode/${geodeVersion}/apache-geode-${geodeVersion}.zip"
-//    dest new File(buildDir, "apache-geode-${geodeVersion}.zip")
-//  }
 
   task "downloadZipFile${source}" (type: Download) {
     src "https://www.apache.org/dyn/closer.cgi?action=download&filename=geode/$geodeVersion/apache-geode-${geodeVersion}.tar.gz"
@@ -65,14 +59,12 @@ def addOldVersion(def source, def geodeVersion) {
     }
   }
 
-  //task "downloadAndUnzipFile${source}" (dependsOn: "downloadZipFile${source}", type: Copy) {
   task "downloadAndUnzipFile${source}" (dependsOn: "verifyGeode${source}", type: Copy) {
     from tarTree(tasks["downloadZipFile${source}"].dest)
     into buildDir
   }
 
   createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${source}"]
-  //build.dependsOn tasks["downloadAndUnzipFile${source}"];
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -109,62 +101,12 @@ task createGeodeClasspathsFile  {
   }
 
   // Add sourceSets for backwards compatibility, rolling upgrade, and
-// pdx testing.
+  // pdx testing.
   addOldVersion('test100', '1.0.0-incubating')
   addOldVersion('test110', '1.1.0')
   addOldVersion('test111', '1.1.1')
   addOldVersion('test120', '1.2.0')
 
-
-
-//
-//  def downloadUrl = (geodeReleaseUrl != "") ? geodeReleaseUrl :
-//          "https://www.apache.org/dyn/closer.cgi?action=download&filename=geode/$geodeVersion"
-//  def verificationUrl = (geodeReleaseUrl != "") ? geodeReleaseUrl :
-//          "https://www.apache.org/dist/geode/$geodeVersion"
-//
-//  def downloadFile = "apache-geode-${geodeVersion}.tar.gz"
-//  def installFile = "$buildDir/$downloadFile"
-//  def installDir = "$buildDir/apache-geode-${geodeVersion}"
-//
-//
-
-
-
-//  task "downloadZipFile${source}" (type: Download) {
-//    src ([
-//            "https://www.apache.org/dyn/closer.cgi?action=download&filename=geode/$geodeVersion/apache-geode-${geodeVersion}.tar.gz",
-//            "https://www.apache.org/dist/geode/$geodeVersion/apache-geode-${geodeVersion}.tar.gz.sha256"
-//            ])
-//
-//    dest new File(buildDir, "apache-geode-${geodeVersion}.zip")
-//  }
-//
-//  task downloadGeode {
-//    inputs.property 'geodeVersion', geodeVersion
-//    outputs.file installFile
-//    outputs.file "${installFile}.sha256"
-//
-//    doLast {
-//      download {
-//        src([
-//                "$downloadUrl/$downloadFile",
-//                "$verificationUrl/${downloadFile}.sha256"
-//        ])
-//        dest buildDir
-//      }
-//    }
-//  }
-//
-
-//
-//  task installGeode(type: Copy, dependsOn: verifyGeode) {
-//    inputs.file installFile
-//    outputs.dir installDir
-//
-//    from tarTree(resources.gzip(installFile))
-//    into buildDir
-//  }
 }
 
 

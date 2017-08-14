@@ -16,11 +16,8 @@ package org.apache.geode.session.tests;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
@@ -166,11 +163,6 @@ public class TomcatSessionBackwardsCompatibilityTest {
     manager.stopAllActiveContainers();
     manager.cleanUp();
 
-    tomcat8AndCurrentModules.clearPreviousRuns();
-    tomcat8AndOldModules.clearPreviousRuns();
-    tomcat7079AndCurrentModules.clearPreviousRuns();
-    tomcat7079AndOldModules.clearPreviousRuns();
-
     CommandStringBuilder locStop = new CommandStringBuilder(CliStrings.STOP_LOCATOR);
     locStop.addOption(CliStrings.STOP_LOCATOR__DIR, "loc");
     gfsh.executeAndVerifyCommand(locStop.toString());
@@ -225,13 +217,11 @@ public class TomcatSessionBackwardsCompatibilityTest {
     doPutAndGetSessionOnAllClients();
   }
 
-
   @Test
   public void tomcat8WithOldModuleCanDoPuts() throws Exception {
     startClusterWithTomcat(classPathTomcat8);
     manager.addContainer(tomcat8AndOldModules);
     manager.addContainer(tomcat8AndOldModules);
-
     doPutAndGetSessionOnAllClients();
   }
 

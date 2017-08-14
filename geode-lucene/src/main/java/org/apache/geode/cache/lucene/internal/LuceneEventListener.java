@@ -34,7 +34,6 @@ import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.lucene.store.AlreadyClosedException;
 

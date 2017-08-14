@@ -134,7 +134,6 @@ public abstract class ServerContainer {
 
     // Set cacheXML file
     File installXMLFile = install.getCacheXMLFile();
-    String path = logDir.getAbsolutePath() + "/" + installXMLFile.getName();
     setCacheXMLFile(new File(logDir.getAbsolutePath() + "/" + installXMLFile.getName()));
     // Copy the cacheXML file to a new, unique location for this container
     FileUtils.copyFile(installXMLFile, cacheXMLFile);

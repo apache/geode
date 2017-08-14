@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
  */
 public class TomcatInstall extends ContainerInstall {
 
+  public static final String GEODE_BUILD_HOME_LIB = GEODE_BUILD_HOME + "/lib/";
+
   /**
    * Version of tomcat that this class will install
    *
@@ -110,49 +112,37 @@ public class TomcatInstall extends ContainerInstall {
   }
 
   private static final String[] tomcatRequiredJars =
-      {"antlr", "commons-lang", "fastutil", "geode-core", "geode-modules", "geode-modules-tomcat7",
-          "geode-modules-tomcat8", "javax.transaction-api", "jgroups", "log4j-api", "log4j-core",
-          "log4j-jul", "shiro-core", "slf4j-api", "slf4j-jdk14", "commons-validator"};
+      {"antlr", "commons-lang", "fastutil", "geode-core", "javax.transaction-api", "jgroups",
+          "log4j-api", "log4j-core", "log4j-jul", "shiro-core", "commons-validator"};
 
   private final TomcatVersion version;
 
-  public TomcatInstall(TomcatVersion version) throws Exception {
-    this(version, ConnectionType.PEER_TO_PEER, DEFAULT_INSTALL_DIR, null, null);
-  }
-
   public TomcatInstall(TomcatVersion version, String installDir) throws Exception {
-    this(version, ConnectionType.PEER_TO_PEER, installDir, null, null);
-  }
-
-  public TomcatInstall(TomcatVersion version, ConnectionType connType) throws Exception {
-    this(version, connType, DEFAULT_INSTALL_DIR, null, null);
+    this(version, ConnectionType.PEER_TO_PEER, installDir, DEFAULT_MODULE_LOCATION,
+        GEODE_BUILD_HOME_LIB);
   }
 
   public TomcatInstall(TomcatVersion version, ConnectionType connType, String installDir)
       throws Exception {
-    this(version, connType, installDir, null, null);
+    this(version, connType, installDir, DEFAULT_MODULE_LOCATION, GEODE_BUILD_HOME_LIB);
   }
 
   /**
    * Download and setup an installation tomcat using the {@link ContainerInstall} constructor and
    * some extra functions this class provides
    *
-   * Specifically, this function uses {@link #copyTomcatGeodeReqFiles(String)} to install geode
-   * session into Tomcat, {@link #setupDefaultSettings()} to modify the context and server XML files
-   * within the installation's 'conf' folder, and {@link #updateProperties()} to set the jar
+   * Specifically, this function uses {@link #copyTomcatGeodeReqFiles(String, String)} to install
+   * geode session into Tomcat, {@link #setupDefaultSettings()} to modify the context and server XML
+   * files within the installation's 'conf' folder, and {@link #updateProperties()} to set the jar
    * skipping properties needed to speedup container startup.
    */
   public TomcatInstall(TomcatVersion version, ConnectionType connType, String installDir,
       String modulesJarLocation, String extraJarsPath) throws Exception {
     // Does download and install from URL
-    super(installDir, version.getDownloadURL(), connType, "tomcat",
-        modulesJarLocation == null ? DEFAULT_MODULE_LOCATION : modulesJarLocation);
+    super(installDir, version.getDownloadURL(), connType, "tomcat", modulesJarLocation);
 
     this.version = version;
-    // if (modulesJarLocation == null || modulesJarLocation.endsWith("zip"))
     modulesJarLocation = getModulePath() + "/lib/";
-    if (extraJarsPath == null)
-      extraJarsPath = GEODE_BUILD_HOME + "/lib/";
 
     // Install geode sessions into tomcat install
     copyTomcatGeodeReqFiles(modulesJarLocation, extraJarsPath);
@@ -163,66 +153,6 @@ public class TomcatInstall extends ContainerInstall {
     if (version.jarSkipPropertyName() != null) {
       updateProperties();
     }
-  }
-
-  /**
-   * Copies jars specified by {@link #tomcatRequiredJars} from the {@link #getModulePath()} and the
-   * specified other directory passed to the function
-   *
-   * @throws IOException if the {@link #getModulePath()}, installation lib directory, or extra
-   *         directory passed in contain no files.
-   */
-  private void copyTomcatGeodeReqFiles(String moduleJarDir, String extraJarsPath)
-      throws IOException {
-    ArrayList<File> requiredFiles = new ArrayList<>();
-    // The library path for the current tomcat installation
-    String tomcatLibPath = getHome() + "/lib/";
-
-    // List of required jars and form version regexps from them
-    String versionRegex = "-?[0-9]*.*\\.jar";
-    ArrayList<Pattern> patterns = new ArrayList<>(tomcatRequiredJars.length);
-    for (String jar : tomcatRequiredJars)
-      patterns.add(Pattern.compile(jar + versionRegex));
-
-    // // Don't need to copy any jars already in the tomcat install
-    File tomcatLib = new File(tomcatLibPath);
-
-    // Find all the required jars in the tomcatModulePath
-    try {
-      for (File file : (new File(moduleJarDir)).listFiles()) {
-        if (file.isFile() && file.getName().endsWith(".jar")) {
-          requiredFiles.add(file);
-        }
-      }
-    } catch (NullPointerException e) {
-      throw new IOException(
-          "No files found in tomcat module directory " + getModulePath() + "/lib/");
-    }
-
-    // Find all the required jars in the extraJarsPath
-    try {
-      for (File file : (new File(extraJarsPath)).listFiles()) {
-        for (Pattern pattern : patterns) {
-          if (pattern.matcher(file.getName()).find()) {
-            requiredFiles.add(file);
-            // patterns.remove(pattern);
-            break;
-          }
-        }
-      }
-    } catch (NullPointerException e) {
-      throw new IOException("No files found in extra jars directory " + extraJarsPath);
-    }
-
-    // Copy the required jars to the given tomcat lib folder
-    for (File file : requiredFiles) {
-      Files.copy(file.toPath(), tomcatLib.toPath().resolve(file.toPath().getFileName()),
-          StandardCopyOption.REPLACE_EXISTING);
-      logger.debug("Copied required jar from " + file.toPath() + " to "
-          + (new File(tomcatLibPath)).toPath().resolve(file.toPath().getFileName()));
-    }
-
-    logger.info("Copied required jars into the Tomcat installation");
   }
 
   /**
@@ -331,39 +261,26 @@ public class TomcatInstall extends ContainerInstall {
    * @throws IOException if the {@link #getModulePath()}, installation lib directory, or extra
    *         directory passed in contain no files.
    */
-  private void copyTomcatGeodeReqFiles(String extraJarsPath) throws IOException {
+  private void copyTomcatGeodeReqFiles(String moduleJarDir, String extraJarsPath)
+      throws IOException {
     ArrayList<File> requiredFiles = new ArrayList<>();
     // The library path for the current tomcat installation
     String tomcatLibPath = getHome() + "/lib/";
 
     // List of required jars and form version regexps from them
-    String versionRegex = "-[0-9]+.*\\.jar";
+    String versionRegex = "-?[0-9]*.*\\.jar";
     ArrayList<Pattern> patterns = new ArrayList<>(tomcatRequiredJars.length);
     for (String jar : tomcatRequiredJars)
       patterns.add(Pattern.compile(jar + versionRegex));
 
     // Don't need to copy any jars already in the tomcat install
     File tomcatLib = new File(tomcatLibPath);
-    if (tomcatLib.exists()) {
-      try {
-        for (File file : tomcatLib.listFiles())
-          patterns.removeIf(pattern -> pattern.matcher(file.getName()).find());
-      } catch (NullPointerException e) {
-        throw new IOException("No files found in tomcat lib directory " + tomcatLibPath);
-      }
-    } else {
-      tomcatLib.mkdir();
-    }
 
     // Find all the required jars in the tomcatModulePath
     try {
-      for (File file : (new File(getModulePath() + "/lib/")).listFiles()) {
-        for (Pattern pattern : patterns) {
-          if (pattern.matcher(file.getName()).find()) {
-            requiredFiles.add(file);
-            patterns.remove(pattern);
-            break;
-          }
+      for (File file : (new File(moduleJarDir)).listFiles()) {
+        if (file.isFile() && file.getName().endsWith(".jar")) {
+          requiredFiles.add(file);
         }
       }
     } catch (NullPointerException e) {
@@ -377,7 +294,6 @@ public class TomcatInstall extends ContainerInstall {
         for (Pattern pattern : patterns) {
           if (pattern.matcher(file.getName()).find()) {
             requiredFiles.add(file);
-            patterns.remove(pattern);
             break;
           }
         }
