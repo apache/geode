@@ -59,9 +59,8 @@ public class GetAllRequestOperationHandler
       }
       return Success.of(RegionAPI.GetAllResponse.newBuilder().addAllEntries(entries).build());
     } catch (UnsupportedEncodingTypeException ex) {
-      int errorCode = ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue;
-      String message = "Encoding not supported.";
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(errorCode, message));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue, "Encoding not supported."));
     } catch (CodecNotRegisteredForTypeException ex) {
       return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
           ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
