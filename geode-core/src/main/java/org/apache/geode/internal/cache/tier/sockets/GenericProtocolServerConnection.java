@@ -20,6 +20,7 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.security.StreamAuthenticator;
 
 import java.io.IOException;
 import java.io.InputStream;
