@@ -24,6 +24,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.NoOpStreamAuthenticator;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
