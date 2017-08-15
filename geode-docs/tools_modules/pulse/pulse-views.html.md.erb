@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Pulse provides a variety of different views to help you monitor Geode clusters, members, and regions.
+Pulse provides a variety of different views to help you monitor <%=vars.product_name%> clusters, members, and regions.
 
 The following sections provide an overview of the main Pulse views:
 
@@ -31,25 +31,25 @@ The following sections provide an overview of the main Pulse views:
 
 # <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_9794B5754E474E10ABFBCD8B1DA240F8" class="no-quick-link"></a>Cluster View
 
-The cluster view is a high-level overview of the Geode distributed system. It is displayed immediately after you log into Pulse. Information displays around the perimeter of the cluster view show statistics such as memory usage, JVM pauses, and throughput. You can use the cluster view to drill down into details for individual members and regions in the distributed system.
+The cluster view is a high-level overview of the <%=vars.product_name%> distributed system. It is displayed immediately after you log into Pulse. Information displays around the perimeter of the cluster view show statistics such as memory usage, JVM pauses, and throughput. You can use the cluster view to drill down into details for individual members and regions in the distributed system.
 
 <img src="../../images/pulse_cluster_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_CC7B54903DF24030850E55965CDB6EC4" class="image imageleft" width="624" />
 
 Use these basic controls while in Cluster view:
 
-1.  Click Members or Data to display information about Geode members or data regions in the distributed system.
-2.  Click the display icons to display the Geode members using icon view, block view, or table view. Note that icon view is available only when displaying Members.
+1.  Click Members or Data to display information about <%=vars.product_name%> members or data regions in the distributed system.
+2.  Click the display icons to display the <%=vars.product_name%> members using icon view, block view, or table view. Note that icon view is available only when displaying Members.
 
-    For example, the following shows Geode Members displayed in table view:
+    For example, the following shows <%=vars.product_name%> Members displayed in table view:
 
     <img src="../../images/member_view_list.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_npw_sq3_wn" class="image" />
-    -   While in block view or table view, click the name of a Geode member to display additional information in the [Member View](#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF).
+    -   While in block view or table view, click the name of a <%=vars.product_name%> member to display additional information in the [Member View](#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF).
     -   Click Topology, Server Groups, or Redundancy Zones to filter the view based on all members in the topology, configured server groups, or configured redundancy zones.
-    The following shows Geode Regions displayed in table view:
+    The following shows <%=vars.product_name%> Regions displayed in table view:
     <img src="../../images/pulse-region-detail.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_glp_1jr_54" class="image" />
-    -   While in block view or table view, click the name of a Geode region to display additional information in the [Region View](#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D).
+    -   While in block view or table view, click the name of a <%=vars.product_name%> region to display additional information in the [Region View](#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D).
 
-3.  While in icon view, click a host machine icon to display the Geode members on that machine.
+3.  While in icon view, click a host machine icon to display the <%=vars.product_name%> members on that machine.
 4.  In the Alerts pane, click the severity tabs to filter the message display by the level of severity.
 
 **Cluster View Screen Components**
@@ -128,8 +128,8 @@ The following table describes the data pieces displayed on the Cluster View scre
 <td>Host Machine</td>
 <td>When you mouse over a machine icon in Topology View, a pop-up appears with the following machine statistics:
 <ul>
-<li><em>CPU Usage</em>. Percentage of CPU being used by Geode processes on the machine.</li>
-<li><em>Memory Usage</em>. Amount of memory (in MB) being used by Geode processes.</li>
+<li><em>CPU Usage</em>. Percentage of CPU being used by <%=vars.product_name%> processes on the machine.</li>
+<li><em>Memory Usage</em>. Amount of memory (in MB) being used by <%=vars.product_name%> processes.</li>
 <li><em>Load Avg</em>. Average number of threads on the host machine that are in the run queue or are waiting for disk I/O over the last minutes. Corresponds to the Linux System statistic loadAverage1. If the load average is not available, a negative value is shown.</li>
 <li><em>Sockets</em>. Number of sockets currently open on the machine.</li>
 </ul></td>
@@ -138,14 +138,14 @@ The following table describes the data pieces displayed on the Cluster View scre
 <td>Member</td>
 <td>When you mouse over a member icon in Graphical View, a pop-up appears with the following member statistics:
 <ul>
-<li><em>CPU Usage</em>. Percentage of CPU being used by the Geode member process.</li>
+<li><em>CPU Usage</em>. Percentage of CPU being used by the <%=vars.product_name%> member process.</li>
 <li><em>Threads</em>. Number of threads running on the member.</li>
 <li><em>JVM Pauses</em>. Number of times the JVM used by the member process has paused due to garbage collection or excessive CPU usage.</li>
 <li><em>Regions</em>. Number of regions hosted on the member process.</li>
 <li><em>Clients</em>. Number of client currently connected to the member process.</li>
 <li><em>Gateway Sender</em>. Number of gateway senders configured on the member.</li>
 <li><em>Port</em>. Server port of the cache server member where clients can connect and perform cache operations.</li>
-<li><em>GemFire Version</em>. The version of the Geode member.</li>
+<li><em>GemFire Version</em>. The version of the <%=vars.product_name%> member.</li>
 </ul></td>
 </tr>
 <tr class="odd">
@@ -156,7 +156,7 @@ The following table describes the data pieces displayed on the Cluster View scre
 <li><em>Name</em>. Name of the member.</li>
 <li><em>Host</em>. Hostname or IP address where the member is running.</li>
 <li><em>Heap Usage</em>. Amount of JVM heap memory being used by the member process.</li>
-<li><em>CPU Usage</em>. Percentage of CPU being used by the Geode member process.</li>
+<li><em>CPU Usage</em>. Percentage of CPU being used by the <%=vars.product_name%> member process.</li>
 <li><em>Uptime</em>. How long the member has been up and running.</li>
 <li><em>Clients</em>. Number of clients currently connected to the member. It will have a value only if the member acts as a CacheServer.</li>
 </ul></td>
@@ -198,7 +198,7 @@ The following table describes the data pieces displayed on the Cluster View scre
 
 # <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_3629814A3DF64D31A190495782DB0DBF" class="no-quick-link"></a>Member View
 
-When you select an individual Geode member in Cluster View, Pulse displays the regions available on that member, as well as member-specific information such as the configured listen ports.
+When you select an individual <%=vars.product_name%> member in Cluster View, Pulse displays the regions available on that member, as well as member-specific information such as the configured listen ports.
 
 <img src="../../images/pulse_member_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_EDBD3D333B2741DCAA5CB94719B507B7" class="image imageleft" width="624" />
 
@@ -330,7 +330,7 @@ The following table describes the data elements displayed on the Member View scr
 
 # <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D" class="no-quick-link"></a>Region View
 
-The Pulse Region View provides a comprehensive overview of all regions in the Geode distributed system:
+The Pulse Region View provides a comprehensive overview of all regions in the <%=vars.product_name%> distributed system:
 
 <img src="../../images/pulse_data_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_A533852E38654E79BE5628E938E170EB" class="image imageleft" width="624" />
 
@@ -362,13 +362,13 @@ The following table describes the data elements displayed on the Region View scr
 <tbody>
 <tr class="odd">
 <td><strong>Region Members</strong></td>
-<td>Lists information about Geode members that host the region, either in block view or table view.</td>
+<td>Lists information about <%=vars.product_name%> members that host the region, either in block view or table view.</td>
 </tr>
 <tr class="even">
 <td>Region Member (Detail View)</td>
 <td>When you hover over a region member in block view, a pop-up appears with the following data fields:
 <ul>
-<li><em>Member Name</em>. The name of the Geode member hosting the region.</li>
+<li><em>Member Name</em>. The name of the <%=vars.product_name%> member hosting the region.</li>
 <li><em>EntryCount</em>. Number of entries for the region on that member.</li>
 <li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries on that member. For replicated regions this field will only provide a value if the eviction algorithm has been set to EvictionAlgorithm#LRU_ MEMORY. All partition regions will have this value. However, the value includes redundant entries and will also count the size of all the secondary entries on the node.</li>
 <li><em>Accessor</em>. Indicates whether the member is an accessor member.</li>
@@ -409,7 +409,7 @@ The following table describes the data elements displayed on the Region View scr
 
 # <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser" class="no-quick-link"></a>Data Browser
 
-The Pulse Data Browser enables you to query region data. Note that there are two key attributes available on DistributedSystemMXBean (see [List of Geode JMX MBeans](../../managing/management/list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B)) that you can use to configure limits for the result sets displayed in Data Browser:
+The Pulse Data Browser enables you to query region data. Note that there are two key attributes available on DistributedSystemMXBean (see [List of <%=vars.product_name%> JMX MBeans](../../managing/management/list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B)) that you can use to configure limits for the result sets displayed in Data Browser:
 
 -   `QueryResultSetLimit` limits the number of rows that Data Browser queries return. 1000 rows are displayed by default.
 -   `QueryCollectionsDepth` limits the number of elements of a collection that Data Browser queries return. This attribute applies to query results contain collections such as Map, List, and so forth. The default value is 100 elements.
@@ -423,7 +423,7 @@ The following shows an example Data Browser view:
 Use these basic controls while in Data Browser view:
 
 1.  Search for the name of a specific region.
-2.  Select one or more regions to display the Geode members that host those regions. The hosting Geode members appear in the Region Members section.
+2.  Select one or more regions to display the <%=vars.product_name%> members that host those regions. The hosting <%=vars.product_name%> members appear in the Region Members section.
 3.  Select one or more members from the Region Members section to restrict query results to those members.
 4.  Type in the text of a query to execute. See [Querying](../../developing/querying_basics/chapter_overview.html).
 5.  Display a list of previously-executed queries. Double-click on a query from the history list to copy it to the Query Editor, or delete the query from your history.

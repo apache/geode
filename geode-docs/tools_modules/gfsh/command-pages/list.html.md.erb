@@ -21,7 +21,7 @@ limitations under the License.
 
 
 
-List existing Geode resources such as deployed applications, disk-stores, functions, members, servers, and regions.
+List existing <%=vars.product_name%> resources such as deployed applications, disk-stores, functions, members, servers, and regions.
 
 -   **[list async-event-queues](#topic_j22_kzk_2l)**
 
@@ -37,7 +37,7 @@ List existing Geode resources such as deployed applications, disk-stores, functi
 
 -   **[list disk-stores](#topic_BC14AD57EA304FB3845766898D01BD04)**
 
-    List all available disk stores across the Geode cluster
+    List all available disk stores across the <%=vars.product_name%> cluster
 
 -   **[list durable-cqs](#topic_66016A698C334F4EBA19B99F51B0204B)**
 
@@ -65,7 +65,7 @@ List existing Geode resources such as deployed applications, disk-stores, functi
 
 -   **[list regions](#topic_F0ECEFF26086474498598035DD83C588)**
 
-    Display regions of a member or members. If no parameter is specified, all regions in the Geode distributed system are listed.
+    Display regions of a member or members. If no parameter is specified, all regions in the <%=vars.product_name%> distributed system are listed.
 
 ## <a id="topic_j22_kzk_2l" class="no-quick-link"></a>list async-event-queues
 
@@ -163,7 +163,7 @@ No JAR Files Found
 
 ## <a id="topic_BC14AD57EA304FB3845766898D01BD04" class="no-quick-link"></a>list disk-stores
 
-List all available disk stores across the Geode cluster
+List all available disk stores across the <%=vars.product_name%> cluster
 
 The command also lists the configured disk directories and any Regions, Cache Servers, Gateways, PDX Serialization and Async Event Queues using Disk Stores to either overflow and/or persist information to disk. Use the `describe                         disk-store` command to see the details for a particular Disk Store.
 
@@ -307,7 +307,7 @@ gfsh> list functions --matches=reconcile.*
   excalibur | reconcileDailyExpenses
 
 
-Example of 'list functions' when no functions are found in Geode :
+Example of 'list functions' when no functions are found in <%=vars.product_name%> :
 
 gfsh> list functions
 No Functions Found.
@@ -389,7 +389,7 @@ ps...        | 192...    | /producers  | pidIdx   | RANGE | id                 |
 
 **Error Messages:**
 
-Example of output when no indexes are found in Geode:
+Example of output when no indexes are found in <%=vars.product_name%>:
 
 ``` pre
 gfsh> list indexes
@@ -479,7 +479,7 @@ locator1 | 192.0.2.0(locator1:216:locator):33368
 
 ## <a id="topic_F0ECEFF26086474498598035DD83C588" class="no-quick-link"></a>list regions
 
-Display regions of a member or members. If no parameter is specified, all regions in the Geode distributed system are listed.
+Display regions of a member or members. If no parameter is specified, all regions in the <%=vars.product_name%> distributed system are listed.
 
 **Syntax:**
 

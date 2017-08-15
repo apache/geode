@@ -19,14 +19,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-To use the Geode HTTP module with Tomcat application servers, you will need to modify Tomcat's `server.xml` and `context.xml` files.
+To use the <%=vars.product_name%> HTTP module with Tomcat application servers, you will need to modify Tomcat's `server.xml` and `context.xml` files.
 
 Configuration is slightly different depending on the topology you are setting up. Refer to [Common Topologies for HTTP Session Management](common_gemfire_topologies.html#common_gemfire_topologies) for more information.
 
 ## <a id="tomcat_setting_up_the_module__section_20294A39368D4402AEFB3D074E8D5887" class="no-quick-link"></a>Peer-to-Peer Setup
 
 <img src="../../images_svg/http_module_p2p_with_locator.svg" id="tomcat_setting_up_the_module__image_bsm_2gf_sv" class="image" />
-To run Geode in a peer-to-peer configuration, add the following line to Tomcat's `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
+To run <%=vars.product_name%> in a peer-to-peer configuration, add the following line to Tomcat's `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
 
 ``` pre
 <Listener className="org.apache.geode.modules.session.catalina.
@@ -60,7 +60,7 @@ For Tomcat 8.0 and 8.5:
 
 <img src="../../images_svg/http_module_cs_with_locator.svg" id="tomcat_setting_up_the_module__image_aqn_jjf_sv" class="image" />
 
-To run Geode in a client/server configuration, the application server will operate as a Geode client. To do this, add the following line to `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
+To run <%=vars.product_name%> in a client/server configuration, the application server will operate as a <%=vars.product_name%> client. To do this, add the following line to `$CATALINA_HOME$/conf/server.xml` within the `<Server>` tag:
 
 ``` pre
 <Listener className="org.apache.geode.modules.session.catalina.
@@ -90,7 +90,7 @@ For Tomcat 8.0 and 8.5:
                          Tomcat8DeltaSessionManager"/> 
 ```
 
-The application server operates as a Geode client in this configuration. With a similar environment to this example that is for a client/server set up,
+The application server operates as a <%=vars.product_name%> client in this configuration. With a similar environment to this example that is for a client/server set up,
 
 ``` pre
 TC_VER=tomcat-8.0.30.C.RELEASE
@@ -112,14 +112,14 @@ $ gfsh start server --name=server1 --locators=localhost[10334] --server-port=0 \
 
 ## <a id="tomcat_setting_up_the_module__section_2B97047AB30A4C549D91AD258657FBA6" class="no-quick-link"></a>Starting the Application Server
 
-Once you've updated the configuration, you are now ready to start your tc Server or Tomcat instance. Refer to your application server documentation for starting the application server. Once started, Geode will automatically launch within the application server process.
+Once you've updated the configuration, you are now ready to start your tc Server or Tomcat instance. Refer to your application server documentation for starting the application server. Once started, <%=vars.product_name%> will automatically launch within the application server process.
 
 **Note:**
-Geode session state management provides its own clustering functionality. If you are using Geode, you should NOT turn on Tomcat clustering as well.
+<%=vars.product_name%> session state management provides its own clustering functionality. If you are using <%=vars.product_name%>, you should NOT turn on Tomcat clustering as well.
 
-## <a id="tomcat_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B" class="no-quick-link"></a>Verifying that Geode Started
+## <a id="tomcat_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B" class="no-quick-link"></a>Verifying that <%=vars.product_name%> Started
 
-You can verify that Geode has successfully started by inspecting the Tomcat log file. For example:
+You can verify that <%=vars.product_name%> has successfully started by inspecting the Tomcat log file. For example:
 
 ``` pre
 Nov 8, 2010 12:12:12 PM
@@ -130,4 +130,4 @@ INFO: Created GemFireCache[id = 2066231378; isClosing = false;
    copyOnRead = false; lockLease = 120; lockTimeout = 60]
 ```
 
-Information is also logged within the Geode log file, which by default is named `gemfire_modules.log`.
+Information is also logged within the <%=vars.product_name%> log file, which by default is named `gemfire_modules.log`.

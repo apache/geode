@@ -121,13 +121,13 @@ create async-event-queue --id=value --listener=value [--group=value(nullvalue)*]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-persistent</span></td>
-<td>Boolean value that determines whether Geode persists this queue.</td>
+<td>Boolean value that determines whether <%=vars.product_name%> persists this queue.</td>
 <td>false
 <p>If specified with out a value, default is true.</p></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-disk-store</span></td>
-<td>Named disk store to use for storing queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, Geode uses the default disk store for overflow and queue persistence.</td>
+<td>Named disk store to use for storing queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -397,14 +397,14 @@ create gateway-receiver [--group=value(,value)*] [--member=value(,value)*]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-start-port</span></td>
-<td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. Geode chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, Geode chooses a port value from 50510 to 50519.</p></td>
+<td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
+<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5000</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-end-port</span></td>
-<td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. Geode chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, Geode chooses a port value from 50510 to 50519.</p></td>
+<td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
+<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5500</td>
 </tr>
 <tr class="even">
@@ -452,7 +452,7 @@ Creates a gateway sender on one or more members of a distributed system.
 See [Gateway Senders](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA).
 
 **Note:**
-The gateway sender configuration for a specific sender `id` must be identical on each Geode member that hosts the gateway sender.
+The gateway sender configuration for a specific sender `id` must be identical on each <%=vars.product_name%> member that hosts the gateway sender.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -512,7 +512,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-enable-batch-conflation</span></td>
-<td>Boolean value that determines whether Geode should conflate messages.</td>
+<td>Boolean value that determines whether <%=vars.product_name%> should conflate messages.</td>
 <td>false</td>
 </tr>
 <tr class="odd">
@@ -542,12 +542,12 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-enable-persistence</span></td>
-<td>Boolean value that determines whether Geode persists the gateway queue.</td>
+<td>Boolean value that determines whether <%=vars.product_name%> persists the gateway queue.</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-disk-store-name</span></td>
-<td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, Geode uses the default disk store for overflow and queue persistence.</td>
+<td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -562,7 +562,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-alert-threshold</span></td>
-<td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before Geode logs an alert.</td>
+<td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before <%=vars.product_name%> logs an alert.</td>
 <td>0</td>
 </tr>
 <tr class="odd">
@@ -578,7 +578,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 <dt><b>thread</b></dt>
 <dd>When distributing region events from the local queue, multiple dispatcher threads preserve the order in which a given thread added region events to the queue.</dd>
 <dt><b>partition</b></dt>
-<dd>When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote Geode site. For a distributed region, this means that all key updates delivered to the local gateway sender queue are distributed to the remote site in the same order.</dd>
+<dd>When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote <%=vars.product_name%> site. For a distributed region, this means that all key updates delivered to the local gateway sender queue are distributed to the remote site in the same order.</dd>
 
 <p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
 <td>key</td>
@@ -942,7 +942,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-compressor</span></td>
-<td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">org.apache.geode.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">org.apache.geode.compression.SnappyCompressor</code>), which is bundled with Geode. See <a href="../../../managing/region_compression/region_compression.html#topic_r43_wgc_gl">Region Compression</a>.</td>
+<td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">org.apache.geode.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">org.apache.geode.compression.SnappyCompressor</code>), which is bundled with <%=vars.product_name%>. See <a href="../../../managing/region_compression/region_compression.html#topic_r43_wgc_gl">Region Compression</a>.</td>
 <td>no compression</td>
 </tr>
 <tr class="odd">
