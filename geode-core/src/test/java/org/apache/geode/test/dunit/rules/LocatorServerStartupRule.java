@@ -189,6 +189,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   public MemberVM startServerAsEmbededLocator(int index) throws IOException {
+    return startServerAsEmbededLocator(index, new Properties());
+  }
+
+  public MemberVM startServerAsEmbededLocator(int index, Properties properties) throws IOException {
     String name = "server-" + index;
 
     VM serverVM = getHost(0).getVM(index);

@@ -56,7 +56,7 @@ public class MemberVM<T extends Member> implements Member {
   }
 
   public T getMember() {
-    return (T) member;
+    return member;
   }
 
   @Override
@@ -84,6 +84,13 @@ public class MemberVM<T extends Member> implements Member {
   @Override
   public String getName() {
     return member.getName();
+  }
+
+  public int getEmbeddedLocatorPort() {
+    if (!(member instanceof Server)) {
+      throw new RuntimeException("member needs to be a server");
+    }
+    return ((Server) member).getEmbeddedLocatorPort();
   }
 
   public void stopMember() {
