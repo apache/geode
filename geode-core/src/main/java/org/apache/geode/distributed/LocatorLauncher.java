@@ -74,16 +74,16 @@ import org.apache.geode.internal.process.ProcessControllerParameters;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.internal.process.StartupStatusListener;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.util.HostUtils;
 
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
- * 
+ *
  * @see org.apache.geode.distributed.AbstractLauncher
  * @see org.apache.geode.distributed.ServerLauncher
  * @since GemFire 7.0
@@ -183,7 +183,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Launches a GemFire Locator from the command-line configured with the given arguments.
-   * 
+   *
    * @param args the command-line arguments used to configure the GemFire Locator at runtime.
    */
   public static void main(final String... args) {
@@ -202,7 +202,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Gets the instance of the LocatorLauncher used to launch the GemFire Locator, or null if this VM
    * does not have an instance of LocatorLauncher indicating no GemFire Locator is running.
-   * 
+   *
    * @return the instance of LocatorLauncher used to launcher a GemFire Locator in this VM.
    */
   public static LocatorLauncher getInstance() {
@@ -212,7 +212,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Gets the LocatorState for this process or null if this process was not launched using this VM's
    * LocatorLauncher reference.
-   * 
+   *
    * @return the LocatorState for this process or null.
    */
   public static LocatorState getLocatorState() {
@@ -224,7 +224,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * using a Builder. The Builder is used to configure a LocatorLauncher instance. The Builder can
    * process user input from the command-line or be used to properly construct an instance of the
    * LocatorLauncher programmatically using the API.
-   * 
+   *
    * @param builder an instance of LocatorLauncher.Builder for configuring and constructing an
    *        instance of the LocatorLauncher.
    * @see org.apache.geode.distributed.LocatorLauncher.Builder
@@ -281,7 +281,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the reference to the Locator object representing the running GemFire Locator.
-   * 
+   *
    * @return a reference to the Locator.
    */
   InternalLocator getLocator() {
@@ -291,7 +291,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Gets an identifier that uniquely identifies and represents the Locator associated with this
    * launcher.
-   * 
+   *
    * @return a String value identifier to uniquely identify the Locator and it's launcher.
    * @see #getBindAddressAsString()
    * @see #getPortAsString()
@@ -303,7 +303,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Get the Locator launcher command used to invoke the Locator.
-   * 
+   *
    * @return the Locator launcher command used to invoke the Locator.
    * @see org.apache.geode.distributed.LocatorLauncher.Command
    */
@@ -314,7 +314,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether the PID file is allowed to be overwritten when the Locator is started and a
    * PID file already exists in the Locator's specified working directory.
-   * 
+   *
    * @return boolean indicating if force has been enabled.
    */
   public boolean isForcing() {
@@ -326,7 +326,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * the standard Locator launcher commands will be used to affect the state of the Locator. A
    * launcher is said to be 'helping' if the user entered the "--help" option (switch) on the
    * command-line.
-   * 
+   *
    * @return a boolean value indicating if this launcher is used for displaying help information.
    * @see org.apache.geode.distributed.LocatorLauncher.Command
    */
@@ -337,7 +337,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether this launcher will redirect output to system logs when starting a new
    * Locator process.
-   * 
+   *
    * @return a boolean value indicating if this launcher will redirect output to system logs when
    *         starting a new Locator process
    */
@@ -348,12 +348,21 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Gets the IP address of the NIC to which the Locator has bound itself listening for client
    * requests.
-   * 
+   *
    * @return an InetAddress object representing the configured bind address for the Locator.
    * @see java.net.InetAddress
    */
   public InetAddress getBindAddress() {
-    return this.bindAddress;
+    try {
+      if (bindAddress != null) {
+        return bindAddress;
+      }
+      return SocketCreator.getLocalHost();
+    } catch (UnknownHostException handled) {
+      // Returning loopback implies the serverBindAddress was null and no IP address
+      // for localhost could be found
+      return InetAddress.getLoopbackAddress();
+    }
   }
 
   /**
@@ -361,10 +370,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * attempt is made to get the canonical hostname for IP address to which the Locator was bound for
    * accepting client requests. If the bind address is null or localhost is unknown, then a default
    * String value of "localhost/127.0.0.1" is returned.
-   * 
+   *
    * Note, this information is purely information and should not be used to re-construct state or
    * for other purposes.
-   * 
+   *
    * @return the hostname or IP address of the host running the Locator, based on the bind-address,
    *         or 'localhost/127.0.0.1' if the bind address is null and localhost is unknown.
    * @see java.net.InetAddress
@@ -380,7 +389,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
       return localhost.getCanonicalHostName();
     } catch (UnknownHostException handled) {
-      // NOTE returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
+      // Returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
       // localhost could be found
       return "localhost/127.0.0.1";
     }
@@ -388,7 +397,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the hostname that clients will use to lookup the running Locator.
-   * 
+   *
    * @return a String indicating the hostname used by clients to lookup the Locator.
    */
   public String getHostnameForClients() {
@@ -397,7 +406,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the name of the log file used to log information about this Locator.
-   * 
+   *
    * @return a String value indicating the name of this Locator's log file.
    */
   @Override
@@ -409,7 +418,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Gets the name of this member (this Locator) in the GemFire distributed system and determined by
    * the 'name' GemFire property.
-   * 
+   *
    * @return a String indicating the name of the member (this Locator) in the GemFire distributed
    *         system.
    */
@@ -421,7 +430,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Gets the user-specified process ID (PID) of the running Locator that LocatorLauncher uses to
    * issue status and stop commands to the Locator.
-   * 
+   *
    * @return an Integer value indicating the process ID (PID) of the running Locator.
    */
   @Override
@@ -431,7 +440,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the port number on which the Locator listens for client requests.
-   * 
+   *
    * @return an Integer value indicating the port number on which the Locator is listening for
    *         client requests.
    */
@@ -446,7 +455,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Gets the port number represented as a String value. If the port number is null, the the default
    * Locator port (10334) is returned;
-   * 
+   *
    * @return the port number as a String value.
    * @see #getPort()
    */
@@ -467,7 +476,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the name for a GemFire Locator.
-   * 
+   *
    * @return a String indicating the name for a GemFire Locator.
    */
   @Override
@@ -477,7 +486,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the working directory pathname in which the Locator will be run.
-   * 
+   *
    * @return a String value indicating the pathname of the Locator's working directory.
    */
   @Override
@@ -488,7 +497,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Displays help for the specified Locator launcher command to standard err. If the Locator
    * launcher command is unspecified, then usage information is displayed instead.
-   * 
+   *
    * @param command the Locator launcher command in which to display help information.
    * @see #usage()
    */
@@ -512,7 +521,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Displays usage information on the proper invocation of the LocatorLauncher from the
    * command-line to standard err.
-   * 
+   *
    * @see #help(org.apache.geode.distributed.LocatorLauncher.Command)
    */
   public void usage() {
@@ -529,7 +538,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * The Runnable method used to launch the Locator with the specified command. If 'start' has been
    * issued, then run will block as expected for the Locator to stop. The 'start' command is
    * implemented with a call to start() followed by a call to waitOnLocator().
-   * 
+   *
    * @see java.lang.Runnable
    * @see LocatorLauncher.Command
    * @see LocatorLauncher#start()
@@ -567,7 +576,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets a File reference with the path to the PID file for the Locator.
-   * 
+   *
    * @return a File reference to the path of the Locator's PID file.
    */
   protected File getLocatorPidFile() {
@@ -576,7 +585,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Determines whether a GemFire Locator can be started with this instance of LocatorLauncher.
-   * 
+   *
    * @return a boolean indicating whether a GemFire Locator can be started with this instance of
    *         LocatorLauncher, which is true if the LocatorLauncher has not already started a Locator
    *         or a Locator is not already running.
@@ -590,19 +599,19 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * Starts a Locator running on the specified port and bind address, as determined by getPort and
    * getBindAddress respectively, defaulting to 10334 and 'localhost' if not specified, with both
    * peer and server location enabled.
-   * 
+   *
    * 'start' is an asynchronous invocation of the Locator. As such, this method makes no guarantees
    * whether the Locator's location services (peer and server) are actually running before it
    * returns. The Locator's location-based services are initiated in separate, daemon Threads and
    * depends on the relative timing and scheduling of those Threads by the JVM. If the application
    * using this API wishes for the Locator to continue running after normal application processing
    * completes, then one must call <code>waitOnLocator</code>.
-   * 
+   *
    * Given the nature of start, the Locator's status will be in either 1 of 2 possible states. If
    * the 'request' to start the Locator proceeds without exception, the status will be 'STARTED'.
    * However, if any exception is encountered during the normal startup sequence, then a
    * RuntimeException is thrown and the status is set to 'STOPPED'.
-   * 
+   *
    * @return a LocatorState to reflect the state of the Locator after start.
    * @throws RuntimeException if the Locator failed to start for any reason.
    * @throws IllegalStateException if the Locator is already running.
@@ -634,12 +643,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         assertPortAvailable(getBindAddress(), getPort());
 
         ProcessLauncherContext.set(isRedirectingOutput(), getOverriddenDefaults(),
-            new StartupStatusListener() {
-              @Override
-              public void setStatus(final String statusMessage) {
-                LocatorLauncher.this.statusMessage = statusMessage;
-              }
-            });
+            statusMessage -> LocatorLauncher.this.statusMessage = statusMessage);
 
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
@@ -688,14 +692,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   @Override
   protected Properties getDistributedSystemProperties() {
-    Properties properties = super.getDistributedSystemProperties(getProperties());
-    return properties;
+    return super.getDistributedSystemProperties(getProperties());
   }
 
   /**
    * A helper method to ensure the same sequence of actions are taken when the Locator fails to
    * start caused by some exception.
-   * 
+   *
    * @param cause the Throwable thrown during the startup or wait operation on the Locator.
    */
   private void failOnStart(final Throwable cause) {
@@ -723,7 +726,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Waits on the Locator to stop causing the calling Thread to join with the Locator's
    * location-based services Thread.
-   * 
+   *
    * @return the Locator's status once it stops.
    * @throws AssertionError if the Locator has not been started and the reference is null
    *         (assertions must be enabled for the error to be thrown).
@@ -762,15 +765,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * time until the timeout expires. If the request to determine the Locator's status is successful,
    * then the Locator is considered to be 'ONLINE'. Otherwise, the Locator is considered to be
    * unresponsive to the status request.
-   * 
+   *
    * However, this does not necessarily imply the Locator start was unsuccessful, only that a
    * response was not received in the given time period.
-   * 
+   *
    * Note, this method does not block or cause the Locator's location-based services (daemon
    * Threads) to continue running in anyway if the main application Thread terminates when running
    * the Locator in-process. If the caller wishes to start a Locator in an asynchronous manner
    * within the application process, then a call should be made to <code>waitOnLocator</code>.
-   * 
+   *
    * @param timeout a long value in time unit indicating when the period of time should expire in
    *        attempting to determine the Locator's status.
    * @param interval a long value in time unit for how frequent the requests should be sent to the
@@ -822,17 +825,17 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * MemberMXBean registered in the MBeanServer of the Locator's JVM, and invoking the 'status'
    * operation. The same behavior occurs if the caller specified the Locator's GemFire member name
    * or ID.
-   * 
+   *
    * However, if 'dir' or 'pid' were not specified, then determining the Locator's status defaults
    * to using the configured bind address and port. If the bind address or port was not specified
    * when using the Builder to construct a LocatorLauncher instance, then the defaults for both bind
    * address and port are used. In either case, an actual TCP/IP request is made to the Locator's
    * ServerSocket to ensure it is listening for client requests. This is true even when the
    * LocatorLauncher is used in-process by calling the API.
-   * 
+   *
    * If the conditions above hold, then the Locator is deemed to be 'ONLINE', otherwise, the Locator
    * is considered 'OFFLINE'.
-   * 
+   *
    * @return the Locator's state.
    * @see #start()
    * @see #stop()
@@ -868,8 +871,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return statusWithWorkingDirectory();
     }
     // attempt to get status using host and port (Note, bind address doubles as host when the
-    // launcher
-    // is used to get the Locator's status).
+    // launcher is used to get the Locator's status).
     else {
       debug("Getting Locator status using host (%1$s) and port (%2$s)%n", getBindAddressAsString(),
           getPortAsString());
@@ -917,7 +919,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       LocatorStatusResponse response = statusLocator(getPort(), getBindAddress());
       return new LocatorState(this, Status.ONLINE, response);
     } catch (Exception handled) {
-      return createNoResponseState(handled, "Failed to connect to locator " + getId());
+      return createNoResponseState(handled, "Failed to connect to locator "
+          + getBindAddress().getCanonicalHostName() + "[" + getPort() + "]");
     }
   }
 
@@ -965,7 +968,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether the Locator can be stopped in-process, such as when a Locator is embedded in
    * an application and the LocatorLauncher API is being used.
-   * 
+   *
    * @return a boolean indicating whether the Locator can be stopped in-process (the application's
    *         process with an embedded Locator).
    */
@@ -979,7 +982,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * LocatorLauncher class from the command-line or from within GemFire shell (Gfsh). In every
    * single case, stop sends a TCP/IP 'shutdown' request on the configured address/port to which the
    * Locator is bound and listening.
-   * 
+   *
    * If the "shutdown" request is successful, then the Locator will be 'STOPPED'. Otherwise, the
    * Locator is considered 'OFFLINE' since the actual state cannot be fully assessed (as in the
    * application process in which the Locator was hosted may still be running and the Locator object
@@ -987,7 +990,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * is particularly important in cases where the system resources (such as Sockets) may not have
    * been cleaned up yet. Therefore, by returning a status of 'OFFLINE', the value is meant to
    * reflect this in-deterministic state.
-   * 
+   *
    * @return a LocatorState indicating the state of the Locator after stop has been requested.
    * @see #start()
    * @see #status()
@@ -1010,7 +1013,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return stopWithPid();
     }
     // attempt to stop Locator using the working directory...
-    // else if (this.workingDirectorySpecified) {
     else if (getWorkingDirectory() != null) {
       return stopWithWorkingDirectory();
     } else {
@@ -1209,7 +1211,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Constructor used to create and configure an instance of the Builder class with the specified
      * arguments, often passed from the command-line when launching an instance of this class from
      * the command-line using the Java launcher.
-     * 
+     *
      * @param args the array of arguments used to configure the Builder.
      */
     public Builder(final String... args) {
@@ -1218,7 +1220,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets an instance of the JOpt Simple OptionParser to parse the command-line arguments.
-     * 
+     *
      * @return an instance of the JOpt Simple OptionParser configured with the command-line options
      *         used by the Locator.
      */
@@ -1244,7 +1246,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Parses an array of arguments to configure this Builder with the intent of constructing a
      * Locator launcher to invoke a Locator. This method is called to parse the arguments specified
      * by the user on the command-line.
-     * 
+     *
      * @param args the array of arguments used to configure this Builder and create an instance of
      *        LocatorLauncher.
      */
@@ -1298,7 +1300,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Iterates the list of arguments in search of the target Locator launcher command.
-     * 
+     *
      * @param args an array of arguments from which to search for the Locator launcher command.
      * @see org.apache.geode.distributed.LocatorLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
@@ -1322,7 +1324,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Iterates the list of arguments in search of the Locator's GemFire member name. If the
      * argument does not start with '-' or is not the name of a Locator launcher command, then the
      * value is presumed to be the member name for the Locator in GemFire.
-     * 
+     *
      * @param args the array of arguments from which to search for the Locator's member name in
      *        GemFire.
      * @see org.apache.geode.distributed.LocatorLauncher.Command#isCommand(String)
@@ -1341,7 +1343,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the Locator launcher command used during the invocation of the LocatorLauncher.
-     * 
+     *
      * @return the Locator launcher command used to invoke (run) the LocatorLauncher class.
      * @see #setCommand(org.apache.geode.distributed.LocatorLauncher.Command)
      * @see LocatorLauncher.Command
@@ -1352,7 +1354,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets the Locator launcher command used during the invocation of the LocatorLauncher
-     * 
+     *
      * @param command the targeted Locator launcher command used during the invocation (run) of
      *        LocatorLauncher.
      * @return this Builder instance.
@@ -1366,7 +1368,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether the new instance of the LocatorLauncher will be set to debug mode.
-     * 
+     *
      * @return a boolean value indicating whether debug mode is enabled or disabled.
      * @see #setDebug(Boolean)
      */
@@ -1376,7 +1378,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets whether the new instance of the LocatorLauncher will be set to debug mode.
-     * 
+     *
      * @param debug a boolean value indicating whether debug mode is to be enabled or disabled.
      * @return this Builder instance.
      * @see #getDebug()
@@ -1426,7 +1428,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Gets the boolean value used by the Locator to determine if it should overwrite the PID file
      * if it already exists.
-     * 
+     *
      * @return the boolean value specifying whether or not to overwrite the PID file if it already
      *         exists.
      * @see #setForce(Boolean)
@@ -1438,7 +1440,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Sets the boolean value used by the Locator to determine if it should overwrite the PID file
      * if it already exists.
-     * 
+     *
      * @param force a boolean value indicating whether to overwrite the PID file when it already
      *        exists.
      * @return this Builder instance.
@@ -1453,7 +1455,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether the new instance of LocatorLauncher will be used to output help
      * information for either a specific command, or for using LocatorLauncher in general.
-     * 
+     *
      * @return a boolean value indicating whether help will be output during the invocation of
      *         LocatorLauncher.
      * @see #setHelp(Boolean)
@@ -1464,7 +1466,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether help has been enabled.
-     * 
+     *
      * @return a boolean indicating if help was enabled.
      */
     private boolean isHelping() {
@@ -1474,7 +1476,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Sets whether the new instance of LocatorLauncher will be used to output help information for
      * either a specific command, or for using LocatorLauncher in general.
-     * 
+     *
      * @param help a boolean indicating whether help information is to be displayed during
      *        invocation of LocatorLauncher.
      * @return this Builder instance.
@@ -1492,7 +1494,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the IP address to which the Locator has bound itself listening for client requests.
-     * 
+     *
      * @return an InetAddress with the IP address or hostname on which the Locator is bound and
      *         listening.
      * @see #setBindAddress(String)
@@ -1505,7 +1507,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Sets the IP address as an java.net.InetAddress to which the Locator has bound itself
      * listening for client requests.
-     * 
+     *
      * @param bindAddress the InetAddress with the IP address or hostname on which the Locator is
      *        bound and listening.
      * @return this Builder instance.
@@ -1539,7 +1541,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the hostname used by clients to lookup the Locator.
-     * 
+     *
      * @return a String indicating the hostname Locator binding used in client lookups.
      * @see #setHostnameForClients(String)
      */
@@ -1549,7 +1551,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets the hostname used by clients to lookup the Locator.
-     * 
+     *
      * @param hostnameForClients a String indicating the hostname Locator binding used in client
      *        lookups.
      * @return this Builder instance.
@@ -1570,7 +1572,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the member name of this Locator in GemFire.
-     * 
+     *
      * @return a String indicating the member name of this Locator in GemFire.
      * @see #setMemberName(String)
      */
@@ -1580,7 +1582,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets the member name of the Locator in GemFire.
-     * 
+     *
      * @param memberName a String indicating the member name of this Locator in GemFire.
      * @return this Builder instance.
      * @throws IllegalArgumentException if the member name is invalid.
@@ -1600,7 +1602,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Gets the process ID (PID) of the running Locator indicated by the user as an argument to the
      * LocatorLauncher. This PID is used by the Locator launcher to determine the Locator's status,
      * or invoke shutdown on the Locator.
-     * 
+     *
      * @return a user specified Integer value indicating the process ID of the running Locator.
      * @see #setPid(Integer)
      */
@@ -1612,7 +1614,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Sets the process ID (PID) of the running Locator indicated by the user as an argument to the
      * LocatorLauncher. This PID will be used by the Locator launcher to determine the Locator's
      * status, or invoke shutdown on the Locator.
-     * 
+     *
      * @param pid a user specified Integer value indicating the process ID of the running Locator.
      * @return this Builder instance.
      * @throws IllegalArgumentException if the process ID (PID) is not valid (greater than zero if
@@ -1635,7 +1637,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Gets the port number used by the Locator to listen for client requests. If the port was not
      * specified, then the default Locator port (10334) is returned.
-     * 
+     *
      * @return the specified Locator port or the default port if unspecified.
      * @see #setPort(Integer)
      */
@@ -1646,7 +1648,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Sets the port number used by the Locator to listen for client requests. The port number must
      * be between 1 and 65535 inclusive.
-     * 
+     *
      * @param port an Integer value indicating the port used by the Locator to listen for client
      *        requests.
      * @return this Builder instance.
@@ -1669,10 +1671,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether the new instance of LocatorLauncher will redirect output to system logs
      * when starting a Locator.
-     * 
+     *
      * @return a boolean value indicating if output will be redirected to system logs when starting
      *         a Locator
-     * 
      * @see #setRedirectOutput(Boolean)
      */
     public Boolean getRedirectOutput() {
@@ -1681,7 +1682,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether redirecting of output has been enabled.
-     * 
+     *
      * @return a boolean indicating if redirecting of output was enabled.
      */
     private boolean isRedirectingOutput() {
@@ -1691,7 +1692,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Sets whether the new instance of LocatorLauncher will redirect output to system logs when
      * starting a Locator.
-     * 
+     *
      * @param redirectOutput a boolean value indicating if output will be redirected to system logs
      *        when starting a Locator.
      * @return this Builder instance.
@@ -1709,7 +1710,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Gets the working directory pathname in which the Locator will be ran. If the directory is
      * unspecified, then working directory defaults to the current directory.
-     * 
+     *
      * @return a String indicating the working directory pathname.
      * @see #setWorkingDirectory(String)
      */
@@ -1722,7 +1723,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * Sets the working directory in which the Locator will be ran. This also the directory in which
      * all Locator files (such as log and license files) will be written. If the directory is
      * unspecified, then the working directory defaults to the current directory.
-     * 
+     *
      * @param workingDirectory a String indicating the pathname of the directory in which the
      *        Locator will be ran.
      * @return this Builder instance.
@@ -1764,7 +1765,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * specified the pathname to the gemfire.properties file before validate is called. It is then
      * assumed, but not further validated, that the user has specified the Locator's member name in
      * the properties file.
-     * 
+     *
      * @throws IllegalStateException if the Builder is not properly configured.
      */
     protected void validate() {
@@ -1778,7 +1779,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the arguments passed to the Builder when the 'start' command has been issued.
-     * 
+     *
      * @see org.apache.geode.distributed.LocatorLauncher.Command#START
      */
     protected void validateOnStart() {
@@ -1802,7 +1803,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the arguments passed to the Builder when the 'status' command has been issued.
-     * 
+     *
      * @see org.apache.geode.distributed.LocatorLauncher.Command#STATUS
      */
     protected void validateOnStatus() {
@@ -1812,7 +1813,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the arguments passed to the Builder when the 'stop' command has been issued.
-     * 
+     *
      * @see org.apache.geode.distributed.LocatorLauncher.Command#STOP
      */
     protected void validateOnStop() {
@@ -1823,7 +1824,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Validates the Builder configuration settings and then constructs an instance of the
      * LocatorLauncher class to invoke operations on a GemFire Locator.
-     * 
+     *
      * @return a newly constructed instance of LocatorLauncher configured with this Builder.
      * @see #validate()
      * @see org.apache.geode.distributed.LocatorLauncher
@@ -1837,7 +1838,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * An enumerated type representing valid commands to the Locator launcher.
    */
-  public static enum Command {
+  public enum Command {
     START("start", "bind-address", "hostname-for-clients", "port", "force", "debug", "help"),
     STATUS("status", "bind-address", "port", "member", "pid", "dir", "debug", "help"),
     STOP("stop", "member", "pid", "dir", "debug", "help"),
@@ -1852,13 +1853,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       assert isNotBlank(name) : "The name of the locator launcher command must be specified!";
       this.name = name;
       this.options = (options != null ? Collections.unmodifiableList(Arrays.asList(options))
-          : Collections.<String>emptyList());
+          : Collections.emptyList());
     }
 
     /**
      * Determines whether the specified name refers to a valid Locator launcher command, as defined
      * by this enumerated type.
-     * 
+     *
      * @param name a String value indicating the potential name of a Locator launcher command.
      * @return a boolean indicating whether the specified name for a Locator launcher command is
      *         valid.
@@ -1870,7 +1871,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether the given Locator launcher command has been properly specified. The
      * command is deemed unspecified if the reference is null or the Command is UNSPECIFIED.
-     * 
+     *
      * @param command the Locator launcher command.
      * @return a boolean value indicating whether the Locator launcher command is unspecified.
      * @see Command#UNSPECIFIED
@@ -1882,7 +1883,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Looks up a Locator launcher command by name. The equality comparison on name is
      * case-insensitive.
-     * 
+     *
      * @param name a String value indicating the name of the Locator launcher command.
      * @return an enumerated type representing the command name or null if the no such command with
      *         the specified name exists.
@@ -1899,7 +1900,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the name of the Locator launcher command.
-     * 
+     *
      * @return a String value indicating the name of the Locator launcher command.
      */
     public String getName() {
@@ -1909,7 +1910,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Gets a set of valid options that can be used with the Locator launcher command when used from
      * the command-line.
-     * 
+     *
      * @return a Set of Strings indicating the names of the options available to the Locator
      *         launcher command.
      */
@@ -1919,7 +1920,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether this Locator launcher command has the specified command-line option.
-     * 
+     *
      * @param option a String indicating the name of the command-line option to this command.
      * @return a boolean value indicating whether this command has the specified named command-line
      *         option.
@@ -1930,7 +1931,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Convenience method for determining whether this is the UNSPECIFIED Locator launcher command.
-     * 
+     *
      * @return a boolean indicating if this command is UNSPECIFIED.
      * @see #UNSPECIFIED
      */
@@ -1940,7 +1941,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the String representation of this Locator launcher command.
-     * 
+     *
      * @return a String value representing this Locator launcher command.
      */
     @Override
@@ -1953,14 +1954,14 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * The LocatorState is an immutable type representing the state of the specified Locator at any
    * given moment in time. The state of the Locator is assessed at the exact moment an instance of
    * this class is constructed.
-   * 
+   *
    * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
    */
   public static class LocatorState extends ServiceState<String> {
 
     /**
      * Unmarshals a LocatorState instance from the JSON String.
-     * 
+     *
      * @return a LocatorState value unmarshalled from the JSON String.
      */
     public static LocatorState fromJson(final String json) {
@@ -2014,18 +2015,33 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       this(status, // status
           errorMessage, // statusMessage
           System.currentTimeMillis(), // timestamp
-          null, // locatorLocation
+          getLocatorLocation(launcher), // locatorLocation
           null, // pid
           0L, // uptime
           launcher.getWorkingDirectory(), // workingDirectory
-          Collections.<String>emptyList(), // jvmArguments
+          ManagementFactory.getRuntimeMXBean().getInputArguments(), // jvmArguments
           null, // classpath
           GemFireVersion.getGemFireVersion(), // gemfireVersion
-          null, // javaVersion
+          System.getProperty("java.version"), // javaVersion
           null, // logFile
-          null, // host
-          null, // port
+          getBindAddress(launcher).getCanonicalHostName(), // host
+          launcher.getPortAsString(), // port
           null);// memberName
+    }
+
+    /*
+     * Guards against throwing NPEs due to incorrect or missing host information while constructing
+     * error states
+     */
+    private static String getLocatorLocation(LocatorLauncher launcher) {
+      if (launcher.getPort() == null) {
+        return launcher.getId();
+      }
+      if (launcher.getBindAddress() == null) {
+        return HostUtils.getLocatorId(HostUtils.getLocalHost(), launcher.getPort());
+      }
+      return HostUtils.getLocatorId(launcher.getBindAddress().getCanonicalHostName(),
+          launcher.getPort());
     }
 
     private static String getBindAddressAsString(LocatorLauncher launcher) {
@@ -2033,12 +2049,23 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         final InternalLocator locator = InternalLocator.getLocator();
         final InetAddress bindAddress = locator.getBindAddress();
         if (bindAddress != null) {
-          if (isBlank(bindAddress.getHostAddress())) {
+          if (isNotBlank(bindAddress.getHostAddress())) {
             return bindAddress.getHostAddress();
           }
         }
       }
       return launcher.getBindAddressAsString();
+    }
+
+    private static InetAddress getBindAddress(LocatorLauncher launcher) {
+      if (InternalLocator.hasLocator()) {
+        final InternalLocator locator = InternalLocator.getLocator();
+        final InetAddress bindAddress = locator.getBindAddress();
+        if (bindAddress != null) {
+          return bindAddress;
+        }
+      }
+      return launcher.getBindAddress();
     }
 
     private static String getLogFileCanonicalPath(LocatorLauncher launcher) {
@@ -2049,8 +2076,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         if (logFile != null && logFile.isFile()) {
           final String logFileCanonicalPath = tryGetCanonicalPathElseGetAbsolutePath(logFile);
           if (isNotBlank(logFileCanonicalPath)) { // this is probably not need but a
-                                                  // safe
-            // check none-the-less.
+            // safe check none-the-less.
             return logFileCanonicalPath;
           }
         }

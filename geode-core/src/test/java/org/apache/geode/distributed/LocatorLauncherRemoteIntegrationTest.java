@@ -185,8 +185,8 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
     assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(locatorState.getClasspath()).isNull();
     assertThat(locatorState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(locatorState.getHost()).isNull();
-    assertThat(locatorState.getJavaVersion()).isNull();
+    assertThat(locatorState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(locatorState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(locatorState.getLogFile()).isNull();
     assertThat(locatorState.getMemberName()).isNull();
     assertThat(locatorState.getPid()).isNull();

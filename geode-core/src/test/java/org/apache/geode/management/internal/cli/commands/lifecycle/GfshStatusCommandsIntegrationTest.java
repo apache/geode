@@ -19,13 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
@@ -33,8 +33,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class GfshStatusCommandsIntegrationTest {
-  final private static String LOCATOR_NAME = "locator1";
-  // private int port;
+  private static final String LOCATOR_NAME = "locator1";
 
   @Rule
   public LocatorStarterRule locator =
@@ -52,37 +51,48 @@ public class GfshStatusCommandsIntegrationTest {
 
   @Before
   public void connect() throws Exception {
-    // port = getRandomAvailablePort(SOCKET);
     gfsh.connectAndVerify(locator);
   }
 
   @Test
-  public void statusLocatorWithBadPortReportsNotResponding() throws Exception {
-    CommandResult result = gfsh.executeCommand("status locator --host=localhost --port="
-        + String.valueOf(locator.getLocator().getPort() - 1));
+  public void statusLocatorWithBadPort_statusNotResponding() throws Exception {
+    String wrongPort = String.valueOf(locator.getLocator().getPort() - 1);
+    CommandResult result =
+        gfsh.executeCommand("status locator --host=localhost --port=" + wrongPort);
+    assertThat(result.getContent().getString("message")).doesNotContain("null");
     assertThat(result.getContent().getString("message")).contains("not responding");
+    assertThat(result.getContent().getString("message")).contains(wrongPort);
   }
 
   @Test
-  public void statusLocatorWithActivePortReportsOnline() throws Exception {
+  public void statusLocatorDefault_LocatorOnNonDefaultPort_statusNotResponding() throws Exception {
+    CommandResult result = gfsh.executeCommand("status locator --host=localhost");
+    assertThat(result.getContent().getString("message")).doesNotContain("null");
+    assertThat(result.getContent().getString("message")).contains("not responding");
+    assertThat(result.getContent().getString("message"))
+        .contains(String.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT));
+  }
+
+  @Test
+  public void statusLocatorWithActivePort_statusOnline() throws Exception {
     CommandResult result = gfsh.executeCommand(
         "status locator --host=localhost --port=" + String.valueOf(locator.getLocator().getPort()));
     assertThat(result.getContent().getString("message")).contains("is currently online");
   }
 
   @Test
-  public void statusServerWithWithNoOptions() throws Exception {
-    File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
-    serverDir.mkdirs();
+  public void statusServerNoServer_statusNotResponding() throws Exception {
     CommandResult result = gfsh.executeCommand("status server");
+    assertThat(result.getContent().getString("message")).doesNotContain("null");
     assertThat(result.getContent().getString("message")).contains("not responding");
   }
 
   @Test
-  public void statusServerWithInvalidDirReturnsMeangingfulMessage() throws Exception {
+  public void statusServerWithEmptyDir_statusNotResponding() throws Exception {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
     serverDir.mkdirs();
     CommandResult result = gfsh.executeCommand("status server --dir=" + serverDir.toString());
+    assertThat(result.getContent().getString("message")).doesNotContain("null");
     assertThat(result.getContent().getString("message")).contains("not responding");
   }
 }

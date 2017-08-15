@@ -30,7 +30,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -282,9 +284,17 @@ public abstract class LauncherIntegrationTestCase {
 
   private void givenPortInUse(final int port) {
     try {
+      givenPortInUse(port, InetAddress.getLocalHost());
+    } catch (UnknownHostException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private void givenPortInUse(final int port, InetAddress bindAddress) {
+    try {
       socket = SocketCreatorFactory
           .createNonDefaultInstance(false, false, null, null, System.getProperties())
-          .createServerSocket(port, 50, null, -1);
+          .createServerSocket(port, 50, bindAddress, -1);
       assertThat(socket.isBound()).isTrue();
       assertThat(socket.isClosed()).isFalse();
       assertThat(isPortAvailable(port, SOCKET)).isFalse();

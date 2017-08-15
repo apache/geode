@@ -14,6 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+
+import java.net.InetAddress;
+
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -27,16 +33,26 @@ public class StatusLocatorRealGfshTest {
   @Rule
   public GfshRule gfshRule = new GfshRule();
 
-  @Test
-  public void statusLocatorSucceedsWhenConnected() throws Exception {
-    GfshScript.of("start locator --name=locator1").execute(gfshRule);
+  private int port;
 
-    GfshScript.of("connect", "status locator --name=locator1").execute(gfshRule);
+  @Before
+  public void setup() {
+    port = getRandomAvailablePort(SOCKET);
   }
 
   @Test
-  public void statusLocatorFailsWhenNotConnected() throws Exception {
-    GfshScript.of("start locator --name=locator1").withName("start locator").execute(gfshRule);
+  public void statusLocatorSucceedsWhenConnected() throws Exception {
+    GfshScript.of("start locator --name=locator1 --port=" + Integer.valueOf(port))
+        .execute(gfshRule);
+
+    GfshScript.of("connect --locator=" + InetAddress.getLocalHost().getHostAddress() + "["
+        + Integer.valueOf(port) + "]", "status locator --name=locator1").execute(gfshRule);
+  }
+
+  @Test
+  public void statusLocatorByNameFailsWhenNotConnected() throws Exception {
+    GfshScript.of("start locator --name=locator1 --port=" + Integer.valueOf(port))
+        .withName("start locator").execute(gfshRule);
 
     GfshScript.of("status locator --name=locator1").withName("status locator").expectFailure()
         .execute(gfshRule);
