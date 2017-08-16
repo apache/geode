@@ -500,10 +500,12 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       boolean isLeader = leader.equals(this.partitionedRegion);
       if (!isLeader) {
         leader.getDataStore().removeBucket(possiblyFreeBucketId, true);
-        logger.info(
-            "For bucket " + possiblyFreeBucketId + ", failed to create cololcated child bucket for "
-                + this.partitionedRegion.getFullPath() + ", removed leader region "
-                + leader.getFullPath() + " bucket.");
+        if (isDebugEnabled) {
+          logger.debug("For bucket " + possiblyFreeBucketId
+              + ", failed to create cololcated child bucket for "
+              + this.partitionedRegion.getFullPath() + ", removed leader region "
+              + leader.getFullPath() + " bucket.");
+        }
       }
       throw validationException;
     } finally {
