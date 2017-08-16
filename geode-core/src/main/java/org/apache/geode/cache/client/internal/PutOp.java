@@ -409,9 +409,7 @@ public class PutOp {
 
     @Override
     protected void processSecureBytes(Connection cnx, Message message) throws Exception {
-      if (!this.isMetaRegionPutOp) {
-        super.processSecureBytes(cnx, message);
-      }
+      super.processSecureBytes(cnx, message);
     }
 
     @Override

@@ -14,10 +14,16 @@
  */
 package org.apache.geode.security;
 
+import static org.mockito.Mockito.*;
+
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -31,6 +37,32 @@ public class ClientAuthenticationPart2DUnitTest extends ClientAuthenticationTest
   @Test
   public void testNoCredentialsForMultipleUsers() throws Exception {
     doTestNoCredentials(true);
+  }
+
+  // GEODE-3249
+  @Test
+  public void testNoCredentialsForMultipleUsersCantRegisterMetadata() throws Exception {
+    doTestNoCredentialsCantRegisterMetadata(true);
+  }
+
+  @Test
+  public void testServerConnectionAcceptsOldInternalMessagesIfAllowed() throws Exception {
+
+    ServerConnection serverConnection = mock(ServerConnection.class);
+    when(serverConnection.isInternalMessage(any(Message.class), any(Boolean.class)))
+        .thenCallRealMethod();
+
+    int[] oldInternalMessages = new int[] {MessageType.ADD_PDX_TYPE, MessageType.ADD_PDX_ENUM,
+        MessageType.REGISTER_INSTANTIATORS, MessageType.REGISTER_DATASERIALIZERS};
+
+    for (int i = 0; i < oldInternalMessages.length; i++) {
+      Message message = mock(Message.class);
+      when(message.getMessageType()).thenReturn(oldInternalMessages[i]);
+
+      serverConnection.setRequestMsg(message);
+      Assert.assertFalse(serverConnection.isInternalMessage(message, false));
+      Assert.assertTrue(serverConnection.isInternalMessage(message, true));
+    }
   }
 
   @Test

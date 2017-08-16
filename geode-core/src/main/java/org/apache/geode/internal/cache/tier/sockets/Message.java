@@ -1029,6 +1029,7 @@ public class Message {
     sb.append("type=").append(MessageType.getString(this.messageType));
     sb.append("; payloadLength=").append(this.payloadLength);
     sb.append("; numberOfParts=").append(this.numberOfParts);
+    sb.append("; hasSecurePart=").append(isSecureMode());
     sb.append("; transactionId=").append(this.transactionId);
     sb.append("; currentPart=").append(this.currentPart);
     sb.append("; messageModified=").append(this.messageModified);
