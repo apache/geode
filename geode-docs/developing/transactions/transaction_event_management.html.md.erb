@@ -46,11 +46,11 @@ results in these events stored in the CacheEvent list:
 
 # At commit and after commit
 
-When the transaction is committed, Geode passes the `TransactionEvent` to the transaction writer local to the transactional view, if one is available. After commit, Geode :
+When the transaction is committed, <%=vars.product_name%> passes the `TransactionEvent` to the transaction writer local to the transactional view, if one is available. After commit, <%=vars.product_name%> :
     -   Passes the `TransactionEvent` to each installed transaction listener.
     -   Walks the `CacheEvent` list, calling all locally installed listeners for each operation listed.
     -   Distributes the `TransactionEvent` to all interested caches.
         **Note:**
-        For Geode and global JTA transactions, the `EntryEvent` object contains the Geode transaction ID. JTA transaction events do not contain the JTA transaction ID.
+        For <%=vars.product_name%> and global JTA transactions, the `EntryEvent` object contains the <%=vars.product_name%> transaction ID. JTA transaction events do not contain the JTA transaction ID.
 
 

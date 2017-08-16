@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-By default, Geode partitions each data entry into a bucket using a hashing policy on the key. Additionally, the physical location of the key-value pair is abstracted away from the application. You can change these policies for a partitioned region. You can provide your own data partitioning resolver and you can additionally specify which members host which data buckets.
+By default, <%=vars.product_name%> partitions each data entry into a bucket using a hashing policy on the key. Additionally, the physical location of the key-value pair is abstracted away from the application. You can change these policies for a partitioned region. You can provide your own data partitioning resolver and you can additionally specify which members host which data buckets.
 
 <a id="custom_partition_region_data__section_CF05CE974C9C4AF78430DA55601D2158"></a>
 **Note:**
@@ -40,7 +40,7 @@ For standard partitioning, use `org.apache.geode.cache.PartitionResolver`. To im
 
 **Procedure**
 
-1.  If using `org.apache.geode.cache.PartitionResolver` (standard partitioning) or `org.apache.geode.cache.FixedPartitionResolver` (fixed partitioning), implement the standard partitioning resolver or the fixed partitioning resolver in one of the following locations, listed here in the search order used by Geode:
+1.  If using `org.apache.geode.cache.PartitionResolver` (standard partitioning) or `org.apache.geode.cache.FixedPartitionResolver` (fixed partitioning), implement the standard partitioning resolver or the fixed partitioning resolver in one of the following locations, listed here in the search order used by <%=vars.product_name%>:
     -   **Custom class**. You provide this class as the partition resolver to the region creation.
     -   **Entry key**. You use the implementing key object for every operation on the region entries.
     -   **Cache callback argument**. This implementation restricts you to using methods that accept a cache callback argument to manage the region entries. For a full list of the methods that take a callback argument, see the `Region` Javadocs.
@@ -54,7 +54,7 @@ function that partitions the entry.
 2.  If you need the resolver's `getName` method, program that.
 3.  If *not* using the default implementation of the string-based
 partition resolver,
-program the resolver's `getRoutingObject` method to return the routing object for each entry, based on how you want to group the entries. Give the same routing object to entries you want to group together. Geode will place the entries in the same bucket.
+program the resolver's `getRoutingObject` method to return the routing object for each entry, based on how you want to group the entries. Give the same routing object to entries you want to group together. <%=vars.product_name%> will place the entries in the same bucket.
 
     **Note:**
     Only fields on the key should be used when creating the routing object. Do not use the value or additional metadata for this purpose.
@@ -130,7 +130,7 @@ program the resolver's `getRoutingObject` method to return the routing object fo
 
             You cannot specify a partition resolver using gfsh.
 
-    2.  Program the `FixedPartitionResolver` `getPartitionName` method to return the name of the partition for each entry, based on where you want the entries to reside. Geode uses `getPartitionName` and `getRoutingObject` to determine where an entry is placed.
+    2.  Program the `FixedPartitionResolver` `getPartitionName` method to return the name of the partition for each entry, based on where you want the entries to reside. <%=vars.product_name%> uses `getPartitionName` and `getRoutingObject` to determine where an entry is placed.
 
         **Note:**
         To group entries, assign every entry in the group the same routing object and the same partition name.
@@ -188,7 +188,7 @@ program the resolver's `getRoutingObject` method to return the routing object fo
         }
         ```
 
-5.  Configure or program the region so Geode finds your resolver for every operation that you perform on the region's entries. How you do this depends on where you chose to program your custom partitioning implementation (step 1).
+5.  Configure or program the region so <%=vars.product_name%> finds your resolver for every operation that you perform on the region's entries. How you do this depends on where you chose to program your custom partitioning implementation (step 1).
     -   **Custom class**. Define the class for the region at creation. The resolver will be used for every entry operation. Use one of these methods:
 
         **XML:**

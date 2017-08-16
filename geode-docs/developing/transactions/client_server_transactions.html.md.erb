@@ -20,19 +20,19 @@ limitations under the License.
 -->
 
 
-The syntax for writing client transactions is the same on the Java client as with any other Geode member, but the underlying behavior in a client-run transaction is different from general transaction behavior.
+The syntax for writing client transactions is the same on the Java client as with any other <%=vars.product_name%> member, but the underlying behavior in a client-run transaction is different from general transaction behavior.
 
-For general information about running a transaction, refer to [How to Run a Geode Cache Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
+For general information about running a transaction, refer to [How to Run a <%=vars.product_name%> Cache Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
 
--   **[How Geode Runs Client Transactions](../../developing/transactions/client_server_transactions.html#how_gemfire_runs_clients)**
+-   **[How <%=vars.product_name%> Runs Client Transactions](client_server_transactions.html#how_gemfire_runs_clients)**
 
--   **[Client Cache Access During a Transaction](../../developing/transactions/client_server_transactions.html#client_cache_access)**
+-   **[Client Cache Access During a Transaction](client_server_transactions.html#client_cache_access)**
 
--   **[Client Transactions and Client Application Plug-Ins](../../developing/transactions/client_server_transactions.html#client_app_plugins)**
+-   **[Client Transactions and Client Application Plug-Ins](client_server_transactions.html#client_app_plugins)**
 
--   **[Client Transaction Failures](../../developing/transactions/client_server_transactions.html#client_transaction_failures)**
+-   **[Client Transaction Failures](client_server_transactions.html#client_transaction_failures)**
 
-## <a id="how_gemfire_runs_clients" class="no-quick-link"></a>How Geode Runs Client Transactions
+## <a id="how_gemfire_runs_clients" class="no-quick-link"></a>How <%=vars.product_name%> Runs Client Transactions
 
 When a client performs a transaction, the transaction is delegated to a server that acts as the transaction initiator in the server system. As with regular, non-client transactions, this server delegate may or may not be the transaction host.
 
@@ -42,7 +42,7 @@ In this figure, the application code on the client makes changes to data entries
 
 ## <a id="client_cache_access" class="no-quick-link"></a>Client Cache Access During a Transaction
 
-To maintain cache consistency, Geode blocks access to the local client cache during a transaction. The local client cache may reflect information inconsistent with the transaction in progress. When the transaction completes, the local cache is accessible again.
+To maintain cache consistency, <%=vars.product_name%> blocks access to the local client cache during a transaction. The local client cache may reflect information inconsistent with the transaction in progress. When the transaction completes, the local cache is accessible again.
 
 ## <a id="client_app_plugins" class="no-quick-link"></a>Client Transactions and Client Application Plug-Ins
 

@@ -31,7 +31,7 @@ When creating indexes, keep in mind the following:
 
 ## <a id="indexing_guidelines__section_A8AFAA243B5C43DD9BB9F9235A48AF53" class="no-quick-link"></a>Tips for Writing Queries that Use Indexes
 
-As with query processors that run against relational databases, the way a query is written can greatly affect execution performance. Among other things, whether indexes are used depends on how each query is stated. These are some of the things to consider when optimizing your Geode queries for performance:
+As with query processors that run against relational databases, the way a query is written can greatly affect execution performance. Among other things, whether indexes are used depends on how each query is stated. These are some of the things to consider when optimizing your <%=vars.product_name%> queries for performance:
 
 -   In general an index will improve query performance if the FROM clauses of the query and index match exactly.
 -   The query evaluation engine does not have a sophisticated cost-based optimizer. It has a simple optimizer which selects best index (one) or multiple indexes based on the index size and the operator that is being evaluated.

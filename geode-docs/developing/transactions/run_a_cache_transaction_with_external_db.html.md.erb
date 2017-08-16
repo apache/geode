@@ -1,6 +1,4 @@
----
-title:  How to Run a Geode Cache Transaction that Coordinates with an External Database
----
+<% set_title("How to Run a", product_name, "Cache Transaction that Coordinates with an External Database") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,9 +17,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Coordinate a Geode cache transaction with an external database by using CacheWriter/CacheListener and TransactionWriter/TransactionListener plug-ins, **to provide an alternative to using JTA transactions**.
+Coordinate a <%=vars.product_name%> cache transaction with an external database by using CacheWriter/CacheListener and TransactionWriter/TransactionListener plug-ins, **to provide an alternative to using JTA transactions**.
 
-There are a few things you should be careful about while working with Geode cache transactions and external databases:
+There are a few things you should be careful about while working with <%=vars.product_name%> cache transactions and external databases:
 
 -   When you set up the JDBC connection, make sure that auto-commit is disabled. For example, in Java:
 
@@ -40,15 +38,15 @@ There are a few things you should be careful about while working with Geode cach
     max_prepared_transactions = 1 # 1 or more enables, zero (default) disables this feature.
     ```
 
-Use the following procedure to write a Geode cache transaction that coordinates with an external database:
+Use the following procedure to write a <%=vars.product_name%> cache transaction that coordinates with an external database:
 
-1.  Configure Geode regions as necessary as described in [How to Run a Geode Cache Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
+1.  Configure <%=vars.product_name%> regions as necessary as described in [How to Run a <%=vars.product_name%> Cache Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
 2.  Begin the transaction.
 3.  If you have not previously committed a previous transaction in this connection, start a database transaction by issuing a BEGIN statement.
-4.  Perform Geode cache operations; each cache operation invokes the CacheWriter. Implement the CacheWriter to perform the corresponding external database operations.
+4.  Perform <%=vars.product_name%> cache operations; each cache operation invokes the CacheWriter. Implement the CacheWriter to perform the corresponding external database operations.
 5.  Commit the transaction.
     At this point, the TransactionWriter is invoked. The TransactionWriter returns a TransactionEvent, which contains all the operations in the transaction. Call PREPARE TRANSACTION within your TransactionWriter code.
 
-6.  After a transaction is successfully committed in Geode, the TransactionListener is invoked. The TransactionListener calls COMMIT PREPARED to commit the database transaction.
+6.  After a transaction is successfully committed in <%=vars.product_name%>, the TransactionListener is invoked. The TransactionListener calls COMMIT PREPARED to commit the database transaction.
 
 
