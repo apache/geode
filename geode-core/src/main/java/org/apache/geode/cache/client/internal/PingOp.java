@@ -53,6 +53,7 @@ public class PingOp {
 
     @Override
     protected void processSecureBytes(Connection cnx, Message message) throws Exception {
+      super.processSecureBytes(cnx, message);
       Message.MESSAGE_TYPE.set(null);
     }
 

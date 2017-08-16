@@ -54,9 +54,6 @@ public class CloseConnectionOp {
     }
 
     @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {}
-
-    @Override
     protected boolean needsUserId() {
       return false;
     }

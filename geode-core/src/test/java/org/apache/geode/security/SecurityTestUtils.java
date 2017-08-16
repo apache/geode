@@ -1825,7 +1825,7 @@ public class SecurityTestUtils {
 
   // ------------------------------- inner classes ----------------------------
 
-  private static class Employee implements PdxSerializable {
+  public static class Employee implements PdxSerializable {
 
     private Long Id;
     private String fname;
@@ -1854,4 +1854,5 @@ public class SecurityTestUtils {
       out.writeString("lname", lname);
     }
   }
+
 }

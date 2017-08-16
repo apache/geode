@@ -72,24 +72,11 @@ public class GetPDXTypeByIdOp {
       stats.endGetPDXTypeById(start, hasTimedOut(), hasFailed());
     }
 
-    @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {}
-
-    @Override
-    protected boolean needsUserId() {
-      return false;
-    }
-
     // Don't send the transaction id for this message type.
     @Override
     protected boolean participateInTransaction() {
       return false;
     }
 
-    @Override
-    protected void sendMessage(Connection cnx) throws Exception {
-      getMessage().clearMessageHasSecurePartFlag();
-      getMessage().send(false);
-    }
   }
 }
