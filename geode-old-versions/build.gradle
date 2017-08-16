@@ -15,11 +15,16 @@
  * limitations under the License.
  */
 
+plugins {
+  id "de.undercouch.download" version "3.2.0"
+}
 
+import de.undercouch.gradle.tasks.download.Download
 disableMavenPublishing()
 
-def addTestSource(def source, def geodeVersion) {
-//  def sourceSet =
+project.ext.installs = new Properties();
+
+def addOldVersion(def source, def geodeVersion) {
   sourceSets.create(source, {
     compileClasspath += configurations.provided
     runtimeClasspath += configurations.provided
@@ -33,14 +38,34 @@ def addTestSource(def source, def geodeVersion) {
   dependencies.add "${source}Compile", "org.apache.geode:geode-cq:$geodeVersion"
   dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:$geodeVersion"
 
-}
+  project.ext.installs.setProperty(source, "$buildDir/apache-geode-${geodeVersion}")
 
-// Add sourceSets for backwards compatibility, rolling upgrade, and
-// pdx testing.
-addTestSource('test100', '1.0.0-incubating')
-addTestSource('test110', '1.1.0')
-addTestSource('test111', '1.1.1')
-addTestSource('test120', '1.2.0')
+  task "downloadZipFile${source}" (type: Download) {
+    src "https://www.apache.org/dyn/closer.cgi?action=download&filename=geode/$geodeVersion/apache-geode-${geodeVersion}.tar.gz"
+    dest new File(buildDir, "apache-geode-${geodeVersion}.tar.gz")
+  }
+
+  task "downloadSHA${source}" (type: Download) {
+    src "https://www.apache.org/dist/geode/${geodeVersion}/apache-geode-${geodeVersion}.tar.gz.sha256"
+    dest new File(buildDir, "apache-geode-${geodeVersion}.tar.gz.sha256")
+  }
+
+
+  task "verifyGeode${source}" (type: de.undercouch.gradle.tasks.download.Verify, dependsOn: [tasks["downloadSHA${source}"], tasks["downloadZipFile${source}"]]) {
+    src tasks["downloadZipFile${source}"].dest
+    algorithm "SHA-256"
+    doFirst {
+      checksum new File(buildDir, "apache-geode-${geodeVersion}.tar.gz.sha256").text.split(' ')[0]
+    }
+  }
+
+  task "downloadAndUnzipFile${source}" (dependsOn: "verifyGeode${source}", type: Copy) {
+    from tarTree(tasks["downloadZipFile${source}"].dest)
+    into buildDir
+  }
+
+  createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${source}"]
+}
 
 def generatedResources = "$buildDir/generated-resources/main"
 
@@ -52,7 +77,9 @@ sourceSets {
 
 task createGeodeClasspathsFile  {
   File classpathsFile = file("$generatedResources/geodeOldVersionClasspaths.txt")
-  outputs.file(classpathsFile);
+  File installsFile = file("$generatedResources/geodeOldVersionInstalls.txt")
+  outputs.file(classpathsFile)
+  outputs.file(installsFile)
 
   doLast {
     Properties versions = new Properties();
@@ -65,6 +92,21 @@ task createGeodeClasspathsFile  {
     new FileOutputStream(classpathsFile).withStream { fos ->
       versions.store(fos, '')
     }
+
+    installsFile.getParentFile().mkdirs();
+
+    new FileOutputStream(installsFile).withStream { fos ->
+      project.ext.installs.store(fos, '')
+    }
   }
+
+  // Add sourceSets for backwards compatibility, rolling upgrade, and
+  // pdx testing.
+  addOldVersion('test100', '1.0.0-incubating')
+  addOldVersion('test110', '1.1.0')
+  addOldVersion('test111', '1.1.1')
+  addOldVersion('test120', '1.2.0')
+
 }
+
 
