@@ -1069,7 +1069,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    * This contacts the locators to find out who the current coordinator is. All locators are
    * contacted. If they don't agree then we choose the oldest coordinator and return it.
    */
-  private boolean findCoordinator() {
+  boolean findCoordinator() {
     SearchState state = searchState;
 
     assert this.localAddress != null;
