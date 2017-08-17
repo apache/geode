@@ -133,7 +133,7 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testCacheXmlParserWithSimplePoolXerces() {
-    String prevParserFactory = System.setProperty("javax.xml.parsers.SAXParserFactory",
+    System.setProperty("javax.xml.parsers.SAXParserFactory",
         "org.apache.xerces.jaxp.SAXParserFactoryImpl");
 
     testCacheXmlParserWithSimplePool();
@@ -167,7 +167,7 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testDTDFallbackWithNonEnglishLocalXerces() {
-    String prevParserFactory = System.setProperty("javax.xml.parsers.SAXParserFactory",
+    System.setProperty("javax.xml.parsers.SAXParserFactory",
         "org.apache.xerces.jaxp.SAXParserFactoryImpl");
 
     testDTDFallbackWithNonEnglishLocal();
