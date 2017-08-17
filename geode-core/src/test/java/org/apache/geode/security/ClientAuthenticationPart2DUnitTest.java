@@ -59,7 +59,6 @@ public class ClientAuthenticationPart2DUnitTest extends ClientAuthenticationTest
       Message message = mock(Message.class);
       when(message.getMessageType()).thenReturn(oldInternalMessages[i]);
 
-      serverConnection.setRequestMsg(message);
       Assert.assertFalse(serverConnection.isInternalMessage(message, false));
       Assert.assertTrue(serverConnection.isInternalMessage(message, true));
     }
