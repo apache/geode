@@ -363,6 +363,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    * @throws GatewaySenderException
    */
   private void initializeConnection() throws GatewaySenderException, GemFireSecurityException {
+    if (ackReaderThread != null) {
+      ackReaderThread.shutDownAckReaderConnection();
+    }
     this.connectionLifeCycleLock.writeLock().lock();
     try {
       // Attempt to acquire a connection
@@ -819,6 +822,12 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   @Override
   public boolean isConnectedToRemote() {
     return connection != null && !connection.isDestroyed();
+  }
+
+  public void shutDownAckReaderConnection() {
+    if (ackReaderThread != null) {
+      ackReaderThread.shutDownAckReaderConnection();
+    }
   }
 
   public void stop() {
