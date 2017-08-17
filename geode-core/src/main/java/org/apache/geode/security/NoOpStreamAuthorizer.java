@@ -14,33 +14,13 @@
  */
 package org.apache.geode.security;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 /**
- * An implementation of {@link StreamAuthenticator} that doesn't use its parameters and always
- * returns true.
+ * An implementation of {@link StreamAuthorizer} that doesn't use its parameters and always returns
+ * true.
  */
-public class NoOpStreamAuthenticator implements StreamAuthenticator {
+public class NoOpStreamAuthorizer implements StreamAuthorizer {
   @Override
-  public void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      SecurityManager securityManager) throws IOException {
-    // this method needs to do nothing as it is a pass-through implementation
-  }
-
-  @Override
-  public boolean isAuthenticated() {
+  public boolean authorize(ResourcePermission permissionRequested) {
     return true;
-  }
-
-  @Override
-  public StreamAuthorizer getAuthorizer() {
-    return new NoOpStreamAuthorizer();
-  }
-
-  @Override
-  public String implementationID() {
-    return "NOOP";
   }
 }

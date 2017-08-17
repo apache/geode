@@ -15,6 +15,9 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.security.StreamAuthorizer;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.security;
 
-import org.apache.geode.security.SecurityManager;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,6 +42,12 @@ public interface StreamAuthenticator {
    * function must always return true.
    */
   boolean isAuthenticated();
+
+  /**
+   * Return an authorization object which can be used to determine which permissions this stream has
+   * according to the provided securityManager.
+   */
+  StreamAuthorizer getAuthorizer() throws AuthenticationRequiredException;
 
   /**
    * @return a unique identifier for this particular implementation (NOOP, PASSTHROUGH, etc.)

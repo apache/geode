@@ -26,6 +26,7 @@ import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.security.NoOpStreamAuthorizer;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -72,7 +73,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, false);
     Result<RegionAPI.GetResponse> result = operationHandler.process(serializationServiceStub,
-        getRequest, new MessageExecutionContext(cacheStub));
+        getRequest, new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     Assert.assertTrue(result instanceof Success);
     Assert.assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT,
@@ -87,7 +88,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.GetRequest getRequest = generateTestRequest(true, false, false);
     Result<RegionAPI.GetResponse> response = operationHandler.process(serializationServiceStub,
-        getRequest, new MessageExecutionContext(cacheStub));
+        getRequest, new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     Assert.assertTrue(response instanceof Failure);
     Assert.assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
@@ -100,7 +101,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, true, false);
     Result<RegionAPI.GetResponse> response = operationHandler.process(serializationServiceStub,
-        getRequest, new MessageExecutionContext(cacheStub));
+        getRequest, new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     Assert.assertTrue(response instanceof Success);
   }
@@ -111,7 +112,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, true);
     Result<RegionAPI.GetResponse> response = operationHandler.process(serializationServiceStub,
-        getRequest, new MessageExecutionContext(cacheStub));
+        getRequest, new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     Assert.assertTrue(response instanceof Success);
   }
@@ -133,7 +134,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     RegionAPI.GetRequest getRequest =
         ProtobufRequestUtilities.createGetRequest(TEST_REGION, encodedKey).getGetRequest();
     Result<RegionAPI.GetResponse> response = operationHandler.process(serializationServiceStub,
-        getRequest, new MessageExecutionContext(cacheStub));
+        getRequest, new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     Assert.assertTrue(response instanceof Failure);
     Assert.assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
