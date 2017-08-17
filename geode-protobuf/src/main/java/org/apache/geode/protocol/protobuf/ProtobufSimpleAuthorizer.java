@@ -12,35 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security;
+package org.apache.geode.protocol.protobuf;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
 
-/**
- * An implementation of {@link StreamAuthenticator} that doesn't use its parameters and always
- * returns true.
- */
-public class NoOpStreamAuthenticator implements StreamAuthenticator {
-  @Override
-  public void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      SecurityManager securityManager) throws IOException {
-    // this method needs to do nothing as it is a pass-through implementation
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.SecurityManager;
+import org.apache.geode.security.StreamAuthenticator;
+import org.apache.geode.security.StreamAuthorizer;
+
+public class ProtobufSimpleAuthorizer implements StreamAuthorizer {
+  private final Object authenticatedPrincipal;
+  private final SecurityManager securityManager;
+
+  public ProtobufSimpleAuthorizer(Object authenticatedPrincipal, SecurityManager securityManager) {
+    this.authenticatedPrincipal = authenticatedPrincipal;
+    this.securityManager = securityManager;
   }
 
   @Override
-  public boolean isAuthenticated() {
-    return true;
-  }
-
-  @Override
-  public StreamAuthorizer getAuthorizer() {
-    return new NoOpStreamAuthorizer();
-  }
-
-  @Override
-  public String implementationID() {
-    return "NOOP";
+  public boolean authorize(ResourcePermission permissionRequested) {
+    return securityManager.authorize(authenticatedPrincipal, permissionRequested);
   }
 }

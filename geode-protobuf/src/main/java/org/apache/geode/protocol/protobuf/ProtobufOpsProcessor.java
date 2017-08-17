@@ -19,6 +19,7 @@ import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
+import org.apache.geode.security.StreamAuthorizer;
 import org.apache.geode.serialization.SerializationService;
 
 /**
@@ -50,6 +51,15 @@ public class ProtobufOpsProcessor {
       result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
           ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
           "Invalid execution context found for operation."));
+    }
+    Result result;
+    if (authorizer.authorize(operationContext.getAccessPermissionRequired())) {
+      result = operationContext.getOperationHandler().process(serializationService,
+          operationContext.getFromRequest().apply(request), cache);
+    } else {
+      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          ProtocolErrorCode.AUTHORIZATION_FAILED.codeValue,
+          "User isn't authorized for this operation."));
     }
 
     builder = (ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),

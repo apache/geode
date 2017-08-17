@@ -18,6 +18,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.StreamAuthenticator;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.security.StreamAuthorizer;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.util.Properties;
 
 public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
   private boolean authenticated;
+  private ProtobufSimpleAuthorizer authorizer = null;
 
   @Override
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
@@ -41,20 +43,28 @@ public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
     properties.setProperty(ResourceConstants.USER_NAME, authenticationRequest.getUsername());
     properties.setProperty(ResourceConstants.PASSWORD, authenticationRequest.getPassword());
 
+    authorizer = null; // authenticating a new user clears current authorizer
     try {
       Object principal = securityManager.authenticate(properties);
-      authenticated = principal != null;
+      if (principal != null) {
+        authorizer = new ProtobufSimpleAuthorizer(principal, securityManager);
+      }
     } catch (AuthenticationFailedException e) {
-      authenticated = false;
+      authorizer = null;
     }
 
-    AuthenticationAPI.SimpleAuthenticationResponse.newBuilder().setAuthenticated(authenticated)
+    AuthenticationAPI.SimpleAuthenticationResponse.newBuilder().setAuthenticated(isAuthenticated())
         .build().writeDelimitedTo(outputStream);
   }
 
   @Override
   public boolean isAuthenticated() {
-    return authenticated;
+    return authorizer != null;
+  }
+
+  @Override
+  public StreamAuthorizer getAuthorizer() {
+    return authorizer;
   }
 
   @Override

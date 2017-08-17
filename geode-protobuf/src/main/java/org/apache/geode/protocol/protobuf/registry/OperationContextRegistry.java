@@ -30,6 +30,7 @@ import org.apache.geode.protocol.protobuf.operations.GetRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.PutAllRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.PutRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.RemoveRequestOperationHandler;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class OperationContextRegistry {
@@ -47,41 +48,57 @@ public class OperationContextRegistry {
     operationContexts.put(RequestAPICase.GETREQUEST,
         new OperationContext<>(ClientProtocol.Request::getGetRequest,
             new GetRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetResponse(opsResp)));
+            opsResp -> ClientProtocol.Response.newBuilder().setGetResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
+                ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.GETALLREQUEST,
         new OperationContext<>(ClientProtocol.Request::getGetAllRequest,
             new GetAllRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetAllResponse(opsResp)));
+            opsResp -> ClientProtocol.Response.newBuilder().setGetAllResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
+                ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.PUTREQUEST,
         new OperationContext<>(ClientProtocol.Request::getPutRequest,
             new PutRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setPutResponse(opsResp)));
+            opsResp -> ClientProtocol.Response.newBuilder().setPutResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
+                ResourcePermission.Operation.WRITE)));
 
     operationContexts.put(RequestAPICase.PUTALLREQUEST,
         new OperationContext<>(ClientProtocol.Request::getPutAllRequest,
             new PutAllRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setPutAllResponse(opsResp)));
+            opsResp -> ClientProtocol.Response.newBuilder().setPutAllResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
+                ResourcePermission.Operation.WRITE)));
 
     operationContexts.put(RequestAPICase.REMOVEREQUEST,
         new OperationContext<>(ClientProtocol.Request::getRemoveRequest,
             new RemoveRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setRemoveResponse(opsResp)));
+            opsResp -> ClientProtocol.Response.newBuilder().setRemoveResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
+                ResourcePermission.Operation.WRITE)));
 
     operationContexts.put(RequestAPICase.GETREGIONNAMESREQUEST,
         new OperationContext<>(ClientProtocol.Request::getGetRegionNamesRequest,
             new GetRegionNamesRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetRegionNamesResponse(opsResp)));
+            opsResp -> ClientProtocol.Response.newBuilder().setGetRegionNamesResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
+                ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.GETREGIONREQUEST,
         new OperationContext<>(ClientProtocol.Request::getGetRegionRequest,
             new GetRegionRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetRegionResponse(opsResp)));
+            opsResp -> ClientProtocol.Response.newBuilder().setGetRegionResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
+                ResourcePermission.Operation.READ)));
 
-    operationContexts.put(RequestAPICase.GETAVAILABLESERVERSREQUEST, new OperationContext<>(
-        ClientProtocol.Request::getGetAvailableServersRequest,
-        new GetAvailableServersOperationHandler(),
-        opsResp -> ClientProtocol.Response.newBuilder().setGetAvailableServersResponse(opsResp)));
+    operationContexts.put(RequestAPICase.GETAVAILABLESERVERSREQUEST,
+        new OperationContext<>(ClientProtocol.Request::getGetAvailableServersRequest,
+            new GetAvailableServersOperationHandler(),
+            opsResp -> ClientProtocol.Response.newBuilder().setGetAvailableServersResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.CLUSTER,
+                ResourcePermission.Operation.READ)));
   }
 }

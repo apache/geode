@@ -26,6 +26,7 @@ import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.security.StreamAuthorizer;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 
 /**
