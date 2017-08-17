@@ -15,20 +15,18 @@
 
 package org.apache.geode.cache.lucene.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.geode.cache.lucene.LuceneIndexExistsException;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
-import org.apache.geode.cache.lucene.internal.management.LuceneServiceMBean;
-import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener;
-import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
-import org.apache.geode.cache.lucene.internal.results.PageResults;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -41,10 +39,12 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager;
@@ -52,15 +52,21 @@ import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFuncti
 import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunctionContext;
 import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
 import org.apache.geode.cache.lucene.internal.filesystem.File;
+import org.apache.geode.cache.lucene.internal.management.LuceneServiceMBean;
+import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener;
+import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
+import org.apache.geode.cache.lucene.internal.results.PageResults;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionListener;
+import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 /**
  * Implementation of LuceneService to create lucene index and query.

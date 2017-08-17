@@ -18,14 +18,13 @@ package org.apache.geode.cache.lucene.internal.distributed;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.InternalEntity;
 
 /**
@@ -62,7 +61,7 @@ public class WaitUntilFlushedFunction implements Function, InternalEntity {
       }
 
     } else {
-      throw new IllegalArgumentException(
+      throw new IllegalStateException(
           "The AEQ does not exist for the index " + indexName + " region " + region.getFullPath());
     }
     resultSender.lastResult(result);
