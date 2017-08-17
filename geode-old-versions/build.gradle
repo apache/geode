@@ -24,7 +24,7 @@ disableMavenPublishing()
 
 project.ext.installs = new Properties();
 
-def addOldVersion(def source, def geodeVersion) {
+def addOldVersion(def source, def geodeVersion, def downloadInstall) {
   sourceSets.create(source, {
     compileClasspath += configurations.provided
     runtimeClasspath += configurations.provided
@@ -64,7 +64,9 @@ def addOldVersion(def source, def geodeVersion) {
     into buildDir
   }
 
-  createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${source}"]
+  if (downloadInstall) {
+    createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${source}"]
+  }
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -102,10 +104,10 @@ task createGeodeClasspathsFile  {
 
   // Add sourceSets for backwards compatibility, rolling upgrade, and
   // pdx testing.
-  addOldVersion('test100', '1.0.0-incubating')
-  addOldVersion('test110', '1.1.0')
-  addOldVersion('test111', '1.1.1')
-  addOldVersion('test120', '1.2.0')
+  addOldVersion('test100', '1.0.0-incubating', false)
+  addOldVersion('test110', '1.1.0', false)
+  addOldVersion('test111', '1.1.1', false)
+  addOldVersion('test120', '1.2.0', true)
 
 }
 
