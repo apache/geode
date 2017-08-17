@@ -29,7 +29,9 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -48,6 +50,9 @@ import java.util.Properties;
  */
 @Category(UnitTest.class)
 public class CacheXmlParserJUnitTest {
+
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private static final String NAMESPACE_URI =
       "urn:java:org.apache.geode.internal.cache.xmlcache.MockXmlParser";
@@ -132,12 +137,6 @@ public class CacheXmlParserJUnitTest {
         "org.apache.xerces.jaxp.SAXParserFactoryImpl");
 
     testCacheXmlParserWithSimplePool();
-
-    if (prevParserFactory != null) {
-      System.setProperty("javax.xml.parsers.SAXParserFactory", prevParserFactory);
-    } else {
-      System.clearProperty("javax.xml.parsers.SAXParserFactory");
-    }
   }
 
   /**
@@ -172,12 +171,6 @@ public class CacheXmlParserJUnitTest {
         "org.apache.xerces.jaxp.SAXParserFactoryImpl");
 
     testDTDFallbackWithNonEnglishLocal();
-
-    if (prevParserFactory != null) {
-      System.setProperty("javax.xml.parsers.SAXParserFactory", prevParserFactory);
-    } else {
-      System.clearProperty("javax.xml.parsers.SAXParserFactory");
-    }
   }
 
   /**
