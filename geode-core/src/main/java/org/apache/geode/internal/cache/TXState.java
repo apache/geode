@@ -1010,7 +1010,6 @@ public class TXState implements TXStateInterface {
             writer.beforeCommit(event);
           }
         } catch (TransactionWriterException twe) {
-          cleanup();
           throw new CommitConflictException(twe);
         } catch (VirtualMachineError err) {
           // cleanup(); this allocates objects so I don't think we can do it - that leaves the TX
@@ -1021,7 +1020,6 @@ public class TXState implements TXStateInterface {
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
-          cleanup(); // rollback the transaction!
           // Whenever you catch Error or Throwable, you must also
           // catch VirtualMachineError (see above). However, there is
           // _still_ a possibility that you are dealing with a cascading
@@ -1031,8 +1029,6 @@ public class TXState implements TXStateInterface {
           throw new CommitConflictException(t);
         }
       }
-
-
     } catch (CommitConflictException commitConflict) {
       cleanup();
       this.proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
