@@ -258,7 +258,8 @@ public class CompiledOperation extends AbstractCompiledValue {
     methodDispatch = (MethodDispatch) CompiledOperation.cache.get(key);
     if (methodDispatch == null) {
       try {
-        methodDispatch = new MethodDispatch(resolutionType, this.methodName, argTypes);
+        methodDispatch = new MethodDispatch(context.getCache().getSecurityService(), resolutionType,
+            this.methodName, argTypes);
       } catch (NameResolutionException nre) {
         if (!org.apache.geode.cache.query.Struct.class.isAssignableFrom(resolutionType)
             && (DefaultQueryService.QUERY_HETEROGENEOUS_OBJECTS

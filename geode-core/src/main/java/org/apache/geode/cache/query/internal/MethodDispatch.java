@@ -16,12 +16,21 @@
 package org.apache.geode.cache.query.internal;
 
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.NameNotFoundException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.security.SecurityService;
 
 
 /**
@@ -35,13 +44,14 @@ public class MethodDispatch {
   private String _methodName;
   private Class[] _argTypes;
   private Method _method; // remember the right method
+  private SecurityService _securityService;
 
-
-  public MethodDispatch(Class targetClass, String methodName, List argTypes)
-      throws NameResolutionException {
+  public MethodDispatch(SecurityService securityService, Class targetClass, String methodName,
+      List argTypes) throws NameResolutionException {
     _targetClass = targetClass;
     _methodName = methodName;
     _argTypes = (Class[]) argTypes.toArray(new Class[argTypes.size()]);
+    _securityService = securityService;
 
     resolve();
     // override security in case this is a method on a nonpublic class
@@ -49,14 +59,12 @@ public class MethodDispatch {
     _method.setAccessible(true);
   }
 
-
-
   public Object invoke(Object target, List args)
       throws NameNotFoundException, QueryInvocationTargetException {
     Object[] argsArray = args.toArray();
 
-
     try {
+      FunctionInvocationAuthorizer.authorizeFunctionInvocation(_securityService, _method);
       return _method.invoke(target, argsArray);
     } catch (IllegalAccessException e) {
       throw new NameNotFoundException(

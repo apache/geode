@@ -100,7 +100,6 @@ public class CloseCQ extends BaseCQCommand {
             cqRegionNames.add(cqQuery.getRegionName());
             authzRequest.closeCQAuthorize(cqName, queryStr, cqRegionNames);
           }
-
         }
 
         cqService.closeCq(cqName, id);

@@ -48,6 +48,11 @@ public class SecurityTestUtil {
     return cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regionName);
   }
 
+  public static void assertNotAuthorizedMatching(
+      ThrowableAssert.ThrowingCallable shouldRaiseThrowable, String permString) {
+    assertThatThrownBy(shouldRaiseThrowable).hasMessageMatching(permString);
+  }
+
   public static void assertNotAuthorized(ThrowableAssert.ThrowingCallable shouldRaiseThrowable,
       String permString) {
     assertThatThrownBy(shouldRaiseThrowable).hasMessageContaining(permString);

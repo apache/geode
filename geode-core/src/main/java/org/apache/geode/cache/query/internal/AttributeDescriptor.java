@@ -15,19 +15,6 @@
 
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.cache.EntryDestroyedException;
-import org.apache.geode.cache.query.NameNotFoundException;
-import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
-
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -41,6 +28,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.query.NameNotFoundException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+
 /**
  * Utility for managing an attribute
  *
@@ -50,12 +51,16 @@ import java.util.concurrent.ConcurrentMap;
 
 public class AttributeDescriptor {
   private final String _name;
+  private final SecurityService _securityService;
   /** cache for remembering the correct Member for a class and attribute */
-  private static final ConcurrentMap _cache = new ConcurrentHashMap();
+  // DAVID/JASON should this be ConcurrentHashMap or ConcurrentMap? (is there a difference?)
+  private static final ConcurrentMap _local_field_cache = new ConcurrentHashMap();
+  private static final ConcurrentMap _local_method_cache = new ConcurrentHashMap();
 
 
 
-  public AttributeDescriptor(String name) {
+  public AttributeDescriptor(SecurityService securityService, String name) {
+    _securityService = securityService;
     _name = name;
   }
 
@@ -94,6 +99,7 @@ public class AttributeDescriptor {
 
     Class resolutionClass = target.getClass();
     Member m = getReadMember(resolutionClass);
+    System.out.println("JASON found m:" + m.getName());
     try {
       if (m instanceof Method) {
         try {
@@ -142,25 +148,39 @@ public class AttributeDescriptor {
   }
 
   Member getReadMember(Class targetClass) throws NameNotFoundException {
+
     // mapping: public field (same name), method (getAttribute()),
     // method (attribute())
     List key = new ArrayList();
     key.add(targetClass);
     key.add(_name);
 
-    Member m = (Member) _cache.get(key);
-    if (m != null)
+    Member m = (Member) _local_field_cache.get(key);
+    if (m != null) {
       return m;
+    } else {
+      m = (Member) _local_method_cache.get(key);
+
+      if (m != null) {
+        FunctionInvocationAuthorizer.authorizeFunctionInvocation(_securityService, m);
+        return m;
+      }
+    }
 
     m = getReadField(targetClass);
-    if (m == null)
+    if (m == null) {
       m = getReadMethod(targetClass);
-    if (m != null)
-      _cache.putIfAbsent(key, m);
-    else
+    } else {
+      _local_field_cache.putIfAbsent(key, m);
+    }
+
+    if (m != null) {
+      _local_method_cache.putIfAbsent(key, m);
+    } else {
       throw new NameNotFoundException(
           LocalizedStrings.AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1
               .toLocalizedString(new Object[] {_name, targetClass.getName()}));
+    }
     // override security for nonpublic derived classes with public members
     ((AccessibleObject) m).setAccessible(true);
     return m;
@@ -180,10 +200,13 @@ public class AttributeDescriptor {
 
   private Method getReadMethod(Class targetType) {
     Method m;
+    // Check for a getter method for this _name
     String beanMethod = "get" + _name.substring(0, 1).toUpperCase() + _name.substring(1);
     m = getReadMethod(targetType, beanMethod);
+
     if (m != null)
       return m;
+
     return getReadMethod(targetType, _name);
   }
 
@@ -191,7 +214,9 @@ public class AttributeDescriptor {
 
   private Method getReadMethod(Class targetType, String methodName) {
     try {
-      return targetType.getMethod(methodName, (Class[]) null);
+      Method m = targetType.getMethod(methodName, (Class[]) null);
+      FunctionInvocationAuthorizer.authorizeFunctionInvocation(_securityService, m);
+      return m;
     } catch (NoSuchMethodException e) {
       updateClassToMethodsMap(targetType.getCanonicalName(), _name);
       return null;
