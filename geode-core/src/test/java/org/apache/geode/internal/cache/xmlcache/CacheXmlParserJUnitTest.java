@@ -23,8 +23,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -110,18 +110,11 @@ public class CacheXmlParserJUnitTest {
     assertNotNull("Did not find simple config.xml file", getClass()
         .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
 
-    DM dm = mock(DM.class);
-
     Properties nonDefault = new Properties();
     nonDefault.setProperty(MCAST_PORT, "0"); // loner
 
-    InternalDistributedSystem system =
-        InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
-    when(dm.getSystem()).thenReturn(system);
-
-    Cache cache = new CacheFactory()
-        .set("cache-xml-file", "CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml")
-        .create(InternalDistributedSystem.connect(nonDefault));
+    ClientCache cache = new ClientCacheFactory(nonDefault).set("cache-xml-file",
+        "xmlcache/CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml").create();
     cache.close();
   }
 
