@@ -463,7 +463,14 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
     super.setOnline(false, true, newId);
   }
 
+  public boolean isAtomicCreation() {
+    return this.atomicCreation;
+  }
+
   public void setAtomicCreation(boolean atomicCreation) {
+    if (getPersistentID() != null) {
+      return;
+    }
     synchronized (lock) {
       this.atomicCreation = atomicCreation;
     }
