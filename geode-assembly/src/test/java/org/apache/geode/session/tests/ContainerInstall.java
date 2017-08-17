@@ -65,7 +65,7 @@ public abstract class ContainerInstall {
 
   public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
   public static final String DEFAULT_INSTALL_DIR = "/tmp/cargo_containers/";
-  private static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
+  protected static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
   public static final String DEFAULT_MODULE_EXTRACTION_DIR = "/tmp/cargo_modules/";
 
   /**
@@ -95,6 +95,11 @@ public abstract class ContainerInstall {
     }
   }
 
+  public ContainerInstall(String installDir, String downloadURL, ConnectionType connType,
+      String moduleName) throws IOException {
+    this(installDir, downloadURL, connType, moduleName, DEFAULT_MODULE_LOCATION);
+  }
+
   /**
    * Base class for handling downloading and configuring J2EE installations
    *
@@ -103,18 +108,17 @@ public abstract class ContainerInstall {
    * installations.
    *
    * Subclasses provide installation of specific containers.
-   *
+   * 
    * @param connType Enum representing the connection type of this installation (either client
    *        server or peer to peer)
    * @param moduleName The module name of the installation being setup (i.e. tomcat, appserver,
    *        etc.)
    */
   public ContainerInstall(String installDir, String downloadURL, ConnectionType connType,
-      String moduleName) throws IOException {
+      String moduleName, String geodeModuleLocation) throws IOException {
     this.connType = connType;
 
-    // Removes previous run stuff (modules, installs, etc.)
-    clearPreviousRuns();
+    clearPreviousInstall(installDir);
 
     logger.info("Installing container from URL " + downloadURL);
 
@@ -125,7 +129,7 @@ public abstract class ContainerInstall {
     // Set install home
     INSTALL_PATH = installer.getHome();
     // Find and extract the module path
-    MODULE_PATH = findAndExtractModule(moduleName);
+    MODULE_PATH = findAndExtractModule(geodeModuleLocation, moduleName);
     logger.info("Extracted module " + moduleName + " to " + MODULE_PATH);
     // Find the session testing war path
     WAR_FILE_PATH = findSessionTestingWar();
@@ -148,17 +152,12 @@ public abstract class ContainerInstall {
   /**
    * Cleans up the installation by deleting the extracted module and downloaded installation folders
    */
-  public void clearPreviousRuns() throws IOException {
-    File modulesFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR);
-    File installsFolder = new File(DEFAULT_INSTALL_DIR);
-
-    // Remove default modules extraction from previous runs
-    if (modulesFolder.exists()) {
-      FileUtils.deleteDirectory(modulesFolder);
-    }
-    // Remove default installs from previous runs
-    if (installsFolder.exists()) {
-      FileUtils.deleteDirectory(installsFolder);
+  public void clearPreviousInstall(String installDir) throws IOException {
+    File installFolder = new File(installDir);
+    // Remove installs from previous runs in the same folder
+    if (installFolder.exists()) {
+      logger.info("Deleting previous install folder " + installFolder.getAbsolutePath());
+      FileUtils.deleteDirectory(installFolder);
     }
   }
 
@@ -256,7 +255,7 @@ public abstract class ContainerInstall {
 
   /**
    * Generates a {@link ServerContainer} from the given {@link ContainerInstall}
-   *
+   * 
    * @param containerDescriptors Additional descriptors used to identify a container
    */
   public abstract ServerContainer generateContainer(File containerConfigHome,
@@ -298,15 +297,15 @@ public abstract class ContainerInstall {
 
   /**
    * Finds and extracts the geode module associated with the specified module.
-   *
+   * 
    * @param moduleName The module name (i.e. tomcat, appserver, etc.) of the module that should be
    *        extract. Used as a search parameter to find the module archive.
    * @return The path to the non-archive (extracted) version of the module files
-   * @throws IOException
    */
-  protected static String findAndExtractModule(String moduleName) throws IOException {
+  protected static String findAndExtractModule(String geodeModuleLocation, String moduleName)
+      throws IOException {
     File modulePath = null;
-    File modulesDir = new File(DEFAULT_MODULE_LOCATION);
+    File modulesDir = new File(geodeModuleLocation);
 
     boolean archive = false;
     logger.info("Trying to access build dir " + modulesDir);
@@ -318,9 +317,20 @@ public abstract class ContainerInstall {
         modulePath = file;
 
         archive = !file.isDirectory();
-        if (!archive)
+        if (!archive) {
           break;
+        }
       }
+    }
+
+    String extractedModulePath =
+        modulePath.getName().substring(0, modulePath.getName().length() - 4);
+    // Get the name of the new module folder within the extraction directory
+    File newModuleFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR + extractedModulePath);
+    // Remove any previous module folders extracted here
+    if (newModuleFolder.exists()) {
+      logger.info("Deleting previous modules directory " + newModuleFolder.getAbsolutePath());
+      FileUtils.deleteDirectory(newModuleFolder);
     }
 
     // Unzip if it is a zip file
@@ -328,10 +338,6 @@ public abstract class ContainerInstall {
       if (!FilenameUtils.getExtension(modulePath.getAbsolutePath()).equals("zip")) {
         throw new IOException("Bad module archive " + modulePath);
       }
-
-      // Get the name of the new module folder within the extraction directory
-      File newModuleFolder = new File(DEFAULT_MODULE_EXTRACTION_DIR
-          + modulePath.getName().substring(0, modulePath.getName().length() - 4));
 
       // Extract folder to location if not already there
       if (!newModuleFolder.exists()) {
@@ -342,14 +348,15 @@ public abstract class ContainerInstall {
     }
 
     // No module found within directory throw IOException
-    if (modulePath == null)
+    if (modulePath == null) {
       throw new IOException("No module found in " + modulesDir);
+    }
     return modulePath.getAbsolutePath();
   }
 
   /**
    * Edits the specified property within the given property file
-   *
+   * 
    * @param filePath path to the property file
    * @param propertyName property name to edit
    * @param propertyValue new property value
@@ -364,10 +371,11 @@ public abstract class ContainerInstall {
     properties.load(input);
 
     String val;
-    if (append)
+    if (append) {
       val = properties.getProperty(propertyName) + propertyValue;
-    else
+    } else {
       val = propertyValue;
+    }
 
     properties.setProperty(propertyName, val);
     properties.store(new FileOutputStream(filePath), null);
@@ -397,7 +405,7 @@ public abstract class ContainerInstall {
    * {@link #rewriteNodeAttributes(Node, HashMap)},
    * {@link #nodeHasExactAttributes(Node, HashMap, boolean)} to edit the required parts of the XML
    * file.
-   *
+   * 
    * @param XMLPath The path to the xml file to edit
    * @param tagId The id of tag to edit. If null, then this method will add a new xml element,
    *        unless writeOnSimilarAttributeNames is set to true.
@@ -441,11 +449,13 @@ public abstract class ContainerInstall {
       } else {
         Element e = doc.createElement(tagName);
         // Set id attribute
-        if (tagId != null)
+        if (tagId != null) {
           e.setAttribute("id", tagId);
+        }
         // Set other attributes
-        for (String key : attributes.keySet())
+        for (String key : attributes.keySet()) {
           e.setAttribute(key, attributes.get(key));
+        }
 
         // Add it as a child of the tag for the file
         doc.getElementsByTagName(parentTagName).item(0).appendChild(e);
@@ -466,7 +476,7 @@ public abstract class ContainerInstall {
 
   /**
    * Finds the node in the given document with the given name and attribute
-   *
+   * 
    * @param doc XML document to search for the node
    * @param nodeName The name of the node to search for
    * @param name The name of the attribute that the node should contain
@@ -476,15 +486,17 @@ public abstract class ContainerInstall {
   private static Node findNodeWithAttribute(Document doc, String nodeName, String name,
       String value) {
     NodeList nodes = doc.getElementsByTagName(nodeName);
-    if (nodes == null)
+    if (nodes == null) {
       return null;
+    }
 
     for (int i = 0; i < nodes.getLength(); i++) {
       Node node = nodes.item(i);
       Node nodeAttr = node.getAttributes().getNamedItem(name);
 
-      if (nodeAttr != null && nodeAttr.getTextContent().equals(value))
+      if (nodeAttr != null && nodeAttr.getTextContent().equals(value)) {
         return node;
+      }
     }
 
     return null;
@@ -492,7 +504,7 @@ public abstract class ContainerInstall {
 
   /**
    * Replaces the node's attributes with the attributes in the given hashmap
-   *
+   * 
    * @param node XML node that should be edited
    * @param attributes HashMap of strings representing the attributes of a node (key = value)
    * @return The given node with ONLY the given attributes
@@ -501,12 +513,14 @@ public abstract class ContainerInstall {
     NamedNodeMap nodeAttrs = node.getAttributes();
 
     // Remove all previous attributes
-    while (nodeAttrs.getLength() > 0)
+    while (nodeAttrs.getLength() > 0) {
       nodeAttrs.removeNamedItem(nodeAttrs.item(0).getNodeName());
+    }
 
     // Set to new attributes
-    for (String key : attributes.keySet())
+    for (String key : attributes.keySet()) {
       ((Element) node).setAttribute(key, attributes.get(key));
+    }
 
     return node;
   }
@@ -514,7 +528,7 @@ public abstract class ContainerInstall {
   /**
    * Checks to see whether the given XML node has the exact attributes given in the attributes
    * hashmap
-   *
+   * 
    * @param checkSimilarValues If true, will also check to make sure that the given node's
    *        attributes also have the exact same values as the ones given in the attributes HashMap.
    * @return True if the node has only the attributes the are given by the HashMap (no more and no

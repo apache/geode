@@ -97,6 +97,8 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
+
+  testCompile project(':geode-old-versions')
 }
 
 sourceSets {
@@ -430,6 +432,7 @@ build.dependsOn installDist
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions/session-testing-war:war'
+distributedTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
