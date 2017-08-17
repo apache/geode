@@ -102,7 +102,7 @@ public class TomcatSessionBackwardsCompatibilityTest {
 
   protected void startLocator(String name, String classPath, int port) throws Exception {
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
-    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, "loc");
+    locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
     locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
     gfsh.executeAndVerifyCommand(locStarter.toString());

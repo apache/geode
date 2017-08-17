@@ -87,13 +87,10 @@ public class DeltaSession extends StandardSession
 
   static {
     try {
-      if (cachedField == null) {
-        cachedField = StandardSession.class.getDeclaredField("attributes");
-        cachedField.setAccessible(true);
-      }
-    }
-    catch (NoSuchFieldException e) {
-     throw new IllegalStateException(e);
+      cachedField = StandardSession.class.getDeclaredField("attributes");
+      cachedField.setAccessible(true);
+    } catch (NoSuchFieldException e) {
+      throw new IllegalStateException(e);
     }
   }
   /**
@@ -578,7 +575,7 @@ public class DeltaSession extends StandardSession
     }
   }
 
-  protected Field getAttributesFieldObject()  {
+  protected Field getAttributesFieldObject() {
     return cachedField;
   }
 
