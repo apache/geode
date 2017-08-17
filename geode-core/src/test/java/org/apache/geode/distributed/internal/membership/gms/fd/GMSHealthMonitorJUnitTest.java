@@ -121,6 +121,7 @@ public class GMSHealthMonitorJUnitTest {
       mockMembers = new ArrayList<InternalDistributedMember>();
       for (int i = 0; i < 7; i++) {
         InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
+        mbr.setMemberTimeout(memberTimeout + i * 500);
 
         if (i == 0 || i == 1) {
           mbr.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
@@ -179,7 +180,7 @@ public class GMSHealthMonitorJUnitTest {
 
     // allow the monitor to give up on the initial "next neighbor" and
     // move on to the one after it
-    long giveup = System.currentTimeMillis() + (2 * memberTimeout) + 1500;
+    long giveup = System.currentTimeMillis() + (2 * initialNeighbor.getMemberTimeout()) + 1500;
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
     while (System.currentTimeMillis() < giveup && neighbor == initialNeighbor) {
       Thread.sleep(50);
@@ -208,7 +209,9 @@ public class GMSHealthMonitorJUnitTest {
     try {
       // member-timeout is 1000 ms. We initiate a check and choose
       // a new neighbor at 500 ms
-      Thread.sleep(memberTimeout / GMSHealthMonitor.LOGICAL_INTERVAL - 100);
+      Thread.sleep(
+          mockMembers.get(myAddressIndex + 1).getMemberTimeout() / GMSHealthMonitor.LOGICAL_INTERVAL
+              - 100);
     } catch (InterruptedException e) {
     }
     // neighbor should be same
@@ -227,7 +230,7 @@ public class GMSHealthMonitorJUnitTest {
 
     // when the view is installed we start a heartbeat timeout. After
     // that expires we request a heartbeat
-    Thread.sleep(3 * memberTimeout + 100);
+    Thread.sleep(2 * mockMembers.get(myAddressIndex + 1).getMemberTimeout() + memberTimeout + 100);
 
     System.out.println("testSuspectMembersCalledThroughMemberCheckThread ending");
     assertTrue(gmsHealthMonitor.isSuspectMember(mockMembers.get(myAddressIndex + 1)));
@@ -268,7 +271,7 @@ public class GMSHealthMonitorJUnitTest {
     try {
       // member-timeout is 1000 ms
       // plus 100 ms for ack
-      Thread.sleep(memberTimeout - 200);
+      Thread.sleep(neighbor.getMemberTimeout() - 200);
     } catch (InterruptedException e) {
     }
 
@@ -326,7 +329,7 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    Thread.sleep(memberTimeout / GMSHealthMonitor.LOGICAL_INTERVAL);
+    Thread.sleep(mockMembers.get(1).getMemberTimeout() / GMSHealthMonitor.LOGICAL_INTERVAL);
 
     ArrayList<InternalDistributedMember> recipient = new ArrayList<InternalDistributedMember>();
     recipient.add(mockMembers.get(0));
@@ -340,7 +343,8 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.processMessage(sm);
 
     Awaitility.await("waiting for remove(member) to be invoked")
-        .atMost(3 * memberTimeout, TimeUnit.SECONDS).until(() -> {
+        .atMost(2 * mockMembers.get(1).getMemberTimeout() + memberTimeout, TimeUnit.SECONDS)
+        .until(() -> {
           verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
               any(String.class));
         });
@@ -414,7 +418,7 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.processMessage(sm);
 
     // this happens after final check, ping timeout = 1000 ms
-    Thread.sleep(memberTimeout + 200);
+    Thread.sleep(mockMembers.get(1).getMemberTimeout() + 200);
 
     verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
         any(String.class));

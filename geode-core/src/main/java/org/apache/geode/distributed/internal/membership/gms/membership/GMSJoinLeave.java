@@ -305,6 +305,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    */
   public boolean join() {
 
+    localAddress.setMemberTimeout(services.getConfig().getMemberTimeout());
+
     try {
       if (Boolean.getBoolean(BYPASS_DISCOVERY_PROPERTY)) {
         synchronized (viewInstallationLock) {
