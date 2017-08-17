@@ -38,8 +38,7 @@ public class ParallelSnapshotFileMapper implements SnapshotFileMapper {
 
   @Override
   public File[] mapImportPath(DistributedMember member, File snapshot) {
-    // parallel import is not yet supported
-    throw new UnsupportedOperationException();
+    return new File[] {snapshot};
   }
 
   private String getBaseName(File snapshot) {

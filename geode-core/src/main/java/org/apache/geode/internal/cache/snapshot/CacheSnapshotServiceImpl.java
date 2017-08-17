@@ -42,7 +42,7 @@ public class CacheSnapshotServiceImpl implements CacheSnapshotService {
 
   @Override
   public SnapshotOptions<Object, Object> createOptions() {
-    return new SnapshotOptionsImpl<Object, Object>();
+    return new SnapshotOptionsImpl<>();
   }
 
   @Override
