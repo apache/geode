@@ -50,7 +50,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("serial")
@@ -82,10 +81,21 @@ public class DeltaSession extends StandardSession
 
   private byte[] serializedPrincipal;
 
-  private Field cachedField = null;
+  private static Field cachedField = null;
 
   private final Log LOG = LogFactory.getLog(DeltaSession.class.getName());
 
+  static {
+    try {
+      if (cachedField == null) {
+        cachedField = StandardSession.class.getDeclaredField("attributes");
+        cachedField.setAccessible(true);
+      }
+    }
+    catch (NoSuchFieldException e) {
+     throw new IllegalStateException(e);
+    }
+  }
   /**
    * The string manager for this package.
    */
@@ -562,20 +572,13 @@ public class DeltaSession extends StandardSession
     try {
       Field field = getAttributesFieldObject();
       field.set(this, map);
-    } catch (NoSuchFieldException e) {
-      logError(e);
-      throw new NoSuchElementException(e.getMessage());
     } catch (IllegalAccessException e) {
       logError(e);
       throw new IllegalStateException(e);
     }
   }
 
-  protected Field getAttributesFieldObject() throws NoSuchFieldException {
-    if (cachedField == null) {
-      cachedField = StandardSession.class.getDeclaredField("attributes");
-      cachedField.setAccessible(true);
-    }
+  protected Field getAttributesFieldObject()  {
     return cachedField;
   }
 
@@ -620,10 +623,10 @@ public class DeltaSession extends StandardSession
       Field field = getAttributesFieldObject();
       Map map = (Map) field.get(this);
       return map;
-    } catch (Exception e) {
+    } catch (IllegalAccessException e) {
       logError(e);
     }
-    throw new NoSuchElementException("Unable to access attributes field");
+    throw new IllegalStateException("Unable to access attributes field");
   }
 
   protected byte[] serialize(Object obj) {
