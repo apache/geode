@@ -84,6 +84,17 @@ public abstract class ServerConnection implements Runnable {
    */
   private static final int TIMEOUT_BUFFER_FOR_CONNECTION_CLEANUP_MS = 5000;
 
+  public static final String ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME =
+      "geode.allow-internal-messages-without-credentials";
+
+  /**
+   * This property allows folks to perform a rolling upgrade from pre-1.2.1 to a post-1.2.1 cluster.
+   * Normally internal messages that can affect server state require credentials but pre-1.2.1 this
+   * wasn't the case. See GEODE-3249
+   */
+  private static final boolean ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS =
+      Boolean.getBoolean(ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME);
+
   private Map commands;
 
   private final SecurityService securityService;
@@ -764,7 +775,8 @@ public abstract class ServerConnection implements Runnable {
 
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do
         // authorization later
-        if (AcceptorImpl.isIntegratedSecurity() && !isInternalMessage()
+        if (AcceptorImpl.isIntegratedSecurity()
+            && !isInternalMessage(this.requestMsg, ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS)
             && this.communicationMode != Acceptor.GATEWAY_TO_GATEWAY) {
           long uniqueId = getUniqueId();
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
@@ -1068,7 +1080,8 @@ public abstract class ServerConnection implements Runnable {
     if (AcceptorImpl.isAuthenticationRequired()
         && this.handshake.getVersion().compareTo(Version.GFE_65) >= 0
         && (this.communicationMode != Acceptor.GATEWAY_TO_GATEWAY)
-        && (!this.requestMsg.getAndResetIsMetaRegion()) && (!isInternalMessage())) {
+        && (!this.requestMsg.getAndResetIsMetaRegion())
+        && (!isInternalMessage(this.requestMsg, ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS))) {
       setSecurityPart();
       return this.securePart;
     } else {
@@ -1081,34 +1094,37 @@ public abstract class ServerConnection implements Runnable {
     return null;
   }
 
-  private boolean isInternalMessage() {
-    return (this.requestMsg.messageType == MessageType.CLIENT_READY
-        || this.requestMsg.messageType == MessageType.CLOSE_CONNECTION
-        || this.requestMsg.messageType == MessageType.GETCQSTATS_MSG_TYPE
-        || this.requestMsg.messageType == MessageType.GET_CLIENT_PARTITION_ATTRIBUTES
-        || this.requestMsg.messageType == MessageType.GET_CLIENT_PR_METADATA
-        || this.requestMsg.messageType == MessageType.INVALID
-        || this.requestMsg.messageType == MessageType.MAKE_PRIMARY
-        || this.requestMsg.messageType == MessageType.MONITORCQ_MSG_TYPE
-        || this.requestMsg.messageType == MessageType.PERIODIC_ACK
-        || this.requestMsg.messageType == MessageType.PING
-        || this.requestMsg.messageType == MessageType.REGISTER_DATASERIALIZERS
-        || this.requestMsg.messageType == MessageType.REGISTER_INSTANTIATORS
-        || this.requestMsg.messageType == MessageType.REQUEST_EVENT_VALUE
-        || this.requestMsg.messageType == MessageType.ADD_PDX_TYPE
-        || this.requestMsg.messageType == MessageType.GET_PDX_ID_FOR_TYPE
-        || this.requestMsg.messageType == MessageType.GET_PDX_TYPE_BY_ID
-        || this.requestMsg.messageType == MessageType.SIZE
-        || this.requestMsg.messageType == MessageType.TX_FAILOVER
-        || this.requestMsg.messageType == MessageType.TX_SYNCHRONIZATION
-        || this.requestMsg.messageType == MessageType.GET_FUNCTION_ATTRIBUTES
-        || this.requestMsg.messageType == MessageType.ADD_PDX_ENUM
-        || this.requestMsg.messageType == MessageType.GET_PDX_ID_FOR_ENUM
-        || this.requestMsg.messageType == MessageType.GET_PDX_ENUM_BY_ID
-        || this.requestMsg.messageType == MessageType.GET_PDX_TYPES
-        || this.requestMsg.messageType == MessageType.GET_PDX_ENUMS
-        || this.requestMsg.messageType == MessageType.COMMIT
-        || this.requestMsg.messageType == MessageType.ROLLBACK);
+  public boolean isInternalMessage(Message message, boolean allowOldInternalMessages) {
+    int messageType = message.getMessageType();
+    boolean isInternalMessage = messageType == MessageType.PING
+        || messageType == MessageType.USER_CREDENTIAL_MESSAGE
+        || messageType == MessageType.REQUEST_EVENT_VALUE || messageType == MessageType.MAKE_PRIMARY
+        || messageType == MessageType.REMOVE_USER_AUTH || messageType == MessageType.CLIENT_READY
+        || messageType == MessageType.SIZE || messageType == MessageType.TX_FAILOVER
+        || messageType == MessageType.TX_SYNCHRONIZATION || messageType == MessageType.COMMIT
+        || messageType == MessageType.ROLLBACK || messageType == MessageType.CLOSE_CONNECTION
+        || messageType == MessageType.INVALID || messageType == MessageType.PERIODIC_ACK
+        || messageType == MessageType.GET_CLIENT_PR_METADATA
+        || messageType == MessageType.GET_CLIENT_PARTITION_ATTRIBUTES;
+
+    // we allow older clients to not send credentials for a handful of messages
+    // if and only if a system property is set. This allows a rolling upgrade
+    // to be performed.
+    if (!isInternalMessage && allowOldInternalMessages) {
+      isInternalMessage = messageType == MessageType.GETCQSTATS_MSG_TYPE
+          || messageType == MessageType.MONITORCQ_MSG_TYPE
+          || messageType == MessageType.REGISTER_DATASERIALIZERS
+          || messageType == MessageType.REGISTER_INSTANTIATORS
+          || messageType == MessageType.ADD_PDX_TYPE
+          || messageType == MessageType.GET_PDX_ID_FOR_TYPE
+          || messageType == MessageType.GET_PDX_TYPE_BY_ID
+          || messageType == MessageType.GET_FUNCTION_ATTRIBUTES
+          || messageType == MessageType.ADD_PDX_ENUM
+          || messageType == MessageType.GET_PDX_ID_FOR_ENUM
+          || messageType == MessageType.GET_PDX_ENUM_BY_ID
+          || messageType == MessageType.GET_PDX_TYPES || messageType == MessageType.GET_PDX_ENUMS;
+    }
+    return isInternalMessage;
   }
 
   public void run() {

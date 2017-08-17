@@ -14,6 +14,7 @@
  */
 package org.apache.geode.protocol.protobuf;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.serialization.SerializationService;
@@ -22,6 +23,7 @@ import org.apache.geode.serialization.SerializationService;
  * This handles protobuf requests by determining the operation type of the request and dispatching
  * it to the appropriate handler.
  */
+@Experimental
 public class ProtobufOpsProcessor {
 
   private final OperationContextRegistry operationContextRegistry;

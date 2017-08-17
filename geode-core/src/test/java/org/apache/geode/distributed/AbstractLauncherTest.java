@@ -14,253 +14,362 @@
  */
 package org.apache.geode.distributed;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.distributed.AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.net.URL;
+import java.util.Properties;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The AbstractLauncherTest class is a test suite of unit tests testing the contract and
- * functionality of the AbstractLauncher class.
- * <p/>
- * 
- * @see org.apache.geode.distributed.AbstractLauncher
- * @see org.junit.Assert
- * @see org.junit.Test
+ * Unit tests for {@link AbstractLauncher}.
+ *
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)
 public class AbstractLauncherTest {
 
-  private AbstractLauncher<?> createAbstractLauncher(final String memberName,
-      final String memberId) {
-    return new FakeServiceLauncher(memberName, memberId);
-  }
-
   @Test
-  public void shouldBeMockable() throws Exception {
+  public void canBeMocked() throws Exception {
     AbstractLauncher mockAbstractLauncher = mock(AbstractLauncher.class);
     mockAbstractLauncher.setDebug(true);
     verify(mockAbstractLauncher, times(1)).setDebug(true);
   }
 
   @Test
-  public void testIsSet() {
-    final Properties properties = new Properties();
+  public void isSetReturnsFalseIfPropertyDoesNotExist() throws Exception {
+    assertThat(AbstractLauncher.isSet(new Properties(), NAME)).isFalse();
+  }
 
-    assertFalse(properties.containsKey(NAME));
-    assertFalse(AbstractLauncher.isSet(properties, NAME));
+  @Test
+  public void isSetReturnsFalseIfPropertyHasEmptyValue() throws Exception {
+    Properties properties = new Properties();
 
     properties.setProperty(NAME, "");
 
-    assertTrue(properties.containsKey(NAME));
-    assertFalse(AbstractLauncher.isSet(properties, NAME));
+    assertThat(AbstractLauncher.isSet(properties, NAME)).isFalse();
+  }
+
+  @Test
+  public void isSetReturnsFalseIfPropertyHasBlankValue() throws Exception {
+    Properties properties = new Properties();
 
     properties.setProperty(NAME, "  ");
 
-    assertTrue(properties.containsKey(NAME));
-    assertFalse(AbstractLauncher.isSet(properties, NAME));
+    assertThat(AbstractLauncher.isSet(properties, NAME)).isFalse();
+  }
+
+  @Test
+  public void isSetReturnsTrueIfPropertyHasRealValue() throws Exception {
+    Properties properties = new Properties();
 
     properties.setProperty(NAME, "memberOne");
 
-    assertTrue(AbstractLauncher.isSet(properties, NAME));
-    assertFalse(AbstractLauncher.isSet(properties, "NaMe"));
+    assertThat(AbstractLauncher.isSet(properties, NAME)).isTrue();
   }
 
   @Test
-  public void testLoadGemFirePropertiesWithNullURL() {
-    final Properties properties = AbstractLauncher.loadGemFireProperties(null);
-    assertNotNull(properties);
-    assertTrue(properties.isEmpty());
+  public void isSetKeyIsCaseSensitive() throws Exception {
+    Properties properties = new Properties();
+
+    properties.setProperty(NAME, "memberOne");
+
+    assertThat(AbstractLauncher.isSet(properties, "NaMe")).isFalse();
   }
 
   @Test
-  public void testLoadGemFirePropertiesWithNonExistingURL() throws MalformedURLException {
-    final Properties properties = AbstractLauncher
-        .loadGemFireProperties(new URL("file:///path/to/non_existing/gemfire.properties"));
-    assertNotNull(properties);
-    assertTrue(properties.isEmpty());
+  public void loadGemFirePropertiesWithNullURLReturnsEmptyProperties() throws Exception {
+    URL nullUrl = null;
+
+    Properties properties = AbstractLauncher.loadGemFireProperties(nullUrl);
+
+    assertThat(properties).isNotNull().isEmpty();
   }
 
   @Test
-  public void testGetDistributedSystemProperties() {
+  public void loadGemFirePropertiesWithNonExistingURLReturnsEmptyProperties() throws Exception {
+    URL nonExistingUrl = new URL("file:///path/to/non_existing/gemfire.properties");
+
+    Properties properties = AbstractLauncher.loadGemFireProperties(nonExistingUrl);
+
+    assertThat(properties).isNotNull().isEmpty();
+  }
+
+  @Test
+  public void getDistributedSystemPropertiesContainsMemberNameAsName() throws Exception {
     AbstractLauncher<?> launcher = createAbstractLauncher("memberOne", "1");
 
-    assertNotNull(launcher);
-    assertEquals("1", launcher.getMemberId());
-    assertEquals("memberOne", launcher.getMemberName());
+    Properties properties = launcher.getDistributedSystemProperties();
 
-    Properties distributedSystemProperties = launcher.getDistributedSystemProperties();
-
-    assertNotNull(distributedSystemProperties);
-    assertTrue(distributedSystemProperties.containsKey(NAME));
-    assertEquals("memberOne", distributedSystemProperties.getProperty(NAME));
-
-    launcher = createAbstractLauncher(null, "22");
-
-    assertNotNull(launcher);
-    assertEquals("22", launcher.getMemberId());
-    assertNull(launcher.getMemberName());
-
-    distributedSystemProperties = launcher.getDistributedSystemProperties();
-
-    assertNotNull(distributedSystemProperties);
-    assertFalse(distributedSystemProperties.containsKey(NAME));
-
-    launcher = createAbstractLauncher(StringUtils.EMPTY, "333");
-
-    assertNotNull(launcher);
-    assertEquals("333", launcher.getMemberId());
-    assertEquals(StringUtils.EMPTY, launcher.getMemberName());
-
-    distributedSystemProperties = launcher.getDistributedSystemProperties();
-
-    assertNotNull(distributedSystemProperties);
-    assertFalse(distributedSystemProperties.containsKey(NAME));
-
-    launcher = createAbstractLauncher("  ", "4444");
-
-    assertNotNull(launcher);
-    assertEquals("4444", launcher.getMemberId());
-    assertEquals("  ", launcher.getMemberName());
-
-    distributedSystemProperties = launcher.getDistributedSystemProperties();
-
-    assertNotNull(distributedSystemProperties);
-    assertFalse(distributedSystemProperties.containsKey(NAME));
+    assertThat(properties).containsExactly(entry(NAME, "memberOne"));
   }
 
   @Test
-  public void testGetDistributedSystemPropertiesWithDefaults() {
+  public void getDistributedSystemPropertiesIsEmptyWhenMemberNameIsNull() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, "22");
+
+    Properties properties = launcher.getDistributedSystemProperties();
+
+    assertThat(properties).isEmpty();
+  }
+
+  @Test
+  public void getDistributedSystemPropertiesIsEmptyWhenMemberNameIsEmpty() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(StringUtils.EMPTY, "333");
+
+    Properties properties = launcher.getDistributedSystemProperties();
+
+    assertThat(properties).isEmpty();
+  }
+
+  @Test
+  public void getDistributedSystemPropertiesIsEmptyWhenMemberNameIsBlank() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher("  ", "4444");
+
+    Properties properties = launcher.getDistributedSystemProperties();
+
+    assertThat(properties).isEmpty();
+  }
+
+  @Test
+  public void getDistributedSystemPropertiesIncludesDefaults() throws Exception {
     AbstractLauncher<?> launcher = createAbstractLauncher("TestMember", "123");
-
-    assertNotNull(launcher);
-    assertEquals("123", launcher.getMemberId());
-    assertEquals("TestMember", launcher.getMemberName());
-
     Properties defaults = new Properties();
-
     defaults.setProperty("testKey", "testValue");
 
-    Properties distributedSystemProperties = launcher.getDistributedSystemProperties(defaults);
+    Properties properties = launcher.getDistributedSystemProperties(defaults);
 
-    assertNotNull(distributedSystemProperties);
-    assertEquals(launcher.getMemberName(), distributedSystemProperties.getProperty(NAME));
-    assertEquals("testValue", distributedSystemProperties.getProperty("testKey"));
+    assertThat(properties.getProperty(NAME)).isEqualTo(launcher.getMemberName());
+    assertThat(properties.getProperty("testKey")).isEqualTo("testValue");
   }
 
   @Test
-  public void testGetMember() {
+  public void getMemberNameReturnsValue() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher("memberOne", null);
+
+    assertThat(launcher.getMemberName()).isEqualTo("memberOne");
+  }
+
+  @Test
+  public void getMemberNameReturnsEmptyIfEmpty() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(StringUtils.EMPTY, null);
+
+    assertThat(launcher.getMemberName()).isEqualTo(StringUtils.EMPTY);
+  }
+
+  @Test
+  public void getMemberNameReturnsBlankIfBlank() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(" ", null);
+
+    assertThat(launcher.getMemberName()).isEqualTo(" ");
+  }
+
+  @Test
+  public void getMemberNameReturnsSameNumberOfBlanks() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher("   ", null);
+
+    assertThat(launcher.getMemberName()).isEqualTo("   ");
+  }
+
+  @Test
+  public void getMemberIdReturnsValue() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, "123");
+
+    assertThat(launcher.getMemberId()).isEqualTo("123");
+  }
+
+  @Test
+  public void getMemberIdReturnsNullIfNull() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, null);
+
+    assertThat(launcher.getMemberId()).isNull();
+  }
+
+  @Test
+  public void getMemberIdReturnsEmptyIfEmpty() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, StringUtils.EMPTY);
+
+    assertThat(launcher.getMemberId()).isEqualTo(StringUtils.EMPTY);
+  }
+
+  @Test
+  public void getMemberIdReturnsBlankIfBlank() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, " ");
+
+    assertThat(launcher.getMemberId()).isEqualTo(" ");
+  }
+
+  @Test
+  public void getMemberIdReturnsSameNumberOfBlanks() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, "   ");
+
+    assertThat(launcher.getMemberId()).isEqualTo("   ");
+  }
+
+  @Test
+  public void getMemberPrefersMemberNameOverMemberId() throws Exception {
     AbstractLauncher<?> launcher = createAbstractLauncher("memberOne", "123");
 
-    assertNotNull(launcher);
-    assertEquals("123", launcher.getMemberId());
-    assertEquals("memberOne", launcher.getMemberName());
-    assertEquals("memberOne", launcher.getMember());
-
-    launcher = createAbstractLauncher(null, "123");
-
-    assertNotNull(launcher);
-    assertEquals("123", launcher.getMemberId());
-    assertNull(launcher.getMemberName());
-    assertEquals("123", launcher.getMember());
-
-    launcher = createAbstractLauncher(StringUtils.EMPTY, "123");
-
-    assertNotNull(launcher);
-    assertEquals("123", launcher.getMemberId());
-    assertEquals(StringUtils.EMPTY, launcher.getMemberName());
-    assertEquals("123", launcher.getMember());
-
-    launcher = createAbstractLauncher(" ", "123");
-
-    assertNotNull(launcher);
-    assertEquals("123", launcher.getMemberId());
-    assertEquals(" ", launcher.getMemberName());
-    assertEquals("123", launcher.getMember());
-
-    launcher = createAbstractLauncher(null, StringUtils.EMPTY);
-
-    assertNotNull(launcher);
-    assertEquals(StringUtils.EMPTY, launcher.getMemberId());
-    assertNull(launcher.getMemberName());
-    assertNull(launcher.getMember());
-
-    launcher = createAbstractLauncher(null, " ");
-
-    assertNotNull(launcher);
-    assertEquals(" ", launcher.getMemberId());
-    assertNull(launcher.getMemberName());
-    assertNull(launcher.getMember());
+    assertThat(launcher.getMember()).isEqualTo("memberOne").isEqualTo(launcher.getMemberName());
   }
 
   @Test
-  public void testAbstractLauncherServiceStateToDaysHoursMinutesSeconds() {
-    assertEquals("", AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(null));
-    assertEquals("0 seconds", AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(0l));
-    assertEquals("1 second", AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(1000l));
-    assertEquals("1 second", AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(1999l));
-    assertEquals("2 seconds", AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(2001l));
-    assertEquals("45 seconds", AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(45000l));
-    assertEquals("1 minute 0 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 1000l));
-    assertEquals("1 minute 1 second",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(61 * 1000l));
-    assertEquals("1 minute 30 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(90 * 1000l));
-    assertEquals("2 minutes 0 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(120 * 1000l));
-    assertEquals("2 minutes 1 second",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(121 * 1000l));
-    assertEquals("2 minutes 15 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(135 * 1000l));
-    assertEquals("1 hour 0 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 60 * 1000l));
-    assertEquals("1 hour 1 second",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 60 * 1000l + 1000l));
-    assertEquals("1 hour 15 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 60 * 1000l + 15000l));
-    assertEquals("1 hour 1 minute 0 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 61 * 1000l));
-    assertEquals("1 hour 1 minute 1 second",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 61 * 1000l + 1000l));
-    assertEquals("1 hour 1 minute 45 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 61 * 1000l + 45000l));
-    assertEquals("1 hour 2 minutes 0 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 62 * 1000l));
-    assertEquals("1 hour 5 minutes 1 second",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 65 * 1000l + 1000l));
-    assertEquals("1 hour 5 minutes 10 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 65 * 1000l + 10000l));
-    assertEquals("1 hour 59 minutes 11 seconds",
-        AbstractLauncher.ServiceState.toDaysHoursMinutesSeconds(60 * 119 * 1000l + 11000l));
-    assertEquals("1 day 1 hour 1 minute 1 second",
-        AbstractLauncher.ServiceState
-            .toDaysHoursMinutesSeconds(TimeUnit.DAYS.toMillis(1) + TimeUnit.HOURS.toMillis(1)
-                + TimeUnit.MINUTES.toMillis(1) + TimeUnit.SECONDS.toMillis(1)));
-    assertEquals("1 day 5 hours 15 minutes 45 seconds",
-        AbstractLauncher.ServiceState
-            .toDaysHoursMinutesSeconds(TimeUnit.DAYS.toMillis(1) + TimeUnit.HOURS.toMillis(5)
-                + TimeUnit.MINUTES.toMillis(15) + TimeUnit.SECONDS.toMillis(45)));
-    assertEquals("2 days 1 hour 30 minutes 1 second",
-        AbstractLauncher.ServiceState
-            .toDaysHoursMinutesSeconds(TimeUnit.DAYS.toMillis(2) + TimeUnit.HOURS.toMillis(1)
-                + TimeUnit.MINUTES.toMillis(30) + TimeUnit.SECONDS.toMillis(1)));
+  public void getMemberReturnsMemberIdIfMemberNameIsNull() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, "123");
+
+    assertThat(launcher.getMember()).isEqualTo("123").isEqualTo(launcher.getMemberId());
+  }
+
+  @Test
+  public void getMemberReturnsMemberIdIfMemberNameIsEmpty() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(StringUtils.EMPTY, "123");
+
+    assertThat(launcher.getMember()).isEqualTo("123").isEqualTo(launcher.getMemberId());
+  }
+
+  @Test
+  public void getMemberReturnsMemberIdIfMemberNameIsBlank() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(" ", "123");
+
+    assertThat(launcher.getMember()).isEqualTo("123").isEqualTo(launcher.getMemberId());
+  }
+
+  @Test
+  public void getMemberReturnsNullIfMemberIdIsNull() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, null);
+
+    assertThat(launcher.getMember()).isNull();
+  }
+
+  @Test
+  public void getMemberReturnNullIfMemberIdIsEmpty() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, StringUtils.EMPTY);
+
+    assertThat(launcher.getMember()).isNull();
+  }
+
+  @Test
+  public void getMemberReturnNullIfMemberIdIsBlank() throws Exception {
+    AbstractLauncher<?> launcher = createAbstractLauncher(null, " ");
+
+    assertThat(launcher.getMember()).isNull();
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_null_returnsEmptyString() throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(null)).isEqualTo("");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_milliseconds_returnsSecondsString() throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(MILLISECONDS.toMillis(0))).isEqualTo("0 seconds");
+    assertThat(toDaysHoursMinutesSeconds(MILLISECONDS.toMillis(999))).isEqualTo("0 seconds");
+    assertThat(toDaysHoursMinutesSeconds(MILLISECONDS.toMillis(1000))).isEqualTo("1 second");
+    assertThat(toDaysHoursMinutesSeconds(MILLISECONDS.toMillis(1999))).isEqualTo("1 second");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_seconds_returnsSecondsString() throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(SECONDS.toMillis(0))).isEqualTo("0 seconds");
+    assertThat(toDaysHoursMinutesSeconds(SECONDS.toMillis(1))).isEqualTo("1 second");
+    assertThat(toDaysHoursMinutesSeconds(SECONDS.toMillis(2))).isEqualTo("2 seconds");
+    assertThat(toDaysHoursMinutesSeconds(SECONDS.toMillis(45))).isEqualTo("45 seconds");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_minutes_returnsMinutesAndSecondsString() throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(MINUTES.toMillis(1))).isEqualTo("1 minute 0 seconds");
+    assertThat(toDaysHoursMinutesSeconds(MINUTES.toMillis(2))).isEqualTo("2 minutes 0 seconds");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_minutesAndSeconds_returnsMinutesAndSecondsString()
+      throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(MINUTES.toMillis(1) + SECONDS.toMillis(1)))
+        .isEqualTo("1 minute 1 second");
+    assertThat(toDaysHoursMinutesSeconds(MINUTES.toMillis(1) + SECONDS.toMillis(30)))
+        .isEqualTo("1 minute 30 seconds");
+    assertThat(toDaysHoursMinutesSeconds(MINUTES.toMillis(2) + SECONDS.toMillis(1)))
+        .isEqualTo("2 minutes 1 second");
+    assertThat(toDaysHoursMinutesSeconds(MINUTES.toMillis(2) + SECONDS.toMillis(15)))
+        .isEqualTo("2 minutes 15 seconds");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_hours_returnsHoursAndSecondsString() throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(HOURS.toMillis(1))).isEqualTo("1 hour 0 seconds");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_hoursAndSeconds_returnsHoursAndSecondsString()
+      throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(HOURS.toMillis(1) + SECONDS.toMillis(1)))
+        .isEqualTo("1 hour 1 second");
+    assertThat(toDaysHoursMinutesSeconds(HOURS.toMillis(1) + SECONDS.toMillis(15)))
+        .isEqualTo("1 hour 15 seconds");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_hoursAndMinutes_returnsHoursAndMinutesAndSecondsString()
+      throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(HOURS.toMillis(1) + MINUTES.toMillis(1)))
+        .isEqualTo("1 hour 1 minute 0 seconds");
+    assertThat(toDaysHoursMinutesSeconds(HOURS.toMillis(1) + MINUTES.toMillis(2)))
+        .isEqualTo("1 hour 2 minutes 0 seconds");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_hoursAndMinutesAndSeconds_returnsHoursAndMinutesAndSecondsString()
+      throws Exception {
+    assertThat(
+        toDaysHoursMinutesSeconds(HOURS.toMillis(1) + MINUTES.toMillis(1) + SECONDS.toMillis(1)))
+            .isEqualTo("1 hour 1 minute 1 second");
+    assertThat(
+        toDaysHoursMinutesSeconds(HOURS.toMillis(1) + MINUTES.toMillis(1) + SECONDS.toMillis(45)))
+            .isEqualTo("1 hour 1 minute 45 seconds");
+    assertThat(
+        toDaysHoursMinutesSeconds(HOURS.toMillis(1) + MINUTES.toMillis(5) + SECONDS.toMillis(1)))
+            .isEqualTo("1 hour 5 minutes 1 second");
+    assertThat(
+        toDaysHoursMinutesSeconds(HOURS.toMillis(1) + MINUTES.toMillis(5) + SECONDS.toMillis(10)))
+            .isEqualTo("1 hour 5 minutes 10 seconds");
+    assertThat(
+        toDaysHoursMinutesSeconds(HOURS.toMillis(1) + MINUTES.toMillis(59) + SECONDS.toMillis(11)))
+            .isEqualTo("1 hour 59 minutes 11 seconds");
+  }
+
+  @Test
+  public void toDaysHoursMinutesSeconds_daysAndHoursAndMinutesAndSeconds_returnsDaysAndHoursAndMinutesAndSecondsString()
+      throws Exception {
+    assertThat(toDaysHoursMinutesSeconds(
+        DAYS.toMillis(1) + HOURS.toMillis(1) + MINUTES.toMillis(1) + SECONDS.toMillis(1)))
+            .isEqualTo("1 day 1 hour 1 minute 1 second");
+    assertThat(toDaysHoursMinutesSeconds(
+        DAYS.toMillis(1) + HOURS.toMillis(5) + MINUTES.toMillis(15) + SECONDS.toMillis(45)))
+            .isEqualTo("1 day 5 hours 15 minutes 45 seconds");
+    assertThat(toDaysHoursMinutesSeconds(
+        DAYS.toMillis(2) + HOURS.toMillis(1) + MINUTES.toMillis(30) + SECONDS.toMillis(1)))
+            .isEqualTo("2 days 1 hour 30 minutes 1 second");
+  }
+
+  private AbstractLauncher<?> createAbstractLauncher(final String memberName,
+      final String memberId) {
+    return new FakeServiceLauncher(memberName, memberId);
   }
 
   private static class FakeServiceLauncher extends AbstractLauncher<String> {
@@ -303,5 +412,4 @@ public class AbstractLauncherTest {
       throw new UnsupportedOperationException("Not Implemented!");
     }
   }
-
 }

@@ -29,6 +29,24 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.concurrent.Synchroniser;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
@@ -41,23 +59,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * The GfshCommandJUnitTest class is a test suite of test cases testing the contract and
@@ -408,17 +409,16 @@ public class GfshCommandJUnitTest {
 
   @Test
   public void testAddGemFirePropertyFileToCommandLine() {
-    final List<String> commandLine = new ArrayList<>();
+    List<String> commandLine = new ArrayList<>();
     assertTrue(commandLine.isEmpty());
+
     StartMemberUtils.addGemFirePropertyFile(commandLine, null);
     assertTrue(commandLine.isEmpty());
-    StartMemberUtils.addGemFirePropertyFile(commandLine, org.apache.commons.lang.StringUtils.EMPTY);
-    assertTrue(commandLine.isEmpty());
-    StartMemberUtils.addGemFirePropertyFile(commandLine, " ");
-    assertTrue(commandLine.isEmpty());
-    StartMemberUtils.addGemFirePropertyFile(commandLine, "/path/to/gemfire.properties");
+
+    File file = new File("/path/to/gemfire.properties");
+    StartMemberUtils.addGemFirePropertyFile(commandLine, file);
     assertFalse(commandLine.isEmpty());
-    assertTrue(commandLine.contains("-DgemfirePropertyFile=/path/to/gemfire.properties"));
+    assertTrue(commandLine.contains("-DgemfirePropertyFile=" + file.getAbsolutePath()));
   }
 
   @Test

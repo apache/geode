@@ -39,7 +39,7 @@ $ gfsh
  / /__/ / ____/  _____/ / /    / /
 /______/_/      /______/_/    /_/
 
-Monitor and Manage Geode
+Monitor and Manage <%=vars.product_name%>
 gfsh>
 ```
 
@@ -60,7 +60,7 @@ Locator in /home/username/gfsh_tutorial/locator1 on 192.0.2.0[10334]
 as locator1 is currently online.
 Process ID: 67666
 Uptime: 6 seconds
-Geode Version: 1.2.0
+<%=vars.product_name%> Version: <%=vars.product_version%>
 Java Version: 1.8.0_92
 Log File: /home/username/gfsh_tutorial/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true
@@ -176,13 +176,13 @@ If the server starts successfully, the following output appears:
 
 ``` pre
 gfsh>start server --name=server1 --locators=localhost[10334]
-Starting a Geode Server in /home/username/gfsh_tutorial/server1/server1.log...
+Starting a <%=vars.product_name%> Server in /home/username/gfsh_tutorial/server1/server1.log...
 ...
 Server in /home/username/gfsh_tutorial/server1 on 192.0.2.0[40404] as server1
 is currently online.
 Process ID: 68375
 Uptime: 4 seconds
-Geode Version: 1.2.0
+<%=vars.product_name%> Version: <%=vars.product_version%>
 Java Version: 1.8.0_92
 Log File: /home/username//gfsh_tutorial/server1/server1.log
 JVM Arguments: -Dgemfire.locators=localhost[10334]
@@ -203,7 +203,7 @@ directory (named after the server), and within that working directory, it has cr
 a .pid (containing the server's process ID) for this cache server. In addition, it has also written
 log files.
 
-**Step 7: List members.** Use the `list members` command to view the current members of the Apache Geode distributed system you have just created.
+**Step 7: List members.** Use the `list members` command to view the current members of the <%=vars.product_name_long%> distributed system you have just created.
 
 ``` pre
 gfsh>list members
@@ -291,13 +291,13 @@ Because only one server is in the distributed system at the moment, the command 
 
 ``` pre
 gfsh>start server --name=server2 --server-port=40405
-Starting a Geode Server in /home/username/gfsh_tutorial/server2...
+Starting a <%=vars.product_name%> Server in /home/username/gfsh_tutorial/server2...
 ...
 Server in /home/username/gfsh_tutorial/server2 on 192.0.2.0[40405] as
 server2 is currently online.
 Process ID: 68423
 Uptime: 4 seconds
-Geode Version: 1.2.0
+<%=vars.product_name%> Version: <%=vars.product_version%>
 Java Version: 1.8.0_92
 Log File: /home/username/gfsh_tutorial/server2/server2.log
 JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334]

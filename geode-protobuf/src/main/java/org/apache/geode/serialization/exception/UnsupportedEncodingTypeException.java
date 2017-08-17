@@ -14,9 +14,12 @@
  */
 package org.apache.geode.serialization.exception;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * This indicates an encoding type that we don't know how to handle.
  */
+@Experimental
 public class UnsupportedEncodingTypeException extends Exception {
   public UnsupportedEncodingTypeException(String message) {
     super(message);

@@ -1034,6 +1034,7 @@ public class TXState implements TXStateInterface {
 
 
     } catch (CommitConflictException commitConflict) {
+      cleanup();
       this.proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
       throw new SynchronizationCommitConflictException(
           LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0

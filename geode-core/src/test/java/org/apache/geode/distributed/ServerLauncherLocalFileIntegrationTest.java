@@ -14,20 +14,19 @@
  */
 package org.apache.geode.distributed;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Subclass of ServerLauncherLocalDUnitTest which forces the code to not find the Attach API which
- * is in the JDK tools.jar. As a result ServerLauncher ends up using the FileProcessController
- * implementation.
+ * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
+ *
+ * Sets {@link ProcessControllerFactory#PROPERTY_DISABLE_ATTACH_API} to force {@code ServerLauncher}
+ * to use the FileProcessController implementation.
  *
  * @since GemFire 8.0
  */
@@ -35,17 +34,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class ServerLauncherLocalFileIntegrationTest extends ServerLauncherLocalIntegrationTest {
 
   @Before
-  public final void setUpServerLauncherLocalFileTest() throws Exception {
+  public void setUpServerLauncherLocalFileTest() throws Exception {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
-  }
-
-  @After
-  public final void tearDownServerLauncherLocalFileTest() throws Exception {}
-
-  @Override
-  @Test
-  public void testIsAttachAPIFound() throws Exception {
-    final ProcessControllerFactory factory = new ProcessControllerFactory();
-    assertFalse(factory.isAttachAPIFound());
+    assertThat(new ProcessControllerFactory().isAttachAPIFound()).isFalse();
   }
 }

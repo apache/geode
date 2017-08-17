@@ -14,9 +14,12 @@
  */
 package org.apache.geode.protocol.exception;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * Indicates that a message didn't properly follow its protocol specification.
  */
+@Experimental
 public class InvalidProtocolMessageException extends Exception {
   public InvalidProtocolMessageException(String message) {
     super(message);

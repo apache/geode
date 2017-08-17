@@ -14,7 +14,17 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
@@ -30,16 +40,10 @@ import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.ServerAPI;
 import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.serialization.SerializationService;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.stream.Collectors;
-
+@Experimental
 public class GetAvailableServersOperationHandler implements
     OperationHandler<ServerAPI.GetAvailableServersRequest, ServerAPI.GetAvailableServersResponse> {
 
@@ -70,9 +74,8 @@ public class GetAvailableServersOperationHandler implements
         // try the next locator
       }
     }
-    return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-        .setErrorCode(ProtocolErrorCode.DATA_UNREACHABLE.codeValue)
-        .setMessage("Unable to find a locator").build());
+    return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+        ProtocolErrorCode.DATA_UNREACHABLE.codeValue, "Unable to find a locator"));
   }
 
   private Result<ServerAPI.GetAvailableServersResponse> getGetAvailableServersFromLocator(

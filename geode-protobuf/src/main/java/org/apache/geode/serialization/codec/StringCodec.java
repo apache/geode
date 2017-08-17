@@ -16,9 +16,11 @@ package org.apache.geode.serialization.codec;
 
 import java.nio.charset.Charset;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
 
+@Experimental
 public class StringCodec implements TypeCodec<String> {
   private static final Charset UTF8 = Charset.forName("UTF-8");
 

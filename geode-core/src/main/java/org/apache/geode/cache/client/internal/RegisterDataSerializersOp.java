@@ -117,18 +117,5 @@ public class RegisterDataSerializersOp {
       stats.endRegisterDataSerializers(start, hasTimedOut(), hasFailed());
     }
 
-    @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {}
-
-    @Override
-    protected boolean needsUserId() {
-      return false;
-    }
-
-    @Override
-    protected void sendMessage(Connection cnx) throws Exception {
-      getMessage().clearMessageHasSecurePartFlag();
-      getMessage().send(false);
-    }
   }
 }

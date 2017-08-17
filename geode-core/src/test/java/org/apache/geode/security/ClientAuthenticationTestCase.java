@@ -24,11 +24,22 @@ import static org.apache.geode.test.dunit.IgnoredException.*;
 import static org.apache.geode.test.dunit.LogWriterUtils.*;
 import static org.apache.geode.test.dunit.Wait.*;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.cache.client.internal.RegisterDataSerializersOp;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.test.dunit.Host;
@@ -51,6 +62,37 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
   private static final String[] clientIgnoredExceptions =
       {AuthenticationRequiredException.class.getName(),
           AuthenticationFailedException.class.getName(), SSLHandshakeException.class.getName()};
+
+
+  public static enum Color {
+    red, orange, yellow, green, blue, indigo, violet
+  }
+
+
+  public static class MyDataSerializer extends DataSerializer {
+    public MyDataSerializer() {}
+
+    @Override
+    public Class<?>[] getSupportedClasses() {
+      return new Class[] {Color.class};
+    }
+
+    public int getId() {
+      return 1073741824;
+    }
+
+    @Override
+    public boolean toData(Object object, DataOutput output) {
+      return true;
+    }
+
+    @Override
+    public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
+      return Color.red;
+    }
+  }
+
+
 
   @Override
   public final void postSetUp() throws Exception {
@@ -170,6 +212,70 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
       client2.invoke(
           () -> createCacheClient(null, null, null, port1, port2, 0, multiUser, AUTHREQ_EXCEPTION));
     }
+  }
+
+  protected void doTestNoCredentialsCantRegisterMetadata(final boolean multiUser) throws Exception {
+    CredentialGenerator gen = new DummyCredentialGenerator();
+    Properties extraProps = gen.getSystemProperties();
+    Properties javaProps = gen.getJavaProperties();
+    String authenticator = gen.getAuthenticator();
+    String authInit = gen.getAuthInit();
+
+    // Start the servers
+    int locPort1 = getLocatorPort();
+    int locPort2 = getLocatorPort();
+    String locString = getAndClearLocatorString();
+
+    int port1 = createServer1(extraProps, javaProps, authenticator, locPort1, locString);
+    int port2 = server2
+        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+
+    // Start first client with valid credentials
+    Properties credentials1 = gen.getValidCredentials(1);
+    Properties javaProps1 = gen.getJavaProperties();
+
+    createClient1NoException(multiUser, authInit, port1, port2, credentials1, javaProps1);
+
+    // Trying to create the region on client2
+    if (gen.classCode().equals(CredentialGenerator.ClassCode.SSL)) {
+      // For SSL the exception may not come since the server can close socket
+      // before handshake message is sent from client. However exception
+      // should come in any region operations.
+      client2.invoke(
+          () -> createCacheClient(null, null, null, port1, port2, 0, multiUser, NO_EXCEPTION));
+      client2.invoke(() -> doPuts(2, OTHER_EXCEPTION));
+
+    } else {
+      client2.invoke(
+          () -> createCacheClient(null, null, null, port1, port2, 0, multiUser, AUTHREQ_EXCEPTION));
+
+      // Try to register a PDX type with the server
+      client2.invoke("register a PDX type", () -> {
+        HeapDataOutputStream outputStream = new HeapDataOutputStream(100, Version.CURRENT);
+        try {
+          DataSerializer.writeObject(new Employee(106l, "David", "Copperfield"), outputStream);
+          throw new Error("operation should have been rejected");
+        } catch (UnsupportedOperationException e) {
+          // "UnsupportedOperationException: Use Pool APIs for doing operations when
+          // multiuser-secure-mode-enabled is set to true."
+        }
+      });
+
+      // Try to register a DataSerializer with the server
+      client2.invoke("register a data serializer", () -> {
+        EventID eventId = InternalDataSerializer.generateEventId();
+        Pool pool = PoolManager.getAll().values().iterator().next();
+        try {
+          RegisterDataSerializersOp.execute((ExecutablePool) pool,
+              new DataSerializer[] {new MyDataSerializer()}, eventId);
+          throw new Error("operation should have been rejected");
+        } catch (UnsupportedOperationException e) {
+          // "UnsupportedOperationException: Use Pool APIs for doing operations when
+          // multiuser-secure-mode-enabled is set to true."
+        }
+      });
+    }
+
   }
 
   protected void doTestInvalidCredentials(final boolean multiUser) throws Exception {

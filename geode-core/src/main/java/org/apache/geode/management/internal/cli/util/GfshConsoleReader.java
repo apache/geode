@@ -15,8 +15,6 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import java.io.IOException;
-
 import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -44,11 +42,7 @@ public class GfshConsoleReader extends GfeConsoleReader {
   public String readLine(String textToPrompt) {
     String lineRead = null;
     if (isSupported()) {
-      try {
-        lineRead = gfsh.interact(textToPrompt);
-      } catch (IOException e) {
-        lineRead = null;
-      }
+      lineRead = gfsh.interact(textToPrompt);
     }
     return lineRead;
   }
@@ -56,12 +50,8 @@ public class GfshConsoleReader extends GfeConsoleReader {
   public char[] readPassword(String textToPrompt) {
     char[] password = null;
     if (isSupported()) {
-      try {
-        String passwordString = gfsh.readWithMask(textToPrompt, '*');
-        password = passwordString.toCharArray();
-      } catch (IOException e) {
-        password = null;
-      }
+      String passwordString = gfsh.readWithMask(textToPrompt, '*');
+      password = passwordString.toCharArray();
     }
     return password;
   }

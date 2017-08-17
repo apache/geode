@@ -35,7 +35,6 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.util.IOUtils;
@@ -142,14 +141,14 @@ public class StartServerCommand implements GfshCommand {
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
           help = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP) final String offHeapMemorySize,
-      @CliOption(key = CliStrings.START_SERVER__PROPERTIES, optionContext = ConverterHint.FILE_PATH,
-          help = CliStrings.START_SERVER__PROPERTIES__HELP) String gemfirePropertiesPathname,
+      @CliOption(key = CliStrings.START_SERVER__PROPERTIES, optionContext = ConverterHint.FILE,
+          help = CliStrings.START_SERVER__PROPERTIES__HELP) File gemfirePropertiesFile,
       @CliOption(key = CliStrings.START_SERVER__REBALANCE, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__REBALANCE__HELP) final Boolean rebalance,
       @CliOption(key = CliStrings.START_SERVER__SECURITY_PROPERTIES,
-          optionContext = ConverterHint.FILE_PATH,
-          help = CliStrings.START_SERVER__SECURITY_PROPERTIES__HELP) String gemfireSecurityPropertiesPathname,
+          optionContext = ConverterHint.FILE,
+          help = CliStrings.START_SERVER__SECURITY_PROPERTIES__HELP) File gemfireSecurityPropertiesFile,
       @CliOption(key = CliStrings.START_SERVER__SERVER_BIND_ADDRESS,
           unspecifiedDefaultValue = CacheServer.DEFAULT_BIND_ADDRESS,
           help = CliStrings.START_SERVER__SERVER_BIND_ADDRESS__HELP) final String serverBindAddress,
@@ -206,23 +205,16 @@ public class StartServerCommand implements GfshCommand {
             CliStrings.format(CliStrings.CACHE_XML_NOT_FOUND_MESSAGE, cacheXmlPathname));
       }
 
-      gemfirePropertiesPathname = CliUtil.resolvePathname(gemfirePropertiesPathname);
-
-      if (StringUtils.isNotBlank(gemfirePropertiesPathname)
-          && !IOUtils.isExistingPathname(gemfirePropertiesPathname)) {
+      if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
-                gemfirePropertiesPathname));
+                gemfirePropertiesFile.getAbsolutePath()));
       }
 
-      gemfireSecurityPropertiesPathname =
-          CliUtil.resolvePathname(gemfireSecurityPropertiesPathname);
-
-      if (StringUtils.isNotBlank(gemfireSecurityPropertiesPathname)
-          && !IOUtils.isExistingPathname(gemfireSecurityPropertiesPathname)) {
+      if (gemfireSecurityPropertiesFile != null && !gemfireSecurityPropertiesFile.exists()) {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
-                gemfireSecurityPropertiesPathname));
+                gemfireSecurityPropertiesFile.getAbsolutePath()));
       }
 
       File serverPidFile = new File(workingDirectory, ProcessType.SERVER.getPidFileName());
@@ -309,9 +301,8 @@ public class StartServerCommand implements GfshCommand {
       ServerLauncher serverLauncher = serverLauncherBuilder.build();
 
       String[] serverCommandLine = createStartServerCommandLine(serverLauncher,
-          gemfirePropertiesPathname, gemfireSecurityPropertiesPathname, gemfireProperties,
-          classpath, includeSystemClasspath, jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap,
-          maxHeap);
+          gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, classpath,
+          includeSystemClasspath, jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap);
 
       if (getGfsh().getDebug()) {
         getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
@@ -415,8 +406,6 @@ public class StartServerCommand implements GfshCommand {
       return ResultBuilder.createUserErrorResult(message);
     } catch (IllegalStateException e) {
       return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (ClusterConfigurationNotAvailableException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -428,7 +417,7 @@ public class StartServerCommand implements GfshCommand {
   }
 
   String[] createStartServerCommandLine(final ServerLauncher launcher,
-      final String gemfirePropertiesPathname, final String gemfireSecurityPropertiesPathname,
+      final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
       final Properties gemfireProperties, final String userClasspath,
       final Boolean includeSystemClasspath, final String[] jvmArgsOpts,
       final Boolean disableExitWhenOutOfMemory, final String initialHeap, final String maxHeap)
@@ -441,8 +430,8 @@ public class StartServerCommand implements GfshCommand {
     commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
 
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
-    StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesPathname);
-    StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesPathname);
+    StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
+    StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
     StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
     StartMemberUtils.addJvmArgumentsAndOptions(commandLine, jvmArgsOpts);
 

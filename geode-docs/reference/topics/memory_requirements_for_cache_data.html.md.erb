@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Geode solutions architects need to estimate resource requirements for meeting application performance, scalability and availability goals.
+<%=vars.product_name%> solutions architects need to estimate resource requirements for meeting application performance, scalability and availability goals.
 
 These requirements include estimates for the following resources:
 
@@ -27,12 +27,12 @@ These requirements include estimates for the following resources:
 -   number of machines
 -   network bandwidth
 
-The information here is only a guideline, and assumes a basic understanding of Geode. While no two applications or use cases are exactly alike, the information here should be a solid starting point, based on real-world experience. Much like with physical database design, ultimately the right configuration and physical topology for deployment is based on the performance requirements, application data access characteristics, and resource constraints (i.e., memory, CPU, and network bandwidth) of the operating environment.
+The information here is only a guideline, and assumes a basic understanding of <%=vars.product_name%>. While no two applications or use cases are exactly alike, the information here should be a solid starting point, based on real-world experience. Much like with physical database design, ultimately the right configuration and physical topology for deployment is based on the performance requirements, application data access characteristics, and resource constraints (i.e., memory, CPU, and network bandwidth) of the operating environment.
 
 
 <a id="topic_ipt_dqz_j4"></a>
 
-# Core Guidelines for Geode Data Region Design
+# Core Guidelines for <%=vars.product_name%> Data Region Design
 
 The following guidelines apply to region design:
 
@@ -46,9 +46,9 @@ The following guidelines apply to region design:
 
 The following guidelines should provide a rough estimate of the amount of memory consumed by your system.
 
-Memory calculation about keys and entries (objects) and region overhead for them can be divided by the number of members of the distributed system for data placed in partitioned regions only. For other regions, the calculation is for each member that hosts the region. Memory used by sockets, threads, and the small amount of application overhead for Geode is per member.
+Memory calculation about keys and entries (objects) and region overhead for them can be divided by the number of members of the distributed system for data placed in partitioned regions only. For other regions, the calculation is for each member that hosts the region. Memory used by sockets, threads, and the small amount of application overhead for <%=vars.product_name%> is per member.
 
-For each entry added to a region, the Geode cache API consumes a certain amount of memory to store and manage the data. This overhead is required even when an entry is overflowed or persisted to disk. Thus objects on disk take up some JVM memory, even when they are paged to disk. The Java cache overhead introduced by a region, using a 32-bit JVM, can be approximated as listed below.
+For each entry added to a region, the <%=vars.product_name%> cache API consumes a certain amount of memory to store and manage the data. This overhead is required even when an entry is overflowed or persisted to disk. Thus objects on disk take up some JVM memory, even when they are paged to disk. The Java cache overhead introduced by a region, using a 32-bit JVM, can be approximated as listed below.
 
 Actual memory use varies based on a number of factors, including the JVM you are using and the platform you are running on. For 64-bit JVMs, the usage will usually be larger than with 32-bit JVMs. As much as 80% more memory may be required for 64-bit JVMs, due to object references and headers using more memory.
 
@@ -56,7 +56,7 @@ There are several additional considerations for calculating your memory requirem
 
 -   **Size of your stored data.** To estimate the size of your stored data, determine first whether you are storing the data in serialized or non-serialized form. In general, the non-serialized form will be the larger of the two. See [Determining Object Serialization Overhead](#topic_psn_5tz_j4)
 
-    Objects in Geode are serialized for storage into partitioned regions and for all distribution activities, including moving data to disk for overflow and persistence. For optimum performance, Geode tries to reduce the number of times an object is serialized and deserialized, so your objects may be stored in serialized or non-serialized form in the cache.
+    Objects in <%=vars.product_name%> are serialized for storage into partitioned regions and for all distribution activities, including moving data to disk for overflow and persistence. For optimum performance, <%=vars.product_name%> tries to reduce the number of times an object is serialized and deserialized, so your objects may be stored in serialized or non-serialized form in the cache.
 
 -   **Application object overhead for your data.** When calculating application overhead, make sure to count the key as well as the value, and to count every object if the key and/or value is a composite object.
 
@@ -105,7 +105,7 @@ Keys are stored in object form except for certain classes where the storage of k
 
 **When to disable inline key storage.** In some cases, storing keys inline may introduce extra memory or CPU usage. If all of your keys are also referenced from some other object, then it is better to not inline the key. If you frequently ask for the key from the region, then you may want to keep the object form stored in the cache so that you do not need to recreate the object form constantly. Note that the basic operation of checking whether a key is in a region does not require the object form but uses the inline primitive data.
 
-The key inlining feature can be disabled by specifying the following Geode property upon member startup:
+The key inlining feature can be disabled by specifying the following <%=vars.product_name%> property upon member startup:
 
 ``` pre
 -Dgemfire.DISABLE_INLINE_REGION_KEYS=true
@@ -180,19 +180,19 @@ The other index overhead estimates listed here also apply to Lucene indexes.
 
 ## <a id="topic_i1m_stz_j4" class="no-quick-link"></a>Estimating Management and Monitoring Overhead
 
-Geode's JMX management and monitoring system contributes to memory overhead and should be accounted for when establishing the memory requirements for your deployment. Specifically, the memory footprint of any processes (such as locators) that are running as JMX managers can increase.
+The <%=vars.product_name%> JMX management and monitoring system contributes to memory overhead and should be accounted for when establishing the memory requirements for your deployment. Specifically, the memory footprint of any processes (such as locators) that are running as JMX managers can increase.
 
 For each resource in the distributed system that is being managed and monitored by the JMX Manager (for example, each MXBean such as MemberMXBean, RegionMXBean, DiskStoreMXBean, LockServiceMXBean and so on), you should add 10 KB of required memory to the JMX Manager node.
 
 ## <a id="topic_psn_5tz_j4" class="no-quick-link"></a>Determining Object Serialization Overhead
 
-Geode PDX serialization can provide significant space savings over Java Serializable in addition to better performance. In some cases we have seen savings of up to 65%, but the savings will vary depending on the domain objects. PDX serialization is most likely to provide the most space savings of all available options. DataSerializable is more compact, but it requires that objects are deserialized on access, so that should be taken into account. On the other hand, PDX serializable does not require deserialization for most operations, and because of that, it may provide greater space savings.
+<%=vars.product_name%> PDX serialization can provide significant space savings over Java Serializable in addition to better performance. In some cases we have seen savings of up to 65%, but the savings will vary depending on the domain objects. PDX serialization is most likely to provide the most space savings of all available options. DataSerializable is more compact, but it requires that objects are deserialized on access, so that should be taken into account. On the other hand, PDX serializable does not require deserialization for most operations, and because of that, it may provide greater space savings.
 
-In any case, the kinds and volumes of operations that would be done on the server side should be considered in the context of data serialization, as Geode has to deserialize data for some types of operations (access). For example, if a function invokes a get operation on the server side, the value returned from the get operation will be deserialized in most cases (the only time it will not be deserialized is when PDX serialization is used and the read-serialized attribute is set). The only way to find out the actual overhead is by running tests, and examining the memory usage.
+In any case, the kinds and volumes of operations that would be done on the server side should be considered in the context of data serialization, as <%=vars.product_name%> has to deserialize data for some types of operations (access). For example, if a function invokes a get operation on the server side, the value returned from the get operation will be deserialized in most cases (the only time it will not be deserialized is when PDX serialization is used and the read-serialized attribute is set). The only way to find out the actual overhead is by running tests, and examining the memory usage.
 
 Some additional serialization guidelines and tips:
 
--   If you are using compound objects, do not mix using standard Java serialization with with Geode serialization (either DataSerializable or PDX). Standard Java serialization functions correctly when mixed with Geode serialization, but it can end up producing many more serialized bytes.
+-   If you are using compound objects, do not mix using standard Java serialization with with <%=vars.product_name%> serialization (either DataSerializable or PDX). Standard Java serialization functions correctly when mixed with <%=vars.product_name%> serialization, but it can end up producing many more serialized bytes.
 
     To determine if you are using standard Java serialization, specify the `-DDataSerializer.DUMP_SERIALIZED=true` upon process execution. Then check your log for messages of this form:
 
@@ -224,7 +224,7 @@ A note of caution-- if the domain object contains many domain objects as member 
 
 Servers always maintain two outgoing connections to each of their peers. So for each peer a server has, there are four total connections: two going out to the peer and two coming in from the peer.
 
-The server threads that service client requests also communicate with peers to distribute events and forward client requests. If the server's Geode connection property *conserve-sockets* is set to true (the default), these threads use the already-established peer connections for this communication.
+The server threads that service client requests also communicate with peers to distribute events and forward client requests. If the server's <%=vars.product_name%> connection property *conserve-sockets* is set to true (the default), these threads use the already-established peer connections for this communication.
 
 If *conserve-sockets* is false, each thread that services clients establishes two of its own individual connections to its server peers, one to send, and one to receive. Each socket uses a file descriptor, so the number of available sockets is governed by two operating system settings:
 
@@ -236,7 +236,7 @@ In servers with many threads servicing clients, if *conserve-sockets* is set to 
 Since each client connection takes one server socket on a thread to handle the connection, and since that server acts as a proxy on partitioned regions to get results, or execute the function service on behalf of the client, for partitioned regions, if conserve sockets is set to false, this also results in a new socket on the server being opened to each peer. Thus N sockets are opened, where N is the number of peers. Large number of clients simultaneously connecting to a large set of peers with a partitioned region with conserve sockets set to false can cause a huge amount of memory to be consumed by socket. Set conserve-sockets to true in these instances.
 
 **Note:**
-There is also JVM overhead for the thread stack for each client connection being processed, set at 256KB or 512KB for most JVMs . On some JVMs you can reduce it to 128KB. You can use the Geode `max-threads` property or the Geode `max-connections` property to limit the number of client threads and thus both thread overhead and socket overhead.
+There is also JVM overhead for the thread stack for each client connection being processed, set at 256KB or 512KB for most JVMs . On some JVMs you can reduce it to 128KB. You can use the <%=vars.product_name%> `max-threads` property or the <%=vars.product_name%> `max-connections` property to limit the number of client threads and thus both thread overhead and socket overhead.
 
 The following table lists the memory requirements based on connections.
 
@@ -286,7 +286,7 @@ The following table lists the memory requirements based on connections.
 <td>1 MB +</td>
 </tr>
 <tr class="even">
-<td><strong>Geode classes and JVM overhead</strong></td>
+<td><strong><%=vars.product_name%> classes and JVM overhead</strong></td>
 <td>Roughly 50MB</td>
 </tr>
 <tr class="odd">
@@ -300,4 +300,4 @@ The following table lists the memory requirements based on connections.
 </tbody>
 </table>
 
-<a id="topic_eww_rvz_j4"></a>
+

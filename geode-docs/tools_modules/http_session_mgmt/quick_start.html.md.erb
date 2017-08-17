@@ -49,7 +49,7 @@ In this section you download, install, and set up the HTTP Session Management mo
 These steps provide a basic starting point for using the tc Server module. For more configuration options, see [HTTP Session Management Module for Pivotal tc Server](session_mgmt_tcserver.html). As a prerequisite, module set up requires a JAVA\_HOME environment variable set to the java installation.
 
 1.  Navigate to the root directory of tc Server.
-2.  Create a Geode instance using one of the provided templates and start the instance after starting up a locator. For example:
+2.  Create a <%=vars.product_name%> instance using one of the provided templates and start the instance after starting up a locator. For example:
 
     ``` pre
     $ gfsh start locator --name=locator1
@@ -57,7 +57,7 @@ These steps provide a basic starting point for using the tc Server module. For m
     $ ./tcruntime-ctl.sh my_instance_name start
     ```
 
-    This will create and run a Geode instance using the peer-to-peer topology and default configuration values. Another Geode instance on another system can be created and started in the same way.
+    This will create and run a <%=vars.product_name%> instance using the peer-to-peer topology and default configuration values. Another <%=vars.product_name%> instance on another system can be created and started in the same way.
 
     If you need to pin your tc Server instance to a specific tc Server runtime version, use the `--version` option when creating the instance.
 
@@ -92,13 +92,13 @@ These steps provide a basic starting point for using the AppServers module with 
 
 **Note:**
 
--   The `modify_war` script relies upon a GEODE environment variable. Set the GEODE environment variable to the Geode product directory; this is the parent directory of `bin`.
+-   The `modify_war` script relies upon a GEODE environment variable. Set the GEODE environment variable to the <%=vars.product_name%> product directory; this is the parent directory of `bin`.
 -   The `modify_war` script, described below, relies on files within the distribution tree and should not be run outside of a complete distribution.
 -   The `modify_war` script is a `bash` script and does not run on Windows.
 
 To set up the AppServers module, perform the following steps:
 
-1.  Run the `modify_war` script against an existing `.war` or `.ear` file to integrate the necessary components. The example below will create a configuration suitable for a peer-to-peer Geode system, placing the necessary libraries into `WEB-INF/lib` for wars and `lib` for ears and modifying any `web.xml` files:
+1.  Run the `modify_war` script against an existing `.war` or `.ear` file to integrate the necessary components. The example below will create a configuration suitable for a peer-to-peer <%=vars.product_name%> system, placing the necessary libraries into `WEB-INF/lib` for wars and `lib` for ears and modifying any `web.xml` files:
 
     ``` pre
     $ bin/modify_war -w my-app.war -p gemfire.property.locators=localhost[10334] \

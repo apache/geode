@@ -14,10 +14,13 @@
  */
 package org.apache.geode.serialization.registry.exception;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * This indicates that we're attempting to register a codec for a type which we already have a
  * handler for.
  */
+@Experimental
 public class CodecAlreadyRegisteredForTypeException extends Exception {
   public CodecAlreadyRegisteredForTypeException(String message) {
     super(message);

@@ -74,7 +74,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
  * <p>
  * The ManagementAgent could be used in a loner or GemFire client to define and control JMX server
  * end points for the Platform MBeanServer and the GemFire MBeans hosted within it.
- * 
+ *
  * @since GemFire 7.0
  */
 public class ManagementAgent {
@@ -99,6 +99,7 @@ public class ManagementAgent {
    * embedded pulse webapp can use a local MBeanServer instead of a remote JMX connection.
    */
   private static final String PULSE_EMBEDDED_PROP = "pulse.embedded";
+  private static final String PULSE_HOST_PROP = "pulse.host";
   private static final String PULSE_PORT_PROP = "pulse.port";
   private static final String PULSE_USESSL_MANAGER = "pulse.useSSL.manager";
   private static final String PULSE_USESSL_LOCATOR = "pulse.useSSL.locator";
@@ -270,6 +271,7 @@ public class ManagementAgent {
           }
 
           System.setProperty(PULSE_EMBEDDED_PROP, "true");
+          System.setProperty(PULSE_HOST_PROP, "" + config.getJmxManagerBindAddress());
           System.setProperty(PULSE_PORT_PROP, "" + config.getJmxManagerPort());
 
           final SocketCreator jmxSocketCreator =

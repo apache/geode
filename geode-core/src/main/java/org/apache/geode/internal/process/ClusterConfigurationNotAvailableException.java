@@ -17,10 +17,14 @@ package org.apache.geode.internal.process;
 /**
  * Exception thrown during server startup when it requests the locators for shared configuration and
  * does not receive it.
- * 
+ *
  * @since GemFire 8.0
+ * @deprecated Please use
+ *             {@link org.apache.geode.internal.config.ClusterConfigurationNotAvailableException}
+ *             instead.
  */
-public class ClusterConfigurationNotAvailableException extends RuntimeException {
+@Deprecated
+public class ClusterConfigurationNotAvailableException extends Exception {
   private static final long serialVersionUID = -3448160213553925462L;
 
   public ClusterConfigurationNotAvailableException(String message) {

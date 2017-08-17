@@ -14,6 +14,7 @@
  */
 package org.apache.geode.protocol.protobuf;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
@@ -22,6 +23,7 @@ import org.apache.geode.serialization.registry.SerializationCodecRegistry;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
+@Experimental
 public class ProtobufSerializationService implements SerializationService<BasicTypes.EncodingType> {
   private SerializationCodecRegistry serializationCodecRegistry = new SerializationCodecRegistry();
 

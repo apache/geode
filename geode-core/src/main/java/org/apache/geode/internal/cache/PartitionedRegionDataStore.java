@@ -500,10 +500,12 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       boolean isLeader = leader.equals(this.partitionedRegion);
       if (!isLeader) {
         leader.getDataStore().removeBucket(possiblyFreeBucketId, true);
-        logger.info(
-            "For bucket " + possiblyFreeBucketId + ", failed to create cololcated child bucket for "
-                + this.partitionedRegion.getFullPath() + ", removed leader region "
-                + leader.getFullPath() + " bucket.");
+        if (isDebugEnabled) {
+          logger.debug("For bucket " + possiblyFreeBucketId
+              + ", failed to create cololcated child bucket for "
+              + this.partitionedRegion.getFullPath() + ", removed leader region "
+              + leader.getFullPath() + " bucket.");
+        }
       }
       throw validationException;
     } finally {
@@ -2881,8 +2883,16 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         }
         if ((isDiskRecovery || pr.isInitialized())
             && (pr.getDataStore().isColocationComplete(bucketId))) {
-          grab = pr.getDataStore().grabFreeBucketRecursively(bucketId, pr, moveSource,
-              forceCreation, replaceOffineData, isRebalance, creationRequestor, isDiskRecovery);
+          try {
+            grab = pr.getDataStore().grabFreeBucketRecursively(bucketId, pr, moveSource,
+                forceCreation, replaceOffineData, isRebalance, creationRequestor, isDiskRecovery);
+          } catch (RegionDestroyedException rde) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Failed to grab, colocated region for bucketId = {}{}{} is destroyed.",
+                  this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+                  bucketId);
+            }
+          }
           if (!grab.nowExists()) {
             if (logger.isDebugEnabled()) {
               logger.debug("Failed grab for bucketId = {}{}{}", this.partitionedRegion.getPRId(),

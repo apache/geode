@@ -21,7 +21,7 @@ limitations under the License.
 <a id="topic_7BCB054803CF48FE8688394C5C39000A"></a>
 
 
-Check the status of the cluster configuration service and Geode member processes, including locators, gateway receivers, gateway senders, and servers.
+Check the status of the cluster configuration service and <%=vars.product_name%> member processes, including locators, gateway receivers, gateway senders, and servers.
 
 -   **[status cluster-config-service](#topic_ts1_qb1_dk2)**
 
@@ -41,7 +41,7 @@ Check the status of the cluster configuration service and Geode member processes
 
 -   **[status server](#topic_E5DB49044978404D9D6B1971BF5D400D)**
 
-    Display the status of the specified Geode cache server.
+    Display the status of the specified <%=vars.product_name%> cache server.
 
 ## <a id="topic_ts1_qb1_dk2" class="no-quick-link"></a>status cluster-config-service
 
@@ -235,7 +235,7 @@ status locator --name=locator1
 
 ## <a id="topic_E5DB49044978404D9D6B1971BF5D400D" class="no-quick-link"></a>status server
 
-Display the status of the specified Geode cache server.
+Display the status of the specified <%=vars.product_name%> cache server.
 
 **Availability:** Online or offline. If you want to obtain the status of a server while you are offline, use the `--dir` option.
 
@@ -250,7 +250,7 @@ status server [--name=value] [--dir=value]
 | Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                           | Default Value     |
 |----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
 | <span class="keyword parmname">&#8209;&#8209;name</span> | Name or ID of the Cache Server for which to display status. You must be connected to the JMX Manager to use this option. Can be used to obtain status of remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
-| <span class="keyword parmname">\\-\\-dir </span> | Directory in which the Geode Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
+| <span class="keyword parmname">\\-\\-dir </span> | Directory in which the <%=vars.product_name%> Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
 
 <span class="tablecap">Table 4. Status Server Parameters</span>
 

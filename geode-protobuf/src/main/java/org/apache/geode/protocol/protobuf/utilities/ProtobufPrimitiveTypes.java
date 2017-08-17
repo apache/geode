@@ -14,8 +14,10 @@
  */
 package org.apache.geode.protocol.protobuf.utilities;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.protocol.protobuf.utilities.exception.UnknownProtobufPrimitiveType;
 
+@Experimental
 public enum ProtobufPrimitiveTypes {
 
   STRING(String.class),

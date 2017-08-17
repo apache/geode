@@ -14,9 +14,11 @@
  */
 package org.apache.geode.serialization.codec;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.serialization.SerializationType;
 import org.apache.geode.serialization.TypeCodec;
 
+@Experimental
 public class BinaryCodec implements TypeCodec<byte[]> {
   @Override
   public byte[] decode(byte[] incoming) {

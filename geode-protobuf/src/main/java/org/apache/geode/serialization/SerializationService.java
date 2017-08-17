@@ -14,6 +14,7 @@
  */
 package org.apache.geode.serialization;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
@@ -23,6 +24,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
  *
  * @param <T> the enumeration of types known to a particular protocol
  */
+@Experimental
 public interface SerializationService<T> {
   Object decode(T encodingTypeValue, byte[] value)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException;

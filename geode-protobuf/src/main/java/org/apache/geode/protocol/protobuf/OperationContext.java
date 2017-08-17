@@ -15,10 +15,12 @@
 
 package org.apache.geode.protocol.protobuf;
 
-import org.apache.geode.protocol.operations.OperationHandler;
-
 import java.util.function.Function;
 
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.protocol.operations.OperationHandler;
+
+@Experimental
 public class OperationContext<OperationRequest, OperationResponse> {
   private final OperationHandler<OperationRequest, OperationResponse> operationHandler;
   private final Function<ClientProtocol.Request, OperationRequest> fromRequest;

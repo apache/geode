@@ -167,7 +167,7 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
          dispatcher-threads="2" order-policy="partition" manual-start="true" />
         ```
 
-        By default, this is set to false on gateway senders and the senders are started automatically.
+        By default, `manual-start` is set to false on gateway senders and the senders are started automatically.
 
 4.  If you have configured the gateway sender with `manual-start` equal to true, then start the gateway sender when appropriate. For persistent gateway senders, the appropriate time to start them is when all other members hosting persistent regions are started. In gfsh:
 
@@ -238,7 +238,8 @@ A gateway receiver configuration specifies a range of possible port numbers on w
 
 You can optionally configure gateway receivers to provide a specific IP address or host name for gateway sender connections. If you configure hostname-for-senders, locators will use the provided host name or IP address when instructing gateway senders on how to connect to gateway receivers. If you provide "" or null as the value, by default the gateway receiver's bind-address will be sent to clients.
 
-In addition, you can configure gateway receivers to start automatically or to require a manual start. By default, gateway receivers must be started manually.
+In addition, you can configure gateway receivers to start automatically or, by setting `manual-start` to true, to require a manual start. 
+By default, gateway receivers start automatically.
 
 **Note:**
 To configure a gateway receiver, you can use gfsh, cache.xml or Java API configurations as described below. For more information on configuring gateway receivers in gfsh, see [create gateway-receiver](../../tools_modules/gfsh/command-pages/create.html#topic_a4x_pb1_dk).
@@ -255,7 +256,7 @@ To configure a gateway receiver, you can use gfsh, cache.xml or Java API configu
 
     ``` pre
     <cache>
-      <gateway-receiver start-port="1530" end-port="1551" hostname-for-senders="gateway1.mycompany.com" manual-start="false" /> 
+      <gateway-receiver start-port="1530" end-port="1551" hostname-for-senders="gateway1.mycompany.com" /> 
        ... 
     </cache>
     ```
@@ -272,33 +273,20 @@ To configure a gateway receiver, you can use gfsh, cache.xml or Java API configu
     gateway.setEndPort(1551);
     gateway.setHostnameForSenders("gateway1.mycompany.com");
     GatewayReceiver receiver = gateway.create();
-    receiver.start();
     ```
 
     **Note:**
-    When using the Java API, you must create any region that might receive events from a remote site before you start the gateway receiver. Otherwise, batches of events could arrive from remote sites before the regions for those events have been created. If this occurs, the local site will throw exceptions because the receiving region does not exist yet. If you define regions in `cache.xml`, the correct startup order is handled automatically.
+    When using the Java API, you must create any region that might receive events from a remote site before you create the gateway receiver. Otherwise, batches of events could arrive from remote sites before the regions for those events have been created. If this occurs, the local site will throw exceptions because the receiving region does not yet exist. If you define regions in `cache.xml`, the correct startup order is handled automatically.
 
--   By default, `manual-start` is configured to **true** on gateway receivers. If you have not changed this configuration (either in gfsh or cache.xml), you must start your gateway receiver manually. For example, in gfsh:
+After starting new gateway receivers, you can execute the [load-balance gateway-sender](../../tools_modules/gfsh/command-pages/load-balance.html) command in `gfsh` so that a specific gateway sender will be able to rebalance its connections and connect new remote gateway receivers. Invoking this command redistributes gateway sender connections more evenly among all the gateway receivers.
 
-    ``` pre
-    gfsh>create gateway-receiver --manual-start=false
-    ```
-
--   In gfsh, if you have not disabled manual-start, execute the following command to start the gateway receiver:
-
-    ``` pre
-    gfsh>start gateway-receiver
-    ```
-
--   After starting new gateway receivers, you can execute the [load-balance gateway-sender](../../tools_modules/gfsh/command-pages/load-balance.html) command in `gfsh` so that a specific gateway sender will be able to rebalance its connections and connect new remote gateway receivers. Invoking this command redistributes gateway sender connections more evenly among all the gateway receivers.
-
-    Another option is to use the `GatewaySender.rebalance` Java API.
+Another option is to use the `GatewaySender.rebalance` Java API.
 
 As an example, assume the following scenario:
 
-1.  start 1 receiver in site ny
-2.  start 4 senders in site ln
-3.  start 3 additional receiver in NY
+1.  Create 1 receiver in site NY.
+2.  Create 4 senders in site LN.
+3.  Create 3 additional receivers in NY.
 
 You can then execute the following in gfsh to see the effects of rebalancing:
 

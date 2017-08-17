@@ -14,6 +14,7 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.protocol.operations.OperationHandler;
@@ -23,11 +24,13 @@ import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.SerializationService;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
+@Experimental
 public class GetRequestOperationHandler
     implements OperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
 
@@ -37,9 +40,8 @@ public class GetRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = cache.getRegion(regionName);
     if (region == null) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-          .setErrorCode(ProtocolErrorCode.REGION_NOT_FOUND.codeValue).setMessage("Region not found")
-          .build());
+      return Failure.of(ProtobufResponseUtilities
+          .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
     }
 
     try {
@@ -54,13 +56,12 @@ public class GetRequestOperationHandler
           ProtobufUtilities.createEncodedValue(serializationService, resultValue);
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } catch (UnsupportedEncodingTypeException ex) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
-          .setMessage("Encoding not supported.").build());
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue, "Encoding not supported."));
     } catch (CodecNotRegisteredForTypeException ex) {
-      return Failure.of(BasicTypes.ErrorResponse.newBuilder()
-          .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
-          .setMessage("Codec error in protobuf deserialization.").build());
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
+          "Codec error in protobuf deserialization."));
     }
   }
 }

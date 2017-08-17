@@ -101,6 +101,9 @@ any protocol that is enabled by default in the configured JSSE provider.</dd>
 <dt>**ssl-truststore, ssl-truststore-password**</dt>
 <dd>The path to the trust store and the trust store password, specified as strings</dd>
 
+<dt>**ssl-keystore-type, ssl-truststore-type**</dt>
+<dd>The types of the key store and trust store, specified as strings. The default for both is "JKS", indicating a Java key store or trust store.</dd>
+
 ### Example: secure communications throughout
 
 To implement secure SSL communications throughout an entire distributed system, each process should

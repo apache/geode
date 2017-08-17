@@ -16,6 +16,7 @@ package org.apache.geode.protocol.protobuf;
 
 import java.util.HashMap;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.serialization.SerializationType;
@@ -24,6 +25,7 @@ import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException
 /**
  * This class maps protobuf specific encoding types and the corresponding serialization types.
  */
+@Experimental
 public abstract class EncodingTypeTranslator {
   static final HashMap<Class, BasicTypes.EncodingType> typeToEncodingMap = intializeTypeMap();
 

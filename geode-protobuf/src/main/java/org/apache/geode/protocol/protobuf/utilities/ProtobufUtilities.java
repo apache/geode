@@ -16,6 +16,7 @@ package org.apache.geode.protocol.protobuf.utilities;
 
 import com.google.protobuf.ByteString;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -37,6 +38,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
  * {@link ProtobufResponseUtilities} Helper functions specific to creating ClientProtocol.Requests
  * can be found at {@link ProtobufRequestUtilities}
  */
+@Experimental
 public abstract class ProtobufUtilities {
   /**
    * Creates a object containing the type and value encoding of a piece of data

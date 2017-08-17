@@ -16,6 +16,9 @@ package org.apache.geode.protocol.protobuf;
 
 import java.util.function.Function;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public interface Result<SuccessType> {
   <T> T map(Function<SuccessType, T> successFunction,
       Function<BasicTypes.ErrorResponse, T> errorFunction);

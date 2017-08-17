@@ -288,7 +288,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
     final int numOps = indices.length;
     System.out.println("Got doOp for op: " + op.toString() + ", numOps: " + numOps + ", indices: "
-        + indicesToString(indices) + ", expect: " + expectedResult);
+        + indicesToString(indices) + ", expect: " + expectedResult + " flags: "
+        + OpFlags.description(flags));
     boolean exceptionOccurred = false;
     boolean breakLoop = false;
 
