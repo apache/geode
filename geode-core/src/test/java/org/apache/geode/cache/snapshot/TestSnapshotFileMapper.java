@@ -32,7 +32,9 @@ public class TestSnapshotFileMapper implements SnapshotFileMapper {
     if (shouldExplode) {
       throw new RuntimeException();
     }
-    return new File(snapshot.getParentFile(), mapFilename(snapshot));
+    File directory = new File(snapshot.getParent(), Integer.toString(1 + VM.getCurrentVMNum()));
+    directory.mkdirs();
+    return new File(directory, mapFilename(snapshot));
   }
 
   @Override
@@ -40,15 +42,11 @@ public class TestSnapshotFileMapper implements SnapshotFileMapper {
     if (shouldExplode) {
       throw new RuntimeException();
     }
-
-    File f = new File(snapshot.getParentFile(), mapFilename(snapshot));
-    return new File[] {f};
+    File directory = new File(snapshot, Integer.toString(1 + VM.getCurrentVMNum()));
+    return new File[] {directory};
   }
 
   private String mapFilename(File snapshot) {
-    String filename = snapshot.getName();
-    int suffixLocation = filename.indexOf(RegionSnapshotService.SNAPSHOT_FILE_EXTENSION);
-    return filename.substring(0, suffixLocation) + "-" + VM.getCurrentVMNum()
-        + RegionSnapshotService.SNAPSHOT_FILE_EXTENSION;
+    return snapshot.getName();
   }
 }

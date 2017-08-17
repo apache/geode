@@ -29,7 +29,7 @@ import java.util.Map.Entry;
  * 
  * @since GemFire 7.0
  */
-public interface SnapshotIterator<K, V> {
+public interface SnapshotIterator<K, V> extends AutoCloseable {
   /**
    * Returns true if there are more elements in the iteration.
    * 
