@@ -29,4 +29,6 @@ public interface GatewaySenderEventDispatcher {
   public boolean isConnectedToRemote();
 
   public void stop();
+
+  public void shutDownAckReaderConnection();
 }

@@ -604,6 +604,18 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return enqueue;
   }
 
+  protected void stopProcessing() {
+    // Stop the dispatcher
+    AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
+    if (ev != null && !ev.isStopped()) {
+      ev.stopProcessing();
+    }
+
+    if (ev != null && ev.getDispatcher() != null) {
+      ev.getDispatcher().shutDownAckReaderConnection();
+    }
+  }
+
   protected void stompProxyDead() {
     Runnable stomper = new Runnable() {
       public void run() {
