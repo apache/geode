@@ -37,6 +37,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.geode.cache.util.GatewayConflictResolver;
 import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -2600,8 +2601,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     // that contain only whitespace; see GEODE-3306
     while (!stack.empty()) {
       Object o = stack.peek();
-      if (o instanceof StringBuffer
-          && ((StringBuffer) o).toString().replaceAll("\\s", "").equals("")) {
+      if (o instanceof StringBuffer && StringUtils.isBlank(((StringBuffer) o).toString())) {
         stack.pop();
       } else {
         break;
@@ -2888,8 +2888,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     // that contain only whitespace; see GEODE-3306
     while (!stack.empty()) {
       Object o = stack.peek();
-      if (o instanceof StringBuffer
-          && ((StringBuffer) o).toString().replaceAll("\\s", "").equals("")) {
+      if (o instanceof StringBuffer && StringUtils.isBlank(((StringBuffer) o).toString())) {
         stack.pop();
       } else {
         break;
