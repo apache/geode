@@ -14,6 +14,22 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -25,23 +41,15 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.List;
-import java.util.Properties;
-
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Dunit class for testing gemfire function commands : execute function, destroy function, list
@@ -554,12 +562,8 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     getLogWriter().info("testDestroyOnGroups cmdResult=" + cmdResult);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     String content = null;
-    try {
-      content = cmdResult.getContent().get("message").toString();
-      getLogWriter().info("testDestroyOnGroups content = " + content);
-    } catch (GfJsonException e) {
-      fail("testDestroyOnGroups exception=" + e);
-    }
+    content = cmdResult.getContent().get("message").toString();
+    getLogWriter().info("testDestroyOnGroups content = " + content);
     assertNotNull(content);
     assertTrue(content
         .equals("[\"Destroyed " + TestFunction.TEST_FUNCTION1 + " Successfully on " + vm1id + ","

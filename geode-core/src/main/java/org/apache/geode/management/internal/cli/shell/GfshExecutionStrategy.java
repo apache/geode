@@ -131,14 +131,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     return cliMetadata != null ? cliMetadata.interceptor() : CliMetaData.ANNOTATION_NULL_VALUE;
   }
 
-  // Not used currently
-  // private static String getCommandName(ParseResult result) {
-  // Method method = result.getMethod();
-  // CliCommand cliCommand = method.getAnnotation(CliCommand.class);
-  //
-  // return cliCommand != null ? cliCommand.value() [0] : null;
-  // }
-
   /**
    * Indicates commands are able to be presented. This generally means all important system startup
    * activities have completed. Copied from {@link ExecutionStrategy#isReadyForCommands()}.
@@ -157,7 +149,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    */
   @Override
   public void terminate() {
-    // TODO: Is additional cleanup required?
     shell = null;
   }
   //////////////// ExecutionStrategy interface Methods End /////////////////////
@@ -247,8 +238,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
       String debugInfo = commandResponse.getDebugInfo();
       if (StringUtils.isNotBlank(debugInfo)) {
-        // TODO - Abhishek When debug is ON, log response in gfsh logs
-        // TODO - Abhishek handle \n better. Is it coming from GemFire formatter
         debugInfo = debugInfo.replaceAll("\n\n\n", "\n");
         debugInfo = debugInfo.replaceAll("\n\n", "\n");
         debugInfo =

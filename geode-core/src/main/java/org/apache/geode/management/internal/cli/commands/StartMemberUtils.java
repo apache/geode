@@ -127,7 +127,6 @@ public class StartMemberUtils {
       commandLine.add("-Xmx" + maxHeap);
       commandLine.add("-XX:+UseConcMarkSweepGC");
       commandLine.add("-XX:CMSInitiatingOccupancyFraction=" + CMS_INITIAL_OCCUPANCY_FRACTION);
-      // commandLine.add("-XX:MinHeapFreeRatio=" + MINIMUM_HEAP_FREE_RATIO);
     }
   }
 

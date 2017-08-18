@@ -121,7 +121,6 @@ public class Gfsh extends JLineShell {
   public static final String ENV_SYS_OS_LINE_SEPARATOR = "SYS_OS_LINE_SEPARATOR";
   public static final String ENV_SYS_GEODE_HOME_DIR = "SYS_GEODE_HOME_DIR";
 
-  // TODO merge find a better place for these
   // SSL Configuration properties. keystore/truststore type is not include
   public static final String SSL_KEYSTORE = "javax.net.ssl.keyStore";
   public static final String SSL_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
@@ -133,19 +132,18 @@ public class Gfsh extends JLineShell {
   private static final int DEFAULT_HEIGHT = 100;
   private static final Object INSTANCE_LOCK = new Object();
 
-  // private static final String ANIMATION_SLOT = "A"; //see 46072
   protected static PrintStream gfshout = System.out;
   protected static PrintStream gfsherr = System.err;
-  protected static ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<Gfsh>();
+  protected static ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<>();
   private static Gfsh instance;
   // This flag is used to restrict column trimming to table only types
-  private static ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<Boolean>();
+  private static ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<>();
   private static String OS = System.getProperty("os.name").toLowerCase();
-  private final Map<String, String> env = new TreeMap<String, String>();
-  private final List<String> readonlyAppEnv = new ArrayList<String>();
+  private final Map<String, String> env = new TreeMap<>();
+  private final List<String> readonlyAppEnv = new ArrayList<>();
   // Map to keep reference to actual user specified Command String
   // Should always have one value at the max
-  private final Map<String, String> expandedPropCommandsMap = new HashMap<String, String>();
+  private final Map<String, String> expandedPropCommandsMap = new HashMap<>();
   private final ExecutionStrategy executionStrategy;
   private final GfshParser parser;
   private final LogWrapper gfshFileLogger;
@@ -158,7 +156,7 @@ public class Gfsh extends JLineShell {
   private Thread runner;
   private boolean debugON;
   private Terminal terminal;
-  private boolean supressScriptCmdOutput;
+  private boolean suppressScriptCadOutput;
   private boolean isScriptRunning;
   private AbstractSignalNotificationHandler signalHandler;
 
@@ -173,7 +171,7 @@ public class Gfsh extends JLineShell {
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  protected Gfsh(String[] args) throws ClassNotFoundException, IOException {
+  protected Gfsh(String[] args) {
     this(true, args, new GfshConfig());
   }
 
@@ -186,8 +184,7 @@ public class Gfsh extends JLineShell {
    * @throws IOException
    * @throws ClassNotFoundException
    */
-  protected Gfsh(boolean launchShell, String[] args, GfshConfig gfshConfig)
-      throws ClassNotFoundException, IOException {
+  protected Gfsh(boolean launchShell, String[] args, GfshConfig gfshConfig) {
     // 1. Disable suppressing of duplicate messages
     JLineLogHandler.setSuppressDuplicateMessages(false);
 
@@ -195,11 +192,7 @@ public class Gfsh extends JLineShell {
     this.gfshConfig = gfshConfig;
     this.gfshFileLogger = LogWrapper.getInstance();
     this.gfshFileLogger.configure(this.gfshConfig);
-    this.ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported()); // TODO -
-    // Abhishek :
-    // should take it
-    // from
-    // ConsoleReader.terminal??
+    this.ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported());
 
     /* 3. log system properties & gfsh environment */
     this.gfshFileLogger.info(Banner.getString(args));
@@ -255,8 +248,7 @@ public class Gfsh extends JLineShell {
     }
   }
 
-  public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig)
-      throws ClassNotFoundException, IOException {
+  public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig) {
     if (instance == null) {
       synchronized (INSTANCE_LOCK) {
         if (instance == null) {
@@ -327,7 +319,6 @@ public class Gfsh extends JLineShell {
       while (loggerNames.hasMoreElements()) {
         String loggerName = loggerNames.nextElement();
         if (loggerName.startsWith("java.") || loggerName.startsWith("javax.")) {
-          // System.out.println(loggerName);
           Logger javaLogger = logManager.getLogger(loggerName);
           /*
            * From Java Docs: It is also important to note that the Logger associated with the String
@@ -423,7 +414,7 @@ public class Gfsh extends JLineShell {
       } else {
         final int spaceCharIndex = string.lastIndexOf(" ", index);
 
-        // If no spaces were found then there's no logical wayto split the string
+        // If no spaces were found then there's no logical way to split the string
         if (spaceCharIndex == -1) {
           stringBuf.append(string.substring(startOfCurrentLine, index)).append(LINE_SEPARATOR);
 
@@ -544,7 +535,6 @@ public class Gfsh extends JLineShell {
    * See findResources in {@link AbstractShell}
    */
   protected Collection<URL> findResources(String resourceName) {
-    // return Collections.singleton(ClassPathLoader.getLatest().getResource(resourceName));
     return null;
   }
 
@@ -604,8 +594,6 @@ public class Gfsh extends JLineShell {
       }
       success = super.executeScriptLine(withPropsExpanded);
     } catch (Exception e) {
-      // TODO: should there be a way to differentiate error in shell & error on
-      // server. May be by exception type.
       setLastExecutionStatus(-1);
     } finally { // Add all commands to in-memory GfshHistory
       gfshHistory.setAutoFlush(true);
@@ -700,7 +688,7 @@ public class Gfsh extends JLineShell {
             while (commandResult.hasNextLine()) {
               write(commandResult.nextLine(), isError);
             }
-          } else if (!supressScriptCmdOutput) {
+          } else if (!suppressScriptCadOutput) {
             // Command is part of script. Show output only when quite=false
             while (commandResult.hasNextLine()) {
               write(commandResult.nextLine(), isError);
@@ -742,7 +730,7 @@ public class Gfsh extends JLineShell {
   }
 
   private boolean isUnix() {
-    return !(OS.indexOf("win") >= 0);
+    return !(OS.contains("win"));
   }
 
   private void write(String message, boolean isError) {
@@ -900,7 +888,7 @@ public class Gfsh extends JLineShell {
       ScriptExecutionDetails scriptInfo = new ScriptExecutionDetails(scriptFile.getPath());
       if (scriptFile.exists()) {
         setEnvProperty(ENV_APP_QUIET_EXECUTION, String.valueOf(quiet));
-        this.supressScriptCmdOutput = quiet;
+        this.suppressScriptCadOutput = quiet;
         BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
         String lineRead = "";
         StringBuilder linesBuffer = new StringBuilder();
@@ -925,7 +913,6 @@ public class Gfsh extends JLineShell {
           linesBufferString = linesBuffer.toString();
           // NOTE: Similar code is in promptLoop()
           if (!linesBufferString.endsWith(GfshParser.CONTINUATION_CHARACTER)) { // see 45893
-            // String command = null;
 
             List<String> commandList = MultiCommandHelper.getMultipleCommands(linesBufferString);
             for (String cmdLet : commandList) {
@@ -995,7 +982,7 @@ public class Gfsh extends JLineShell {
   }
 
   public Map<String, String> getEnv() {
-    Map<String, String> map = new TreeMap<String, String>();
+    Map<String, String> map = new TreeMap<>();
     map.putAll(env);
     return map;
   }
@@ -1003,8 +990,6 @@ public class Gfsh extends JLineShell {
   @Override
   public void setPromptPath(String currentContext) {
     super.setPromptPath(currentContext);
-    // Enable when "use region" command is required. See #46110
-    // env.put(CliConstants.ENV_APP_CONTEXT_PATH, currentContext);
   }
 
   public boolean isQuietMode() {
@@ -1100,7 +1085,7 @@ public class Gfsh extends JLineShell {
   @Override
   protected String getPromptText() {
     String defaultPrompt = gfshConfig.getDefaultPrompt();
-    String contextPath = /* getEnvProperty(CliConstants.ENV_APP_CONTEXT_PATH) */ "";
+    String contextPath = "";
     String clusterString = "";
 
     if (getOperationInvoker() != null && isConnectedAndReady()) {
@@ -1108,14 +1093,6 @@ public class Gfsh extends JLineShell {
       if (clusterId != OperationInvoker.CLUSTER_ID_WHEN_NOT_CONNECTED) {
         clusterString = "Cluster-" + clusterId + " ";
       }
-      // //As "use region" is not in scope for 7.0, see 46110.
-      // if (contextPath == null) {
-      // contextPath = "." + CliConstants.DEFAULT_APP_CONTEXT_PATH;
-      // } else {
-      // contextPath = "." + contextPath;
-      // }
-      // } else {
-      // contextPath = "." + CliConstants.DEFAULT_APP_CONTEXT_PATH;
     }
 
     defaultPrompt = MessageFormat.format(defaultPrompt, clusterString, contextPath);
@@ -1170,7 +1147,7 @@ class ScriptExecutionDetails {
 
   ScriptExecutionDetails(String filePath) {
     this.filePath = filePath;
-    this.commandAndStatusList = new ArrayList<CommandAndStatus>();
+    this.commandAndStatusList = new ArrayList<>();
   }
 
   void addCommandAndStatus(String command, String status) {

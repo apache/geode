@@ -248,8 +248,7 @@ public class DiskStoreCommands implements GfshCommand {
         new ArrayList<>(results.size());
 
     for (final Object result : results) {
-      if (result instanceof Set) { // ignore FunctionInvocationTargetExceptions and other
-                                   // Exceptions...
+      if (result instanceof Set) {
         distributedSystemMemberDiskStores.addAll((Set<DiskStoreDetails>) result);
       }
     }
@@ -739,7 +738,6 @@ public class DiskStoreCommands implements GfshCommand {
       commandList.add(CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize);
 
       ProcessBuilder procBuilder = new ProcessBuilder(commandList);
-      // procBuilder.redirectErrorStream(true);
       upgraderProcess = procBuilder.start();
       InputStream inputStream = upgraderProcess.getInputStream();
       InputStream errorStream = upgraderProcess.getErrorStream();
@@ -1250,8 +1248,6 @@ public class DiskStoreCommands implements GfshCommand {
       return ResultBuilder.createGemFireErrorResult(CliStrings
           .format(CliStrings.VALIDATE_DISK_STORE__MSG__IO_ERROR, diskStoreName, ex.getMessage()));
     } catch (Exception ex) {
-      // StringPrintWriter s = new StringPrintWriter();
-      // ex.printStackTrace(s);
       return ResultBuilder.createGemFireErrorResult(CliStrings
           .format(CliStrings.VALIDATE_DISK_STORE__MSG__ERROR, diskStoreName, ex.getMessage()));
     }

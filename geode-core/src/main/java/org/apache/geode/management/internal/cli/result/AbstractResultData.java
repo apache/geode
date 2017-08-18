@@ -14,15 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,6 +22,15 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Base64;
 import java.util.zip.DataFormatException;
+
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * 
@@ -147,11 +147,10 @@ public abstract class AbstractResultData implements ResultData {
 
   public ResultData addAsFile(String fileName, byte[] data, int fileType, String message,
       boolean addTimeStampToName) {
-    byte[] bytes = data;
     if (addTimeStampToName) {
       fileName = addTimeStampBeforeLastDot(fileName);
     }
-    return addAsFile(fileName, bytes, fileType, message);
+    return addAsFile(fileName, data, fileType, message);
   }
 
   private ResultData addAsFile(String fileName, byte[] data, int fileType, String message) {
@@ -191,11 +190,8 @@ public abstract class AbstractResultData implements ResultData {
       throws GfJsonException, DataFormatException, IOException {
     boolean overwriteAllExisting = false;
     int length = byteDataArray.size();
-    String options = length > 1 ? "(y/N/a)" : "(y/N)"; // TODO - Abhishek Make this consistent -
-                                                       // with
-                                                       // AbstractCliAroundInterceptor.readYesNo()
-
-    BYTEARRAY_LOOP: for (int i = 0; i < length; i++) {
+    String options = length > 1 ? "(y/N/a)" : "(y/N)";
+    for (int i = 0; i < length; i++) {
       GfJsonObject object = byteDataArray.getJSONObject(i);
 
       int fileType = object.getInt(FILE_TYPE_FIELD);
@@ -255,7 +251,7 @@ public abstract class AbstractResultData implements ResultData {
             overwriteAllExisting = true;
           } else if (!"y".equalsIgnoreCase(interaction.trim())) {
             // do not save file & continue
-            continue BYTEARRAY_LOOP;
+            continue;
           }
         } else {
           throw new IOException(fileExistsMessage);
@@ -289,18 +285,15 @@ public abstract class AbstractResultData implements ResultData {
         fos.flush();
         fos.close();
       }
-      // System.out.println("fileMessage :: "+fileMessage);
       if (fileMessage != null && !fileMessage.isEmpty()) {
         if (gfsh != null) {
           Gfsh.println(
               MessageFormat.format(fileMessage, new Object[] {fileToDumpData.getAbsolutePath()}));
         }
       }
-      // System.out.println(new String(uncompressed));
     }
   }
 
-  // TODO - Abhishek : prepare common utility for this & ANSI Styling
   static void handleCondition(String message) throws IOException {
     Gfsh gfsh = Gfsh.getCurrentInstance();
     // null check required in GfshVM too to avoid test issues

@@ -194,7 +194,6 @@ public class DataCommandsController extends AbstractCommandsController {
       @RequestParam(CliStrings.QUERY__QUERY) final String oql,
       @RequestParam(value = CliStrings.QUERY__INTERACTIVE,
           defaultValue = "true") final Boolean interactive) {
-    // logRequest(request);
 
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.QUERY);
 

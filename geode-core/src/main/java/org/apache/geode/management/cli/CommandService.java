@@ -113,10 +113,6 @@ public abstract class CommandService {
           "Can not create command service as cache doesn't exist or cache is closed.");
     }
 
-    /*
-     * if (!cache.isServer()) { throw new IllegalArgumentException("Server cache is required."); }
-     */
-
     if (localCommandService == null || !localCommandService.isUsable()) {
       String nonExistingDependency = CliUtil.cliDependenciesExist(false);
       if (nonExistingDependency != null) {
@@ -144,45 +140,4 @@ public abstract class CommandService {
 
     return null;
   }
-
-  // public static CommandService createCommandService(RegionService regionService) {
-  // if (regionService == null || regionService.isClosed()) {
-  // throw new CacheClosedException("Can not create command service as region service doesn't exist
-  // or cache is closed.");
-  // }
-  //
-  // CommandService commandService;
-  //
-  // if (Cache.class.isInstance(regionService) &&
-  // ((Cache) regionService).isServer() &&
-  // CacheFactory.getAnyInstance() == regionService) {
-  // commandService = createLocalCommandService((Cache) regionService);
-  // } else {
-  // Pool poolToUse = null;
-  // if (ProxyCache.class.isInstance(regionService)) {
-  // ProxyCache proxyCache = (ProxyCache) regionService;
-  // poolToUse = proxyCache.getUserAttributes().getPool();
-  // } else if (ClientCache.class.isInstance(regionService)) {
-  // ClientCache localCache = (ClientCache) regionService;
-  // poolToUse = localCache.getDefaultPool();
-  // } else {
-  // throw new IllegalArgumentException("Can not create Command Service for given Region Service: "
-  // + regionService);
-  // }
-  // commandService = new ProxyCommandService(poolToUse);
-  // }
-  //
-  // return commandService;
-  // }
-  //
-  // public static CommandService createRemoteCommandService(String poolName) {
-  // Pool poolToUse = PoolManager.find(poolName);
-  //
-  // if (poolToUse == null) {
-  // throw new IllegalArgumentException("Can not create Command Service as a Pool with name \"" +
-  // poolName+"\" was not found.");
-  // }
-  //
-  // return new ProxyCommandService(poolToUse);
-  // }
 }

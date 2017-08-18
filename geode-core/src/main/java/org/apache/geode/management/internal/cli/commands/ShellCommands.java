@@ -159,7 +159,7 @@ public class ShellCommands implements GfshCommand {
 
   @CliCommand(value = {CliStrings.EXIT, "quit"}, help = CliStrings.EXIT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public ExitShellRequest exit() throws IOException {
+  public ExitShellRequest exit() {
     Gfsh gfshInstance = getGfsh();
 
     gfshInstance.stop();
@@ -219,7 +219,6 @@ public class ShellCommands implements GfshCommand {
       Gfsh gfshInstance = getGfsh();
       if (gfshInstance.isConnectedAndReady()) {
         OperationInvoker operationInvoker = gfshInstance.getOperationInvoker();
-        // tabularResultData.accumulate("Monitored GemFire DS", operationInvoker.toString());
         tabularResultData.accumulate("Connection Endpoints", operationInvoker.toString());
       } else {
         tabularResultData.accumulate("Connection Endpoints", "Not connected");
@@ -236,8 +235,7 @@ public class ShellCommands implements GfshCommand {
 
   @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""},
-      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+  public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
       mandatory = true, help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
     Result result = null;
 
@@ -257,10 +255,8 @@ public class ShellCommands implements GfshCommand {
 
   TabularResultData buildResultForEcho(Set<Entry<String, String>> propertyMap) {
     TabularResultData resultData = ResultBuilder.createTabularResultData();
-    Iterator<Entry<String, String>> it = propertyMap.iterator();
 
-    while (it.hasNext()) {
-      Entry<String, String> setEntry = it.next();
+    for (Entry<String, String> setEntry : propertyMap) {
       resultData.accumulate("Property", setEntry.getKey());
       resultData.accumulate("Value", String.valueOf(setEntry.getValue()));
     }
@@ -319,7 +315,6 @@ public class ShellCommands implements GfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result history(
       @CliOption(key = {CliStrings.HISTORY__FILE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.HISTORY__FILE__HELP) String saveHistoryTo,
       @CliOption(key = {CliStrings.HISTORY__CLEAR}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
@@ -346,7 +341,7 @@ public class ShellCommands implements GfshCommand {
 
       while (it.hasNext()) {
         String line = it.next().toString();
-        if (line.isEmpty() == false) {
+        if (!line.isEmpty()) {
           if (flagForLineNumbers) {
             lineNumber++;
             contents.append(String.format("%" + historySizeWordLength + "s  ", lineNumber));
@@ -459,7 +454,7 @@ public class ShellCommands implements GfshCommand {
     try {
       LogWrapper.getInstance().fine("Sleeping for " + time + "seconds.");
       Thread.sleep(Math.round(time * 1000));
-    } catch (InterruptedException ignorable) {
+    } catch (InterruptedException ignored) {
     }
     return ResultBuilder.createInfoResult("");
   }
@@ -476,11 +471,7 @@ public class ShellCommands implements GfshCommand {
     try {
       result =
           ResultBuilder.buildResult(executeCommand(Gfsh.getCurrentInstance(), command, useConsole));
-    } catch (IllegalStateException e) {
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-      LogWrapper.getInstance()
-          .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");
-    } catch (IOException e) {
+    } catch (IllegalStateException | IOException e) {
       result = ResultBuilder.createUserErrorResult(e.getMessage());
       LogWrapper.getInstance()
           .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");

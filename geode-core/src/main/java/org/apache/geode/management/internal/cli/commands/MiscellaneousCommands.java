@@ -112,8 +112,8 @@ import org.apache.geode.security.ResourcePermission.Resource;
 public class MiscellaneousCommands implements GfshCommand {
 
   public static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
-  public final static String DEFAULT_TIME_OUT = "10";
-  private final static Logger logger = LogService.getLogger();
+  public static final String DEFAULT_TIME_OUT = "10";
+  private static final Logger logger = LogService.getLogger();
 
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
@@ -237,7 +237,6 @@ public class MiscellaneousCommands implements GfshCommand {
       return ResultBuilder.createUserErrorResult(ex.getMessage());
     }
 
-    // @TODO. List all the nodes which could be successfully shutdown
     return ResultBuilder.createInfoResult("Shutdown is triggered");
   }
 
@@ -375,7 +374,6 @@ public class MiscellaneousCommands implements GfshCommand {
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  // TODO : Verify the auto-completion for multiple values.
   public Result netstat(
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -1106,9 +1104,6 @@ public class MiscellaneousCommands implements GfshCommand {
             csvBuilder);
         writeToTableAndCsv(metricsTable, "", "putAllAvgLatency", memberMxBean.getPutAllAvgLatency(),
             csvBuilder);
-        // Not available from stats. After Stats re-org it will be available
-        // writeToTableAndCsv(metricsTable, "", "getAllAvgLatency",
-        // memberMxBean.getGetAllAvgLatency(), csvBuilder);
         writeToTableAndCsv(metricsTable, "", "totalMissCount", memberMxBean.getTotalMissCount(),
             csvBuilder);
         writeToTableAndCsv(metricsTable, "", "totalHitCount", memberMxBean.getTotalHitCount(),

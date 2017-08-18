@@ -14,15 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.geode.management.internal.cli.GfshParser;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,6 +25,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.management.internal.cli.GfshParser;
 
 /**
  * 
@@ -58,7 +57,7 @@ public class ReadWriteFile {
       BufferedReader input = null;
       BufferedWriter output = null;
       File logFileNameFile = new File(logFileName);
-      if (logFileNameFile.canRead() == false) {
+      if (!logFileNameFile.canRead()) {
         return ("Cannot read logFileName=" + logFileName);
       }
       input = new BufferedReader(new FileReader(logFileName));
@@ -66,39 +65,27 @@ public class ReadWriteFile {
       File logToBeWrittenToFile = new File(logToBeWritten);
       output = new BufferedWriter(new FileWriter(logToBeWrittenToFile));
       if (!logToBeWrittenToFile.exists()) {
-        if (input != null) {
-          input.close();
-        }
-        if (output != null) {
-          output.flush();
-          output.close();
-        }
-        return (logToBeWritten + " doesn not exist");
+        input.close();
+        output.flush();
+        output.close();
+        return (logToBeWritten + " does not exist");
       }
       if (!logToBeWrittenToFile.isFile()) {
-        if (input != null) {
-          input.close();
-        }
-        if (output != null) {
-          output.flush();
-          output.close();
-        }
+        input.close();
+        output.flush();
+        output.close();
         return (logToBeWritten + " is not a file");
       }
       if (!logToBeWrittenToFile.canWrite()) {
-        if (input != null) {
-          input.close();
-        }
-        if (output != null) {
-          output.flush();
-          output.close();
-        }
+        input.close();
+        output.flush();
+        output.close();
         return ("can not write file " + logToBeWritten);
       }
 
       // build possible log levels based on user input
       // get all the levels below the one mentioned by user
-      List<String> logLevels = new ArrayList<String>();
+      List<String> logLevels = new ArrayList<>();
       if (onlyLogLevel.toLowerCase().equals("false")) {
         int[] intLogLevels = LogWriterImpl.allLevels;
         for (int level : intLogLevels) {
@@ -112,18 +99,13 @@ public class ReadWriteFile {
       boolean timeRangeCheck = false;
       boolean foundLogLevelTag = false;
       boolean validateLogLevel = true;
-      while (input.ready() == true && (line = input.readLine()) != null) {
-        if (new File(logFileName).canRead() == false) {
+      while (input.ready() && (line = input.readLine()) != null) {
+        if (!new File(logFileName).canRead()) {
           return ("Cannot read logFileName=" + logFileName);
         }
-        // boolean validateLogLevel = true;
         lineCount++;
-        if (line.startsWith("[")) {
-          foundLogLevelTag = true;
-        } else {
-          foundLogLevelTag = false;
-        }
-        if (line.contains("[info ") && timeRangeCheck == false) {
+        foundLogLevelTag = line.startsWith("[");
+        if (line.contains("[info ") && !timeRangeCheck) {
           String stTime = "";
           int spaceCounter = 0;
           for (int i = line.indexOf("[info ") + 6; i < line.length(); i++) {
@@ -152,12 +134,12 @@ public class ReadWriteFile {
             // set this so that no need to check time range for each line
             timeRangeCheck = true;
           } else {
-            // dont take this log file as this does not fit in time range
+            // don't take this log file as this does not fit in time range
             break;
           }
         }
 
-        if (foundLogLevelTag == true) {
+        if (foundLogLevelTag) {
           validateLogLevel = checkLogLevel(line, logLevel, logLevels, foundLogLevelTag);
         }
 
@@ -178,11 +160,9 @@ public class ReadWriteFile {
         output.flush();
         output.close();
       }
-      return ("Sucessfully written file " + logFileName);
+      return ("Successfully written file " + logFileName);
     } catch (FunctionException ex) {
       return ("readWriteFile FunctionException " + ex.getMessage());
-    } catch (FileNotFoundException ex) {
-      return ("readWriteFile FileNotFoundException " + ex.getMessage());
     } catch (IOException ex) {
       return ("readWriteFile FileNotFoundException " + ex.getMessage());
     } catch (Exception ex) {
@@ -194,7 +174,7 @@ public class ReadWriteFile {
       boolean foundLogLevelTag) {
     if (line == null) {
       return false;
-    } else if (line != null && foundLogLevelTag == true) {
+    } else if (foundLogLevelTag) {
       if (logLevel.toLowerCase().equals("all")) {
         return true;
       } else if (line.equals(GfshParser.LINE_SEPARATOR)) {
@@ -207,7 +187,7 @@ public class ReadWriteFile {
             if (indexFrom > -1 && indexTo > -1 && indexTo > indexFrom) {
               boolean flag =
                   line.substring(indexFrom + 1, indexTo).toLowerCase().contains(permittedLogLevel);
-              if (flag == true) {
+              if (flag) {
                 return flag;
               }
             }

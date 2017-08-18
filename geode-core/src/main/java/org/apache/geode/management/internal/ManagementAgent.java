@@ -14,7 +14,40 @@
  */
 package org.apache.geode.management.internal;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.Set;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXServiceURL;
+import javax.management.remote.rmi.RMIConnectorServer;
+import javax.management.remote.rmi.RMIJRMPServerImpl;
+import javax.management.remote.rmi.RMIServerImpl;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -36,37 +69,6 @@ import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.unsafe.ReadOpFileAccessController;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.Set;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXServiceURL;
-import javax.management.remote.rmi.RMIConnectorServer;
-import javax.management.remote.rmi.RMIJRMPServerImpl;
-import javax.management.remote.rmi.RMIServerImpl;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients to connect, such as
@@ -390,7 +392,7 @@ public class ManagementAgent {
       logger.debug("Starting jmx manager agent on port {}{}", port,
           (bindAddr != null ? (" bound to " + bindAddr) : "") + (ssl ? " using SSL" : ""));
     }
-    RMIClientSocketFactory rmiClientSocketFactory = ssl ? new SslRMIClientSocketFactory() : null;// RMISocketFactory.getDefaultSocketFactory();
+    RMIClientSocketFactory rmiClientSocketFactory = ssl ? new SslRMIClientSocketFactory() : null;
     RMIServerSocketFactory rmiServerSocketFactory =
         new GemFireRMIServerSocketFactory(socketCreator, bindAddr);
 
@@ -410,7 +412,7 @@ public class ManagementAgent {
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
     // Environment map. why is this declared as HashMap?
-    final HashMap<String, Object> env = new HashMap<String, Object>();
+    final HashMap<String, Object> env = new HashMap<>();
 
     // Manually creates and binds a JMX RMI Connector Server stub with the
     // registry created above: the port we pass here is the port that can
@@ -487,8 +489,6 @@ public class ManagementAgent {
 
       String accessFile = this.config.getJmxManagerAccessFile();
       if (accessFile != null && accessFile.length() > 0) {
-        // Lets not use default connector based authorization
-        // env.put("jmx.remote.x.access.file", accessFile);
         // Rewire the mbs hierarchy to set accessController
         ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
         controller.setMBeanServer(mbs);
@@ -529,7 +529,7 @@ public class ManagementAgent {
 
     private static final long serialVersionUID = -7604285019188827617L;
 
-    private/* final hack to prevent serialization */ transient SocketCreator sc;
+    private transient SocketCreator sc;
 
     public GemFireRMIClientSocketFactory(SocketCreator sc) {
       this.sc = sc;
@@ -537,7 +537,7 @@ public class ManagementAgent {
 
     @Override
     public Socket createSocket(String host, int port) throws IOException {
-      return this.sc.connectForClient(host, port, 0/* no timeout */);
+      return this.sc.connectForClient(host, port, 0);
     }
   }
 
@@ -545,7 +545,7 @@ public class ManagementAgent {
       implements RMIServerSocketFactory, Serializable {
 
     private static final long serialVersionUID = -811909050641332716L;
-    private/* final hack to prevent serialization */ transient SocketCreator sc;
+    private transient SocketCreator sc;
     private final InetAddress bindAddr;
 
     public GemFireRMIServerSocketFactory(SocketCreator sc, InetAddress bindAddr) {

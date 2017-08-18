@@ -14,10 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
 import org.json.JSONArray;
 
 import org.apache.geode.cache.CacheFactory;
@@ -385,7 +382,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           if (logger.isDebugEnabled()) {
             logger.debug("Removed key {} successfully", key);
           }
-          // return DataCommandResult.createRemoveResult(key, value, null, null);
           Object array[] = getJSONForNonPrimitiveObject(value);
           DataCommandResult result =
               DataCommandResult.createRemoveResult(key, array[1], null, null, true);
@@ -465,7 +461,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         if (logger.isDebugEnabled()) {
           logger.debug("Get for key {} value {}", key, value);
         }
-        // return DataCommandResult.createGetResult(key, value, null, null);
         Object array[] = getJSONForNonPrimitiveObject(value);
         if (value != null) {
           DataCommandResult result =
@@ -723,7 +718,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           Object value = object.get(key);
           if (GfJsonObject.isJSONKind(value)) {
             GfJsonObject jsonVal = new GfJsonObject(value);
-            // System.out.println("Re-wrote inner object");
             try {
               if (jsonVal.has("type-class")) {
                 object.put(key, jsonVal.get("type-class"));

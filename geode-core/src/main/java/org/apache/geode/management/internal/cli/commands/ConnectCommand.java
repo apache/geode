@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.Map;
@@ -69,9 +68,9 @@ import org.apache.geode.security.AuthenticationFailedException;
 
 public class ConnectCommand implements GfshCommand {
   // millis that connect --locator will wait for a response from the locator.
-  public final static int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
+  static final int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
 
-  static UserInputProperty[] USERINPUTPROPERTIES =
+  private static UserInputProperty[] USERINPUTPROPERTIES =
       {UserInputProperty.KEYSTORE, UserInputProperty.KEYSTORE_PASSWORD,
           UserInputProperty.KEYSTORE_TYPE, UserInputProperty.TRUSTSTORE,
           UserInputProperty.TRUSTSTORE_PASSWORD, UserInputProperty.TRUSTSTORE_TYPE,
@@ -117,8 +116,7 @@ public class ConnectCommand implements GfshCommand {
           help = CliStrings.CONNECT__USE_SSL__HELP) boolean useSsl,
       @CliOption(key = {"skip-ssl-validation"}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
-          help = "When connecting via HTTP, connects using 1-way SSL validation rather than 2-way SSL validation.") boolean skipSslValidation)
-      throws MalformedURLException {
+          help = "When connecting via HTTP, connects using 1-way SSL validation rather than 2-way SSL validation.") boolean skipSslValidation) {
 
     Result result;
     Gfsh gfsh = getGfsh();
@@ -213,10 +211,7 @@ public class ConnectCommand implements GfshCommand {
   }
 
   boolean isSslImpliedBySslOptions(String... sslOptions) {
-    if (sslOptions == null) {
-      return false;
-    }
-    return Arrays.stream(sslOptions).anyMatch(Objects::nonNull);
+    return sslOptions != null && Arrays.stream(sslOptions).anyMatch(Objects::nonNull);
   }
 
   Properties loadProperties(File... files) {
@@ -282,16 +277,16 @@ public class ConnectCommand implements GfshCommand {
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       if (!(e instanceof SecurityException) && !(e instanceof AuthenticationFailedException)) {
-        return handleExcpetion(e, null);
+        return handleException(e);
       }
 
-      // if it's security exception, and we already sent in username and password, still retuns the
+      // if it's security exception, and we already sent in username and password, still returns the
       // connection error
       if (gfProperties.containsKey(ResourceConstants.USER_NAME)) {
-        return handleExcpetion(e, null);
+        return handleException(e);
       }
 
-      // otherwise, prompt for username and password and retry the conenction
+      // otherwise, prompt for username and password and retry the connection
       gfProperties.setProperty(UserInputProperty.USERNAME.getKey(),
           UserInputProperty.USERNAME.promptForAcceptableValue(gfsh));
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(),
@@ -358,25 +353,22 @@ public class ConnectCommand implements GfshCommand {
       LogWrapper.getInstance().info(CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS,
           jmxHostPortToConnect.toString(false)));
       return ResultBuilder.buildResult(infoResultData);
-    } catch (Exception e) {
-      // all other exceptions, just logs it and returns a connection error
-      if (!(e instanceof SecurityException) && !(e instanceof AuthenticationFailedException)) {
-        return handleExcpetion(e, jmxHostPortToConnect);
-      }
-
+    } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
       // connection error
       if (gfProperties.containsKey(ResourceConstants.USER_NAME)) {
-        return handleExcpetion(e, jmxHostPortToConnect);
+        return handleException(e, jmxHostPortToConnect);
       }
 
-      // otherwise, prompt for username and password and retry the conenction
+      // otherwise, prompt for username and password and retry the connection
       gfProperties.setProperty(UserInputProperty.USERNAME.getKey(),
           UserInputProperty.USERNAME.promptForAcceptableValue(gfsh));
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(),
           UserInputProperty.PASSWORD.promptForAcceptableValue(gfsh));
       return jmxConnect(gfProperties, useSsl, jmxHostPortToConnect, null, true);
-
+    } catch (Exception e) {
+      // all other exceptions, just logs it and returns a connection error
+      return handleException(e, jmxHostPortToConnect);
     } finally {
       Gfsh.redirectInternalJavaLoggers();
     }
@@ -461,13 +453,20 @@ public class ConnectCommand implements GfshCommand {
     }
   }
 
-  private Result handleExcpetion(Exception e, ConnectionEndpoint hostPortToConnect) {
-    String errorMessage = e.getMessage();
-    if (hostPortToConnect != null) {
-      errorMessage = CliStrings.format(CliStrings.CONNECT__MSG__ERROR,
-          hostPortToConnect.toString(false), e.getMessage());
-    }
+  private Result handleException(Exception e) {
+    return handleException(e, e.getMessage());
+  }
+
+  private Result handleException(Exception e, String errorMessage) {
     LogWrapper.getInstance().severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
+  }
+
+  private Result handleException(Exception e, ConnectionEndpoint hostPortToConnect) {
+    if (hostPortToConnect == null) {
+      return handleException(e);
+    }
+    return handleException(e, CliStrings.format(CliStrings.CONNECT__MSG__ERROR,
+        hostPortToConnect.toString(false), e.getMessage()));
   }
 }
