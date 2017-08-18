@@ -10,6 +10,7 @@ org/apache/geode/distributed/internal/DistributionManager
 org/apache/geode/internal/ExitCode
 org/apache/geode/internal/JarDeployer
 org/apache/geode/internal/cache/BackupLock
+org/apache/geode/internal/cache/tier/sockets/InvalidExecutionContextException
 org/apache/geode/internal/logging/GemFireLevel
 org/apache/geode/internal/logging/LoggingThreadGroup
 org/apache/geode/internal/logging/LogWriterImpl
