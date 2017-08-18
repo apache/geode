@@ -23,18 +23,15 @@ import static org.junit.Assert.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.DiskWriteAttributesFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.persistence.BackupManager;
-import org.apache.geode.internal.cache.persistence.RestoreScript;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -54,16 +51,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 @Category(IntegrationTest.class)
 public class BackupJUnitTest {
 
-  protected GemFireCacheImpl cache = null;
+  private static final String DISK_STORE_NAME = "diskStore";
+  private GemFireCacheImpl cache = null;
   private File tmpDir;
-  protected File cacheXmlFile;
+  private File cacheXmlFile;
 
-  protected DistributedSystem ds = null;
-  protected Properties props = new Properties();
+  private Properties props = new Properties();
 
   private File backupDir;
   private File[] diskDirs;
@@ -103,7 +101,6 @@ public class BackupJUnitTest {
 
   private void createCache() throws IOException {
     cache = (GemFireCacheImpl) new CacheFactory(props).create();
-    ds = cache.getDistributedSystem();
   }
 
   @After
@@ -123,33 +120,26 @@ public class BackupJUnitTest {
 
   @Test
   public void testBackupAndRecover() throws IOException, InterruptedException {
-    backupAndRecover(new RegionCreator() {
-      public Region createRegion() {
-        DiskStoreImpl ds = createDiskStore();
-        return BackupJUnitTest.this.createRegion();
-      }
+    backupAndRecover(() -> {
+      createDiskStore();
+      return BackupJUnitTest.this.createRegion();
     });
   }
 
   @Test
   public void testBackupAndRecoverOldConfig() throws IOException, InterruptedException {
-    backupAndRecover(new RegionCreator() {
-      public Region createRegion() {
-        DiskStoreImpl ds = createDiskStore();
-        RegionFactory rf = new RegionFactory();
-        rf.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-        rf.setDiskDirs(diskDirs);
-        DiskWriteAttributesFactory daf = new DiskWriteAttributesFactory();
-        daf.setMaxOplogSize(1);
-        rf.setDiskWriteAttributes(daf.create());
-        return rf.create("region");
-      }
+    backupAndRecover(() -> {
+      createDiskStore();
+      RegionFactory regionFactory = cache.createRegionFactory();
+      regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+      regionFactory.setDiskStoreName(DISK_STORE_NAME);
+      return regionFactory.create("region");
     });
   }
 
-  public void backupAndRecover(RegionCreator regionFactory)
+  private void backupAndRecover(RegionCreator regionFactory)
       throws IOException, InterruptedException {
-    Region region = regionFactory.createRegion();
+    Region<Object, Object> region = regionFactory.createRegion();
 
     // Put enough data to roll some oplogs
     for (int i = 0; i < 1024; i++) {
@@ -193,8 +183,8 @@ public class BackupJUnitTest {
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareBackup();
-    backup.finishBackup(backupDir, null, false);
+    backup.prepareForBackup();
+    backup.doBackup(backupDir, null, false);
 
     // Put another key to make sure we restore
     // from a backup that doesn't contain this key
@@ -238,19 +228,19 @@ public class BackupJUnitTest {
 
   @Test
   public void testBackupEmptyDiskStore() throws IOException, InterruptedException {
-    DiskStoreImpl ds = createDiskStore();
+    createDiskStore();
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareBackup();
-    backup.finishBackup(backupDir, null, false);
+    backup.prepareForBackup();
+    backup.doBackup(backupDir, null, false);
     assertEquals("No backup files should have been created", Collections.emptyList(),
         Arrays.asList(backupDir.list()));
   }
 
   @Test
   public void testBackupOverflowOnlyDiskStore() throws IOException, InterruptedException {
-    DiskStoreImpl ds = createDiskStore();
+    createDiskStore();
     Region region = createOverflowRegion();
     // Put another key to make sure we restore
     // from a backup that doesn't contain this key
@@ -258,8 +248,8 @@ public class BackupJUnitTest {
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareBackup();
-    backup.finishBackup(backupDir, null, false);
+    backup.prepareForBackup();
+    backup.doBackup(backupDir, null, false);
 
 
     assertEquals("No backup files should have been created", Collections.emptyList(),
@@ -275,51 +265,54 @@ public class BackupJUnitTest {
     dsf.setAutoCompact(false);
     dsf.setAllowForceCompaction(true);
     dsf.setCompactionThreshold(20);
-    String name = "diskStore";
-    DiskStoreImpl ds = (DiskStoreImpl) dsf.create(name);
+    DiskStoreImpl ds = (DiskStoreImpl) dsf.create(DISK_STORE_NAME);
 
-    Region region = createRegion();
+    Region<Object, Object> region = createRegion();
 
     // Put enough data to roll some oplogs
     for (int i = 0; i < 1024; i++) {
       region.put(i, getBytes(i));
     }
 
-    RestoreScript script = new RestoreScript();
-    ds.startBackup(backupDir, null, script);
-
-    for (int i = 2; i < 1024; i++) {
-      assertTrue(region.destroy(i) != null);
-    }
-    assertTrue(ds.forceCompaction());
-    // Put another key to make sure we restore
-    // from a backup that doesn't contain this key
-    region.put("A", "A");
-
-    ds.finishBackup(
-        new BackupManager(cache.getInternalDistributedSystem().getDistributedMember(), cache));
-    script.generate(backupDir);
+    BackupManager backupManager =
+        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+    backupManager.validateRequestingAdmin();
+    backupManager.prepareForBackup();
+    final Region theRegion = region;
+    final DiskStore theDiskStore = ds;
+    CompletableFuture.runAsync(() -> destroyAndCompact(theRegion, theDiskStore));
+    backupManager.doBackup(backupDir, null, false);
 
     cache.close();
     destroyDiskDirs();
     restoreBackup(false);
     createCache();
-    ds = createDiskStore();
+    createDiskStore();
     region = createRegion();
     validateEntriesExist(region, 0, 1024);
 
     assertNull(region.get("A"));
   }
 
+  private void destroyAndCompact(Region<Object, Object> region, DiskStore diskStore) {
+    for (int i = 2; i < 1024; i++) {
+      assertTrue(region.destroy(i) != null);
+    }
+    assertTrue(diskStore.forceCompaction());
+    // Put another key to make sure we restore
+    // from a backup that doesn't contain this key
+    region.put("A", "A");
+  }
+
   @Test
   public void testBackupCacheXml() throws Exception {
-    DiskStoreImpl ds = createDiskStore();
+    createDiskStore();
     createRegion();
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareBackup();
-    backup.finishBackup(backupDir, null, false);
+    backup.prepareForBackup();
+    backup.doBackup(backupDir, null, false);
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,
         new RegexFileFilter("cache.xml"), DirectoryFileFilter.DIRECTORY);
     assertEquals(1, fileCollection.size());
@@ -337,12 +330,9 @@ public class BackupJUnitTest {
     // The cache xml file should be small enough to fit in one byte array
     int size = (int) file.length();
     byte[] contents = new byte[size];
-    FileInputStream fis = new FileInputStream(file);
-    try {
+    try (FileInputStream fis = new FileInputStream(file)) {
       assertEquals(size, fis.read(contents));
       assertEquals(-1, fis.read());
-    } finally {
-      fis.close();
     }
     return contents;
   }
@@ -406,36 +396,35 @@ public class BackupJUnitTest {
 
   }
 
-  protected Region createRegion() {
-    RegionFactory rf = new RegionFactory();
-    rf.setDiskStoreName("diskStore");
-    rf.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-    return rf.create("region");
+  private Region createRegion() {
+    RegionFactory regionFactory = cache.createRegionFactory();
+    regionFactory.setDiskStoreName(DISK_STORE_NAME);
+    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+    return regionFactory.create("region");
   }
 
   private Region createOverflowRegion() {
-    RegionFactory rf = new RegionFactory();
-    rf.setDiskStoreName("diskStore");
-    rf.setEvictionAttributes(
+    RegionFactory regionFactory = cache.createRegionFactory();
+    regionFactory.setDiskStoreName(DISK_STORE_NAME);
+    regionFactory.setEvictionAttributes(
         EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
-    rf.setDataPolicy(DataPolicy.NORMAL);
-    return rf.create("region");
+    regionFactory.setDataPolicy(DataPolicy.NORMAL);
+    return regionFactory.create("region");
   }
 
   private DiskStore findDiskStore() {
-    return cache.findDiskStore("diskStore");
+    return cache.findDiskStore(DISK_STORE_NAME);
   }
 
-  private DiskStoreImpl createDiskStore() {
-    DiskStoreFactory dsf = cache.createDiskStoreFactory();
-    dsf.setDiskDirs(diskDirs);
-    dsf.setMaxOplogSize(1);
-    String name = "diskStore";
-    return (DiskStoreImpl) dsf.create(name);
+  private void createDiskStore() {
+    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(diskDirs);
+    diskStoreFactory.setMaxOplogSize(1);
+    diskStoreFactory.create(DISK_STORE_NAME);
   }
 
   private interface RegionCreator {
-    Region createRegion();
+    Region<Object, Object> createRegion();
   }
 
 }

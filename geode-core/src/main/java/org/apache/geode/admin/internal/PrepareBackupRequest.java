@@ -37,7 +37,7 @@ import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.cache.BackupManager;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -87,7 +87,7 @@ public class PrepareBackupRequest extends CliLegacyMessage {
     } else {
       try {
         BackupManager manager = cache.startBackup(getSender());
-        persistentIds = manager.prepareBackup();
+        persistentIds = manager.prepareForBackup();
       } catch (IOException e) {
         logger.error(
             LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), e);

@@ -77,7 +77,7 @@ import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.cache.BackupManager;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -1037,10 +1037,10 @@ public class MemberMBeanBridge {
         Set<PersistentID> existingDataStores;
         Set<PersistentID> successfulDataStores;
         try {
-          existingDataStores = manager.prepareBackup();
+          existingDataStores = manager.prepareForBackup();
           abort = false;
         } finally {
-          successfulDataStores = manager.finishBackup(targetDir, null/* TODO rishi */, abort);
+          successfulDataStores = manager.doBackup(targetDir, null/* TODO rishi */, abort);
         }
         diskBackUpResult = new DiskBackupResult[existingDataStores.size()];
         int j = 0;
