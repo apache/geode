@@ -32,14 +32,12 @@ import org.apache.geode.management.ManagementException;
 
 /**
  * Instance of this class is responsible for proxy creation/deletion etc.
- * 
+ *
  * If a member is added/removed proxy factory is responsible for creating removing the corresponding
  * proxies for that member.
- * 
+ *
  * It also maintains a proxy repository {@link MBeanProxyInfoRepository} for quick access to the
  * proxy instances
- * 
- * 
  */
 public class MBeanProxyFactory {
   private static final Logger logger = LogService.getLogger();
@@ -80,10 +78,11 @@ public class MBeanProxyFactory {
       Region<String, Object> monitoringRegion, Object newVal) {
 
     try {
+      String name = objectName.toString();
+      FederationComponent federationComponent = (FederationComponent) monitoringRegion.get(name);
+      String interfaceClassName = federationComponent.getMBeanInterfaceClass();
 
-      Class interfaceClass = ClassLoadUtil
-          .classFromName(((FederationComponent) monitoringRegion.get(objectName.toString()))
-              .getMBeanInterfaceClass());
+      Class interfaceClass = ClassLoadUtil.classFromName(interfaceClassName);
 
       Object object = MBeanProxyInvocationHandler.newProxyInstance(member, monitoringRegion,
           objectName, interfaceClass);
@@ -112,7 +111,7 @@ public class MBeanProxyFactory {
   /**
    * This method will create all the proxies for a given DistributedMember. It does not throw any
    * exception to its caller. It handles the error and logs error messages
-   * 
+   *
    * It will be called from GII or when a member joins the system
    * 
    * @param member {@link org.apache.geode.distributed.DistributedMember}
@@ -233,7 +232,6 @@ public class MBeanProxyFactory {
    * @return an instance of proxy exposing the given interface
    */
   public <T> T findProxy(ObjectName objectName, Class<T> interfaceClass) {
-
 
     return proxyRepo.findProxyByName(objectName, interfaceClass);
 
