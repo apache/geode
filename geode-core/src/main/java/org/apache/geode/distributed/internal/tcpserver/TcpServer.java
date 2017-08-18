@@ -14,35 +14,6 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandlerLoader;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.logging.log4j.Logger;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -64,7 +35,36 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.net.ssl.SSLException;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
+import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataOutputStream;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
+import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * TCP server which listens on a port and delegates requests to a request handler. The server uses
@@ -99,6 +99,11 @@ public class TcpServer {
 
   private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
+  /**
+   * For the new client-server protocol, which ignores the usual handshake mechanism.
+   */
+  public static final byte PROTOBUF_CLIENT_SERVER_PROTOCOL = (byte) 110;
+
   // For test purpose only
   public static boolean isTesting = false;
   // Non-final field for testing to avoid any security holes in system.
@@ -126,8 +131,10 @@ public class TcpServer {
   private InetAddress bind_address;
   private volatile boolean shuttingDown = false; // GemStoneAddition
   private final PoolStatHelper poolHelper;
-  private InternalLocator internalLocator;
+  private final InternalLocator internalLocator;
   private final TcpHandler handler;
+  private ClientProtocolMessageHandler messageHandler;
+
 
   private PooledExecutorWithDMStats executor;
   private final ThreadGroup threadGroup;
@@ -150,12 +157,14 @@ public class TcpServer {
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-      ThreadGroup threadGroup, String threadName, InternalLocator internalLocator) {
+      ThreadGroup threadGroup, String threadName, InternalLocator internalLocator,
+      ClientProtocolMessageHandler messageHandler) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
     this.poolHelper = poolHelper;
     this.internalLocator = internalLocator;
+    this.messageHandler = messageHandler;
     // register DSFID types first; invoked explicitly so that all message type
     // initializations do not happen in first deserialization on a possibly
     // "precious" thread
@@ -365,69 +374,67 @@ public class TcpServer {
 
         short versionOrdinal;
         if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
-          if (input.readUnsignedByte() == AcceptorImpl.PROTOBUF_CLIENT_SERVER_PROTOCOL
+          if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-            ClientProtocolMessageHandler messageHandler = ClientProtocolMessageHandlerLoader.load();
             messageHandler.receiveMessage(input, socket.getOutputStream(),
-                new ExecutionContext(internalLocator));
+                new MessageExecutionContext(internalLocator));
           } else {
+            rejectUnknownProtocolConnection(socket, gossipVersion);
+          }
+        } else {
+          if (gossipVersion <= getCurrentGossipVersion()
+              && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
+            // Create a versioned stream to remember sender's GemFire version
+            versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
+          } else {
+            // Close the socket. We can not accept requests from a newer version
             rejectUnknownProtocolConnection(socket, gossipVersion);
             return;
           }
-        }
-        if (gossipVersion <= getCurrentGossipVersion()
-            && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
-          // Create a versioned stream to remember sender's GemFire version
-          versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
-        } else {
-          // Close the socket. We can not accept requests from a newer version
-          rejectUnknownProtocolConnection(socket, gossipVersion);
-          return;
-        }
-        if (Version.GFE_71.compareTo(versionOrdinal) <= 0) {
-          // Recent versions of TcpClient will send the version ordinal
-          versionOrdinal = input.readShort();
-        }
-
-        if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
-          log.debug("Locator reading request from " + socket.getInetAddress() + " with version "
-              + Version.fromOrdinal(versionOrdinal, false));
-        }
-        input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
-        request = DataSerializer.readObject(input);
-        if (log.isDebugEnabled()) {
-          log.debug("Locator received request " + request + " from " + socket.getInetAddress());
-        }
-        if (request instanceof ShutdownRequest) {
-          shuttingDown = true;
-          // Don't call shutdown from within the worker thread, see java bug #6576792.
-          // Closing the socket will cause our acceptor thread to shutdown the executor
-          this.serverSocketPortAtClose = srv_sock.getLocalPort();
-          srv_sock.close();
-          response = new ShutdownResponse();
-        } else if (request instanceof InfoRequest) {
-          response = handleInfoRequest(request);
-        } else if (request instanceof VersionRequest) {
-          response = handleVersionRequest(request);
-        } else {
-          response = handler.processRequest(request);
-        }
-
-        handler.endRequest(request, startTime);
-
-        startTime = DistributionStats.getStatTime();
-        if (response != null) {
-          DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-          if (versionOrdinal != Version.CURRENT_ORDINAL) {
-            output =
-                new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
+          if (Version.GFE_71.compareTo(versionOrdinal) <= 0) {
+            // Recent versions of TcpClient will send the version ordinal
+            versionOrdinal = input.readShort();
           }
-          DataSerializer.writeObject(response, output);
-          output.flush();
+
+          if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
+            log.debug("Locator reading request from " + socket.getInetAddress() + " with version "
+                + Version.fromOrdinal(versionOrdinal, false));
+          }
+          input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
+          request = DataSerializer.readObject(input);
+          if (log.isDebugEnabled()) {
+            log.debug("Locator received request " + request + " from " + socket.getInetAddress());
+          }
+          if (request instanceof ShutdownRequest) {
+            shuttingDown = true;
+            // Don't call shutdown from within the worker thread, see java bug #6576792.
+            // Closing the socket will cause our acceptor thread to shutdown the executor
+            this.serverSocketPortAtClose = srv_sock.getLocalPort();
+            srv_sock.close();
+            response = new ShutdownResponse();
+          } else if (request instanceof InfoRequest) {
+            response = handleInfoRequest(request);
+          } else if (request instanceof VersionRequest) {
+            response = handleVersionRequest(request);
+          } else {
+            response = handler.processRequest(request);
+          }
+
+          handler.endRequest(request, startTime);
+
+          startTime = DistributionStats.getStatTime();
+          if (response != null) {
+            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+            if (versionOrdinal != Version.CURRENT_ORDINAL) {
+              output =
+                  new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
+            }
+            DataSerializer.writeObject(response, output);
+            output.flush();
+          }
+
+          handler.endResponse(request, startTime);
         }
-
-        handler.endResponse(request, startTime);
-
       } catch (EOFException ignore) {
         // client went away - ignore
       } catch (CancelException ignore) {

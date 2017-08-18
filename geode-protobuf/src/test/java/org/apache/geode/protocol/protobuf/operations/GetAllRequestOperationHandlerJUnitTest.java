@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.RegionAPI;
@@ -82,7 +82,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true), new ExecutionContext(cacheStub));
+        generateTestRequest(true), new MessageExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -102,7 +102,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processReturnsNoEntriesForNoKeysRequested() throws UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false), new ExecutionContext(cacheStub));
+        generateTestRequest(false), new MessageExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 

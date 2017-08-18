@@ -18,7 +18,8 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorLoadSnapshot;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.ServerAPI;
@@ -31,6 +32,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -41,13 +43,14 @@ import static org.mockito.Mockito.when;
 @Category(UnitTest.class)
 public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
 
-  public static final String HOSTNAME_1 = "hostname1";
-  public static final int PORT_1 = 12345;
+  private final String HOSTNAME_1 = "hostname1";
+  private final int PORT_1 = 12345;
 
-  public static final String HOSTNAME_2 = "hostname2";
-  public static final int PORT_2 = 23456;
+  private final String HOSTNAME_2 = "hostname2";
+  private final int PORT_2 = 23456;
 
   private InternalLocator internalLocatorMock;
+  private LocatorLoadSnapshot locatorLoadSnapshot;
 
   @Before
   public void setUp() throws Exception {
@@ -56,25 +59,42 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
     operationHandler = new GetAvailableServersOperationHandler();
     internalLocatorMock = mock(InternalLocator.class);
     ServerLocator serverLocatorAdviseeMock = mock(ServerLocator.class);
-    LocatorLoadSnapshot locatorLoadSnapshot = mock(LocatorLoadSnapshot.class);
-    ArrayList<Object> serverList = new ArrayList<>();
-    serverList.add(new ServerLocation(HOSTNAME_1, PORT_1));
-    serverList.add(new ServerLocation(HOSTNAME_2, PORT_2));
+    locatorLoadSnapshot = mock(LocatorLoadSnapshot.class);
+
 
     when(internalLocatorMock.getServerLocatorAdvisee()).thenReturn(serverLocatorAdviseeMock);
     when(serverLocatorAdviseeMock.getLoadSnapshot()).thenReturn(locatorLoadSnapshot);
-    when(locatorLoadSnapshot.getServers(null)).thenReturn(serverList);
   }
 
   @Test
   public void testServerReturnedFromHandler() throws Exception {
+    ArrayList<Object> serverList = new ArrayList<>();
+    serverList.add(new ServerLocation(HOSTNAME_1, PORT_1));
+    serverList.add(new ServerLocation(HOSTNAME_2, PORT_2));
+    when(locatorLoadSnapshot.getServers(null)).thenReturn(serverList);
+
     ServerAPI.GetAvailableServersRequest getAvailableServersRequest =
         ProtobufRequestUtilities.createGetAvailableServersRequest();
     Result operationHandlerResult = operationHandler.process(serializationServiceStub,
-        getAvailableServersRequest, new ExecutionContext(internalLocatorMock));
+        getAvailableServersRequest, new MessageExecutionContext(internalLocatorMock));
     assertTrue(operationHandlerResult instanceof Success);
     ValidateGetAvailableServersResponse(
         (GetAvailableServersResponse) operationHandlerResult.getMessage());
+  }
+
+  @Test
+  public void testWhenServersFromSnapshotAreNullReturnsEmtpy()
+      throws InvalidExecutionContextException {
+    when(locatorLoadSnapshot.getServers(any())).thenReturn(null);
+
+    ServerAPI.GetAvailableServersRequest getAvailableServersRequest =
+        ProtobufRequestUtilities.createGetAvailableServersRequest();
+    Result operationHandlerResult = operationHandler.process(serializationServiceStub,
+        getAvailableServersRequest, new MessageExecutionContext(internalLocatorMock));
+    assertTrue(operationHandlerResult instanceof Success);
+    GetAvailableServersResponse availableServersResponse =
+        (GetAvailableServersResponse) operationHandlerResult.getMessage();
+    assertEquals(0, availableServersResponse.getServersCount());
   }
 
   private void ValidateGetAvailableServersResponse(

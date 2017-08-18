@@ -76,9 +76,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
-  default InternalDistributedMember getMyId() {
-    return null;
-  }
+  InternalDistributedMember getMyId();
 
   Collection<DiskStore> listDiskStores();
 

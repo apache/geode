@@ -62,6 +62,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -498,8 +499,8 @@ public class InternalLocator extends Locator implements ConnectListener {
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
     this.stats = new LocatorStats();
 
-    this.server = new TcpServer(port, this.bindAddress, null, this.config, this.handler,
-        new DelayedPoolStatHelper(), group, this.toString(), this);
+    this.server = new TcpServerFactory().makeTcpServer(port, this.bindAddress, null, this.config,
+        this.handler, new DelayedPoolStatHelper(), group, this.toString(), this);
   }
 
   // Reset the file names with the correct port number if startLocatorAndDS was called with port

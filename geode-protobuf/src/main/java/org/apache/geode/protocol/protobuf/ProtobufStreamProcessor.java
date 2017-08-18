@@ -21,7 +21,7 @@ import java.io.OutputStream;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
@@ -46,7 +46,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
 
   @Override
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      ExecutionContext executionContext) throws IOException {
+      MessageExecutionContext executionContext) throws IOException {
     try {
       processOneMessage(inputStream, outputStream, executionContext);
     } catch (InvalidProtocolMessageException e) {
@@ -55,7 +55,8 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   }
 
   private void processOneMessage(InputStream inputStream, OutputStream outputStream,
-      ExecutionContext executionContext) throws InvalidProtocolMessageException, IOException {
+      MessageExecutionContext executionContext)
+      throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
     if (message == null) {
       throw new EOFException("Tried to deserialize protobuf message at EOF");

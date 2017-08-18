@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -41,7 +41,7 @@ public class GetAllRequestOperationHandler
 
   @Override
   public Result<RegionAPI.GetAllResponse> process(SerializationService serializationService,
-      RegionAPI.GetAllRequest request, ExecutionContext executionContext)
+      RegionAPI.GetAllRequest request, MessageExecutionContext executionContext)
       throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
     Region region = executionContext.getCache().getRegion(regionName);

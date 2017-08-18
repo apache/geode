@@ -15,12 +15,22 @@
 
 package org.apache.geode.protocol;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,7 +39,11 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
@@ -39,6 +53,7 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -48,6 +63,7 @@ public class RoundTripLocatorConnectionJUnitTest extends JUnit4CacheTestCase {
 
   private Socket socket;
   private DataOutputStream dataOutputStream;
+  private Locator locator;
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -63,7 +79,8 @@ public class RoundTripLocatorConnectionJUnitTest extends JUnit4CacheTestCase {
     socket = new Socket(host.getHostName(), locatorPort);
     dataOutputStream = new DataOutputStream(socket.getOutputStream());
     dataOutputStream.writeInt(0);
-    dataOutputStream.writeByte(110);
+    // Using the constant from AcceptorImpl to ensure that magic byte is the same
+    dataOutputStream.writeByte(AcceptorImpl.PROTOBUF_CLIENT_SERVER_PROTOCOL);
   }
 
   @Test

@@ -24,7 +24,6 @@ import org.apache.geode.security.StreamAuthenticator;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
 
@@ -32,7 +31,7 @@ import java.util.ServiceLoader;
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
-  private ClientProtocolMessageHandler protobufProtocolHandler;
+  private ClientProtocolMessageHandler protocolHandler;
   private Map<String, Class<? extends StreamAuthenticator>> authenticators = null;
 
   public ServerConnectionFactory() {}
@@ -49,20 +48,13 @@ public class ServerConnectionFactory {
   }
 
   private synchronized ClientProtocolMessageHandler initializeMessageHandler() {
-    if (protobufProtocolHandler != null) {
-      return protobufProtocolHandler;
-    }
-    ServiceLoader<ClientProtocolMessageHandler> loader =
-        ServiceLoader.load(ClientProtocolMessageHandler.class);
-    Iterator<ClientProtocolMessageHandler> iterator = loader.iterator();
-
-    if (!iterator.hasNext()) {
-      throw new ServiceLoadingFailureException(
-          "There is no ClientProtocolMessageHandler implementation found in JVM");
+    if (protocolHandler != null) {
+      return protocolHandler;
     }
 
-    protobufProtocolHandler = iterator.next();
-    return protobufProtocolHandler;
+    protocolHandler = new MessageHandlerFactory().makeMessageHandler();
+
+    return protocolHandler;
   }
 
   private StreamAuthenticator findStreamAuthenticator(String implementationID) {
@@ -86,10 +78,10 @@ public class ServerConnectionFactory {
   }
 
   private ClientProtocolMessageHandler getClientProtocolMessageHandler() {
-    if (protobufProtocolHandler == null) {
+    if (protocolHandler == null) {
       initializeMessageHandler();
     }
-    return protobufProtocolHandler;
+    return protocolHandler;
   }
 
   public ServerConnection makeServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,

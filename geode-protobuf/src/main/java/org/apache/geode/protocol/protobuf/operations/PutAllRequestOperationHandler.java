@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -44,7 +44,7 @@ public class PutAllRequestOperationHandler
 
   @Override
   public Result<RegionAPI.PutAllResponse> process(SerializationService serializationService,
-      RegionAPI.PutAllRequest putAllRequest, ExecutionContext executionContext)
+      RegionAPI.PutAllRequest putAllRequest, MessageExecutionContext executionContext)
       throws InvalidExecutionContextException {
     Region region = executionContext.getCache().getRegion(putAllRequest.getRegionName());
 
