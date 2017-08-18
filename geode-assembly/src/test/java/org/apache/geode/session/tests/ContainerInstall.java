@@ -385,17 +385,25 @@ public abstract class ContainerInstall {
 
   protected static void editXMLFile(String XMLPath, String tagId, String tagName,
       String parentTagName, HashMap<String, String> attributes) {
-    editXMLFile(XMLPath, tagId, tagName, parentTagName, attributes, false);
+    editXMLFile(XMLPath, tagId, tagName, tagName, parentTagName, attributes, false);
   }
 
   protected static void editXMLFile(String XMLPath, String tagName, String parentTagName,
       HashMap<String, String> attributes) {
-    editXMLFile(XMLPath, null, tagName, parentTagName, attributes, false);
+    editXMLFile(XMLPath, tagName, parentTagName, attributes, false);
   }
 
   protected static void editXMLFile(String XMLPath, String tagName, String parentTagName,
       HashMap<String, String> attributes, boolean writeOnSimilarAttributeNames) {
-    editXMLFile(XMLPath, null, tagName, parentTagName, attributes, writeOnSimilarAttributeNames);
+    editXMLFile(XMLPath, null, tagName, tagName, parentTagName, attributes,
+        writeOnSimilarAttributeNames);
+  }
+
+  protected static void editXMLFile(String XMLPath, String tagName, String replacementTagName,
+      String parentTagName, HashMap<String, String> attributes,
+      boolean writeOnSimilarAttributeNames) {
+    editXMLFile(XMLPath, null, tagName, replacementTagName, parentTagName, attributes,
+        writeOnSimilarAttributeNames);
   }
 
   /**
@@ -410,6 +418,7 @@ public abstract class ContainerInstall {
    * @param tagId The id of tag to edit. If null, then this method will add a new xml element,
    *        unless writeOnSimilarAttributeNames is set to true.
    * @param tagName The name of the xml element to edit
+   * @param replacementTagName The new name of the XML attribute that is being edited
    * @param parentTagName The parent element of the element we should edit
    * @param attributes the xml attributes for the element to edit
    * @param writeOnSimilarAttributeNames If true, find an existing element with the same set of
@@ -418,7 +427,7 @@ public abstract class ContainerInstall {
    *        not null).
    */
   protected static void editXMLFile(String XMLPath, String tagId, String tagName,
-      String parentTagName, HashMap<String, String> attributes,
+      String replacementTagName, String parentTagName, HashMap<String, String> attributes,
       boolean writeOnSimilarAttributeNames) {
 
     try {
@@ -431,23 +440,33 @@ public abstract class ContainerInstall {
       // Get node with specified tagId
       if (tagId != null) {
         node = findNodeWithAttribute(doc, tagName, "id", tagId);
-      } else if (writeOnSimilarAttributeNames) {
+      }
+      // If writing on similar attributes then search by tag name
+      else if (writeOnSimilarAttributeNames) {
+        // Get all the nodes with the given tag name
         NodeList nodes = doc.getElementsByTagName(tagName);
         for (int i = 0; i < nodes.getLength(); i++) {
           Node n = nodes.item(i);
+          // If the node being iterated across has the exact attributes then it is the one that
+          // should be edited
           if (nodeHasExactAttributes(n, attributes, false)) {
             node = n;
             break;
           }
         }
       }
-      // If no node is found
+      // If a node if found
       if (node != null) {
+        doc.renameNode(node, null, replacementTagName);
+        // Rewrite the node attributes
         rewriteNodeAttributes(node, attributes);
+        // Write the tagId so that it can be found easier next time
         if (tagId != null)
           ((Element) node).setAttribute("id", tagId);
-      } else {
-        Element e = doc.createElement(tagName);
+      }
+      // No node found creates new element under the parent tag passed in
+      else {
+        Element e = doc.createElement(replacementTagName);
         // Set id attribute
         if (tagId != null) {
           e.setAttribute("id", tagId);
@@ -485,11 +504,13 @@ public abstract class ContainerInstall {
    */
   private static Node findNodeWithAttribute(Document doc, String nodeName, String name,
       String value) {
+    // Get all nodes with given name
     NodeList nodes = doc.getElementsByTagName(nodeName);
     if (nodes == null) {
       return null;
     }
 
+    // Find and return the first node that has the given attribute
     for (int i = 0; i < nodes.getLength(); i++) {
       Node node = nodes.item(i);
       Node nodeAttr = node.getAttributes().getNamedItem(name);

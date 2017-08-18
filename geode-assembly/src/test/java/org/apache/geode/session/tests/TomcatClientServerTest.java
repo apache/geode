@@ -33,6 +33,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
  * Sets up the server needed for the client container to connect to
  */
 public abstract class TomcatClientServerTest extends CargoTestBase {
+  private String serverName;
 
   @Rule
   public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -43,10 +44,6 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   @Rule
   public transient LocatorServerStartupRule locatorStartup = new LocatorServerStartupRule();
 
-
-  private String serverName;
-  private File workingDirectory;
-
   /**
    * Starts a server for the client Tomcat container to connect to using the GFSH command line
    * before each test
@@ -54,31 +51,33 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   @Before
   public void startServer() throws Exception {
     TomcatInstall install = (TomcatInstall) getInstall();
+    // List of all the jars for tomcat to put on the server classpath
     String libDirJars = install.getHome() + "/lib/*";
     String binDirJars = install.getHome() + "/bin/*";
 
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
+    // Set server name based on the test about to be run
     serverName = getClass().getSimpleName().concat("_").concat(getTestMethodName());
-    workingDirectory = temporaryFolder.newFolder(serverName);
 
-
+    // Create command string for starting server
+    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
     command.addOption(CliStrings.START_SERVER__NAME, serverName);
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
+    // Add Tomcat jars to server classpath
     command.addOption(CliStrings.START_SERVER__CLASSPATH,
         binDirJars + File.pathSeparator + libDirJars);
     command.addOption(CliStrings.START_SERVER__LOCATORS, DUnitEnv.get().getLocatorString());
-    command.addOption(CliStrings.START_SERVER__DIR, workingDirectory.getCanonicalPath());
 
+    // Start server
     gfsh.executeAndVerifyCommand(command.toString());
   }
 
+  /**
+   * Stops the server for the client Tomcat container is has been connecting to
+   */
   @After
   public void stopServer() throws Exception {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);
-
-    // command.addOption(CliStrings.START_SERVER__NAME, serverName);
-    command.addOption(CliStrings.STOP_SERVER__DIR, workingDirectory.getCanonicalPath());
-
+    command.addOption(CliStrings.STOP_SERVER__DIR, serverName);
     gfsh.executeAndVerifyCommand(command.toString());
   }
 }

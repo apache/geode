@@ -14,28 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Delta;
-import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.lru.Sizeable;
-import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.modules.gatewaydelta.GatewayDelta;
-import org.apache.geode.modules.gatewaydelta.GatewayDeltaEvent;
-import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEvent;
-import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
-import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
-import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
-import org.apache.catalina.Manager;
-import org.apache.catalina.ha.session.SerializablePrincipal;
-import org.apache.catalina.realm.GenericPrincipal;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.session.StandardSession;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
-import javax.servlet.http.HttpSession;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -51,6 +29,30 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.Manager;
+import org.apache.catalina.ha.session.SerializablePrincipal;
+import org.apache.catalina.realm.GenericPrincipal;
+import org.apache.catalina.security.SecurityUtil;
+import org.apache.catalina.session.StandardSession;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.modules.gatewaydelta.GatewayDelta;
+import org.apache.geode.modules.gatewaydelta.GatewayDeltaEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
 
 @SuppressWarnings("serial")
 public class DeltaSession extends StandardSession
