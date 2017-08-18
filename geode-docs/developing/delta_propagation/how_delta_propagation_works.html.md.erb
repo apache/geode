@@ -66,4 +66,4 @@ The following topologies support delta propagation (with some limitations):
     -   When the client's `gemfire.properties` setting `conflate-events` is set to true, the servers send full values for all regions.
     -   When the server region attribute `enable-subscription-conflation` is set to true and the client `gemfire.properties` setting `conflate-events` is set to `server`, the servers send full values for the region.
     -   When the client region is configured with the `PROXY` client region shortcut setting (empty client region), servers send full values.
-
+-   **Multi-site (WAN)**. Gateway senders do not send Deltas. The full value is always sent.
