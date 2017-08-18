@@ -21,6 +21,7 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
@@ -493,7 +494,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
       return result;
 
-    } catch (RuntimeException validationException) {
+    } catch (PartitionOfflineException validationException) {
       // GEODE-3055
       PartitionedRegion leader = ColocationHelper.getLeaderRegion(this.partitionedRegion);
       boolean isLeader = leader.equals(this.partitionedRegion);
