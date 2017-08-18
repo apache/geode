@@ -188,7 +188,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000).intValue();
 
   public static int TOKEN_TIMEOUT =
-      Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 15000).intValue();
+      Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 120000).intValue();
 
   /**
    * The name of the DistributedLockService used when accessing the GatewaySender's meta data
