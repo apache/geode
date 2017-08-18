@@ -14,8 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
-import org.apache.geode.modules.session.CommandServlet;
-import org.apache.geode.modules.session.QueryCommand;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,8 +31,8 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import org.apache.geode.modules.session.CommandServlet;
+import org.apache.geode.modules.session.QueryCommand;
 
 /**
  * A simple http client that talks to a server running the session-testing-war.
@@ -207,7 +208,8 @@ public class Client {
 
     StatusLine status = resp.getStatusLine();
     if (status.getStatusCode() != 200) {
-      throw new IOException("Http request failed. " + status);
+      throw new IOException("Http request to " + req.getURI().getHost() + "["
+          + req.getURI().getPort() + "] failed. " + status);
     }
 
     Response response = new Response(reqCookie, EntityUtils.toString(resp.getEntity()), isNew);

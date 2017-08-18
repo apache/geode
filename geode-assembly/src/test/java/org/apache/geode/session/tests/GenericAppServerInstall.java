@@ -14,7 +14,6 @@
  */
 package org.apache.geode.session.tests;
 
-import java.awt.Container;
 import java.io.File;
 import java.io.IOException;
 
@@ -35,7 +34,8 @@ import java.io.IOException;
 public class GenericAppServerInstall extends ContainerInstall {
 
   /**
-   * Get the download URL and container name of a generic app server using hardcoded keywords
+   * Get the version number, download URL, and container name of a generic app server using
+   * hardcoded keywords
    *
    * Currently the only supported keyword instance is JETTY9.
    */

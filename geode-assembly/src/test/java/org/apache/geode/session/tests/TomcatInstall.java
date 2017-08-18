@@ -163,10 +163,12 @@ public class TomcatInstall extends ContainerInstall {
   public void setupDefaultSettings() {
     HashMap<String, String> attributes = new HashMap<>();
 
+    // Set the session manager class within the context XML file
     attributes.put("className", getContextSessionManagerClass());
     editXMLFile(getDefaultContextXMLFile().getAbsolutePath(), "Tomcat", "Manager", "Context",
         attributes);
 
+    // Set the server lifecycle listener within the server XML file
     attributes.put("className", getServerLifeCycleListenerClass());
     editXMLFile(getDefaultServerXMLFile().getAbsolutePath(), "Tomcat", "Listener", "Server",
         attributes);
@@ -276,7 +278,7 @@ public class TomcatInstall extends ContainerInstall {
     // Don't need to copy any jars already in the tomcat install
     File tomcatLib = new File(tomcatLibPath);
 
-    // Find all the required jars in the tomcatModulePath
+    // Find all jars in the tomcatModulePath and add them as required jars
     try {
       for (File file : (new File(moduleJarDir)).listFiles()) {
         if (file.isFile() && file.getName().endsWith(".jar")) {
@@ -318,9 +320,11 @@ public class TomcatInstall extends ContainerInstall {
    */
   private void updateProperties() throws Exception {
     String jarsToSkip = "";
+    // Adds all the required jars as jars to skip when starting Tomcat
     for (String jarName : tomcatRequiredJars)
       jarsToSkip += "," + jarName + "*.jar";
 
+    // Add the jars to skip to the catalina property file
     editPropertyFile(getHome() + "/conf/catalina.properties", version.jarSkipPropertyName(),
         jarsToSkip, true);
   }

@@ -53,13 +53,13 @@ public class TomcatContainer extends ServerContainer {
       String containerDescriptors) throws IOException {
     super(install, containerConfigHome, containerDescriptors);
 
-    // Modify the cargo configuration to load off of the installation's context.xml
-    setConfigFile(DEFAULT_CONF_DIR + "context.xml", "conf", "context.xml");
     // Setup container specific XML files
     contextXMLFile = new File(logDir.getAbsolutePath() + "/context.xml");
     serverXMLFile = new File(DEFAULT_CONF_DIR + "server.xml");
 
+    // Copy the default container context XML file from the install to the specified path
     FileUtils.copyFile(new File(DEFAULT_CONF_DIR + "context.xml"), contextXMLFile);
+    // Set the container context XML file to the new location copied to above
     setConfigFile(contextXMLFile.getAbsolutePath(), DEFAULT_TOMCAT_XML_REPLACEMENT_DIR,
         DEFAULT_TOMCAT_CONTEXT_XML_REPLACEMENT_NAME);
 

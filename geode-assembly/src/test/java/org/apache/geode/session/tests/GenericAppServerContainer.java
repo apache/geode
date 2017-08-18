@@ -95,18 +95,25 @@ public class GenericAppServerContainer extends ServerContainer {
   private List<String> buildCommand() throws IOException {
     ContainerInstall install = getInstall();
 
+    // Start command list
     List<String> command = new ArrayList<>();
+    // Path to the modify war script to run
     command.add(modifyWarScript.getAbsolutePath());
+    // Path to the WAR file to modify
     command.add("-w");
     command.add(install.getWarFilePath());
+    // Get connection type for the WAR (peer-to-peer or client-server)
     command.add("-t");
     command.add(install.getConnectionType().getName());
+    // Path to the modified version of the origin WAR file
     command.add("-o");
     command.add(getWarFile().getAbsolutePath());
+    // Add all the cache properties setup to the WAR file
     for (String property : cacheProperties.keySet()) {
       command.add("-p");
       command.add("gemfire.cache." + property + "=" + getCacheProperty(property));
     }
+    // Add all the system properties to the WAR file
     for (String property : systemProperties.keySet()) {
       command.add("-p");
       command.add("gemfire.property." + property + "=" + getSystemProperty(property));
@@ -148,8 +155,7 @@ public class GenericAppServerContainer extends ServerContainer {
   }
 
   /**
-   * Update the container's settings by calling by modifying the war file through the
-   * {@link #modifyWarFile()} function
+   * Update the container's settings by calling {@link #modifyWarFile()} method
    */
   @Override
   public void writeSettings() throws Exception {
