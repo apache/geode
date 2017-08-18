@@ -84,7 +84,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * to keep track. Note: unprocessedEventsLock MUST be synchronized before using this map. This is
    * not a cut and paste error. sync unprocessedEventsLock when using unprocessedTokens.
    */
-  private Map<EventID, Long> unprocessedTokens;
+  protected Map<EventID, Long> unprocessedTokens;
 
   private ExecutorService executor;
 
@@ -98,7 +98,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * When the Number of unchecked events exceeds this threshold and the number of tokens in the map
    * exceeds this threshold then a check will be done for old tokens.
    */
-  static private final int REAP_THRESHOLD = 1000;
+  static protected final int REAP_THRESHOLD = 1000;
 
   /*
    * How many events have happened without a reap check being done?
