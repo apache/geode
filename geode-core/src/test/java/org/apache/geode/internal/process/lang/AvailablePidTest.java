@@ -12,13 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.process.lang;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
-import static org.apache.geode.internal.process.lang.AvailablePid.DEFAULT_TIMEOUT_MILLIS;
+import static org.apache.geode.internal.process.lang.AvailablePid.DEFAULT_LOWER_BOUND;
+import static org.apache.geode.internal.process.lang.AvailablePid.DEFAULT_UPPER_BOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
@@ -29,9 +32,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Stopwatch;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.Timeout;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -43,6 +49,9 @@ public class AvailablePidTest {
 
   private AvailablePid availablePid;
 
+  @Rule
+  public Timeout timeout = Timeout.builder().withTimeout(20, SECONDS).build();
+
   @Before
   public void before() throws Exception {
     availablePid = new AvailablePid();
@@ -50,39 +59,39 @@ public class AvailablePidTest {
 
   @Test
   public void lowerBoundShouldBeLegalPid() throws Exception {
-    assertThat(isProcessAlive(AvailablePid.LOWER_BOUND)).isIn(true, false);
+    assertThat(isProcessAlive(DEFAULT_LOWER_BOUND)).isIn(true, false);
   }
 
   @Test
   public void upperBoundShouldBeLegalPid() throws Exception {
-    assertThat(isProcessAlive(AvailablePid.UPPER_BOUND)).isIn(true, false);
+    assertThat(isProcessAlive(DEFAULT_UPPER_BOUND)).isIn(true, false);
   }
 
-  @Test(timeout = DEFAULT_TIMEOUT_MILLIS)
+  @Test
   public void findAvailablePidShouldNotReturnLocalPid() throws Exception {
     int pid = availablePid.findAvailablePid();
 
     assertThat(pid).isNotEqualTo(identifyPid());
   }
 
-  @Test(timeout = DEFAULT_TIMEOUT_MILLIS)
+  @Test
   public void findAvailablePidShouldNotReturnLivePid() throws Exception {
     int pid = availablePid.findAvailablePid();
 
     assertThat(isProcessAlive(pid)).isFalse();
   }
 
-  @Test(timeout = DEFAULT_TIMEOUT_MILLIS)
-  public void findAvailablePidShouldReturnRandomPid() throws Exception {
+  @Test
+  public void findAvailablePidShouldUseRandom() throws Exception {
     Random random = spy(new Random());
-    availablePid = new AvailablePid(random, DEFAULT_TIMEOUT_MILLIS);
+    availablePid = new AvailablePid(random);
 
     availablePid.findAvailablePid();
 
     verify(random, atLeastOnce()).nextInt(anyInt());
   }
 
-  @Test(timeout = DEFAULT_TIMEOUT_MILLIS)
+  @Test
   public void findAvailablePidsShouldReturnSpecifiedNumberOfPids() throws Exception {
     assertThat(availablePid.findAvailablePids(1)).hasSize(1);
     assertThat(availablePid.findAvailablePids(2)).hasSize(2);
@@ -91,7 +100,7 @@ public class AvailablePidTest {
     assertThat(availablePid.findAvailablePids(8)).hasSize(8);
   }
 
-  @Test(timeout = DEFAULT_TIMEOUT_MILLIS)
+  @Test
   public void findAvailablePidsShouldReturnNoDuplicatedPids() throws Exception {
     assertThatNoPidIsDuplicated(availablePid.findAvailablePids(1));
     assertThatNoPidIsDuplicated(availablePid.findAvailablePids(2));
@@ -100,7 +109,55 @@ public class AvailablePidTest {
     assertThatNoPidIsDuplicated(availablePid.findAvailablePids(8));
   }
 
-  private void assertThatNoPidIsDuplicated(int[] pids) {
+  @Test
+  public void findAvailablePidShouldReturnGreaterThanOrEqualToLowerBound() throws Exception {
+    availablePid = new AvailablePid(new AvailablePid.Bounds(1, 10));
+    Stopwatch stopwatch = Stopwatch.createStarted();
+
+    do {
+      assertThat(availablePid.findAvailablePid()).isGreaterThanOrEqualTo(1);
+    } while (stopwatch.elapsed(SECONDS) < 2);
+  }
+
+  @Test
+  public void findAvailablePidShouldReturnLessThanOrEqualToUpperBound() throws Exception {
+    availablePid = new AvailablePid(new AvailablePid.Bounds(1, 10));
+    Stopwatch stopwatch = Stopwatch.createStarted();
+
+    do {
+      assertThat(availablePid.findAvailablePid()).isLessThanOrEqualTo(10);
+    } while (stopwatch.elapsed(SECONDS) < 2);
+  }
+
+  @Test
+  public void randomLowerBoundIsInclusive() throws Exception {
+    availablePid = new AvailablePid(new AvailablePid.Bounds(1, 3));
+
+    await().atMost(10, SECONDS).until(() -> assertThat(availablePid.random()).isEqualTo(1));
+  }
+
+  @Test
+  public void randomUpperBoundIsInclusive() throws Exception {
+    availablePid = new AvailablePid(new AvailablePid.Bounds(1, 3));
+
+    await().atMost(10, SECONDS).until(() -> assertThat(availablePid.random()).isEqualTo(3));
+  }
+
+  @Test
+  public void lowerBoundMustBeGreaterThanZero() throws Exception {
+    assertThatThrownBy(() -> new AvailablePid(new AvailablePid.Bounds(0, 1)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("lowerBound must be greater than '0'");
+  }
+
+  @Test
+  public void upperBoundMustBeGreaterThanLowerBound() throws Exception {
+    assertThatThrownBy(() -> new AvailablePid(new AvailablePid.Bounds(1, 1)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("upperBound must be greater than lowerBound '1'");
+  }
+
+  private void assertThatNoPidIsDuplicated(final int[] pids) {
     Set<Integer> pidSet = Arrays.stream(pids).boxed().collect(Collectors.toSet());
     assertThat(pidSet).hasSize(pids.length);
   }
