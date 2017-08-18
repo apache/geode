@@ -19,19 +19,6 @@ import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
 import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_PREFIX;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
-import org.apache.geode.management.internal.configuration.domain.CacheElement;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -45,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -61,6 +49,20 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.management.internal.configuration.domain.CacheElement;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+
 public class XmlUtils {
 
   /**
@@ -75,7 +77,7 @@ public class XmlUtils {
    */
   public static Document createDocumentFromReader(final Reader reader)
       throws SAXException, ParserConfigurationException, IOException {
-    Document doc = null;
+    Document doc;
     InputSource inputSource = new InputSource(reader);
 
     doc = getDocumentBuilder().parse(inputSource);
@@ -148,7 +150,6 @@ public class XmlUtils {
         final String namespace = childElement.getNamespaceURI();
 
         if (namespace.equals(xmlEntity.getNamespace()) && type.equals(xmlEntity.getType())) {
-          // TODO this should really be checking all attributes in xmlEntity.getAttributes
           // First check if the element has a name
           String nameOrId = getAttribute(childElement, "name");
           // If not then check if the element has an Id
@@ -233,15 +234,15 @@ public class XmlUtils {
    * Creates a node from the String xml definition
    * 
    * @param owner
-   * @param xmlDefintion
+   * @param xmlDefinition
    * @return Node representing the xml definition
    * @throws ParserConfigurationException
    * @throws IOException
    * @throws SAXException
    */
-  private static Node createNode(Document owner, String xmlDefintion)
+  private static Node createNode(Document owner, String xmlDefinition)
       throws SAXException, IOException, ParserConfigurationException {
-    InputSource inputSource = new InputSource(new StringReader(xmlDefintion));
+    InputSource inputSource = new InputSource(new StringReader(xmlDefinition));
     Document document = getDocumentBuilder().parse(inputSource);
     Node newNode = document.getDocumentElement();
     return owner.importNode(newNode, true);
@@ -279,7 +280,7 @@ public class XmlUtils {
    * @since GemFire 8.1
    */
   public static Map<String, List<String>> buildSchemaLocationMap(final String schemaLocation) {
-    return buildSchemaLocationMap(new HashMap<String, List<String>>(), schemaLocation);
+    return buildSchemaLocationMap(new HashMap<>(), schemaLocation);
   }
 
   /**
@@ -296,12 +297,7 @@ public class XmlUtils {
    */
   static Map<String, List<String>> buildSchemaLocationMap(
       Map<String, List<String>> schemaLocationMap, final String schemaLocation) {
-    if (null == schemaLocation) {
-      return schemaLocationMap;
-    }
-
     if (null == schemaLocation || schemaLocation.isEmpty()) {
-      // should really ever be null but being safe.
       return schemaLocationMap;
     }
 
@@ -323,7 +319,7 @@ public class XmlUtils {
   }
 
   /*****
-   * Deletes all the node from the document which match the definition provided by xmlentity
+   * Deletes all the node from the document which match the definition provided by xmlEntity
    * 
    * @param doc
    * @param xmlEntity
@@ -366,8 +362,8 @@ public class XmlUtils {
    *
    */
   public static class XPathContext implements NamespaceContext {
-    private HashMap<String, String> prefixToUri = new HashMap<String, String>();
-    private HashMap<String, String> uriToPrefix = new HashMap<String, String>();
+    private HashMap<String, String> prefixToUri = new HashMap<>();
+    private HashMap<String, String> uriToPrefix = new HashMap<>();
 
 
     public XPathContext() {}
@@ -408,7 +404,7 @@ public class XmlUtils {
    * @throws TransformerFactoryConfigurationError
    */
   public static String prettyXml(Node doc)
-      throws IOException, TransformerFactoryConfigurationError, TransformerException {
+      throws TransformerFactoryConfigurationError, TransformerException {
     Transformer transformer = TransformerFactory.newInstance().newTransformer();
     transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
@@ -428,8 +424,7 @@ public class XmlUtils {
     DOMSource source = new DOMSource(element);
     transformer.transform(source, result);
 
-    String xmlString = result.getWriter().toString();
-    return xmlString;
+    return result.getWriter().toString();
   }
 
   /****
@@ -510,7 +505,6 @@ public class XmlUtils {
     }
 
     if (null != document.getDoctype()) {
-      // doc.setDocType(null);
       Node root = document.getDocumentElement();
 
       Document copiedDocument = getDocumentBuilder().newDocument();
@@ -551,7 +545,7 @@ public class XmlUtils {
         buildSchemaLocationMap(schemaLocationAttribute);
     List<String> schemaLocations = schemaLocationMap.get(namespaceUri);
     if (null == schemaLocations) {
-      schemaLocations = new ArrayList<String>();
+      schemaLocations = new ArrayList<>();
       schemaLocationMap.put(namespaceUri, schemaLocations);
     }
     schemaLocations.clear();
@@ -665,7 +659,7 @@ public class XmlUtils {
    * @param xmlEntity xml entity for the root , it also contains the attributes
    * @throws IOException
    */
-  public static void modifyRootAttributes(Document doc, XmlEntity xmlEntity) throws IOException {
+  public static void modifyRootAttributes(Document doc, XmlEntity xmlEntity) {
     if (xmlEntity == null || xmlEntity.getAttributes() == null) {
       return;
     }

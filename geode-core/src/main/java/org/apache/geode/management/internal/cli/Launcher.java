@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
@@ -94,7 +93,7 @@ public class Launcher {
 
   protected Launcher() {
     this.startupTimeLogHelper = new StartupTimeLogHelper();
-    this.allowedCommandLineCommands = new HashSet<String>();
+    this.allowedCommandLineCommands = new HashSet<>();
     this.allowedCommandLineCommands.add(CliStrings.RUN);
     this.allowedCommandLineCommands.add(CliStrings.START_PULSE);
     this.allowedCommandLineCommands.add(CliStrings.START_JCONSOLE);
@@ -141,10 +140,6 @@ public class Launcher {
     try {
       gfsh = Gfsh.getInstance(false, args, new GfshConfig());
       this.startupTimeLogHelper.logStartupTime();
-    } catch (ClassNotFoundException cnfex) {
-      log(cnfex, gfsh);
-    } catch (IOException ioex) {
-      log(ioex, gfsh);
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
     }
@@ -208,10 +203,6 @@ public class Launcher {
     try {
       gfsh = Gfsh.getInstance(launchShell, args, new GfshConfig());
       this.startupTimeLogHelper.logStartupTime();
-    } catch (ClassNotFoundException cnfex) {
-      log(cnfex, gfsh);
-    } catch (IOException ioex) {
-      log(ioex, gfsh);
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
     }

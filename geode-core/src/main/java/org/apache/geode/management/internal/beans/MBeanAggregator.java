@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.SystemManagementService;
  */
 public class MBeanAggregator implements ProxyListener {
 
-  private static final List<Class> distributedMBeanList = new ArrayList<Class>();
+  private static final List<Class> distributedMBeanList = new ArrayList<>();
 
 
   /**
@@ -405,10 +405,7 @@ public class MBeanAggregator implements ProxyListener {
   }
 
   public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {
-    // [bruce] does this need to propagate through this bridge object?
-    // distributedSystemBridge.quorumLost(failures, remaining);
-  }
+      List<InternalDistributedMember> remaining) {}
 
   @Override
   public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,

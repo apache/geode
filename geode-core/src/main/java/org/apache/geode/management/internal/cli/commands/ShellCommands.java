@@ -44,6 +44,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
@@ -159,7 +160,7 @@ public class ShellCommands implements GfshCommand {
 
   @CliCommand(value = {CliStrings.EXIT, "quit"}, help = CliStrings.EXIT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public ExitShellRequest exit() throws IOException {
+  public ExitShellRequest exit() {
     Gfsh gfshInstance = getGfsh();
 
     gfshInstance.stop();
@@ -179,7 +180,7 @@ public class ShellCommands implements GfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX,
       CliStrings.TOPIC_GEODE_MANAGER})
   public Result disconnect() {
-    Result result = null;
+    Result result;
 
     if (getGfsh() != null && !getGfsh().isConnectedAndReady()) {
       result = ResultBuilder.createInfoResult("Not connected.");
@@ -195,8 +196,7 @@ public class ShellCommands implements GfshCommand {
               operationInvoker.toString()));
           LogWrapper.getInstance().info(CliStrings.format(CliStrings.DISCONNECT__MSG__DISCONNECTED,
               operationInvoker.toString()));
-          gfshInstance.setPromptPath(
-              org.apache.geode.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+          gfshInstance.setPromptPath(RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
         } else {
           infoResultData.addLine(CliStrings.DISCONNECT__MSG__NOTCONNECTED);
         }
@@ -213,13 +213,12 @@ public class ShellCommands implements GfshCommand {
   @CliCommand(value = {CliStrings.DESCRIBE_CONNECTION}, help = CliStrings.DESCRIBE_CONNECTION__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX})
   public Result describeConnection() {
-    Result result = null;
+    Result result;
     try {
       TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
       Gfsh gfshInstance = getGfsh();
       if (gfshInstance.isConnectedAndReady()) {
         OperationInvoker operationInvoker = gfshInstance.getOperationInvoker();
-        // tabularResultData.accumulate("Monitored GemFire DS", operationInvoker.toString());
         tabularResultData.accumulate("Connection Endpoints", operationInvoker.toString());
       } else {
         tabularResultData.accumulate("Connection Endpoints", "Not connected");
@@ -238,7 +237,7 @@ public class ShellCommands implements GfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
       mandatory = true, help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
-    Result result = null;
+    Result result;
 
     if (stringToEcho.equals("$*")) {
       Gfsh gfshInstance = getGfsh();
@@ -256,10 +255,8 @@ public class ShellCommands implements GfshCommand {
 
   TabularResultData buildResultForEcho(Set<Entry<String, String>> propertyMap) {
     TabularResultData resultData = ResultBuilder.createTabularResultData();
-    Iterator<Entry<String, String>> it = propertyMap.iterator();
 
-    while (it.hasNext()) {
-      Entry<String, String> setEntry = it.next();
+    for (Entry<String, String> setEntry : propertyMap) {
       resultData.accumulate("Property", setEntry.getKey());
       resultData.accumulate("Value", String.valueOf(setEntry.getValue()));
     }
@@ -273,7 +270,7 @@ public class ShellCommands implements GfshCommand {
           help = CliStrings.SET_VARIABLE__VAR__HELP) String var,
       @CliOption(key = CliStrings.SET_VARIABLE__VALUE, mandatory = true,
           help = CliStrings.SET_VARIABLE__VALUE__HELP) String value) {
-    Result result = null;
+    Result result;
     try {
       getGfsh().setEnvProperty(var, String.valueOf(value));
       result =
@@ -329,7 +326,7 @@ public class ShellCommands implements GfshCommand {
     } else {
       // Process file option
       Gfsh gfsh = Gfsh.getCurrentInstance();
-      ErrorResultData errorResultData = null;
+      ErrorResultData errorResultData;
       StringBuilder contents = new StringBuilder();
       Writer output = null;
 
@@ -344,7 +341,7 @@ public class ShellCommands implements GfshCommand {
 
       while (it.hasNext()) {
         String line = it.next().toString();
-        if (line.isEmpty() == false) {
+        if (!line.isEmpty()) {
           if (flagForLineNumbers) {
             lineNumber++;
             contents.append(String.format("%" + historySizeWordLength + "s  ", lineNumber));
@@ -429,7 +426,7 @@ public class ShellCommands implements GfshCommand {
       @CliOption(key = {CliStrings.RUN__CONTINUEONERROR}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.RUN__CONTINUEONERROR__HELP) boolean continueOnError) {
-    Result result = null;
+    Result result;
 
     Gfsh gfsh = Gfsh.getCurrentInstance();
     try {
@@ -457,7 +454,7 @@ public class ShellCommands implements GfshCommand {
     try {
       LogWrapper.getInstance().fine("Sleeping for " + time + "seconds.");
       Thread.sleep(Math.round(time * 1000));
-    } catch (InterruptedException ignorable) {
+    } catch (InterruptedException ignored) {
     }
     return ResultBuilder.createInfoResult("");
   }
@@ -470,15 +467,11 @@ public class ShellCommands implements GfshCommand {
       @CliOption(key = CliStrings.SH__USE_CONSOLE, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.SH__USE_CONSOLE__HELP) boolean useConsole) {
-    Result result = null;
+    Result result;
     try {
       result =
           ResultBuilder.buildResult(executeCommand(Gfsh.getCurrentInstance(), command, useConsole));
-    } catch (IllegalStateException e) {
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-      LogWrapper.getInstance()
-          .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");
-    } catch (IOException e) {
+    } catch (IllegalStateException | IOException e) {
       result = ResultBuilder.createUserErrorResult(e.getMessage());
       LogWrapper.getInstance()
           .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");

@@ -28,12 +28,10 @@ public interface ResultData {
   String RESULT_FOOTER = "footer";
 
 
-  // String TYPE_CATALOGED = "catalog";
   String TYPE_COMPOSITE = "composite";
   String TYPE_ERROR = "error";
   String TYPE_INFO = "info";
   String TYPE_OBJECT = "object";
-  // String TYPE_SECTION = "composite-section";
   String TYPE_TABULAR = "table";
 
   String getHeader();
@@ -44,7 +42,7 @@ public interface ResultData {
 
   String getType();
 
-  public Status getStatus();
+  Status getStatus();
 
-  public void setStatus(final Status status);
+  void setStatus(final Status status);
 }

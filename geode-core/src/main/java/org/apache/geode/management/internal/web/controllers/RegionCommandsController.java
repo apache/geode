@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 
@@ -108,14 +108,13 @@ public class RegionCommandsController extends AbstractCommandsController {
           required = false) final Boolean enableCloning,
       @RequestParam(value = CliStrings.ALTER_REGION__EVICTIONMAX,
           required = false) final Integer evictionMax) {
-    // logRequest(request);
 
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.ALTER_REGION);
 
     command.addOption(CliStrings.ALTER_REGION__REGION, decode(regionNamePath));
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, ","));
     }
 
     addCommandOption(request, command, CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
@@ -240,7 +239,7 @@ public class RegionCommandsController extends AbstractCommandsController {
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.GROUP, StringUtils.join(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.GROUP, StringUtils.join(groups, ","));
     }
 
     command.addOption(CliStrings.CREATE_REGION__SKIPIFEXISTS,
@@ -320,7 +319,7 @@ public class RegionCommandsController extends AbstractCommandsController {
 
     if (hasValue(cacheListeners)) {
       command.addOption(CliStrings.CREATE_REGION__CACHELISTENER,
-          StringUtils.join(cacheListeners, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(cacheListeners, ","));
     }
 
     if (hasValue(cacheLoader)) {
@@ -333,12 +332,12 @@ public class RegionCommandsController extends AbstractCommandsController {
 
     if (hasValue(asyncEventQueueIds)) {
       command.addOption(CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
-          StringUtils.join(asyncEventQueueIds, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(asyncEventQueueIds, ","));
     }
 
     if (hasValue(gatewaySenderIds)) {
       command.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID,
-          StringUtils.join(gatewaySenderIds, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(gatewaySenderIds, ","));
     }
 
     if (Boolean.TRUE.equals(enableConcurrencyChecks)) {

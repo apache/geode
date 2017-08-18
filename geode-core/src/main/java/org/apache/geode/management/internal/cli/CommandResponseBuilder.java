@@ -27,31 +27,16 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 public class CommandResponseBuilder {
 
   public static CommandResponse prepareCommandResponse(String memberName, CommandResult result) {
-    GfJsonObject content = null;
-    try {
-      content = result.getContent();
-    } catch (GfJsonException e) {
-      try {
-        content = new GfJsonObject(e.getMessage());
-      } catch (GfJsonException e1) {
-        content = new GfJsonObject();
-      }
-    }
-    return new CommandResponse(memberName, // sender
-        getType(result), // contentType
-        result.getStatus().getCode(), // status code
-        "1/1", // page --- TODO - Abhishek - define a scrollable ResultData
-        CliMetaData.ANNOTATION_NULL_VALUE, // tokenAccessor for next results
-        getDebugInfo(result), // debugData
-        result.getHeader(), // header
-        content, // content
-        result.getFooter(), // footer
-        result.failedToPersist()); // failed to persist
+    GfJsonObject content;
+    content = result.getContent();
+    return new CommandResponse(memberName, getType(result), result.getStatus().getCode(), "1/1",
+        CliMetaData.ANNOTATION_NULL_VALUE, getDebugInfo(result), result.getHeader(), content,
+        result.getFooter(), result.failedToPersist());
   }
 
   // De-serializing to CommandResponse
   public static CommandResponse prepareCommandResponseFromJson(String jsonString) {
-    GfJsonObject jsonObject = null;
+    GfJsonObject jsonObject;
     try {
       jsonObject = new GfJsonObject(jsonString);
     } catch (GfJsonException e) {

@@ -396,9 +396,6 @@ public class ShowMetricsCommand implements GfshCommand {
             csvBuilder);
         writeToTableAndCsv(metricsTable, "", "putAllAvgLatency", memberMxBean.getPutAllAvgLatency(),
             csvBuilder);
-        // Not available from stats. After Stats re-org it will be available
-        // writeToTableAndCsv(metricsTable, "", "getAllAvgLatency",
-        // memberMxBean.getGetAllAvgLatency(), csvBuilder);
         writeToTableAndCsv(metricsTable, "", "totalMissCount", memberMxBean.getTotalMissCount(),
             csvBuilder);
         writeToTableAndCsv(metricsTable, "", "totalHitCount", memberMxBean.getTotalHitCount(),

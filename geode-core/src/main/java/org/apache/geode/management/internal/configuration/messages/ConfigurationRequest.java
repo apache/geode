@@ -14,15 +14,16 @@
  */
 package org.apache.geode.management.internal.configuration.messages;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 /***
  * Request sent by a member to the locator requesting the shared configuration
@@ -30,7 +31,7 @@ import java.util.Set;
  */
 public class ConfigurationRequest implements DataSerializableFixedID {
   private static int DEFAULT_NUM_ATTEMPTS = 5;
-  private Set<String> groups = new HashSet<String>();
+  private Set<String> groups = new HashSet<>();
   private boolean isRequestForEntireConfiguration = false;
   private int numAttempts = DEFAULT_NUM_ATTEMPTS;
 
@@ -74,7 +75,7 @@ public class ConfigurationRequest implements DataSerializableFixedID {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.isRequestForEntireConfiguration = in.readBoolean();
     int size = in.readInt();
-    Set<String> groups = new HashSet<String>();
+    Set<String> groups = new HashSet<>();
     if (size > 0) {
       for (int i = 0; i < size; i++) {
         groups.add(in.readUTF());
@@ -105,11 +106,8 @@ public class ConfigurationRequest implements DataSerializableFixedID {
     return sb.toString();
   }
 
-  // TODO Sourabh, please review for correctness
-  // Asif: Returning null, as otherwise backward compatibility tests fail
-  // due to missing pre to & from data functions.
   public Version[] getSerializationVersions() {
-    return null;// new Version[] { Version.CURRENT };
+    return null;
   }
 
   public int getNumAttempts() {
