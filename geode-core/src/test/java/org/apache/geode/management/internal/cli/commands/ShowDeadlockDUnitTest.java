@@ -18,6 +18,25 @@ import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -36,23 +55,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command
@@ -106,6 +108,7 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     assertEquals(null, detect.find().findCycle());
 
     File outputFile = new File(temporaryFolder.getRoot(), "dependency.txt");
+
     String showDeadlockCommand = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK)
         .addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, outputFile.getName()).toString();
 
@@ -130,12 +133,14 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     lockTheLocks(vm1, member0);
 
     File outputFile = new File(temporaryFolder.getRoot(), "dependency.txt");
+
     String showDeadlockCommand = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK)
         .addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, outputFile.getName()).toString();
     CommandStatement showDeadlocksCommand =
         new CommandProcessor().createCommandStatement(showDeadlockCommand, Collections.emptyMap());
 
     Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+      FileUtils.deleteQuietly(outputFile);
       Result result = showDeadlocksCommand.process();
       try {
         result.saveIncomingFiles(temporaryFolder.getRoot().getAbsolutePath());
