@@ -350,10 +350,7 @@ public class CliStrings {
       "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
   public static final String ALTER_REGION__ASYNCEVENTQUEUEID = "async-event-queue-id";
   public static final String ALTER_REGION__ASYNCEVENTQUEUEID__HELP =
-      "IDs of the Async Event Queues that will be used for write-behind operations."; // TODO -
-                                                                                      // Abhishek Is
-                                                                                      // this
-                                                                                      // correct?
+      "IDs of the Async Event Queues that will be used for write-behind operations.";
   public static final String ALTER_REGION__GATEWAYSENDERID = "gateway-sender-id";
   public static final String ALTER_REGION__GATEWAYSENDERID__HELP =
       "IDs of the Gateway Senders to which data will be routed.";
@@ -527,8 +524,8 @@ public class CliStrings {
       "This disk store is in use by other process. \"" + CliStrings.COMPACT_DISK_STORE
           + "\" can be used to compact disk store that is current in use.";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__CANNOT_ACCESS_DISKSTORE_0_FROM_1_CHECK_GFSH_LOGS =
-      "Can not access disk store \"{0}\" from  \"{1}\". Check "
-          + org.apache.geode.management.internal.cli.shell.Gfsh.GFSH_APP_NAME + " logs for error.";
+      "Can not access disk store \"{0}\" from  \"{1}\". Check " + Gfsh.GFSH_APP_NAME
+          + " logs for error.";
   public static final String COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2 =
       "While compacting disk store={0} {1}. Reason: {2}";
 
@@ -885,10 +882,7 @@ public class CliStrings {
       "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID = "async-event-queue-id";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID__HELP =
-      "IDs of the Async Event Queues that will be used for write-behind operations."; // TODO -
-                                                                                      // Abhishek Is
-                                                                                      // this
-                                                                                      // correct?
+      "IDs of the Async Event Queues that will be used for write-behind operations.";
   public static final String CREATE_REGION__GATEWAYSENDERID = "gateway-sender-id";
   public static final String CREATE_REGION__GATEWAYSENDERID__HELP =
       "IDs of the Gateway Senders to which data will be routed.";
@@ -985,14 +979,7 @@ public class CliStrings {
       "Could not access class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_REGION__MSG__EXPIRATION_ACTION_0_IS_NOT_VALID =
       "Expiration action \"{0}\" is not valid.";
-  public static final String CREATE_REGION__MSG__ERROR_ON_MEMBER_0 = "Error on member: {0}. "; // leave
-                                                                                               // space
-                                                                                               // in
-                                                                                               // the
-                                                                                               // end
-                                                                                               // for
-                                                                                               // further
-                                                                                               // message
+  public static final String CREATE_REGION__MSG__ERROR_ON_MEMBER_0 = "Error on member: {0}. ";
   public static final String CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1 =
       "Could not retrieve region attributes for given path \"{0}\". Reason: {1}";
   public static final String CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_VERIFY_REGION_EXISTS =
@@ -2333,12 +2320,7 @@ public class CliStrings {
   public static final String START_LOCATOR__PORT__HELP = "Port the Locator will listen on.";
   public static final String START_LOCATOR__PROPERTIES = "properties-file";
   public static final String START_LOCATOR__PROPERTIES__HELP =
-      "The gemfire.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=)."; // TODO:GEODE-1466:
-                                                                                                                                                                           // update
-                                                                                                                                                                           // golden
-                                                                                                                                                                           // file
-                                                                                                                                                                           // to
-                                                                                                                                                                           // geode.properties
+      "The gemfire.properties file for configuring the Locator's distributed system. The file's path can be absolute or relative to the gfsh working directory (--dir=).";
   public static final String START_LOCATOR__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_LOCATOR__SECURITY_PROPERTIES__HELP =
       "The gfsecurity.properties file for configuring the Locator's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory (--dir=).";
@@ -2500,12 +2482,7 @@ public class CliStrings {
       "The total size of off-heap memory specified as off-heap-memory-size=<n>[g|m]. <n> is the size. [g|m] indicates whether the size should be interpreted as gigabytes or megabytes. A non-zero size causes that much memory to be allocated from the operating system and reserved for off-heap use.";
   public static final String START_SERVER__PROPERTIES = "properties-file";
   public static final String START_SERVER__PROPERTIES__HELP =
-      "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory."; // TODO:GEODE-1466:
-                                                                                                                                                                       // update
-                                                                                                                                                                       // golden
-                                                                                                                                                                       // file
-                                                                                                                                                                       // to
-                                                                                                                                                                       // geode.properties
+      "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
   public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
   public static final String START_SERVER__REDIS_PORT__HELP =
       "Sets the port that the Geode Redis service listens on for Redis clients.";
@@ -2515,8 +2492,7 @@ public class CliStrings {
       "Sets the IP address the Geode Redis service listens on for Redis clients. The default is to bind to the first non-loopback address for this machine.";
   public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
   public static final String START_SERVER__REDIS_PASSWORD__HELP =
-      "Sets the authentication password for GeodeRedisServer"; // TODO:GEODE-1566: update golden
-                                                               // file to GeodeRedisServer
+      "Sets the authentication password for GeodeRedisServer";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP =
       "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";
@@ -2536,10 +2512,6 @@ public class CliStrings {
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE = STATISTIC_ARCHIVE_FILE;
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE__HELP =
       "The file that statistic samples are written to.  An empty string (default) disables statistic archival.";
-  // public static final String START_SERVER__START_LOCATOR = "start-locator";
-  // public static final String START_SERVER__START_LOCATOR__HELP =
-  // "To start embedded Locator with given endpoints in the format: host[port]. If no endpoints are
-  // given defaults (localhost[10334]) are assumed.";
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION = USE_CLUSTER_CONFIGURATION;
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION__HELP =
       "When set to true, the server requests the configuration from locator's cluster configuration service.";
@@ -2569,15 +2541,6 @@ public class CliStrings {
   public static final String START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP =
       "Set the percentage of off-heap memory at or above which the eviction should begin on Regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately."
           + " Only one change to this attribute or critical off-heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed.";
-  // cacheServer.setLoadPollInterval(loadPollInterval)
-  // cacheServer.setLoadProbe(loadProbe);
-  // cacheServer.setMaxConnections(maxCons);
-  // cacheServer.setMaximumMessageCount(maxMessageCount);
-  // cacheServer.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
-  // cacheServer.setMaxThreads(maxThreads);
-  // cacheServer.setMessageTimeToLive(messageTimeToLive);
-  // cacheServer.setSocketBufferSize(socketBufferSize)
-  // cacheServer.setTcpNoDelay(noDelay)
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS = "hostname-for-clients";
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS__HELP =
       "Sets the ip address or host name that this cache server is to listen on for client connections."
@@ -3017,7 +2980,6 @@ public class CliStrings {
   /***
    * Cluster Configuration commands
    */
-  // TODO: Jared - clean up messages
   public static final String EXPORT_SHARED_CONFIG = "export cluster-configuration";
   public static final String EXPORT_SHARED_CONFIG__HELP =
       "Exports the cluster configuration artifacts as a zip file.";

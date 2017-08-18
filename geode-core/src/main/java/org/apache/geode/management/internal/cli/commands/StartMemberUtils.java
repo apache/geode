@@ -29,6 +29,7 @@ import java.util.Properties;
 import javax.management.MalformedObjectNameException;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
@@ -102,7 +103,7 @@ public class StartMemberUtils {
     for (final Object property : gemfireProperties.keySet()) {
       final String propertyName = property.toString();
       final String propertyValue = gemfireProperties.getProperty(propertyName);
-      if (org.apache.geode.internal.lang.StringUtils.isNotBlank(propertyValue)) {
+      if (StringUtils.isNotBlank(propertyValue)) {
         commandLine.add(
             "-D" + DistributionConfig.GEMFIRE_PREFIX + "" + propertyName + "=" + propertyValue);
       }
@@ -117,26 +118,24 @@ public class StartMemberUtils {
   }
 
   static void addInitialHeap(final List<String> commandLine, final String initialHeap) {
-    if (org.apache.geode.internal.lang.StringUtils.isNotBlank(initialHeap)) {
+    if (StringUtils.isNotBlank(initialHeap)) {
       commandLine.add("-Xms" + initialHeap);
     }
   }
 
   static void addMaxHeap(final List<String> commandLine, final String maxHeap) {
-    if (org.apache.geode.internal.lang.StringUtils.isNotBlank(maxHeap)) {
+    if (StringUtils.isNotBlank(maxHeap)) {
       commandLine.add("-Xmx" + maxHeap);
       commandLine.add("-XX:+UseConcMarkSweepGC");
       commandLine.add("-XX:CMSInitiatingOccupancyFraction=" + CMS_INITIAL_OCCUPANCY_FRACTION);
-      // commandLine.add("-XX:MinHeapFreeRatio=" + MINIMUM_HEAP_FREE_RATIO);
     }
   }
 
   static void addCurrentLocators(GfshCommand gfshCommand, final List<String> commandLine,
       final Properties gemfireProperties) throws MalformedObjectNameException {
-    if (org.apache.geode.internal.lang.StringUtils
-        .isBlank(gemfireProperties.getProperty(LOCATORS))) {
+    if (StringUtils.isBlank(gemfireProperties.getProperty(LOCATORS))) {
       String currentLocators = getCurrentLocators(gfshCommand);
-      if (org.apache.geode.internal.lang.StringUtils.isNotBlank(currentLocators)) {
+      if (StringUtils.isNotBlank(currentLocators)) {
         commandLine.add("-D".concat(ProcessLauncherContext.OVERRIDDEN_DEFAULTS_PREFIX)
             .concat(LOCATORS).concat("=").concat(currentLocators));
       }
@@ -209,9 +208,8 @@ public class StartMemberUtils {
     // System CLASSPATH environment variable setting, which is consistent with the Java platform
     // behavior...
     for (String userClasspath : userClasspaths) {
-      if (org.apache.geode.internal.lang.StringUtils.isNotBlank(userClasspath)) {
-        classpath.append((classpath.length() == 0)
-            ? org.apache.geode.internal.lang.StringUtils.EMPTY : File.pathSeparator);
+      if (StringUtils.isNotBlank(userClasspath)) {
+        classpath.append((classpath.length() == 0) ? StringUtils.EMPTY : File.pathSeparator);
         classpath.append(userClasspath);
       }
     }
@@ -227,9 +225,8 @@ public class StartMemberUtils {
 
     // And finally, include all GemFire dependencies on the CLASSPATH...
     for (String jarFilePathname : jarFilePathnames) {
-      if (org.apache.geode.internal.lang.StringUtils.isNotBlank(jarFilePathname)) {
-        classpath.append((classpath.length() == 0)
-            ? org.apache.geode.internal.lang.StringUtils.EMPTY : File.pathSeparator);
+      if (StringUtils.isNotBlank(jarFilePathname)) {
+        classpath.append((classpath.length() == 0) ? StringUtils.EMPTY : File.pathSeparator);
         classpath.append(jarFilePathname);
       }
     }
@@ -240,7 +237,6 @@ public class StartMemberUtils {
     String classpath = getSystemClasspath();
     String gemfireJarPath = GEODE_JAR_PATHNAME;
     for (String classpathElement : classpath.split(File.pathSeparator)) {
-      // MUST CHANGE THIS TO REGEX SINCE VERSION CHANGES IN JAR NAME
       if (classpathElement.endsWith("gemfire-core-8.2.0.0-SNAPSHOT.jar")) {
         gemfireJarPath = classpathElement;
         break;

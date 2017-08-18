@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.web.controllers;
 
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 
@@ -194,7 +194,6 @@ public class DataCommandsController extends AbstractCommandsController {
       @RequestParam(CliStrings.QUERY__QUERY) final String oql,
       @RequestParam(value = CliStrings.QUERY__INTERACTIVE,
           defaultValue = "true") final Boolean interactive) {
-    // logRequest(request);
 
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.QUERY);
 
@@ -219,12 +218,12 @@ public class DataCommandsController extends AbstractCommandsController {
 
     if (hasValue(includedRegions)) {
       command.addOption(CliStrings.REBALANCE__INCLUDEREGION,
-          StringUtils.join(includedRegions, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(includedRegions, ","));
     }
 
     if (hasValue(excludedRegions)) {
       command.addOption(CliStrings.REBALANCE__EXCLUDEREGION,
-          StringUtils.join(excludedRegions, StringUtils.COMMA_DELIMITER));
+          StringUtils.join(excludedRegions, ","));
     }
 
     command.addOption(CliStrings.REBALANCE__SIMULATE, String.valueOf(simulate));

@@ -14,7 +14,29 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.xpath.XPathExpressionException;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
@@ -27,26 +49,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.xpath.XPathExpressionException;
 
 /****
  * Domain class for defining a GemFire entity in XML.
@@ -60,7 +62,7 @@ public class XmlEntity implements VersionedDataSerializable {
   private String type;
   @SuppressWarnings("unused")
   private String parentType;
-  private Map<String, String> attributes = new HashMap<String, String>();
+  private Map<String, String> attributes = new HashMap<>();
   private String xmlDefinition;
   private String searchString;
 
@@ -112,13 +114,10 @@ public class XmlEntity implements VersionedDataSerializable {
    */
   public XmlEntity(final String parentType, final String parentKey, final String parentValue,
       final String childType, final String childKey, final String childValue) {
-    // TODO this should be replaced with a builder.
-    // TODO consider parent as nested XmlEntity type.
     this.parentType = parentType;
     this.type = childType;
     initializeSearchString(parentKey, parentValue, this.prefix, childKey, childValue);
 
-    // no init();
   }
 
   /****
@@ -268,13 +267,10 @@ public class XmlEntity implements VersionedDataSerializable {
     if (attributes.size() > 0) {
       queryStringBuilder.append("[");
       Entry<String, String> attrEntry = attributeIter.next();
-      // queryStringBuilder.append("@").append(attrEntry.getKey()).append("=\"").append(attrEntry.getValue()).append("\"");
       queryStringBuilder.append("@").append(attrEntry.getKey()).append("='")
           .append(attrEntry.getValue()).append("'");
       while (attributeIter.hasNext()) {
         attrEntry = attributeIter.next();
-        // queryStringBuilder.append(" and
-        // @").append(attrEntry.getKey()).append("=\"").append(attrEntry.getValue()).append("\"");
         queryStringBuilder.append(" and @").append(attrEntry.getKey()).append("='")
             .append(attrEntry.getValue()).append("'");
       }
@@ -463,7 +459,7 @@ public class XmlEntity implements VersionedDataSerializable {
     private XmlEntity xmlEntity;
 
     /**
-     * Private contstructor.
+     * Private constructor.
      * 
      * @since GemFire 8.1
      */

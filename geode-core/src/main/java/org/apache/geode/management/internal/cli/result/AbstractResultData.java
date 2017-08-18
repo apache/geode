@@ -14,6 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Time;
+import java.text.MessageFormat;
+import java.util.Base64;
+import java.util.zip.DataFormatException;
+
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
@@ -22,15 +32,6 @@ import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Base64;
-import java.util.zip.DataFormatException;
 
 /**
  * 
@@ -123,7 +124,7 @@ public abstract class AbstractResultData implements ResultData {
   }
 
   private static String addTimeStampBeforeLastDot(String src) {
-    String toAdd = String.valueOf(new java.sql.Time(System.currentTimeMillis()));
+    String toAdd = String.valueOf(new Time(System.currentTimeMillis()));
     toAdd = "-" + toAdd.replaceAll(":", "_");
 
     int lastIndexOf = src.lastIndexOf(".");
@@ -147,11 +148,10 @@ public abstract class AbstractResultData implements ResultData {
 
   public ResultData addAsFile(String fileName, byte[] data, int fileType, String message,
       boolean addTimeStampToName) {
-    byte[] bytes = data;
     if (addTimeStampToName) {
       fileName = addTimeStampBeforeLastDot(fileName);
     }
-    return addAsFile(fileName, bytes, fileType, message);
+    return addAsFile(fileName, data, fileType, message);
   }
 
   private ResultData addAsFile(String fileName, byte[] data, int fileType, String message) {
@@ -191,11 +191,8 @@ public abstract class AbstractResultData implements ResultData {
       throws GfJsonException, DataFormatException, IOException {
     boolean overwriteAllExisting = false;
     int length = byteDataArray.size();
-    String options = length > 1 ? "(y/N/a)" : "(y/N)"; // TODO - Abhishek Make this consistent -
-                                                       // with
-                                                       // AbstractCliAroundInterceptor.readYesNo()
-
-    BYTEARRAY_LOOP: for (int i = 0; i < length; i++) {
+    String options = length > 1 ? "(y/N/a)" : "(y/N)";
+    for (int i = 0; i < length; i++) {
       GfJsonObject object = byteDataArray.getJSONObject(i);
 
       int fileType = object.getInt(FILE_TYPE_FIELD);
@@ -205,8 +202,8 @@ public abstract class AbstractResultData implements ResultData {
       }
 
       // build file name
-      byte[] fileNameBytes = null;
-      String fileName = null;
+      byte[] fileNameBytes;
+      String fileName;
       GfJsonArray fileNameJsonBytes = object.getJSONArray(FILE_NAME_FIELD);
       if (fileNameJsonBytes != null) { // if in gfsh
         fileNameBytes = GfJsonArray.toByteArray(fileNameJsonBytes);
@@ -216,8 +213,8 @@ public abstract class AbstractResultData implements ResultData {
       }
 
       // build file message
-      byte[] fileMessageBytes = null;
-      String fileMessage = null;
+      byte[] fileMessageBytes;
+      String fileMessage;
       GfJsonArray fileMessageJsonBytes = object.getJSONArray(FILE_MESSAGE);
       if (fileMessageJsonBytes != null) { // if in gfsh
         fileMessageBytes = GfJsonArray.toByteArray(fileMessageJsonBytes);
@@ -247,7 +244,7 @@ public abstract class AbstractResultData implements ResultData {
       if (fileToDumpData.exists()) {
         String fileExistsMessage =
             CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__FILE_WITH_NAME_0_EXISTS_IN_1,
-                new Object[] {fileName, fileToDumpData.getParent(), options});
+                fileName, fileToDumpData.getParent(), options);
         if (gfsh != null && !gfsh.isQuietMode() && !overwriteAllExisting) {
           fileExistsMessage = fileExistsMessage + " Overwrite? " + options + " : ";
           String interaction = gfsh.interact(fileExistsMessage);
@@ -255,7 +252,7 @@ public abstract class AbstractResultData implements ResultData {
             overwriteAllExisting = true;
           } else if (!"y".equalsIgnoreCase(interaction.trim())) {
             // do not save file & continue
-            continue BYTEARRAY_LOOP;
+            continue;
           }
         } else {
           throw new IOException(fileExistsMessage);
@@ -289,18 +286,14 @@ public abstract class AbstractResultData implements ResultData {
         fos.flush();
         fos.close();
       }
-      // System.out.println("fileMessage :: "+fileMessage);
       if (fileMessage != null && !fileMessage.isEmpty()) {
         if (gfsh != null) {
-          Gfsh.println(
-              MessageFormat.format(fileMessage, new Object[] {fileToDumpData.getAbsolutePath()}));
+          Gfsh.println(MessageFormat.format(fileMessage, fileToDumpData.getAbsolutePath()));
         }
       }
-      // System.out.println(new String(uncompressed));
     }
   }
 
-  // TODO - Abhishek : prepare common utility for this & ANSI Styling
   static void handleCondition(String message) throws IOException {
     Gfsh gfsh = Gfsh.getCurrentInstance();
     // null check required in GfshVM too to avoid test issues

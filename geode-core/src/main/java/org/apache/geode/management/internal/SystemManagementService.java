@@ -320,8 +320,7 @@ public class SystemManagementService extends BaseManagementService {
     return jmxAdapter.getLocalRegionMXBean(regionPath);
   }
 
-  public <T> T getMBeanProxy(ObjectName objectName, Class<T> interfaceClass) { // TODO: this is too
-                                                                               // generic
+  public <T> T getMBeanProxy(ObjectName objectName, Class<T> interfaceClass) {
     if (!isStartedAndOpen()) {
       return null;
     }
@@ -556,7 +555,7 @@ public class SystemManagementService extends BaseManagementService {
 
   @Override
   public ObjectName getAsyncEventQueueMBeanName(DistributedMember member, String queueId) {
-    return MBeanJMXAdapter.getAsycnEventQueueMBeanName(member, queueId);
+    return MBeanJMXAdapter.getAsyncEventQueueMBeanName(member, queueId);
   }
 
   @Override
