@@ -36,12 +36,14 @@ import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.ProxyRegion;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -68,7 +70,7 @@ public class FunctionServiceManager {
 
   private static final ConcurrentHashMap<String, Function> idToFunctionMap =
       new ConcurrentHashMap<>();
-
+  private InternalDistributedSystem system;
   /**
    * use when the optimization to execute onMember locally is not desired.
    */
@@ -76,7 +78,7 @@ public class FunctionServiceManager {
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "randomizeOnMember");
 
   public FunctionServiceManager() {
-    // do nothing
+    this.system = InternalDistributedSystem.getAnyInstance();
   }
 
   /**
@@ -364,6 +366,11 @@ public class FunctionServiceManager {
           LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH.toLocalizedString());
     }
 
+    if ((null != system) && (function instanceof FunctionAdapter)
+        && !idToFunctionMap.containsKey(function.getId())) {
+      system.requestRegisterBean(function);
+    }
+
     idToFunctionMap.put(function.getId(), function);
   }
 
@@ -379,6 +386,10 @@ public class FunctionServiceManager {
     if (functionId == null) {
       throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
           .toLocalizedString("functionId instance "));
+    }
+    Function function = idToFunctionMap.get(functionId);
+    if ((function instanceof FunctionAdapter) && idToFunctionMap.containsKey(functionId)) {
+      system.requestUnRegisterBean(function);
     }
     idToFunctionMap.remove(functionId);
   }

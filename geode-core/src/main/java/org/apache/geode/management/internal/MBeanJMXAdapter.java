@@ -45,6 +45,7 @@ import org.apache.geode.management.DiskStoreMXBean;
 import org.apache.geode.management.DistributedLockServiceMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.FunctionStatsMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.LocatorMXBean;
@@ -432,6 +433,10 @@ public class MBeanJMXAdapter implements ManagementConstants {
     return (AsyncEventQueueMXBean) localGemFireMBean.get(objName);
   }
 
+  public FunctionStatsMXBean getFunctionStatsMXBean(String functionId) {
+    ObjectName objName = getAsycnEventQueueMBeanName(distMember, functionId);
+    return (FunctionStatsMXBean) localGemFireMBean.get(objName);
+  }
 
   public LocatorMXBean getLocatorMXBean() {
     ObjectName objName = getLocatorMBeanName(distMember);
@@ -534,6 +539,16 @@ public class MBeanJMXAdapter implements ManagementConstants {
   public static ObjectName getAsycnEventQueueMBeanName(String member, String queueId) {
     return getObjectName((MessageFormat.format(OBJECTNAME__ASYNCEVENTQUEUE_MXBEAN,
         new Object[] {queueId, makeCompliantName(member)})));
+  }
+
+  public static ObjectName getFunctionStatsMBeanName(DistributedMember member, String functionId) {
+    return getObjectName((MessageFormat.format(OBJECTNAME__FUNCTIONS_STATS_MXBEAN,
+        new Object[] {functionId, getMemberNameOrId(member)})));
+  }
+
+  public static ObjectName getFunctionStatsMBeanName(String member, String functionId) {
+    return getObjectName((MessageFormat.format(OBJECTNAME__FUNCTIONS_STATS_MXBEAN,
+        new Object[] {functionId, makeCompliantName(member)})));
   }
 
   public static ObjectName getDistributedRegionMbeanName(String regionPath) {

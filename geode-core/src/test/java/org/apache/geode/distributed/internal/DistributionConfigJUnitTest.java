@@ -38,7 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,16 +51,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class DistributionConfigJUnitTest {
@@ -99,7 +98,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 157);
+    assertEquals(attNames.length, 158);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -135,7 +134,7 @@ public class DistributionConfigJUnitTest {
     // are.
     assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(86, stringList.size());
+    assertEquals(87, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }

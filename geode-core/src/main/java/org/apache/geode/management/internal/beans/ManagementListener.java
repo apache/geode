@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -201,6 +202,14 @@ public class ManagementListener implements ResourceEventsListener {
       case CACHE_SERVICE_CREATE:
         CacheService service = (CacheService) resource;
         adapter.handleCacheServiceCreation(service);
+        break;
+      case FUNCTION_REGISTERED:
+        Function functionRegister = (Function) resource;
+        adapter.handleFunctionCreationRequest(functionRegister);
+        break;
+      case FUNCTION_UNREGISTERED:
+        Function functionUnRegister = (Function) resource;
+        adapter.handleFunctionUnRegisterRequest(functionUnRegister);
         break;
       default:
         break;

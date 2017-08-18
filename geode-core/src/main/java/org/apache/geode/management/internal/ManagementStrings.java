@@ -184,6 +184,9 @@ public class ManagementStrings {
   public static final StringId TARGET_DIR_CANT_BE_NULL_OR_EMPTY =
       new StringId(100055, "Target directory path can not be null or empty");
 
+  public static final StringId FUNCTION_STATS_MONITOR =
+      new StringId(100056, "FunctionStatsMXBeanMonitor");
+
   // HTTP & Jetty Related
 
 
