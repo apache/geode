@@ -72,6 +72,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +84,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
@@ -156,6 +156,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * The address server socket's in a client-server topology should listen on
    */
   private String serverBindAddress = DEFAULT_SERVER_BIND_ADDRESS;
+
+  private String functionExposedOverJmxNames = "";
+
 
   /**
    * The locations of the distribution locators
@@ -658,6 +661,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.mcastAddress = other.getMcastAddress();
     this.bindAddress = other.getBindAddress();
     this.serverBindAddress = other.getServerBindAddress();
+    this.functionExposedOverJmxNames = other.getFunctionExposedOverJmxNames();
     this.locators = ((DistributionConfigImpl) other).locators;
     this.locatorWaitTime = other.getLocatorWaitTime();
     this.remoteLocators = other.getRemoteLocators();
@@ -1715,6 +1719,22 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     return this.serverBindAddress;
   }
 
+
+  public String getFunctionExposedOverJmxNames() {
+    return this.functionExposedOverJmxNames;
+  }
+
+  public Boolean isFunctionExposedOnJMX(String functionId) {
+    Boolean isFunctionFound = false;
+    if ("" != functionExposedOverJmxNames) {
+      String[] functionNames = functionExposedOverJmxNames.split(",");
+      if (Arrays.asList(functionNames).contains(functionId)) {
+        isFunctionFound = true;
+      }
+    }
+    return isFunctionFound;
+  }
+
   public String getLocators() {
     if (this.startLocator != null && this.startLocator.length() > 0) {
       String locs = this.locators;
@@ -1927,6 +1947,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   public void setServerBindAddress(String value) {
     this.serverBindAddress = (String) value;
+  }
+
+  public void setFunctionExposedOverJmxNames(String value) {
+    if (value == null) {
+      value = "";
+    }
+    this.functionExposedOverJmxNames = (String) value;
   }
 
   public void setLocators(String value) {

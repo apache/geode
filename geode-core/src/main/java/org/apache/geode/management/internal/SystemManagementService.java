@@ -41,6 +41,7 @@ import org.apache.geode.management.DiskStoreMXBean;
 import org.apache.geode.management.DistributedLockServiceMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.FunctionStatsMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.LocatorMXBean;
@@ -771,5 +772,10 @@ public class SystemManagementService extends BaseManagementService {
   @Override
   public void removeMembershipListener(MembershipListener listener) {
     universalListenerContainer.removeMembershipListener(listener);
+  }
+
+  @Override
+  public FunctionStatsMXBean getLocalFunctionStatsMXBean(String functionId) {
+    return jmxAdapter.getFunctionStatsMXBean(functionId);
   }
 }

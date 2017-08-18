@@ -40,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -58,6 +56,7 @@ import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
@@ -114,28 +113,6 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -3090,5 +3067,23 @@ public class InternalDistributedSystem extends DistributedSystem
   public interface CreationStackGenerator {
 
     Throwable generateCreationStack(final DistributionConfig config);
+  }
+
+  public void requestRegisterBean(Function function) {
+
+    if (config.isFunctionExposedOnJMX(function.getId())) {
+      logger.info("FUNCTION_REGISTERED:" + "functionID:" + function.getId());
+      this.handleResourceEvent(ResourceEvent.FUNCTION_REGISTERED, function);
+    }
+  }
+
+
+  public void requestUnRegisterBean(Function function) {
+
+    if (config.isFunctionExposedOnJMX(function.getId())) {
+      logger
+          .info("requestUnRegisterBean-FUNCTION_DEREGISTERED:" + "functionID:" + function.getId());
+      this.handleResourceEvent(ResourceEvent.FUNCTION_UNREGISTERED, function);
+    }
   }
 }

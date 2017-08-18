@@ -59,11 +59,13 @@ import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.geode.cache.execute.Function;
 import java.lang.reflect.Type;
+import org.apache.geode.cache.execute.FunctionService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.geode.management.FunctionStatsMXBean;
 import java.util.Map;
 import java.util.Set;
 import javax.management.InstanceNotFoundException;
@@ -186,6 +188,68 @@ public class ManagementAdapter {
         }
 
       }
+    }
+  }
+
+  /* Register the function over the JMX */
+  public void handleFunctionCreationRequest(Function function) throws ManagementException {
+    if (!isServiceInitialised("handleManagerStart")) {
+      return;
+    }
+    try {
+      Function functionDetail = function;
+      FunctionStatsMBeanBridge functionStatsMBeanBridge =
+          new FunctionStatsMBeanBridge(functionDetail, internalCache);
+      FunctionStatsMXBean functionBean = new FunctionStatsMBean(functionStatsMBeanBridge);
+      ObjectName functionObjectName = MBeanJMXAdapter.getFunctionStatsMBeanName(
+          internalCache.getDistributedSystem().getDistributedMember(), functionDetail.getId());
+      logger.info("handleFunctionCreationRequest :functionObjectName:" + functionObjectName);
+      ObjectName functionMBeanName =
+          service.registerInternalMBean(functionBean, functionObjectName);
+
+      service.federate(functionMBeanName, FunctionStatsMXBean.class, true);
+    } catch (Exception e) {
+      logger.info("handleFunctionCreationRequest: Bean Could not initialise");
+    } finally {
+      if (!serviceInitialised && service != null) {
+        service.close();
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "handleFunctionCreationRequest:Function Bean Could not initialise hence closing");
+        }
+
+      } else {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "handleFunctionCreationRequest:Function Bean is initialised and Registered in JMX");
+        }
+
+      }
+    }
+  }
+
+  /* UnRegister the Function over the JMX */
+  public void handleFunctionUnRegisterRequest(Function functionUnRegister) {
+
+    if (!isServiceInitialised("handleFunctionUnRegisterRequest")) {
+      return;
+    }
+    try {
+      ObjectName functionObjectName = MBeanJMXAdapter.getFunctionStatsMBeanName(
+          internalCache.getDistributedSystem().getDistributedMember(), functionUnRegister.getId());
+      FunctionStatsMBean FunctionStatsMBean = null;
+      FunctionStatsMBean =
+          (FunctionStatsMBean) service.getLocalFunctionStatsMXBean(functionUnRegister.getId());
+      if (FunctionStatsMBean != null) {
+        FunctionStatsMBean.stopMonitor();
+      }
+      service.unregisterMBean(functionObjectName);
+
+    } catch (ManagementException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(e.getMessage(), e);
+      }
+
     }
   }
 

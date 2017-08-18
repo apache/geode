@@ -278,6 +278,18 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = String.class)
   String SERVER_BIND_ADDRESS_NAME = SERVER_BIND_ADDRESS;
 
+
+  @ConfigAttributeGetter(name = FUNCTION_EXPOSED_OVER_JMX_NAMES)
+  String getFunctionExposedOverJmxNames();
+
+  @ConfigAttributeSetter(name = FUNCTION_EXPOSED_OVER_JMX_NAMES)
+  void setFunctionExposedOverJmxNames(String value);
+
+  @ConfigAttribute(type = String.class)
+  String FUNCTION_EXPOSED_OVER_JMX_NAME = FUNCTION_EXPOSED_OVER_JMX_NAMES;
+
+  Boolean isFunctionExposedOnJMX(String functionId);
+
   /**
    * The default value of the {@link ConfigurationProperties#SERVER_BIND_ADDRESS} property. Current
    * value is an empty string <code>""</code>

@@ -14,11 +14,12 @@
  */
 package org.apache.geode.management.internal;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.management.internal.beans.QueryDataFunction;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
-import java.util.concurrent.TimeUnit;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.management.internal.beans.QueryDataFunction;
 
 
 /**
@@ -115,6 +116,10 @@ public interface ManagementConstants {
 
   public static final String OBJECTNAME__ASYNCEVENTQUEUE_MXBEAN =
       OBJECTNAME__PREFIX + "service=AsyncEventQueue,queue={0},type=Member,member={1}";
+
+  public static final String OBJECTNAME__FUNCTIONS_STATS_MXBEAN =
+      OBJECTNAME__PREFIX + "service=Functionstats,function={0},type=Member,member={1}";
+
 
   public static final String OBJECTNAME__GATEWAYSENDER_MXBEAN =
       OBJECTNAME__PREFIX + "service=GatewaySender,gatewaySender={0},type=Member,member={1}";

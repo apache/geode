@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.UnmodifiableException;
@@ -44,6 +42,7 @@ import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.memcached.GemFireMemcachedServer;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -851,6 +850,10 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SERVER_BIND_ADDRESS,
         LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0
             .toLocalizedString(DEFAULT_BIND_ADDRESS));
+
+    m.put(FUNCTION_EXPOSED_OVER_JMX_NAMES,
+        LocalizedStrings.AbstractDistributionConfig_FUNCTION_EXPOSED_OVER_JMX_0
+            .toLocalizedString(""));
 
     m.put(NAME,
         "A name that uniquely identifies a member in its distributed system."

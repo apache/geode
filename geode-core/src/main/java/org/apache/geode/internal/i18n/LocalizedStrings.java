@@ -7693,6 +7693,8 @@ public class LocalizedStrings {
       new StringId(6658, "Ignoring duplicate index creation for Lucene index {0} on region {1}");
   public static final StringId StringQueryProvider_PARSING_QUERY_0_FAILED_DUE_TO_1 =
       new StringId(6659, "Parsing query {0} failed due to: {1}");
+  public static final StringId AbstractDistributionConfig_FUNCTION_EXPOSED_OVER_JMX_0 =
+      new StringId(6660, "function which require to exposed over jmx. Defaults to \"{0}\".");
 
   public static final StringId LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED = new StringId(6660,
       "Region {0} cannot be destroyed because it defines Lucene index(es) [{1}]. Destroy all Lucene indexes before destroying the region.");

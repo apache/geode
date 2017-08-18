@@ -122,6 +122,14 @@ public abstract class ManagementService {
   public abstract RegionMXBean getLocalRegionMBean(String regionPath);
 
   /**
+   * Returns a FunctionStatsMXBean for managing and monitoring a function.
+   * 
+   * @param functionID of the function.
+   * @return A FunctionStatsMXBean if the function exists, null otherwise.
+   */
+  public abstract FunctionStatsMXBean getLocalFunctionStatsMXBean(String functionID);
+
+  /**
    * Returns a LockServiceMXBean for managing and monitoring a lock service.
    * 
    * @param lockServiceName Name of the lock service.

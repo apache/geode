@@ -1540,6 +1540,10 @@ public interface ConfigurationProperties {
    */
   String SERVER_BIND_ADDRESS = "server-bind-address";
   /**
+   * functions ',' separated names which all need to be register over jmx
+   */
+  String FUNCTION_EXPOSED_OVER_JMX_NAMES = "function-exposed-over-jmx";
+  /**
    * The static String definition of the <i>"ssl-server-alias"</i> property <a
    * name="ssl-server-alias"/a>
    * </p>

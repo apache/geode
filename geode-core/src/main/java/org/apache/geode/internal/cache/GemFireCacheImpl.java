@@ -74,11 +74,7 @@ import java.util.regex.Pattern;
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -235,6 +231,10 @@ import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.logging.log4j.Logger;
+
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
 
 // TODO: somebody Come up with more reasonable values for {@link #DEFAULT_LOCK_TIMEOUT}, etc.
 /**
@@ -3138,7 +3138,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     invokeRegionAfter(region);
 
     // Added for M&M . Putting the callback here to avoid creating RegionMBean in case of Exception
-    if (!region.isInternalRegion()) {
+    if (region.isRegionRegistrationRequireOnJmx()) {
       this.system.handleResourceEvent(ResourceEvent.REGION_CREATE, region);
     }
 
