@@ -381,16 +381,11 @@ public class TcpServer {
           } else {
             rejectUnknownProtocolConnection(socket, gossipVersion);
           }
-        } else {
-          if (gossipVersion <= getCurrentGossipVersion()
-              && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
-            // Create a versioned stream to remember sender's GemFire version
-            versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
-          } else {
-            // Close the socket. We can not accept requests from a newer version
-            rejectUnknownProtocolConnection(socket, gossipVersion);
-            return;
-          }
+        } else if (gossipVersion <= getCurrentGossipVersion()
+            && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
+          // Create a versioned stream to remember sender's GemFire version
+          versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
+
           if (Version.GFE_71.compareTo(versionOrdinal) <= 0) {
             // Recent versions of TcpClient will send the version ordinal
             versionOrdinal = input.readShort();
@@ -434,6 +429,9 @@ public class TcpServer {
           }
 
           handler.endResponse(request, startTime);
+        } else {
+          // Close the socket. We can not accept requests from a newer version
+          rejectUnknownProtocolConnection(socket, gossipVersion);
         }
       } catch (EOFException ignore) {
         // client went away - ignore
