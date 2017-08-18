@@ -15,7 +15,7 @@
 package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
@@ -37,7 +37,8 @@ public class ProtobufOpsProcessor {
     this.operationContextRegistry = operationContextRegistry;
   }
 
-  public ClientProtocol.Response process(ClientProtocol.Request request, ExecutionContext context) {
+  public ClientProtocol.Response process(ClientProtocol.Request request,
+      MessageExecutionContext context) {
     ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
     OperationContext operationContext = operationContextRegistry.getOperationContext(requestType);
     ClientProtocol.Response.Builder builder;

@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -40,7 +40,7 @@ public class RemoveRequestOperationHandler
 
   @Override
   public Result<RegionAPI.RemoveResponse> process(SerializationService serializationService,
-      RegionAPI.RemoveRequest request, ExecutionContext executionContext)
+      RegionAPI.RemoveRequest request, MessageExecutionContext executionContext)
       throws InvalidExecutionContextException {
 
     String regionName = request.getRegionName();

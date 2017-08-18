@@ -15,7 +15,7 @@
 package org.apache.geode.protocol.operations;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.ProtobufOpsProcessor;
 import org.apache.geode.protocol.protobuf.Result;
@@ -34,6 +34,6 @@ public interface OperationHandler<Req, Resp> {
    * indicated on the provided cache, and return a response.
    */
   Result<Resp> process(SerializationService serializationService, Req request,
-      ExecutionContext executionContext) throws InvalidExecutionContextException;
+      MessageExecutionContext executionContext) throws InvalidExecutionContextException;
 }
 

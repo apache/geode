@@ -297,6 +297,8 @@ public class DUnitLauncher {
         // able to do so successfully anyway
         p.setProperty(DISABLE_AUTO_RECONNECT, "true");
 
+        System.setProperty("geode.feature-protobuf-protocol", "true");
+
         try {
           Locator.startLocatorAndDS(0, locatorLogFile, p);
           InternalLocator internalLocator = (InternalLocator) Locator.getLocator();

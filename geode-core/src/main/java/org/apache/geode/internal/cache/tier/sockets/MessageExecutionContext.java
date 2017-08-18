@@ -15,18 +15,20 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
 
-public class ExecutionContext {
+@Experimental
+public class MessageExecutionContext {
   private Cache cache;
   private InternalLocator locator;
 
-  public ExecutionContext(Cache cache) {
+  public MessageExecutionContext(Cache cache) {
     this.cache = cache;
   }
 
-  public ExecutionContext(InternalLocator locator) {
+  public MessageExecutionContext(InternalLocator locator) {
     this.locator = locator;
   }
 
@@ -37,7 +39,7 @@ public class ExecutionContext {
       return cache;
     } else {
       throw new InvalidExecutionContextException(
-          "Execution context's cache was accessed but isn't present. Did this happen on a locator? Operations on the locator should not try to operate on a cache");
+          "Operations on the locator should not to try to operate on a cache");
     }
   }
 
@@ -48,7 +50,7 @@ public class ExecutionContext {
       return locator;
     } else {
       throw new InvalidExecutionContextException(
-          "Execution context's locator was accessed but isn't present. Did this happen on a server? Operations on the locator should not try to operate on a cache");
+          "Operations on the server should not to try to operate on a locator");
     }
   }
 }

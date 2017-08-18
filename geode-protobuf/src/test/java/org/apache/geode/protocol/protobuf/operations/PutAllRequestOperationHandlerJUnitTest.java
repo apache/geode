@@ -15,7 +15,7 @@
 package org.apache.geode.protocol.protobuf.operations;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.RegionAPI;
@@ -74,7 +74,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, true), new ExecutionContext(cacheStub));
+        generateTestRequest(false, true), new MessageExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -88,7 +88,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true, true), new ExecutionContext(cacheStub));
+        generateTestRequest(true, true), new MessageExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
@@ -107,7 +107,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, false), new ExecutionContext(cacheStub));
+        generateTestRequest(false, false), new MessageExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 

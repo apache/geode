@@ -30,5 +30,5 @@ import java.io.OutputStream;
  */
 public interface ClientProtocolMessageHandler {
   void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      ExecutionContext executionContext) throws IOException;
+      MessageExecutionContext executionContext) throws IOException;
 }

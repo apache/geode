@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.tier.sockets.ExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
@@ -37,13 +37,17 @@ public class GetAvailableServersOperationHandler implements
   @Override
   public Result<ServerAPI.GetAvailableServersResponse> process(
       SerializationService serializationService, ServerAPI.GetAvailableServersRequest request,
-      ExecutionContext executionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext executionContext) throws InvalidExecutionContextException {
 
     InternalLocator locator = executionContext.getLocator();
-    ArrayList servers2 = locator.getServerLocatorAdvisee().getLoadSnapshot().getServers(null);
+    ArrayList serversFromSnapshot =
+        locator.getServerLocatorAdvisee().getLoadSnapshot().getServers(null);
+    if (serversFromSnapshot == null) {
+      serversFromSnapshot = new ArrayList();
+    }
 
-    Collection<BasicTypes.Server> servers = (Collection<BasicTypes.Server>) servers2.stream()
-        .map(serverLocation -> getServerProtobufMessage((ServerLocation) serverLocation))
+    Collection<BasicTypes.Server> servers = (Collection<BasicTypes.Server>) serversFromSnapshot
+        .stream().map(serverLocation -> getServerProtobufMessage((ServerLocation) serverLocation))
         .collect(Collectors.toList());
     ServerAPI.GetAvailableServersResponse.Builder builder =
         ServerAPI.GetAvailableServersResponse.newBuilder().addAllServers(servers);
