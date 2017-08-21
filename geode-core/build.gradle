@@ -31,7 +31,9 @@ configurations {
 }
 
 dependencies {
-   // Source Dependencies
+  // Source Dependencies
+  antlr 'antlr:antlr:' + project.'antlr.version'
+
   // External
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
