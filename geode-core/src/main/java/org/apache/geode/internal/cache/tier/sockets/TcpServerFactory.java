@@ -40,14 +40,15 @@ public class TcpServerFactory {
   }
 
   public synchronized ClientProtocolMessageHandler initializeMessageHandler() {
-    if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-      return null;
-    }
     if (protocolHandler != null) {
       return protocolHandler;
     }
 
-    protocolHandler = new MessageHandlerFactory().makeMessageHandler();
+    try {
+      protocolHandler = new MessageHandlerFactory().makeMessageHandler();
+    } catch (ServiceLoadingFailureException ex) {
+      // ignore, TcpServer will take care right now
+    }
 
     return protocolHandler;
   }
