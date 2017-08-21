@@ -43,11 +43,13 @@ def addOldVersion(def source, def geodeVersion, def downloadInstall) {
   task "downloadZipFile${source}" (type: Download) {
     src "https://www.apache.org/dyn/closer.cgi?action=download&filename=geode/$geodeVersion/apache-geode-${geodeVersion}.tar.gz"
     dest new File(buildDir, "apache-geode-${geodeVersion}.tar.gz")
+    overwrite false
   }
 
   task "downloadSHA${source}" (type: Download) {
     src "https://www.apache.org/dist/geode/${geodeVersion}/apache-geode-${geodeVersion}.tar.gz.sha256"
     dest new File(buildDir, "apache-geode-${geodeVersion}.tar.gz.sha256")
+    overwrite false
   }
 
 
