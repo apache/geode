@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_HTTP_SERVICE_PORT;
@@ -24,22 +23,27 @@ import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 
 @Category({IntegrationTest.class, RestAPITest.class})
-public class RestServersJUnitTest {
+public class RestServersIntegrationTest {
+
+  private static GeodeRestClient restClient;
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule().withRestService(true);
 
 
-  private static GeodeRestClient restClient;
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @BeforeClass
   public static void before() throws Exception {
