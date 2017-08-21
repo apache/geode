@@ -29,9 +29,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.lang.StringUtils;
@@ -112,7 +114,10 @@ public class ConnectCommand implements GfshCommand {
           help = CliStrings.CONNECT__SECURITY_PROPERTIES__HELP) final File gfSecurityPropertiesFile,
       @CliOption(key = {CliStrings.CONNECT__USE_SSL}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
-          help = CliStrings.CONNECT__USE_SSL__HELP) boolean useSsl)
+          help = CliStrings.CONNECT__USE_SSL__HELP) boolean useSsl,
+      @CliOption(key = {"skip-ssl-validation"}, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false",
+          help = "When connecting via HTTP, connects using 1-way SSL validation rather than 2-way SSL validation.") boolean skipSslValidation)
       throws MalformedURLException {
 
     Result result;
@@ -145,12 +150,10 @@ public class ConnectCommand implements GfshCommand {
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(), password);
     }
 
-    // TODO: refactor this to be more readable, like
-    /*
-     * if(useHttp) connectOverHttp else if(jmxManagerEndPoint==null) connectToLocator to get the
-     * jmxManagerEndPoint else connectTo jmxManagerEndPoint
-     */
     if (useHttp) {
+      if (skipSslValidation) {
+        HttpsURLConnection.setDefaultHostnameVerifier((String s, SSLSession sslSession) -> true);
+      }
       result = httpConnect(gfProperties, url);
     } else {
       result = jmxConnect(gfProperties, useSsl, jmxManagerEndPoint, locatorEndPoint, false);
@@ -160,8 +163,6 @@ public class ConnectCommand implements GfshCommand {
   }
 
   /**
-   *
-   * @param gfsh
    * @param useSsl if true, and no files/options passed, we would still insist on prompting for ssl
    *        config (considered only when the last three parameters are null)
    * @param gfPropertiesFile gemfire properties file, can be null

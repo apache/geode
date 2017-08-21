@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.internal.cli.commands.StatusLocatorRealGfshTest;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
@@ -144,7 +143,7 @@ public class GfshRule extends ExternalResource {
         new CommandStringBuilder("stop server").addOption("dir", dir).toString();
 
     GfshScript stopServerScript =
-        new GfshScript(stopServerCommand).withName("stop-server-teardown").awaitQuietly();
+        new GfshScript(stopServerCommand).withName("teardown-stop-server").awaitQuietly();
     execute(stopServerScript);
   }
 
@@ -153,7 +152,7 @@ public class GfshRule extends ExternalResource {
         new CommandStringBuilder("stop locator").addOption("dir", dir).toString();
 
     GfshScript stopServerScript =
-        new GfshScript(stopLocatorCommand).withName("stop-locator-teardown").awaitQuietly();
+        new GfshScript(stopLocatorCommand).withName("teardown-stop-locator").awaitQuietly();
     execute(stopServerScript);
   }
 
