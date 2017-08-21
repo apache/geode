@@ -54,9 +54,7 @@ public class ConnectCommandTest {
   public static GfshParserRule gfshParserRule = new GfshParserRule();
 
   private ConnectCommand connectCommand;
-
-  private Gfsh gfsh = mock(Gfsh.class);
-
+  private Gfsh gfsh;
   private CommandResult result;
   private Properties properties;
   private ArgumentCaptor<File> fileCaptor;
@@ -64,6 +62,7 @@ public class ConnectCommandTest {
   @Before
   public void before() throws Exception {
     properties = new Properties();
+    gfsh = mock(Gfsh.class);
     when(gfsh.getOperationInvoker()).thenReturn(mock(OperationInvoker.class));
     // using spy instead of mock because we want to call the real method when we do connect
     connectCommand = spy(ConnectCommand.class);
@@ -107,8 +106,8 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void notPromptForPasswordIfuserNameisGivenInFile() throws Exception {
-    // username specified in property file won't promot for password
+  public void notPromptForPasswordIfuserNameIsGivenInFile() throws Exception {
+    // username specified in property file won't prompt for password
     properties.setProperty("security-username", "user");
     doReturn(properties).when(connectCommand).loadProperties(any(File.class));
 
@@ -245,25 +244,25 @@ public class ConnectCommandTest {
   @Test
   public void containsLegacySSLConfigTest_ssl() throws Exception {
     properties.setProperty(SSL_KEYSTORE, "keystore");
-    assertThat(connectCommand.containsLegacySSLConfig(properties)).isFalse();
+    assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isFalse();
   }
 
   @Test
   public void containsLegacySSLConfigTest_cluster() throws Exception {
     properties.setProperty(CLUSTER_SSL_KEYSTORE, "cluster-keystore");
-    assertThat(connectCommand.containsLegacySSLConfig(properties)).isTrue();
+    assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isTrue();
   }
 
   @Test
   public void containsLegacySSLConfigTest_jmx() throws Exception {
     properties.setProperty(JMX_MANAGER_SSL_KEYSTORE, "jmx-keystore");
-    assertThat(connectCommand.containsLegacySSLConfig(properties)).isTrue();
+    assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isTrue();
   }
 
   @Test
   public void containsLegacySSLConfigTest_http() throws Exception {
     properties.setProperty(HTTP_SERVICE_SSL_KEYSTORE, "http-keystore");
-    assertThat(connectCommand.containsLegacySSLConfig(properties)).isTrue();
+    assertThat(ConnectCommand.containsLegacySSLConfig(properties)).isTrue();
   }
 
   @Test
@@ -274,7 +273,8 @@ public class ConnectCommandTest {
 
   @Test
   public void isSslImpliedByOptions() throws Exception {
-    assertThat(connectCommand.isSslImpliedBySslOptions(null)).isFalse();
+    assertThat(connectCommand.isSslImpliedBySslOptions((String) null)).isFalse();
+    assertThat(connectCommand.isSslImpliedBySslOptions((String[]) null)).isFalse();
 
     assertThat(connectCommand.isSslImpliedBySslOptions(null, null, null)).isFalse();
 
