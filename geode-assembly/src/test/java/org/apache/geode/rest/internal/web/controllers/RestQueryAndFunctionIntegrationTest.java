@@ -22,6 +22,33 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -45,35 +72,15 @@ import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+import org.apache.geode.test.junit.categories.RestAPITest;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+@Category({IntegrationTest.class, RestAPITest.class})
+public class RestQueryAndFunctionIntegrationTest {
 
-@Category(IntegrationTest.class)
-public class RestAPIsQueryAndFEJUnitTest {
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   private Cache c;
 
@@ -842,107 +849,110 @@ public class RestAPIsQueryAndFEJUnitTest {
       }
     }
   }
-}
 
+  static class SimpleCacheLoader implements CacheLoader<String, Object>, Declarable {
 
-// TODO: move following classes to be inner classes
+    @Override
+    public Object load(LoaderHelper helper) {
+      // throws TimeoutException
+      throw new TimeoutException("Could not load, Request Timedout...!!");
+    }
 
-class SimpleCacheLoader implements CacheLoader<String, Object>, Declarable {
+    @Override
+    public void close() {
+      // nothing
+    }
 
-  @Override
-  public Object load(LoaderHelper helper) {
-    // throws TimeoutException
-    throw new TimeoutException("Could not load, Request Timedout...!!");
+    @Override
+    public void init(Properties props) {
+      // nothing
+    }
   }
 
-  @Override
-  public void close() {}
+  static class SampleCacheWriter implements CacheWriter<String, Object> {
 
-  @Override
-  public void init(Properties props) {
+    @Override
+    public void close() {
+      // nothing
+    }
 
-  }
-}
+    @Override
+    public void beforeUpdate(EntryEvent event) throws CacheWriterException {
+      // nothing
+    }
 
+    @Override
+    public void beforeCreate(EntryEvent event) throws CacheWriterException {
+      throw new CacheWriterException("Put request failed as gemfire has thrown error...!!");
+    }
 
-class SampleCacheWriter implements CacheWriter<String, Object> {
+    @Override
+    public void beforeDestroy(EntryEvent event) throws CacheWriterException {
+      throw new RegionDestroyedException("Region has been destroyed already...!!", "dummyRegion");
+    }
 
-  @Override
-  public void close() {}
+    @Override
+    public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
+      // nothing
+    }
 
-  @Override
-  public void beforeUpdate(EntryEvent event) throws CacheWriterException {}
-
-  @Override
-  public void beforeCreate(EntryEvent event) throws CacheWriterException {
-    throw new CacheWriterException("Put request failed as gemfire has thrown error...!!");
-  }
-
-  @Override
-  public void beforeDestroy(EntryEvent event) throws CacheWriterException {
-    throw new RegionDestroyedException("Region has been destroyed already...!!", "dummyRegion");
-  }
-
-  @Override
-  public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {}
-
-  @Override
-  public void beforeRegionClear(RegionEvent event) throws CacheWriterException {}
-}
-
-
-enum QueryType {
-  LIST_ALL_NAMED_QUERY, EXECUTE_NAMED_QUERY, EXECUTE_ADHOC_QUERY
-}
-
-
-class QueryResultData {
-
-  private int queryIndex;
-  private QueryType type;
-  private int resultSize;
-  private List<String> result;
-
-  public QueryResultData() {}
-
-  @SuppressWarnings("unused")
-  public QueryResultData(int index, QueryType type, int size, List<String> result) {
-    this.queryIndex = index;
-    this.type = type;
-    this.resultSize = size;
-    this.result = result;
+    @Override
+    public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
+      // nothing
+    }
   }
 
-  public QueryType getType() {
-    return type;
+  enum QueryType {
+    LIST_ALL_NAMED_QUERY, EXECUTE_NAMED_QUERY, EXECUTE_ADHOC_QUERY
   }
 
-  public void setType(QueryType type) {
-    this.type = type;
-  }
+  static class QueryResultData {
 
-  public int getQueryIndex() {
-    return queryIndex;
-  }
+    private int queryIndex;
+    private QueryType type;
+    private int resultSize;
+    private List<String> result;
 
-  public void setQueryIndex(int queryIndex) {
-    this.queryIndex = queryIndex;
-  }
+    public QueryResultData() {}
 
-  public int getResultSize() {
-    return resultSize;
-  }
+    @SuppressWarnings("unused")
+    public QueryResultData(int index, QueryType type, int size, List<String> result) {
+      this.queryIndex = index;
+      this.type = type;
+      this.resultSize = size;
+      this.result = result;
+    }
 
-  public void setResultSize(int resultSize) {
-    this.resultSize = resultSize;
-  }
+    public QueryType getType() {
+      return type;
+    }
 
-  public List<String> getResult() {
-    return result;
-  }
+    public void setType(QueryType type) {
+      this.type = type;
+    }
 
-  public void setResult(List<String> result) {
-    this.result = result;
-  }
+    public int getQueryIndex() {
+      return queryIndex;
+    }
 
+    public void setQueryIndex(int queryIndex) {
+      this.queryIndex = queryIndex;
+    }
+
+    public int getResultSize() {
+      return resultSize;
+    }
+
+    public void setResultSize(int resultSize) {
+      this.resultSize = resultSize;
+    }
+
+    public List<String> getResult() {
+      return result;
+    }
+
+    public void setResult(List<String> result) {
+      this.result = result;
+    }
+  }
 }
