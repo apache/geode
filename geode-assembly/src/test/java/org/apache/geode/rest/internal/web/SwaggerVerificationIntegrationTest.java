@@ -20,21 +20,28 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category({IntegrationTest.class, RestAPITest.class})
-public class SwaggerVerificationTest {
+@Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
+public class SwaggerVerificationIntegrationTest {
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule()
       .withSecurityManager(SimpleTestSecurityManager.class).withRestService().withAutoStart();
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Test
   public void isSwaggerRunning() throws Exception {
