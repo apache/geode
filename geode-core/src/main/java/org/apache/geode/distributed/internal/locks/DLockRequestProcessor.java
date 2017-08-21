@@ -196,13 +196,6 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     return this.response.leaseExpireTime;
   }
 
-  /**
-   *
-   * @param interruptible
-   * @param lockId
-   * @return
-   * @throws InterruptedException only possible if interruptible is true.
-   */
   protected boolean requestLock(boolean interruptible, int lockId) throws InterruptedException {
     final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
 
