@@ -15,6 +15,7 @@
 package org.apache.geode.internal.process;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,16 +41,13 @@ import org.apache.geode.internal.util.StopWatch;
 public abstract class AbstractProcessStreamReaderIntegrationTest {
 
   /** Timeout to join to a running ProcessStreamReader thread */
-  private static final int READER_JOIN_TIMEOUT_MILLIS = 20 * 1000;
+  private static final int READER_JOIN_TIMEOUT_MILLIS = 2 * 60 * 1000;
 
   /** Sleep timeout for {@link ProcessSleeps} instead of sleeping Long.MAX_VALUE */
   private static final int PROCESS_FAIL_SAFE_TIMEOUT_MILLIS = 10 * 60 * 1000;
 
   /** Additional time for launched processes to live before terminating */
   private static final int PROCESS_TIME_TO_LIVE_MILLIS = 3 * 500;
-
-  /** Timeout to wait for a new {@link ProcessStreamReader} to be running */
-  private static final int WAIT_FOR_READER_IS_RUNNING_TIMEOUT_MILLIS = 20 * 1000;
 
   protected Process process;
   protected ProcessStreamReader stderr;
@@ -149,7 +147,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   }
 
   protected ConditionFactory await() {
-    return Awaitility.await().atMost(WAIT_FOR_READER_IS_RUNNING_TIMEOUT_MILLIS, MILLISECONDS);
+    return Awaitility.await().atMost(2, MINUTES);
   }
 
   protected static String[] createCommandLine(final Class<?> clazz) {
