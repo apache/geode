@@ -14,6 +14,7 @@
  */
 package org.apache.geode.protocol.protobuf;
 
+import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.StreamAuthenticator;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
@@ -37,8 +38,8 @@ public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
     }
 
     Properties properties = new Properties();
-    properties.setProperty("username", authenticationRequest.getUsername());
-    properties.setProperty("password", authenticationRequest.getPassword());
+    properties.setProperty(ResourceConstants.USER_NAME, authenticationRequest.getUsername());
+    properties.setProperty(ResourceConstants.PASSWORD, authenticationRequest.getPassword());
 
     try {
       Object principal = securityManager.authenticate(properties);
