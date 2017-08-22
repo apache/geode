@@ -14,15 +14,16 @@
  */
 package org.apache.geode.management.internal.web.domain;
 
+import java.io.Serializable;
+import java.net.URI;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
+
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.apache.geode.management.internal.web.util.UriUtils;
-
-import java.io.Serializable;
-import java.net.URI;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
 
 /**
  * The Link class models hypermedia controls/link relations.
@@ -82,7 +83,7 @@ public class Link implements Comparable<Link>, Serializable {
     this.href = href;
   }
 
-  @XmlAttribute(name = METHOD_ATTRIBUTE_NAME, required = false)
+  @XmlAttribute(name = METHOD_ATTRIBUTE_NAME)
   public HttpMethod getMethod() {
     return method;
   }

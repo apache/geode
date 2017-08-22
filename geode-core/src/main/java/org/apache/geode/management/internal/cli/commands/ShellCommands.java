@@ -236,8 +236,7 @@ public class ShellCommands implements GfshCommand {
 
   @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""},
-      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+  public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
       mandatory = true, help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
     Result result = null;
 
@@ -319,7 +318,6 @@ public class ShellCommands implements GfshCommand {
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result history(
       @CliOption(key = {CliStrings.HISTORY__FILE},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.HISTORY__FILE__HELP) String saveHistoryTo,
       @CliOption(key = {CliStrings.HISTORY__CLEAR}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",

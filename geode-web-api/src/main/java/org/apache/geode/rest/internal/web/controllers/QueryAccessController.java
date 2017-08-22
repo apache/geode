@@ -14,18 +14,12 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.util.JSONUtils;
-import org.apache.geode.rest.internal.web.util.ValidationUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -33,9 +27,29 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.util.concurrent.ConcurrentHashMap;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.JSONUtils;
+import org.apache.geode.rest.internal.web.util.ValidationUtils;
 
 /**
  * The QueryingController class serves all HTTP REST requests related to the gemfire querying
@@ -76,7 +90,7 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "list all parametrized queries",
-      notes = "List all parametrized queries by id/name", response = void.class)
+      notes = "List all parametrized queries by id/name")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -106,8 +120,8 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.POST)
   @ApiOperation(value = "create a parametrized Query",
-      notes = "Prepare the specified parametrized query and assign the corresponding ID for lookup",
-      response = void.class)
+      notes = "Prepare the specified parametrized query and assign the corresponding ID for lookup"
+  )
   @ApiResponses({@ApiResponse(code = 201, message = "Successfully created."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -148,8 +162,8 @@ public class QueryAccessController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.GET, value = "/adhoc",
       produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "run an adhoc query",
-      notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter",
-      response = void.class)
+      notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter"
+  )
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -207,8 +221,8 @@ public class QueryAccessController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.POST, value = "/{query}",
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "run parametrized query",
-      notes = "run the specified named query passing in scalar values for query parameters in the GemFire cluster",
-      response = void.class)
+      notes = "run the specified named query passing in scalar values for query parameters in the GemFire cluster"
+  )
   @ApiResponses({@ApiResponse(code = 200, message = "Query successfully executed."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -291,7 +305,7 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.PUT, value = "/{query}")
   @ApiOperation(value = "update parametrized query",
-      notes = "Update named, parametrized query by ID", response = void.class)
+      notes = "Update named, parametrized query by ID")
   @ApiResponses({@ApiResponse(code = 200, message = "Updated successfully."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -322,7 +336,7 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{query}")
   @ApiOperation(value = "delete parametrized query",
-      notes = "delete named, parametrized query by ID", response = void.class)
+      notes = "delete named, parametrized query by ID")
   @ApiResponses({@ApiResponse(code = 200, message = "Deleted successfully."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),

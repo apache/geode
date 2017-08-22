@@ -14,16 +14,14 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
-import org.apache.geode.rest.internal.web.controllers.support.RegionData;
-import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,11 +30,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.RegionData;
+import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
 
 /**
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on
@@ -72,8 +77,8 @@ public class PdxBasedCrudController extends CommonCrudController {
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{region}",
       consumes = MediaType.APPLICATION_JSON_VALUE, produces = {MediaType.APPLICATION_JSON_VALUE})
-  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region",
-      response = void.class)
+  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region"
+  )
   @ApiResponses({@ApiResponse(code = 201, message = "Created."),
       @ApiResponse(code = 400,
           message = "Data specified (JSON doc) in the request body is invalid."),
@@ -125,8 +130,8 @@ public class PdxBasedCrudController extends CommonCrudController {
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read all data for region",
-      notes = "Read all data for region. Use limit param to get fixed or limited number of entries.",
-      response = void.class)
+      notes = "Read all data for region. Use limit param to get fixed or limited number of entries."
+  )
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -200,7 +205,7 @@ public class PdxBasedCrudController extends CommonCrudController {
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read data for specific keys",
-      notes = "Read data for specific set of keys in region.", response = void.class)
+      notes = "Read data for specific set of keys in region.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad Request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -280,8 +285,8 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiOperation(value = "update data for key",
       notes = "Update or insert (put) data for key in region."
           + "op=REPLACE, update (replace) data with key if and only if the key exists in region"
-          + "op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in region",
-      response = void.class)
+          + "op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in region"
+  )
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad Request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -312,7 +317,7 @@ public class PdxBasedCrudController extends CommonCrudController {
   @RequestMapping(method = RequestMethod.HEAD, value = "/{region}",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiOperation(value = "Get total number of entries",
-      notes = "Get total number of entries into the specified region", response = void.class)
+      notes = "Get total number of entries into the specified region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),

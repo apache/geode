@@ -14,8 +14,22 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -34,19 +48,6 @@ import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ExportLogsCommand implements GfshCommand {
 
@@ -60,20 +61,18 @@ public class ExportLogsCommand implements GfshCommand {
   private static final Pattern DISK_SPACE_LIMIT_PATTERN = Pattern.compile("(\\d+)([kmgtKMGT]?)");
 
   @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
-  @CliMetaData(shellOnly = false, isFileDownloadOverHttp = true,
+  @CliMetaData(isFileDownloadOverHttp = true,
       interceptor = "org.apache.geode.management.internal.cli.commands.ExportLogsInterceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result exportLogs(
-      @CliOption(key = CliStrings.EXPORT_LOGS__DIR, help = CliStrings.EXPORT_LOGS__DIR__HELP,
-          mandatory = false) String dirName,
+      @CliOption(key = CliStrings.EXPORT_LOGS__DIR, help = CliStrings.EXPORT_LOGS__DIR__HELP
+      ) String dirName,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXPORT_LOGS__GROUP__HELP) String[] groups,
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_LOGS__MEMBER__HELP) String[] memberIds,
       @CliOption(key = CliStrings.EXPORT_LOGS__LOGLEVEL,
@@ -85,10 +84,8 @@ public class ExportLogsCommand implements GfshCommand {
       @CliOption(key = CliStrings.EXPORT_LOGS__MERGELOG, unspecifiedDefaultValue = "false",
           help = CliStrings.EXPORT_LOGS__MERGELOG__HELP) boolean mergeLog,
       @CliOption(key = CliStrings.EXPORT_LOGS__STARTTIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.EXPORT_LOGS__STARTTIME__HELP) String start,
       @CliOption(key = CliStrings.EXPORT_LOGS__ENDTIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.EXPORT_LOGS__ENDTIME__HELP) String end,
       @CliOption(key = CliStrings.EXPORT_LOGS__LOGSONLY, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
