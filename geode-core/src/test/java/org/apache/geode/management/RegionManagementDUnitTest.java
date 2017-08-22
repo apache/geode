@@ -30,11 +30,14 @@ package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.apache.geode.cache.Region.*;
-import static org.apache.geode.management.internal.MBeanJMXAdapter.*;
-import static org.apache.geode.test.dunit.Host.*;
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedRegionMbeanName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getRegionMBeanName;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +50,6 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.After;
@@ -80,6 +82,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class checks and verifies various data and operations exposed through RegionMXBean
@@ -91,7 +94,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * TODO: complete refactoring this test to use ManagementTestRule
  */
 @Category(DistributedTest.class)
-@SuppressWarnings({"serial", "unused"})
 public class RegionManagementDUnitTest extends ManagementTestBase {
 
   private static final String REGION_NAME = "MANAGEMENT_TEST_REGION";
@@ -263,6 +265,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-3335
   public void testNavigationAPIS() throws Exception {
     createManagersAndThenMembers_tmp();
 
