@@ -59,6 +59,7 @@ public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
 
   @Override
   public boolean isAuthenticated() {
+    // note: an authorizer is only created if the user has been authenticated
     return authorizer != null;
   }
 
