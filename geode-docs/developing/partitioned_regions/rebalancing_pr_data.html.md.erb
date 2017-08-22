@@ -104,3 +104,8 @@ gfsh>rebalance --simulate
 If you are using `heap_lru` for data eviction, you may notice a difference between your simulated results and your actual rebalancing results. This discrepancy can be due to the VM starting to evict entries after you execute the simulation. Then when you perform an actual rebalance operation, the operation will make different decisions based on the newer heap size.
 
 
+## Automated Rebalancing
+
+The experimental [automated rebalance feature](automated_rebalance.html) triggers a rebalance operation based on a time schedule.
+
+
