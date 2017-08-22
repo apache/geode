@@ -121,8 +121,7 @@ public class FunctionAccessController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId:.+}",
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "execute function",
-      notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified"
-  )
+      notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),

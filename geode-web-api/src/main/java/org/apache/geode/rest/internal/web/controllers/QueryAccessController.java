@@ -120,8 +120,7 @@ public class QueryAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.POST)
   @ApiOperation(value = "create a parametrized Query",
-      notes = "Prepare the specified parametrized query and assign the corresponding ID for lookup"
-  )
+      notes = "Prepare the specified parametrized query and assign the corresponding ID for lookup")
   @ApiResponses({@ApiResponse(code = 201, message = "Successfully created."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -162,8 +161,7 @@ public class QueryAccessController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.GET, value = "/adhoc",
       produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "run an adhoc query",
-      notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter"
-  )
+      notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -221,8 +219,7 @@ public class QueryAccessController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.POST, value = "/{query}",
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "run parametrized query",
-      notes = "run the specified named query passing in scalar values for query parameters in the GemFire cluster"
-  )
+      notes = "run the specified named query passing in scalar values for query parameters in the GemFire cluster")
   @ApiResponses({@ApiResponse(code = 200, message = "Query successfully executed."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),

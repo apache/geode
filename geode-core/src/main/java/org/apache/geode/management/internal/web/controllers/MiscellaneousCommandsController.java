@@ -201,16 +201,14 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @RequestMapping(method = RequestMethod.POST, value = "/groups/{groups}/loglevel")
   @ResponseBody
   public String changeLogLevelForGroups(@PathVariable("groups") final String groups,
-      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL
-      ) final String logLevel) {
+      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL) final String logLevel) {
     return internalChangeLogLevel(groups, null, logLevel);
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/members/{members}/loglevel")
   @ResponseBody
   public String changeLogLevelForMembers(@PathVariable("members") final String members,
-      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL
-      ) final String logLevel) {
+      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL) final String logLevel) {
     return internalChangeLogLevel(null, members, logLevel);
   }
 

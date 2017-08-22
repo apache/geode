@@ -77,8 +77,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{region}",
       consumes = MediaType.APPLICATION_JSON_VALUE, produces = {MediaType.APPLICATION_JSON_VALUE})
-  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region"
-  )
+  @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region")
   @ApiResponses({@ApiResponse(code = 201, message = "Created."),
       @ApiResponse(code = 400,
           message = "Data specified (JSON doc) in the request body is invalid."),
@@ -130,8 +129,7 @@ public class PdxBasedCrudController extends CommonCrudController {
   @RequestMapping(method = RequestMethod.GET, value = "/{region}",
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ApiOperation(value = "read all data for region",
-      notes = "Read all data for region. Use limit param to get fixed or limited number of entries."
-  )
+      notes = "Read all data for region. Use limit param to get fixed or limited number of entries.")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -285,8 +283,7 @@ public class PdxBasedCrudController extends CommonCrudController {
   @ApiOperation(value = "update data for key",
       notes = "Update or insert (put) data for key in region."
           + "op=REPLACE, update (replace) data with key if and only if the key exists in region"
-          + "op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in region"
-  )
+          + "op=CAS update (compare-and-set) value having key with a new value if and only if the \"@old\" value sent matches the current value for the key in region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 400, message = "Bad Request."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),

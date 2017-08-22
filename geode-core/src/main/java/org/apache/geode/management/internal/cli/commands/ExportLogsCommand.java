@@ -67,8 +67,8 @@ public class ExportLogsCommand implements GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result exportLogs(
-      @CliOption(key = CliStrings.EXPORT_LOGS__DIR, help = CliStrings.EXPORT_LOGS__DIR__HELP
-      ) String dirName,
+      @CliOption(key = CliStrings.EXPORT_LOGS__DIR,
+          help = CliStrings.EXPORT_LOGS__DIR__HELP) String dirName,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXPORT_LOGS__GROUP__HELP) String[] groups,
