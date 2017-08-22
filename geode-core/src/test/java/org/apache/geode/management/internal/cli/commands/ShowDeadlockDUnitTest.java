@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +40,9 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
+import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetectorDUnitTest;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
@@ -52,30 +53,30 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
- * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command
- * processor for executing the "show deadlock" command
+ * Distributed tests for show deadlock command in {@link MiscellaneousCommands}.
+ *
+ * @see GemFireDeadlockDetectorDUnitTest
  */
 @Category(DistributedTest.class)
-public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
+public class ShowDeadlockDUnitTest extends CacheTestCase {
+
   private static final Set<Thread> stuckThreads =
       Collections.synchronizedSet(new HashSet<Thread>());
+
   private static final Lock lock = new ReentrantLock();
-
-  private static final Map<String, String> EMPTY_ENV = Collections.emptyMap();
-
-  @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   private transient VM vm0;
   private transient VM vm1;
 
   private transient InternalDistributedMember member0;
   private transient InternalDistributedMember member1;
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Before
   public void setup() {
@@ -123,7 +124,6 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     assertTrue(outputFile.exists());
   }
 
-
   @Test
   public void testDistributedDeadlockWithFunction() throws Exception {
     // Have two threads lock locks on different members in different orders.
@@ -155,7 +155,6 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-
   private void createCache(Properties props) {
     getSystem(props);
     getCache();
@@ -174,6 +173,7 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
 
   private InternalDistributedMember createCache(VM vm) {
     return (InternalDistributedMember) vm.invoke(new SerializableCallable<Object>() {
+      @Override
       public Object call() {
         getCache();
         return getSystem().getDistributedMember();
@@ -193,20 +193,23 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
   private static class TestFunction implements Function<Object> {
     private static final int LOCK_WAIT_TIME = 1000;
 
+    @Override
     public boolean hasResult() {
       return true;
     }
 
+    @Override
     public void execute(FunctionContext<Object> context) {
       try {
         stuckThreads.add(Thread.currentThread());
         lock.tryLock(LOCK_WAIT_TIME, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        // ingore
+      } catch (InterruptedException ignored) {
+        // ignored
       }
       context.getResultSender().lastResult(null);
     }
 
+    @Override
     public boolean isHA() {
       return false;
     }
