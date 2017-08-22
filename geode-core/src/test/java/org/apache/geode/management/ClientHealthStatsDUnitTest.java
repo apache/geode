@@ -14,13 +14,15 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Host.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.apache.geode.test.dunit.NetworkUtils.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -56,7 +58,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Client health stats check
+ * Distributed tests for client stats exposed via {@link CacheServerMXBean}:
+ * <ul>
+ * <li>{@link CacheServerMXBean#showClientStats}
+ * <li>{@link CacheServerMXBean#showAllClientStats}
+ * <li>{@link CacheServerMXBean#showClientQueueDetails}
+ * </ul>
  */
 @Category(DistributedTest.class)
 @SuppressWarnings({"serial", "unused"})
@@ -118,7 +125,6 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
     DistributedMember serverMember = this.managementTestRule.getDistributedMember(this.serverVM);
     this.managerVM.invoke(() -> verifyClientStats(serverMember, port, 2));
-
     this.managementTestRule.stopManager(this.managerVM);
   }
 
@@ -311,7 +317,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
     CacheServerMXBean cacheServerMXBean = awaitCacheServerMXBean(serverMember, serverPort);
 
     String[] clientIds = cacheServerMXBean.getClientIds();
-    assertThat(clientIds).hasSize(2);
+    await().until(() -> assertThat(clientIds).hasSize(2));
 
     ClientHealthStatus[] clientStatuses = cacheServerMXBean.showAllClientStats();
 
@@ -332,14 +338,14 @@ public class ClientHealthStatsDUnitTest implements Serializable {
    */
   private void verifyStats(final int serverPort) throws Exception {
     ManagementService service = this.managementTestRule.getManagementService();
-    CacheServerMXBean serverBean = service.getLocalCacheServerMXBean(serverPort);
+    CacheServerMXBean cacheServerMXBean = service.getLocalCacheServerMXBean(serverPort);
 
     CacheClientNotifier clientNotifier = CacheClientNotifier.getInstance();
     CacheClientProxy clientProxy = clientNotifier.getClientProxies().iterator().next();
     assertThat(clientProxy.getQueueSizeStat()).isEqualTo(clientProxy.getQueueSize());
 
-    ClientQueueDetail queueDetails = serverBean.showClientQueueDetails()[0];
-    assertThat(clientProxy.getQueueSizeStat()).isEqualTo((int) queueDetails.getQueueSize());
+    ClientQueueDetail queueDetails = cacheServerMXBean.showClientQueueDetails()[0];
+    assertThat((int) queueDetails.getQueueSize()).isEqualTo(clientProxy.getQueueSizeStat());
   }
 
   private CacheServerMXBean awaitCacheServerMXBean(final DistributedMember serverMember,
