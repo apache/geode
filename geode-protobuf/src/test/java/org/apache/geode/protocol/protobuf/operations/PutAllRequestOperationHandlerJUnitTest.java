@@ -23,6 +23,7 @@ import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.security.NoOpStreamAuthorizer;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -73,8 +74,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecAlreadyRegisteredForTypeException, InvalidExecutionContextException {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, true), new MessageExecutionContext(cacheStub));
+    Result<RegionAPI.PutAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(false, true),
+            new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -87,8 +89,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithInvalidEntrySucceedsAndReturnsFailedKey() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true, true), new MessageExecutionContext(cacheStub));
+    Result<RegionAPI.PutAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(true, true),
+            new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     assertTrue(result instanceof Success);
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
@@ -106,8 +109,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithNoEntriesPasses() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, false), new MessageExecutionContext(cacheStub));
+    Result<RegionAPI.PutAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(false, false),
+            new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
 
     assertTrue(result instanceof Success);
 

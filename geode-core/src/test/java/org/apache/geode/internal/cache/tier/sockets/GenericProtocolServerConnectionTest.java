@@ -53,7 +53,7 @@ public class GenericProtocolServerConnectionTest {
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
 
     ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
-    doThrow(new IOException()).when(clientProtocolMock).receiveMessage(any(), any(), any(), any());
+    doThrow(new IOException()).when(clientProtocolMock).receiveMessage(any(), any(), any());
 
     return new GenericProtocolServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",

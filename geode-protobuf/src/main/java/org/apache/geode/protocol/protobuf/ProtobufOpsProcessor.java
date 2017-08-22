@@ -15,6 +15,7 @@
 package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
@@ -45,21 +46,18 @@ public class ProtobufOpsProcessor {
     ClientProtocol.Response.Builder builder;
     Result result;
     try {
-      result = operationContext.getOperationHandler().process(serializationService,
-          operationContext.getFromRequest().apply(request), context);
-    } catch (InvalidExecutionContextException e) {
+      if (context.getAuthorizer().authorize(operationContext.getAccessPermissionRequired())) {
+        result = operationContext.getOperationHandler().process(serializationService,
+            operationContext.getFromRequest().apply(request), context);
+      } else {
+        result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+            ProtocolErrorCode.AUTHORIZATION_FAILED.codeValue,
+            "User isn't authorized for this operation."));
+      }
+    } catch (InvalidExecutionContextException exception) {
       result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
           ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
           "Invalid execution context found for operation."));
-    }
-    Result result;
-    if (authorizer.authorize(operationContext.getAccessPermissionRequired())) {
-      result = operationContext.getOperationHandler().process(serializationService,
-          operationContext.getFromRequest().apply(request), cache);
-    } else {
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          ProtocolErrorCode.AUTHORIZATION_FAILED.codeValue,
-          "User isn't authorized for this operation."));
     }
 
     builder = (ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),

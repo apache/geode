@@ -40,6 +40,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
@@ -81,8 +82,8 @@ public class AuthorizationIntegrationTest {
   @Before
   public void setUp() throws IOException, CodecAlreadyRegisteredForTypeException {
     Properties expectedAuthProperties = new Properties();
-    expectedAuthProperties.setProperty("username", TEST_USERNAME);
-    expectedAuthProperties.setProperty("password", TEST_PASSWORD);
+    expectedAuthProperties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
+    expectedAuthProperties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
 
     securityPrincipal = new Object();
     mockSecurityManager = mock(SecurityManager.class);

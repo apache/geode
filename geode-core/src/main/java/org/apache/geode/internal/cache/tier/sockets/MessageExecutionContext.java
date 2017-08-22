@@ -18,39 +18,60 @@ package org.apache.geode.internal.cache.tier.sockets;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.security.NoOpStreamAuthorizer;
+import org.apache.geode.security.StreamAuthorizer;
 
 @Experimental
 public class MessageExecutionContext {
   private Cache cache;
   private InternalLocator locator;
+  private StreamAuthorizer authorizer;
 
-  public MessageExecutionContext(Cache cache) {
+  public MessageExecutionContext(Cache cache, StreamAuthorizer streamAuthorizer) {
     this.cache = cache;
+    this.authorizer = streamAuthorizer;
   }
 
   public MessageExecutionContext(InternalLocator locator) {
     this.locator = locator;
+    // set a no-op authorizer until such time as locators implement authentication
+    // and authorization checks
+    this.authorizer = new NoOpStreamAuthorizer();
   }
 
-  // This throws if the cache isn't present because we know that non of the callers can take any
-  // reasonable action if the cache is not present
+  /**
+   * Returns the cache associated with this execution
+   * <p>
+   * 
+   * @throws InvalidExecutionContextException if there is no cache available
+   */
   public Cache getCache() throws InvalidExecutionContextException {
     if (cache != null) {
       return cache;
-    } else {
-      throw new InvalidExecutionContextException(
-          "Operations on the locator should not to try to operate on a cache");
     }
+    throw new InvalidExecutionContextException(
+        "Operations on the locator should not to try to operate on a cache");
   }
 
-  // This throws if the locator isn't present because we know that non of the callers can take any
-  // reasonable action if the locator is not present
+  /**
+   * Returns the locator associated with this execution
+   * <p>
+   * 
+   * @throws InvalidExecutionContextException if there is no locator available
+   */
   public InternalLocator getLocator() throws InvalidExecutionContextException {
     if (locator != null) {
       return locator;
-    } else {
-      throw new InvalidExecutionContextException(
-          "Operations on the server should not to try to operate on a locator");
     }
+    throw new InvalidExecutionContextException(
+        "Operations on the server should not to try to operate on a locator");
+  }
+
+  /**
+   * Returns the StreamAuthorizer associated with this execution. This can be used to perform
+   * authorization checks for the user associated with this thread.
+   */
+  public StreamAuthorizer getAuthorizer() {
+    return authorizer;
   }
 }
