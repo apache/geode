@@ -15,20 +15,20 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
+public class MessageHandlerFactory {
+  public ClientProtocolMessageHandler makeMessageHandler() {
+    ServiceLoader<ClientProtocolMessageHandler> loader =
+        ServiceLoader.load(ClientProtocolMessageHandler.class);
+    Iterator<ClientProtocolMessageHandler> iterator = loader.iterator();
 
-/**
- * This is an interface that other modules can implement to hook into
- * {@link GenericProtocolServerConnection} to handle messages sent to Geode.
- *
- * Currently, only one {@link ClientProtocolMessageHandler} at a time can be used in a Geode
- * instance. It gets wired into {@link ServerConnectionFactory} to create all instances of
- * {@link GenericProtocolServerConnection}.
- */
-public interface ClientProtocolMessageHandler {
-  void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      MessageExecutionContext executionContext) throws IOException;
+    if (!iterator.hasNext()) {
+      throw new ServiceLoadingFailureException(
+          "There is no ClientProtocolMessageHandler implementation found in JVM");
+    }
+
+    return iterator.next();
+  }
 }

@@ -61,7 +61,8 @@ public class GenericProtocolServerConnection extends ServerConnection {
       if (!authenticator.isAuthenticated()) {
         authenticator.receiveMessage(inputStream, outputStream, securityManager);
       } else {
-        messageHandler.receiveMessage(inputStream, outputStream, this.getCache());
+        messageHandler.receiveMessage(inputStream, outputStream,
+            new MessageExecutionContext(this.getCache()));
       }
     } catch (IOException e) {
       logger.warn(e);

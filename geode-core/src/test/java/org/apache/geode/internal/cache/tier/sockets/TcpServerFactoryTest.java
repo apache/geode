@@ -15,20 +15,20 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import static org.junit.Assert.*;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-/**
- * This is an interface that other modules can implement to hook into
- * {@link GenericProtocolServerConnection} to handle messages sent to Geode.
- *
- * Currently, only one {@link ClientProtocolMessageHandler} at a time can be used in a Geode
- * instance. It gets wired into {@link ServerConnectionFactory} to create all instances of
- * {@link GenericProtocolServerConnection}.
- */
-public interface ClientProtocolMessageHandler {
-  void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      MessageExecutionContext executionContext) throws IOException;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.test.junit.categories.UnitTest;
+
+@Category(UnitTest.class)
+public class TcpServerFactoryTest {
+  @Test
+  public void createsATcpServer() {
+    TcpServerFactory factory = new TcpServerFactory();
+    TcpServer server = factory.makeTcpServer(80, null, null, null, null, null, null, null, null);
+    assertTrue(server != null);
+  }
 }

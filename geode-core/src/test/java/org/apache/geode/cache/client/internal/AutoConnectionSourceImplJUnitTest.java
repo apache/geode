@@ -18,11 +18,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
-import org.apache.geode.cache.client.internal.AutoConnectionSourceImpl.UpdateLocatorListTask;
-import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
@@ -38,6 +35,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
+import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -63,7 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -307,8 +304,9 @@ public class AutoConnectionSourceImplJUnitTest {
   public void test_DiscoverLocators_whenOneLocatorWasShutdown() throws Exception {
     startFakeLocator();
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    TcpServer server2 = new TcpServer(secondPort, InetAddress.getLocalHost(), null, null, handler,
-        new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server");
+    TcpServer server2 =
+        new TcpServerFactory().makeTcpServer(secondPort, InetAddress.getLocalHost(), null, null,
+            handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server", null);
     server2.start();
 
     try {
@@ -391,8 +389,8 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   private void startFakeLocator() throws UnknownHostException, IOException, InterruptedException {
-    server = new TcpServer(port, InetAddress.getLocalHost(), null, null, handler, new FakeHelper(),
-        Thread.currentThread().getThreadGroup(), "Tcp Server");
+    server = new TcpServerFactory().makeTcpServer(port, InetAddress.getLocalHost(), null, null,
+        handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "Tcp Server", null);
     server.start();
     Thread.sleep(500);
   }

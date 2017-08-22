@@ -16,6 +16,8 @@ package org.apache.geode.protocol.protobuf.operations;
 
 import com.google.protobuf.ByteString;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -71,10 +73,10 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processValidKeyRemovesTheEntryAndReturnSuccess()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
+      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, false).getRemoveRequest();
-    Result<RegionAPI.RemoveResponse> result =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+    Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
+        removeRequest, new MessageExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     verify(regionStub).remove(TEST_KEY);
@@ -83,10 +85,10 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsUnsucessfulResponseForInvalidRegion()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
+      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(true, false).getRemoveRequest();
-    Result<RegionAPI.RemoveResponse> result =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+    Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
+        removeRequest, new MessageExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
@@ -96,10 +98,10 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsSuccessWhenKeyIsNotFound()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
+      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, true).getRemoveRequest();
-    Result<RegionAPI.RemoveResponse> result =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+    Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
+        removeRequest, new MessageExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
   }
@@ -107,7 +109,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsErrorWhenUnableToDecodeRequest()
       throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, UnsupportedEncodingException {
+      CodecNotRegisteredForTypeException, UnsupportedEncodingException,
+      InvalidExecutionContextException {
     CodecNotRegisteredForTypeException exception =
         new CodecNotRegisteredForTypeException("error finding codec for type");
     when(serializationServiceStub.decode(any(), any())).thenThrow(exception);
@@ -120,8 +123,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     RegionAPI.RemoveRequest removeRequest =
         ProtobufRequestUtilities.createRemoveRequest(TEST_REGION, encodedKey).getRemoveRequest();;
-    Result<RegionAPI.RemoveResponse> result =
-        operationHandler.process(serializationServiceStub, removeRequest, cacheStub);
+    Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
+        removeRequest, new MessageExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,

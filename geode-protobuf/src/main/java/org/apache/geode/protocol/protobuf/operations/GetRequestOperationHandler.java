@@ -15,8 +15,9 @@
 package org.apache.geode.protocol.protobuf.operations;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -36,9 +37,10 @@ public class GetRequestOperationHandler
 
   @Override
   public Result<RegionAPI.GetResponse> process(SerializationService serializationService,
-      RegionAPI.GetRequest request, Cache cache) {
+      RegionAPI.GetRequest request, MessageExecutionContext executionContext)
+      throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
-    Region region = cache.getRegion(regionName);
+    Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
       return Failure.of(ProtobufResponseUtilities
           .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));

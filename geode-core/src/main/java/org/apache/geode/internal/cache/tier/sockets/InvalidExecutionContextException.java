@@ -12,23 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.apache.geode.annotations.Experimental;
 
-
-/**
- * This is an interface that other modules can implement to hook into
- * {@link GenericProtocolServerConnection} to handle messages sent to Geode.
- *
- * Currently, only one {@link ClientProtocolMessageHandler} at a time can be used in a Geode
- * instance. It gets wired into {@link ServerConnectionFactory} to create all instances of
- * {@link GenericProtocolServerConnection}.
+/*
+ * Indicates that OperationContext was missing required data. This will typically happen if a
+ * operation that is supposed to run on a server runs on a locator and receives a locator in its
+ * context instead of a cache. The reverse case applies as well.
  */
-public interface ClientProtocolMessageHandler {
-  void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      MessageExecutionContext executionContext) throws IOException;
+@Experimental
+public class InvalidExecutionContextException extends Exception {
+  public InvalidExecutionContextException(String message) {
+    super(message);
+  }
+
+  public InvalidExecutionContextException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

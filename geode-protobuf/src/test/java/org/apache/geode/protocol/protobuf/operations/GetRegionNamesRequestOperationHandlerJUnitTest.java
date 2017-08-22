@@ -17,7 +17,6 @@ package org.apache.geode.protocol.protobuf.operations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,7 +27,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
@@ -62,11 +62,12 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   }
 
   @Test
-  public void processReturnsCacheRegions() throws CodecAlreadyRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    Result<RegionAPI.GetRegionNamesResponse> result =
-        operationHandler.process(serializationServiceStub,
-            ProtobufRequestUtilities.createGetRegionNamesRequest(), cacheStub);
+  public void processReturnsCacheRegions()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+    Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
+        serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
+        new MessageExecutionContext(cacheStub));
     Assert.assertTrue(result instanceof Success);
 
     RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
@@ -84,14 +85,15 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   }
 
   @Test
-  public void processReturnsNoCacheRegions() throws CodecAlreadyRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+  public void processReturnsNoCacheRegions()
+      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    Result<RegionAPI.GetRegionNamesResponse> result =
-        operationHandler.process(serializationServiceStub,
-            ProtobufRequestUtilities.createGetRegionNamesRequest(), emptyCache);
+    Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
+        serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
+        new MessageExecutionContext(emptyCache));
     Assert.assertTrue(result instanceof Success);
 
     RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
