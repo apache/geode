@@ -19,10 +19,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Geode includes interfaces for defining and maintaining your own statistics.
+<%=vars.product_name%> includes interfaces for defining and maintaining your own statistics.
 
 <a id="application_defined_statistics__section_88C31FA62A194947BF71AD54B5F9BAB3"></a>
-The Geode package, `org.apache.geode`, includes the following interfaces for defining and maintaining your own statistics:
+The <%=vars.product_name%> package, `org.apache.geode`, includes the following interfaces for defining and maintaining your own statistics:
 
 -   **StatisticDescriptor**. Describes an individual statistic. Each statistic has a name and information on the statistic it holds, such as its class type (long, int, etc.) and whether it is a counter that always increments, or a gauge that can vary in any manner.
 -   **StatisticsType**. Logical type that holds a list of `StatisticDescriptors` and provides access methods to them. The `StatisticDescriptors` contained by a `StatisticsType` are each assigned a unique ID within the list. `StatisticsType` is used to create a `Statistics` instance.
