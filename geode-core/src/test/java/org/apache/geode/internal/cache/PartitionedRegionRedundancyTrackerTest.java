@@ -117,4 +117,10 @@ public class PartitionedRegionRedundancyTrackerTest {
     redundancyTracker.decrementNoCopiesBucketCount();
     assertEquals(1, redundancyTracker.getLowestBucketCopies());
   }
+
+  @Test
+  public void willNotSetActualRedundantCopiesStatBelowZero() {
+    redundancyTracker.setActualRedundancy(-1);
+    assertEquals(0, stats.getActualRedundantCopies());
+  }
 }

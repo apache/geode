@@ -134,6 +134,6 @@ class PartitionedRegionRedundancyTracker {
   }
 
   void setActualRedundancy(int actualRedundancy) {
-    stats.setActualRedundantCopies(actualRedundancy);
+    stats.setActualRedundantCopies(Math.max(actualRedundancy, 0));
   }
 }
