@@ -18,8 +18,7 @@ package org.apache.geode.internal.config;
  * Exception thrown during server startup when it requests the locators for shared configuration and
  * does not receive it.
  */
-public class ClusterConfigurationNotAvailableException
-    extends org.apache.geode.internal.process.ClusterConfigurationNotAvailableException {
+public class ClusterConfigurationNotAvailableException extends Exception {
 
   private static final long serialVersionUID = 771319836094239284L;
 
