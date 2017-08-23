@@ -149,7 +149,7 @@ class FileProcessController implements ProcessController {
 
     String lines = statusRef.get();
     if (isBlank(lines)) {
-      throw new IllegalStateException("Failed to read status file");
+      throw new IllegalStateException("Status file '" + statusFile + "' is blank");
     }
     return lines;
   }
