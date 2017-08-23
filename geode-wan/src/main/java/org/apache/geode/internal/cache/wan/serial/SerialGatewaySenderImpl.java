@@ -116,15 +116,10 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     this.getLifeCycleLock().writeLock().lock();
     try {
       // Stop the dispatcher
-      AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
-      if (ev != null && !ev.isStopped()) {
-        ev.stopProcessing();
-      }
-
+      stopProcessing();
       // Stop the proxy (after the dispatcher, so the socket is still
       // alive until after the dispatcher has stopped)
       stompProxyDead();
-
       // Close the listeners
       for (AsyncEventListener listener : this.listeners) {
         listener.close();

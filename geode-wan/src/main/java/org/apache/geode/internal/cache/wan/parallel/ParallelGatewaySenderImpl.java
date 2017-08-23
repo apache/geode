@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.AbstractRemoteGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -103,10 +102,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
         return;
       }
       // Stop the dispatcher
-      AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
-      if (ev != null && !ev.isStopped()) {
-        ev.stopProcessing();
-      }
+      stopProcessing();
 
       // Stop the proxy (after the dispatcher, so the socket is still
       // alive until after the dispatcher has stopped)
