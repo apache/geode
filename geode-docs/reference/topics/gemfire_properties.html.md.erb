@@ -210,6 +210,12 @@ This setting must be the same for every member of a given distributed system and
 <td>false</td>
 </tr>
 <tr class="odd">
+<td>geode.allow-internal-messages-without-credentials</td>
+<td>A boolean that disables internal message validation when true. Set this system property on the `gfsh start server` command line when upgrading servers to work with not-upgraded clients.
+</td>
+<td>S</td>
+<td>false</td>
+<tr class="odd">
 <td>groups</td>
 <td>Defines the list of groups that this member belongs to. Use commas to separate group names. Note that anything defined by the roles gemfire property will also be considered a group. 
 See <a href="../../configuring/cluster_config/using_member_groups.html">Using Member Groups</a> for more information.</td>
