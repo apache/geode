@@ -1,0 +1,206 @@
+package org.apache.geode.serialization.codec;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import com.sun.tools.javac.util.List;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.WritablePdxInstance;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedList;
+
+@Category(UnitTest.class)
+public class JSONCodecJUnitTest {
+
+  private String complexJSONString = "{\n" + "    \"_id\": \"599c7d885df276ac3e0bf10a\",\n"
+      + "    \"index\": 0,\n" + "    \"guid\": \"395902d8-36ed-4178-ad70-2f720c557c55\",\n"
+      + "    \"isActive\": true,\n" + "    \"balance\": \"$3,152.82\",\n"
+      + "    \"picture\": \"http://placehold.it/32x32\",\n" + "    \"age\": 27,\n"
+      + "    \"eyeColor\": \"blue\",\n" + "    \"name\": \"Kristina Norman\",\n"
+      + "    \"gender\": \"female\",\n" + "    \"company\": \"ORBALIX\",\n"
+      + "    \"email\": \"kristinanorman@orbalix.com\",\n"
+      + "    \"phone\": \"+1 (983) 526-3433\",\n"
+      + "    \"address\": \"400 Vermont Court, Denio, Wyoming, 7142\",\n"
+      + "    \"about\": \"Mollit nostrud irure excepteur veniam aliqua. Non id tempor magna nisi ipsum minim. Culpa velit tempor culpa mollit cillum deserunt nisi culpa irure ut nostrud enim consectetur voluptate. Elit veniam velit enim minim. Sunt nostrud ea duis enim sit cillum.\",\n"
+      + "    \"registered\": \"2015-03-11T02:22:45 +07:00\",\n" + "    \"latitude\": -0.853065,\n"
+      + "    \"longitude\": -29.749358,\n" + "    \"tags\": [\n" + "      \"laboris\",\n"
+      + "      \"velit\",\n" + "      \"non\",\n" + "      \"est\",\n" + "      \"anim\",\n"
+      + "      \"amet\",\n" + "      \"cupidatat\"\n" + "    ],\n" + "    \"friends\": [\n"
+      + "      {\n" + "        \"id\": 0,\n" + "        \"name\": \"Roseann Roy\"\n" + "      },\n"
+      + "      {\n" + "        \"id\": 1,\n" + "        \"name\": \"Adriana Perry\"\n"
+      + "      },\n" + "      {\n" + "        \"id\": 2,\n"
+      + "        \"name\": \"Tyler Mccarthy\"\n" + "      }\n" + "    ],\n"
+      + "    \"greeting\": \"Hello, Kristina Norman! You have 8 unread messages.\",\n"
+      + "    \"favoriteFruit\": \"apple\"\n" + "  }";
+  private Cache cache;
+
+  @Before
+  public void setUp() throws Exception {
+    cache = new CacheFactory().create();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (cache != null) {
+      cache.close();
+    }
+  }
+
+  @Test
+  public void testSimpleJSONEncode() throws Exception {
+    InternalCache cache = (InternalCache) new CacheFactory().create();
+    PdxInstanceFactory pdxInstanceFactory =
+        cache.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
+
+    pdxInstanceFactory.writeString("string", "someString");
+    pdxInstanceFactory.writeBoolean("boolean", true);
+    PdxInstance pdxInstance = pdxInstanceFactory.create();
+
+    byte[] encodedJSONByte = new JSONCodec().encode(pdxInstance);
+
+    String expectedJsonString =
+        "{\n" + "  \"string\" : \"someString\",\n" + "  \"boolean\" : true\n" + "}";
+    assertArrayEquals(expectedJsonString.getBytes(), encodedJSONByte);
+  }
+
+  @Test
+  public void testComplexJSONEncode() {
+    PdxInstance pdxInstanceForComplexJSONString = createPDXInstanceForComplexJSONString();
+    PdxInstance decodedJSONPdxInstance = new JSONCodec().decode(complexJSONString.getBytes());
+
+    assertEquals(pdxInstanceForComplexJSONString.getFieldNames(),
+        decodedJSONPdxInstance.getFieldNames());
+
+    List<String> fieldNames = List.of("_id", "index", "guid", "isActive", "balance", "picture",
+        "age", "eyeColor", "name", "gender", "company", "email", "phone", "address", "about",
+        "registered", "latitude", "longitude", "tags", "friends", "greeting", "favoriteFruit");
+    fieldNames.forEach(
+        fieldName -> assertEquals(pdxInstanceForComplexJSONString.getField(fieldName).getClass(),
+            decodedJSONPdxInstance.getField(fieldName).getClass()));
+
+    fieldNames.forEach(
+        fieldName -> assertEquals(pdxFieldValues(pdxInstanceForComplexJSONString, fieldName),
+            pdxFieldValues(decodedJSONPdxInstance, fieldName)));
+  }
+
+  /**
+   * This method is very specific to this test. It will take an pdxInstance object and return you
+   * the value for the fieldName. In most cases it will return the value directly, but in the case
+   * of collections LinkedList<String> it will return an ArrayList<String> or in the case of a
+   * LinkedList<PdxInstance> it will return an ArrayList<ArrayList>.
+   */
+  private Object pdxFieldValues(PdxInstance pdxInstance, String fieldName) {
+    Object fieldValue = pdxInstance.getField(fieldName);
+    // Check if the value is of type PDXInstance. If so, then iterate over its fields and return an
+    // ArrayList of all the values
+    if (fieldValue instanceof PdxInstance) {
+      ArrayList<Object> objects = new ArrayList<>();
+      ((PdxInstance) fieldValue).getFieldNames().forEach(
+          innerFieldName -> objects.add(pdxFieldValues((PdxInstance) fieldValue, innerFieldName)));
+      return objects;
+    }
+    // Else check if the value is of type LinkedList. Then it is a collection of either type String
+    // or type PDXInstance. If of type String, then return an ArrayList<String> otherwise the
+    // collection
+    // contains a collection of PdxInstance.
+    else if (fieldValue instanceof LinkedList) {
+      LinkedList value = (LinkedList) fieldValue;
+      // if the first value of the LinkedList is not a PDXInstance return the LinkedList
+      if (!value.isEmpty() && !(value.getFirst() instanceof PdxInstance)) {
+        return value;
+      } else {
+        // Here the LinkedList contains PDXInstances. Here we will iterate the linkedList and
+        // process
+        // each pdxInstance into and ArrayList of the pdx's values.
+        ArrayList<Object> objects = new ArrayList<>();
+        value.forEach(internalPdxInstance -> {
+          ArrayList innerObject = new ArrayList();
+          ((PdxInstance) internalPdxInstance).getFieldNames()
+              .forEach(internalFieldName -> innerObject
+                  .add(pdxFieldValues((PdxInstance) internalPdxInstance, internalFieldName)));
+          objects.add(innerObject);
+          objects.sort((Comparator) (o1, o2) -> (byte) ((ArrayList) o1).get(0));
+        });
+        return objects;
+      }
+    }
+    // Otherwise if the field is not a PdxInstance or LinkedList, then return the value.
+    else {
+      return fieldValue;
+    }
+  }
+
+  /**
+   * Create a PDXInstance object that is equivalent to @link{complexJSONString}
+   */
+  private PdxInstance createPDXInstanceForComplexJSONString() {
+    PdxInstanceFactory friendPdxFactory =
+        ((InternalCache) cache).createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
+
+    friendPdxFactory.writeByte("id", (byte) 0);
+    PdxInstance friendPdx1 = friendPdxFactory.writeString("name", "Roseann Roy").create();
+
+    WritablePdxInstance friendPdx2 = friendPdx1.createWriter();
+    friendPdx2.setField("id", (byte) 1);
+    friendPdx2.setField("name", "Adriana Perry");
+
+    WritablePdxInstance friendPdx3 = friendPdx1.createWriter();
+    friendPdx3.setField("id", (byte) 2);
+    friendPdx3.setField("name", "Tyler Mccarthy");
+
+    PdxInstanceFactory pdxInstanceFactory =
+        cache.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME);
+    pdxInstanceFactory.writeString("_id", "599c7d885df276ac3e0bf10a");
+    pdxInstanceFactory.writeByte("index", (byte) 0);
+    pdxInstanceFactory.writeString("guid", "395902d8-36ed-4178-ad70-2f720c557c55");
+    pdxInstanceFactory.writeBoolean("isActive", true);
+    pdxInstanceFactory.writeString("balance", "$3,152.82");
+    pdxInstanceFactory.writeString("picture", "http://placehold.it/32x32");
+    pdxInstanceFactory.writeByte("age", (byte) 27);
+    pdxInstanceFactory.writeString("eyeColor", "blue");
+    pdxInstanceFactory.writeString("name", "Kristina Norman");
+    pdxInstanceFactory.writeString("gender", "female");
+    pdxInstanceFactory.writeString("company", "ORBALIX");
+    pdxInstanceFactory.writeString("email", "kristinanorman@orbalix.com");
+    pdxInstanceFactory.writeString("phone", "+1 (983) 526-3433");
+    pdxInstanceFactory.writeString("address", "400 Vermont Court, Denio, Wyoming, 7142");
+    pdxInstanceFactory.writeString("about",
+        "Mollit nostrud irure excepteur veniam aliqua. Non id tempor magna nisi ipsum minim. Culpa velit tempor culpa mollit cillum deserunt nisi culpa irure ut nostrud enim consectetur voluptate. Elit veniam velit enim minim. Sunt nostrud ea duis enim sit cillum.");
+    pdxInstanceFactory.writeString("registered", "2015-03-11T02:22:45 +07:00");
+    pdxInstanceFactory.writeDouble("latitude", -0.853065);
+    pdxInstanceFactory.writeDouble("longitude", -29.749358);
+    pdxInstanceFactory.writeObject("tags",
+        new LinkedList<>(List.of("laboris", "velit", "non", "est", "anim", "amet", "cupidatat")));
+    pdxInstanceFactory.writeObject("friends",
+        new LinkedList<>(List.of(friendPdx1, friendPdx2, friendPdx3)));
+    pdxInstanceFactory.writeString("greeting",
+        "Hello, Kristina Norman! You have 8 unread messages.");
+    pdxInstanceFactory.writeString("favoriteFruit", "apple");
+    return pdxInstanceFactory.create();
+  }
+
+  @Test
+  public void testJSONDecode() throws Exception {
+    PdxInstance pdxInstance = new JSONCodec().decode(complexJSONString.getBytes());
+
+    assertNotNull(pdxInstance);
+    List<String> fieldNames = List.of("_id", "index", "guid", "isActive", "balance", "picture",
+        "age", "eyeColor", "name", "gender", "company", "email", "phone", "address", "about",
+        "registered", "latitude", "longitude", "tags", "friends", "greeting", "favoriteFruit");
+    assertEquals(fieldNames, pdxInstance.getFieldNames());
+  }
+
+}

@@ -14,22 +14,20 @@
  */
 package org.apache.geode.protocol.serializer;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ServiceLoader;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.protocol.MessageUtil;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Category(UnitTest.class)
 public class ProtobufProtocolSerializerJUnitTest {
@@ -37,12 +35,7 @@ public class ProtobufProtocolSerializerJUnitTest {
 
   @Before
   public void startup() {
-    ServiceLoader<ProtocolSerializer> serviceLoader = ServiceLoader.load(ProtocolSerializer.class);
-    for (ProtocolSerializer protocolSerializer : serviceLoader) {
-      if (protocolSerializer instanceof ProtobufProtocolSerializer) {
-        this.protocolSerializer = protocolSerializer;
-      }
-    }
+    this.protocolSerializer = new ProtobufProtocolSerializer();
   }
 
   @Test

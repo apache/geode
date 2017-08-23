@@ -35,7 +35,6 @@ import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.serialization.codec.StringCodec;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -51,7 +50,6 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   private static final String TEST_KEY3 = "my key3";
   private static final String TEST_VALUE3 = "my value3";
   private static final String TEST_REGION = "test region";
-  private StringCodec stringDecoder;
 
   @Before
   public void setUp() throws Exception {
@@ -74,7 +72,6 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     operationHandler = new GetAllRequestOperationHandler();
-    stringDecoder = new StringCodec();
   }
 
   @Test
