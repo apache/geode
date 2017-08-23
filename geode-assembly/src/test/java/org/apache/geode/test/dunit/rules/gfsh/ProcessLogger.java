@@ -84,7 +84,6 @@ public class ProcessLogger {
   }
 
   public List<String> getStdErrLines() {
-    return Lists.newArrayList(stdOutLines.iterator());
+    return Lists.newArrayList(stdErrorLines.iterator());
   }
-
 }
