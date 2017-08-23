@@ -140,6 +140,7 @@ public class ContainerManager {
   public ArrayList<Integer> getContainerIndexesWithState(String state) {
     ArrayList<Integer> indexes = new ArrayList<>();
     for (int i = 0; i < numContainers(); i++) {
+      // Checks that the state passed in is one of the 5 supported by Cargo
       if (state.equals(State.STARTED.toString()) || state.equals(State.STOPPED.toString())
           || state.equals(State.STARTED.toString()) || state.equals(State.STOPPING.toString())
           || state.equals(State.UNKNOWN.toString())) {
@@ -195,6 +196,13 @@ public class ContainerManager {
 
     logger.info("Setup container " + getContainerDescription(index));
     return container;
+  }
+
+  /**
+   * Remove the container in the given index from the list
+   */
+  public ServerContainer removeContainer(int index) {
+    return containers.remove(index);
   }
 
   /**

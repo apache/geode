@@ -14,11 +14,12 @@
  */
 package org.apache.geode.session.tests;
 
+import org.junit.Before;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.junit.Before;
 
 /**
  * Extends the {@link CargoTestBase} class to support client server tests of generic app servers
@@ -31,14 +32,17 @@ public abstract class GenericAppServerClientServerTest extends CargoTestBase {
    */
   @Before
   public void startServers() throws InterruptedException {
+    // Setup host
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
+    // Start server in VM
     vm0.invoke(() -> {
       Cache cache = getCache();
+      // Add cache server
       CacheServer server = cache.addCacheServer();
       server.setPort(0);
+      // Start the server in this VM
       server.start();
     });
-    Thread.sleep(5000);
   }
 }

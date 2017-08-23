@@ -90,8 +90,10 @@ public abstract class ServerContainer {
     this.install = install;
     // Get a container description for logging and output
     description = generateUniqueContainerDescription(containerDescriptors);
+    // Setup logging
     loggingLevel = DEFAULT_LOGGING_LEVEL;
     logDir = new File(DEFAULT_LOG_DIR + description);
+    logDir.mkdirs();
 
     logger.info("Creating new container " + description);
 
@@ -105,8 +107,6 @@ public abstract class ServerContainer {
     systemProperties = new HashMap<>();
     // Set WAR file to session testing war
     warFile = new File(install.getWarFilePath());
-    // Setup logging folders
-    logDir.mkdirs();
 
     // Create the Cargo Container instance wrapping our physical container
     LocalConfiguration configuration = (LocalConfiguration) new DefaultConfigurationFactory()
@@ -122,18 +122,20 @@ public abstract class ServerContainer {
     gemfireLogFile = new File(logDir.getAbsolutePath() + "/gemfire.log");
     gemfireLogFile.getParentFile().mkdirs();
     setSystemProperty("log-file", gemfireLogFile.getAbsolutePath());
-    logger.info("Gemfire logs in " + gemfireLogFile.getAbsolutePath());
+
+    logger.info("Gemfire logs can be found in " + gemfireLogFile.getAbsolutePath());
 
     // Create the container
     container = (InstalledLocalContainer) (new DefaultContainerFactory())
         .createContainer(install.getInstallId(), ContainerType.INSTALLED, configuration);
     // Set container's home dir to where it was installed
     container.setHome(install.getHome());
-    // Set container output log
+    // Set container output log to directory setup for it
     container.setOutput(logDir.getAbsolutePath() + "/container.log");
 
     // Set cacheXML file
     File installXMLFile = install.getCacheXMLFile();
+    // Sets the cacheXMLFile variable and adds the cache XML file server system property map
     setCacheXMLFile(new File(logDir.getAbsolutePath() + "/" + installXMLFile.getName()));
     // Copy the cacheXML file to a new, unique location for this container
     FileUtils.copyFile(installXMLFile, cacheXMLFile);
@@ -182,7 +184,10 @@ public abstract class ServerContainer {
 
     try {
       logger.info("Starting container " + description);
+
+      // Writes settings to the expected form (either XML or WAR file)
       writeSettings();
+      // Start the container through cargo
       container.start();
     } catch (Exception e) {
       throw new RuntimeException(

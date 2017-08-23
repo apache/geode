@@ -71,6 +71,28 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
   }
 
   /**
+   * Gets the specified key from all the containers within the container manager and check that each
+   * container has the associated expected value
+   */
+  public void getKeyValueDataOnAllClients(String key, String expectedValue, String expectedCookie)
+      throws IOException, URISyntaxException {
+    for (int i = 0; i < manager.numContainers(); i++) {
+      // Set the port for this server
+      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
+      // Get the response to a get on the specified key from this server
+      Client.Response resp = client.get(key);
+
+      // Null would mean we don't expect the same cookie as before
+      if (expectedCookie != null)
+        assertEquals("Sessions are not replicating properly", expectedCookie,
+            resp.getSessionCookie());
+
+      // Check that the response from this server is correct
+      assertEquals("Session data is not replicating properly", expectedValue, resp.getResponse());
+    }
+  }
+
+  /**
    * Test that when multiple containers are using session replication, all of the containers will
    * use the same session cookie for the same client.
    */
@@ -80,14 +102,8 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.get(null);
-    String cookie = resp.getSessionCookie();
 
-    for (int i = 1; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(null);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-    }
+    getKeyValueDataOnAllClients(null, "", resp.getSessionCookie());
   }
 
   /**
@@ -103,15 +119,8 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals("Session data is not replicating properly", value, resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
   }
 
   /**
@@ -128,17 +137,11 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
 
     manager.stopContainer(0);
+    manager.removeContainer(0);
 
-    for (int i = 1; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals("Container failure caused inaccessible data.", value, resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
   }
 
   /**
@@ -153,17 +156,11 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     String value = "Foo";
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
-    Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
+    client.set(key, value);
 
     client.invalidate();
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Data removal is not being replicated properly.", "", resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, "", null);
   }
 
   /**
@@ -180,27 +177,13 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
 
     client.setMaxInactive(1);
-
     Thread.sleep(5000);
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Session replication is not doing session expiration correctly.", "",
-          resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, "", null);
   }
 
 
@@ -219,7 +202,6 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
 
     client.setMaxInactive(timeToExp);
 
@@ -232,14 +214,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       curTime = System.currentTimeMillis();
     }
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals("Containers are not replicating session expiration reset", value,
-          resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
   }
 
   /**
@@ -254,28 +229,13 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     client.remove(key);
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(
-          "Was expecting an empty response after removal. Double check to make sure that the enableLocalCache cacheProperty is set to false. This test is unreliable on servers which use a local cache.",
-          "", resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, "", resp.getSessionCookie());
   }
 
   /**
@@ -291,29 +251,16 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
-    String cookie = resp.getSessionCookie();
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
 
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
-    }
     int numContainers = manager.numContainers();
-
+    // Add and start new container
     manager.addContainer(getInstall());
     manager.startAllInactiveContainers();
-
+    // Check that a container was added
     assertEquals(numContainers + 1, manager.numContainers());
 
-    for (int i = 0; i < manager.numContainers(); i++) {
-      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      resp = client.get(key);
-
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals("Containers are not properly sharing data with new arrival", value,
-          resp.getResponse());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
   }
 }
