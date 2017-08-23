@@ -19,6 +19,7 @@ import static org.apache.commons.lang.Validate.notNull;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -137,15 +138,14 @@ public class ControllableProcess {
   }
 
   private void deleteFiles(final File directory, final ProcessType processType) {
-    deleteFile(directory, processType.getStatusRequestFileName());
-    deleteFile(directory, processType.getStatusFileName());
-    deleteFile(directory, processType.getStopRequestFileName());
-  }
-
-  private void deleteFile(final File directory, final String fileName) {
-    File file = new File(directory, fileName);
-    if (file.exists()) {
-      file.delete();
+    try {
+      deleteFileWithValidation(new File(directory, processType.getStatusRequestFileName()),
+          "statusRequestFile");
+      deleteFileWithValidation(new File(directory, processType.getStatusFileName()), "statusFile");
+      deleteFileWithValidation(new File(directory, processType.getStopRequestFileName()),
+          "stopRequestFile");
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -165,30 +165,7 @@ public class ControllableProcess {
   private static ControlRequestHandler createStatusHandler(final ControlNotificationHandler handler,
       final File directory, final ProcessType processType) {
     return () -> {
-      ServiceState<?> state = handler.handleStatus();
-
-      File statusFile = new File(directory, processType.getStatusFileName());
-      if (statusFile.exists()) {
-        boolean deleted = statusFile.delete();
-        assert deleted;
-      }
-
-      File statusFileTmp = new File(directory, processType.getStatusFileName() + ".tmp");
-      if (statusFileTmp.exists()) {
-        boolean deleted = statusFileTmp.delete();
-        assert deleted;
-      }
-
-      boolean created = statusFileTmp.createNewFile();
-      assert created;
-
-      FileWriter writer = new FileWriter(statusFileTmp);
-      writer.write(state.toJson());
-      writer.flush();
-      writer.close();
-
-      boolean renamed = statusFileTmp.renameTo(statusFile);
-      assert renamed;
+      writeStatusToFile(fetchStatusWithValidation(handler), directory, processType);
     };
   }
 
@@ -202,5 +179,55 @@ public class ControllableProcess {
       final ProcessType processType, final ControlRequestHandler statusHandler) {
     return new ControlFileWatchdog(directory, processType.getStatusRequestFileName(), statusHandler,
         false);
+  }
+
+  private static String fetchStatusWithValidation(final ControlNotificationHandler handler) {
+    ServiceState<?> state = handler.handleStatus();
+    if (state == null) {
+      throw new IllegalStateException("Null ServiceState is invalid");
+    }
+
+    String jsonContent = state.toJson();
+    if (jsonContent == null) {
+      throw new IllegalStateException("Null JSON for status is invalid");
+    } else if (jsonContent.isEmpty()) {
+      throw new IllegalStateException("Empty JSON for status is invalid");
+    }
+
+    return jsonContent;
+  }
+
+  private static void deleteFileWithValidation(final File file, final String fileNameForMessage)
+      throws IOException {
+    if (file.exists()) {
+      if (!file.delete()) {
+        throw new IOException(
+            "Unable to delete " + fileNameForMessage + "'" + file.getCanonicalPath() + "'");
+      }
+    }
+  }
+
+  private static void writeStatusToFile(final String jsonContent, final File directory,
+      final ProcessType processType) throws IOException {
+    File statusFile = new File(directory, processType.getStatusFileName());
+    File statusFileTmp = new File(directory, processType.getStatusFileName() + ".tmp");
+
+    deleteFileWithValidation(statusFile, "statusFile");
+    deleteFileWithValidation(statusFileTmp, "statusFileTmp");
+
+    if (!statusFileTmp.createNewFile()) {
+      throw new IOException(
+          "Unable to create statusFileTmp '" + statusFileTmp.getCanonicalPath() + "'");
+    }
+
+    FileWriter writer = new FileWriter(statusFileTmp);
+    writer.write(jsonContent);
+    writer.flush();
+    writer.close();
+
+    if (!statusFileTmp.renameTo(statusFile)) {
+      throw new IOException("Unable to rename statusFileTmp '" + statusFileTmp.getCanonicalPath()
+          + "' to '" + statusFile.getCanonicalPath() + "'");
+    }
   }
 }
