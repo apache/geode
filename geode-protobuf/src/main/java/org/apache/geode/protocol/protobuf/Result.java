@@ -17,14 +17,14 @@ package org.apache.geode.protocol.protobuf;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 
 @Experimental
 public interface Result<SuccessType> {
   <T> T map(Function<SuccessType, T> successFunction,
-      Function<BasicTypes.ErrorResponse, T> errorFunction);
+      Function<ClientProtocol.ErrorResponse, T> errorFunction);
 
   SuccessType getMessage();
 
-  BasicTypes.ErrorResponse getErrorMessage();
+  ClientProtocol.ErrorResponse getErrorMessage();
 }

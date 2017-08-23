@@ -17,23 +17,23 @@ package org.apache.geode.protocol.protobuf;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 
 @Experimental
 public class Failure<SuccessType> implements Result<SuccessType> {
-  private final BasicTypes.ErrorResponse errorResponse;
+  private final ClientProtocol.ErrorResponse errorResponse;
 
-  public Failure(BasicTypes.ErrorResponse errorResponse) {
+  public Failure(ClientProtocol.ErrorResponse errorResponse) {
     this.errorResponse = errorResponse;
   }
 
-  public static <T> Failure<T> of(BasicTypes.ErrorResponse errorResponse) {
+  public static <T> Failure<T> of(ClientProtocol.ErrorResponse errorResponse) {
     return new Failure<>(errorResponse);
   }
 
   @Override
   public <T> T map(Function<SuccessType, T> successFunction,
-      Function<BasicTypes.ErrorResponse, T> errorFunction) {
+      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
     return errorFunction.apply(errorResponse);
   }
 
@@ -43,7 +43,7 @@ public class Failure<SuccessType> implements Result<SuccessType> {
   }
 
   @Override
-  public BasicTypes.ErrorResponse getErrorMessage() {
+  public ClientProtocol.ErrorResponse getErrorMessage() {
     return errorResponse;
   }
 }

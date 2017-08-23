@@ -61,8 +61,8 @@ public class PutAllRequestOperationHandler
     return Success.of(builder.build());
   }
 
-  private BasicTypes.KeyedErrorResponse singlePut(SerializationService serializationService,
-      Region region, BasicTypes.Entry entry) {
+  private BasicTypes.KeyedError singlePut(SerializationService serializationService, Region region,
+      BasicTypes.Entry entry) {
     try {
       Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
       Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
@@ -81,11 +81,11 @@ public class PutAllRequestOperationHandler
     return null;
   }
 
-  private BasicTypes.KeyedErrorResponse buildAndLogKeyedError(BasicTypes.Entry entry,
+  private BasicTypes.KeyedError buildAndLogKeyedError(BasicTypes.Entry entry,
       ProtocolErrorCode errorCode, String message, Exception ex) {
     logger.error(message, ex);
 
-    return BasicTypes.KeyedErrorResponse.newBuilder().setKey(entry.getKey())
+    return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())
         .setError(
             BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message))
         .build();

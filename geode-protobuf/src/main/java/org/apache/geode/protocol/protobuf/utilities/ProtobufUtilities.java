@@ -83,7 +83,10 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * Creates a protobuf key,value pair from unencoded data
+   * Creates a protobuf (key, value) pair from unencoded data. if the value is null, it will be
+   * unset in the {@link BasicTypes.Entry}.
+   *
+   * The key MUST NOT be null.
    *
    * @param serializationService - object which knows how to encode objects for the protobuf
    *        protocol {@link ProtobufSerializationService}
@@ -98,6 +101,10 @@ public abstract class ProtobufUtilities {
   public static BasicTypes.Entry createEntry(SerializationService serializationService,
       Object unencodedKey, Object unencodedValue)
       throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+    if (unencodedValue == null) {
+      return BasicTypes.Entry.newBuilder()
+          .setKey(createEncodedValue(serializationService, unencodedKey)).build();
+    }
     return createEntry(createEncodedValue(serializationService, unencodedKey),
         createEncodedValue(serializationService, unencodedValue));
   }

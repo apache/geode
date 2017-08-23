@@ -82,11 +82,7 @@ message Error {
     string message = 2;
 }
 
-message ErrorResponse {
-    Error error = 1;
-}
-
-message KeyedErrorResponse {
+message KeyedError {
     EncodedValue key = 1;
     Error error = 2;
 }

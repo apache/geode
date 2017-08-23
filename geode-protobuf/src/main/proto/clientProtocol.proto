@@ -84,3 +84,7 @@ message MetaData {
     int32 numberOfMetadata = 1;
     map<int32, google.protobuf.Any> metaDataEntries = 2;
 }
+
+message ErrorResponse {
+    Error error = 1;
+}
