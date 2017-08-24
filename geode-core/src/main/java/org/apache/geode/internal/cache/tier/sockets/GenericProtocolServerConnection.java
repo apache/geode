@@ -22,6 +22,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.StreamAuthenticator;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -64,9 +65,13 @@ public class GenericProtocolServerConnection extends ServerConnection {
         messageHandler.receiveMessage(inputStream, outputStream,
             new MessageExecutionContext(this.getCache()));
       }
+    } catch (EOFException e) {
+      this.setFlagProcessMessagesAsFalse();
+      setClientDisconnectedException(e);
     } catch (IOException e) {
       logger.warn(e);
-      this.setFlagProcessMessagesAsFalse(); // TODO: better shutdown.
+      this.setFlagProcessMessagesAsFalse();
+      setClientDisconnectedException(e);
     }
   }
 
