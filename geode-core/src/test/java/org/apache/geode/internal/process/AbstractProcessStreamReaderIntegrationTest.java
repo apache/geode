@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
@@ -44,7 +45,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   private static final int READER_JOIN_TIMEOUT_MILLIS = 2 * 60 * 1000;
 
   /** Sleep timeout for {@link ProcessSleeps} instead of sleeping Long.MAX_VALUE */
-  private static final int PROCESS_FAIL_SAFE_TIMEOUT_MILLIS = 10 * 60 * 1000;
+  private static final int PROCESS_FAIL_SAFE_TIMEOUT_MILLIS = 8 * 60 * 1000;
 
   /** Additional time for launched processes to live before terminating */
   private static final int PROCESS_TIME_TO_LIVE_MILLIS = 3 * 500;
@@ -165,6 +166,11 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
 
   protected void waitUntilProcessStops() {
     await().until(() -> assertThat(isProcessAlive(process)).isFalse());
+  }
+
+  protected void waitUntilProcessStops(final long timeout, final TimeUnit unit) {
+    Awaitility.await().atMost(2, MINUTES)
+        .until(() -> assertThat(isProcessAlive(process)).isFalse());
   }
 
   private ProcessStreamReader buildProcessStreamReader(final InputStream stream,
