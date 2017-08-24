@@ -317,7 +317,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
     CacheServerMXBean cacheServerMXBean = awaitCacheServerMXBean(serverMember, serverPort);
 
     String[] clientIds = cacheServerMXBean.getClientIds();
-    await().until(() -> assertThat(clientIds).hasSize(2));
+    await().until(() -> cacheServerMXBean.getClientIds().length == 2);
 
     ClientHealthStatus[] clientStatuses = cacheServerMXBean.showAllClientStats();
 
