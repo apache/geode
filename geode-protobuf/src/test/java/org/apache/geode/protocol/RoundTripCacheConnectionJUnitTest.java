@@ -122,7 +122,14 @@ public class RoundTripCacheConnectionJUnitTest {
     }
 
     CacheFactory cacheFactory = new CacheFactory(properties);
-    cacheFactory.set("mcast-port", "0"); // sometimes it isn't due to other tests.
+    cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0"); // sometimes it isn't due to other
+                                                               // tests.
+    cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false"); // sometimes it
+                                                                                     // isn't due to
+                                                                                     // other tests.
+    cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false"); // sometimes it
+                                                                                  // isn't due to
+                                                                                  // other tests.
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();

@@ -58,7 +58,6 @@ message GetAllRequest {
 
 message GetAllResponse {
     repeated Entry entries = 1;
-    repeated KeyedErrorResponse failedKeys = 2;
 }
 
 message RemoveRequest {

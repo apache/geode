@@ -50,10 +50,10 @@ public class CodecRegistryJUnitTest {
 
   @Test
   public void testRegisterCodec() throws CodecAlreadyRegisteredForTypeException {
-    Assert.assertEquals(10, codecRegistry.getRegisteredCodecCount());
+    Assert.assertEquals(1, codecRegistry.getRegisteredCodecCount());
     SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
     codecRegistry.register(mockSerializationType, new DummyTypeCodec());
-    Assert.assertEquals(11, codecRegistry.getRegisteredCodecCount());
+    Assert.assertEquals(2, codecRegistry.getRegisteredCodecCount());
   }
 
   @Test
