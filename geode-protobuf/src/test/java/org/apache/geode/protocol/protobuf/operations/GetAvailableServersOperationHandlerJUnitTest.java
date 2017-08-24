@@ -20,10 +20,10 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
-import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Result;
-import org.apache.geode.protocol.protobuf.ServerAPI;
-import org.apache.geode.protocol.protobuf.ServerAPI.GetAvailableServersResponse;
+import org.apache.geode.internal.protocol.protobuf.ServerAPI;
+import org.apache.geode.internal.protocol.protobuf.ServerAPI.GetAvailableServersResponse;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

@@ -24,7 +24,7 @@ import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextExcep
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
-import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
