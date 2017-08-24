@@ -20,7 +20,7 @@ import java.io.OutputStream;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.serializer.ProtocolSerializer;
 
 @Experimental

@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.ClientProtocol.Request.RequestAPICase;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol.Request.RequestAPICase;
 import org.apache.geode.protocol.protobuf.OperationContext;
 import org.apache.geode.protocol.protobuf.operations.GetAllRequestOperationHandler;
 import org.apache.geode.protocol.protobuf.operations.GetAvailableServersOperationHandler;

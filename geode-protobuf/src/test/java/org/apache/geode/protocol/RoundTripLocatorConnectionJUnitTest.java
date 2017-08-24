@@ -40,21 +40,17 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
-import org.apache.geode.protocol.protobuf.ServerAPI;
+import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -63,7 +59,6 @@ public class RoundTripLocatorConnectionJUnitTest extends JUnit4CacheTestCase {
 
   private Socket socket;
   private DataOutputStream dataOutputStream;
-  private Locator locator;
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -72,7 +67,7 @@ public class RoundTripLocatorConnectionJUnitTest extends JUnit4CacheTestCase {
   public void setup() throws IOException {
     Host host = Host.getHost(0);
     int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
-    int cacheServer1Port = startCacheWithCacheServer();
+    startCacheWithCacheServer();
 
     Host.getLocator().invoke(() -> System.setProperty("geode.feature-protobuf-protocol", "true"));
 

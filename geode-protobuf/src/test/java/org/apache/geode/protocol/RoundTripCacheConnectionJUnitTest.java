@@ -61,10 +61,10 @@ import org.apache.geode.internal.cache.tier.sockets.GenericProtocolServerConnect
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
-import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;

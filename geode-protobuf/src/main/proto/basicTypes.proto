@@ -20,7 +20,7 @@
 
 
 syntax = "proto3";
-package org.apache.geode.protocol.protobuf;
+package org.apache.geode.internal.protocol.protobuf;
 
 import "google/protobuf/any.proto";
 import "google/protobuf/empty.proto";

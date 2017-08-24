@@ -16,6 +16,7 @@ package org.apache.geode.protocol.protobuf;
 
 import static org.junit.Assert.assertSame;
 
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

@@ -16,7 +16,7 @@
 package org.apache.geode.protocol.protobuf.utilities;
 
 import com.google.protobuf.ByteString;
-import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.utilities.exception.UnknownProtobufPrimitiveType;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;

@@ -18,6 +18,8 @@ package org.apache.geode.protocol.protobuf;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.operations.OperationHandler;
 
 @Experimental

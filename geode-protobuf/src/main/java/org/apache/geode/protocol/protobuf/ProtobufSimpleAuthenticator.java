@@ -15,6 +15,7 @@
 package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.security.StreamAuthenticator;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;

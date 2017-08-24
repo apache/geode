@@ -27,7 +27,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.protocol.MessageUtil;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 

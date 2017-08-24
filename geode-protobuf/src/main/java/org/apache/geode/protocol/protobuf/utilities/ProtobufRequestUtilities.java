@@ -14,13 +14,11 @@
  */
 package org.apache.geode.protocol.protobuf.utilities;
 
-import java.util.Set;
-
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.protocol.protobuf.BasicTypes;
-import org.apache.geode.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.RegionAPI;
-import org.apache.geode.protocol.protobuf.ServerAPI;
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 
 import java.util.Set;
 

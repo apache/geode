@@ -20,9 +20,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
-import org.apache.geode.protocol.protobuf.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 
 
 /**
