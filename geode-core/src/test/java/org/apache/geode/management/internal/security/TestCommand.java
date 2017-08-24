@@ -189,7 +189,7 @@ public class TestCommand {
     createTestCommand("execute function --id=InterestCalculations --groups=Group1", dataWrite);
     createTestCommand("list functions", clusterRead);
 
-    // GfshHelpCommands
+    // GfshHelpCommand, GfshHintCommand
     createTestCommand("hint");
     createTestCommand("help");
 
