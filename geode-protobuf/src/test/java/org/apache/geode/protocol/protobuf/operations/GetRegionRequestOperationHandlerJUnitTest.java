@@ -20,7 +20,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
-import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
+import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.protocol.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;

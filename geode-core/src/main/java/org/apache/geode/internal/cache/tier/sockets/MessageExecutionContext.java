@@ -17,14 +17,16 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.security.server.Authorizer;
 
 @Experimental
 public class MessageExecutionContext {
   private Cache cache;
-  private InternalLocator locator;
+  private Locator locator;
   private Authorizer authorizer;
 
   public MessageExecutionContext(Cache cache, Authorizer streamAuthorizer) {
@@ -42,7 +44,7 @@ public class MessageExecutionContext {
   /**
    * Returns the cache associated with this execution
    * <p>
-   * 
+   *
    * @throws InvalidExecutionContextException if there is no cache available
    */
   public Cache getCache() throws InvalidExecutionContextException {
@@ -56,10 +58,10 @@ public class MessageExecutionContext {
   /**
    * Returns the locator associated with this execution
    * <p>
-   * 
+   *
    * @throws InvalidExecutionContextException if there is no locator available
    */
-  public InternalLocator getLocator() throws InvalidExecutionContextException {
+  public Locator getLocator() throws InvalidExecutionContextException {
     if (locator != null) {
       return locator;
     }

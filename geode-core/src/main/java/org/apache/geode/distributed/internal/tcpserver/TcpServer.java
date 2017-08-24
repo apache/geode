@@ -258,8 +258,6 @@ public class TcpServer {
   }
 
   public void join() throws InterruptedException {
-    // this.log.info("TcpServer@"+System.identityHashCode(this)+" join() invoked. Server
-    // thread="+serverThread+"@"+System.identityHashCode(serverThread)+";alive="+serverThread.isAlive());
     if (serverThread != null) {
       serverThread.join();
     }
