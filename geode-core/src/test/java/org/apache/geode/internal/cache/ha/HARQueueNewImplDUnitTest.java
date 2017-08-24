@@ -355,8 +355,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testRefCountForNormalAndGIIPut() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("240000"));
+    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("240000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
