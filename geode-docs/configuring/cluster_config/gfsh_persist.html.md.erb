@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-The Apache Geode cluster configuration service persists cluster configurations created by `gfsh` commands to the locators in a cluster and distributes the configurations to members of the cluster.
+The <%=vars.product_name_long%> cluster configuration service persists cluster configurations created by `gfsh` commands to the locators in a cluster and distributes the configurations to members of the cluster.
 
 ## Why Use the Cluster Configuration Service
 
@@ -27,7 +27,7 @@ We highly recommend that you use the `gfsh` command line and the cluster configu
 
 You can use the cluster configuration service to:
 
--   Save the configuration for an entire Apache Geode cluster.
+-   Save the configuration for an entire <%=vars.product_name_long%> cluster.
 -   Restart members using a previously-saved configuration.
 -   Export a configuration from a development environment and migrate that configuration to create a testing or production system.
 -   Start additional servers without having to configure each server separately.
@@ -35,7 +35,7 @@ You can use the cluster configuration service to:
 
 ## Using the Cluster Configuration Service
 
-To use the cluster configuration service in Geode, you must use dedicated, standalone locators in your deployment. You cannot use the cluster configuration service with co-located locators (locators running in another process such as a server) or in multicast environments.
+To use the cluster configuration service in <%=vars.product_name%>, you must use dedicated, standalone locators in your deployment. You cannot use the cluster configuration service with co-located locators (locators running in another process such as a server) or in multicast environments.
 
 The standalone locators distribute configuration to all locators in a cluster. Every locator in the cluster with `--enable-cluster-configuration` set to true keeps a record of all cluster-level and group-level configuration settings.
 
@@ -48,9 +48,9 @@ You can also load existing configuration files into the cluster configuration se
 
 ## How the Cluster Configuration Service Works
 
-When you use `gfsh` commands to create Apache Geode regions, disk-stores, and other objects, the cluster configuration service saves the configurations on each locator in the cluster (also called a Geode distributed system). If you specify a group when issuing these commands, a separate configuration is saved containing only configurations that apply to the group.
+When you use `gfsh` commands to create <%=vars.product_name_long%> regions, disk-stores, and other objects, the cluster configuration service saves the configurations on each locator in the cluster (also called a <%=vars.product_name%> distributed system). If you specify a group when issuing these commands, a separate configuration is saved containing only configurations that apply to the group.
 
-When you use `gfsh` to start new Apache Geode servers, the locator distributes the persisted configurations to the new server. If you specify a group when starting the server, the server receives the group-level configuration in addition to the cluster-level configuration. Group-level configurations are applied after cluster-wide configurations; therefore you can use group-level to override cluster-level settings.
+When you use `gfsh` to start new <%=vars.product_name_long%> servers, the locator distributes the persisted configurations to the new server. If you specify a group when starting the server, the server receives the group-level configuration in addition to the cluster-level configuration. Group-level configurations are applied after cluster-wide configurations; therefore you can use group-level to override cluster-level settings.
 
 <img src="../../images_svg/cluster_config_overview.svg" id="concept_r22_hyw_bl__image_jjc_vhb_y4" class="image" />
 

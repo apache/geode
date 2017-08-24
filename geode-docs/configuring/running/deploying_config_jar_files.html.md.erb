@@ -24,9 +24,9 @@ This section provides a procedure and an example for deploying configuration fil
 **Procedure**
 
 1.  Jar the files.
-2.  Set the Apache Geode system properties to point to the files as they reside in the jar file.
+2.  Set the <%=vars.product_name_long%> system properties to point to the files as they reside in the jar file.
 3.  Include the jar file in your `CLASSPATH.`
-4.  Verify the jar file copies are the only ones visible to the application at runtime. Geode searches the `CLASSPATH` after searching other locations, so the files cannot be available in the other search areas.
+4.  Verify the jar file copies are the only ones visible to the application at runtime. <%=vars.product_name%> searches the `CLASSPATH` after searching other locations, so the files cannot be available in the other search areas.
 5.  Start your application. The configuration file is loaded from the jar file.
 
 **Example of Deploying a Configuration JAR**
