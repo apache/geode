@@ -22,7 +22,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
-import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
+import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Result;
@@ -39,9 +39,9 @@ public class GetAvailableServersOperationHandler implements
       SerializationService serializationService, ServerAPI.GetAvailableServersRequest request,
       MessageExecutionContext executionContext) throws InvalidExecutionContextException {
 
-    InternalLocator locator = executionContext.getLocator();
+    InternalLocator internalLocator = (InternalLocator) executionContext.getLocator();
     ArrayList serversFromSnapshot =
-        locator.getServerLocatorAdvisee().getLoadSnapshot().getServers(null);
+        internalLocator.getServerLocatorAdvisee().getLoadSnapshot().getServers(null);
     if (serversFromSnapshot == null) {
       serversFromSnapshot = new ArrayList();
     }

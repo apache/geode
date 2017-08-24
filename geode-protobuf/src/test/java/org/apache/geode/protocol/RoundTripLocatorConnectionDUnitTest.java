@@ -18,7 +18,18 @@ package org.apache.geode.protocol;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
@@ -42,7 +53,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 @Category(DistributedTest.class)
-public class RoundTripLocatorConnectionJUnitTest extends JUnit4CacheTestCase {
+public class RoundTripLocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
   private Socket socket;
 

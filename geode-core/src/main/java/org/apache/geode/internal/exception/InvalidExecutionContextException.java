@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
+package org.apache.geode.internal.exception;
 
 import org.apache.geode.annotations.Experimental;
 

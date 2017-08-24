@@ -17,7 +17,7 @@ package org.apache.geode.protocol.protobuf.operations;
 import com.google.protobuf.ByteString;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
-import org.apache.geode.internal.cache.tier.sockets.InvalidExecutionContextException;
+import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.Failure;
