@@ -1449,6 +1449,7 @@ public abstract class ServerConnection implements Runnable {
     }
     if (this.communicationMode == Acceptor.CLIENT_TO_SERVER || isGatewayConnection()
         || this.communicationMode == Acceptor.MONITOR_TO_SERVER
+        || this.communicationMode == Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL
     /* || this.communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE */) {
       getAcceptor().decClientServerCnxCount();
     }

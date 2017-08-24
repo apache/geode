@@ -457,6 +457,7 @@ public class JGroupsMessenger implements Messenger {
         }
       }
       if (recipient != null) {
+        logger.warn("Unable to send message to " + recipient, e);
         services.getHealthMonitor().suspect(recipient,
             "Unable to send messages to this member via JGroups");
       }

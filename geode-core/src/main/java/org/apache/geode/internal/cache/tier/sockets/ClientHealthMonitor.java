@@ -559,11 +559,10 @@ public class ClientHealthMonitor {
     {
       if (serverConnections != null) { // fix for bug 35343
         result = true;
-        // logger.warning("Terminating " + serverConnections.size() + "
-        // connections");
+        // logger.warn("Terminating " + serverConnections.size() + " connections");
         for (Iterator it = serverConnections.iterator(); it.hasNext();) {
           ServerConnection serverConnection = (ServerConnection) it.next();
-          // logger.warning("Terminating " + serverConnection);
+          // logger.warn("Terminating " + serverConnection);
           serverConnection.handleTermination(timedOut);
         }
       }
