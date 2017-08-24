@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
 import org.apache.geode.management.cli.CliMetaData;
@@ -25,10 +26,7 @@ import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-/**
- * @since GemFire 7.0
- */
-public class GfshHelpCommands implements GfshCommand, CommandManagerAware {
+public class GfshHelpCommand implements GfshCommand, CommandManagerAware {
   private CommandManager commandManager = null;
 
   public void setCommandManager(CommandManager commandManager) {
@@ -42,14 +40,6 @@ public class GfshHelpCommands implements GfshCommand, CommandManagerAware {
           help = "Command name to provide help for") String buffer) {
 
     return ResultBuilder.createInfoResult(commandManager.obtainHelp(buffer));
-  }
-
-  @CliCommand(value = CliStrings.HINT, help = CliStrings.HINT__HELP)
-  @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP})
-  public Result hint(@CliOption(key = {"", CliStrings.HINT__TOPICNAME},
-      optionContext = ConverterHint.HINT, help = CliStrings.HINT__TOPICNAME) String topicName) {
-
-    return ResultBuilder.createInfoResult(commandManager.obtainHint(topicName));
   }
 
 }
