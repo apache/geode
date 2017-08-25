@@ -38,39 +38,46 @@ def addOldVersion(def source, def geodeVersion, def downloadInstall) {
   dependencies.add "${source}Compile", "org.apache.geode:geode-cq:$geodeVersion"
   dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:$geodeVersion"
 
-  project.ext.installs.setProperty(source, "$buildDir/apache-geode-${geodeVersion}")
-
-  task "downloadZipFile${source}" (type: Download) {
-    src "https://www.apache.org/dyn/closer.cgi?action=download&filename=geode/$geodeVersion/apache-geode-${geodeVersion}.tar.gz"
-    def destFile = new File(buildDir, "apache-geode-${geodeVersion}.tar.gz")
-    dest destFile
-    onlyIf {!destFile.exists()}
-  }
-
-  task "downloadSHA${source}" (type: Download) {
-    src "https://www.apache.org/dist/geode/${geodeVersion}/apache-geode-${geodeVersion}.tar.gz.sha256"
-    def destFile =  new File(buildDir, "apache-geode-${geodeVersion}.tar.gz.sha256")
-    dest destFile
-    onlyIf {!destFile.exists()}
-  }
-
-
-  task "verifyGeode${source}" (type: de.undercouch.gradle.tasks.download.Verify, dependsOn: [tasks["downloadSHA${source}"], tasks["downloadZipFile${source}"]]) {
-    src tasks["downloadZipFile${source}"].dest
-    algorithm "SHA-256"
-    doFirst {
-      checksum new File(buildDir, "apache-geode-${geodeVersion}.tar.gz.sha256").text.split(' ')[0]
-    }
-  }
-
-  task "downloadAndUnzipFile${source}" (dependsOn: "verifyGeode${source}", type: Copy) {
-    from tarTree(tasks["downloadZipFile${source}"].dest)
-    into buildDir
-  }
+  String oldVersionDir = "old-versions"
 
   if (downloadInstall) {
+
+    File installDir = file("$oldVersionDir/apache-geode-${geodeVersion}")
+    project.ext.installs.setProperty(source, installDir.absolutePath)
+
+    task "downloadZipFile${source}" (type: Download) {
+      src "https://www.apache.org/dyn/closer.cgi?action=download&filename=geode/$geodeVersion/apache-geode-${geodeVersion}.tar.gz"
+      def destFile = new File(buildDir, "apache-geode-${geodeVersion}.tar.gz")
+      dest destFile
+      onlyIf {!installDir.exists()}
+    }
+
+    task "downloadSHA${source}" (type: Download) {
+      src "https://www.apache.org/dist/geode/${geodeVersion}/apache-geode-${geodeVersion}.tar.gz.sha256"
+      def destFile =  new File(buildDir, "apache-geode-${geodeVersion}.tar.gz.sha256")
+      dest destFile
+      onlyIf {!installDir.exists()}
+    }
+
+
+    task "verifyGeode${source}" (type: de.undercouch.gradle.tasks.download.Verify, dependsOn: [tasks["downloadSHA${source}"], tasks["downloadZipFile${source}"]]) {
+      src tasks["downloadZipFile${source}"].dest
+      algorithm "SHA-256"
+      doFirst {
+        checksum new File(buildDir, "apache-geode-${geodeVersion}.tar.gz.sha256").text.split(' ')[0]
+      }
+      onlyIf {!installDir.exists()}
+    }
+
+    task "downloadAndUnzipFile${source}" (dependsOn: "verifyGeode${source}", type: Copy) {
+      from tarTree(tasks["downloadZipFile${source}"].dest)
+      into file('old-versions')
+      onlyIf {!installDir.exists()}
+    }
+
     createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${source}"]
   }
+
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

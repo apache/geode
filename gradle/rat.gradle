@@ -45,6 +45,9 @@ rat {
     'geode-examples/gradlew*/**',
     'geode-examples/gradle/wrapper/**',
 
+    //Downloaded old versions
+    'geode-old-versions/old-versions/**',
+
     // IDE
     'etc/eclipse-java-google-style.xml',
     'etc/intellij-java-modified-google-style.xml',
