@@ -46,7 +46,7 @@ The following sections show example `cache.xml` files configured for each of the
 
 The example shows a `cache.xml` file configured for a pool of `XAPooledDataSource` connections connected to the data resource `newDB`.
 
-The log-in and blocking timeouts are set lower than the defaults. The connection information, including `user-name` and `password`, is set in the `cache.xml` file, instead of waiting until connection time. The password is encrypted; for details, see [Encrypting Passwords for Use in cache.xml](../../managing/security/encrypting_passwords.html#topic_730CC61BA84F421494956E2B98BDE2A1).
+The log-in and blocking timeouts are set lower than the defaults. The connection information, including `user-name` and `password`, is set in the `cache.xml` file, instead of waiting until connection time. The password is not encrypted.
 
 When specifying the configuration properties for JCA-implemented database drivers that support XA transactions (in other words, **XAPooledDataSource**), you must use configuration properties to define the datasource connection instead of the `connection-url` attribute of the `<jndi-binding>` element. Configuration properties differ depending on your database vendor. Specify JNDI binding properties through the `config-property` tag, as shown in this example. You can add as many `config-property` tags as required.
 
@@ -73,7 +73,7 @@ load-factor="0.75" concurrency-level="16" statistics-enabled="true">
     login-timeout-seconds="10"
     xa-datasource-class="org.apache.derby.jdbc.EmbeddedXADataSource"
     user-name="mitul" 
-    password="encrypted(83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a)">
+    password="thecleartextpassword">
          <config-property>
           <config-property-name>Description</config-property-name>
           <config-property-type>java.lang.String</config-property-type>
@@ -218,7 +218,7 @@ load-factor="0.75" concurrency-level="16" statistics-enabled="true">
     login-timeout-seconds="10"
     managed-conn-factory-class="com.myvendor.connection.ConnFactory"
     user-name="mitul"  
-    password="encrypted(83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a)">
+    password="thecleartextpassword">
           <config-property>
              <config-property-name>Description</config-property-name>
              <config-property-type>java.lang.String</config-property-type>
@@ -243,7 +243,7 @@ load-factor="0.75" concurrency-level="16" statistics-enabled="true">
 
 ## PooledDataSource Example (Derby)
 
-Use the `PooledDataSource` and `SimpleDataSource` connections for operations executed outside of any transaction. This example shows a `cache.xml` file configured for a pool of `PooledDataSource` connections to the data resource `newDB`. For this non-transactional connection pool, the log-in and blocking timeouts are set higher than for the transactional connection pools in the two previous examples. The connection information, including `user-name` and `password`, is set in the `cache.xml` file, instead of waiting until connection time. The password is encrypted; for details, see [Encrypting Passwords for Use in cache.xml](../../managing/security/encrypting_passwords.html#topic_730CC61BA84F421494956E2B98BDE2A1).
+Use the `PooledDataSource` and `SimpleDataSource` connections for operations executed outside of any transaction. This example shows a `cache.xml` file configured for a pool of `PooledDataSource` connections to the data resource `newDB`. For this non-transactional connection pool, the log-in and blocking timeouts are set higher than for the transactional connection pools in the two previous examples. The connection information, including `user-name` and `password`, is set in the `cache.xml` file, instead of waiting until connection time. The password is not encrypted.
 
 ``` pre
 <?xml version="1.0"?>
@@ -270,7 +270,7 @@ initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabl
     login-timeout-seconds="30" 
     conn-pooled-datasource-class="org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource"
     user-name="mitul"
-    password="encrypted(83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a)">
+    password="thecleartextpassword">
        <config-property>
           <config-property-name>Description</config-property-name>
           <config-property-type>java.lang.String</config-property-type>
@@ -319,7 +319,7 @@ load-factor="0.75" concurrency-level="16" statistics-enabled="true">
     jndi-name="oldDB1" 
     jdbc-driver-class="org.apache.derby.jdbc.EmbeddedDriver"
     user-name="mitul" 
-    password="password" 
+    password="thecleartextpassword" 
     connection-url="jdbc:derby:newDB;create=true">
         . . .
        </jndi-binding>
