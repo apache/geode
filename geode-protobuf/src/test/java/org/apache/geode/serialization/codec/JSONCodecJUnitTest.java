@@ -101,26 +101,29 @@ public class JSONCodecJUnitTest {
     PdxInstance pdxInstanceForComplexJSONString = createPDXInstanceForComplexJSONString();
     PdxInstance decodedJSONPdxInstance = new JSONCodec().decode(complexJSONString.getBytes());
 
-    assertEquals(pdxInstanceForComplexJSONString.getFieldNames(),
-        decodedJSONPdxInstance.getFieldNames());
+    pdxInstanceEquals(pdxInstanceForComplexJSONString, decodedJSONPdxInstance);
+  }
 
-    List<String> fieldNames = asList("_id", "index", "guid", "isActive", "balance", "picture",
-        "age", "eyeColor", "name", "gender", "company", "email", "phone", "address", "about",
-        "registered", "latitude", "longitude", "tags", "friends", "greeting", "favoriteFruit");
-    fieldNames.forEach(
-        fieldName -> assertEquals(pdxInstanceForComplexJSONString.getField(fieldName).getClass(),
-            decodedJSONPdxInstance.getField(fieldName).getClass()));
+  private void pdxInstanceEquals(PdxInstance expectedPdxInstance,
+                                 PdxInstance decodedJSONPdxInstance) {
+    List<String> expectedFieldNames = expectedPdxInstance.getFieldNames();
 
-    fieldNames.forEach(
-        fieldName -> assertEquals(pdxFieldValues(pdxInstanceForComplexJSONString, fieldName),
-            pdxFieldValues(decodedJSONPdxInstance, fieldName)));
+    assertEquals(expectedFieldNames, decodedJSONPdxInstance.getFieldNames());
+
+    expectedFieldNames.forEach(
+        fieldName -> {
+          assertEquals(expectedPdxInstance.getField(fieldName).getClass(),
+              decodedJSONPdxInstance.getField(fieldName).getClass());
+          assertEquals(pdxFieldValues(expectedPdxInstance, fieldName),
+              pdxFieldValues(decodedJSONPdxInstance, fieldName));
+        });
   }
 
   /**
-   * This method is very specific to this test. It will take an pdxInstance object and return you
+   * This method is very specific to this test. It will take a pdxInstance object and return you
    * the value for the fieldName. In most cases it will return the value directly, but in the case
-   * of collections LinkedList<String> it will return an ArrayList<String> or in the case of a
-   * LinkedList<PdxInstance> it will return an ArrayList<ArrayList>.
+   * of collections LinkedList&lt;String&gt; it will return an ArrayList&lt;String&gt; or in the case of a
+   * LinkedList&lt;PdxInstance&gt; it will return an ArrayList&lt;ArrayList&lt;String&gt;&gt;.
    */
   private Object pdxFieldValues(PdxInstance pdxInstance, String fieldName) {
     Object fieldValue = pdxInstance.getField(fieldName);

@@ -22,16 +22,7 @@ import org.apache.geode.pdx.PdxInstance;
  */
 @Experimental
 public enum SerializationType {
-  STRING(String.class),
-  BINARY(byte[].class),
-  INT(int.class),
-  BYTE(byte.class),
-  SHORT(short.class),
-  LONG(long.class),
-  JSON(PdxInstance.class),
-  BOOLEAN(boolean.class),
-  FLOAT(float.class),
-  DOUBLE(double.class);
+  JSON(PdxInstance.class);
 
   public final Class klass;
 
