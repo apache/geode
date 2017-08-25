@@ -20,19 +20,16 @@ import javax.servlet.http.HttpSessionListener;
 
 public class SessionCountingListener extends ListenerStoredInSessionContext
     implements HttpSessionListener {
-  private final AtomicInteger sessionCount = new AtomicInteger();
   private final AtomicInteger sessionCreates = new AtomicInteger();
   private final AtomicInteger sessionDestroys = new AtomicInteger();
 
   @Override
   public void sessionCreated(final HttpSessionEvent se) {
-    sessionCount.incrementAndGet();
     sessionCreates.incrementAndGet();
   }
 
   @Override
   public void sessionDestroyed(final HttpSessionEvent se) {
-    sessionCount.decrementAndGet();
     sessionDestroys.incrementAndGet();
   }
 

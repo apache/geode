@@ -44,7 +44,7 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
   public static void setupJettyInstall() throws Exception {
     install = new GenericAppServerInstall(GenericAppServerInstall.GenericAppServerVersion.JETTY9,
         ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Jetty9ClientServerTest");
+        ContainerInstall.DEFAULT_INSTALL_DIR + "Jetty9CachingClientServerTest");
     install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
   }
 
@@ -54,8 +54,8 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
   }
 
   /**
-   * Test that we cache the user's session on the client, rather
-   * than going to the server for each request
+   * Test that we cache the user's session on the client, rather than going to the server for each
+   * request
    */
   @Test
   public void shouldCacheSessionOnClient()
@@ -69,14 +69,14 @@ public class Jetty9CachingClientServerTest extends GenericAppServerClientServerT
     Client.Response resp = client.set(key, value);
     String cookie = resp.getSessionCookie();
 
-    //Modify the values on the server
+    // Modify the values on the server
     serverVM.invoke(() -> {
       Cache cache = getCache();
       Region<String, HttpSession> region = cache.getRegion("gemfire_modules_sessions");
       region.values().forEach(session -> session.setAttribute(key, "bogus"));
     });
 
-    //Make sure the client still sees it's original cached value
+    // Make sure the client still sees it's original cached value
     resp = client.get(key);
     assertEquals(value, resp.getResponse());
   }

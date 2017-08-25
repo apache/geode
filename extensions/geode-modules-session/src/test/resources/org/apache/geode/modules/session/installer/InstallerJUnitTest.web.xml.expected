@@ -36,9 +36,6 @@ limitations under the License.
     <filter-name>existingFilter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
-    <listener>
-        <listener-class>org.apache.geode.modules.session.filter.SessionListener</listener-class>
-    </listener>
 
   <servlet>
     <servlet-name>existingServlet</servlet-name>

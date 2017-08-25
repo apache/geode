@@ -77,7 +77,8 @@ public class GenericAppServerContainer extends ServerContainer {
     setLocator(install.getDefaultLocatorAddress(), install.getDefaultLocatorPort());
 
     // Make sure that local caches are disabled by default
-    setCacheProperty("enable_local_cache", Boolean.toString(install.getConnectionType().enableLocalCache()));
+    setCacheProperty("enable_local_cache",
+        Boolean.toString(install.getConnectionType().enableLocalCache()));
   }
 
   /**

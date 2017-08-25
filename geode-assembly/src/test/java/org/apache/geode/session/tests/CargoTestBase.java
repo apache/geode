@@ -184,7 +184,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
 
-    if(!localCacheEnabled()) {
+    if (!localCacheEnabled()) {
       getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
     }
 
@@ -216,7 +216,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     // 59 minutes is the value configured in web.xml
     verifyMaxInactiveInterval(59 * 60);
 
-    if(!localCacheEnabled()) {
+    if (!localCacheEnabled()) {
       client.setMaxInactive(63);
 
       verifyMaxInactiveInterval(63);
@@ -283,7 +283,7 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     Client.Response resp = client.set(key, value);
 
 
-    if(!localCacheEnabled()) {
+    if (!localCacheEnabled()) {
       getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
     }
 

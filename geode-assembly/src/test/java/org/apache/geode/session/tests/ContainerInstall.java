@@ -84,7 +84,8 @@ public abstract class ContainerInstall {
     private final boolean enableLocalCache;
     private final boolean isClientServer;
 
-    ConnectionType(String name, String cacheXMLFileName, boolean enableLocalCache, boolean isClientServer) {
+    ConnectionType(String name, String cacheXMLFileName, boolean enableLocalCache,
+        boolean isClientServer) {
       this.name = name;
       this.cacheXMLFileName = cacheXMLFileName;
       this.enableLocalCache = enableLocalCache;

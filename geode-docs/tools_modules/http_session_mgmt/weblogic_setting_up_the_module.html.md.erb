@@ -31,7 +31,7 @@ $ modify_war -h
 
 To modify your war or ear file manually, make the following updates:
 
--   **web.xml** needs a filter and listener added as follows. If you have your own filters, the <%=vars.product_name%> Module filter **must** be the first one.
+-   **web.xml** needs a filter added as follows. If you have your own filters, the <%=vars.product_name%> Module filter **must** be the first one.
 
     ``` pre
     <filter>
@@ -52,9 +52,6 @@ To modify your war or ear file manually, make the following updates:
         <filter-name>gemfire-session-filter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    <listener>
-        <listener-class>org.apache.geode.modules.session.filter.SessionListener</listener-class>
-    </listener>
     ```
 
 -   Add the following jar files from the AppServer.zip to the `WEB-INF/lib` directory of the war:

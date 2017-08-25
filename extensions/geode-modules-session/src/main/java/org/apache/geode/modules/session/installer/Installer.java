@@ -48,9 +48,6 @@ public class Installer {
   private static final String GEMFIRE_FILTER_CLASS =
       "org.apache.geode.modules.session.filter.SessionCachingFilter";
 
-  private static final String GEMFIRE_LISTENER_CLASS =
-      "org.apache.geode.modules.session.filter.SessionListener";
-
   private ArgumentValues argValues;
 
   private static final Argument ARG_HELP =
@@ -220,10 +217,7 @@ public class Installer {
     final Element filterMapping = doc.createElement("filter-mapping");
     append(doc, filterMapping, "filter-name", "gemfire-session-filter");
     append(doc, filterMapping, "url-pattern", "/*");
-    final Element contextListener = doc.createElement("listener");
-    append(doc, contextListener, "listener-class", GEMFIRE_LISTENER_CLASS);
     docElement.insertBefore(filterMapping, after(docElement, "filter"));
-    docElement.insertBefore(contextListener, after(docElement, "filter-mapping"));
     return doc;
   }
 
