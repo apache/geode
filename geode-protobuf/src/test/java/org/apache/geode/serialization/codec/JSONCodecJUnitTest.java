@@ -105,25 +105,24 @@ public class JSONCodecJUnitTest {
   }
 
   private void pdxInstanceEquals(PdxInstance expectedPdxInstance,
-                                 PdxInstance decodedJSONPdxInstance) {
+      PdxInstance decodedJSONPdxInstance) {
     List<String> expectedFieldNames = expectedPdxInstance.getFieldNames();
 
     assertEquals(expectedFieldNames, decodedJSONPdxInstance.getFieldNames());
 
-    expectedFieldNames.forEach(
-        fieldName -> {
-          assertEquals(expectedPdxInstance.getField(fieldName).getClass(),
-              decodedJSONPdxInstance.getField(fieldName).getClass());
-          assertEquals(pdxFieldValues(expectedPdxInstance, fieldName),
-              pdxFieldValues(decodedJSONPdxInstance, fieldName));
-        });
+    expectedFieldNames.forEach(fieldName -> {
+      assertEquals(expectedPdxInstance.getField(fieldName).getClass(),
+          decodedJSONPdxInstance.getField(fieldName).getClass());
+      assertEquals(pdxFieldValues(expectedPdxInstance, fieldName),
+          pdxFieldValues(decodedJSONPdxInstance, fieldName));
+    });
   }
 
   /**
-   * This method is very specific to this test. It will take a pdxInstance object and return you
-   * the value for the fieldName. In most cases it will return the value directly, but in the case
-   * of collections LinkedList&lt;String&gt; it will return an ArrayList&lt;String&gt; or in the case of a
-   * LinkedList&lt;PdxInstance&gt; it will return an ArrayList&lt;ArrayList&lt;String&gt;&gt;.
+   * This method is very specific to this test. It will take a pdxInstance object and return you the
+   * value for the fieldName. In most cases it will return the value directly, but in the case of
+   * collections LinkedList&lt;String&gt; it will return an ArrayList&lt;String&gt; or in the case
+   * of a LinkedList&lt;PdxInstance&gt; it will return an ArrayList&lt;ArrayList&lt;String&gt;&gt;.
    */
   private Object pdxFieldValues(PdxInstance pdxInstance, String fieldName) {
     Object fieldValue = pdxInstance.getField(fieldName);
