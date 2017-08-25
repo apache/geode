@@ -17,11 +17,11 @@ package org.apache.geode.protocol;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.security.SecurityManager;
@@ -56,16 +56,9 @@ public class AuthenticationIntegrationTest {
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  private Cache cache;
-  private int cacheServerPort;
-  private CacheServer cacheServer;
-  private Socket socket;
   private OutputStream outputStream;
-  private ProtobufSerializationService serializationService;
   private InputStream inputStream;
   private ProtobufProtocolSerializer protobufProtocolSerializer;
-  private Object securityPrincipal;
-  private SecurityManager mockSecurityManager;
 
   public void setUp(String authenticationMode)
       throws IOException, CodecAlreadyRegisteredForTypeException {
@@ -73,34 +66,36 @@ public class AuthenticationIntegrationTest {
     expectedAuthProperties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
     expectedAuthProperties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
 
-    securityPrincipal = new Object();
-    mockSecurityManager = mock(SecurityManager.class);
+    Object securityPrincipal = new Object();
+    SecurityManager mockSecurityManager = mock(SecurityManager.class);
     when(mockSecurityManager.authenticate(expectedAuthProperties)).thenReturn(securityPrincipal);
     when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(true);
 
     Properties properties = new Properties();
     CacheFactory cacheFactory = new CacheFactory(properties);
-    cacheFactory.set("mcast-port", "0"); // sometimes it isn't due to other tests.
+    cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0"); // sometimes it isn't due to other
+                                                               // tests.
+    cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
     cacheFactory.setSecurityManager(mockSecurityManager);
-    cache = cacheFactory.create();
+    Cache cache = cacheFactory.create();
 
-    cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    CacheServer cacheServer = cache.addCacheServer();
+    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
     System.setProperty("geode.protocol-authentication-mode", authenticationMode);
-    socket = new Socket("localhost", cacheServerPort);
+    Socket socket = new Socket("localhost", cacheServerPort);
 
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
     inputStream = socket.getInputStream();
     outputStream.write(110);
 
-    serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
   }
 

@@ -27,7 +27,6 @@ import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.serialization.codec.StringCodec;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -52,7 +51,6 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   private final String TEST_REGION = "test region";
   private final String MISSING_REGION = "missing region";
   private final String MISSING_KEY = "missing key";
-  private StringCodec stringDecoder;
   private Region regionStub;
 
   @Before
@@ -67,7 +65,6 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     when(cacheStub.getRegion(MISSING_REGION)).thenReturn(null);
     operationHandler = new RemoveRequestOperationHandler();
-    stringDecoder = new StringCodec();
   }
 
   @Test
