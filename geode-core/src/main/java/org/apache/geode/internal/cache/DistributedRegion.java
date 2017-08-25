@@ -2197,12 +2197,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     validateKey(event.getKey());
     // this next step also distributes the object to other processes, if necessary
     try {
-      // set the tail key so that the event is passed to GatewaySender queues.
-      // if the tailKey is not set, the event gets filtered out in ParallelGatewaySenderQueue
-      if (this instanceof BucketRegion) {
-        if (((BucketRegion) this).getPartitionedRegion().isParallelWanEnabled())
-          ((BucketRegion) this).handleWANEvent(event);
-      }
       re = basicPutEntry(event, lastModified);
 
       // Update client event with latest version tag from re.

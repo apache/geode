@@ -18,6 +18,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -29,9 +30,11 @@ import org.awaitility.Awaitility;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
@@ -220,6 +223,25 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     verifySerializedValues(region);
   }
 
+  @Test
+  public void cacheLoadUpdatesIndex() throws InterruptedException, LuceneQueryException {
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
+
+    Region region = this.cache.<String, TestObject>createRegionFactory(RegionShortcut.PARTITION)
+        .setCacheLoader(new TestCacheLoader()).create(REGION_NAME);
+
+    region.get("object-1");
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    assertTrue(luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS));
+
+    LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory().create(INDEX_NAME,
+        REGION_NAME, "hello", "description");
+    assertEquals(Collections.singletonList("object-1"), query.findKeys());
+  }
+
   private void populateRegion(Region region) {
     region.put("object-1", new TestObject("title 1", "hello world"));
     region.put("object-2", new TestObject("title 2", "this will not match"));
@@ -242,6 +264,16 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   private void await(Runnable runnable) {
     Awaitility.await().atMost(30, TimeUnit.SECONDS).until(runnable);
+  }
+
+  private static final class TestCacheLoader implements CacheLoader<String, TestObject> {
+    @Override
+    public void close() {}
+
+    @Override
+    public TestObject load(LoaderHelper<String, TestObject> helper) throws CacheLoaderException {
+      return new TestObject("title 1", "hello world");
+    }
   }
 
   private static class TestObject implements Serializable {
