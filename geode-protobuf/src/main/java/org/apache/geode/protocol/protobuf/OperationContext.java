@@ -21,6 +21,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.operations.OperationHandler;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class OperationContext<OperationRequest, OperationResponse> {
@@ -28,14 +29,17 @@ public class OperationContext<OperationRequest, OperationResponse> {
   private final Function<ClientProtocol.Request, OperationRequest> fromRequest;
   private final Function<OperationResponse, ClientProtocol.Response.Builder> toResponse;
   private final Function<BasicTypes.ErrorResponse, ClientProtocol.Response.Builder> toErrorResponse;
+  private final ResourcePermission accessPermissionRequired;
 
   public OperationContext(Function<ClientProtocol.Request, OperationRequest> fromRequest,
       OperationHandler<OperationRequest, OperationResponse> operationHandler,
-      Function<OperationResponse, ClientProtocol.Response.Builder> toResponse) {
+      Function<OperationResponse, ClientProtocol.Response.Builder> toResponse,
+      ResourcePermission permissionRequired) {
     this.operationHandler = operationHandler;
     this.fromRequest = fromRequest;
     this.toResponse = toResponse;
     this.toErrorResponse = OperationContext::makeErrorBuilder;
+    accessPermissionRequired = permissionRequired;
   }
 
   public static ClientProtocol.Response.Builder makeErrorBuilder(
@@ -57,5 +61,9 @@ public class OperationContext<OperationRequest, OperationResponse> {
 
   public Function<BasicTypes.ErrorResponse, ClientProtocol.Response.Builder> getToErrorResponse() {
     return toErrorResponse;
+  }
+
+  public ResourcePermission getAccessPermissionRequired() {
+    return accessPermissionRequired;
   }
 }
