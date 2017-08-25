@@ -14,15 +14,16 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 
 /**
  * The MiscellaneousCommandsController class implements GemFire Management REST API web service
@@ -200,16 +201,14 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
   @RequestMapping(method = RequestMethod.POST, value = "/groups/{groups}/loglevel")
   @ResponseBody
   public String changeLogLevelForGroups(@PathVariable("groups") final String groups,
-      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
-          required = true) final String logLevel) {
+      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL) final String logLevel) {
     return internalChangeLogLevel(groups, null, logLevel);
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/members/{members}/loglevel")
   @ResponseBody
   public String changeLogLevelForMembers(@PathVariable("members") final String members,
-      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL,
-          required = true) final String logLevel) {
+      @RequestParam(value = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL) final String logLevel) {
     return internalChangeLogLevel(null, members, logLevel);
   }
 
