@@ -1304,6 +1304,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       throws TimeoutException, CacheWriterException {
     beginLocalWrite(event);
     try {
+      if (getPartitionedRegion().isParallelWanEnabled()) {
+        handleWANEvent(event);
+      }
       event.setInvokePRCallbacks(true);
       forceSerialized(event);
       return super.basicPutEntry(event, lastModified);
