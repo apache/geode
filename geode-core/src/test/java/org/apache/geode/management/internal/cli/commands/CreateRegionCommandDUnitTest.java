@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
-  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   /**
    * Asserts that the "compressor" option for the "create region" command succeeds for a recognized
@@ -61,9 +61,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
-    vm.invoke(() -> {
-      assertNotNull(getCache());
-    });
+    vm.invoke(() -> assertNotNull(getCache()));
 
     // Run create region command with compression
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
@@ -100,9 +98,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
-    vm.invoke(() -> {
-      assertNotNull(getCache());
-    });
+    vm.invoke(() -> assertNotNull(getCache()));
 
     // Create a region with an unrecognized compressor
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
@@ -130,9 +126,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
     VM vm = Host.getHost(0).getVM(1);
 
     // Create a cache in vm 1
-    vm.invoke(() -> {
-      assertNotNull(getCache());
-    });
+    vm.invoke(() -> assertNotNull(getCache()));
 
     // Create a region with no compression
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
@@ -204,9 +198,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
     VM vm = Host.getHost(0).getVM(1);
     // Create a cache in vm 1
-    vm.invoke(() -> {
-      assertNotNull(getCache());
-    });
+    vm.invoke(() -> assertNotNull(getCache()));
 
     ClassBuilder classBuilder = new ClassBuilder();
     // classBuilder.addToClassPath(".");
@@ -249,9 +241,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
       assertEquals("TestPartitionResolver", partitionResolver.getName());
     });
 
-    vm.invoke(() -> {
-      getCache().getRegion("regionWithPartitionResolver").destroyRegion();
-    });
+    vm.invoke(() -> getCache().getRegion("regionWithPartitionResolver").destroyRegion());
   }
 
   @Test
@@ -259,9 +249,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
     VM vm = Host.getHost(0).getVM(1);
     // Create a cache in vm 1
-    vm.invoke(() -> {
-      assertNotNull(getCache());
-    });
+    vm.invoke(() -> assertNotNull(getCache()));
 
     // Create a region with an unrecognized compressor
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
@@ -288,9 +276,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
     VM vm = Host.getHost(0).getVM(1);
     // Create a cache in vm 1
-    vm.invoke(() -> {
-      assertNotNull(getCache());
-    });
+    vm.invoke(() -> assertNotNull(getCache()));
 
     // Create a region with an unrecognized compressor
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);

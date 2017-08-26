@@ -48,7 +48,7 @@ public class StatusClusterConfigServiceCommand implements GfshCommand {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusSharedConfiguration() {
     final InternalCache cache = GemFireCacheImpl.getInstance();
-    final Set<DistributedMember> locators = new HashSet<DistributedMember>(
+    final Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
     if (locators.isEmpty()) {
       return ResultBuilder.createInfoResult(CliStrings.NO_LOCATORS_WITH_SHARED_CONFIG);

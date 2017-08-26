@@ -111,7 +111,7 @@ public class ListIndexCommandJUnitTest {
     final List<IndexDetails> expectedIndexDetails =
         Arrays.asList(indexDetails1, indexDetails2, indexDetails3);
 
-    final List<Set<IndexDetails>> results = new ArrayList<Set<IndexDetails>>(2);
+    final List<Set<IndexDetails>> results = new ArrayList<>(2);
 
     results.add(CollectionUtils.asSet(indexDetails2, indexDetails1));
     results.add(CollectionUtils.asSet(indexDetails3));
@@ -169,7 +169,7 @@ public class ListIndexCommandJUnitTest {
 
     final List<IndexDetails> expectedIndexDetails = Collections.singletonList(indexDetails);
 
-    final List<Object> results = new ArrayList<Object>(2);
+    final List<Object> results = new ArrayList<>(2);
 
     results.add(CollectionUtils.asSet(indexDetails));
     results.add(new FunctionInvocationTargetException("expected"));

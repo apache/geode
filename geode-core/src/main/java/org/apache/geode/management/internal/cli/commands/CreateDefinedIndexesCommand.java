@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -77,8 +76,6 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      // TODO PSR: is this safe to remove?
-      CacheFactory.getAnyInstance();
       final ResultCollector<?, ?> rc = CliUtil.executeFunction(createDefinedIndexesFunction,
           IndexDefinition.indexDefinitions, targetMembers);
 

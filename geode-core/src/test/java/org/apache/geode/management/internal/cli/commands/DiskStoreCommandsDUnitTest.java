@@ -692,7 +692,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     final String diskStoreName1 = "DiskStore1";
     final String region1 = "Region1";
     final String region2 = "Region2";
-    final Map<String, String> entries = new HashMap<String, String>();
+    final Map<String, String> entries = new HashMap<>();
     entries.put("key1", "value1");
     entries.put("key2", "value2");
 
@@ -1450,7 +1450,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     diskStoreFactory.setAutoCompact(false);
     diskStoreFactory.create(diskStoreName);
 
-    /****
+    /*
      * Eviction Attributes
      */
     EvictionAttributes ea =

@@ -38,9 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -119,29 +117,6 @@ public class ExportStackTraceCommand implements GfshCommand {
           .createGemFireErrorResult(CliStrings.EXPORT_STACKTRACE__ERROR + ex.getMessage());
     }
     return result;
-  }
-
-  // TODO PSR: ExportStackTrace Interceptor appeared to exist, but was not hooked to command and has
-  // a clearly incorrect javadoc.
-  // TODO PSR: It appears it was introduced in 2016-11-26: 903135115a0466d86fa663e965ace3ff47eba6b4,
-  // but never correctly linked to the command.
-  public static class ExportStackTraceInterceptor extends AbstractCliAroundInterceptor {
-    @Override
-    public Result preExecution(GfshParseResult parseResult) {
-
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-      String fileName = paramValueMap.get(CliStrings.EXPORT_STACKTRACE__FILE);
-
-      Response response = readYesNo(
-          CliStrings.format(CliStrings.EXPORT_STACKTRACE_WARN_USER, fileName), Response.YES);
-      if (response == Response.NO) {
-        return ResultBuilder
-            .createShellClientAbortOperationResult(CliStrings.EXPORT_STACKTRACE_MSG_ABORTING);
-      } else {
-        // we don't to show any info result
-        return ResultBuilder.createInfoResult("");
-      }
-    }
   }
 
   /***

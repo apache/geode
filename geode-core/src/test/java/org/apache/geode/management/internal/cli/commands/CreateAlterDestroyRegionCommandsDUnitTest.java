@@ -76,12 +76,11 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 @Category(DistributedTest.class)
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
   private static final long serialVersionUID = 1L;
-  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   private void waitForRegionMBeanCreation(final String regionPath) {
-    Host.getHost(0).getVM(0).invoke(() -> {
-      waitAtMost(5, TimeUnit.SECONDS).until(newRegionMBeanIsCreated(regionPath));
-    });
+    Host.getHost(0).getVM(0)
+        .invoke(() -> waitAtMost(5, TimeUnit.SECONDS).until(newRegionMBeanIsCreated(regionPath)));
   }
 
   private Callable<Boolean> newRegionMBeanIsCreated(final String regionPath) {

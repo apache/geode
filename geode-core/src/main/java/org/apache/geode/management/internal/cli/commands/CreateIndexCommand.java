@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -79,8 +78,6 @@ public class CreateIndexCommand implements GfshCommand {
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     try {
-      // TODO PSR: Is this safe to remove?
-      CacheFactory.getAnyInstance();
       int idxType;
 
       // Index type check

@@ -94,7 +94,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", createdRegion.getName());
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
-              new Object[] {createdRegion.getFullPath(), memberNameOrId})));
+              createdRegion.getFullPath(), memberNameOrId)));
     } catch (IllegalStateException e) {
       String exceptionMsg = e.getMessage();
       String localizedString =
@@ -105,15 +105,13 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
                 new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, null/* do not log */));
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | CreateSubregionException e) {
       resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (RegionExistsException e) {
       String exceptionMsg =
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_PATH_0_ALREADY_EXISTS_ON_1,
               regionCreateArgs.getRegionPath(), memberNameOrId);
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
-    } catch (CreateSubregionException e) {
-      resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (Exception e) {
       String exceptionMsg = e.getMessage();
       if (exceptionMsg == null) {
@@ -370,9 +368,9 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
 
     PartitionAttributes<K, V> partitionAttributes = regionAttributes.getPartitionAttributes();
     if (partitionAttributes != null) {
-      prAttrFactory = new PartitionAttributesFactory<K, V>(partitionAttributes);
+      prAttrFactory = new PartitionAttributesFactory<>(partitionAttributes);
     } else {
-      prAttrFactory = new PartitionAttributesFactory<K, V>();
+      prAttrFactory = new PartitionAttributesFactory<>();
     }
 
     String colocatedWith = partitionArgs.getPrColocatedWith();
@@ -421,9 +419,8 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
 
   private static Class<PartitionResolver> forName(String className, String neededFor) {
     if (StringUtils.isBlank(className)) {
-      throw new IllegalArgumentException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-              new Object[] {className, neededFor}));
+      throw new IllegalArgumentException(CliStrings
+          .format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER, className, neededFor));
     }
     try {
       return (Class<PartitionResolver>) ClassPathLoader.getLatest().forName(className);

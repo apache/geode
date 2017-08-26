@@ -57,13 +57,13 @@ public class BundledJarsJUnitTest {
     TreeMap<String, String> sortedJars = getBundledJars();
     Stream<String> lines =
         sortedJars.entrySet().stream().map(entry -> removeVersion(entry.getKey()));
-    Set<String> bundledJarNames = new TreeSet<String>(lines.collect(Collectors.toSet()));
+    Set<String> bundledJarNames = new TreeSet<>(lines.collect(Collectors.toSet()));
 
     Files.write(Paths.get("bundled_jars.txt"), bundledJarNames);
 
-    TreeSet<String> newJars = new TreeSet<String>(bundledJarNames);
+    TreeSet<String> newJars = new TreeSet<>(bundledJarNames);
     newJars.removeAll(expectedJars);
-    TreeSet<String> missingJars = new TreeSet<String>(expectedJars);
+    TreeSet<String> missingJars = new TreeSet<>(expectedJars);
     missingJars.removeAll(bundledJarNames);
 
     String message =
@@ -89,11 +89,11 @@ public class BundledJarsJUnitTest {
         geodeHomeDirectory.isDirectory());
 
     Collection<File> jars = FileUtils.listFiles(geodeHomeDirectory, new String[] {"jar"}, true);
-    TreeMap<String, String> sortedJars = new TreeMap<String, String>();
+    TreeMap<String, String> sortedJars = new TreeMap<>();
     jars.forEach(jar -> sortedJars.put(jar.getName(), jar.getPath()));
 
     Collection<File> wars = FileUtils.listFiles(geodeHomeDirectory, new String[] {"war"}, true);
-    TreeSet<File> sortedWars = new TreeSet<File>(wars);
+    TreeSet<File> sortedWars = new TreeSet<>(wars);
     sortedWars.stream().flatMap(BundledJarsJUnitTest::extractJarNames)
         .forEach(jar -> sortedJars.put(jar.getName(), jar.getPath()));
 

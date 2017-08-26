@@ -132,7 +132,6 @@ public class ExecuteFunctionCommand implements GfshCommand {
         // if user wish to execute on locator then he can choose --member or --group option
         Set<DistributedMember> dsMembers = CliUtil.getAllNormalMembers(cache);
         if (dsMembers.size() > 0) {
-          new UserFunctionExecution();
           LogWrapper.getInstance().info(CliStrings
               .format(CliStrings.EXECUTE_FUNCTION__MSG__EXECUTING_0_ON_ENTIRE_DS, functionId));
           for (DistributedMember member : dsMembers) {

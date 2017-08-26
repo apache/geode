@@ -48,8 +48,8 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ShutdownCommand implements GfshCommand {
-  private final static String DEFAULT_TIME_OUT = "10";
-  private final static Logger logger = LogService.getLogger();
+  private static final String DEFAULT_TIME_OUT = "10";
+  private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.SHUTDOWN, help = CliStrings.SHUTDOWN__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_LIFECYCLE},
@@ -158,19 +158,15 @@ public class ShutdownCommand implements GfshCommand {
     try {
       final Function shutDownFunction = new ShutDownFunction();
       logger.info("Gfsh executing shutdown on members " + includeMembers);
-      Callable<String> shutdownNodes = new Callable<String>() {
-
-        @Override
-        public String call() {
-          try {
-            Execution execution = FunctionService.onMembers(includeMembers);
-            execution.execute(shutDownFunction);
-          } catch (FunctionException functionEx) {
-            // Expected Exception as the function is shutting down the target members and the result
-            // collector will get member departed exception
-          }
-          return "SUCCESS";
+      Callable<String> shutdownNodes = () -> {
+        try {
+          Execution execution = FunctionService.onMembers(includeMembers);
+          execution.execute(shutDownFunction);
+        } catch (FunctionException functionEx) {
+          // Expected Exception as the function is shutting down the target members and the result
+          // collector will get member departed exception
         }
+        return "SUCCESS";
       };
       Future<String> result = exec.submit(shutdownNodes);
       result.get(timeout, TimeUnit.MILLISECONDS);

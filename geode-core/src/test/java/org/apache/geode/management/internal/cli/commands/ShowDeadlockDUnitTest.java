@@ -57,7 +57,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
- * Distributed tests for show deadlock command in {@link MiscellaneousCommands}.
  *
  * @see GemFireDeadlockDetectorDUnitTest
  */

@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -54,7 +55,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ShowMetricsCommand implements GfshCommand {
-  private final static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.SHOW_METRICS, help = CliStrings.SHOW_METRICS__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_STATISTICS})
@@ -83,7 +84,7 @@ public class ShowMetricsCommand implements GfshCommand {
       }
       if (regionName != null && !regionName.isEmpty()) {
 
-        if (!org.apache.geode.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
+        if (StringUtils.isNotBlank(cacheServerPortString)) {
           return ResultBuilder
               .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
@@ -130,7 +131,7 @@ public class ShowMetricsCommand implements GfshCommand {
           result = ResultBuilder.buildResult(erd);
         }
       } else {
-        if (!org.apache.geode.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
+        if (StringUtils.isNotBlank(cacheServerPortString)) {
           return ResultBuilder
               .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
