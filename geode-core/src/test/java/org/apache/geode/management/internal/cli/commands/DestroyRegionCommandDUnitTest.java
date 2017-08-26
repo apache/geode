@@ -166,9 +166,8 @@ public class DestroyRegionCommandDUnitTest extends CliCommandTestBase {
 
     for (int i = 1; i <= 3; i++) {
       final int x = i;
-      Host.getHost(0).getVM(i).invoke(() -> {
-        assertNull("Region still exists in VM " + x, getCache().getRegion("Customer"));
-      });
+      Host.getHost(0).getVM(i).invoke(
+          () -> assertNull("Region still exists in VM " + x, getCache().getRegion("Customer")));
     }
   }
 
@@ -365,9 +364,8 @@ public class DestroyRegionCommandDUnitTest extends CliCommandTestBase {
   }
 
   private void waitForRegionMBeanCreation(final String regionPath, final int mbeanCount) {
-    Host.getHost(0).getVM(0).invoke(() -> {
-      waitAtMost(5, TimeUnit.SECONDS).until(newRegionMBeanIsCreated(regionPath, mbeanCount));
-    });
+    Host.getHost(0).getVM(0).invoke(() -> waitAtMost(5, TimeUnit.SECONDS)
+        .until(newRegionMBeanIsCreated(regionPath, mbeanCount)));
   }
 
   private Callable<Boolean> newRegionMBeanIsCreated(final String regionPath, final int mbeanCount) {

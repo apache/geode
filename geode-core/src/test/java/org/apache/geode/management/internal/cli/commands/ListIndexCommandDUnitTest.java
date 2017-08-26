@@ -563,7 +563,7 @@ public class ListIndexCommandDUnitTest extends CliCommandTestBase {
     }
   }
 
-  private static abstract class AbstractBean<T extends Comparable<T>>
+  private abstract static class AbstractBean<T extends Comparable<T>>
       implements MutableIdentifiable<T>, Serializable {
 
     private T id;

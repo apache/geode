@@ -29,6 +29,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -54,7 +55,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ShowMetricsCommand implements GfshCommand {
-  private final static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.SHOW_METRICS, help = CliStrings.SHOW_METRICS__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_STATISTICS})
@@ -83,7 +84,7 @@ public class ShowMetricsCommand implements GfshCommand {
       }
       if (regionName != null && !regionName.isEmpty()) {
 
-        if (!org.apache.geode.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
+        if (!StringUtils.isBlank(cacheServerPortString)) {
           return ResultBuilder
               .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
@@ -130,7 +131,7 @@ public class ShowMetricsCommand implements GfshCommand {
           result = ResultBuilder.buildResult(erd);
         }
       } else {
-        if (!org.apache.geode.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
+        if (!StringUtils.isBlank(cacheServerPortString)) {
           return ResultBuilder
               .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }

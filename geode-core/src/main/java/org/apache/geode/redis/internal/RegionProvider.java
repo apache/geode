@@ -81,7 +81,7 @@ public class RegionProvider implements Closeable {
   private final Cache cache;
   private final QueryService queryService;
   private final ConcurrentMap<ByteArrayWrapper, Map<Enum<?>, Query>> preparedQueries =
-      new ConcurrentHashMap<ByteArrayWrapper, Map<Enum<?>, Query>>();
+      new ConcurrentHashMap<>();
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap;
   private final ScheduledExecutorService expirationExecutor;
   private final RegionShortcut defaultRegionType;
@@ -95,7 +95,7 @@ public class RegionProvider implements Closeable {
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null)
       throw new NullPointerException();
-    this.regions = new ConcurrentHashMap<ByteArrayWrapper, Region<?, ?>>();
+    this.regions = new ConcurrentHashMap<>();
     this.stringsRegion = stringsRegion;
     this.hLLRegion = hLLRegion;
     this.redisMetaRegion = redisMetaRegion;
@@ -104,7 +104,7 @@ public class RegionProvider implements Closeable {
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
     this.defaultRegionType = defaultShortcut;
-    this.locks = new ConcurrentHashMap<String, Lock>();
+    this.locks = new ConcurrentHashMap<>();
   }
 
   public boolean existsKey(ByteArrayWrapper key) {
@@ -364,7 +364,7 @@ public class RegionProvider implements Closeable {
     } catch (IndexNameConflictException | IndexExistsException | UnsupportedOperationException e) {
       // ignore, these indexes already exist or unsupported but make sure prepared queries are made
     }
-    HashMap<Enum<?>, Query> queryList = new HashMap<Enum<?>, Query>();
+    HashMap<Enum<?>, Query> queryList = new HashMap<>();
     for (SortedSetQuery lq : SortedSetQuery.values()) {
       String queryString = lq.getQueryString(fullpath);
       Query query = this.queryService.newQuery(queryString);
@@ -374,10 +374,10 @@ public class RegionProvider implements Closeable {
   }
 
   private void doInitializeList(ByteArrayWrapper key, Region r) {
-    r.put("head", Integer.valueOf(0));
-    r.put("tail", Integer.valueOf(0));
+    r.put("head", 0);
+    r.put("tail", 0);
     String fullpath = r.getFullPath();
-    HashMap<Enum<?>, Query> queryList = new HashMap<Enum<?>, Query>();
+    HashMap<Enum<?>, Query> queryList = new HashMap<>();
     for (ListQuery lq : ListQuery.values()) {
       String queryString = lq.getQueryString(fullpath);
       Query query = this.queryService.newQuery(queryString);

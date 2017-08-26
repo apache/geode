@@ -64,7 +64,7 @@ public class AlterRegionCommandDUnitTest extends CliCommandTestBase {
   private VM alterVm2;
   private String alterVm2Name;
 
-  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   @Ignore("bug51924")
   @Test
@@ -135,9 +135,7 @@ public class AlterRegionCommandDUnitTest extends CliCommandTestBase {
     regionAlterSetDefaultsTest();
     regionAlterManipulatePlugInsTest();
 
-    this.alterVm1.invoke(() -> {
-      getCache().getRegion(alterRegionName).destroyRegion();
-    });
+    this.alterVm1.invoke(() -> getCache().getRegion(alterRegionName).destroyRegion());
   }
 
   @Category(FlakyTest.class) // GEODE-3018

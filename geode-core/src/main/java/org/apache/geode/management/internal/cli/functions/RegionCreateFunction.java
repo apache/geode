@@ -105,15 +105,13 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
                 new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, null/* do not log */));
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | CreateSubregionException e) {
       resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (RegionExistsException e) {
       String exceptionMsg =
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_PATH_0_ALREADY_EXISTS_ON_1,
               regionCreateArgs.getRegionPath(), memberNameOrId);
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
-    } catch (CreateSubregionException e) {
-      resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (Exception e) {
       String exceptionMsg = e.getMessage();
       if (exceptionMsg == null) {
@@ -370,9 +368,9 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
 
     PartitionAttributes<K, V> partitionAttributes = regionAttributes.getPartitionAttributes();
     if (partitionAttributes != null) {
-      prAttrFactory = new PartitionAttributesFactory<K, V>(partitionAttributes);
+      prAttrFactory = new PartitionAttributesFactory<>(partitionAttributes);
     } else {
-      prAttrFactory = new PartitionAttributesFactory<K, V>();
+      prAttrFactory = new PartitionAttributesFactory<>();
     }
 
     String colocatedWith = partitionArgs.getPrColocatedWith();
