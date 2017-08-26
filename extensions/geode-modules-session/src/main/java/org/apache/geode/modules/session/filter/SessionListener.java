@@ -22,6 +22,11 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+/**
+ * Listener to destroy gemfire sessions when native sessions are destroyed.
+ *
+ * @deprecated No longer does anything, native sessions are no longer kept around
+ */
 public class SessionListener implements HttpSessionListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(SessionListener.class.getName());
@@ -32,13 +37,6 @@ public class SessionListener implements HttpSessionListener {
    * This will receive events from the container using the native sessions.
    */
   public void sessionDestroyed(HttpSessionEvent event) {
-    String nativeId = event.getSession().getId();
-    try {
-      String sessionId = SessionCachingFilter.getSessionManager().destroyNativeSession(nativeId);
-      LOG.debug("Received sessionDestroyed event for native session {} (wrapped by {})", nativeId,
-          sessionId);
-    } catch (DistributedSystemDisconnectedException dex) {
-      LOG.debug("Cache disconnected - unable to destroy native session {0}", nativeId);
-    }
+    // No op
   }
 }

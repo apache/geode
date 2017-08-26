@@ -33,6 +33,10 @@ import org.apache.http.util.EntityUtils;
 
 import org.apache.geode.modules.session.CommandServlet;
 import org.apache.geode.modules.session.QueryCommand;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.function.Function;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * A simple http client that talks to a server running the session-testing-war.
@@ -110,6 +114,20 @@ public class Client {
     reqURIBuild.setParameter("value", value);
 
     return doRequest(new HttpGet(reqURIBuild.build()), storeRespCookie);
+  }
+
+  /**
+   * Instantiate and execute a function in the server. Note that this function must be present in
+   * the sesssion testing war.
+   */
+  public Response executionFunction(
+      Class<? extends Function<HttpServletRequest, String>> functionClass)
+      throws IOException, URISyntaxException {
+    resetURI();
+    reqURIBuild.setParameter("cmd", QueryCommand.FUNCTION.name());
+    reqURIBuild.setParameter("function", functionClass.getName());
+
+    return doRequest(new HttpGet(reqURIBuild.build()), true);
   }
 
   /**

@@ -69,6 +69,10 @@ public class DeltaEvent implements DataSerializable {
   }
 
   private void blobifyValue() {
+    if (value instanceof byte[]) {
+      // already blobified
+      return;
+    }
     try {
       value = BlobHelper.serializeToBlob(value);
     } catch (IOException iox) {
@@ -92,7 +96,7 @@ public class DeltaEvent implements DataSerializable {
   @Override
   public void toData(DataOutput out) throws IOException {
     if (session != null) {
-      value = session.getNativeSession().getAttribute(name);
+      value = session.getAttribute(name);
       blobifyValue();
     }
     out.writeBoolean(update);

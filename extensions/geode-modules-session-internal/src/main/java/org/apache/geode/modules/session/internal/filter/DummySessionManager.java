@@ -20,6 +20,8 @@ import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessi
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -69,10 +71,10 @@ public class DummySessionManager implements SessionManager {
    * {@inheritDoc}
    */
   @Override
-  public HttpSession wrapSession(HttpSession nativeSession) {
+  public HttpSession wrapSession(ServletContext context, int maxInactiveInterval) {
     String id = generateId();
     AbstractSessionAttributes attributes = new Attributes();
-    GemfireHttpSession session = new GemfireHttpSession(id, nativeSession);
+    GemfireHttpSession session = new GemfireHttpSession(id, context);
     session.setManager(this);
     session.setAttributes(attributes);
     sessions.put(id, session);
@@ -80,13 +82,6 @@ public class DummySessionManager implements SessionManager {
     return session;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public HttpSession getWrappingSession(String nativeId) {
-    return sessions.get(nativeId);
-  }
 
   /**
    * {@inheritDoc}
@@ -103,11 +98,6 @@ public class DummySessionManager implements SessionManager {
   @Override
   public void destroySession(String id) {
     sessions.remove(id);
-  }
-
-  @Override
-  public String destroyNativeSession(String id) {
-    return null;
   }
 
   public String getSessionCookieName() {

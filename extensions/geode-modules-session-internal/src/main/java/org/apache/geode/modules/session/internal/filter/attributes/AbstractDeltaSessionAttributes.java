@@ -87,14 +87,8 @@ public abstract class AbstractDeltaSessionAttributes extends AbstractSessionAttr
     for (DeltaEvent e : localDeltas.values()) {
       if (e.isUpdate()) {
         attributes.put(e.getName(), e.getValue());
-        if (session.getNativeSession() != null) {
-          session.getNativeSession().setAttribute(e.getName(), e.getValue());
-        }
       } else {
         attributes.remove(e.getName());
-        if (session.getNativeSession() != null) {
-          session.getNativeSession().setAttribute(e.getName(), null);
-        }
       }
     }
     jvmOwnerId = in.readUTF();

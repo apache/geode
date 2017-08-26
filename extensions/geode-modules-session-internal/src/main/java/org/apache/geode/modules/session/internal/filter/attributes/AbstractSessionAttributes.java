@@ -16,6 +16,8 @@
 package org.apache.geode.modules.session.internal.filter.attributes;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 
@@ -65,6 +67,8 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
    * The JVM Id who last committed these attributes
    */
   protected String jvmOwnerId;
+
+  protected long creationTime;
 
   /**
    * {@inheritDoc}
@@ -119,6 +123,16 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
   }
 
   @Override
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  @Override
+  public void setCreationTime(long creationTime) {
+    this.creationTime = creationTime;
+  }
+
+  @Override
   public void setLastAccessedTime(long time) {
     lastAccessedTime = time;
   }
@@ -143,6 +157,11 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
    */
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_1_3_0_0(out);
+    out.writeLong(creationTime);
+  }
+
+  public void toDataPre_GEODE_1_3_0_0(DataOutput out) throws IOException {
     out.writeInt(maxInactiveInterval);
     out.writeLong(lastAccessedTime);
 
@@ -159,6 +178,11 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_3_0_0(in);
+    creationTime = in.readLong();
+  }
+
+  private void fromDataPre_GEODE_1_3_0_0(DataInput in) throws IOException, ClassNotFoundException {
     maxInactiveInterval = in.readInt();
     lastAccessedTime = in.readLong();
     int size = in.readInt();

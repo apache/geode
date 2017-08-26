@@ -13,25 +13,19 @@
  * the License.
  */
 
-package org.apache.geode.modules.session.internal.filter;
+package org.apache.geode.modules.session;
 
-import org.apache.geode.modules.session.filter.SessionCachingFilter;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
-
-public class HttpSessionListenerImpl extends AbstractListener implements HttpSessionListener {
-
-  public synchronized void sessionCreated(HttpSessionEvent se) {
-    HttpSession gfeSession = SessionCachingFilter.getWrappingSession(se.getSession());
-    gfeSession.setAttribute("gemfire-session-id", gfeSession.getId());
-    events.add(ListenerEventType.SESSION_CREATED);
-    latch.countDown();
+public class ListenerStoredInSessionContext implements ServletContextListener {
+  @Override
+  public void contextInitialized(final ServletContextEvent sce) {
+    sce.getServletContext().setAttribute(getClass().getName(), this);
   }
 
-  public synchronized void sessionDestroyed(HttpSessionEvent se) {
-    events.add(ListenerEventType.SESSION_DESTROYED);
-    latch.countDown();
+  @Override
+  public void contextDestroyed(final ServletContextEvent sce) {
+
   }
 }

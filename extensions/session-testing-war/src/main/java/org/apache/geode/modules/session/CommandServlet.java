@@ -17,6 +17,7 @@ package org.apache.geode.modules.session;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.function.Function;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -48,37 +49,52 @@ public class CommandServlet extends HttpServlet {
     String value = request.getParameter("value");
     PrintWriter out = response.getWriter();
 
-    String cmdStr = request.getParameter("cmd");
-    if (cmdStr != null) {
-      cmd = QueryCommand.valueOf(cmdStr);
-    }
+    try {
+      String cmdStr = request.getParameter("cmd");
+      if (cmdStr != null) {
+        cmd = QueryCommand.valueOf(cmdStr);
+      }
 
-    HttpSession session;
+      HttpSession session;
 
-    switch (cmd) {
-      case SET:
-        session = request.getSession();
-        session.setAttribute(param, value);
-        break;
-      case SET_MAX_INACTIVE:
-        session = request.getSession();
-        session.setMaxInactiveInterval(Integer.valueOf(value));
-        break;
-      case GET:
-        session = request.getSession();
-        String val = (String) session.getAttribute(param);
-        if (val != null) {
-          out.write(val);
-        }
-        break;
-      case REMOVE:
-        session = request.getSession();
-        session.removeAttribute(param);
-        break;
-      case INVALIDATE:
-        session = request.getSession();
-        session.invalidate();
-        break;
+      switch (cmd) {
+        case SET:
+          session = request.getSession();
+          session.setAttribute(param, value);
+          break;
+        case SET_MAX_INACTIVE:
+          session = request.getSession();
+          session.setMaxInactiveInterval(Integer.valueOf(value));
+          break;
+        case GET:
+          session = request.getSession();
+          String val = (String) session.getAttribute(param);
+          if (val != null) {
+            out.write(val);
+          }
+          break;
+        case REMOVE:
+          session = request.getSession();
+          session.removeAttribute(param);
+          break;
+        case INVALIDATE:
+          session = request.getSession();
+          session.invalidate();
+          break;
+        case FUNCTION:
+          String functionClass = request.getParameter("function");
+          Class<? extends Function> clazz = (Class<? extends Function>) Thread.currentThread()
+              .getContextClassLoader().loadClass(functionClass);
+          Function<HttpServletRequest, String> function = clazz.newInstance();
+          String result = function.apply(request);
+          if (result != null) {
+            out.write(result);
+          }
+          break;
+      }
+    } catch (Exception e) {
+      out.write("Error in servlet: " + e.toString());
+      e.printStackTrace(out);
     }
   }
 

@@ -14,10 +14,17 @@
  */
 package org.apache.geode.modules.session.internal.filter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -29,15 +36,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionAttributeListener;
 
-import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
-import com.mockrunner.mock.web.MockHttpSession;
 import com.mockrunner.servlet.BasicServletTestCaseAdapter;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import org.apache.geode.modules.session.filter.SessionCachingFilter;
 
 /**
  * This servlet tests the effects of the downstream SessionCachingFilter filter. When these tests
@@ -321,59 +327,6 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     } catch (Exception ex) {
       fail("Exception should not be thrown");
     }
-  }
-
-  /**
-   * Test that Session Attribute events get triggered
-   */
-  @Test
-  public void testSessionAttributeListener1() throws Exception {
-    AbstractListener listener = new HttpSessionAttributeListenerImpl();
-    RendezvousManager.registerListener(listener);
-    listener.setLatch(3);
-
-    doFilter();
-
-    // Ugh
-    MockHttpSession session =
-        (MockHttpSession) ((GemfireHttpSession) ((HttpServletRequest) getFilteredRequest())
-            .getSession()).getNativeSession();
-    session.addAttributeListener((HttpSessionAttributeListener) listener);
-    session.setAttribute("foo", "bar");
-    session.setAttribute("foo", "baz");
-    session.setAttribute("foo", null);
-
-    assertTrue("Event timeout", listener.await(1, TimeUnit.SECONDS));
-    assertEquals(ListenerEventType.SESSION_ATTRIBUTE_ADDED, listener.getEvents().get(0));
-    assertEquals(ListenerEventType.SESSION_ATTRIBUTE_REPLACED, listener.getEvents().get(1));
-    assertEquals(ListenerEventType.SESSION_ATTRIBUTE_REMOVED, listener.getEvents().get(2));
-  }
-
-  /**
-   * Test that both replace and remove events get triggered
-   */
-  @Test
-  public void testHttpSessionBindingListener1() throws Exception {
-    doFilter();
-
-    HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
-
-    HttpSessionBindingListenerImpl listener1 = new HttpSessionBindingListenerImpl(2);
-    HttpSessionBindingListenerImpl listener2 = new HttpSessionBindingListenerImpl(2);
-
-    session.setAttribute("foo", listener1);
-    session.setAttribute("foo", listener2);
-    session.setAttribute("foo", null);
-
-    assertTrue("Event timeout", listener1.await(1, TimeUnit.SECONDS));
-    assertTrue("Event timeout", listener2.await(1, TimeUnit.SECONDS));
-
-    assertEquals("Event list size incorrect", 2, listener1.getEvents().size());
-    assertEquals("Event list size incorrect", 2, listener2.getEvents().size());
-    assertEquals(ListenerEventType.SESSION_VALUE_BOUND, listener1.getEvents().get(0));
-    assertEquals(ListenerEventType.SESSION_VALUE_UNBOUND, listener1.getEvents().get(1));
-    assertEquals(ListenerEventType.SESSION_VALUE_BOUND, listener2.getEvents().get(0));
-    assertEquals(ListenerEventType.SESSION_VALUE_UNBOUND, listener2.getEvents().get(1));
   }
 
   @Test
