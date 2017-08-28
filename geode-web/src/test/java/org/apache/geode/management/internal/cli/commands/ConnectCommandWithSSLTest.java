@@ -56,8 +56,6 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
-import javax.net.ssl.HttpsURLConnection;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -155,7 +153,6 @@ public class ConnectCommandWithSSLTest {
   @Before
   public void before() throws Exception {
     locator = lsRule.startLocatorVM(0, sslProperties);
-    HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
     IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Unrecognized SSL message");
     sslConfigFile = temporaryFolder.newFile("ssl.properties");
     out = new FileOutputStream(sslConfigFile);
@@ -197,7 +194,7 @@ public class ConnectCommandWithSSLTest {
     gfsh.disconnect();
 
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
-        "security-properties-file", sslConfigFile.getAbsolutePath());
+        "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
     assertThat(gfsh.isConnected()).isTrue();
   }
 
@@ -245,9 +242,9 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
 
-    // can conect to http
+    // can connect to http
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
-        "security-properties-file", sslConfigFile.getAbsolutePath());
+        "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
     assertThat(gfsh.isConnected()).isTrue();
   }
 
@@ -264,9 +261,9 @@ public class ConnectCommandWithSSLTest {
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 
-    // cannot conect to http
+    // can conect to http
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
-        "security-properties-file", sslConfigFile.getAbsolutePath());
+        "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
     assertThat(gfsh.isConnected()).isTrue();
   }
 
