@@ -15,6 +15,7 @@
 package org.apache.geode.protocol.protobuf;
 
 import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.StreamAuthenticator;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
@@ -64,7 +65,10 @@ public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
   }
 
   @Override
-  public StreamAuthorizer getAuthorizer() {
+  public StreamAuthorizer getAuthorizer() throws AuthenticationRequiredException {
+    if (authorizer == null) {
+      throw new AuthenticationRequiredException("Not yet authenticated");
+    }
     return authorizer;
   }
 

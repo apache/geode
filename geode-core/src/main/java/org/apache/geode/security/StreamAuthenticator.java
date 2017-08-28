@@ -46,10 +46,8 @@ public interface StreamAuthenticator {
   /**
    * Return an authorization object which can be used to determine which permissions this stream has
    * according to the provided securityManager.
-   *
-   * Calling this before authentication has succeeded may result in a null return object.
    */
-  StreamAuthorizer getAuthorizer();
+  StreamAuthorizer getAuthorizer() throws AuthenticationRequiredException;
 
   /**
    * @return a unique identifier for this particular implementation (NOOP, PASSTHROUGH, etc.)
