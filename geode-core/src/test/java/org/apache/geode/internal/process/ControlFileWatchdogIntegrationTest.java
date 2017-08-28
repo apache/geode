@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class ControlFileWatchdogIntegrationTest {
 
-  private static final int TWO_MINUTES_MILLIS = 2 * 60 * 1000;
+  private static final int TEN_MINUTES_MILLIS = 10 * 60 * 1000;
 
   private File directory;
   private String requestFileName;
@@ -145,7 +145,7 @@ public class ControlFileWatchdogIntegrationTest {
     File file = new EmptyFileWriter(requestFile).createNewFile();
 
     // assert
-    verify(requestHandler, timeout(TWO_MINUTES_MILLIS)).handleRequest();
+    verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
     assertThat(file).doesNotExist();
   }
 
@@ -161,7 +161,7 @@ public class ControlFileWatchdogIntegrationTest {
     File file = new EmptyFileWriter(requestFile).createNewFile();
 
     // assert
-    verify(requestHandler, timeout(TWO_MINUTES_MILLIS)).handleRequest();
+    verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
     await().atMost(2, MINUTES).until(() -> assertThat(file).doesNotExist());
     assertThat(file).doesNotExist();
   }
@@ -206,7 +206,7 @@ public class ControlFileWatchdogIntegrationTest {
     File file = new EmptyFileWriter(requestFile).createNewFile();
 
     // assert
-    verify(requestHandler, timeout(TWO_MINUTES_MILLIS)).handleRequest();
+    verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
     await().atMost(2, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
     assertThat(file).doesNotExist();
   }
@@ -223,7 +223,7 @@ public class ControlFileWatchdogIntegrationTest {
     File file = new EmptyFileWriter(requestFile).createNewFile();
 
     // assert
-    verify(requestHandler, timeout(TWO_MINUTES_MILLIS)).handleRequest();
+    verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
     assertThat(watchdog.isAlive()).isTrue();
     assertThat(file).doesNotExist();
   }
