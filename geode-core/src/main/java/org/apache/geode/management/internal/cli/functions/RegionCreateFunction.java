@@ -419,9 +419,8 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
 
   private static Class<PartitionResolver> forName(String className, String neededFor) {
     if (StringUtils.isBlank(className)) {
-      throw new IllegalArgumentException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-              className, neededFor));
+      throw new IllegalArgumentException(CliStrings
+          .format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER, className, neededFor));
     }
     try {
       return (Class<PartitionResolver>) ClassPathLoader.getLatest().forName(className);

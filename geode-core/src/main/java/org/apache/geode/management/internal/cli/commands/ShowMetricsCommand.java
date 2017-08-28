@@ -23,13 +23,13 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -84,7 +84,7 @@ public class ShowMetricsCommand implements GfshCommand {
       }
       if (regionName != null && !regionName.isEmpty()) {
 
-        if (!StringUtils.isBlank(cacheServerPortString)) {
+        if (StringUtils.isNotBlank(cacheServerPortString)) {
           return ResultBuilder
               .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
@@ -131,7 +131,7 @@ public class ShowMetricsCommand implements GfshCommand {
           result = ResultBuilder.buildResult(erd);
         }
       } else {
-        if (!StringUtils.isBlank(cacheServerPortString)) {
+        if (StringUtils.isNotBlank(cacheServerPortString)) {
           return ResultBuilder
               .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
