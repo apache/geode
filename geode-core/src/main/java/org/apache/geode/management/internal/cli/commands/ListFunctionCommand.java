@@ -56,8 +56,6 @@ public class ListFunctionCommand implements GfshCommand {
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
     boolean accumulatedData = false;
 
-    getCache(); // TODO PSR: Can this safely be removed?
-
     Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, members);
 
     if (targetMembers.isEmpty()) {

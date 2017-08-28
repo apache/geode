@@ -79,8 +79,6 @@ public class CreateIndexCommand implements GfshCommand {
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     try {
-      // TODO PSR: Is this safe to remove?
-      CacheFactory.getAnyInstance();
       int idxType;
 
       // Index type check

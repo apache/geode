@@ -77,8 +77,6 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      // TODO PSR: is this safe to remove?
-      CacheFactory.getAnyInstance();
       final ResultCollector<?, ?> rc = CliUtil.executeFunction(createDefinedIndexesFunction,
           IndexDefinition.indexDefinitions, targetMembers);
 
