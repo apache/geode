@@ -156,7 +156,7 @@ public class Gfsh extends JLineShell {
   private Thread runner;
   private boolean debugON;
   private Terminal terminal;
-  private boolean suppressScriptCadOutput;
+  private boolean suppressScriptCmdOutput;
   private boolean isScriptRunning;
   private AbstractSignalNotificationHandler signalHandler;
 
@@ -688,7 +688,7 @@ public class Gfsh extends JLineShell {
             while (commandResult.hasNextLine()) {
               write(commandResult.nextLine(), isError);
             }
-          } else if (!suppressScriptCadOutput) {
+          } else if (!suppressScriptCmdOutput) {
             // Command is part of script. Show output only when quite=false
             while (commandResult.hasNextLine()) {
               write(commandResult.nextLine(), isError);
@@ -888,7 +888,7 @@ public class Gfsh extends JLineShell {
       ScriptExecutionDetails scriptInfo = new ScriptExecutionDetails(scriptFile.getPath());
       if (scriptFile.exists()) {
         setEnvProperty(ENV_APP_QUIET_EXECUTION, String.valueOf(quiet));
-        this.suppressScriptCadOutput = quiet;
+        this.suppressScriptCmdOutput = quiet;
         BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
         String lineRead = "";
         StringBuilder linesBuffer = new StringBuilder();

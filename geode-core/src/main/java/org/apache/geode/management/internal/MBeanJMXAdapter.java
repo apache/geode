@@ -75,8 +75,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
    * public constructor
    */
 
-  public static final int VALUE_NOT_AVAILABLE = -1;
-
   public MBeanJMXAdapter() {
     this.localGemFireMBean = new ConcurrentHashMap<>();
     this.distMember = InternalDistributedSystem.getConnectedInstance().getDistributedMember();

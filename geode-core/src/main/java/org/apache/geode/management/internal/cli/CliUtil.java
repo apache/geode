@@ -210,10 +210,6 @@ public class CliUtil {
     }
   }
 
-  public static boolean isValidFileName(String filePath, String extension) {
-    return true;
-  }
-
   private static InternalCache getInternalCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }

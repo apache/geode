@@ -44,9 +44,9 @@ import org.apache.geode.management.internal.cli.util.JsonUtil;
 
 
 /**
- * Domain object used for Data Commands Functions TODO : Implement DataSerializable
+ * Domain object used for Data Commands Functions
  */
-public class DataCommandResult implements /* Data */ Serializable {
+public class DataCommandResult implements Serializable {
   private static Logger logger = LogManager.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -414,7 +414,6 @@ public class DataCommandResult implements /* Data */ Serializable {
     } else if (isRemove()) {
       toCommandResult_isRemove(section, table);
     }
-    // isSelect() moved to a separate method
     return ResultBuilder.buildResult(data);
   }
 
