@@ -36,7 +36,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -76,28 +92,26 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the
  * disk store commands that are part of Gfsh.
  * </p>
  *
- * @see org.apache.geode.management.internal.cli.commands.DiskStoreCommands
+ * @see org.apache.geode.management.internal.cli.commands.AlterOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.BackupDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.CompactDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.CompactOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.DescribeDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.DescribeOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.DestroyDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.ExportOfflineDiskStoreCommand
+ * @see ListDiskStoresCommand
+ * @see org.apache.geode.management.internal.cli.commands.RevokeMissingDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.ShowMissingDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.UpgradeOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.ValidateDiskStoreCommand
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0
@@ -678,7 +692,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     final String diskStoreName1 = "DiskStore1";
     final String region1 = "Region1";
     final String region2 = "Region2";
-    final Map<String, String> entries = new HashMap<String, String>();
+    final Map<String, String> entries = new HashMap<>();
     entries.put("key1", "value1");
     entries.put("key2", "value2");
 
@@ -1436,7 +1450,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     diskStoreFactory.setAutoCompact(false);
     diskStoreFactory.create(diskStoreName);
 
-    /****
+    /*
      * Eviction Attributes
      */
     EvictionAttributes ea =

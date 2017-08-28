@@ -14,9 +14,6 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,11 +21,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+
 /**
  * The IndexCommandsController class implements the REST API calls for the Gfsh Index commands.
  * </p>
  * 
- * @see org.apache.geode.management.internal.cli.commands.IndexCommands
+ * @see org.apache.geode.management.internal.cli.commands.ClearDefinedIndexesCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateDefinedIndexesCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.DefineIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.DestroyIndexCommand
+ * @see org.apache.geode.management.internal.cli.commands.ListIndexCommand
  * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller

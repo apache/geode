@@ -14,20 +14,22 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+
 /**
  * The PdxCommandsController class implements GemFire Management REST API web service endpoints for
  * Gfsh PDX Commands.
  *
- * @see org.apache.geode.management.internal.cli.commands.PDXCommands
+ * @see org.apache.geode.management.internal.cli.commands.PDXRenameCommand
+ * @see org.apache.geode.management.internal.cli.commands.ConfigurePDXCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestMapping

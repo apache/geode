@@ -123,12 +123,12 @@ public class TestCommand {
     createTestCommand("list clients", clusterRead);
     createTestCommand("describe client --clientID=172.16.196.144", clusterRead);
 
-    // ConfigCommands
+    // AlterRuntimeConfigCommand, DescribeConfigCommand, ExportConfigCommand (config commands)
     createTestCommand("alter runtime", clusterManage);
     createTestCommand("describe config --member=Member1", clusterRead);
     createTestCommand("export config --member=member1", clusterRead);
 
-    // CreateAlterDestroyRegionCommands
+    // CreateRegionCommand, AlterRegionCommand, DestroyRegionCommand
     createTestCommand("alter region --name=RegionA --eviction-max=5000", regionAManage);
     createTestCommand("create region --name=region12 --type=REPLICATE", dataManage);
     createTestCommand("create region --name=region123 --type=PARTITION_PERSISTENT", dataManage,
@@ -171,28 +171,30 @@ public class TestCommand {
     createTestCommand("alter disk-store --name=foo --region=xyz --disk-dirs=bar");
     createTestCommand("destroy disk-store --name=foo", clusterManageDisk);
 
-    // DurableClientCommands
+    // CloseDurableClientCommand, CloseDurableCQsCommand, CountDurableCQEventsCommand,
+    // ListDurableClientCQsCommand
     createTestCommand("close durable-client --durable-client-id=client1", clusterManageQuery);
     createTestCommand("close durable-cq --durable-client-id=client1 --durable-cq-name=cq1",
         clusterManageQuery);
     createTestCommand("show subscription-queue-size --durable-client-id=client1", clusterRead);
     createTestCommand("list durable-cqs --durable-client-id=client1", clusterRead);
 
-    // ExportIMportSharedConfigurationCommands
+    // ExportImportSharedConfigurationCommands
     createTestCommand("export cluster-configuration --zip-file-name=mySharedConfig.zip",
         clusterRead);
     createTestCommand("import cluster-configuration --zip-file-name=value.zip", clusterManage);
 
-    // FunctionCommands
+    // DestroyFunctionCommand, ExecuteFunctionCommand, ListFunctionCommand
     // createTestCommand("destroy function --id=InterestCalculations", dataManage);
     createTestCommand("execute function --id=InterestCalculations --groups=Group1", dataWrite);
     createTestCommand("list functions", clusterRead);
 
-    // GfshHelpCommands
+    // GfshHelpCommand, GfshHintCommand
     createTestCommand("hint");
     createTestCommand("help");
 
-    // IndexCommands
+    // ClearDefinedIndexesCommand, CreateDefinedIndexesCommand, CreateIndexCommand,
+    // DefineIndexCommand, DestroyIndexCommand, ListIndexCommand
     createTestCommand("clear defined indexes", clusterManageQuery);
     createTestCommand("create defined indexes", clusterManageQuery);
     createTestCommand(
@@ -216,7 +218,7 @@ public class TestCommand {
     // createTestCommand("stop locator --name=locator1", clusterManage);
     // createTestCommand("stop server --name=server1", clusterManage);
 
-    // MemberCommands
+    // DescribeMemberCommand, ListMemberCommand
     createTestCommand("describe member --name=server1", clusterRead);
     createTestCommand("list members", clusterRead);
 
@@ -245,11 +247,11 @@ public class TestCommand {
 
     createTestCommand("list async-event-queues", clusterRead);
 
-    // RegionCommands
+    // DescribeRegionCommand, ListRegionCommand
     createTestCommand("describe region --name=value", clusterRead);
     createTestCommand("list regions", clusterRead);
 
-    // StatusCommands
+    // StatusClusterConfigServiceCommand
     createTestCommand("status cluster-config-service", clusterRead);
 
     // Shell Commands

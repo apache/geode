@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +37,7 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
   public void execute(FunctionContext context) {
     String memberId = null;
     List<Index> indexes = null;
-    Cache cache = null;
+    Cache cache;
     try {
       cache = CacheFactory.getAnyInstance();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
