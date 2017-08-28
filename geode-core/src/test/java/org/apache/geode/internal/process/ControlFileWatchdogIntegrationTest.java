@@ -162,7 +162,7 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    await().atMost(2, MINUTES).until(() -> assertThat(file).doesNotExist());
+    await().atMost(10, MINUTES).until(() -> assertThat(file).doesNotExist());
     assertThat(file).doesNotExist();
   }
 
@@ -207,7 +207,7 @@ public class ControlFileWatchdogIntegrationTest {
 
     // assert
     verify(requestHandler, timeout(TEN_MINUTES_MILLIS)).handleRequest();
-    await().atMost(2, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
+    await().atMost(10, MINUTES).until(() -> assertThat(watchdog.isAlive()).isFalse());
     assertThat(file).doesNotExist();
   }
 
