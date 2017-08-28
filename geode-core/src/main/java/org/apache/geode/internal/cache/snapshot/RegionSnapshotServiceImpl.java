@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Serializable;
@@ -59,6 +58,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getLoggerI18n;
+
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Provides an implementation for region snapshots.
@@ -90,12 +91,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
         return new File[] {snapshot};
       }
 
-      return snapshot.listFiles(new FileFilter() {
-        @Override
-        public boolean accept(File pathname) {
-          return !pathname.isDirectory();
-        }
-      });
+      return snapshot.listFiles(pathname -> !pathname.isDirectory());
     }
   };
 
@@ -141,7 +137,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
   @Override
   public SnapshotOptions<K, V> createOptions() {
-    return new SnapshotOptionsImpl<K, V>();
+    return new SnapshotOptionsImpl<>();
   }
 
   @Override
@@ -158,7 +154,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
 
     if (shouldRunInParallel(options)) {
-      snapshotInParallel(new ParallelArgs<K, V>(snapshot, format, options),
+      snapshotInParallel(new ParallelArgs<>(snapshot, format, options),
           new ParallelExportFunction<K, V>());
     } else {
       exportOnMember(snapshot, format, options);
@@ -176,9 +172,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       throws IOException, ClassNotFoundException {
 
     if (shouldRunInParallel(options)) {
-      snapshotInParallel(new ParallelArgs<K, V>(snapshot, format, options),
-          new ParallelImportFunction<K, V>());
-      return;
+      snapshotInParallel(new ParallelArgs<>(snapshot, format, options),
+          new ParallelImportFunction<>());
 
     } else {
       importOnMember(snapshot, format, options);
@@ -241,12 +236,12 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     // Would be interesting to use a PriorityQueue ordered on isDone()
     // but this is probably close enough in practice.
-    LinkedList<Future<?>> puts = new LinkedList<Future<?>>();
+    LinkedList<Future<?>> puts = new LinkedList<>();
     GFSnapshotImporter in = new GFSnapshotImporter(snapshot);
 
     try {
       int bufferSize = 0;
-      Map<K, V> buffer = new HashMap<K, V>();
+      Map<K, V> buffer = new HashMap<>();
 
       SnapshotRecord record;
       while ((record = in.readSnapshotRecord()) != null) {
@@ -286,14 +281,10 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
               puts.removeFirst().get();
             }
 
-            final Map<K, V> copy = new HashMap<K, V>(buffer);
+            final Map<K, V> copy = new HashMap<>(buffer);
             Future<?> f = GemFireCacheImpl.getExisting("Importing region from snapshot")
-                .getDistributionManager().getWaitingThreadPool().submit(new Runnable() {
-                  @Override
-                  public void run() {
-                    local.basicImportPutAll(copy, !options.shouldInvokeCallbacks());
-                  }
-                });
+                .getDistributionManager().getWaitingThreadPool().submit((Runnable) () -> local
+                    .basicImportPutAll(copy, !options.shouldInvokeCallbacks()));
 
             puts.addLast(f);
             buffer.clear();
@@ -400,12 +391,12 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
   static <K, V> Exporter<K, V> createExporter(Region<?, ?> region, SnapshotOptions<K, V> options) {
     String pool = region.getAttributes().getPoolName();
     if (pool != null) {
-      return new ClientExporter<K, V>(PoolManager.find(pool));
+      return new ClientExporter<>(PoolManager.find(pool));
 
     } else if (InternalDistributedSystem.getAnyInstance().isLoner()
         || region.getAttributes().getDataPolicy().equals(DataPolicy.NORMAL)
         || region.getAttributes().getDataPolicy().equals(DataPolicy.PRELOADED)
-        || region instanceof LocalDataSet || (((SnapshotOptionsImpl<K, V>) options).isParallelMode()
+        || region instanceof LocalDataSet || (options.isParallelMode()
             && region.getAttributes().getDataPolicy().withPartitioning())) {
 
       // Avoid function execution:
@@ -413,10 +404,10 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       // for NORMAL/PRELOAD since they don't support fn execution
       // for LocalDataSet since we're already running a fn
       // for parallel ops since we're already running a fn
-      return new LocalExporter<K, V>();
+      return new LocalExporter<>();
     }
 
-    return new WindowedExporter<K, V>();
+    return new WindowedExporter<>();
   }
 
   static LocalRegion getLocalRegion(Region<?, ?> region) {
@@ -566,11 +557,12 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
         if (files != null) {
           for (File f : files) {
-            if (f.isDirectory() || !f.exists()) {
-              throw new IOException(
-                  LocalizedStrings.Snapshot_INVALID_IMPORT_FILE.toLocalizedString(f));
+            if (f.exists()) {
+              local.getSnapshotService().load(f, args.getFormat(), args.getOptions());
+            } else {
+              LogManager.getLogger(RegionSnapshotServiceImpl.class)
+                  .info("Nothing to import as location does not exist: " + f.getAbsolutePath());
             }
-            local.getSnapshotService().load(f, args.getFormat(), args.getOptions());
           }
         }
         context.getResultSender().lastResult(Boolean.TRUE);

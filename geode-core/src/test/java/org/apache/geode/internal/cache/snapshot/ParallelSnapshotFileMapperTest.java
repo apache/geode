@@ -69,9 +69,10 @@ public class ParallelSnapshotFileMapperTest {
   }
 
   @Test
-  public void mapImportPathIsUnsupported() throws Exception {
-    thrown.expect(UnsupportedOperationException.class);
-    mapper.mapImportPath(null, null);
+  public void mapImportReturnsUnchangedPath() {
+    File file = new File(BASE_LOCATION + FILE_TYPE);
+    File[] mappedFiles = mapper.mapImportPath(null, file);
+    assertEquals(file, mappedFiles[0]);
   }
 
   @Test
