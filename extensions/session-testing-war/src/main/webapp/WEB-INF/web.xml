@@ -40,4 +40,12 @@ limitations under the License.
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
 
+  <session-config>
+    <session-timeout>59</session-timeout>
+  </session-config>
+
+  <listener>
+    <listener-class>org.apache.geode.modules.session.SessionCountingListener</listener-class>
+  </listener>
+
 </web-app>

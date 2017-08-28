@@ -75,15 +75,21 @@ public abstract class ContainerInstall {
    * identify XML files or connection types when setting up containers.
    */
   public enum ConnectionType {
-    PEER_TO_PEER("peer-to-peer", "cache-peer.xml"),
-    CLIENT_SERVER("client-server", "cache-client.xml");
+    PEER_TO_PEER("peer-to-peer", "cache-peer.xml", false, false),
+    CLIENT_SERVER("client-server", "cache-client.xml", false, true),
+    CACHING_CLIENT_SERVER("client-server", "cache-client.xml", true, true);
 
     private final String name;
     private final String cacheXMLFileName;
+    private final boolean enableLocalCache;
+    private final boolean isClientServer;
 
-    ConnectionType(String name, String cacheXMLFileName) {
+    ConnectionType(String name, String cacheXMLFileName, boolean enableLocalCache,
+        boolean isClientServer) {
       this.name = name;
       this.cacheXMLFileName = cacheXMLFileName;
+      this.enableLocalCache = enableLocalCache;
+      this.isClientServer = isClientServer;
     }
 
     public String getName() {
@@ -92,6 +98,14 @@ public abstract class ContainerInstall {
 
     public String getCacheXMLFileName() {
       return cacheXMLFileName;
+    }
+
+    public boolean enableLocalCache() {
+      return enableLocalCache;
+    }
+
+    public boolean isClientServer() {
+      return isClientServer;
     }
   }
 
@@ -176,7 +190,7 @@ public abstract class ContainerInstall {
    * which checks for a peer to peer installation (just check if not client server).
    */
   public boolean isClientServer() {
-    return connType == ConnectionType.CLIENT_SERVER;
+    return connType.isClientServer();
   }
 
   /**

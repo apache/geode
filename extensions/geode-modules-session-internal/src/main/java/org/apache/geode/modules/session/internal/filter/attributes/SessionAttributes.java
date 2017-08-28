@@ -112,4 +112,14 @@ public interface SessionAttributes extends DataSerializable {
    * @param jvmId
    */
   public void setJvmOwnerId(String jvmId);
+
+  /**
+   * Return the creation of time of this session in milliseconds
+   */
+  long getCreationTime();
+
+  /**
+   * Set the creation time for these attributes
+   */
+  void setCreationTime(long creationTime);
 }

@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
@@ -46,7 +47,6 @@ import org.apache.geode.modules.session.internal.filter.GemfireSessionManager;
 import org.apache.geode.modules.session.internal.filter.SessionManager;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionAttributes;
-import org.apache.geode.modules.session.internal.filter.util.ThreadLocalSession;
 
 /**
  * Primary class which orchestrates everything. This is the class which gets configured in the
@@ -110,18 +110,21 @@ public class SessionCachingFilter implements Filter {
 
     private HttpServletRequest outerRequest = null;
 
+    private final ServletContext context;
+
     /**
      * Need to save this in case we need the original {@code RequestDispatcher}
      */
     private HttpServletRequest originalRequest;
 
     public RequestWrapper(SessionManager manager, HttpServletRequest request,
-        ResponseWrapper response) {
+        ResponseWrapper response, ServletContext context) {
 
       super(request);
       this.response = response;
       this.manager = manager;
       this.originalRequest = request;
+      this.context = context;
 
       final Cookie[] cookies = request.getCookies();
       if (cookies != null) {
@@ -160,7 +163,6 @@ public class SessionCachingFilter implements Filter {
      */
     @Override
     public HttpSession getSession(boolean create) {
-      super.getSession(false);
       if (session != null && session.isValid()) {
         session.setIsNew(false);
         session.updateAccessTime();
@@ -172,34 +174,22 @@ public class SessionCachingFilter implements Filter {
         if (session != null) {
           session.setIsNew(false);
           // This means we've failed over to another node
-          if (session.getNativeSession() == null) {
-            try {
-              ThreadLocalSession.set(session);
-              HttpSession nativeSession = super.getSession();
-              session.failoverSession(nativeSession);
-              session.putInRegion();
-            } finally {
-              ThreadLocalSession.remove();
-            }
+          if (session.getServletContext() == null) {
+            session.setServletContext(context);
           }
         }
       }
 
       if (session == null || !session.isValid()) {
         if (create) {
+          HttpSession nativeSession = super.getSession();
           try {
-            session = (GemfireHttpSession) manager.wrapSession(null);
-            ThreadLocalSession.set(session);
-            HttpSession nativeSession = super.getSession();
-            if (session.getNativeSession() == null) {
-              session.setNativeSession(nativeSession);
-            } else {
-              assert (session.getNativeSession() == nativeSession);
-            }
+            session = (GemfireHttpSession) manager.wrapSession(context,
+                nativeSession.getMaxInactiveInterval());
             session.setIsNew(true);
             manager.putSession(session);
           } finally {
-            ThreadLocalSession.remove();
+            nativeSession.invalidate();
           }
         } else {
           // create is false, and session is either null or not valid.
@@ -222,31 +212,9 @@ public class SessionCachingFilter implements Filter {
         return;
       }
 
-      // Get the existing cookies
-      Cookie[] cookies = getCookies();
-
       Cookie cookie = new Cookie(manager.getSessionCookieName(), session.getId());
       cookie.setPath("".equals(getContextPath()) ? "/" : getContextPath());
       response.addCookie(cookie);
-    }
-
-    private String getCookieString(Cookie c) {
-      StringBuilder cookie = new StringBuilder();
-      cookie.append(c.getName()).append("=").append(c.getValue());
-
-      if (c.getPath() != null) {
-        cookie.append("; ").append("Path=").append(c.getPath());
-      }
-      if (c.getDomain() != null) {
-        cookie.append("; ").append("Domain=").append(c.getDomain());
-      }
-      if (c.getSecure()) {
-        cookie.append("; ").append("Secure");
-      }
-
-      cookie.append("; HttpOnly");
-
-      return cookie.toString();
     }
 
     /**
@@ -415,7 +383,8 @@ public class SessionCachingFilter implements Filter {
     // include requests.
 
     ResponseWrapper wrappedResponse = new ResponseWrapper(httpResp);
-    final RequestWrapper wrappedRequest = new RequestWrapper(manager, httpReq, wrappedResponse);
+    final RequestWrapper wrappedRequest =
+        new RequestWrapper(manager, httpReq, wrappedResponse, filterConfig.getServletContext());
 
     Throwable problem = null;
 
@@ -615,25 +584,5 @@ public class SessionCachingFilter implements Filter {
    */
   public static SessionManager getSessionManager() {
     return manager;
-  }
-
-  /**
-   * Return the GemFire session which wraps a native session
-   *
-   * @param nativeSession the native session for which the corresponding GemFire session should be
-   *        returned.
-   * @return the GemFire session or null if no session maps to the native session
-   */
-  public static HttpSession getWrappingSession(HttpSession nativeSession) {
-    /*
-     * This is a special case where the GemFire session has been set as a ThreadLocal during session
-     * creation.
-     */
-    GemfireHttpSession gemfireSession = (GemfireHttpSession) ThreadLocalSession.get();
-    if (gemfireSession != null) {
-      gemfireSession.setNativeSession(nativeSession);
-      return gemfireSession;
-    }
-    return getSessionManager().getWrappingSession(nativeSession.getId());
   }
 }

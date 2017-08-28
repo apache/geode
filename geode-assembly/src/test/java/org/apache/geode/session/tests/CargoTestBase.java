@@ -19,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.apache.geode.modules.session.functions.GetMaxInactiveInterval;
+import org.apache.geode.modules.session.functions.GetSessionCount;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -160,6 +162,10 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
 
     client.invalidate();
 
+    verifySessionIsRemoved(key);
+  }
+
+  protected void verifySessionIsRemoved(String key) throws IOException, URISyntaxException {
     getKeyValueDataOnAllClients(key, "", null);
   }
 
@@ -178,12 +184,52 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
 
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    if (!localCacheEnabled()) {
+      getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    }
 
     client.setMaxInactive(1);
     Thread.sleep(5000);
 
-    getKeyValueDataOnAllClients(key, "", null);
+    verifySessionIsRemoved(key);
+  }
+
+  private boolean localCacheEnabled() {
+    return getInstall().getConnectionType().enableLocalCache();
+  }
+
+  /**
+   * Test that if a session is not used within the expiration time, it is expired and removed from
+   * all containers
+   */
+  @Test
+  public void sessionPicksUpSessionTimeoutConfiguredInWebXml()
+      throws IOException, URISyntaxException, InterruptedException {
+    manager.startAllInactiveContainers();
+
+    String key = "value_testSessionExpiration";
+    String value = "Foo";
+
+    client.setPort(Integer.parseInt(manager.getContainerPort(0)));
+    Client.Response resp = client.set(key, value);
+
+    // 59 minutes is the value configured in web.xml
+    verifyMaxInactiveInterval(59 * 60);
+
+    if (!localCacheEnabled()) {
+      client.setMaxInactive(63);
+
+      verifyMaxInactiveInterval(63);
+    }
+
+  }
+
+  protected void verifyMaxInactiveInterval(int expected) throws IOException, URISyntaxException {
+    for (int i = 0; i < manager.numContainers(); i++) {
+      client.setPort(Integer.parseInt(manager.getContainerPort(i)));
+      assertEquals(Integer.toString(expected),
+          client.executionFunction(GetMaxInactiveInterval.class).getResponse());
+    }
   }
 
 
@@ -196,22 +242,28 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
       throws URISyntaxException, IOException, InterruptedException {
     manager.startAllInactiveContainers();
 
-    int timeToExp = 5;
+    int timeToExp = 30;
     String key = "value_testSessionExpiration";
     String value = "Foo";
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
+    String cookie = resp.getSessionCookie();
 
-    client.setMaxInactive(timeToExp);
+    resp = client.setMaxInactive(timeToExp);
+    assertEquals(cookie, resp.getSessionCookie());
 
     long startTime = System.currentTimeMillis();
     long curTime = System.currentTimeMillis();
     // Run for 2 times the set expiration time
     while (curTime - startTime < timeToExp * 2000) {
-      client.get(key);
+      resp = client.get(key);
       Thread.sleep(500);
       curTime = System.currentTimeMillis();
+
+      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
+      assertEquals("Containers are not replicating session expiration reset", value,
+          resp.getResponse());
     }
 
     getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
@@ -230,7 +282,10 @@ public abstract class CargoTestBase extends JUnit4CacheTestCase {
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
 
-    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+
+    if (!localCacheEnabled()) {
+      getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
+    }
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     client.remove(key);

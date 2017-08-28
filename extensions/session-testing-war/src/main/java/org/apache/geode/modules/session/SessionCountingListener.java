@@ -12,25 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.modules.session;
 
-package org.apache.geode.modules.session.internal.filter.util;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
-import javax.servlet.http.HttpSession;
+public class SessionCountingListener extends ListenerStoredInSessionContext
+    implements HttpSessionListener {
+  private final AtomicInteger sessionCreates = new AtomicInteger();
+  private final AtomicInteger sessionDestroys = new AtomicInteger();
 
-/**
- */
-public class ThreadLocalSession {
-  private static ThreadLocal<HttpSession> threadLocal = new ThreadLocal<HttpSession>();
-
-  public static HttpSession get() {
-    return threadLocal.get();
+  @Override
+  public void sessionCreated(final HttpSessionEvent se) {
+    sessionCreates.incrementAndGet();
   }
 
-  public static void set(HttpSession session) {
-    threadLocal.set(session);
+  @Override
+  public void sessionDestroyed(final HttpSessionEvent se) {
+    sessionDestroys.incrementAndGet();
   }
 
-  public static void remove() {
-    threadLocal.remove();
+  public int getSessionCreates() {
+    return sessionCreates.get();
+  }
+
+  public int getSessionDestroys() {
+    return sessionDestroys.get();
   }
 }

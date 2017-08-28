@@ -13,27 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.modules.session.internal.filter;
+package org.apache.geode.modules.session.functions;
 
-import org.apache.geode.modules.session.filter.SessionCachingFilter;
+import java.util.function.Function;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import javax.servlet.http.HttpServletRequest;
 
-public class HttpSessionListenerImpl2 extends AbstractListener implements HttpSessionListener {
+import org.apache.geode.modules.session.SessionCountingListener;
 
+public class GetMaxInactiveInterval implements Function<HttpServletRequest, String> {
   @Override
-  public void sessionCreated(HttpSessionEvent se) {
-    events.add(ListenerEventType.SESSION_CREATED);
-    latch.countDown();
-  }
-
-  @Override
-  public void sessionDestroyed(HttpSessionEvent se) {
-    HttpSession gfeSession = SessionCachingFilter.getWrappingSession(se.getSession());
-    assert (gfeSession != null);
-    events.add(ListenerEventType.SESSION_DESTROYED);
-    latch.countDown();
+  public String apply(final HttpServletRequest request) {
+    return Integer.toString(request.getSession().getMaxInactiveInterval());
   }
 }
