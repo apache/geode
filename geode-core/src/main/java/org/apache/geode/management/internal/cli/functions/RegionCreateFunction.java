@@ -94,7 +94,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
       XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", createdRegion.getName());
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,
-              new Object[] {createdRegion.getFullPath(), memberNameOrId})));
+              createdRegion.getFullPath(), memberNameOrId)));
     } catch (IllegalStateException e) {
       String exceptionMsg = e.getMessage();
       String localizedString =
@@ -421,7 +421,7 @@ public class RegionCreateFunction extends FunctionAdapter implements InternalEnt
     if (StringUtils.isBlank(className)) {
       throw new IllegalArgumentException(
           CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-              new Object[] {className, neededFor}));
+              className, neededFor));
     }
     try {
       return (Class<PartitionResolver>) ClassPathLoader.getLatest().forName(className);

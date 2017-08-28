@@ -204,7 +204,7 @@ public class CreateRegionCommand implements GfshCommand {
         if (!regionExists(cache, useAttributesFrom)) {
           throw new IllegalArgumentException(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
-              new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
+              CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom));
         }
 
         FetchRegionAttributesFunction.FetchRegionAttributesFunctionResult<Object, Object> regionAttributesResult =
@@ -349,7 +349,7 @@ public class CreateRegionCommand implements GfshCommand {
       if (!regionExists(cache, useAttributesFrom)) { // check already done in createRegion !!!
         throw new IllegalArgumentException(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
-            new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
+            CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom));
       }
       if (!regionFunctionArgs.isSetUseAttributesFrom()
           || regionFunctionArgs.getRegionAttributes() == null) {
@@ -374,7 +374,7 @@ public class CreateRegionCommand implements GfshCommand {
         if (foundRegionPath == null) {
           throw new IllegalArgumentException(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
-              new Object[] {CliStrings.CREATE_REGION__COLOCATEDWITH, colocatedWith}));
+              CliStrings.CREATE_REGION__COLOCATEDWITH, colocatedWith));
         }
         ManagementService mgmtService = ManagementService.getExistingManagementService(cache);
         DistributedRegionMXBean distributedRegionMXBean =
@@ -606,7 +606,7 @@ public class CreateRegionCommand implements GfshCommand {
               LogWrapper.getInstance().info(CliUtil.stackTraceAsString((th)));
               throw new IllegalArgumentException(CliStrings.format(
                   CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1,
-                  new Object[] {regionPath, th.getMessage()}));
+                  regionPath, th.getMessage()));
             } else { // has to be RegionAttributes
               @SuppressWarnings("unchecked") // to avoid warning :(
               FetchRegionAttributesFunction.FetchRegionAttributesFunctionResult<K, V> regAttr =
