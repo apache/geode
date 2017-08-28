@@ -12,19 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security;
+package org.apache.geode.security.server;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.security.SecurityManager;
+
 /**
- * An implementation of {@link StreamAuthenticator} that doesn't use its parameters and always
- * returns true.
+ * An implementation of {@link Authenticator} that doesn't use its parameters and always returns
+ * true.
  */
-public class NoOpStreamAuthenticator implements StreamAuthenticator {
+public class NoOpAuthenticator implements Authenticator {
   @Override
-  public void receiveMessage(InputStream inputStream, OutputStream outputStream,
+  public void authenticate(InputStream inputStream, OutputStream outputStream,
       SecurityManager securityManager) throws IOException {
     // this method needs to do nothing as it is a pass-through implementation
   }
@@ -35,8 +37,8 @@ public class NoOpStreamAuthenticator implements StreamAuthenticator {
   }
 
   @Override
-  public StreamAuthorizer getAuthorizer() {
-    return new NoOpStreamAuthorizer();
+  public Authorizer getAuthorizer() {
+    return new NoOpAuthorizer();
   }
 
   @Override

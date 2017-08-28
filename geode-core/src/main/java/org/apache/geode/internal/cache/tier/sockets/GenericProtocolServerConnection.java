@@ -20,7 +20,7 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.StreamAuthenticator;
+import org.apache.geode.security.server.Authenticator;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
   private final ClientProtocolMessageHandler messageHandler;
   private final SecurityManager securityManager;
-  private final StreamAuthenticator authenticator;
+  private final Authenticator authenticator;
 
   /**
    * Creates a new <code>GenericProtocolServerConnection</code> that processes messages received
@@ -44,7 +44,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
   public GenericProtocolServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
       byte communicationMode, Acceptor acceptor, ClientProtocolMessageHandler newClientProtocol,
-      SecurityService securityService, StreamAuthenticator authenticator) {
+      SecurityService securityService, Authenticator authenticator) {
     super(s, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr, communicationMode,
         acceptor, securityService);
     securityManager = securityService.getSecurityManager();
@@ -60,7 +60,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
       OutputStream outputStream = socket.getOutputStream();
 
       if (!authenticator.isAuthenticated()) {
-        authenticator.receiveMessage(inputStream, outputStream, securityManager);
+        authenticator.authenticate(inputStream, outputStream, securityManager);
       } else {
         messageHandler.receiveMessage(inputStream, outputStream,
             new MessageExecutionContext(this.getCache(), authenticator.getAuthorizer()));

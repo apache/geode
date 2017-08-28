@@ -14,19 +14,11 @@
  */
 package org.apache.geode.protocol.protobuf;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Properties;
-
-import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.StreamAuthenticator;
-import org.apache.geode.security.StreamAuthorizer;
+import org.apache.geode.security.server.Authorizer;
 
-public class ProtobufSimpleAuthorizer implements StreamAuthorizer {
+public class ProtobufSimpleAuthorizer implements Authorizer {
   private final Object authenticatedPrincipal;
   private final SecurityManager securityManager;
 
