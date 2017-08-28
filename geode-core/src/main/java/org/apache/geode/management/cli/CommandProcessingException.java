@@ -53,7 +53,6 @@ public class CommandProcessingException extends RuntimeException {
    * Error Type indicating the absence of value for named parameter of a command.
    */
   public static int OPTION_VALUE_REQUIRED = 9;
-  // public static int ARGUMENT_VALUE_REQUIRED = 10;
   /**
    * Error Type indicating IO errors occurred while accessing File/Network resource
    */

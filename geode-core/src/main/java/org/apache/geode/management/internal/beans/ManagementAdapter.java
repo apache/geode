@@ -14,7 +14,24 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
@@ -58,21 +75,6 @@ import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
 
 /**
  * Acts as an intermediate between MBean layer and Federation Layer. Handles all Call backs from
@@ -530,7 +532,7 @@ public class ManagementAdapter {
     }
     AsyncEventQueueMBeanBridge bridge = new AsyncEventQueueMBeanBridge(queue);
     AsyncEventQueueMXBean queueMBean = new AsyncEventQueueMBean(bridge);
-    ObjectName senderObjectName = MBeanJMXAdapter.getAsycnEventQueueMBeanName(
+    ObjectName senderObjectName = MBeanJMXAdapter.getAsyncEventQueueMBeanName(
         internalCache.getDistributedSystem().getDistributedMember(), queue.getId());
 
     ObjectName changedMBeanName = service.registerInternalMBean(queueMBean, senderObjectName);
@@ -553,7 +555,7 @@ public class ManagementAdapter {
       return;
     }
 
-    ObjectName asycnEventQueueMBeanName = MBeanJMXAdapter.getAsycnEventQueueMBeanName(
+    ObjectName asycnEventQueueMBeanName = MBeanJMXAdapter.getAsyncEventQueueMBeanName(
         internalCache.getDistributedSystem().getDistributedMember(), queue.getId());
     AsyncEventQueueMBean bean;
     try {

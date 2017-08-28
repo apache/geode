@@ -94,7 +94,7 @@ public class GemFireProperties {
    * same package.
    * 
    * The peer and server parameters are optional. They specify whether the locator can be used for
-   * peers to discover eachother, or for clients to discover peers. By default both are true.
+   * peers to discover each other, or for clients to discover peers. By default both are true.
    * Default: "" (doesn't start a locator)
    **/
   private String startLocator;
@@ -163,26 +163,6 @@ public class GemFireProperties {
    * file deletion.
    **/
   private int logDiskSpaceLimit;
-  // /**
-  // * If true, all gemfire socket communication is configured to use SSL through
-  // * JSSE.
-  // **/
-  // private boolean sslEnabled;
-  // /**
-  // * A space seperated list of the SSL cipher suites to enable. Those listed
-  // * must be supported by the available providers.
-  // **/
-  // private String sslCiphers;
-  // /**
-  // * A space seperated list of the SSL protocols to enable. Those listed must be
-  // * supported by the available providers.
-  // **/
-  // private String sslProtocols;
-  // /**
-  // * If false, allow ciphers that do not require the client side of the
-  // * connection to be authenticated.
-  // **/
-  // private boolean sslRequireAuthentication;
   /**
    * The number of milliseconds a thread can keep exclusive access to a socket that it is not
    * actively using. Once a thread loses its lease to a socket it will need to re-acquire a socket
@@ -993,26 +973,6 @@ public class GemFireProperties {
 
   }
 
-  // public void setSSLEnabled(boolean sslEnabled) {
-  // this.sslEnabled = sslEnabled;
-  //
-  // }
-  //
-  // public void setSSLCiphers(String sslCiphers) {
-  // this.sslCiphers = sslCiphers;
-  //
-  // }
-  //
-  // public void setSSLProtocols(String sslProtocols) {
-  // this.sslProtocols = sslProtocols;
-  //
-  // }
-  //
-  // public void setSSLRequireAuthentication(boolean sslRequireAuthentication) {
-  // this.sslRequireAuthentication = sslRequireAuthentication;
-  //
-  // }
-
   public void setSocketLeaseTime(int socketLeaseTime) {
     this.socketLeaseTime = socketLeaseTime;
 
@@ -1288,7 +1248,6 @@ public class GemFireProperties {
   }
 
   public void setJmxManagerHttpPort(int jmxManagerHttpPort) {
-    // this.jmxManagerHttpPort = jmxManagerHttpPort;
     setHttpServicePort(jmxManagerHttpPort);
   }
 

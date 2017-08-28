@@ -2536,10 +2536,6 @@ public class CliStrings {
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE = STATISTIC_ARCHIVE_FILE;
   public static final String START_SERVER__STATISTIC_ARCHIVE_FILE__HELP =
       "The file that statistic samples are written to.  An empty string (default) disables statistic archival.";
-  // public static final String START_SERVER__START_LOCATOR = "start-locator";
-  // public static final String START_SERVER__START_LOCATOR__HELP =
-  // "To start embedded Locator with given endpoints in the format: host[port]. If no endpoints are
-  // given defaults (localhost[10334]) are assumed.";
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION = USE_CLUSTER_CONFIGURATION;
   public static final String START_SERVER__USE_CLUSTER_CONFIGURATION__HELP =
       "When set to true, the server requests the configuration from locator's cluster configuration service.";
@@ -2569,15 +2565,6 @@ public class CliStrings {
   public static final String START_SERVER__EVICTION_OFF_HEAP_PERCENTAGE__HELP =
       "Set the percentage of off-heap memory at or above which the eviction should begin on Regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately."
           + " Only one change to this attribute or critical off-heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed.";
-  // cacheServer.setLoadPollInterval(loadPollInterval)
-  // cacheServer.setLoadProbe(loadProbe);
-  // cacheServer.setMaxConnections(maxCons);
-  // cacheServer.setMaximumMessageCount(maxMessageCount);
-  // cacheServer.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
-  // cacheServer.setMaxThreads(maxThreads);
-  // cacheServer.setMessageTimeToLive(messageTimeToLive);
-  // cacheServer.setSocketBufferSize(socketBufferSize)
-  // cacheServer.setTcpNoDelay(noDelay)
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS = "hostname-for-clients";
   public static final String START_SERVER__HOSTNAME__FOR__CLIENTS__HELP =
       "Sets the ip address or host name that this cache server is to listen on for client connections."

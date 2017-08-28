@@ -14,15 +14,15 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
+import java.io.IOException;
+import java.util.Set;
+
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.web.domain.Link;
-import org.apache.geode.management.internal.web.domain.LinkIndex;
-import org.apache.geode.management.internal.web.domain.QueryParameterSource;
-import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,12 +33,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.IOException;
-import java.util.Set;
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.web.domain.Link;
+import org.apache.geode.management.internal.web.domain.LinkIndex;
+import org.apache.geode.management.internal.web.domain.QueryParameterSource;
+import org.apache.geode.management.internal.web.http.HttpMethod;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
@@ -69,7 +71,6 @@ public class ShellCommandsController extends AbstractCommandsController {
     return processCommand(decode(command));
   }
 
-  // TODO research the use of Jolokia instead
   @RequestMapping(method = RequestMethod.GET, value = "/mbean/attribute")
   public ResponseEntity<?> getAttribute(@RequestParam("resourceName") final String resourceName,
       @RequestParam("attributeName") final String attributeName) {
@@ -77,19 +78,16 @@ public class ShellCommandsController extends AbstractCommandsController {
       final Object attributeValue = getMBeanServer()
           .getAttribute(ObjectName.getInstance(decode(resourceName)), decode(attributeName));
 
-      return new ResponseEntity<byte[]>(IOUtils.serializeObject(attributeValue), HttpStatus.OK);
-    } catch (AttributeNotFoundException e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(IOUtils.serializeObject(attributeValue), HttpStatus.OK);
+    } catch (AttributeNotFoundException | MalformedObjectNameException e) {
+      return new ResponseEntity<>(printStackTrace(e), HttpStatus.BAD_REQUEST);
     } catch (InstanceNotFoundException e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.NOT_FOUND);
-    } catch (MalformedObjectNameException e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(printStackTrace(e), HttpStatus.NOT_FOUND);
     } catch (Exception e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  // TODO research the use of Jolokia instead
   @RequestMapping(method = RequestMethod.POST, value = "/mbean/operation")
   public ResponseEntity<?> invoke(@RequestParam("resourceName") final String resourceName,
       @RequestParam("operationName") final String operationName,
@@ -102,13 +100,13 @@ public class ShellCommandsController extends AbstractCommandsController {
       final Object result = getMBeanServer().invoke(ObjectName.getInstance(decode(resourceName)),
           decode(operationName), parameters, signature);
 
-      return new ResponseEntity<byte[]>(IOUtils.serializeObject(result), HttpStatus.OK);
+      return new ResponseEntity<>(IOUtils.serializeObject(result), HttpStatus.OK);
     } catch (InstanceNotFoundException e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(printStackTrace(e), HttpStatus.NOT_FOUND);
     } catch (MalformedObjectNameException e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(printStackTrace(e), HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -118,9 +116,9 @@ public class ShellCommandsController extends AbstractCommandsController {
       final Set<ObjectName> objectNames =
           getMBeanServer().queryNames(query.getObjectName(), query.getQueryExpression());
 
-      return new ResponseEntity<byte[]>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
+      return new ResponseEntity<>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
     } catch (IOException e) {
-      return new ResponseEntity<String>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -135,16 +133,11 @@ public class ShellCommandsController extends AbstractCommandsController {
    * @see org.apache.geode.management.internal.web.domain.LinkIndex
    * @see org.apache.geode.management.internal.web.http.HttpMethod
    */
-  // TODO figure out a better way to maintain this link index, such as using an automated way to
-  // introspect
-  // the Spring Web MVC Controller RequestMapping Annotations.
   @RequestMapping(method = RequestMethod.GET, value = "/index",
       produces = MediaType.APPLICATION_XML_VALUE)
   @ResponseBody
   public LinkIndex index(@RequestParam(value = "scheme", required = false,
       defaultValue = "http") final String scheme) {
-    // logger.warning(String.format("Returning Link Index for Context Path (%1$s).",
-    // ServletUriComponentsBuilder.fromCurrentContextPath().build().toString()));
     return new LinkIndex()
         // Cluster Commands
         .add(new Link(CliStrings.STATUS_SHARED_CONFIG, toUri("/services/cluster-config", scheme)))
@@ -293,7 +286,7 @@ public class ShellCommandsController extends AbstractCommandsController {
 
   @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD}, value = "/ping")
   public ResponseEntity<String> ping() {
-    return new ResponseEntity<String>("<html><body><h1>Mischief Managed!</h1></body></html>",
+    return new ResponseEntity<>("<html><body><h1>Mischief Managed!</h1></body></html>",
         HttpStatus.OK);
   }
 

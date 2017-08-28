@@ -44,9 +44,9 @@ import org.apache.geode.management.internal.cli.util.JsonUtil;
 
 
 /**
- * Domain object used for Data Commands Functions TODO : Implement DataSerializable
+ * Domain object used for Data Commands Functions
  */
-public class DataCommandResult implements /* Data */ Serializable {
+public class DataCommandResult implements Serializable {
   private static Logger logger = LogManager.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -260,7 +260,6 @@ public class DataCommandResult implements /* Data */ Serializable {
     DataCommandResult result = new DataCommandResult();
     result.command = CliStrings.QUERY;
     result.inputQuery = inputQuery;
-    // result.limit = limit;
     result.queryTraceString = queryTraceString;
     result.selectResult = value;
     result.error = error;
@@ -390,7 +389,6 @@ public class DataCommandResult implements /* Data */ Serializable {
     }
 
     if (errorString != null) {
-      // return ResultBuilder.createGemFireErrorResult(errorString);
       CompositeResultData data = ResultBuilder.createCompositeResultData();
       SectionResultData section = data.addSection();
       section.addData("Message", errorString);
@@ -415,8 +413,6 @@ public class DataCommandResult implements /* Data */ Serializable {
       toCommandResult_isPut(section, table);
     } else if (isRemove()) {
       toCommandResult_isRemove(section, table);
-    } else if (isSelect()) {
-      // its moved to its separate method
     }
     return ResultBuilder.buildResult(data);
   }
@@ -457,7 +453,6 @@ public class DataCommandResult implements /* Data */ Serializable {
         if (locations != null) {
           if (locations.size() == 1) {
             Object array[] = locations.get(0);
-            // String regionPath = (String)array[0];
             boolean found = (Boolean) array[1];
             if (found) {
               totalLocations++;
@@ -537,11 +532,10 @@ public class DataCommandResult implements /* Data */ Serializable {
    * This method returns result when flag interactive=false i.e. Command returns result in one go
    * and does not goes through steps waiting for user input. Method returns CompositeResultData
    * instead of Result as Command Step is required to add NEXT_STEP information to guide
-   * executionStragey to route it through final step.
+   * executionStrategy to route it through final step.
    */
   public CompositeResultData toSelectCommandResult() {
     if (errorString != null) {
-      // return ResultBuilder.createGemFireErrorResult(errorString);
       CompositeResultData data = ResultBuilder.createCompositeResultData();
       SectionResultData section = data.addSection();
       section.addData("Message", errorString);
@@ -816,7 +810,6 @@ public class DataCommandResult implements /* Data */ Serializable {
     if (result == null) {// self-transform result from single to aggregate when numMember==1
       if (this.locateEntryResult != null) {
         locateEntryLocations.add(locateEntryResult);
-        // TODO : Decide whether to show value or not this.getResult = locateEntryResult.getValue();
       }
       return;
     }

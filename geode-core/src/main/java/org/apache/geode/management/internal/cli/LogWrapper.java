@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.shell.GfshConfig;
  */
 public class LogWrapper {
   private static Object INSTANCE_LOCK = new Object();
-  private volatile static LogWrapper INSTANCE = null;
+  private static volatile LogWrapper INSTANCE = null;
 
   private Logger logger;
 
@@ -50,7 +50,6 @@ public class LogWrapper {
 
     Cache cache = CliUtil.getCacheIfExists();
     if (cache != null && !cache.isClosed()) {
-      // TODO - Abhishek how to set different log levels for different handlers???
       logger.addHandler(cache.getLogger().getHandler());
       CommandResponseWriterHandler handler = new CommandResponseWriterHandler();
       handler.setFilter(new Filter() {
@@ -86,9 +85,7 @@ public class LogWrapper {
         fileHandler.setLevel(config.getLogLevel());
         logger.addHandler(fileHandler);
         logger.setLevel(config.getLogLevel());
-      } catch (SecurityException e) {
-        addDefaultConsoleHandler(logger, e.getMessage(), config.getLogFilePath());
-      } catch (IOException e) {
+      } catch (SecurityException | IOException e) {
         addDefaultConsoleHandler(logger, e.getMessage(), config.getLogFilePath());
       }
     }
@@ -164,8 +161,7 @@ public class LogWrapper {
     return logger.getLevel();
   }
 
-  // TODO - Abhishek - ideally shouldn't be exposed outside.
-  /* package */ Logger getLogger() {
+  Logger getLogger() {
     return logger;
   }
 
@@ -184,19 +180,6 @@ public class LogWrapper {
       logger.log(Level.SEVERE, message, t);
     }
   }
-
-  // TODO - Abhishek - Check whether we can use GemFireLevel.ERROR
-  // public boolean errorEnabled() {
-  // return severeEnabled();
-  // }
-  //
-  // public void error(String message) {
-  // logger.severe(message);
-  // }
-  //
-  // public void error(String message, Throwable t) {
-  // logger.log(Level.SEVERE, message, t);
-  // }
 
   public boolean warningEnabled() {
     return logger.isLoggable(Level.WARNING);
@@ -298,9 +281,8 @@ public class LogWrapper {
    *
    * @since GemFire 7.0
    */
-  // Formatter code "copied" from LogWriterImpl
   static class GemFireFormatter extends Formatter {
-    private final static String FORMAT = "yyyy/MM/dd HH:mm:ss.SSS z";
+    private static final String FORMAT = "yyyy/MM/dd HH:mm:ss.SSS z";
 
     private SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
 
@@ -350,8 +332,7 @@ public class LogWrapper {
         sw.close();
       } catch (java.io.IOException ignore) {
       }
-      String result = sw.toString();
-      return result;
+      return sw.toString();
     }
 
     private void formatText(PrintWriter writer, String target, int initialLength) {
