@@ -14,6 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.shell.core.annotation.CliCommand;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -31,15 +37,9 @@ import org.apache.geode.management.internal.configuration.domain.SharedConfigura
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.annotation.CliCommand;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-public class StatusCommands implements GfshCommand {
-  static final FetchSharedConfigurationStatusFunction fetchSharedConfigStatusFunction =
+public class StatusClusterConfigServiceCommand implements GfshCommand {
+  private static final FetchSharedConfigurationStatusFunction fetchSharedConfigStatusFunction =
       new FetchSharedConfigurationStatusFunction();
 
   @SuppressWarnings("unchecked")
