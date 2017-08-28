@@ -19,7 +19,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.StreamAuthenticator;
+import org.apache.geode.security.server.Authenticator;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -32,7 +32,7 @@ import java.util.ServiceLoader;
  */
 public class ServerConnectionFactory {
   private ClientProtocolMessageHandler protocolHandler;
-  private Map<String, Class<? extends StreamAuthenticator>> authenticators = null;
+  private Map<String, Class<? extends Authenticator>> authenticators = null;
 
   public ServerConnectionFactory() {}
 
@@ -41,8 +41,8 @@ public class ServerConnectionFactory {
       return;
     }
     authenticators = new HashMap<>();
-    ServiceLoader<StreamAuthenticator> loader = ServiceLoader.load(StreamAuthenticator.class);
-    for (StreamAuthenticator streamAuthenticator : loader) {
+    ServiceLoader<Authenticator> loader = ServiceLoader.load(Authenticator.class);
+    for (Authenticator streamAuthenticator : loader) {
       authenticators.put(streamAuthenticator.implementationID(), streamAuthenticator.getClass());
     }
   }
@@ -57,15 +57,14 @@ public class ServerConnectionFactory {
     return protocolHandler;
   }
 
-  private StreamAuthenticator findStreamAuthenticator(String implementationID) {
+  private Authenticator findStreamAuthenticator(String implementationID) {
     if (authenticators == null) {
       initializeAuthenticatorsMap();
     }
-    Class<? extends StreamAuthenticator> streamAuthenticatorClass =
-        authenticators.get(implementationID);
+    Class<? extends Authenticator> streamAuthenticatorClass = authenticators.get(implementationID);
     if (streamAuthenticatorClass == null) {
       throw new ServiceLoadingFailureException(
-          "Could not find implementation for StreamAuthenticator with implementation ID "
+          "Could not find implementation for Authenticator with implementation ID "
               + implementationID);
     } else {
       try {

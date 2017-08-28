@@ -19,7 +19,6 @@ import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
@@ -77,7 +76,7 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
   public void successfulAuthentication() throws IOException {
     assertFalse(protobufSimpleAuthenticator.isAuthenticated());
 
-    protobufSimpleAuthenticator.receiveMessage(byteArrayInputStream, byteArrayOutputStream,
+    protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityManager);
 
     AuthenticationAPI.SimpleAuthenticationResponse simpleAuthenticationResponse =
@@ -97,7 +96,7 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
     when(mockSecurityManager.authenticate(expectedAuthProperties))
         .thenThrow(new AuthenticationFailedException("BOOM!"));
 
-    protobufSimpleAuthenticator.receiveMessage(byteArrayInputStream, byteArrayOutputStream,
+    protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityManager);
 
     AuthenticationAPI.SimpleAuthenticationResponse simpleAuthenticationResponse =
@@ -111,7 +110,7 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
   public void testExampleSecurityManager() throws IOException {
     assertFalse(protobufSimpleAuthenticator.isAuthenticated());
 
-    protobufSimpleAuthenticator.receiveMessage(byteArrayInputStream, byteArrayOutputStream,
+    protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityManager);
 
     new ExampleSecurityManager().init(expectedAuthProperties);

@@ -23,7 +23,7 @@ import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.security.NoOpStreamAuthorizer;
+import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -76,7 +76,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     Result<RegionAPI.PutAllResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(false, true),
-            new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
+            new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -91,7 +91,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     Result<RegionAPI.PutAllResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(true, true),
-            new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
+            new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
 
     assertTrue(result instanceof Success);
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
@@ -111,7 +111,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     Result<RegionAPI.PutAllResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(false, false),
-            new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
+            new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
 
     assertTrue(result instanceof Success);
 

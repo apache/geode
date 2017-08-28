@@ -195,11 +195,11 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         case 4:
           region.replace(key, value, value);
           break;
-//        case 5:
-//          remove(k,v) can't be included in this test as it checks the old value
-//          against what is in the local cache before sending the operation to the server
-//          region.remove(key, value);
-//          break;
+        // case 5:
+        // remove(k,v) can't be included in this test as it checks the old value
+        // against what is in the local cache before sending the operation to the server
+        // region.remove(key, value);
+        // break;
         default:
           throw new RuntimeException("" + j + " % 5 == " + operation + "?");
       }
@@ -930,7 +930,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   }
 
   private int createServerRegion(VM vm, final String regionName, final boolean replicatedRegion,
-                                 Scope regionScope) {
+      Scope regionScope) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         // TombstoneService.VERBOSE = true;
