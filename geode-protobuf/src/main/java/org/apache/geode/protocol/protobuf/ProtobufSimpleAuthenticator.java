@@ -17,10 +17,10 @@ package org.apache.geode.protocol.protobuf;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.security.AuthenticationRequiredException;
-import org.apache.geode.security.StreamAuthenticator;
+import org.apache.geode.security.server.Authenticator;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.StreamAuthorizer;
+import org.apache.geode.security.server.Authorizer;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -28,12 +28,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
-  private boolean authenticated;
+public class ProtobufSimpleAuthenticator implements Authenticator {
   private ProtobufSimpleAuthorizer authorizer = null;
 
   @Override
-  public void receiveMessage(InputStream inputStream, OutputStream outputStream,
+  public void authenticate(InputStream inputStream, OutputStream outputStream,
       SecurityManager securityManager) throws IOException {
     AuthenticationAPI.SimpleAuthenticationRequest authenticationRequest =
         AuthenticationAPI.SimpleAuthenticationRequest.parseDelimitedFrom(inputStream);
@@ -66,7 +65,7 @@ public class ProtobufSimpleAuthenticator implements StreamAuthenticator {
   }
 
   @Override
-  public StreamAuthorizer getAuthorizer() throws AuthenticationRequiredException {
+  public Authorizer getAuthorizer() throws AuthenticationRequiredException {
     if (authorizer == null) {
       throw new AuthenticationRequiredException("Not yet authenticated");
     }

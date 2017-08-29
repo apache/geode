@@ -18,16 +18,16 @@ package org.apache.geode.internal.cache.tier.sockets;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.security.NoOpStreamAuthorizer;
-import org.apache.geode.security.StreamAuthorizer;
+import org.apache.geode.security.server.NoOpAuthorizer;
+import org.apache.geode.security.server.Authorizer;
 
 @Experimental
 public class MessageExecutionContext {
   private Cache cache;
   private InternalLocator locator;
-  private StreamAuthorizer authorizer;
+  private Authorizer authorizer;
 
-  public MessageExecutionContext(Cache cache, StreamAuthorizer streamAuthorizer) {
+  public MessageExecutionContext(Cache cache, Authorizer streamAuthorizer) {
     this.cache = cache;
     this.authorizer = streamAuthorizer;
   }
@@ -36,7 +36,7 @@ public class MessageExecutionContext {
     this.locator = locator;
     // set a no-op authorizer until such time as locators implement authentication
     // and authorization checks
-    this.authorizer = new NoOpStreamAuthorizer();
+    this.authorizer = new NoOpAuthorizer();
   }
 
   /**
@@ -68,10 +68,10 @@ public class MessageExecutionContext {
   }
 
   /**
-   * Returns the StreamAuthorizer associated with this execution. This can be used to perform
+   * Returns the Authorizer associated with this execution. This can be used to perform
    * authorization checks for the user associated with this thread.
    */
-  public StreamAuthorizer getAuthorizer() {
+  public Authorizer getAuthorizer() {
     return authorizer;
   }
 }

@@ -28,7 +28,7 @@ import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
-import org.apache.geode.security.NoOpStreamAuthorizer;
+import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -77,7 +77,7 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
 
     Result<RegionAPI.GetRegionResponse> result = operationHandler.process(serializationServiceStub,
         MessageUtil.makeGetRegionRequest(TEST_REGION1),
-        new MessageExecutionContext(cacheStub, new NoOpStreamAuthorizer()));
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
     RegionAPI.GetRegionResponse response = result.getMessage();
     BasicTypes.Region region = response.getRegion();
     Assert.assertEquals(TEST_REGION1, region.getName());
@@ -103,7 +103,7 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
     String unknownRegionName = "UNKNOWN_REGION";
     Result<RegionAPI.GetRegionResponse> result = operationHandler.process(serializationServiceStub,
         MessageUtil.makeGetRegionRequest(unknownRegionName),
-        new MessageExecutionContext(emptyCache, new NoOpStreamAuthorizer()));
+        new MessageExecutionContext(emptyCache, new NoOpAuthorizer()));
     Assert.assertTrue(result instanceof Failure);
     Assert.assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
         result.getErrorMessage().getError().getErrorCode());

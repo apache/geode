@@ -12,13 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security;
+package org.apache.geode.security.server;
+
+import org.apache.geode.security.ResourcePermission;
 
 /**
- * An implementation of {@link StreamAuthorizer} that doesn't use its parameters and always returns
- * true.
+ * An implementation of {@link Authorizer} that doesn't use its parameters and always returns true.
  */
-public class NoOpStreamAuthorizer implements StreamAuthorizer {
+public class NoOpAuthorizer implements Authorizer {
   @Override
   public boolean authorize(ResourcePermission permissionRequested) {
     return true;
