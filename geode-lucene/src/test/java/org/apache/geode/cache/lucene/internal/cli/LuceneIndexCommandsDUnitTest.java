@@ -64,8 +64,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
+@SuppressWarnings("serial")
 public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
-
 
   @Before
   public void createJMXManager() {

@@ -14,6 +14,22 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Properties;
+
+import javax.management.ObjectName;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -21,34 +37,28 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.management.*;
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import javax.management.ObjectName;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Properties;
-
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1764 GEODE-3530
+@SuppressWarnings("serial")
 public class ShowMetricsDUnitTest extends CliCommandTestBase {
-
-  private static final long serialVersionUID = 1L;
 
   private void createLocalSetUp() {
     Properties localProps = new Properties();
@@ -220,8 +230,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     return waitCriterion;
   }
 
-  @Category(FlakyTest.class) // GEODE-1764
-  @Test
+  @Test // FlakyTest: GEODE-1764
   public void testShowMetricsMember()
       throws ClassNotFoundException, IOException, InterruptedException {
     systemSetUp();

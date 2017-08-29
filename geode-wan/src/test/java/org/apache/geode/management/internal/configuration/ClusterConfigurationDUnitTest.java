@@ -39,6 +39,17 @@ import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -68,18 +79,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1333 GEODE-1334 GEODE-3530
+@SuppressWarnings("serial")
 public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   private static final int TIMEOUT = 10000;
@@ -113,8 +115,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
    * 
    * @since GemFire 8.1
    */
-  @Category(FlakyTest.class) // GEODE-1334
-  @Test
+  @Test // FlakyTest: GEODE-1334
   public void testCreateExtensions() throws Exception {
     Object[] result = setup();
     final int locatorPort = (Integer) result[0];
@@ -184,8 +185,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
    * 
    * @since GemFire 8.1
    */
-  @Category(FlakyTest.class) // GEODE-1333
-  @Test
+  @Test // FlakyTest: GEODE-1333
   public void testDestroyExtensions() throws Exception {
     Object[] result = setup();
     final int locatorPort = (Integer) result[0];

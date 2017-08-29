@@ -116,14 +116,13 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1206 GEODE-1406 GEODE-2102 GEODE-3530
 @SuppressWarnings("serial")
 public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
-  @Category(FlakyTest.class) // GEODE-2102
-  @Test
+  @Test // FlakyTest: GEODE-2102
   public void testMissingDiskStore() {
     final String regionName = "testShowMissingDiskStoreRegion";
 
@@ -738,8 +737,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying disk stores correctly updates the shared configuration.
    */
-  @Category(FlakyTest.class) // GEODE-1406
-  @Test
+  @Test // FlakyTest: GEODE-1406
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -1143,8 +1141,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(true, resultAsString.contains(vm1Name));
   }
 
-  @Category(FlakyTest.class) // GEODE-1206: random ports, BindException
-  @Test
+  @Test // FlakyTest: GEODE-1206
   public void testCreateDiskStore() {
     final String diskStore1Name = "testCreateDiskStore1";
     final String diskStore2Name = "testCreateDiskStore2";

@@ -68,16 +68,15 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-908 GEODE-3530
+@SuppressWarnings("serial")
 public class ListClientCommandDUnitTest extends CliCommandTestBase {
 
-  private static final long serialVersionUID = 1L;
   private final String regionName = "stocks";
   private int port0 = 0;
   private int port1 = 0;
 
-  @Category(FlakyTest.class) // GEODE-908: random ports, BindException, time sensitive, HeadlessGfsh
-  @Test
+  @Test // FlakyTest: GEODE-908
   public void testListClient() throws Exception {
     setupSystemForListClient();
 

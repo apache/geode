@@ -14,13 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.ClassRule;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 
-@Category(DistributedTest.class)
-@SuppressWarnings("deprecated")
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@SuppressWarnings("serial")
 public class RebalanceCommandOverHttpDistributedTest extends RebalanceCommandDistributedTest {
 
   @ClassRule

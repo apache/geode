@@ -73,9 +73,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-973 GEODE-2009 GEODE-3530
+@SuppressWarnings("serial")
 public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBase {
-  private static final long serialVersionUID = 1L;
+
   private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   private void waitForRegionMBeanCreation(final String regionPath) {
@@ -103,8 +104,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
    * Asserts that creating, altering and destroying regions correctly updates the shared
    * configuration.
    */
-  @Category(FlakyTest.class) // GEODE-2009
-  @Test
+  @Test // FlakyTest: GEODE-2009
   public void testCreateAlterDestroyUpdatesSharedConfig() throws Exception {
     disconnectAllFromDS();
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);

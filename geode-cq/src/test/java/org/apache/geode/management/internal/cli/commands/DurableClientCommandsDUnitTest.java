@@ -59,7 +59,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1705, GEODE-3404, GEODE-3359
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1705 GEODE-3404 GEODE-3359 GEODE-3530
+@SuppressWarnings("serial")
 public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
 
   private static final String REGION_NAME = "stocks";

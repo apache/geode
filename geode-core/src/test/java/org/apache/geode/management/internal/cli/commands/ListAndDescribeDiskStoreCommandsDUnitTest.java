@@ -40,6 +40,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases
@@ -52,7 +53,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@SuppressWarnings("serial")
 public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   @Override

@@ -51,6 +51,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
@@ -84,7 +85,9 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * The LauncherLifecycleCommandsDUnitTest class is a test suite of integration tests testing the
@@ -101,9 +104,13 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@SuppressWarnings("serial")
 public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   protected static final DateFormat TIMESTAMP = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 

@@ -66,10 +66,11 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 /**
  * DUnit class for testing gemfire function commands : GC, Shutdown
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1034 GEODE-1385 GEODE-1518 GEODE-1605
+                                                    // GEODE-1706 GEODE-2126 GEODE-3530
+@SuppressWarnings("serial")
 public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
 
-  private static final long serialVersionUID = 1L;
   private static String cachedLogLevel;
 
   @Override
@@ -84,9 +85,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-1034: random ports, GC sensitive, memory sensitive,
-                             // HeadlessGFSH
-  @Test
+  @Test // FlakyTest: GEODE-1034
   public void testGCForGroup() {
     Properties localProps = new Properties();
     localProps.setProperty(NAME, "Manager");
@@ -155,8 +154,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-2126
-  @Test
+  @Test // FlakyTest: GEODE-2126
   public void testShowLogNumLines() {
     Properties props = new Properties();
     props.setProperty(LOG_FILE, "testShowLogNumLines.log");
@@ -231,8 +229,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-1706
-  @Test
+  @Test // FlakyTest: GEODE-1706
   public void testShutDownWithoutTimeout() {
 
     addIgnoredException("EntryDestroyedException");
@@ -302,8 +299,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(defaultShell.isConnectedAndReady());
   }
 
-  @Category(FlakyTest.class) // GEODE-1385, 1518: time sensitive, HeadlessGfsh
-  @Test
+  @Test // FlakyTest: GEODE-1385 GEODE-1518
   public void testShutDownForTIMEOUT() {
     setupForShutDown();
     ThreadUtils.sleep(2500);
@@ -410,8 +406,7 @@ public class MiscellaneousCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(Boolean.FALSE.equals(vm0.invoke(connectedChecker)));
   }
 
-  @Category(FlakyTest.class) // GEODE-1605
-  @Test
+  @Test // FlakyTest: GEODE-1605
   public void testChangeLogLevelForMembers() {
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);

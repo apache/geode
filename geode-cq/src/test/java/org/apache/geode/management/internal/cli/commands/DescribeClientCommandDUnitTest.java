@@ -75,10 +75,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-910 GEODE-3530
+@SuppressWarnings("serial")
 public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
 
-  private static final long serialVersionUID = 1L;
   private final String regionName = "stocks";
   private final String cq1 = "cq1";
   private final String cq2 = "cq2";
@@ -283,8 +283,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
     ClientCommandsTestUtils.closeCacheServer(Host.getHost(0).getVM(1));
   }
 
-  @Category(FlakyTest.class) // GEODE-910: random ports, HeadlessGfsh
-  @Test
+  @Test // FlakyTest: GEODE-910
   public void testDescribeClientForNonSubscribedClient() throws Exception {
     setUpNonSubscribedClient();
 

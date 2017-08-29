@@ -14,6 +14,18 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
@@ -29,19 +41,10 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-989 GEODE-3530
+@SuppressWarnings("serial")
 public class ShellCommandsDUnitTest extends CliCommandTestBase {
-
-  private static final long serialVersionUID = 1L;
 
   @Override
   public final void postSetUpCliCommandTestBase() throws Exception {
@@ -53,9 +56,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
         .addOption(CliStrings.CONNECT__LOCATOR, "localhost[" + locatorPort + "]").toString());
   }
 
-  @Category(FlakyTest.class) // GEODE-989: random ports, suspect string: DiskAccessException, disk
-                             // pollution, HeadlessGfsh, time sensitive
-  @Test
+  @Test // FlakyTest: GEODE-989
   public void testConnectToLocatorBecomesManager() {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 

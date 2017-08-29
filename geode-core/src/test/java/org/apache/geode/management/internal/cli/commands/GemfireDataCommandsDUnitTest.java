@@ -15,11 +15,17 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-import static org.apache.geode.test.dunit.Wait.*;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNotSame;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,7 +97,9 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1182 GEODE-1249 GEODE-1404 GEODE-1430
+                                                    // GEODE-1487 GEODE-1496 GEODE-1561 GEODE-1822
+                                                    // GEODE-2006 GEODE-3530
 @SuppressWarnings("serial")
 public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
@@ -577,8 +585,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     validateResult(cmdResult, true);
   }
 
-  @Category(FlakyTest.class) // GEODE-2006
-  @Test
+  @Test // FlakyTest: GEODE-2006
   public void testSelectCommand() {
     setupForSelect();
     doTestGetRegionAssociatedMembersForSelect();
@@ -984,8 +991,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
   }
 
-  @Test
-  @Category(FlakyTest.class) // GEODE-1249
+  @Test // FlakyTest: GEODE-1249
   public void testSimplePutIfAbsentCommand() {
     final String keyPrefix = "testKey";
     final String valuePrefix = "testValue";
@@ -1047,8 +1053,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(checkPutIfAbsentKeys);
   }
 
-  @Category(FlakyTest.class) // GEODE-1496 (http)
-  @Test
+  @Test // FlakyTest: GEODE-1496 (http)
   public void testSimpleRemoveCommand() {
     final String keyPrefix = "testKey";
     final String valuePrefix = "testValue";
@@ -1283,8 +1288,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1822
-  @Test
+  @Test // FlakyTest: GEODE-1822
   public void testGetLocateEntryLocationsForPR() {
     final String keyPrefix = "testKey";
     final String valuePrefix = "testValue";
@@ -1380,9 +1384,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(checkPutKeysInVM2);
   }
 
-  @Category(FlakyTest.class) // GEODE-1182: random ports, BindException, HeadlessGFSH,
-                             // waitForCriterion, time sensitive
-  @Test
+  @Test // FlakyTest: GEODE-1182
   public void testGetLocateEntryJsonKeys() {
     final String keyPrefix = "testKey";
 
@@ -1507,8 +1509,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1430
-  @Test
+  @Test // FlakyTest: GEODE-1430
   public void testPutJsonKeys() {
     final String keyPrefix = "testKey";
 
@@ -1718,8 +1719,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
-  @Category(FlakyTest.class) // GEODE-1404
-  @Test
+  @Test // FlakyTest: GEODE-1404
   public void testImportExportData() throws InterruptedException, IOException {
     final String regionName = "Region1";
     final String exportFileName = "export.gfd";
@@ -2099,8 +2099,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1561
-  @Test
+  @Test // FlakyTest: GEODE-1561
   public void testSimulateForEntireDS() {
     setupTestRebalanceForEntireDS();
     // check if DistributedRegionMXBean is available so that command will not fail
@@ -2148,8 +2147,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1487
-  @Test
+  @Test // FlakyTest: GEODE-1487
   public void testRebalanceForEntireDS() {
     setupTestRebalanceForEntireDS();
     // check if DistributedRegionMXBean is available so that command will not fail

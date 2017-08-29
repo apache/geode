@@ -14,10 +14,29 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.*;
-import static org.apache.geode.util.test.TestUtil.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__KEY_STORE;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__KEY_STORE_PASSWORD;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__SSL_CIPHERS;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__SSL_PROTOCOLS;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__TRUST_STORE;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__TRUST_STORE_PASSWORD;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__URL;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__USE_HTTP;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CONNECT__USE_SSL;
+import static org.apache.geode.util.test.TestUtil.getResourcePath;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Arrays;
@@ -38,15 +57,17 @@ import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * @since GemFire 8.1
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({DistributedTest.class, SecurityTest.class, FlakyTest.class}) // GEODE-3530
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@SuppressWarnings("serial")
 public class ConnectCommandWithHttpAndSSLDUnitTest extends CliCommandTestBase {
 
   private static final ThreadLocal<Properties> sslInfoHolder = new ThreadLocal<>();

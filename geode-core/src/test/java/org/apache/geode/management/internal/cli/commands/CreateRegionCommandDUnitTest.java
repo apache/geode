@@ -47,8 +47,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-973 GEODE-3530
+@SuppressWarnings("serial")
 public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
+
   private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   /**
@@ -149,9 +151,7 @@ public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
     assertEquals(Result.Status.OK, cmdResult.getStatus());
   }
 
-  @Category(FlakyTest.class) // GEODE-973: random ports, BindException,
-  // java.rmi.server.ExportException: Port already in use
-  @Test
+  @Test // FlakyTest: GEODE-973
   public void testCreateRegion46391() throws IOException {
     setUpJmxManagerOnVm0ThenConnect(null); // GEODE-973: getRandomAvailablePort
     String region46391 = "region46391";

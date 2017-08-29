@@ -58,6 +58,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * The ListIndexCommandDUnitTest class is distributed test suite of test cases for testing the
@@ -72,8 +73,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * @see org.apache.geode.management.internal.cli.commands.ListIndexCommand
  * @since GemFire 7.0
  */
-@SuppressWarnings("unused")
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@SuppressWarnings("serial")
 public class ListIndexCommandDUnitTest extends CliCommandTestBase {
 
   private static final int DEFAULT_REGION_INITIAL_CAPACITY = 10000;
