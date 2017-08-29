@@ -23,6 +23,7 @@ dependencies {
   compile 'commons-io:commons-io:' + project.'commons-io.version'
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile 'com.google.guava:guava:' + project.'guava.version'
+  compile 'org.awaitility:awaitility:' + project.'awaitility.version'
 
 
   compile('junit:junit:' + project.'junit.version') {

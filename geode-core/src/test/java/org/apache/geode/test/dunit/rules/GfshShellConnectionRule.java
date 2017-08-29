@@ -223,8 +223,13 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   }
 
 
-  public CommandResult executeAndVerifyCommand(String command) throws Exception {
-    CommandResult result = executeCommand(command);
+  public CommandResult executeAndVerifyCommand(String command) {
+    CommandResult result = null;
+    try {
+      result = executeCommand(command);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     assertThat(result.getStatus())
         .describedAs("Failure in command: " + command + "\n Result " + result)
         .isEqualTo(Result.Status.OK);

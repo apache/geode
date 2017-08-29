@@ -14,203 +14,138 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache30.CacheTestCase;
-import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetectorDUnitTest;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.management.cli.CommandStatement;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.remote.CommandProcessor;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.concurrent.FileBasedCountDownLatch;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
- *
+ * Distributed tests for show deadlock command in {@link ShowDeadlockCommand}.
+ * 
  * @see GemFireDeadlockDetectorDUnitTest
  */
 @Category(DistributedTest.class)
-public class ShowDeadlockDUnitTest extends CacheTestCase {
+public class ShowDeadlockDUnitTest {
+  private static Thread stuckThread = null;
+  private static final Lock LOCK = new ReentrantLock();
 
-  private static final Set<Thread> stuckThreads =
-      Collections.synchronizedSet(new HashSet<Thread>());
+  private MemberVM server1;
+  private MemberVM server2;
 
-  private static final Lock lock = new ReentrantLock();
-
-  private transient VM vm0;
-  private transient VM vm1;
-
-  private transient InternalDistributedMember member0;
-  private transient InternalDistributedMember member1;
+  private File outputFile;
+  private String showDeadlockCommand;
 
   @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
   @Before
-  public void setup() {
-    Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
+  public void setup() throws Exception {
+    outputFile = new File(temporaryFolder.getRoot(), "dependency.txt").getAbsoluteFile();
+    showDeadlockCommand = "show dead-locks --file=" + outputFile.getAbsolutePath();
+    outputFile.delete();
 
-    // Make sure a deadlock from a previous test is cleared.
-    disconnectAllFromDS();
+    MemberVM locator = lsRule.startLocatorVM(0);
+    server1 = lsRule.startServerVM(1, locator.getPort());
+    server2 = lsRule.startServerVM(2, locator.getPort());
 
-    member0 = createCache(vm0);
-    member1 = createCache(vm1);
-
-    createCache(new Properties());
+    gfsh.connect(locator);
   }
 
   @After
-  public void teardown() {
-    disconnectAllFromDS();
-  }
-
-  @Override
-  public final void preTearDownCacheTestCase() throws Exception {
-    invokeInEveryVM(() -> stuckThreads.forEach(Thread::interrupt));
+  public final void after() throws Exception {
+    server1.invoke(() -> stuckThread.interrupt());
+    server2.invoke(() -> stuckThread.interrupt());
   }
 
   @Test
   public void testNoDeadlock() throws Exception {
-    GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
-    assertEquals(null, detect.find().findCycle());
+    gfsh.executeAndVerifyCommand(showDeadlockCommand);
+    String commandOutput = gfsh.getGfshOutput();
 
-    File outputFile = new File(temporaryFolder.getRoot(), "dependency.txt");
-
-    String showDeadlockCommand = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK)
-        .addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, outputFile.getName()).toString();
-
-    Result result = new CommandProcessor()
-        .createCommandStatement(showDeadlockCommand, Collections.emptyMap()).process();
-    String commandOutput = getResultAsString(result);
-
-    assertEquals(true, result.hasIncomingFiles());
-    assertEquals(true, result.getStatus().equals(Status.OK));
-    assertEquals(true, commandOutput.startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK));
-    result.saveIncomingFiles(temporaryFolder.getRoot().getAbsolutePath());
-    assertTrue(outputFile.exists());
+    assertThat(commandOutput).startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK);
+    assertThat(outputFile).exists();
   }
 
   @Test
   public void testDistributedDeadlockWithFunction() throws Exception {
-    // Have two threads lock locks on different members in different orders.
-    // This thread locks the lock member0 first, then member1.
-    lockTheLocks(vm0, member1);
-    // This thread locks the lock member1 first, then member0.
-    lockTheLocks(vm1, member0);
+    FileBasedCountDownLatch countDownLatch = new FileBasedCountDownLatch(2);
 
-    File outputFile = new File(temporaryFolder.getRoot(), "dependency.txt");
+    // This thread locks the lock in server1 first, then server2.
+    lockTheLocks(server1, server2, countDownLatch);
+    // This thread locks the lock server2 first, then server1.
+    lockTheLocks(server2, server1, countDownLatch);
 
-    String showDeadlockCommand = new CommandStringBuilder(CliStrings.SHOW_DEADLOCK)
-        .addOption(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE, outputFile.getName()).toString();
-    CommandStatement showDeadlocksCommand =
-        new CommandProcessor().createCommandStatement(showDeadlockCommand, Collections.emptyMap());
-
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
-      FileUtils.deleteQuietly(outputFile);
-      Result result = showDeadlocksCommand.process();
-      try {
-        result.saveIncomingFiles(temporaryFolder.getRoot().getAbsolutePath());
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      String commandOutput = getResultAsString(result);
-      assertEquals(true, commandOutput.startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED));
-      assertEquals(true, result.getStatus().equals(Status.OK));
-      assertTrue(outputFile.exists());
+    Awaitility.await().atMost(5, TimeUnit.MINUTES).pollDelay(5, TimeUnit.SECONDS).until(() -> {
+      gfsh.executeAndVerifyCommand(showDeadlockCommand);
+      String commandOutput = gfsh.getGfshOutput();
+      assertThat(commandOutput).startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
+      assertThat(outputFile).exists();
     });
   }
 
-  private void createCache(Properties props) {
-    getSystem(props);
-    getCache();
-  }
-
-  private void lockTheLocks(VM vm0, final InternalDistributedMember member) {
-    vm0.invokeAsync(() -> {
-      lock.lock();
-
-      ResultCollector collector = FunctionService.onMember(member).execute(new TestFunction());
-      // wait the function to lock the lock on member.
-      collector.getResult();
-      lock.unlock();
+  private void lockTheLocks(MemberVM thisVM, final MemberVM thatVM,
+      FileBasedCountDownLatch countDownLatch) {
+    thisVM.invokeAsync(() -> {
+      LOCK.lock();
+      countDownLatch.countDown();
+      countDownLatch.await();
+      // At this point each VM will hold its own lock.
+      lockRemoteVM(thatVM);
+      LOCK.unlock();
     });
   }
 
-  private InternalDistributedMember createCache(VM vm) {
-    return (InternalDistributedMember) vm.invoke(new SerializableCallable<Object>() {
-      @Override
-      public Object call() {
-        getCache();
-        return getSystem().getDistributedMember();
-      }
-    });
+  private static void lockRemoteVM(MemberVM vmToLock) {
+    InternalDistributedMember thatInternalMember = getInternalDistributedMember(vmToLock);
+
+    ResultCollector collector =
+        FunctionService.onMember(thatInternalMember).execute(new LockFunction());
+    collector.getResult();
   }
 
-  private String getResultAsString(Result result) {
-    StringBuilder sb = new StringBuilder();
-    while (result.hasNextLine()) {
-      sb.append(result.nextLine());
-    }
-
-    return sb.toString();
+  private static InternalDistributedMember getInternalDistributedMember(MemberVM memberVM) {
+    return memberVM.getVM().invoke(() -> LocatorServerStartupRule.serverStarter.getCache()
+        .getInternalDistributedSystem().getDistributedMember());
   }
 
-  private static class TestFunction implements Function<Object> {
-    private static final int LOCK_WAIT_TIME = 1000;
-
-    @Override
-    public boolean hasResult() {
-      return true;
-    }
-
+  private static class LockFunction implements Function<Object> {
     @Override
     public void execute(FunctionContext<Object> context) {
+      stuckThread = Thread.currentThread();
       try {
-        stuckThreads.add(Thread.currentThread());
-        lock.tryLock(LOCK_WAIT_TIME, TimeUnit.SECONDS);
-      } catch (InterruptedException ignored) {
-        // ignored
+        LOCK.tryLock(5, TimeUnit.MINUTES);
+      } catch (InterruptedException e) {
+        context.getResultSender().lastResult(null);
       }
-      context.getResultSender().lastResult(null);
-    }
-
-    @Override
-    public boolean isHA() {
-      return false;
     }
   }
 }
