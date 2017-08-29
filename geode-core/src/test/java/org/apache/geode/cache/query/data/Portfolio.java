@@ -236,6 +236,10 @@ public class Portfolio implements Serializable, DataSerializable {
     return this.doubleMinValue;
   }
 
+  public void throwExceptionMethod() {
+    throw new IllegalStateException();
+  }
+
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.ID = in.readInt();
     boolean isNull = DataSerializer.readPrimitiveBoolean(in);

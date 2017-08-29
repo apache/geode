@@ -78,6 +78,7 @@ public class ListIndexCommand implements GfshCommand {
         indexData.accumulate("Type", StringUtils.defaultString(indexDetails.getIndexType()));
         indexData.accumulate("Indexed Expression", indexDetails.getIndexedExpression());
         indexData.accumulate("From Clause", indexDetails.getFromClause());
+        indexData.accumulate("Valid Index", indexDetails.getIsValid());
 
         if (showStats) {
           final IndexStatisticsDetailsAdapter adapter =

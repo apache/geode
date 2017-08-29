@@ -419,32 +419,6 @@ public class QueryAndJtaJUnitTest {
     }
   }
 
-  @Test
-  public void testFailedIndexUpdateOnCommitForPut() throws Exception {
-    Person.THROW_ON_INDEX = true;
-    AttributesFactory af = new AttributesFactory();
-    af.setDataPolicy(DataPolicy.REPLICATE);
-    SimpleListener sl = new SimpleListener();
-    af.setCacheListener(sl);
-    Region region = cache.createRegion("sample", af.create());
-    qs.createIndex("foo", IndexType.FUNCTIONAL, "index", "/sample");
-    Context ctx = cache.getJNDIContext();
-
-    Integer x = new Integer(0);
-    region.getCache().getCacheTransactionManager().begin();
-    region.create(x, new Person("xyz", 45));
-    try {
-      region.getCache().getCacheTransactionManager().commit();
-      fail("commit should have thrown an exception because the index maintenance threw");
-    } catch (org.apache.geode.cache.query.IndexMaintenanceException ie) {
-      // this is the desired case
-    }
-    Person p = (Person) region.get(x);
-    assertEquals("object shouldn't have made it into region", null, p);
-    assertEquals(0, sl.creates);
-    assertEquals(0, sl.updates);
-  }
-
   private static class SimpleListener extends CacheListenerAdapter {
 
     public int creates = 0;

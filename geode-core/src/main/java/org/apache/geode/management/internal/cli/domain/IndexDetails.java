@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.domain;
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.ObjectUtils;
 
@@ -36,6 +37,7 @@ import java.io.Serializable;
 @SuppressWarnings("unused")
 public class IndexDetails implements Comparable<IndexDetails>, Serializable {
 
+  private static final long serialVersionUID = -2198907141534201288L;
   private IndexStatisticsDetails indexStatisticsDetails;
 
   private IndexType indexType;
@@ -45,6 +47,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   private String projectionAttributes;
   private String memberName;
   private String regionName;
+  private String isValid;
 
   private final String indexName;
   private final String memberId;
@@ -84,10 +87,18 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     setMemberName(member.getName());
     setProjectionAttributes(index.getProjectionAttributes());
     setRegionName(index.getRegion().getName());
-
+    if (index instanceof AbstractIndex) {
+      setIsValid(((AbstractIndex) index).isValid());
+    } else {
+      setIsValid(false);
+    }
     if (index.getStatistics() != null) {
       setIndexStatisticsDetails(createIndexStatisticsDetails(index.getStatistics()));
     }
+  }
+
+  public void setIsValid(boolean valid) {
+    this.isValid = String.valueOf(valid);
   }
 
   public IndexDetails(final String memberId, final String regionPath, final String indexName) {
@@ -175,6 +186,10 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     return regionPath;
   }
 
+  public String getIsValid() {
+    return this.isValid;
+  }
+
   public int compareTo(final IndexDetails indexDetails) {
     int comparisonValue = compare(getMemberName(), indexDetails.getMemberName());
     comparisonValue = (comparisonValue != 0 ? comparisonValue
@@ -223,6 +238,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     buffer.append(", memberName = ").append(getMemberName());
     buffer.append(", regionName = ").append(getRegionName());
     buffer.append(", regionPath = ").append(getRegionPath());
+    buffer.append(", isValid = ").append(getIsValid());
     buffer.append(", projectAttributes = ").append(getProjectionAttributes());
     buffer.append("}");
 
