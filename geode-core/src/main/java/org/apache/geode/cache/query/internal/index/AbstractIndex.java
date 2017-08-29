@@ -484,6 +484,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   @Override
   public boolean addIndexMapping(RegionEntry entry) throws IMQException {
     addMapping(entry);
+
     // if no exception, then success
     return true;
   }
@@ -516,7 +517,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     return true;
   }
 
-  @Override
+
   public boolean isValid() {
     return this.isValid;
   }

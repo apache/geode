@@ -9626,6 +9626,7 @@ public class PartitionedRegion extends LocalRegion
           }
         }
       } // End of bucket list
+      parIndex.markValid(true);
       return parIndex;
     }
   }

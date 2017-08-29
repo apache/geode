@@ -157,8 +157,6 @@ public interface IndexProtocol extends Index {
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
-  boolean isValid();
-
   void markValid(boolean b);
 
   void initializeIndex(boolean loadEntries) throws IMQException;

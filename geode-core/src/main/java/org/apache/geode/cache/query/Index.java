@@ -80,6 +80,14 @@ public interface Index {
    */
   public String getFromClause();
 
+
+  /**
+   * Get whether index is valid to be used in queries.
+   */
+  public default boolean isValid() {
+    return false;
+  }
+
   /**
    * Get the canonicalized fromClause for this index.
    */

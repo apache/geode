@@ -111,6 +111,19 @@ public class IndexCommandsDUnitTest {
   }
 
   @Test
+  public void testListIndexValidField() throws Exception {
+    CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
+        "\"/" + partitionedRegionName + " s, s.history h\"");
+
+    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+
+    assertTrue(indexIsListedAsValid());
+  }
+
+  @Test
   public void testCannotCreateIndexWithExistingIndexName() throws Exception {
     createBaseIndexForTesting();
 
@@ -251,6 +264,11 @@ public class IndexCommandsDUnitTest {
   private boolean indexIsListed() throws Exception {
     gfsh.executeAndVerifyCommand(CliStrings.LIST_INDEX);
     return gfsh.getGfshOutput().contains(indexName);
+  }
+
+  private boolean indexIsListedAsValid() throws Exception {
+    gfsh.executeAndVerifyCommand(CliStrings.LIST_INDEX);
+    return gfsh.getGfshOutput().contains("true");
   }
 
   private static Region<?, ?> createPartitionedRegion(String regionName, Cache cache,
