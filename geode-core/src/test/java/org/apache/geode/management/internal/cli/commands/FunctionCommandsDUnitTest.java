@@ -41,7 +41,6 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.dunit.Host;
@@ -227,7 +226,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
   SerializableRunnable checkRegionMBeans = new SerializableRunnable() {
     @Override
     public void run() {
-      final WaitCriterion waitForMaangerMBean = new WaitCriterion() {
+      final WaitCriterion waitForManagerMBean = new WaitCriterion() {
         @Override
         public boolean done() {
           final ManagementService service = ManagementService.getManagementService(getCache());
@@ -247,7 +246,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
           return "Probing for testExecuteFunctionOnRegionBug51480";
         }
       };
-      waitForCriterion(waitForMaangerMBean, 2 * 60 * 1000, 2000, true);
+      waitForCriterion(waitForManagerMBean, 2 * 60 * 1000, 2000, true);
       DistributedRegionMXBean bean = ManagementService.getManagementService(getCache())
           .getDistributedRegionMXBean(Region.SEPARATOR + REGION_ONE);
       assertNotNull(bean);
@@ -294,7 +293,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
+    final String vm1MemberId = vm1.invoke(this::getMemberId);
 
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       public void run() {
@@ -494,7 +493,7 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     FunctionService.registerFunction(function);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1MemberId = (String) vm1.invoke(() -> getMemberId());
+    final String vm1MemberId = vm1.invoke(this::getMemberId);
     String command = "destroy function --id=" + function.getId() + " --member=" + vm1MemberId;
     getLogWriter().info("testDestroyOnMember command=" + command);
     CommandResult cmdResult = executeCommand(command);
@@ -560,13 +559,9 @@ public class FunctionCommandsDUnitTest extends CliCommandTestBase {
     CommandResult cmdResult = executeCommand(command);
     getLogWriter().info("testDestroyOnGroups cmdResult=" + cmdResult);
     assertEquals(Result.Status.OK, cmdResult.getStatus());
-    String content = null;
-    try {
-      content = cmdResult.getContent().get("message").toString();
-      getLogWriter().info("testDestroyOnGroups content = " + content);
-    } catch (GfJsonException e) {
-      fail("testDestroyOnGroups exception=" + e);
-    }
+    String content;
+    content = cmdResult.getContent().get("message").toString();
+    getLogWriter().info("testDestroyOnGroups content = " + content);
     assertNotNull(content);
     assertTrue(content
         .equals("[\"Destroyed " + TestFunction.TEST_FUNCTION1 + " Successfully on " + vm1id + ","

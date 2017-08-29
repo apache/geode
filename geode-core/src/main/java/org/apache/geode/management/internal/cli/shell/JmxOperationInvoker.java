@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -88,21 +87,21 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   private ObjectName managerMemberObjectName;
 
-  /* package */ final AtomicBoolean isConnected = new AtomicBoolean(false);
-  /* package */ final AtomicBoolean isSelfDisconnect = new AtomicBoolean(false);
+  final AtomicBoolean isConnected = new AtomicBoolean(false);
+  final AtomicBoolean isSelfDisconnect = new AtomicBoolean(false);
 
   private int clusterId = CLUSTER_ID_WHEN_NOT_CONNECTED;
 
   public JmxOperationInvoker(final String host, final int port, Properties gfProperties)
       throws Exception {
-    final Set<String> propsToClear = new TreeSet<String>();
+    final Set<String> propsToClear = new TreeSet<>();
     try {
       this.managerHost = host;
       this.managerPort = port;
       this.endpoints = host + "[" + port + "]"; // Use the same syntax as the "connect" command.
 
       // Modify check period from default (60 sec) to 1 sec
-      final Map<String, Object> env = new HashMap<String, Object>();
+      final Map<String, Object> env = new HashMap<>();
 
       env.put(JMXConnectionListener.CHECK_PERIOD_PROP, JMXConnectionListener.CHECK_PERIOD);
       env.put(JMXConnector.CREDENTIALS, gfProperties);
@@ -169,12 +168,6 @@ public class JmxOperationInvoker implements OperationInvoker {
 
       this.isConnected.set(true);
       this.clusterId = distributedSystemMXBeanProxy.getDistributedSystemId();
-    } catch (NullPointerException e) {
-      throw e;
-    } catch (MalformedURLException e) {
-      throw e;
-    } catch (IOException e) {
-      throw e;
     } finally {
       for (String propToClear : propsToClear) {
         System.clearProperty(propToClear);
@@ -215,7 +208,7 @@ public class JmxOperationInvoker implements OperationInvoker {
       throw new JMXInvocationException(attributeName + " not found for " + resourceName, e);
     } catch (InstanceNotFoundException e) {
       throw new JMXInvocationException(resourceName + " is not registered in the MBean server.", e);
-    } catch (MalformedObjectNameException e) {
+    } catch (MalformedObjectNameException | IOException e) {
       throw new JMXInvocationException(resourceName + " is not a valid resource name.", e);
     } catch (MBeanException e) {
       throw new JMXInvocationException(
@@ -225,8 +218,6 @@ public class JmxOperationInvoker implements OperationInvoker {
           e);
     } catch (NullPointerException e) {
       throw new JMXInvocationException("Given resourceName is null.", e);
-    } catch (IOException e) {
-      throw new JMXInvocationException(resourceName + " is not a valid resource name.", e);
     }
   }
 
@@ -283,8 +274,6 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   @Override
   public Object processCommand(final CommandRequest commandRequest) throws JMXInvocationException {
-    // Gfsh.getCurrentInstance().printAsSevere(String.format("Command (%1$s)%n",
-    // commandRequest.getInput()));
     if (commandRequest.hasFileData()) {
       return memberMXBeanProxy.processCommand(commandRequest.getInput(),
           commandRequest.getEnvironment(), ArrayUtils.toByteArray(commandRequest.getFileData()));
@@ -365,7 +354,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     return this.clusterId;
   }
 
-  /* package */ void resetClusterId() {
+  void resetClusterId() {
     clusterId = CLUSTER_ID_WHEN_NOT_CONNECTED;
   }
 
@@ -378,12 +367,10 @@ public class JmxOperationInvoker implements OperationInvoker {
    *
    * @return for an IPv6 address returns compatible host address otherwise returns the same string
    */
-  // TODO - Abhishek: move to utility class
-  // Taken from GFMon
   public static String checkAndConvertToCompatibleIPv6Syntax(String hostAddress) {
     // if host string contains ":", considering it as an IPv6 Address
     // Conforming to RFC2732 - http://www.ietf.org/rfc/rfc2732.txt
-    if (hostAddress.indexOf(":") != -1) {
+    if (hostAddress.contains(":")) {
       LogWrapper logger = LogWrapper.getInstance();
       if (logger.fineEnabled()) {
         logger.fine("IPv6 host address detected, using IPv6 syntax for host in JMX connection URL");

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
+import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
 import static org.apache.geode.management.internal.configuration.utils.XmlUtils.getAttribute;
-import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 
 import java.io.IOException;
 import java.net.URL;
@@ -111,8 +111,7 @@ public class CacheElement {
         XmlUtils.buildSchemaLocationMap(getAttribute(doc.getFirstChild(),
             W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI));
 
-    final LinkedHashMap<String, CacheElement> elementMap =
-        new LinkedHashMap<String, CacheElement>();
+    final LinkedHashMap<String, CacheElement> elementMap = new LinkedHashMap<>();
 
     buildElementMapCacheType(elementMap,
         resolveSchema(schemaLocationMap, CacheXml.GEODE_NAMESPACE));
@@ -210,10 +209,6 @@ public class CacheElement {
           final String name = getAttribute(child, "name");
           elementMap.put(name, new CacheElement(name, rank++, isMultiple(child)));
           break;
-        // TODO group support as XSD matures
-        // case "xsd:group":
-        // buildElementMapGroup(elementMap, doc, child, rank, xPathContext);
-        // break;
         case "xsd:choice":
         case "xsd:sequence":
           rank = buildElementMapXPath(elementMap, schema, child, rank,
@@ -223,7 +218,6 @@ public class CacheElement {
           // ignore extensions
           break;
         default:
-          // TODO jbarrett - localize
           throw new UnsupportedOperationException(
               "Unsupported child type '" + child.getNodeName() + "'");
       }
@@ -236,16 +230,12 @@ public class CacheElement {
    * Tests if element allows multiple.
    * 
    * @param element to test for multiple.
-   * @return true if mulitple allowed, otherwise false.
+   * @return true if multiple allowed, otherwise false.
    * @since GemFire 8.1
    */
   private static boolean isMultiple(final Element element) {
-    final String maxOccurs = getAttribute(element, "maxOccurs");
-    if (null != maxOccurs && !maxOccurs.equals("1")) {
-      // is "unbounded" or greater than 1 if valid schema.
-      return true;
-    }
-    return false;
+    String maxOccurs = getAttribute(element, "maxOccurs");
+    return null != maxOccurs && !maxOccurs.equals("1");
   }
 
 }

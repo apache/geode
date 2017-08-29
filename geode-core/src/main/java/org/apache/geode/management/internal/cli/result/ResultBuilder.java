@@ -14,19 +14,18 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Provides methods for creating {@link Result} objects to return from Gfsh command functions
  */
 public class ResultBuilder {
   public static final int CODE_SHELLCLIENT_ABORT_OP = 110;
-  // public static final int OKCODE = 200;
 
   // error on gfsh
   public static final int ERRORCODE_DEFAULT = 400;
@@ -169,10 +168,6 @@ public class ResultBuilder {
     return new ObjectResultData<>();
   }
 
-  // public static CatalogedResultData createCatalogedResultData() {
-  // return new CatalogedResultData();
-  // }
-
   /**
    * Creates a {@link InfoResultData} object to start building result that is required to be shown
    * as an information without any specific format.
@@ -233,10 +228,7 @@ public class ResultBuilder {
       AbstractResultData resultData;
       if (ResultData.TYPE_TABULAR.equals(contentType)) {
         resultData = new TabularResultData(data);
-      } /*
-         * else if (ResultData.TYPE_CATALOGED.equals(contentType)) { resultData = new
-         * CatalogedResultData(new GfJsonObject(String.valueOf(content))); }
-         */ else if (ResultData.TYPE_INFO.equals(contentType)) {
+      } else if (ResultData.TYPE_INFO.equals(contentType)) {
         resultData = new InfoResultData(data);
       } else if (ResultData.TYPE_ERROR.equals(contentType)) {
         resultData = new ErrorResultData(data);
@@ -266,7 +258,6 @@ public class ResultBuilder {
       while (result.hasNextLine()) {
         builder.append(result.nextLine());
       }
-      // TODO - what to do with incoming files??
     }
 
     return builder.toString();

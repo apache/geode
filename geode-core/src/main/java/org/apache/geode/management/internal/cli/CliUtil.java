@@ -75,7 +75,7 @@ public class CliUtil {
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
-    String jarProductName = null;
+    String jarProductName;
 
     // Parser & CliCommand from Spring Shell
     jarProductName =
@@ -127,23 +127,22 @@ public class CliUtil {
   }
 
   public static byte[][] filesToBytes(String[] fileNames) throws IOException {
-    List<byte[]> filesDataList = new ArrayList<byte[]>();
+    List<byte[]> filesDataList = new ArrayList<>();
 
-    for (int i = 0; i < fileNames.length; i++) {
-      File file = new File(fileNames[i]);
+    for (String fileName : fileNames) {
+      File file = new File(fileName);
 
       if (!file.exists()) {
         throw new FileNotFoundException("Could not find " + file.getCanonicalPath());
       }
 
       if (file.isDirectory()) {
-        // TODO: (1) No recursive search yet. (2) Do we need to check/limit size of the files too?
         File[] childrenFiles = file.listFiles(JAR_FILE_FILTER);
-        for (int j = 0; j < childrenFiles.length; j++) {
+        for (File childrenFile : childrenFiles) {
           // 1. add name of the file as bytes at even index
-          filesDataList.add(childrenFiles[j].getName().getBytes());
+          filesDataList.add(childrenFile.getName().getBytes());
           // 2. add file contents as bytes at odd index
-          filesDataList.add(toByteArray(new FileInputStream(childrenFiles[j])));
+          filesDataList.add(toByteArray(new FileInputStream(childrenFile)));
         }
       } else {
         filesDataList.add(file.getName().getBytes());
@@ -211,31 +210,21 @@ public class CliUtil {
     }
   }
 
-  public static boolean isValidFileName(String filePath, String extension) {
-    boolean isValid = true;
-    return isValid;
-  }
-
   private static InternalCache getInternalCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
 
   public static Set<String> getAllRegionNames() {
     InternalCache cache = getInternalCache();
-    Set<String> regionNames = new HashSet<String>();
+    Set<String> regionNames = new HashSet<>();
     Set<Region<?, ?>> rootRegions = cache.rootRegions();
 
-    Iterator<Region<?, ?>> rootRegionIters = rootRegions.iterator();
-
-    while (rootRegionIters.hasNext()) {
-      Region<?, ?> rootRegion = rootRegionIters.next();
+    for (Region<?, ?> rootRegion : rootRegions) {
       regionNames.add(rootRegion.getFullPath().substring(1));
 
       Set<Region<?, ?>> subRegions = rootRegion.subregions(true);
-      Iterator<Region<?, ?>> subRegionIters = subRegions.iterator();
 
-      while (subRegionIters.hasNext()) {
-        Region<?, ?> subRegion = subRegionIters.next();
+      for (Region<?, ?> subRegion : subRegions) {
         regionNames.add(subRegion.getFullPath().substring(1));
       }
     }
@@ -245,10 +234,8 @@ public class CliUtil {
   public static String convertStringSetToString(Set<String> stringSet, char delimiter) {
     StringBuilder sb = new StringBuilder();
     if (stringSet != null) {
-      Iterator<String> iters = stringSet.iterator();
 
-      while (iters.hasNext()) {
-        String stringValue = iters.next();
+      for (String stringValue : stringSet) {
         sb.append(stringValue);
         sb.append(delimiter);
       }
@@ -259,10 +246,8 @@ public class CliUtil {
   public static String convertStringListToString(List<String> stringList, char delimiter) {
     StringBuilder sb = new StringBuilder();
     if (stringList != null) {
-      Iterator<String> iters = stringList.iterator();
 
-      while (iters.hasNext()) {
-        String stringValue = iters.next();
+      for (String stringValue : stringList) {
         sb.append(stringValue);
         sb.append(delimiter);
       }
@@ -311,7 +296,7 @@ public class CliUtil {
       return membersToConsider;
     }
 
-    Set<DistributedMember> matchingMembers = new HashSet<DistributedMember>();
+    Set<DistributedMember> matchingMembers = new HashSet<>();
     // it will either go into this loop or the following loop, not both.
     for (String memberNameOrId : members) {
       for (DistributedMember member : membersToConsider) {
@@ -384,7 +369,7 @@ public class CliUtil {
   }
 
   public static <K> K newInstance(Class<K> klass, String neededFor) {
-    K instance = null;
+    K instance;
     try {
       instance = klass.newInstance();
     } catch (InstantiationException e) {
@@ -449,7 +434,6 @@ public class CliUtil {
       System.arraycopy(buffer, 0, newResult, result.length, bytesRead);
       result = newResult;
     }
-    // System.out.println(new String(result));
     decompresser.end();
 
     return new DeflaterInflaterData(result.length, result);
@@ -477,43 +461,6 @@ public class CliUtil {
     @Override
     public String toString() {
       return String.valueOf(dataLength);
-    }
-  }
-
-  public static void main(String[] args) {
-    try {
-      byte[][] filesToBytes =
-          filesToBytes(new String[] {"/export/abhishek1/work/aspenmm/GFTryouts/test.json"});
-
-      System.out.println(filesToBytes[1].length);
-
-      DeflaterInflaterData compressBytes = compressBytes(filesToBytes[1]);
-      System.out.println(compressBytes);
-
-      DeflaterInflaterData uncompressBytes =
-          uncompressBytes(compressBytes.data, compressBytes.dataLength);
-      System.out.println(uncompressBytes);
-
-      System.out.println(new String(uncompressBytes.getData()));
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (DataFormatException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public static void main1(String[] args) {
-    try {
-      byte[][] fileToBytes = filesToBytes(new String[] {"../dumped/source/lib"});
-
-      bytesToFiles(fileToBytes, "../dumped/dest/lib/", true);
-
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
@@ -560,7 +507,7 @@ public class CliUtil {
    */
   public static Set<DistributedMember> getDistributedMembersByGroup(InternalCache cache,
       String[] groups) {
-    Set<DistributedMember> groupMembers = new HashSet<DistributedMember>();
+    Set<DistributedMember> groupMembers = new HashSet<>();
     for (String group : groups) {
       groupMembers.addAll(
           cache.getInternalDistributedSystem().getDistributionManager().getGroupMembers(group));
@@ -580,7 +527,7 @@ public class CliUtil {
    */
   public static ResultCollector<?, ?> executeFunction(final Function function, Object args,
       final Set<DistributedMember> targetMembers) {
-    Execution execution = null;
+    Execution execution;
 
     if (args != null) {
       execution = FunctionService.onMembers(targetMembers).setArguments(args);
@@ -603,7 +550,7 @@ public class CliUtil {
    */
   public static ResultCollector<?, ?> executeFunction(final Function function, Object args,
       final DistributedMember targetMember) {
-    Execution execution = null;
+    Execution execution;
 
     if (args != null) {
       execution = FunctionService.onMember(targetMember).setArguments(args);
@@ -635,9 +582,9 @@ public class CliUtil {
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
     DistributedSystemMXBean distributedSystemMXBean =
         managementService.getDistributedSystemMXBean();
-    Set<DistributedMember> matchedMembers = new HashSet<DistributedMember>();
+    Set<DistributedMember> matchedMembers = new HashSet<>();
 
-    Set<DistributedMember> allClusterMembers = new HashSet<DistributedMember>();
+    Set<DistributedMember> allClusterMembers = new HashSet<>();
     allClusterMembers.addAll(cache.getMembers());
     allClusterMembers.add(cache.getDistributedSystem().getDistributedMember());
 
@@ -647,8 +594,7 @@ public class CliUtil {
             region) != null) {
           matchedMembers.add(member);
         }
-      } catch (Exception e) {
-        // ignore for now
+      } catch (Exception ignored) {
       }
     }
     return matchedMembers;
@@ -729,7 +675,7 @@ public class CliUtil {
     }
 
     File file = null;
-    FileWriter fw = null;
+    FileWriter fw;
     try {
       file = File.createTempFile("gfsh_output", "less");
       fw = new FileWriter(file);
@@ -741,9 +687,7 @@ public class CliUtil {
               "LESSOPEN=\"|color %s\" less -SR " + file.getName() + " < /dev/tty > /dev/tty "},
           null, workingDir);
       p.waitFor();
-    } catch (IOException e) {
-      Gfsh.printlnErr(e.getMessage());
-    } catch (InterruptedException e) {
+    } catch (IOException | InterruptedException e) {
       Gfsh.printlnErr(e.getMessage());
     } finally {
       if (file != null)
@@ -764,7 +708,7 @@ public class CliUtil {
   public static Set<DistributedMember> getMembersForeRegionViaFunction(InternalCache cache,
       String regionPath, boolean returnAll) {
     try {
-      Set<DistributedMember> regionMembers = new HashSet<DistributedMember>();
+      Set<DistributedMember> regionMembers = new HashSet<>();
       MembersForRegionFunction membersForRegionFunction = new MembersForRegionFunction();
       FunctionService.registerFunction(membersForRegionFunction);
       Set<DistributedMember> targetMembers = CliUtil.getAllMembers(cache);
@@ -786,9 +730,7 @@ public class CliUtil {
           }
           if (object != null) {
             Map<String, String> memberDetails = (Map<String, String>) object;
-            Iterator<Entry<String, String>> it = memberDetails.entrySet().iterator();
-            while (it.hasNext()) {
-              Entry<String, String> entry = it.next();
+            for (Entry<String, String> entry : memberDetails.entrySet()) {
               Set<DistributedMember> dsMems = CliUtil.getAllMembers(cache);
               for (DistributedMember mem : dsMems) {
                 if (mem.getId().equals(entry.getKey())) {
@@ -802,7 +744,6 @@ public class CliUtil {
           }
         } catch (Exception ex) {
           LogWrapper.getInstance().warning("getMembersForeRegionViaFunction exception " + ex);
-          continue;
         }
       }
       return regionMembers;

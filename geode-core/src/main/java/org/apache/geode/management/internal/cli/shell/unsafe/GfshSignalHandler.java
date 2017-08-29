@@ -18,11 +18,11 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
+import sun.misc.SignalHandler;
+
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
 import org.apache.geode.internal.process.signal.Signal;
 import org.apache.geode.internal.process.signal.SignalEvent;
-
-import sun.misc.SignalHandler;
 
 /**
  * This class externalizes signal handling in order to make the GemFire build process a bit cleaner
@@ -42,13 +42,6 @@ public class GfshSignalHandler extends AbstractSignalNotificationHandler impleme
 
   public GfshSignalHandler() {
     for (final Signal signal : Signal.values()) {
-      // NOTE SignalHandler registration for SIGQUIT led to an IllegalArgumentException without the
-      // following
-      // "if" statement...
-      // Exception in thread "main" java.lang.IllegalArgumentException: Signal already used by VM:
-      // SIGQUIT
-      // if (!Signal.SIGQUIT.equals(signal)) {
-      // TODO uncomment above if statement if all Signals need to be handled by this SignalHandler
       if (Signal.SIGINT.equals(signal)) {
         originalSignalHandlers.put(signal,
             sun.misc.Signal.handle(new sun.misc.Signal(signal.getName()), this));
@@ -58,8 +51,6 @@ public class GfshSignalHandler extends AbstractSignalNotificationHandler impleme
 
   @Override
   public void handle(final sun.misc.Signal sig) {
-    // System.err.printf("Thread (%1$s) is processing Signal '%2$s' (%3$d)...%n",
-    // Thread.currentThread().getName(), sig.getName(), sig.getNumber());
     notifyListeners(new SignalEvent(sig, Signal.valueOfName(sig.getName())));
     handleDefault(sig);
   }
