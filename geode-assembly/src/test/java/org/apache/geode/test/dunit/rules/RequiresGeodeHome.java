@@ -20,13 +20,14 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 
-import org.junit.rules.ExternalResource;
+import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
  * This {@code Rule} is used to indicate tests that require the GEODE_HOME environment varible to be
  * set. (For example, any test that relies on the assembled Pulse WAR or GFSH binary.)
  */
-public class RequiresGeodeHome extends ExternalResource {
+public class RequiresGeodeHome extends SerializableExternalResource {
+
   private static final String GEODE_HOME_NOT_SET_MESSAGE =
       "This test requires a GEODE_HOME environment variable that points to the location "
           + "of geode-assembly/build/install/apache-geode." + LINE_SEPARATOR
