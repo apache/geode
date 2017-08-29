@@ -48,6 +48,7 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
@@ -1497,6 +1498,54 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     // is stuck in some operation. Hence adding this log
     logger.info(LocalizedMessage.create(
         LocalizedStrings.DistributedRegion_INITIALIZING_REGION_COMPLETED_0, this.getName()));
+  }
+
+  @Override
+  public void basicBridgeRemove(Object key, Object expectedOldValue, Object p_callbackArg,
+      ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
+    Lock lock = getDistributedLockIfGlobal(key);
+    try {
+      super.basicBridgeRemove(key, expectedOldValue, p_callbackArg, memberId, fromClient,
+          clientEvent);
+    } finally {
+      if (lock != null) {
+        logger.debug("releasing distributed lock on {}", key);
+        lock.unlock();
+        getLockService().freeResources(key);
+      }
+    }
+  }
+
+  @Override
+  public void basicBridgeDestroy(Object key, Object p_callbackArg, ClientProxyMembershipID memberId,
+      boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
+    Lock lock = getDistributedLockIfGlobal(key);
+    try {
+      super.basicBridgeDestroy(key, p_callbackArg, memberId, fromClient, clientEvent);
+    } finally {
+      if (lock != null) {
+        logger.debug("releasing distributed lock on {}", key);
+        lock.unlock();
+        getLockService().freeResources(key);
+      }
+    }
+  }
+
+  @Override
+  public void basicBridgeInvalidate(Object key, Object p_callbackArg,
+      ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
+    Lock lock = getDistributedLockIfGlobal(key);
+    try {
+      super.basicBridgeInvalidate(key, p_callbackArg, memberId, fromClient, clientEvent);
+    } finally {
+      if (lock != null) {
+        logger.debug("releasing distributed lock on {}", key);
+        lock.unlock();
+      }
+    }
   }
 
   @Override
