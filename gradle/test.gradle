@@ -220,6 +220,13 @@ subprojects {
     forkEvery 30
   }
 
+  task acceptanceTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
+    }
+    forkEvery 1
+  }
+
   // apply common test configuration
   gradle.taskGraph.whenReady( { graph ->
     tasks.withType(Test).each { test ->
@@ -281,6 +288,6 @@ subprojects {
 
   check.dependsOn checkMissedTests
 
-  combineReports.mustRunAfter check, test, ":geode-assembly:acceptanceTest", integrationTest, distributedTest, flakyTest, checkMissedTests
-  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests].each {it.finalizedBy combineReports}
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest
+  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest].each {it.finalizedBy combineReports}
 }

@@ -106,14 +106,6 @@ sourceSets {
   //test.runtimeClasspath -= configurations.provided
 }
 
-task acceptanceTest(type:Test) {
-  useJUnit {
-    includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-  }
-  forkEvery 1
-}
-
-
 test {
   // test from the actual classpath not the gradle classpath
   dependsOn installDist
