@@ -44,12 +44,12 @@ import org.apache.geode.test.junit.rules.DescribedExternalResource;
  *
  * you can use this as Rule
  * 
- * @Rule GfshShellConnectionRule rule = new GfshShellConnectionRule(); then after you connect to a
+ * @Rule GfshShellConnectionRule rule = new GfshSheelConnectionRule(); then after you connect to a
  *       locator, you don't have to call disconnect() or close() at all, since the rule's after
  *       takes care of it for you.
  *
  *       Or as a ClassRule
- * @ClassRule GfshShellConnectionRule rule = new GfshShellConnectionRule(); When using as a
+ * @ClassRule GfshShellConnectionRule rule = new GfshSheelConnectionRule(); When using as a
  *            ClassRule, if you call connect in a test, you will need to call disconnect after the
  *            test as well. See NetstatDUnitTest for example.
  *

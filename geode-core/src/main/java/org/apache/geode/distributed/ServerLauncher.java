@@ -30,7 +30,6 @@ import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetA
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -82,13 +81,13 @@ import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessControllerParameters;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.StartupStatusListener;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.util.HostUtils;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -96,7 +95,7 @@ import org.apache.geode.security.GemFireSecurityException;
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying
  * a GemFire Cache Server process).
- *
+ * 
  * @see org.apache.geode.distributed.AbstractLauncher
  * @see org.apache.geode.distributed.LocatorLauncher
  * @since GemFire 7.0
@@ -218,7 +217,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
-   *
+   * 
    * @param args the command-line arguments used to configure the GemFire Server at runtime.
    */
   public static void main(final String... args) {
@@ -238,7 +237,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Gets the instance of the ServerLauncher used to launch the GemFire Cache Server, or null if
    * this VM does not have an instance of ServerLauncher indicating no GemFire Cache Server is
    * running.
-   *
+   * 
    * @return the instance of ServerLauncher used to launcher a GemFire Cache Server in this VM.
    */
   public static ServerLauncher getInstance() {
@@ -248,7 +247,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Gets the ServerState for this process or null if this process was not launched using this VM's
    * ServerLauncher reference .
-   *
+   * 
    * @return the ServerState for this process or null.
    */
   public static ServerState getServerState() {
@@ -260,7 +259,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * using a Builder. The Builder is used to configure a ServerLauncher instance. The Builder can
    * process user input from the command-line or be used programmatically to properly construct an
    * instance of the ServerLauncher using the API.
-   *
+   * 
    * @param builder an instance of ServerLauncher.Builder for configuring and constructing an
    *        instance of the ServerLauncher.
    * @see org.apache.geode.distributed.ServerLauncher.Builder
@@ -319,7 +318,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets a reference to the Cache that was created when the GemFire Server was started.
-   *
+   * 
    * @return a reference to the Cache created by the GemFire Server start operation.
    * @see org.apache.geode.cache.Cache
    */
@@ -352,7 +351,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Gets an identifier that uniquely identifies and represents the Server associated with this
    * launcher.
-   *
+   * 
    * @return a String value identifier to uniquely identify the Server and it's launcher.
    * @see #getServerBindAddressAsString()
    * @see #getServerPortAsString()
@@ -370,7 +369,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Get the Server launcher command used to invoke the Server.
-   *
+   * 
    * @return the Server launcher command used to invoke the Server.
    * @see org.apache.geode.distributed.ServerLauncher.Command
    */
@@ -381,7 +380,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether buckets should be assigned to partitioned regions in the cache upon Server
    * start.
-   *
+   * 
    * @return a boolean indicating if buckets should be assigned upon Server start.
    */
   public boolean isAssignBuckets() {
@@ -390,7 +389,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Determines whether a default cache server will be added when the GemFire Server comes online.
-   *
+   * 
    * @return a boolean value indicating whether to add a default cache server.
    */
   public boolean isDisableDefaultServer() {
@@ -400,7 +399,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether the PID file is allowed to be overwritten when the Server is started and a
    * PID file already exists in the Server's specified working directory.
-   *
+   * 
    * @return boolean indicating if force has been enabled.
    */
   public boolean isForcing() {
@@ -412,7 +411,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * the standard Server launcher commands will be used to affect the state of the Server. A
    * launcher is said to be 'helping' if the user entered the "--help" option (switch) on the
    * command-line.
-   *
+   * 
    * @return a boolean value indicating if this launcher is used for displaying help information.
    * @see org.apache.geode.distributed.ServerLauncher.Command
    */
@@ -423,7 +422,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether a rebalance operation on the cache will occur upon starting the GemFire
    * server using this launcher.
-   *
+   * 
    * @return a boolean indicating if the cache will be rebalance when the GemFire server starts.
    */
   public boolean isRebalancing() {
@@ -433,7 +432,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether this launcher will redirect output to system logs when starting a new
    * Locator process.
-   *
+   * 
    * @return a boolean value indicating if this launcher will redirect output to system logs when
    *         starting a new Locator process
    */
@@ -443,7 +442,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the name of the log file used to log information about this Server.
-   *
+   * 
    * @return a String value indicating the name of this Server's log file.
    */
   @Override
@@ -454,7 +453,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Gets the name of this member (this Server) in the GemFire distributed system as determined by
    * the 'name' GemFire property.
-   *
+   * 
    * @return a String indicating the name of the member (this Server) in the GemFire distributed
    *         system.
    */
@@ -466,7 +465,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Gets the user-specified process ID (PID) of the running Server that ServerLauncher uses to
    * issue status and stop commands to the Server.
-   *
+   * 
    * @return an Integer value indicating the process ID (PID) of the running Server.
    */
   @Override
@@ -490,22 +489,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * connections. This property should not be confused with 'bindAddress' ServerLauncher property,
    * which is the port for binding the Server's ServerSocket used in distribution and messaging
    * between the peers of the GemFire distributed system.
-   *
+   * 
    * @return an InetAddress indicating the IP address that the Server is bound to listening for and
    *         accepting cache client connections in a client/server topology.
    */
   public InetAddress getServerBindAddress() {
-    if (serverBindAddress != null) {
-      return this.serverBindAddress;
-    }
-
-    try {
-      return SocketCreator.getLocalHost();
-    } catch (UnknownHostException handled) {
-      // Returning loopback implies the serverBindAddress was null and no IP address
-      // for localhost could be found
-      return InetAddress.getLoopbackAddress();
-    }
+    return this.serverBindAddress;
   }
 
   /**
@@ -513,10 +502,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * attempt is made to get the canonical hostname for IP address to which the Server was bound for
    * accepting client requests. If the server bind address is null or localhost is unknown, then a
    * default String value of "localhost/127.0.0.1" is returned.
-   *
+   * 
    * Note, this information is purely information and should not be used to re-construct state or
    * for other purposes.
-   *
+   * 
    * @return the hostname or IP address of the host running the Server, based on the bind-address,
    *         or 'localhost/127.0.0.1' if the bind address is null and localhost is unknown.
    * @see java.net.InetAddress
@@ -532,7 +521,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       return localhost.getCanonicalHostName();
     } catch (UnknownHostException handled) {
-      // Returning localhost/127.0.0.1 implies the serverBindAddress was null and no IP address
+      // NOTE returning localhost/127.0.0.1 implies the serverBindAddress was null and no IP address
       // for localhost could be found
       return "localhost/127.0.0.1";
     }
@@ -543,7 +532,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * should not be confused with the 'port' ServerLauncher property, which is used by the Server to
    * set the 'tcp-port' distribution config property and is used by the ServerSocket for peer
    * distribution and messaging.
-   *
+   * 
    * @return an Integer value indicating the port the Server is listening on for cache client
    *         connections in the client/server topology.
    */
@@ -554,7 +543,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Gets the server port on which the Server is listening for client requests represented as a
    * String value.
-   *
+   * 
    * @return a String representing the server port on which the Server is listening for client
    *         requests.
    * @see #getServerPort()
@@ -565,7 +554,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the name for a GemFire Server.
-   *
+   * 
    * @return a String indicating the name for a GemFire Server.
    */
   @Override
@@ -577,7 +566,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Gets the location of the Spring XML configuration meta-data file used to bootstrap, configure
    * and initialize the GemFire Server on start.
    * <p>
-   *
+   * 
    * @return a String indicating the location of the Spring XML configuration file.
    * @see org.apache.geode.distributed.ServerLauncher.Builder#getSpringXmlLocation()
    */
@@ -589,7 +578,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Determines whether this GemFire Server was configured and initialized with Spring configuration
    * meta-data.
    * <p>
-   *
+   * 
    * @return a boolean value indicating whether this GemFire Server was configured with Spring
    *         configuration meta-data.
    */
@@ -599,7 +588,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets the working directory pathname in which the Server will be run.
-   *
+   * 
    * @return a String value indicating the pathname of the Server's working directory.
    */
   @Override
@@ -650,7 +639,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Displays help for the specified Server launcher command to standard err. If the Server launcher
    * command is unspecified, then usage information is displayed instead.
-   *
+   * 
    * @param command the Server launcher command in which to display help information.
    * @see #usage()
    */
@@ -674,7 +663,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Displays usage information on the proper invocation of the ServerLauncher from the command-line
    * to standard err.
-   *
+   * 
    * @see #help(org.apache.geode.distributed.ServerLauncher.Command)
    */
   public void usage() {
@@ -691,7 +680,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * A Runnable method used to invoke the GemFire server (cache server) with the specified command.
    * From run, a user can invoke 'start', 'status', 'stop' and 'version'. Note, that 'version' is
    * also a command-line option, but can be treated as a "command" as well.
-   *
+   * 
    * @see java.lang.Runnable
    */
   @Override
@@ -721,7 +710,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Gets a File reference with the path to the PID file for the Server.
-   *
+   * 
    * @return a File reference to the path of the Server's PID file.
    */
   protected File getServerPidFile() {
@@ -762,9 +751,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
         SystemFailure.setExitOK(true);
 
         ProcessLauncherContext.set(isRedirectingOutput(), getOverriddenDefaults(),
-            (String statusMessage) -> {
-              debug("Callback setStatus(String) called with message (%1$s)...", statusMessage);
-              ServerLauncher.this.statusMessage = statusMessage;
+            new StartupStatusListener() {
+              @Override
+              public void setStatus(final String statusMessage) {
+                debug("Callback setStatus(String) called with message (%1$s)...", statusMessage);
+                ServerLauncher.this.statusMessage = statusMessage;
+              }
             });
 
         try {
@@ -857,7 +849,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * A helper method to ensure the same sequence of actions are taken when the Server fails to start
    * caused by some exception.
-   *
+   * 
    * @param cause the Throwable thrown during the startup operation on the Server.
    */
   private void failOnStart(final Throwable cause) {
@@ -877,7 +869,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Determines whether the specified Cache has any CacheServers.
-   *
+   * 
    * @param cache the Cache to check for existing CacheServers.
    * @return a boolean value indicating if any CacheServers were added to the Cache.
    */
@@ -887,7 +879,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Determines whether to continue waiting and keep the GemFire non-Server data member running.
-   *
+   * 
    * @param cache the Cache associated with this GemFire (non-Server) data member.
    * @return a boolean value indicating whether the GemFire data member should continue running, as
    *         determined by the running flag and a connection to the distributed system (GemFire
@@ -930,7 +922,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * by the absence of specifying the --disable-default-server command-line option (switch). In
    * addition, a default cache server is started only if no cache servers have been added to the
    * Cache by way of cache.xml.
-   *
+   * 
    * @param cache the reference to the Cache to check for any existing cache servers.
    * @return a boolean indicating whether a default server should be added to the Cache.
    * @see #isDisableDefaultServer()
@@ -943,7 +935,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * If the default server (cache server) has not been disabled and no prior cache servers were
    * added to the cache, then this method will add a cache server to the Cache and start the server
    * Thread on the specified bind address and port.
-   *
+   * 
    * @param cache the Cache to which the server will be added.
    * @throws IOException if the Cache server fails to start due to IO error.
    */
@@ -990,7 +982,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Causes a rebalance operation to occur on the given Cache.
-   *
+   * 
    * @param cache the reference to the Cache to rebalance.
    * @see org.apache.geode.cache.control.ResourceManager#createRebalanceFactory()
    */
@@ -1005,7 +997,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * using the --assign-buckets command-line option (switch) at the command-line as well as whether
    * the option is technically allowed. The option is only allowed if the instance of the Cache is
    * the internal GemFireCacheImpl at present.
-   *
+   * 
    * @param cache the Cache reference to check for instance type.
    * @return a boolean indicating if bucket assignment is both enabled and allowed.
    * @see #isAssignBuckets()
@@ -1016,7 +1008,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Assigns buckets to individual Partitioned Regions of the Cache.
-   *
+   * 
    * @param cache the Cache who's Partitioned Regions are accessed to assign buckets to.
    * @see PartitionRegionHelper#assignBucketsToPartitions(org.apache.geode.cache.Region)
    */
@@ -1030,7 +1022,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Determines whether the Server is the process of starting or is already running.
-   *
+   * 
    * @return a boolean indicating if the Server is starting or is already running.
    */
   protected boolean isStartingOrRunning() {
@@ -1059,8 +1051,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
       debug("Getting Server status using working directory (%1$s)%n", getWorkingDirectory());
       return statusWithWorkingDirectory();
     }
-    debug("This ServerLauncher was not the instance used to launch the GemFire Cache Server, and "
-        + "neither PID nor working directory were specified; the Server's state is unknown.%n");
+
+    debug(
+        "This ServerLauncher was not the instance used to launch the GemFire Cache Server, and neither PID "
+            .concat("nor working directory were specified; the Server's state is unknown.%n"));
 
     return new ServerState(this, Status.NOT_RESPONDING);
   }
@@ -1137,7 +1131,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Determines whether the Server can be stopped in-process, such as when a Server is embedded in
    * an application and the ServerLauncher API is being used.
-   *
+   * 
    * @return a boolean indicating whether the Server can be stopped in-process (the application's
    *         process with an embedded Server).
    */
@@ -1395,7 +1389,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Constructor used to create and configure an instance of the Builder class with the specified
      * arguments, passed in from the command-line when launching an instance of this class from the
      * command-line using the Java launcher.
-     *
+     * 
      * @param args the array of arguments used to configure the Builder.
      * @see #parseArguments(String...)
      */
@@ -1406,7 +1400,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Gets an instance of the JOptSimple OptionParser to parse the command-line arguments for
      * Server.
-     *
+     * 
      * @return an instance of the JOptSimple OptionParser configured with the command-line options
      *         used by the Server.
      */
@@ -1454,7 +1448,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Parses the list of arguments to configure this Builder with the intent of constructing a
      * Server launcher to invoke a Cache Server. This method is called to parse the arguments
      * specified by the user on the command-line.
-     *
+     * 
      * @param args the array of arguments used to configure this Builder and create an instance of
      *        ServerLauncher.
      */
@@ -1599,7 +1593,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Iterates the list of arguments in search of the target Server launcher command.
-     *
+     * 
      * @param args an array of arguments from which to search for the Server launcher command.
      * @see org.apache.geode.distributed.ServerLauncher.Command#valueOfName(String)
      * @see #parseArguments(String...)
@@ -1620,7 +1614,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Iterates the list of arguments in search of the Server's GemFire member name. If the argument
      * does not start with '-' or is not the name of a Server launcher command, then the value is
      * presumed to be the member name for the Server in GemFire.
-     *
+     * 
      * @param args the array of arguments from which to search for the Server's member name in
      *        GemFire.
      * @see org.apache.geode.distributed.ServerLauncher.Command#isCommand(String)
@@ -1648,7 +1642,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the Server launcher command used during the invocation of the ServerLauncher.
-     *
+     * 
      * @return the Server launcher command used to invoke (run) the ServerLauncher class.
      * @see #setCommand(org.apache.geode.distributed.ServerLauncher.Command)
      * @see org.apache.geode.distributed.ServerLauncher.Command
@@ -1659,7 +1653,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets the Sever launcher command used during the invocation of the ServerLauncher
-     *
+     * 
      * @param command the targeted Server launcher command used during the invocation (run) of
      *        ServerLauncher.
      * @return this Builder instance.
@@ -1674,7 +1668,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether buckets should be assigned to partitioned regions in the cache upon Server
      * start.
-     *
+     * 
      * @return a boolean indicating if buckets should be assigned upon Server start.
      * @see #setAssignBuckets(Boolean)
      */
@@ -1685,7 +1679,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets whether buckets should be assigned to partitioned regions in the cache upon Server
      * start.
-     *
+     * 
      * @param assignBuckets a boolean indicating if buckets should be assigned upon Server start.
      * @return this Builder instance.
      * @see #getAssignBuckets()
@@ -1708,7 +1702,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether the new instance of the ServerLauncher will be set to debug mode.
-     *
+     * 
      * @return a boolean value indicating whether debug mode is enabled or disabled.
      * @see #setDebug(Boolean)
      */
@@ -1718,7 +1712,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets whether the new instance of the ServerLauncher will be set to debug mode.
-     *
+     * 
      * @param debug a boolean value indicating whether debug mode is to be enabled or disabled.
      * @return this Builder instance.
      * @see #getDebug()
@@ -1756,7 +1750,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether a default cache server will be added when the Geode Server comes online.
-     *
+     * 
      * @return a boolean value indicating whether to add a default cache server.
      * @see #setDisableDefaultServer(Boolean)
      */
@@ -1767,7 +1761,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets a boolean value indicating whether to add a default cache when the GemFire Server comes
      * online.
-     *
+     * 
      * @param disableDefaultServer a boolean value indicating whether to add a default cache server.
      * @return this Builder instance.
      * @see #getDisableDefaultServer()
@@ -1791,7 +1785,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Gets the boolean value used by the Server to determine if it should overwrite the PID file if
      * it already exists.
-     *
+     * 
      * @return the boolean value specifying whether or not to overwrite the PID file if it already
      *         exists.
      * @see #setForce(Boolean)
@@ -1803,7 +1797,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets the boolean value used by the Server to determine if it should overwrite the PID file if
      * it already exists.
-     *
+     * 
      * @param force a boolean value indicating whether to overwrite the PID file when it already
      *        exists.
      * @return this Builder instance.
@@ -1817,7 +1811,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether the new instance of the ServerLauncher will be used to output help
      * information for either a specific command, or for using ServerLauncher in general.
-     *
+     * 
      * @return a boolean value indicating whether help will be output during the invocation of the
      *         ServerLauncher.
      * @see #setHelp(Boolean)
@@ -1828,7 +1822,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether help has been enabled.
-     *
+     * 
      * @return a boolean indicating if help was enabled.
      */
     protected boolean isHelping() {
@@ -1838,7 +1832,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets whether the new instance of ServerLauncher will be used to output help information for
      * either a specific command, or for using ServerLauncher in general.
-     *
+     * 
      * @param help a boolean indicating whether help information is to be displayed during
      *        invocation of ServerLauncher.
      * @return this Builder instance.
@@ -1852,7 +1846,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether a rebalance operation on the cache will occur upon starting the GemFire
      * server.
-     *
+     * 
      * @return a boolean indicating if the cache will be rebalance when the GemFire server starts.
      * @see #setRebalance(Boolean)
      */
@@ -1863,7 +1857,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Set a boolean value indicating whether a rebalance operation on the cache should occur upon
      * starting the GemFire server.
-     *
+     * 
      * @param rebalance a boolean indicating if the cache will be rebalanced when the GemFire server
      *        starts.
      * @return this Builder instance.
@@ -1876,7 +1870,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the member name of this Server in GemFire.
-     *
+     * 
      * @return a String indicating the member name of this Server in GemFire.
      * @see #setMemberName(String)
      */
@@ -1886,7 +1880,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Sets the member name of the Server in GemFire.
-     *
+     * 
      * @param memberName a String indicating the member name of this Server in GemFire.
      * @return this Builder instance.
      * @throws IllegalArgumentException if the member name is invalid.
@@ -1906,7 +1900,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Gets the process ID (PID) of the running Server indicated by the user as an argument to the
      * ServerLauncher. This PID is used by the Server launcher to determine the Server's status, or
      * invoke shutdown on the Server.
-     *
+     * 
      * @return a user specified Integer value indicating the process ID of the running Server.
      * @see #setPid(Integer)
      */
@@ -1918,7 +1912,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Sets the process ID (PID) of the running Server indicated by the user as an argument to the
      * ServerLauncher. This PID will be used by the Server launcher to determine the Server's
      * status, or invoke shutdown on the Server.
-     *
+     * 
      * @param pid a user specified Integer value indicating the process ID of the running Server.
      * @return this Builder instance.
      * @throws IllegalArgumentException if the process ID (PID) is not valid (greater than zero if
@@ -1937,9 +1931,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether the new instance of ServerLauncher will redirect output to system logs
      * when starting a Server.
-     *
+     * 
      * @return a boolean value indicating if output will be redirected to system logs when starting
      *         a Server
+     * 
      * @see #setRedirectOutput(Boolean)
      */
     public Boolean getRedirectOutput() {
@@ -1948,7 +1943,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether redirecting of output has been enabled.
-     *
+     * 
      * @return a boolean indicating if redirecting of output was enabled.
      */
     private boolean isRedirectingOutput() {
@@ -1958,7 +1953,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets whether the new instance of ServerLauncher will redirect output to system logs when
      * starting a Server.
-     *
+     * 
      * @param redirectOutput a boolean value indicating if output will be redirected to system logs
      *        when starting a Server.
      * @return this Builder instance.
@@ -1972,7 +1967,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Gets the IP address to which the Server will be bound listening for and accepting cache
      * client connections in a client/server topology.
-     *
+     * 
      * @return an InetAddress indicating the IP address that the Server is bound to listening for
      *         and accepting cache client connections in a client/server topology.
      * @see #setServerBindAddress(String)
@@ -1988,7 +1983,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets the IP address to which the Server will be bound listening for and accepting cache
      * client connections in a client/server topology.
-     *
+     * 
      * @param serverBindAddress a String specifying the IP address or hostname that the Server will
      *        be bound to listen for and accept cache client connections in a client/server
      *        topology.
@@ -2026,7 +2021,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Gets the port on which the Server will listen for and accept cache client connections in a
      * client/server topology.
-     *
+     * 
      * @return an Integer value specifying the port the Server will listen on and accept cache
      *         client connections in a client/server topology.
      * @see #setServerPort(Integer)
@@ -2042,7 +2037,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Sets the port on which the Server will listen for and accept cache client connections in a
      * client/server topology.
-     *
+     * 
      * @param serverPort an Integer value specifying the port the Server will listen on and accept
      *        cache client connections in a client/server topology.
      * @return this Builder instance.
@@ -2064,7 +2059,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Gets the location of the Spring XML configuration meta-data file used to bootstrap, configure
      * and initialize the GemFire Server on start.
      * <p>
-     *
+     * 
      * @return a String indicating the location of the Spring XML configuration file.
      * @see #setSpringXmlLocation(String)
      */
@@ -2076,7 +2071,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Sets the location of the Spring XML configuration meta-data file used to bootstrap, configure
      * and initialize the GemFire Server on start.
      * <p>
-     *
+     * 
      * @param springXmlLocation a String indicating the location of the Spring XML configuration
      *        file.
      * @return this Builder instance.
@@ -2090,7 +2085,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Gets the working directory pathname in which the Server will be ran. If the directory is
      * unspecified, then working directory defaults to the current directory.
-     *
+     * 
      * @return a String indicating the working directory pathname.
      * @see #setWorkingDirectory(String)
      */
@@ -2103,7 +2098,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * Sets the working directory in which the Server will be ran. This also the directory in which
      * all Server files (such as log and license files) will be written. If the directory is
      * unspecified, then the working directory defaults to the current directory.
-     *
+     * 
      * @param workingDirectory a String indicating the pathname of the directory in which the Server
      *        will be ran.
      * @return this Builder instance.
@@ -2266,6 +2261,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
 
+
     /**
      * Sets a GemFire Distributed System Property.
      *
@@ -2347,7 +2343,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * user must specify the member name for the Server in the GemFire distributed system as a
      * command-line argument, or by setting the memberName property programmatically using the
      * corresponding setter method.
-     *
+     * 
      * @throws IllegalStateException if the Builder is not properly configured.
      */
     protected void validate() {
@@ -2360,7 +2356,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the arguments passed to the Builder when the 'start' command has been issued.
-     *
+     * 
      * @see org.apache.geode.distributed.ServerLauncher.Command#START
      */
     void validateOnStart() {
@@ -2384,7 +2380,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the arguments passed to the Builder when the 'status' command has been issued.
-     *
+     * 
      * @see org.apache.geode.distributed.ServerLauncher.Command#STATUS
      */
     void validateOnStatus() {
@@ -2395,7 +2391,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Validates the arguments passed to the Builder when the 'stop' command has been issued.
-     *
+     * 
      * @see org.apache.geode.distributed.ServerLauncher.Command#STOP
      */
     void validateOnStop() {
@@ -2407,7 +2403,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Validates the Builder configuration settings and then constructs an instance of the
      * ServerLauncher class to invoke operations on a GemFire Server.
-     *
+     * 
      * @return a newly constructed instance of the ServerLauncher configured with this Builder.
      * @see #validate()
      * @see org.apache.geode.distributed.ServerLauncher
@@ -2437,13 +2433,13 @@ public class ServerLauncher extends AbstractLauncher<String> {
       assert isNotBlank(name) : "The name of the command must be specified!";
       this.name = name;
       this.options = options != null ? Collections.unmodifiableList(Arrays.asList(options))
-          : Collections.emptyList();
+          : Collections.<String>emptyList();
     }
 
     /**
      * Determines whether the specified name refers to a valid Server launcher command, as defined
      * by this enumerated type.
-     *
+     * 
      * @param name a String value indicating the potential name of a Server launcher command.
      * @return a boolean indicating whether the specified name for a Server launcher command is
      *         valid.
@@ -2455,7 +2451,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Determines whether the given Server launcher command has been properly specified. The command
      * is deemed unspecified if the reference is null or the Command is UNSPECIFIED.
-     *
+     * 
      * @param command the Server launcher command.
      * @return a boolean value indicating whether the Server launcher command is unspecified.
      * @see Command#UNSPECIFIED
@@ -2467,7 +2463,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Looks up a Server launcher command by name. The equality comparison on name is
      * case-insensitive.
-     *
+     * 
      * @param name a String value indicating the name of the Server launcher command.
      * @return an enumerated type representing the command name or null if the no such command with
      *         the specified name exists.
@@ -2484,7 +2480,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the name of the Server launcher command.
-     *
+     * 
      * @return a String value indicating the name of the Server launcher command.
      */
     public String getName() {
@@ -2494,7 +2490,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Gets a set of valid options that can be used with the Server launcher command when used from
      * the command-line.
-     *
+     * 
      * @return a Set of Strings indicating the names of the options available to the Server launcher
      *         command.
      */
@@ -2504,7 +2500,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Determines whether this Server launcher command has the specified command-line option.
-     *
+     * 
      * @param option a String indicating the name of the command-line option to this command.
      * @return a boolean value indicating whether this command has the specified named command-line
      *         option.
@@ -2515,7 +2511,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Convenience method for determining whether this is the UNSPECIFIED Server launcher command.
-     *
+     * 
      * @return a boolean indicating if this command is UNSPECIFIED.
      * @see #UNSPECIFIED
      */
@@ -2525,7 +2521,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     /**
      * Gets the String representation of this Server launcher command.
-     *
+     * 
      * @return a String value representing this Server launcher command.
      */
     @Override
@@ -2538,14 +2534,14 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * The ServerState is an immutable type representing the state of the specified Server at any
    * given moment in time. The state of the Server is assessed at the exact moment an instance of
    * this class is constructed.
-   *
+   * 
    * @see org.apache.geode.distributed.AbstractLauncher.ServiceState
    */
   public static class ServerState extends ServiceState<String> {
 
     /**
      * Unmarshals a ServerState instance from the JSON String.
-     *
+     * 
      * @return a ServerState value unmarshalled from the JSON String.
      */
     public static ServerState fromJson(final String json) {
@@ -2596,33 +2592,18 @@ public class ServerLauncher extends AbstractLauncher<String> {
       this(status, // status
           errorMessage, // statusMessage
           System.currentTimeMillis(), // timestamp
-          getServerLocation(launcher), // serverLocation
+          null, // serverLocation
           null, // pid
           0L, // uptime
           launcher.getWorkingDirectory(), // workingDirectory
-          ManagementFactory.getRuntimeMXBean().getInputArguments(), // jvmArguments
+          Collections.<String>emptyList(), // jvmArguments
           null, // classpath
           GemFireVersion.getGemFireVersion(), // gemfireVersion
-          System.getProperty("java.version"), // javaVersion
+          null, // javaVersion
           null, // logFile
-          getServerBindAddress(launcher).getCanonicalHostName(), // host
-          launcher.getServerPortAsString(), // port
+          null, // host
+          null, // port
           null);// memberName
-    }
-
-    /*
-     * Guards against throwing NPEs due to incorrect or missing host information while constructing
-     * error states
-     */
-    private static String getServerLocation(ServerLauncher launcher) {
-      if (launcher.getServerPort() == null) {
-        return launcher.getId();
-      }
-      if (launcher.getServerBindAddress() == null) {
-        return HostUtils.getLocatorId(HostUtils.getLocalHost(), launcher.getServerPort());
-      }
-      return HostUtils.getLocatorId(launcher.getServerBindAddress().getCanonicalHostName(),
-          launcher.getServerPort());
     }
 
     protected ServerState(final Status status, final String statusMessage, final long timestamp,
@@ -2646,6 +2627,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
         }
       }
+
       return launcher.getLogFileCanonicalPath();
     }
 
@@ -2663,28 +2645,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
         }
       }
+
       return launcher.getServerBindAddressAsString();
-    }
-
-    private static InetAddress getServerBindAddress(final ServerLauncher launcher) {
-      final InternalCache internalCache = GemFireCacheImpl.getInstance();
-
-      if (internalCache != null) {
-        final List<CacheServer> csList = internalCache.getCacheServers();
-        if (csList != null && !csList.isEmpty()) {
-          final CacheServer cs = csList.get(0);
-          final InetAddress serverBindAddress;
-          try {
-            serverBindAddress = InetAddress.getByName(cs.getBindAddress());
-          } catch (UnknownHostException e) {
-            throw new UncheckedIOException(e);
-          }
-          if (serverBindAddress != null) {
-            return serverBindAddress;
-          }
-        }
-      }
-      return launcher.getServerBindAddress();
     }
 
     @SuppressWarnings("unchecked")
@@ -2701,6 +2663,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
         }
       }
+
       return launcher.isDisableDefaultServer() ? EMPTY : launcher.getServerPortAsString();
     }
 
@@ -2709,4 +2672,5 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return SERVER_SERVICE_NAME;
     }
   }
+
 }

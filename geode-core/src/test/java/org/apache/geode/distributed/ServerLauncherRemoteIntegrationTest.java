@@ -244,9 +244,9 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
     assertThat(serverState.getClasspath()).isNull();
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
+    assertThat(serverState.getJavaVersion()).isNull();
     assertThat(serverState.getLogFile()).isNull();
-    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getHost()).isNull();
     assertThat(serverState.getMemberName()).isNull();
   }
 

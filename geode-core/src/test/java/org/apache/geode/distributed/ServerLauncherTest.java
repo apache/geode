@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -270,7 +271,7 @@ public class ServerLauncherTest {
 
     launcher.startCacheServer(cache);
 
-    verify(cacheServer, times(1)).setBindAddress(anyString());
+    verify(cacheServer, times(1)).setBindAddress(isNull());
     verify(cacheServer, times(1)).setPort(eq(11235));
     verify(cacheServer, times(1)).start();
   }
