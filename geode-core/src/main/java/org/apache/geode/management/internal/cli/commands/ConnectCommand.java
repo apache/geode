@@ -274,12 +274,7 @@ public class ConnectCommand implements GfshCommand {
       return ResultBuilder.createInfoResult(
           CliStrings.format(CliStrings.CONNECT__MSG__SUCCESS, operationInvoker.toString()));
 
-    } catch (Exception e) {
-      // all other exceptions, just logs it and returns a connection error
-      if (!(e instanceof SecurityException) && !(e instanceof AuthenticationFailedException)) {
-        return handleException(e);
-      }
-
+    } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
       // connection error
       if (gfProperties.containsKey(ResourceConstants.USER_NAME)) {
@@ -292,7 +287,9 @@ public class ConnectCommand implements GfshCommand {
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(),
           UserInputProperty.PASSWORD.promptForAcceptableValue(gfsh));
       return httpConnect(gfProperties, url);
-
+    } catch (Exception e) {
+      // all other exceptions, just logs it and returns a connection error
+      return handleException(e);
     } finally {
       Gfsh.redirectInternalJavaLoggers();
     }
