@@ -41,7 +41,7 @@ By default, <%=vars.product_name%> assigns *ephemeral* ports, that is, temporary
 
 ## **Properties for Firewall and Port Configuration**
 
-This table contains properties potentially involved in firewall behavior, with a brief description of each property. Click on a property name for a link to the reference topic.
+This table contains properties potentially involved in firewall behavior, with a brief description of each property.
 
 <table>
 <colgroup>
@@ -94,7 +94,7 @@ This table contains properties potentially involved in firewall behavior, with a
 <colgroup>
 <col width="33%" />
 <col width="33%" />
-<col width="33%" />
+<col width="34%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -128,7 +128,7 @@ This table contains properties potentially involved in firewall behavior, with a
 <colgroup>
 <col width="33%" />
 <col width="33%" />
-<col width="33%" />
+<col width="34%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -183,64 +183,18 @@ This table contains properties potentially involved in firewall behavior, with a
 
 ## **Properties for Firewall and Port Configuration in Multi-Site (WAN) Configurations**
 
-Each gateway receiver uses a port to listen for incoming communication from one or more gateway senders communication between <%=vars.product_name%> sites. The full range of port values for gateway receivers must be made accessible within the firewall from across the WAN.
+Each gateway receiver uses a single port to accept connections from gateway senders in other
+systems. The configuration of a gateway receiver specifies a range of possible port values
+to use. <%=vars.product_name%> selects an available port from the specified range when the gateway
+receiver starts. Configure your firewall so that the full range of possible port values is
+accessible by gateway senders from across the WAN.
 
-This table contains properties potentially involved in firewall behavior, with a brief description of each property. Click on a property name for a link to the [gemfire.properties and gfsecurity.properties (<%=vars.product_name%> Properties)](../../reference/topics/gemfire_properties.html#gemfire_properties) reference topic.
+| Configuration Area | Property or Setting | Definition |
+|--------------------|---------------------|------------|
+| multi-site (WAN) config for gateway sender | [hostname-for-senders](../../reference/topics/gfe_cache_xml.html#gateway-receiver) | Hostname or IP address of the gateway receiver used by gateway senders to connect. |
+| multi-site (WAN) config for locator | [remote-locators](../../reference/topics/gemfire_properties.html#gemfire_properties) | List of locators (and their ports) that are available on the remote WAN site. |
+| multi-site (WAN) config for gateway receiver | [start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the <code class=" ph codeph">gfsh start gateway receiver</code> command | Port range that the gateway receiver can use to listen for gateway sender communication. |
 
-<table>
-<colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Configuration Area</th>
-<th><strong>Property or Setting</strong></th>
-<th><strong>Definition</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>multi-site (WAN) config</td>
-<td><p>[hostname-for-senders](../../reference/topics/gfe_cache_xml.html#gateway-receiver)</p></td>
-<td><p>Hostname or IP address of the gateway receiver used by gateway senders to connect.</p></td>
-</tr>
-<tr class="even">
-<td>multi-site (WAN) config</td>
-<td>[remote-locators](../../reference/topics/gemfire_properties.html#gemfire_properties)</td>
-<td><p>List of locators (and their ports) that are available on the remote WAN site.</p></td>
-</tr>
-<tr class="odd">
-<td>multi-site (WAN) config</td>
-<td><p>[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the <code class=" ph codeph">gfsh start gateway receiver</code> command</p></td>
-<td><p>Port range that the gateway receiver can use to listen for gateway sender communication.</p></td>
-</tr>
-</tbody>
-</table>
 
-## Default Port Configuration
-
-<table>
-<colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><p><strong>Port Name</strong></p></th>
-<th>Related Configuration Setting</th>
-<th><p><strong>Default Port</strong></p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p>Gateway Receiver</p></td>
-<td><p>[start-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) and [end-port](../../reference/topics/gfe_cache_xml.html#gateway-receiver) (cache.xml) or <code class="ph codeph">--start-port</code> and <code class="ph codeph">--end-port</code> parameters to the <code class="ph codeph">gfsh start gateway receiver</code> command</p></td>
-<td><em>not set</em> Each gateway receiver uses a single port to accept connections from gateway senders in other systems. However, the configuration of a gateway receiver specifies a range of possible port values to use. <%=vars.product_name%> selects an available port from the specified range when the gateway receiver starts. Configure your firewall so that the full range of possible port values is accessible by gateway senders from across the WAN.</td>
-</tr>
-</tbody>
-</table>
 
 
