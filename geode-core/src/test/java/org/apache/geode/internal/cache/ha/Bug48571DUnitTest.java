@@ -49,12 +49,15 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
@@ -95,32 +98,24 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void verifyProxyHasBeenPaused() {
-    WaitCriterion criterion = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        CacheClientNotifier ccn = CacheClientNotifier.getInstance();
-        Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+      Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
+      boolean pausedFlag = false;
+      Iterator<CacheClientProxy> itr = ccProxies.iterator();
 
-        Iterator<CacheClientProxy> itr = ccProxies.iterator();
-
-        while (itr.hasNext()) {
-          CacheClientProxy ccp = itr.next();
-          System.out.println("proxy status " + ccp.getState());
-          if (ccp.isPaused())
-            return true;
+      while (itr.hasNext()) {
+        CacheClientProxy ccp = itr.next();
+        System.out.println("proxy status " + ccp.getState());
+        if (ccp.isPaused()) {
+          pausedFlag = true;
+          break;
         }
-        return false;
       }
-
-      @Override
-      public String description() {
-        return "Proxy has not paused yet";
-      }
-    };
-    Wait.waitForCriterion(criterion, 15 * 1000, 200, true);
+      assertEquals("Proxy has not been paused in 1 minute", true, pausedFlag);
+    });
   }
 
-  // @Category(FlakyTest.class) // GEODE-510
   @Test
   public void testStatsMatchWithSize() throws Exception {
     IgnoredException.addIgnoredException("Unexpected IOException||Connection reset");
@@ -135,7 +130,7 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
 
     server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused());
     // resume puts on server, add another 100.
-    server.invokeAsync(() -> Bug48571DUnitTest.resumePuts()); // TODO: join or await result
+    server.invoke(() -> Bug48571DUnitTest.resumePuts());
     // start durable client
     client.invoke(() -> Bug48571DUnitTest.createClientCache(client.getHost(), port));
     // wait for full queue dispatch
@@ -283,19 +278,22 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void verifyStats() throws Exception {
-    CacheClientNotifier ccn = CacheClientNotifier.getInstance();
-    CacheClientProxy ccp = ccn.getClientProxies().iterator().next();
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getQueueSize() " + ccp.getQueueSize());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
-        "getQueueSizeStat() " + ccp.getQueueSizeStat());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
-        "getEventsEnqued() " + ccp.getHARegionQueue().getStatistics().getEventsEnqued());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
-        "getEventsDispatched() " + ccp.getHARegionQueue().getStatistics().getEventsDispatched());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
-        "getEventsRemoved() " + ccp.getHARegionQueue().getStatistics().getEventsRemoved());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
-        "getNumVoidRemovals() " + ccp.getHARegionQueue().getStatistics().getNumVoidRemovals());
-    assertEquals(ccp.getQueueSize(), ccp.getQueueSizeStat());
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      CacheClientNotifier ccn = CacheClientNotifier.getInstance();
+      CacheClientProxy ccp = ccn.getClientProxies().iterator().next();
+      cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getQueueSize() " + ccp.getQueueSize());
+      cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+          "getQueueSizeStat() " + ccp.getQueueSizeStat());
+      cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+          "getEventsEnqued() " + ccp.getHARegionQueue().getStatistics().getEventsEnqued());
+      cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+          "getEventsDispatched() " + ccp.getHARegionQueue().getStatistics().getEventsDispatched());
+      cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+          "getEventsRemoved() " + ccp.getHARegionQueue().getStatistics().getEventsRemoved());
+      cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+          "getNumVoidRemovals() " + ccp.getHARegionQueue().getStatistics().getNumVoidRemovals());
+      assertEquals("The queue size did not match the stat value", ccp.getQueueSize(),
+          ccp.getQueueSizeStat());
+    });
   }
 }
