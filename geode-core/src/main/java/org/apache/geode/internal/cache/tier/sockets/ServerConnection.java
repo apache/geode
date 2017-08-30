@@ -1108,7 +1108,6 @@ public class ServerConnection implements Runnable {
   public boolean isInternalMessage(Message message, boolean allowOldInternalMessages) {
     int messageType = message.getMessageType();
     boolean isInternalMessage = messageType == MessageType.PING
-        || messageType == MessageType.USER_CREDENTIAL_MESSAGE
         || messageType == MessageType.REQUEST_EVENT_VALUE || messageType == MessageType.MAKE_PRIMARY
         || messageType == MessageType.REMOVE_USER_AUTH || messageType == MessageType.CLIENT_READY
         || messageType == MessageType.SIZE || messageType == MessageType.TX_FAILOVER
