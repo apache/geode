@@ -218,7 +218,7 @@ public class TestCommand {
     // createTestCommand("stop locator --name=locator1", clusterManage);
     // createTestCommand("stop server --name=server1", clusterManage);
 
-    // DescribeMemberCommand, ListMemberCommand
+    // DescribeMemberCommand, ListMembersCommand
     createTestCommand("describe member --name=server1", clusterRead);
     createTestCommand("list members", clusterRead);
 

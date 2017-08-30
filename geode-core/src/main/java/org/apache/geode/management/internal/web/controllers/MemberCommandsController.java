@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import org.apache.geode.management.internal.cli.commands.ListMembersCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 
@@ -29,7 +30,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
  * for the Gfsh Member Commands.
  * <p/>
  * 
- * @see org.apache.geode.management.internal.cli.commands.ListMemberCommand
+ * @see org.apache.geode.management.internal.cli.commands.ListMembersCommand
  * @see org.apache.geode.management.internal.cli.commands.DescribeMemberCommand
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
