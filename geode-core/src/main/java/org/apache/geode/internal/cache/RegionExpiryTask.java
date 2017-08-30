@@ -141,6 +141,6 @@ abstract class RegionExpiryTask extends ExpiryTask {
       SystemFailure.checkFailure();
     }
     return super.toString() + " for " + getLocalRegion().getFullPath() + ", expiration time: "
-        + expireTime + " [now: " + getNow() + "]";
+        + expireTime + " [now: " + calculateNow() + "]";
   }
 }
