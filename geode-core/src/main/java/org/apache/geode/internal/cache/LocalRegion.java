@@ -7746,19 +7746,17 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (!isInitialized()) {
       return; // don't schedule expiration until region is initialized (bug
     }
+    if (!isEntryExpiryPossible()) {
+      return;
+    }
     // OK to ignore transaction since Expiry only done non-tran
     Iterator<RegionEntry> it = this.entries.regionEntries().iterator();
     if (it.hasNext()) {
-      try {
-        if (isEntryExpiryPossible()) {
-          ExpiryTask.setNow();
-        }
+      ExpiryTask.doWithNowSet(this, () -> {
         while (it.hasNext()) {
           addExpiryTask(it.next());
         }
-      } finally {
-        ExpiryTask.clearNow();
-      }
+      });
     }
   }
 

@@ -3933,8 +3933,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                       ((InternalDistributedSystem) (region.getCache().getDistributedSystem()))
                           .getClock().getStopTime();
                   logger.info("DEBUG: waiting for expire destroy expirationTime= "
-                      + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime
-                      + " currentTimeMillis=" + System.currentTimeMillis());
+                      + eet.getExpirationTime() + " now=" + eet.calculateNow() + " stopTime="
+                      + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
                 } else {
                   logger.info("DEBUG: waiting for expire destroy but expiry task is null");
                 }
@@ -3948,8 +3948,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               try {
                 EntryExpiryTask eet = getEntryExpiryTask(region, key);
                 if (eet != null) {
-                  expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow()
-                      + " currentTimeMillis=" + System.currentTimeMillis();
+                  expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now="
+                      + eet.calculateNow() + " currentTimeMillis=" + System.currentTimeMillis();
                 }
               } catch (EntryNotFoundException ex) {
                 expiryInfo = "EntryNotFoundException when getting expiry task";
