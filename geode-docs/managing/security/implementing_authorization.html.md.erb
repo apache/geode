@@ -103,6 +103,8 @@ a Client-Server interaction.
 | Region.destroy(key)                | DATA:WRITE:RegionName:Key           |
 | Region.put(key)                    | DATA:WRITE:RegionName:Key           |
 | Region.replace                     | DATA:WRITE:RegionName:Key           |
+| CqQuery.execute                    | DATA:READ and CLUSTER:MANAGE:QUERY  |
+| CqQuery.executeWithInitialResults  | DATA:READ and CLUSTER:MANAGE:QUERY  |
 
 
 This table classifies the permissions assigned for `gfsh` operations.
