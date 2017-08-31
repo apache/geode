@@ -35,10 +35,6 @@ import org.junit.experimental.categories.Category;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * TODO: Add additional tests for all methods in DataCommandFunction.
- *
- */
 @Category(IntegrationTest.class)
 public class Bug3544JUnitTest {
 
