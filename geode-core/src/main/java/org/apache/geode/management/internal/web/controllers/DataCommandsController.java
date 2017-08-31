@@ -151,12 +151,15 @@ public class DataCommandsController extends AbstractCommandsController {
   public Callable<ResponseEntity<String>> importData(
       @PathVariable("member") final String memberNameId,
       @PathVariable("region") final String regionNamePath,
+      @RequestParam(value = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS,
+          required = false) final boolean invokeCallbacks,
       @RequestParam(CliStrings.IMPORT_DATA__FILE) final String file) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.IMPORT_DATA);
 
     command.addOption(CliStrings.MEMBER, decode(memberNameId));
     command.addOption(CliStrings.IMPORT_DATA__REGION, decode(regionNamePath));
     command.addOption(CliStrings.IMPORT_DATA__FILE, decode(file));
+    command.addOption(CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, invokeCallbacks + "");
 
     return getProcessCommandCallable(command.toString());
   }

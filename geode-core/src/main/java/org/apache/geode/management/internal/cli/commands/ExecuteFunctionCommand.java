@@ -63,8 +63,9 @@ public class ExecuteFunctionCommand implements GfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.EXECUTE_FUNCTION__ONGROUPS__HELP) String[] onGroups,
-      @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.EXECUTE_FUNCTION__ONMEMBER__HELP) String onMember,
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+          optionContext = ConverterHint.MEMBERIDNAME,
+          help = CliStrings.EXECUTE_FUNCTION__ONMEMBER__HELP) String[] onMembers,
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ONREGION,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.EXECUTE_FUNCTION__ONREGION__HELP) String onRegion,
@@ -87,9 +88,6 @@ public class ExecuteFunctionCommand implements GfshCommand {
     if (onRegion != null) {
       onRegion = onRegion.trim();
     }
-    if (onMember != null) {
-      onMember = onMember.trim();
-    }
     if (filterString != null) {
       filterString = filterString.trim();
     }
@@ -103,7 +101,7 @@ public class ExecuteFunctionCommand implements GfshCommand {
         return ResultBuilder.buildResult(errorResultData);
       }
 
-      if (isMoreThanOneTrue(onRegion != null, onMember != null, onGroups != null)) {
+      if (isMoreThanOneTrue(onRegion != null, onMembers != null, onGroups != null)) {
         // Provide Only one of region/member/groups
         ErrorResultData errorResultData =
             ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
@@ -127,7 +125,7 @@ public class ExecuteFunctionCommand implements GfshCommand {
         filters.add(filterString);
       }
 
-      if (onRegion == null && onMember == null && onGroups == null) {
+      if (onRegion == null && onMembers == null && onGroups == null) {
         // run function on all the members excluding locators bug#46113
         // if user wish to execute on locator then he can choose --member or --group option
         Set<DistributedMember> dsMembers = CliUtil.getAllNormalMembers(cache);
@@ -221,40 +219,19 @@ public class ExecuteFunctionCommand implements GfshCommand {
                 CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR));
           }
         }
-      } else if (onGroups != null) {
-        // execute on group members
-        Set<DistributedMember> dsMembers = new HashSet<>();
-        for (String grp : onGroups) {
-          dsMembers.addAll(cache.getDistributedSystem().getGroupMembers(grp));
+      } else if (onGroups != null || onMembers != null) {
+        Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroups, onMembers);
+
+        if (dsMembers.size() == 0) {
+          return ResultBuilder.createUserErrorResult("No members found.");
         }
 
-        if (dsMembers.size() > 0) {
-          for (DistributedMember member : dsMembers) {
-            executeAndGetResults(functionId, filterString, resultCollector, arguments, cache,
-                member, resultTable, onRegion);
-          }
-          return ResultBuilder.buildResult(resultTable);
-        } else {
-          StringBuilder grps = new StringBuilder();
-          for (String grp : onGroups) {
-            grps.append(grp);
-            grps.append(", ");
-          }
-          return ResultBuilder.createUserErrorResult(
-              CliStrings.format(CliStrings.EXECUTE_FUNCTION__MSG__GROUPS_0_HAS_NO_MEMBERS,
-                  grps.toString().substring(0, grps.toString().length() - 1)));
-        }
-      } else if (onMember != null && onMember.length() > 0) {
-        DistributedMember member = CliUtil.getDistributedMemberByNameOrId(onMember); // fix for bug
-        // 45658
-        if (member != null) {
+        for (DistributedMember member : dsMembers) {
           executeAndGetResults(functionId, filterString, resultCollector, arguments, cache, member,
               resultTable, onRegion);
-        } else {
-          toTabularResultData(resultTable, onMember, CliStrings
-              .format(CliStrings.EXECUTE_FUNCTION__MSG__NO_ASSOCIATED_MEMBER + " " + onMember));
         }
         return ResultBuilder.buildResult(resultTable);
+
       }
     } catch (Exception e) {
       ErrorResultData errorResultData = ResultBuilder.createErrorResultData()

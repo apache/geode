@@ -556,7 +556,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     int randomInteger = random.nextInt(COUNT);
     String query =
         "query --query=\"select ID , status , createTime , pk, floatMinValue from ${DATA_REGION} where ID <= ${PORTFOLIO_ID}"
-            + " and status='${STATUS}'" + "\" --interactive=false";
+            + " and status=${STATUS}" + "\" --interactive=false";
     executeCommand("set variable --name=DATA_REGION --value=" + DATA_REGION_NAME_PATH);
     executeCommand("set variable --name=PORTFOLIO_ID --value=" + randomInteger);
     executeCommand("set variable --name=STATUS --value=" + (statusActive ? "active" : "inactive"));
@@ -568,7 +568,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     try {
       query =
           "query --query=\"select ID , status , createTime , pk, floatMinValue from ${DATA_REGION2} where ID <= ${PORTFOLIO_ID2}"
-              + " and status='${STATUS2}'" + "\" --interactive=false";
+              + " and status=${STATUS2}" + "\" --interactive=false";
       cmdResult = executeCommand(query);
       printCommandOutput(cmdResult);
       validateSelectResult(cmdResult, false, 0, null);

@@ -301,4 +301,26 @@ public class GfshParserParsingTest {
     assertThat(result.getParamValue("cache-listener")).isNotNull().isEmpty();
     assertThat(result.getParamValue("cache-loader")).isNotNull().isEmpty();
   }
+
+  @Test
+  public void testValueOfJsonWithoutOuterQuoteAndSpace() throws Exception {
+    String command = "put --key=('name':'id') --value=456 --region=/test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("key")).isEqualTo("('name':'id')");
+  }
+
+  @Test
+  public void testValueOfJsonWithSpace() throws Exception {
+    // this is considerred an invalid command
+    String command = "put --key=('name' : 'id') --value=456 --region=/test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void testValueOfJsonWithSpaceAndOuterQuotes() throws Exception {
+    String command = "put --key=\"('name' : 'id')\" --value=456 --region=/test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("key")).isEqualTo("\"('name' : 'id')\"");
+  }
 }

@@ -14,19 +14,20 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
-import org.apache.geode.management.internal.cli.shell.OperationInvoker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-import org.springframework.shell.event.ParseResult;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.event.ParseResult;
+
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
 /**
  * Immutable representation of the outcome of parsing a given shell line. * Extends
@@ -85,8 +86,14 @@ public class GfshParseResult extends ParseResult {
       // these will be used for the http request parameters, when turned into the
       // commands again, the options will be quoted.
       if (argumentAsString.contains(" ")) {
-        argumentAsString = "'" + argumentAsString + "'";
+        if (argumentAsString.contains("'")) {
+          argumentAsString = "\"" + argumentAsString + "\"";
+        } else {
+          argumentAsString = "'" + argumentAsString + "'";
+        }
       }
+      // this always uses the first variation of the option as the key, so all the controllers
+      // should use this as the parameter key
       paramValueStringMap.put(cliOption.key()[0], argumentAsString);
     }
   }

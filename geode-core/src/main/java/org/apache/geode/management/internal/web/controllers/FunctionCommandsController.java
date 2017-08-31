@@ -77,7 +77,7 @@ public class FunctionCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.POST, value = "/functions/{id}")
   public Callable<ResponseEntity<String>> executeFunction(
       @PathVariable("id") final String functionId,
-      @RequestParam(value = CliStrings.GROUPS, required = false) final String groupName,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
       @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId,
       @RequestParam(value = CliStrings.EXECUTE_FUNCTION__ONREGION,
           required = false) final String regionNamePath,
@@ -92,7 +92,7 @@ public class FunctionCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.EXECUTE_FUNCTION__ID, decode(functionId));
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.GROUPS, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     if (hasValue(memberNameId)) {
@@ -121,14 +121,14 @@ public class FunctionCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.DELETE, value = "/functions/{id}")
   @ResponseBody
   public String destroyFunction(@PathVariable("id") final String functionId,
-      @RequestParam(value = CliStrings.GROUPS, required = false) final String groupName,
+      @RequestParam(value = CliStrings.GROUP, required = false) final String groupName,
       @RequestParam(value = CliStrings.MEMBER, required = false) final String memberNameId) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.DESTROY_FUNCTION);
 
     command.addOption(CliStrings.DESTROY_FUNCTION__ID, decode(functionId));
 
     if (hasValue(groupName)) {
-      command.addOption(CliStrings.GROUPS, groupName);
+      command.addOption(CliStrings.GROUP, groupName);
     }
 
     if (hasValue(memberNameId)) {
