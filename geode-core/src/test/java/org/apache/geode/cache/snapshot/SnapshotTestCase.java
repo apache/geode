@@ -67,7 +67,7 @@ public class SnapshotTestCase {
 
   Map<Integer, MyObject> createExpected(SerializationType type) {
     Map<Integer, MyObject> expected = new HashMap<>();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
       expected.put(i, regionGenerator.createData(type, i, "The number is " + i));
     }
     return expected;
