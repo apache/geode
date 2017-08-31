@@ -18,10 +18,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,6 +42,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
 
 public class JarDeployer implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -308,27 +309,14 @@ public class JarDeployer implements Serializable {
    * @throws IOException If the directory isn't writable
    */
   public void verifyWritableDeployDirectory() throws IOException {
-    Exception exception = null;
-    int tryCount = 0;
-    do {
-      try {
-        if (this.deployDirectory.canWrite()) {
-          return;
-        }
-      } catch (Exception ex) {
-        exception = ex;
-        // We'll just ignore exceptions and loop to try again
+    try {
+      if (this.deployDirectory.canWrite()) {
+        return;
       }
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException iex) {
-        logger.error("Interrupted while testing writable deploy directory", iex);
-      }
-    } while (tryCount++ < 20);
-
-    if (exception != null) {
-      throw new IOException("Unable to write to deploy directory", exception);
+    } catch (SecurityException ex) {
+      throw new IOException("Unable to write to deploy directory", ex);
     }
+
     throw new IOException(
         "Unable to write to deploy directory: " + this.deployDirectory.getCanonicalPath());
   }
