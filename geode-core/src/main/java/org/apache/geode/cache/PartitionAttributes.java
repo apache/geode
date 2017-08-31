@@ -80,7 +80,7 @@ public interface PartitionAttributes<K, V> {
    * 
    * @return maximum size of the partitioned region, in megabytes
    *
-   * @deprecated since Geode 1.2.2
+   * @deprecated since Geode 1.3.0
    */
   @Deprecated
   public long getTotalMaxMemory();
