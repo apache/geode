@@ -1351,6 +1351,12 @@ public class CliStrings {
       "File to which the exported data will be written. The file must have an extension of \".gfd\".";
   public static final String EXPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be exported to the specified file on the host where the member is running.";
+  public static final String EXPORT_DATA__DIR = "directory";
+  public static final String EXPORT_DATA__DIR__HELP =
+      "Directory to which the exported data will be written. Required if parallel set to true. Overrides value of \"--file\" if both specified";
+  public static final String EXPORT_DATA__PARALLEL = "parallel";
+  public static final String EXPORT_DATA__PARALLEL_HELP =
+      "Export local data on each node to a directory on that machine. Available for partitioned regions only";
   public static final String EXPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found";
   public static final String EXPORT_DATA__REGION__NOT__FOUND = "Region {0} not found";
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
@@ -1529,6 +1535,12 @@ public class CliStrings {
   public static final String IMPORT_DATA__FILE = "file";
   public static final String IMPORT_DATA__FILE__HELP =
       "File from which the imported data will be read. The file must have an extension of \".gfd\".";
+  public static final String IMPORT_DATA__DIR = "directory";
+  public static final String IMPORT_DATA__DIR__HELP =
+      "Directory from which all data files (\".gfd\") will be read. Required if parallel set to true. Overrides value of \"--file\" if both specified";
+  public static final String IMPORT_DATA__PARALLEL = "parallel";
+  public static final String IMPORT_DATA__PARALLEL_HELP =
+      "Import data from given directory on all members. Used to import data from a parallel export. Available for partitioned regions only";
   public static final String IMPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be imported from the specified file on the host where the member is running.";
   public static final String IMPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found.";

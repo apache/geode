@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -40,49 +41,38 @@ public class ImportDataCommand implements GfshCommand {
   public Result importData(
       @CliOption(key = CliStrings.IMPORT_DATA__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.IMPORT_DATA__REGION__HELP) String regionName,
-      @CliOption(key = CliStrings.IMPORT_DATA__FILE, mandatory = true,
+      @CliOption(key = CliStrings.IMPORT_DATA__FILE,
           help = CliStrings.IMPORT_DATA__FILE__HELP) String filePath,
+      @CliOption(key = CliStrings.IMPORT_DATA__DIR,
+          help = CliStrings.IMPORT_DATA__DIR__HELP) String dirPath,
       @CliOption(key = CliStrings.MEMBER, mandatory = true,
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",
-          help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks) {
+          help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks,
+      @CliOption(key = CliStrings.IMPORT_DATA__PARALLEL, unspecifiedDefaultValue = "false",
+          help = CliStrings.IMPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
     getSecurityService().authorizeRegionWrite(regionName);
 
+    final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
+    if (targetMember == null) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.IMPORT_DATA__MEMBER__NOT__FOUND, memberNameOrId));
+    }
+
+    Optional<Result> validationResult = validatePath(filePath, dirPath, parallel);
+    if (validationResult.isPresent()) {
+      return validationResult.get();
+    }
+
     Result result;
-
     try {
-      final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
+      String path = dirPath != null ? dirPath : filePath;
+      final Object args[] = {regionName, path, parallel, invokeCallbacks};
 
-      if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
-        return ResultBuilder.createUserErrorResult(CliStrings
-            .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION));
-      }
-      if (targetMember != null) {
-        final Object args[] = {regionName, filePath, invokeCallbacks};
-        ResultCollector<?, ?> rc = CliUtil.executeFunction(importDataFunction, args, targetMember);
-        List<Object> results = (List<Object>) rc.getResult();
-
-        if (results != null) {
-          Object resultObj = results.get(0);
-
-          if (resultObj instanceof String) {
-            result = ResultBuilder.createInfoResult((String) resultObj);
-          } else if (resultObj instanceof Exception) {
-            result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
-          } else {
-            result = ResultBuilder.createGemFireErrorResult(
-                CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
-          }
-        } else {
-          result = ResultBuilder.createGemFireErrorResult(
-              CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
-        }
-      } else {
-        result = ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.IMPORT_DATA__MEMBER__NOT__FOUND, memberNameOrId));
-      }
+      ResultCollector<?, ?> rc = CliUtil.executeFunction(importDataFunction, args, targetMember);
+      result = getFunctionResult(rc);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
@@ -90,5 +80,41 @@ public class ImportDataCommand implements GfshCommand {
           CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
     }
     return result;
+  }
+
+  private Result getFunctionResult(ResultCollector<?, ?> rc) {
+    Result result;
+    List<Object> results = (List<Object>) rc.getResult();
+    if (results != null) {
+      Object resultObj = results.get(0);
+      if (resultObj instanceof String) {
+        result = ResultBuilder.createInfoResult((String) resultObj);
+      } else if (resultObj instanceof Exception) {
+        result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
+      } else {
+        result = ResultBuilder.createGemFireErrorResult(
+            CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
+      }
+    } else {
+      result = ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
+    }
+    return result;
+  }
+
+  private Optional<Result> validatePath(String filePath, String dirPath, boolean parallel) {
+    if (filePath == null && dirPath == null) {
+      return Optional
+          .of(ResultBuilder.createUserErrorResult("Must specify a location to load snapshot from"));
+    } else if (parallel && dirPath == null) {
+      return Optional.of(ResultBuilder
+          .createUserErrorResult("Must specify a directory to load snapshot files from"));
+    }
+
+    if (dirPath == null && !filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
+      return Optional.of(ResultBuilder.createUserErrorResult(CliStrings
+          .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION)));
+    }
+    return Optional.empty();
   }
 }

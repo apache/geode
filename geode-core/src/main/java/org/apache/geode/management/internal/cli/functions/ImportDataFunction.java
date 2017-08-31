@@ -40,9 +40,13 @@ public class ImportDataFunction extends FunctionAdapter implements InternalEntit
     final Object[] args = (Object[]) context.getArguments();
     final String regionName = (String) args[0];
     final String importFileName = (String) args[1];
-    boolean invokeCallbacks = false;
+    boolean parallel = false;
     if (args.length > 2) {
-      invokeCallbacks = (boolean) args[2];
+      parallel = (boolean) args[2];
+    }
+    boolean invokeCallbacks = false;
+    if (args.length > 3) {
+      invokeCallbacks = (boolean) args[3];
     }
 
     try {
@@ -53,6 +57,7 @@ public class ImportDataFunction extends FunctionAdapter implements InternalEntit
         RegionSnapshotService<?, ?> snapshotService = region.getSnapshotService();
         SnapshotOptions options = snapshotService.createOptions();
         options.invokeCallbacks(invokeCallbacks);
+        options.setParallelMode(parallel);
         File importFile = new File(importFileName);
         snapshotService.load(new File(importFileName), SnapshotFormat.GEMFIRE, options);
         String successMessage = CliStrings.format(CliStrings.IMPORT_DATA__SUCCESS__MESSAGE,

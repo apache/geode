@@ -342,6 +342,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     long count = 0;
     long start = CachePerfStats.getStatTime();
+    snapshot.getParentFile().mkdirs();
     SnapshotWriter writer = GFSnapshot.create(snapshot, region.getFullPath());
     try {
       if (getLoggerI18n().infoEnabled())
