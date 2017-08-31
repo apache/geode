@@ -193,7 +193,10 @@ public class PartitionAttributesFactory<K, V> {
    * <p>
    * <em>This setting must be the same in all processes using the Region.</em> The default value is
    * Integer.MAX_VALUE.
+   *
+   * @deprecated since Geode 1.2.2
    */
+  @Deprecated
   public PartitionAttributesFactory<K, V> setTotalMaxMemory(long mb) {
     this.partitionAttributes.setTotalMaxMemory(mb);
     return this;
