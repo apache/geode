@@ -226,7 +226,6 @@ public class StartLocatorCommand implements GfshCommand {
                 new File(locatorLauncher.getWorkingDirectory()))),
             null);
 
-        LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
         do {
           if (locatorProcess.isAlive()) {
             Gfsh.print(".");

@@ -25,9 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.net.BindException;
 import java.net.InetAddress;
-import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
@@ -206,7 +206,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
 
     LocatorLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
 
-    assertThatThrownBy(() -> launcher.status()).isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(launcher::status).isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Invalid pid 'null' found in");
   }
 
@@ -220,9 +220,10 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
     assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(locatorState.getClasspath()).isNull();
     assertThat(locatorState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(locatorState.getHost()).isNull();
-    assertThat(locatorState.getJavaVersion()).isNull();
-    assertThat(locatorState.getJvmArguments()).isEqualTo(Collections.emptyList());
+    assertThat(locatorState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(locatorState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
+    assertThat(locatorState.getJvmArguments())
+        .isEqualTo(ManagementFactory.getRuntimeMXBean().getInputArguments());
     assertThat(locatorState.getLogFile()).isNull();
     assertThat(locatorState.getMemberName()).isNull();
     assertThat(locatorState.getPid()).isNull();
