@@ -118,6 +118,7 @@ rat {
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
 
     '**/META-INF/**',
+    'jpf.properties',
 
     // --- Other Licenses ---
 
