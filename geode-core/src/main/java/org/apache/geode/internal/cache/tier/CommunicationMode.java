@@ -101,6 +101,14 @@ public enum CommunicationMode {
   }
 
   /**
+   * non-protobuf (legacy) protocols expect a refusal message before a connection is closed. This is
+   * unintelligible to protobuf protocol clients.
+   */
+  public boolean expectsConnectionRefusalMessage() {
+    return this != ProtobufClientServerProtocol;
+  }
+
+  /**
    * The modeNumber is the byte written on-wire that indicates this connection mode
    */
   private byte modeNumber;

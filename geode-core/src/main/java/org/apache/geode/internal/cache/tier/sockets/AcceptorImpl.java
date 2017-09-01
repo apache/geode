@@ -1471,12 +1471,14 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
             LocalizedStrings.AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_CURRENT_CONNECTION_COUNT_OF_1_IS_GREATER_THAN_OR_EQUAL_TO_THE_CONFIGURED_MAX_OF_2,
             new Object[] {socket.getInetAddress(), Integer.valueOf(curCnt),
                 Integer.valueOf(this.maxConnections)}));
-        try {
-          ServerHandShakeProcessor.refuse(socket.getOutputStream(),
-              LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
-                  .toLocalizedString(Integer.valueOf(this.maxConnections)));
-        } catch (Exception ex) {
-          logger.debug("rejection message failed", ex);
+        if (mode.expectsConnectionRefusalMessage()) {
+          try {
+            ServerHandShakeProcessor.refuse(socket.getOutputStream(),
+                LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
+                    .toLocalizedString(Integer.valueOf(this.maxConnections)));
+          } catch (Exception ex) {
+            logger.debug("rejection message failed", ex);
+          }
         }
         closeSocket(socket);
         return;
