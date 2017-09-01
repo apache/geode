@@ -102,11 +102,11 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
   }
 
-  private TXStateProxy prepForTransaction() throws InterruptedException {
+  private TXStateProxy prepForTransaction(DistributionManager dm) throws InterruptedException {
     if (this.txUniqId == TXManagerImpl.NOTX) {
       return null;
     } else {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (cache == null) {
         // ignore and return, we are shutting down!
         return null;
@@ -141,7 +141,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
             .toLocalizedString(dm.getId()));
         return;
       }
-      dr = (DistributedRegion) GemFireCacheImpl.getInstance().getRegion(this.regionPath);
+      dr = (DistributedRegion) dm.getCache().getRegion(this.regionPath);
       if (dr == null) {
         // if the distributed system is disconnecting, don't send a reply saying
         // the partitioned region can't be found (bug 36585)
@@ -150,7 +150,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
         return; // reply sent in finally block below
       }
       thr = UNHANDLED_EXCEPTION;
-      tx = prepForTransaction();
+      tx = prepForTransaction(dm);
       sendReply = operateOnDistributedRegion(dm, dr); // need to take care of
                                                       // it...
       thr = null;
@@ -275,7 +275,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    * check to see if the cache is closing
    */
   private boolean checkCacheClosing(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     return cache == null || cache.getCancelCriterion().isCancelInProgress();
   }
 

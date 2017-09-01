@@ -115,11 +115,11 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     fromData(in);
   }
 
-  private TXStateProxy prepForTransaction() throws InterruptedException {
+  private TXStateProxy prepForTransaction(DistributionManager dm) throws InterruptedException {
     if (this.txUniqId == TXManagerImpl.NOTX) {
       return null;
     } else {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (cache == null) {
         // ignore and return, we are shutting down!
         return null;
@@ -157,10 +157,10 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     FunctionStats stats =
         FunctionStats.getFunctionStats(this.functionObject.getId(), dm.getSystem());
     TXStateProxy tx = null;
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
 
     try {
-      tx = prepForTransaction();
+      tx = prepForTransaction(dm);
       ResultSender resultSender = new MemberFunctionResultSender(dm, this, this.functionObject);
       Set<Region> regions = new HashSet<Region>();
       if (this.regionPathSet != null) {
@@ -354,7 +354,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
    * check to see if the cache is closing
    */
   private boolean checkCacheClosing(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     return (cache == null || cache.getCancelCriterion().isCancelInProgress());
   }
 

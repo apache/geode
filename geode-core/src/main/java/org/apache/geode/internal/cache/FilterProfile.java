@@ -1814,7 +1814,7 @@ public class FilterProfile implements DataSerializableFixedID {
     @Override
     protected void process(DistributionManager dm) {
       try {
-        CacheDistributionAdvisee r = findRegion();
+        CacheDistributionAdvisee r = findRegion(dm);
         if (r == null) {
           if (logger.isDebugEnabled()) {
             logger.debug("Region not found, so ignoring filter profile update: {}", this);
@@ -1920,11 +1920,10 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     }
 
-    private CacheDistributionAdvisee findRegion() {
+    private CacheDistributionAdvisee findRegion(DistributionManager dm) {
       CacheDistributionAdvisee result = null;
-      InternalCache cache;
       try {
-        cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = dm.getCache();
         if (cache != null) {
           LocalRegion lr = cache.getRegionByPathForProcessing(regionName);
           if (lr instanceof CacheDistributionAdvisee) {

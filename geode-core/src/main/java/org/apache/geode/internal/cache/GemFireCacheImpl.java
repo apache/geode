@@ -759,7 +759,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (instance == null) {
           instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners,
               typeRegistry);
+          system.setCache(instance);
           instance.initialize();
+        } else {
+          system.setCache(instance);
         }
         return instance;
       }
@@ -1706,6 +1709,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public void shutDownAll() {
     if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
       try {

@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 
@@ -1248,6 +1249,7 @@ public class LonerDistributionManager implements DM {
   }
 
   private final Stopper stopper = new Stopper();
+  private InternalCache cache;
 
   public CancelCriterion getCancelCriterion() {
     return stopper;
@@ -1374,5 +1376,15 @@ public class LonerDistributionManager implements DM {
   public boolean isSharedConfigurationServiceEnabledForDS() {
     // return false for loner
     return false;
+  }
+
+  @Override
+  public InternalCache getCache() {
+    return this.cache;
+  }
+
+  @Override
+  public void setCache(InternalCache instance) {
+    this.cache = instance;
   }
 }

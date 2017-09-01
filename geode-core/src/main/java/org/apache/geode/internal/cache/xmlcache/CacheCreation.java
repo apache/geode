@@ -2209,4 +2209,9 @@ public class CacheCreation implements InternalCache {
   public boolean hasPersistentRegion() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
+  @Override
+  public void shutDownAll() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
 }

@@ -97,7 +97,7 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
     @Override
     protected void process(final DistributionManager dm) {
       try {
-        Cache c = GemFireCacheImpl.getInstance();
+        Cache c = dm.getCache();
         if (c != null) {
           List l = c.getCacheServers();
           if (l != null) {
