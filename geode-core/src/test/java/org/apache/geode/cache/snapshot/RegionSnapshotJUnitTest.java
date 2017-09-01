@@ -107,7 +107,65 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
   }
 
   @Test
-  public void testFilter() throws Exception {
+  public void testFilterOnExport() throws Exception {
+    SnapshotFilter<Integer, MyObject> odd =
+        (SnapshotFilter<Integer, MyObject>) entry -> entry.getKey() % 2 == 1;
+
+    for (final RegionType rt : RegionType.values()) {
+      for (final SerializationType st : SerializationType.values()) {
+        String name = "test-" + rt.name() + "-" + st.name();
+        Region<Integer, MyObject> region =
+            regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
+        final Map<Integer, MyObject> expected = createExpected(st);
+
+        region.putAll(expected);
+        RegionSnapshotService<Integer, MyObject> rss = region.getSnapshotService();
+        SnapshotOptions<Integer, MyObject> options = rss.createOptions().setFilter(odd);
+        rss.save(snapshotFile, SnapshotFormat.GEMFIRE, options);
+
+        region.destroyRegion();
+        region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
+
+        rss = region.getSnapshotService();
+        rss.load(snapshotFile, SnapshotFormat.GEMFIRE, rss.createOptions());
+
+        region.entrySet().forEach(entry -> assertTrue(odd.accept(entry)));
+        assertTrue("Comparison failure for " + rt.name() + "/" + st.name(), region.size() > 0);
+      }
+    }
+  }
+
+  @Test
+  public void testFilterOnImport() throws Exception {
+    SnapshotFilter<Integer, MyObject> odd =
+        (SnapshotFilter<Integer, MyObject>) entry -> entry.getKey() % 2 == 1;
+
+    for (final RegionType rt : RegionType.values()) {
+      for (final SerializationType st : SerializationType.values()) {
+        String name = "test-" + rt.name() + "-" + st.name();
+        Region<Integer, MyObject> region =
+            regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
+        final Map<Integer, MyObject> expected = createExpected(st);
+
+        region.putAll(expected);
+        RegionSnapshotService<Integer, MyObject> rss = region.getSnapshotService();
+        rss.save(snapshotFile, SnapshotFormat.GEMFIRE, rss.createOptions());
+
+        region.destroyRegion();
+        region = regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
+
+        rss = region.getSnapshotService();
+        SnapshotOptions<Integer, MyObject> options = rss.createOptions().setFilter(odd);
+        rss.load(snapshotFile, SnapshotFormat.GEMFIRE, options);
+
+        region.entrySet().forEach(entry -> assertTrue(odd.accept(entry)));
+        assertTrue("Comparison failure for " + rt.name() + "/" + st.name(), region.size() > 0);
+      }
+    }
+  }
+
+  @Test
+  public void testFilterOnExportAndImport() throws Exception {
     SnapshotFilter<Integer, MyObject> even =
         (SnapshotFilter<Integer, MyObject>) entry -> entry.getKey() % 2 == 0;
 
