@@ -18,17 +18,25 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.net.InetAddress;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.logging.LogService;
 
 public class TcpServerFactory {
   private ClientProtocolMessageHandler protocolHandler;
+  static final Logger logger = LogService.getLogger();
 
   public TcpServerFactory() {
-    initializeMessageHandler();
+    try {
+      protocolHandler = new MessageHandlerFactory().makeMessageHandler();
+    } catch (ServiceLoadingFailureException ex) {
+      logger.warn(ex.getMessage());
+    }
   }
 
   public TcpServer makeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
@@ -37,19 +45,5 @@ public class TcpServerFactory {
 
     return new TcpServer(port, bind_address, sslConfig, cfg, handler, poolHelper, threadGroup,
         threadName, internalLocator, protocolHandler);
-  }
-
-  public synchronized ClientProtocolMessageHandler initializeMessageHandler() {
-    if (protocolHandler != null) {
-      return protocolHandler;
-    }
-
-    try {
-      protocolHandler = new MessageHandlerFactory().makeMessageHandler();
-    } catch (ServiceLoadingFailureException ex) {
-      // ignore, TcpServer will take care right now
-    }
-
-    return protocolHandler;
   }
 }
