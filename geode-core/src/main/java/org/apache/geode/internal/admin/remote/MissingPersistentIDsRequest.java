@@ -81,7 +81,7 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
   protected AdminResponse createResponse(DistributionManager dm) {
     Set<PersistentID> missingIds = new HashSet<>();
     Set<PersistentID> localPatterns = new HashSet<>();
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     if (cache != null && !cache.isClosed()) {
       PersistentMemberManager mm = cache.getPersistentMemberManager();
       Map<String, Set<PersistentMemberID>> waitingRegions = mm.getWaitingRegions();

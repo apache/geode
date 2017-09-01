@@ -314,4 +314,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   SecurityService getSecurityService();
 
   boolean hasPersistentRegion();
+
+  void shutDownAll();
 }

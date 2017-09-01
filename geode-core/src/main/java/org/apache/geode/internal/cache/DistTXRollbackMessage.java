@@ -75,7 +75,7 @@ public class DistTXRollbackMessage extends TXMessage {
       logger.debug("Dist TX: Rollback: {}", txId);
     }
 
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     TXManagerImpl txMgr = cache.getTXMgr();
     final TXStateProxy txState = txMgr.getTXState();
     boolean rollbackSuccessful = false;

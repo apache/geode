@@ -178,7 +178,7 @@ public class ShutdownAllRequest extends AdminRequest {
     if (isToShutdown) {
       boolean isSuccess = false;
       try {
-        GemFireCacheImpl.getInstance().shutDownAll();
+        dm.getCache().shutDownAll();
         isSuccess = true;
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);

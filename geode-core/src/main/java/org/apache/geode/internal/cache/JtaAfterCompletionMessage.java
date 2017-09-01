@@ -74,7 +74,7 @@ public class JtaAfterCompletionMessage extends TXMessage {
 
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
-    TXManagerImpl txMgr = GemFireCacheImpl.getInstance().getTXMgr();
+    TXManagerImpl txMgr = dm.getCache().getTXMgr();
     if (logger.isDebugEnabled()) {
       logger.debug("JTA: Calling afterCompletion for :{}", txId);
     }

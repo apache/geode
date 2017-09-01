@@ -72,9 +72,7 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
    */
   @Override
   protected void process(DistributionManager dm) {
-    final InternalCache cache;
-    // use GemFireCache.getInstance to avoid blocking during cache.xml processing.
-    cache = GemFireCacheImpl.getInstance();
+    final InternalCache cache = dm.getCache();
     if (cache != null) {
       Iterator iterator = this.messagesList.iterator();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);

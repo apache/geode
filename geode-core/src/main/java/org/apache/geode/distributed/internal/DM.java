@@ -30,6 +30,7 @@ import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * This interface defines the services provided by any class that is a distribution manager.
@@ -462,4 +463,8 @@ public interface DM extends ReplySender {
   public void releaseUDPMessagingForCurrentThread();
 
   int getDMType();
+
+  InternalCache getCache();
+
+  void setCache(InternalCache instance);
 }

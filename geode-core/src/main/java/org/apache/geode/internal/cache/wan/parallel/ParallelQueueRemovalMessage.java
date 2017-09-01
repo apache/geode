@@ -73,8 +73,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   @Override
   protected void process(DistributionManager dm) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    final InternalCache cache;
-    cache = GemFireCacheImpl.getInstance();
+    final InternalCache cache = dm.getCache();
     if (cache != null) {
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {

@@ -66,7 +66,7 @@ public class FlushToDiskRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     if (cache != null) {
       cache.listDiskStoresIncludingRegionOwned().forEach(DiskStore::flush);
     }

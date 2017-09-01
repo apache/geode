@@ -93,7 +93,7 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     HashSet<PersistentID> persistentIds;
     if (cache == null || cache.getBackupManager() == null) {
       persistentIds = new HashSet<PersistentID>();

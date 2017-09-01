@@ -66,7 +66,7 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
             + "; indexName=" + this.indexName);
       }
       try {
-        InternalCache cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = dm.getCache();
         LuceneServiceImpl impl = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
         impl.destroyIndex(this.indexName, this.regionPath, false);
         if (logger.isDebugEnabled()) {

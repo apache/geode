@@ -1210,7 +1210,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
     @Override
     protected void process(DistributionManager dm) {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (cache != null) {
         TXManagerImpl mgr = cache.getTXMgr();
         mgr.removeTransactions(this.txIds, false);

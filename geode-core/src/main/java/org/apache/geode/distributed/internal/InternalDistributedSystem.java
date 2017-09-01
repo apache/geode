@@ -3091,4 +3091,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
     Throwable generateCreationStack(final DistributionConfig config);
   }
+
+  public void setCache(InternalCache instance) {
+    this.dm.setCache(instance);
+  }
 }
