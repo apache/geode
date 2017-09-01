@@ -52,6 +52,7 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.ClientHandShake;
 import org.apache.geode.internal.cache.tier.Command;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
@@ -173,7 +174,7 @@ public abstract class ServerConnection implements Runnable {
 
   private final InternalLogWriter logWriter;
   private final InternalLogWriter securityLogWriter;
-  final private AcceptorImpl acceptor;
+  final AcceptorImpl acceptor;
   private Thread owner;
 
   /**
@@ -224,7 +225,7 @@ public abstract class ServerConnection implements Runnable {
    * The communication mode for this <code>ServerConnection</code>. Valid types include
    * 'client-server', 'gateway-gateway' and 'monitor-server'.
    */
-  protected final byte communicationMode;
+  protected final CommunicationMode communicationMode;
   private final String communicationModeStr;
 
   private long processingMessageStartTime = -1;
@@ -280,7 +281,7 @@ public abstract class ServerConnection implements Runnable {
     this.logWriter = (InternalLogWriter) internalCache.getLoggerI18n();
     this.securityLogWriter = (InternalLogWriter) internalCache.getSecurityLoggerI18n();
     this.communicationModeStr = communicationModeStr;
-    this.communicationMode = communicationMode;
+    this.communicationMode = CommunicationMode.fromModeNumber(communicationMode);
     this.principal = null;
     this.authzRequest = null;
     this.postAuthzRequest = null;
@@ -615,7 +616,7 @@ public abstract class ServerConnection implements Runnable {
       logger.debug("{}: Accepted handshake", this.name);
     }
 
-    if (this.communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE) {
+    if (this.communicationMode == CommunicationMode.ClientToServerForQueue) {
       this.stats.incCurrentQueueConnections();
     } else {
       this.stats.incCurrentClientConnections();
@@ -680,10 +681,7 @@ public abstract class ServerConnection implements Runnable {
    * @return whether this is a connection to a client, regardless of protocol.
    */
   public boolean isClientServerConnection() {
-    return communicationMode == Acceptor.CLIENT_TO_SERVER
-        || communicationMode == Acceptor.PRIMARY_SERVER_TO_CLIENT
-        || communicationMode == Acceptor.SECONDARY_SERVER_TO_CLIENT
-        || communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE;
+    return communicationMode.isClientToServerOrSubscriptionFeed();
   }
 
   static class Counter {
@@ -714,7 +712,7 @@ public abstract class ServerConnection implements Runnable {
       // can be used.
       initializeCommands();
       // its initialized in verifyClientConnection call
-      if (getCommunicationMode() != Acceptor.GATEWAY_TO_GATEWAY)
+      if (!getCommunicationMode().isWAN())
         initializeClientUserAuths();
     }
     if (TEST_VERSION_AFTER_HANDSHAKE_FLAG) {
@@ -777,7 +775,7 @@ public abstract class ServerConnection implements Runnable {
         // authorization later
         if (AcceptorImpl.isIntegratedSecurity()
             && !isInternalMessage(this.requestMsg, ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS)
-            && this.communicationMode != Acceptor.GATEWAY_TO_GATEWAY) {
+            && !this.communicationMode.isWAN()) {
           long uniqueId = getUniqueId();
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
           if (subject != null) {
@@ -846,7 +844,7 @@ public abstract class ServerConnection implements Runnable {
             this.stats.decCurrentClients();
           }
         }
-        if (this.communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE) {
+        if (this.communicationMode == CommunicationMode.ClientToServerForQueue) {
           this.stats.decCurrentQueueConnections();
         } else {
           this.stats.decCurrentClientConnections();
@@ -1079,9 +1077,8 @@ public abstract class ServerConnection implements Runnable {
     // need to take care all message types here
     if (AcceptorImpl.isAuthenticationRequired()
         && this.handshake.getVersion().compareTo(Version.GFE_65) >= 0
-        && (this.communicationMode != Acceptor.GATEWAY_TO_GATEWAY)
-        && (!this.requestMsg.getAndResetIsMetaRegion())
-        && (!isInternalMessage(this.requestMsg, ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS))) {
+        && !this.communicationMode.isWAN() && !this.requestMsg.getAndResetIsMetaRegion()
+        && !isInternalMessage(this.requestMsg, ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS)) {
       setSecurityPart();
       return this.securePart;
     } else {
@@ -1248,7 +1245,7 @@ public abstract class ServerConnection implements Runnable {
   // return this.proxyId.getDistributedMember();
   // }
 
-  protected byte getCommunicationMode() {
+  protected CommunicationMode getCommunicationMode() {
     return this.communicationMode;
   }
 
@@ -1446,10 +1443,8 @@ public abstract class ServerConnection implements Runnable {
     if (isClosed()) {
       return false;
     }
-    if (this.communicationMode == Acceptor.CLIENT_TO_SERVER || isGatewayConnection()
-        || this.communicationMode == Acceptor.MONITOR_TO_SERVER
-        || this.communicationMode == Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL
-    /* || this.communicationMode == Acceptor.CLIENT_TO_SERVER_FOR_QUEUE */) {
+    if (this.communicationMode.isWAN()
+        || this.communicationMode.isCountedAsClientServerConnection()) {
       getAcceptor().decClientServerCnxCount();
     }
     try {
@@ -1725,7 +1720,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId = 0;
 
-    if (this.handshake.getVersion().isPre65() || isGatewayConnection()) {
+    if (this.handshake.getVersion().isPre65() || communicationMode.isWAN()) {
       uniqueId = this.userAuthId;
     } else if (this.requestMsg.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(this.requestMsg,
@@ -1735,10 +1730,6 @@ public abstract class ServerConnection implements Runnable {
           LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
     }
     return uniqueId;
-  }
-
-  private boolean isGatewayConnection() {
-    return getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY;
   }
 
   public AuthorizeRequest getAuthzRequest() throws AuthenticationRequiredException, IOException {

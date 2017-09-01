@@ -71,6 +71,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -261,7 +262,8 @@ public class CacheClientNotifier {
           LocalizedMessage.create(
               LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_CAUGHT_EXCEPTION_ATTEMPTING_TO_CLIENT),
           uve);
-      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, uve, clientVersion);
+      writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), uve,
+          clientVersion);
       return;
     }
 
@@ -393,7 +395,8 @@ public class CacheClientNotifier {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
           new Object[] {proxyID, ""}), ex);
-      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, ex, clientVersion);
+      writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), ex,
+          clientVersion);
       return;
     }
 
@@ -426,7 +429,7 @@ public class CacheClientNotifier {
     }
 
     // Determine whether the client is durable or not.
-    byte responseByte = Acceptor.SUCCESSFUL_SERVER_TO_CLIENT;
+    byte responseByte = CommunicationMode.SuccessfulServerToClient.getModeNumber();
     String unsuccessfulMsg = null;
     boolean successful = true;
     boolean clientIsDurable = proxyId.isDurable();
@@ -576,7 +579,7 @@ public class CacheClientNotifier {
     // the marker message. If the client is durable, the message processor
     // is not started until the clientReady message is received.
     if (!clientIsDurable && l_proxy != null
-        && responseByte == Acceptor.SUCCESSFUL_SERVER_TO_CLIENT) {
+        && responseByte == CommunicationMode.SuccessfulServerToClient.getModeNumber()) {
       // The startOrResumeMessageDispatcher tests if the proxy is a primary.
       // If this is a secondary proxy, the dispatcher is not started.
       // The false parameter signifies that a marker message has not already been
@@ -584,7 +587,7 @@ public class CacheClientNotifier {
       l_proxy.startOrResumeMessageDispatcher(false);
     }
 
-    if (responseByte == Acceptor.SUCCESSFUL_SERVER_TO_CLIENT) {
+    if (responseByte == CommunicationMode.SuccessfulServerToClient.getModeNumber()) {
       if (logger.isDebugEnabled()) {
         logger.debug("CacheClientNotifier: Successfully registered {}", l_proxy);
       }

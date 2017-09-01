@@ -28,6 +28,7 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -52,6 +53,7 @@ public class AuthenticationIntegrationTest {
 
   private static final String TEST_USERNAME = "bob";
   private static final String TEST_PASSWORD = "bobspassword";
+  private Cache cache;
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -79,7 +81,7 @@ public class AuthenticationIntegrationTest {
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
 
     cacheFactory.setSecurityManager(mockSecurityManager);
-    Cache cache = cacheFactory.create();
+    cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
     int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -97,6 +99,14 @@ public class AuthenticationIntegrationTest {
     outputStream.write(110);
 
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
+  }
+
+  @After
+  public void tearDown() {
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
   }
 
   @Test

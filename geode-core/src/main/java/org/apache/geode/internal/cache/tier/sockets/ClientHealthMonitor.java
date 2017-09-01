@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -536,7 +537,7 @@ public class ClientHealthMonitor {
         Iterator connectionsIterator = connections.iterator();
         while (connectionsIterator.hasNext()) {
           ServerConnection sc = (ServerConnection) connectionsIterator.next();
-          if (sc.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY) {
+          if (sc.getCommunicationMode().isWAN()) {
             IncomingGatewayStatus status = new IncomingGatewayStatus(proxyID.getDSMembership(),
                 sc.getSocketAddress(), sc.getSocketPort());
             connectedIncomingGateways.put(proxyID.getDSMembership(), status);

@@ -57,7 +57,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
@@ -501,7 +501,7 @@ public class TcpServer {
     // read the first byte & check for an improperly configured client pool trying
     // to contact a cache server
     int firstByte = input.readUnsignedByte();
-    if (firstByte >= Acceptor.CLIENT_TO_SERVER) {
+    if (CommunicationMode.isValidMode(firstByte)) {
       sock.getOutputStream().write(HandShake.REPLY_SERVER_IS_LOCATOR);
       throw new Exception("Improperly configured client detected - use addPoolLocator to "
           + "configure its locators instead of addPoolServer.");

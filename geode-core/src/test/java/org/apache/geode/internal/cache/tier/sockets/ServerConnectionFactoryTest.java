@@ -16,7 +16,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -53,8 +53,8 @@ public class ServerConnectionFactoryTest {
    */
   @Test(expected = IOException.class)
   public void newClientProtocolFailsWithoutSystemPropertySet() throws IOException {
-    ServerConnection serverConnection =
-        serverConnectionMockedExceptForCommunicationMode(Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
+    ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
+        CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
   }
 
@@ -65,21 +65,21 @@ public class ServerConnectionFactoryTest {
   @Test(expected = ServiceLoadingFailureException.class)
   public void newClientProtocolFailsWithSystemPropertySet() throws IOException {
     System.setProperty("geode.feature-protobuf-protocol", "true");
-    ServerConnection serverConnection =
-        serverConnectionMockedExceptForCommunicationMode(Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL);
+    ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
+        CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
   }
 
   @Test
   public void makeServerConnection() throws Exception {
-    byte[] communicationModes =
-        new byte[] {Acceptor.CLIENT_TO_SERVER, Acceptor.PRIMARY_SERVER_TO_CLIENT,
-            Acceptor.SECONDARY_SERVER_TO_CLIENT, Acceptor.GATEWAY_TO_GATEWAY,
-            Acceptor.MONITOR_TO_SERVER, Acceptor.SUCCESSFUL_SERVER_TO_CLIENT,
-            Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, Acceptor.CLIENT_TO_SERVER_FOR_QUEUE,};
+    CommunicationMode[] communicationModes = new CommunicationMode[] {
+        CommunicationMode.ClientToServer, CommunicationMode.PrimaryServerToClient,
+        CommunicationMode.SecondaryServerToClient, CommunicationMode.GatewayToGateway,
+        CommunicationMode.MonitorToServer, CommunicationMode.SuccessfulServerToClient,
+        CommunicationMode.UnsuccessfulServerToClient, CommunicationMode.ClientToServer,};
 
-    for (byte communicationMode : communicationModes) {
+    for (CommunicationMode communicationMode : communicationModes) {
       ServerConnection serverConnection =
-          serverConnectionMockedExceptForCommunicationMode(communicationMode);
+          serverConnectionMockedExceptForCommunicationMode(communicationMode.getModeNumber());
       assertTrue(serverConnection instanceof LegacyServerConnection);
     }
   }
@@ -87,15 +87,15 @@ public class ServerConnectionFactoryTest {
   @Test
   public void makeServerConnectionForOldProtocolWithFeatureFlagEnabled() throws IOException {
     System.setProperty("geode.feature-protobuf-protocol", "true");
-    byte[] communicationModes =
-        new byte[] {Acceptor.CLIENT_TO_SERVER, Acceptor.PRIMARY_SERVER_TO_CLIENT,
-            Acceptor.SECONDARY_SERVER_TO_CLIENT, Acceptor.GATEWAY_TO_GATEWAY,
-            Acceptor.MONITOR_TO_SERVER, Acceptor.SUCCESSFUL_SERVER_TO_CLIENT,
-            Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, Acceptor.CLIENT_TO_SERVER_FOR_QUEUE,};
+    CommunicationMode[] communicationModes = new CommunicationMode[] {
+        CommunicationMode.ClientToServer, CommunicationMode.PrimaryServerToClient,
+        CommunicationMode.SecondaryServerToClient, CommunicationMode.GatewayToGateway,
+        CommunicationMode.MonitorToServer, CommunicationMode.SuccessfulServerToClient,
+        CommunicationMode.UnsuccessfulServerToClient, CommunicationMode.ClientToServer,};
 
-    for (byte communicationMode : communicationModes) {
+    for (CommunicationMode communicationMode : communicationModes) {
       ServerConnection serverConnection =
-          serverConnectionMockedExceptForCommunicationMode(communicationMode);
+          serverConnectionMockedExceptForCommunicationMode(communicationMode.getModeNumber());
       assertTrue(serverConnection instanceof LegacyServerConnection);
     }
   }

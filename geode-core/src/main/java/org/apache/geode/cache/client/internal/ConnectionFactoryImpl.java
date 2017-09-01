@@ -27,7 +27,7 @@ import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
@@ -110,13 +110,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     blackList.start(background);
   }
 
-  private byte getCommMode(boolean forQueue) {
+  private CommunicationMode getCommMode(boolean forQueue) {
     if (this.usedByGateway || (this.gatewaySender != null)) {
-      return Acceptor.GATEWAY_TO_GATEWAY;
+      return CommunicationMode.GatewayToGateway;
     } else if (forQueue) {
-      return Acceptor.CLIENT_TO_SERVER_FOR_QUEUE;
+      return CommunicationMode.ClientToServerForQueue;
     } else {
-      return Acceptor.CLIENT_TO_SERVER;
+      return CommunicationMode.ClientToServer;
     }
   }
 

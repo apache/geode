@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
+import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
@@ -39,6 +40,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessage;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -89,7 +91,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.net.ssl.SSLException;
 
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from the edge and starts
@@ -1440,21 +1441,30 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
 
     socket.setTcpNoDelay(this.tcpNoDelay);
 
+    final CommunicationMode mode;
+    try {
+      mode = CommunicationMode.fromModeNumber(communicationMode);
+    } catch (IllegalArgumentException e) {
+      // possible if a client uses SSL & the server isn't configured to use SSL
+      logger.warn("Error processing client connection", e);
+      throw new EOFException();
+    }
+
     String communicationModeStr;
-    if (communicationMode == PRIMARY_SERVER_TO_CLIENT
-        || communicationMode == SECONDARY_SERVER_TO_CLIENT) {
-      boolean primary = communicationMode == PRIMARY_SERVER_TO_CLIENT;
+    if (mode.isSubscriptionFeed()) {
+      boolean primary = mode == CommunicationMode.PrimaryServerToClient;
       logger.debug(":Bridge server: Initializing {} server-to-client communication socket: {}",
           primary ? "primary" : "secondary", socket);
       AcceptorImpl.this.clientNotifier.registerClient(socket, primary, this.acceptorId,
           this.notifyBySubscription);
       return;
     }
-    communicationModeStr = getCommunicationMode(communicationMode);
+    communicationModeStr = mode.toString();
 
     logger.debug("Bridge server: Initializing {} communication socket: {}", communicationModeStr,
         socket);
-    if (communicationMode != CLIENT_TO_SERVER_FOR_QUEUE) {
+    boolean notForQueue = (mode != ClientToServerForQueue);
+    if (notForQueue) {
       int curCnt = this.getClientServerCnxCount();
       if (curCnt >= this.maxConnections) {
         logger.warn(LocalizedMessage.create(
@@ -1482,7 +1492,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
       ServerConnection snap[] = this.allSCList; // avoid volatile read
       this.allSCList = (ServerConnection[]) ArrayUtils.insert(snap, snap.length, serverConn);
     }
-    if (communicationMode != CLIENT_TO_SERVER_FOR_QUEUE) {
+    if (notForQueue) {
       incClientServerCnxCount();
     }
     if (isSelector()) {
@@ -1507,23 +1517,6 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
         }
         serverConn.cleanup();
       }
-    }
-  }
-
-  private String getCommunicationMode(byte communicationMode) throws IOException {
-    switch (communicationMode) {
-      default:
-        throw new IOException("Acceptor received unknown communication mode: " + communicationMode);
-      case CLIENT_TO_SERVER:
-        return "client";
-      case GATEWAY_TO_GATEWAY:
-        return "gateway";
-      case MONITOR_TO_SERVER:
-        return "monitor";
-      case CLIENT_TO_SERVER_FOR_QUEUE:
-        return "clientToServerForQueue";
-      case PROTOBUF_CLIENT_SERVER_PROTOCOL:
-        return "Protobuf client";
     }
   }
 

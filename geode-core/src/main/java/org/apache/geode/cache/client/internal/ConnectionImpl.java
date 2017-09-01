@@ -34,6 +34,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
@@ -98,7 +99,8 @@ public class ConnectionImpl implements Connection {
 
   public ServerQueueStatus connect(EndpointManager endpointManager, ServerLocation location,
       HandShake handShake, int socketBufferSize, int handShakeTimeout, int readTimeout,
-      byte communicationMode, GatewaySender sender, SocketCreator sc) throws IOException {
+      CommunicationMode communicationMode, GatewaySender sender, SocketCreator sc)
+      throws IOException {
     theSocket = sc.connectForClient(location.getHostName(), location.getPort(), handShakeTimeout,
         socketBufferSize);
     theSocket.setTcpNoDelay(true);

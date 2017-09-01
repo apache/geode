@@ -15,11 +15,11 @@
 
 package org.apache.geode.protocol;
 
+import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
@@ -61,7 +61,7 @@ public class RoundTripLocatorConnectionJUnitTest extends JUnit4CacheTestCase {
     DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
     dataOutputStream.writeInt(0);
     // Using the constant from AcceptorImpl to ensure that magic byte is the same
-    dataOutputStream.writeByte(AcceptorImpl.PROTOBUF_CLIENT_SERVER_PROTOCOL);
+    dataOutputStream.writeByte(ProtobufClientServerProtocol.getModeNumber());
   }
 
   @Test

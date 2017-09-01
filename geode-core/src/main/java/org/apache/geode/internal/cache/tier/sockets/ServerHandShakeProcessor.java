@@ -29,6 +29,7 @@ import java.net.SocketTimeoutException;
 import java.security.Principal;
 import java.util.Properties;
 
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
@@ -214,7 +215,7 @@ public class ServerHandShakeProcessor {
       // hitesh: it gets principals
       // Hitesh:for older version we should set this
       if (clientVersion.compareTo(Version.GFE_65) < 0
-          || connection.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY) {
+          || connection.getCommunicationMode().isWAN()) {
         long uniqueId = setAuthAttributes(connection);
         connection.setUserAuthId(uniqueId);// for older clients < 6.5
       }
@@ -374,7 +375,7 @@ public class ServerHandShakeProcessor {
         clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
       } catch (UnsupportedVersionException uve) {
         // Allows higher version of wan site to connect to server
-        if (connection.getCommunicationMode() == Acceptor.GATEWAY_TO_GATEWAY) {
+        if (connection.getCommunicationMode().isWAN()) {
           return Acceptor.VERSION;
         } else {
           SocketAddress sa = socket.getRemoteSocketAddress();

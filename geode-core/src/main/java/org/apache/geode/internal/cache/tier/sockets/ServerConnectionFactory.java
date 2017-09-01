@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
+
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -87,9 +89,9 @@ public class ServerConnectionFactory {
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
       byte communicationMode, Acceptor acceptor, SecurityService securityService)
       throws IOException {
-    if (communicationMode == Acceptor.PROTOBUF_CLIENT_SERVER_PROTOCOL) {
+    if (communicationMode == ProtobufClientServerProtocol.getModeNumber()) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-        throw new IOException("Acceptor received unknown communication mode: " + communicationMode);
+        throw new IOException("Server received unknown communication mode: " + communicationMode);
       } else {
         String authenticationMode =
             System.getProperty("geode.protocol-authentication-mode", "NOOP");

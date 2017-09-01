@@ -2,6 +2,7 @@ org/apache/geode/cache/query/CqAttributesFactory
 org/apache/geode/cache/query/internal/index/CompactRangeIndex
 org/apache/geode/cache/query/internal/index/CompactRangeIndex$1
 org/apache/geode/cache/query/internal/index/CompactRangeIndex$IMQEvaluator$1
+org/apache/geode/internal/cache/tier/CommunicationMode
 org/apache/geode/distributed/LocatorLauncher
 org/apache/geode/distributed/LocatorLauncher$Command
 org/apache/geode/distributed/ServerLauncher
