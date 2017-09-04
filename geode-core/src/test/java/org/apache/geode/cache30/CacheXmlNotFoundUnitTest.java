@@ -3,6 +3,7 @@ package org.apache.geode.cache30;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -12,6 +13,7 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.fail;
 
 @Category(UnitTest.class)
@@ -29,6 +31,7 @@ public class CacheXmlNotFoundUnitTest {
 
     String CACHE_SERVER_LOG = "cacheXmlNotFoundUnitTest.log";
     Properties props = new Properties();
+    props.put(ConfigurationProperties.MCAST_PORT, "0");
     props.put(ConfigurationProperties.LOG_FILE, CACHE_SERVER_LOG);
     props.put(ConfigurationProperties.CACHE_XML_FILE, "non-existing-cache-xml");
 
