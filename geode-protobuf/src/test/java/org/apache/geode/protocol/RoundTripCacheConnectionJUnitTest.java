@@ -306,8 +306,8 @@ public class RoundTripCacheConnectionJUnitTest {
 
     AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
 
+    // Start 16 sockets, which is exactly the maximum that the server will support.
     Socket[] sockets = new Socket[16];
-
     for (int i = 0; i < 16; i++) {
       Socket socket = new Socket("localhost", cacheServerPort);
       sockets[i] = socket;
@@ -316,20 +316,23 @@ public class RoundTripCacheConnectionJUnitTest {
           .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
     }
 
+    // try to start a new socket, expecting it to be disconnected.
     try (Socket socket = new Socket("localhost", cacheServerPort)) {
       Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
       socket.getOutputStream()
           .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-      assertEquals(-1, socket.getInputStream().read());
+      assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
     }
 
     for (Socket currentSocket : sockets) {
       currentSocket.close();
     }
 
+    // Once all connections are closed, the acceptor should have a connection count of 0.
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> acceptor.getClientServerCnxCount() == 0);
 
+    // Try to start 16 new connections, again at the limit.
     for (int i = 0; i < 16; i++) {
       Socket socket = new Socket("localhost", cacheServerPort);
       sockets[i] = socket;
