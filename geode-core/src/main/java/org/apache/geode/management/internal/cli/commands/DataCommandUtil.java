@@ -36,8 +36,8 @@ public class DataCommandUtil {
             CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
       }
     } else {
-      result = ResultBuilder
-          .createGemFireErrorResult(CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
+      result = ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
     }
     return result;
   }

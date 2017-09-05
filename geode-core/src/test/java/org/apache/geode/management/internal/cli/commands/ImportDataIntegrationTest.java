@@ -169,20 +169,13 @@ public class ImportDataIntegrationTest {
   }
 
   @Test
-  public void testDirectoryCommandSupersedesFile() throws Exception {
-    String exportCommand =
-        buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString())
-            .addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString()).getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
-
-    loadRegion("");
-
+  public void testSpecifyingDirectoryAndFileCommands() throws Exception {
     String importCommand =
         buildBaseImportCommand().addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString())
             .addOption(CliStrings.IMPORT_DATA__DIR, snapshotDir.toString()).getCommandString();
-    gfsh.executeAndVerifyCommand(importCommand);
-    assertThat(gfsh.getGfshOutput()).contains("Data imported from file");
-    validateImport("value");
+    gfsh.executeCommand(importCommand);
+    assertThat(gfsh.getGfshOutput())
+        .contains("Options \"file\" and \"dir\" cannot be specified at the same time");
   }
 
   private void validateImport(String value) {

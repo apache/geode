@@ -154,15 +154,15 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testDirectoryCommandSupersedesFile() throws Exception {
+  public void testSpecifyingDirectoryAndFileCommands() throws Exception {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString())
             .addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString()).getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
-    assertThat(gfsh.getGfshOutput()).contains("Data successfully exported ");
+    gfsh.executeCommand(exportCommand);
+    assertThat(gfsh.getGfshOutput())
+        .contains("Options \"file\" and \"dir\" cannot be specified at the same time");
 
-    assertTrue(Files.exists(snapshotDir));
-    assertFalse(Files.exists(snapshotFile));
+    assertFalse(Files.exists(snapshotDir));
   }
 
   private void loadRegion(String value) {

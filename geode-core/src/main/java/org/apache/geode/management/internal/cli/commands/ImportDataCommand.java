@@ -87,6 +87,9 @@ public class ImportDataCommand implements GfshCommand {
     if (filePath == null && dirPath == null) {
       return Optional
           .of(ResultBuilder.createUserErrorResult("Must specify a location to load snapshot from"));
+    } else if (filePath != null && dirPath != null) {
+      return Optional.of(ResultBuilder.createUserErrorResult(
+          "Options \"file\" and \"dir\" cannot be specified at the same time"));
     } else if (parallel && dirPath == null) {
       return Optional.of(ResultBuilder
           .createUserErrorResult("Must specify a directory to load snapshot files from"));
