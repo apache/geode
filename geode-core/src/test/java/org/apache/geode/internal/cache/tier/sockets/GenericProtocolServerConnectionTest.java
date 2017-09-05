@@ -26,12 +26,15 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.server.NoOpAuthenticator;
 import org.apache.geode.test.junit.categories.UnitTest;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 @Category(UnitTest.class)
 public class GenericProtocolServerConnectionTest {
@@ -48,6 +51,19 @@ public class GenericProtocolServerConnectionTest {
     }
   }
 
+  @Test
+  public void emergencyCloseClosesSocket() throws IOException {
+    Socket socketMock = mock(Socket.class);
+    when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
+
+    GenericProtocolServerConnection genericProtocolServerConnection =
+        getGenericProtocolServerConnection(socketMock, mock(ClientProtocolMessageHandler.class));
+
+    genericProtocolServerConnection.emergencyClose();
+
+    Mockito.verify(socketMock).close();
+  }
+
   private static ServerConnection IOExceptionThrowingServerConnection() throws IOException {
     Socket socketMock = mock(Socket.class);
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
@@ -55,6 +71,11 @@ public class GenericProtocolServerConnectionTest {
     ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
     doThrow(new IOException()).when(clientProtocolMock).receiveMessage(any(), any(), any());
 
+    return getGenericProtocolServerConnection(socketMock, clientProtocolMock);
+  }
+
+  private static GenericProtocolServerConnection getGenericProtocolServerConnection(
+      Socket socketMock, ClientProtocolMessageHandler clientProtocolMock) {
     return new GenericProtocolServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), mock(AcceptorImpl.class),
