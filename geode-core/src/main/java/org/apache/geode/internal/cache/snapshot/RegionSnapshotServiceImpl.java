@@ -333,6 +333,12 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       throw new IllegalArgumentException("Failure to export snapshot: "
           + snapshot.getCanonicalPath() + " is not a valid .gfd file");
     }
+    File directory = snapshot.getParentFile();
+    if (directory == null) {
+      throw new IllegalArgumentException("Failure to export snapshot: "
+          + snapshot.getCanonicalPath() + " is not a valid location");
+    }
+    directory.mkdirs();
     LocalRegion local = getLocalRegion(region);
     Exporter<K, V> exp = createExporter(region, options);
 
@@ -342,7 +348,6 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     long count = 0;
     long start = CachePerfStats.getStatTime();
-    snapshot.getParentFile().mkdirs();
     SnapshotWriter writer = GFSnapshot.create(snapshot, region.getFullPath());
     try {
       if (getLoggerI18n().infoEnabled())

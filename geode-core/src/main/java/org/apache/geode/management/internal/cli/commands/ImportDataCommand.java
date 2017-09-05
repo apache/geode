@@ -51,6 +51,7 @@ public class ImportDataCommand implements GfshCommand {
       @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, unspecifiedDefaultValue = "false",
           help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks,
       @CliOption(key = CliStrings.IMPORT_DATA__PARALLEL, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
           help = CliStrings.IMPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
     getSecurityService().authorizeRegionWrite(regionName);
@@ -69,33 +70,13 @@ public class ImportDataCommand implements GfshCommand {
     Result result;
     try {
       String path = dirPath != null ? dirPath : filePath;
-      final Object args[] = {regionName, path, parallel, invokeCallbacks};
+      final Object args[] = {regionName, path, invokeCallbacks, parallel};
 
       ResultCollector<?, ?> rc = CliUtil.executeFunction(importDataFunction, args, targetMember);
-      result = getFunctionResult(rc);
+      result = DataCommandUtil.getFunctionResult(rc, CliStrings.IMPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
-    }
-    return result;
-  }
-
-  private Result getFunctionResult(ResultCollector<?, ?> rc) {
-    Result result;
-    List<Object> results = (List<Object>) rc.getResult();
-    if (results != null) {
-      Object resultObj = results.get(0);
-      if (resultObj instanceof String) {
-        result = ResultBuilder.createInfoResult((String) resultObj);
-      } else if (resultObj instanceof Exception) {
-        result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
-      } else {
-        result = ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
-      }
-    } else {
       result = ResultBuilder.createGemFireErrorResult(
           CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
     }

@@ -43,6 +43,10 @@ public class ExportDataFunction extends FunctionAdapter implements InternalEntit
 
   public void execute(FunctionContext context) {
     final String[] args = (String[]) context.getArguments();
+    if (args.length < 3) {
+      throw new IllegalStateException(
+          "Arguments length does not match required length. Export command may have been sent from incompatible older version");
+    }
     final String regionName = args[0];
     final String fileName = args[1];
     final boolean parallel = Boolean.parseBoolean(args[2]);

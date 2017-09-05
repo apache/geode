@@ -51,6 +51,7 @@ public class ExportDataCommand implements GfshCommand {
       @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
           mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId,
       @CliOption(key = CliStrings.EXPORT_DATA__PARALLEL, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
           help = CliStrings.EXPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
     getSecurityService().authorizeRegionRead(regionName);
@@ -71,32 +72,12 @@ public class ExportDataCommand implements GfshCommand {
       final String args[] = {regionName, path, Boolean.toString(parallel)};
 
       ResultCollector<?, ?> rc = CliUtil.executeFunction(exportDataFunction, args, targetMember);
-      result = getFunctionResult(rc);
+      result = DataCommandUtil.getFunctionResult(rc, CliStrings.EXPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
       result = ResultBuilder.createGemFireErrorResult(
           CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
-    }
-    return result;
-  }
-
-  private Result getFunctionResult(ResultCollector<?, ?> rc) {
-    Result result;
-    List<Object> results = (List<Object>) rc.getResult();
-    if (results != null) {
-      Object resultObj = results.get(0);
-      if (resultObj instanceof String) {
-        result = ResultBuilder.createInfoResult((String) resultObj);
-      } else if (resultObj instanceof Exception) {
-        result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
-      } else {
-        result = ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.EXPORT_DATA));
-      }
-    } else {
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.EXPORT_DATA));
     }
     return result;
   }

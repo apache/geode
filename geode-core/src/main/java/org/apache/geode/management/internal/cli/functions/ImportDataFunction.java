@@ -38,16 +38,14 @@ public class ImportDataFunction extends FunctionAdapter implements InternalEntit
 
   public void execute(FunctionContext context) {
     final Object[] args = (Object[]) context.getArguments();
+    if (args.length < 4) {
+      throw new IllegalStateException(
+          "Arguments length does not match required length. Import command may have been sent from incompatible older version");
+    }
     final String regionName = (String) args[0];
     final String importFileName = (String) args[1];
-    boolean parallel = false;
-    if (args.length > 2) {
-      parallel = (boolean) args[2];
-    }
-    boolean invokeCallbacks = false;
-    if (args.length > 3) {
-      invokeCallbacks = (boolean) args[3];
-    }
+    final boolean invokeCallbacks = (boolean) args[2];
+    final boolean parallel = (boolean) args[3];
 
     try {
       final Cache cache = CacheFactory.getAnyInstance();
