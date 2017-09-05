@@ -28,8 +28,10 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.BatchRemovalThreadHelper;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -376,7 +378,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Get mixed site members
     VM site1Locator = host.getVM(oldVersion, 0);
     VM site1Server1 = host.getVM(oldVersion, 1);
-    VM site1Server2 = host.getVM(2);
+    VM site1Server2 = host.getVM(oldVersion, 2);
     VM site1Client = host.getVM(oldVersion, 3);
 
     // Get old site members
@@ -411,6 +413,14 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     startAndConfigureServers(site1Server1, site1Server2, site1Locators, site2DistributedSystemId,
         regionName, site1SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
+    // Roll mixed site locator to current
+    rollLocatorToCurrent(site1Locator, site1LocatorPort, site1DistributedSystemId, site1Locators,
+        site2Locators);
+
+    // Roll one mixed site server to current
+    rollStartAndConfigureServerToCurrent(site1Server2, site1Locators, site2DistributedSystemId,
+        regionName, site1SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
+
     // Start and configure old site servers
     String site2SenderId = getName() + "_gatewaysender_" + site1DistributedSystemId;
     startAndConfigureServers(site2Server1, site2Server2, site2Locators, site1DistributedSystemId,
@@ -429,7 +439,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Get mixed site members
     VM site1Locator = host.getVM(oldVersion, 0);
     VM site1Server1 = host.getVM(oldVersion, 1);
-    VM site1Server2 = host.getVM(2);
+    VM site1Server2 = host.getVM(oldVersion, 2);
     VM site1Client = host.getVM(oldVersion, 3);
 
     // Get old site members
@@ -464,6 +474,14 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     startAndConfigureServers(site1Server1, site1Server2, site1Locators, site2DistributedSystemId,
         regionName, site1SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
+    // Roll mixed site locator to current
+    rollLocatorToCurrent(site1Locator, site1LocatorPort, site1DistributedSystemId, site1Locators,
+        site2Locators);
+
+    // Roll one mixed site server to current
+    rollStartAndConfigureServerToCurrent(site1Server2, site1Locators, site2DistributedSystemId,
+        regionName, site1SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
+
     // Start and configure old site servers
     String site2SenderId = getName() + "_gatewaysender_" + site1DistributedSystemId;
     startAndConfigureServers(site2Server1, site2Server2, site2Locators, site1DistributedSystemId,
@@ -486,6 +504,28 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     Locator.startLocatorAndDS(port, null, props);
+  }
+
+  private void stopLocator() throws Exception {
+    InternalLocator.getLocator().stop();
+  }
+
+  private VM rollLocatorToCurrent(VM rollLocator, int port, int distributedSystemId,
+      String locators, String remoteLocators) throws Exception {
+    rollLocator.invoke(() -> stopLocator());
+    VM newLocator = Host.getHost(0).getVM(rollLocator.getPid());
+    newLocator.invoke(() -> startLocator(port, distributedSystemId, locators, remoteLocators));
+    return newLocator;
+  }
+
+  private VM rollStartAndConfigureServerToCurrent(VM oldServer, String locators,
+      int distributedSystem, String regionName, String senderId, int messageSyncInterval)
+      throws Exception {
+    oldServer.invoke(() -> closeCache());
+    VM rollServer = Host.getHost(0).getVM(oldServer.getPid());
+    startAndConfigureServers(rollServer, null, locators, distributedSystem, regionName, senderId,
+        messageSyncInterval);
+    return rollServer;
   }
 
   private void startAndConfigureServers(VM server1, VM server2, String locators,
