@@ -1351,7 +1351,7 @@ public class CliStrings {
       "File to which the exported data will be written. The file must have an extension of \".gfd\".";
   public static final String EXPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be exported to the specified file on the host where the member is running.";
-  public static final String EXPORT_DATA__DIR = "directory";
+  public static final String EXPORT_DATA__DIR = "dir";
   public static final String EXPORT_DATA__DIR__HELP =
       "Directory to which the exported data will be written. Required if parallel set to true. Overrides value of \"--file\" if both specified";
   public static final String EXPORT_DATA__PARALLEL = "parallel";
@@ -1535,7 +1535,7 @@ public class CliStrings {
   public static final String IMPORT_DATA__FILE = "file";
   public static final String IMPORT_DATA__FILE__HELP =
       "File from which the imported data will be read. The file must have an extension of \".gfd\".";
-  public static final String IMPORT_DATA__DIR = "directory";
+  public static final String IMPORT_DATA__DIR = "dir";
   public static final String IMPORT_DATA__DIR__HELP =
       "Directory from which all data files (\".gfd\") will be read. Required if parallel set to true. Overrides value of \"--file\" if both specified";
   public static final String IMPORT_DATA__PARALLEL = "parallel";
