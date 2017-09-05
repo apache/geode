@@ -397,7 +397,7 @@ public class RoundTripCacheConnectionJUnitTest {
     assertEquals(expectedFailedKeys.size(), response.getPutAllResponse().getFailedKeysCount());
 
     Stream<BasicTypes.EncodedValue> failedKeyStream = response.getPutAllResponse()
-        .getFailedKeysList().stream().map(BasicTypes.KeyedErrorResponse::getKey);
+        .getFailedKeysList().stream().map(BasicTypes.KeyedError::getKey);
     assertTrue(failedKeyStream.allMatch(expectedFailedKeys::contains));
 
   }

@@ -100,7 +100,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     RegionAPI.PutAllResponse putAllResponse = result.getMessage();
     assertEquals(1, putAllResponse.getFailedKeysCount());
-    BasicTypes.KeyedErrorResponse error = putAllResponse.getFailedKeys(0);
+    BasicTypes.KeyedError error = putAllResponse.getFailedKeys(0);
     assertEquals(TEST_INVALID_KEY,
         ProtobufUtilities.decodeValue(serializationServiceStub, error.getKey()));
   }
