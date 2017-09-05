@@ -24,6 +24,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -40,18 +41,20 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
 @Experimental
 public class PutAllRequestOperationHandler
     implements OperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse> {
-  private static Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   @Override
   public Result<RegionAPI.PutAllResponse> process(SerializationService serializationService,
       RegionAPI.PutAllRequest putAllRequest, MessageExecutionContext executionContext)
       throws InvalidExecutionContextException {
-    Region region = executionContext.getCache().getRegion(putAllRequest.getRegionName());
+    String regionName = putAllRequest.getRegionName();
+    Region region = executionContext.getCache().getRegion(regionName);
 
     if (region == null) {
-      return Failure.of(ProtobufResponseUtilities.createAndLogErrorResponse(
-          ProtocolErrorCode.REGION_NOT_FOUND,
-          "Region passed by client did not exist: " + putAllRequest.getRegionName(), logger, null));
+      logger.error("Received PutAll request for non-existing region {}", regionName);
+      return Failure.of(
+          ProtobufResponseUtilities.createAndLogErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND,
+              "Region passed does not exist: " + regionName, logger, null));
     }
 
     RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder()

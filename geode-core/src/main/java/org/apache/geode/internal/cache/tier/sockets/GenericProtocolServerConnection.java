@@ -81,6 +81,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
     } catch (EOFException e) {
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
+      logger.debug("Encountered EOF while processing message: {}", e);
     } catch (IOException e) {
       logger.warn(e);
       this.setFlagProcessMessagesAsFalse();

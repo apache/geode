@@ -14,10 +14,13 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -34,6 +37,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
 @Experimental
 public class PutRequestOperationHandler
     implements OperationHandler<RegionAPI.PutRequest, RegionAPI.PutResponse> {
+  final private Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.PutResponse> process(SerializationService serializationService,
@@ -42,6 +46,7 @@ public class PutRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
+      logger.warn("Received Put request for non-existing region: {}", regionName);
       return Failure.of(
           ProtobufResponseUtilities.makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
               "Region passed by client did not exist: " + regionName));
@@ -56,11 +61,13 @@ public class PutRequestOperationHandler
         region.put(decodedKey, decodedValue);
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
+        logger.error("Received Put request with invalid key type: {}", ex);
         return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
             ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue,
             "invalid key or value type for region " + regionName));
       }
     } catch (UnsupportedEncodingTypeException | CodecNotRegisteredForTypeException ex) {
+      logger.error("Got codec error when decoding Put request: {}", ex);
       return Failure.of(ProtobufResponseUtilities
           .makeErrorResponse(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue, ex.getMessage()));
     }
