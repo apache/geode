@@ -14,10 +14,13 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -34,6 +37,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
 @Experimental
 public class GetRequestOperationHandler
     implements OperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.GetResponse> process(SerializationService serializationService,
@@ -42,6 +46,7 @@ public class GetRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
+      logger.error("Received Get request for non-existing region {}", regionName);
       return Failure.of(ProtobufResponseUtilities
           .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
     }
@@ -58,9 +63,11 @@ public class GetRequestOperationHandler
           ProtobufUtilities.createEncodedValue(serializationService, resultValue);
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } catch (UnsupportedEncodingTypeException ex) {
+      logger.error("Received Get request with unsupported encoding: {}", ex);
       return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
           ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue, "Encoding not supported."));
     } catch (CodecNotRegisteredForTypeException ex) {
+      logger.error("Got codec error when decoding Get request: {}", ex);
       return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
           ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
           "Codec error in protobuf deserialization."));

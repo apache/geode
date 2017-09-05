@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
@@ -25,6 +27,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.operations.OperationHandler;
@@ -41,6 +45,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
 @Experimental
 public class GetAllRequestOperationHandler
     implements OperationHandler<RegionAPI.GetAllRequest, RegionAPI.GetAllResponse> {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.GetAllResponse> process(SerializationService serializationService,
@@ -49,6 +54,7 @@ public class GetAllRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
+      logger.error("Received GetAll request for non-existing region {}", regionName);
       return Failure.of(ProtobufResponseUtilities
           .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
     }
@@ -76,24 +82,28 @@ public class GetAllRequestOperationHandler
       Object value = region.get(decodedKey);
       return ProtobufUtilities.createEntry(serializationService, decodedKey, value);
     } catch (CodecNotRegisteredForTypeException | UnsupportedEncodingTypeException ex) {
+      logger.error("Encoding not supported: {}", ex);
       return BasicTypes.KeyedError.newBuilder().setKey(key)
           .setError(BasicTypes.Error.newBuilder()
               .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
               .setMessage("Encoding not supported."))
           .build();
     } catch (org.apache.geode.distributed.LeaseExpiredException | TimeoutException e) {
+      logger.error("Operation timed out: {}", e);
       return BasicTypes.KeyedError.newBuilder().setKey(key)
           .setError(BasicTypes.Error.newBuilder()
               .setErrorCode(ProtocolErrorCode.OPERATION_TIMEOUT.codeValue)
               .setMessage("Operation timed out: " + e.getMessage()))
           .build();
     } catch (CacheLoaderException | PartitionedRegionStorageException e) {
+      logger.error("Data unreachable: {}", e);
       return BasicTypes.KeyedError.newBuilder().setKey(key)
           .setError(BasicTypes.Error.newBuilder()
               .setErrorCode(ProtocolErrorCode.DATA_UNREACHABLE.codeValue)
               .setMessage("Data unreachable: " + e.getMessage()))
           .build();
     } catch (NullPointerException | IllegalArgumentException e) {
+      logger.error("Invalid input: {}", e);
       return BasicTypes.KeyedError.newBuilder().setKey(key)
           .setError(BasicTypes.Error.newBuilder()
               .setErrorCode(ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue)

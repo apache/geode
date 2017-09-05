@@ -17,19 +17,19 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.server.Authenticator;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.server.Authenticator;
 
 /**
  * Creates instances of ServerConnection based on the connection mode provided.
