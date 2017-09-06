@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
+import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.lucene.analysis.Analyzer;
 
 import java.util.Map;
@@ -80,5 +81,13 @@ public interface LuceneIndexFactory {
    * @param regionPath The region to index. The entries added to this region will be indexes.
    */
   void create(String indexName, String regionPath);
+
+  /**
+   * Configure the way objects are converted to lucene documents for this lucene index
+   * 
+   * @param luceneSerializer A callback which converts a region value to a lucene document or
+   *        documents to be stored in the index.
+   */
+  public void setLuceneSerializer(LuceneSerializer luceneSerializer);
 
 }
