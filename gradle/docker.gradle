@@ -38,17 +38,6 @@
  *                       The default is 'root'.
  */
 
-static def getWorkingDirArgIndex(args) {
-  def index = 0
-  for (arg in args) {
-    if (arg.equals('-w')) {
-      return index + 1
-    }
-    index++
-  }
-  return -1
-}
-
 def dockerConfig = {
   maxParallelForks = dunitParallelForks.toInteger()
 
@@ -67,31 +56,27 @@ def dockerConfig = {
     // specify the user for starting Gradle test worker within the container.
     user = dunitDockerUser
 
-    argsInspect = { List args ->
-      def javaHomeIdx = 0
-      def pathIdx = 0
-      def i = args.iterator()
-      def j = 0
-      while (i.hasNext()) {
-        if (i.next() == '-e') {
-          def x = i.next()
-          j++
-          if (x.startsWith('JAVA_HOME')) {
-            javaHomeIdx = j
-          }
-          if (x.startsWith('PATH')) {
-            pathIdx = j
-          }
+    beforeContainerCreate = { cmd, client ->
+      def javaHomeIdx = -1
+      def pathIdx = -1
+      def tmpEnv = []
+      cmd.getEnv().each { tmpEnv << it }
+
+      tmpEnv.eachWithIndex { x, j ->
+        if (x.startsWith('JAVA_HOME')) {
+          javaHomeIdx = j
         }
-        j++
+        if (x.startsWith('PATH')) {
+          pathIdx = j
+        }
       }
 
       // Remove JAVA_HOME and PATH env variables - they might not be the same as the container needs
-      if (javaHomeIdx > 0) {
-        args[javaHomeIdx] = 'JAVA_HOME_REMOVED='
+      if (javaHomeIdx >= 0) {
+        tmpEnv[javaHomeIdx] = 'JAVA_HOME_REMOVED='
       }
-      if (pathIdx > 0) {
-        args[pathIdx] = 'PATH_REMOVED='
+      if (pathIdx >= 0) {
+        tmpEnv[pathIdx] = 'PATH_REMOVED='
       }
 
       // Unfortunately this snippet of code is here and is required by dev-tools/docker/base/entrypoint.sh.
@@ -101,24 +86,23 @@ def dockerConfig = {
       if (System.env['LOCAL_USER_ID'] == null) {
         def username = System.getProperty("user.name")
         def uid = ['id', '-u', username].execute().text.trim()
-        args.add(1, "-e" as String)
-        args.add(2, "LOCAL_USER_ID=${uid}" as String)
+        tmpEnv << ("LOCAL_USER_ID=${uid}" as String)
       }
 
+      cmd.withEnv(tmpEnv)
+
       // Infer the index of this invocation
-      def matcher = (args[args.size - 1] =~ /.*Executor (\d*).*/)
+      def cmdList = cmd.getCmd()
+      def matcher = (cmdList[cmdList.length - 1] =~ /.*Executor (\d*).*/)
 
-      def pwdIndex = getWorkingDirArgIndex(args)
-      args[pwdIndex] = args[pwdIndex] + matcher[0][1]
-      def workdir = new File(args[pwdIndex])
+      def workdir = new File(cmd.getWorkingDir() + matcher[0][1])
       workdir.mkdirs()
-//      println args
+      cmd.withWorkingDir(workdir.toString())
 
-      args
+      //println cmd
     }
   }
 }
-
 subprojects {
   apply plugin: 'com.github.pedjak.dockerized-test'
 
