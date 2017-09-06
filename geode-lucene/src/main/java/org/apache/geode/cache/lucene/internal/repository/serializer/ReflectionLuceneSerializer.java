@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -75,5 +76,10 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
     if (logger.isDebugEnabled()) {
       logger.debug("ReflectionLuceneSerializer.toDocument:" + doc);
     }
+  }
+
+  @Override
+  public Collection<Document> toDocuments(Object value) {
+    return null;
   }
 }

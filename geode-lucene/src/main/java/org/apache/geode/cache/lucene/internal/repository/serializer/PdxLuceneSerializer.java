@@ -18,6 +18,8 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
+import java.util.Collection;
+
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -49,5 +51,10 @@ class PdxLuceneSerializer implements LuceneSerializer {
     if (logger.isDebugEnabled()) {
       logger.debug("PdxLuceneSerializer.toDocument:" + doc);
     }
+  }
+
+  @Override
+  public Collection<Document> toDocuments(Object value) {
+    return null;
   }
 }
