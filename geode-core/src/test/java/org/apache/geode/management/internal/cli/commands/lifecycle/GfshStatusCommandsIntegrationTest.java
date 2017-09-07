@@ -34,12 +34,10 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class GfshStatusCommandsIntegrationTest {
   final private static String LOCATOR_NAME = "locator1";
-  // private int port;
 
   @Rule
   public LocatorStarterRule locator =
       new LocatorStarterRule().withJMXManager().withName(LOCATOR_NAME).withAutoStart();
-
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
@@ -52,7 +50,6 @@ public class GfshStatusCommandsIntegrationTest {
 
   @Before
   public void connect() throws Exception {
-    // port = getRandomAvailablePort(SOCKET);
     gfsh.connectAndVerify(locator);
   }
 
