@@ -298,7 +298,7 @@ public class LuceneIndexCommands implements GfshCommand {
           unspecifiedDefaultValue = "false",
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__KEYSONLY__HELP) boolean keysOnly) {
 
-    getSecurityService().authorizeRegionRead(regionPath);
+    getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath);
 
     try {
       LuceneQueryInfo queryInfo =

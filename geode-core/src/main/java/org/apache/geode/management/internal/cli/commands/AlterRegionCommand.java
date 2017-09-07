@@ -38,6 +38,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class AlterRegionCommand implements GfshCommand {
   @CliCommand(value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
@@ -88,7 +90,7 @@ public class AlterRegionCommand implements GfshCommand {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    getSecurityService().authorizeRegionManage(regionPath);
+    getSecurityService().authorize(Resource.DATA, Operation.MANAGE, regionPath);
 
     try {
       InternalCache cache = getCache();

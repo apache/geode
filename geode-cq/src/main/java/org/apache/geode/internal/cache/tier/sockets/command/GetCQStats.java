@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -23,8 +25,8 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetCQStats extends BaseCQCommand {
 
@@ -70,7 +72,7 @@ public class GetCQStats extends BaseCQCommand {
       return;
     }
 
-    securityService.authorizeClusterRead();
+    securityService.authorize(Resource.CLUSTER, Operation.READ);
     // Process the cq request
     try {
       // make sure the cqservice has been created

@@ -33,6 +33,8 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetDurableCQs extends BaseCQCommand {
 
@@ -67,7 +69,7 @@ public class GetDurableCQs extends BaseCQCommand {
       DefaultQueryService qService =
           (DefaultQueryService) crHelper.getCache().getLocalQueryService();
 
-      securityService.authorizeClusterRead();
+      securityService.authorize(Resource.CLUSTER, Operation.READ);
 
       // Authorization check
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();

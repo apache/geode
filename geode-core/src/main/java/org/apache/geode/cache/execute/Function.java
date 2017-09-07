@@ -28,11 +28,6 @@ import org.apache.geode.lang.Identifiable;
  * return a non-null identifier and register your function using
  * {@link FunctionService#registerFunction(Function)} or the cache.xml <code>function</code>
  * element.
- * 
- * @see FunctionAdapter
- * @see FunctionService
- *
- * @param T type of FunctionContext's arguments of this Function
  *
  * @since GemFire 6.0
  */

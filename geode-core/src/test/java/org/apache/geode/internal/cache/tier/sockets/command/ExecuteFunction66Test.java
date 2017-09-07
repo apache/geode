@@ -15,8 +15,12 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,6 +55,8 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -163,7 +169,7 @@ public class ExecuteFunction66Test {
 
     this.executeFunction66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorizeDataWrite();
+    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE);
     // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
     // types get sent?
   }
@@ -172,12 +178,13 @@ public class ExecuteFunction66Test {
   public void withIntegratedSecurityShouldThrowIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataWrite();
+    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+        Operation.WRITE);
 
     assertThatThrownBy(() -> this.executeFunction66.cmdExecute(this.message, this.serverConnection,
         this.securityService, 0)).isExactlyInstanceOf(NullPointerException.class);
 
-    verify(this.securityService).authorizeDataWrite();
+    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE);
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
 
@@ -204,7 +211,7 @@ public class ExecuteFunction66Test {
     assertThatThrownBy(() -> this.executeFunction66.cmdExecute(this.message, this.serverConnection,
         this.securityService, 0)).isExactlyInstanceOf(NullPointerException.class);
 
-    verify(this.securityService).authorizeDataWrite();
+    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE);
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
 

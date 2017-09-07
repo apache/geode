@@ -19,6 +19,7 @@ import java.io.IOException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -37,7 +38,8 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.i18n.StringId;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Request extends BaseCommand {
 
@@ -124,7 +126,7 @@ public class Request extends BaseCommand {
         GetOperationContext getContext = null;
 
         try {
-          securityService.authorizeRegionRead(regionName, key.toString());
+          securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
           AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
           if (authzRequest != null) {
             getContext = authzRequest.getAuthorize(regionName, key, callbackArg);

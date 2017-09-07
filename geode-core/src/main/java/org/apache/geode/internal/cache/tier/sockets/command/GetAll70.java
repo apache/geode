@@ -41,6 +41,8 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetAll70 extends BaseCommand {
 
@@ -210,7 +212,7 @@ public class GetAll70 extends BaseCommand {
         }
 
         try {
-          securityService.authorizeRegionRead(regionName, key.toString());
+          securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
         } catch (NotAuthorizedException ex) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,

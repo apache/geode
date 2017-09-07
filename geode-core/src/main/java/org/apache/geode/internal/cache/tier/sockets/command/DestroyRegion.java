@@ -34,6 +34,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class DestroyRegion extends BaseCommand {
 
@@ -126,7 +128,7 @@ public class DestroyRegion extends BaseCommand {
 
     try {
       // user needs to have data:manage on all regions in order to destory a particular region
-      securityService.authorizeDataManage();
+      securityService.authorize(Resource.DATA, Operation.MANAGE);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

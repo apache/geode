@@ -36,6 +36,8 @@ import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class RemoveCommand implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
@@ -64,9 +66,9 @@ public class RemoveCommand implements GfshCommand {
     }
 
     if (removeAllKeys) {
-      cache.getSecurityService().authorizeRegionWrite(regionPath);
+      cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath);
     } else {
-      cache.getSecurityService().authorizeRegionWrite(regionPath, key);
+      cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath, key);
     }
 
     @SuppressWarnings("rawtypes")

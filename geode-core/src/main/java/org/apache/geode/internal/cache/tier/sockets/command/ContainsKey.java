@@ -30,6 +30,8 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class ContainsKey extends BaseCommand {
 
@@ -116,7 +118,7 @@ public class ContainsKey extends BaseCommand {
     }
 
     try {
-      securityService.authorizeRegionRead(regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
     } catch (NotAuthorizedException ex) {
       writeException(clientMessage, ex, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

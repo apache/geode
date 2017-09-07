@@ -47,45 +47,15 @@ public interface SecurityService {
     return callable;
   }
 
-  default void authorize(Resource resource, Operation operation, String target, String key) {}
-
-  default void authorize(Resource resource, Operation operation, Target target, String key) {}
+  default void authorize(Resource resource, Operation operation) {}
 
   default void authorize(Resource resource, Operation operation, Target target) {}
 
   default void authorize(Resource resource, Operation operation, String target) {}
 
-  default void authorizeClusterManage() {}
+  default void authorize(Resource resource, Operation operation, String target, String key) {}
 
-  default void authorizeClusterWrite() {}
-
-  default void authorizeClusterRead() {}
-
-  default void authorizeDataManage() {}
-
-  default void authorizeDataWrite() {}
-
-  default void authorizeDataRead() {}
-
-  default void authorizeDiskManage() {}
-
-  default void authorizeGatewayManage() {}
-
-  default void authorizeJarManage() {}
-
-  default void authorizeQueryManage() {}
-
-  default void authorizeRegionManage(String regionName) {}
-
-  default void authorizeRegionManage(String regionName, String key) {}
-
-  default void authorizeRegionWrite(String regionName) {}
-
-  default void authorizeRegionWrite(String regionName, String key) {}
-
-  default void authorizeRegionRead(String regionName) {}
-
-  default void authorizeRegionRead(String regionName, String key) {}
+  default void authorize(Resource resource, Operation operation, Target target, String key) {}
 
   default void authorize(ResourcePermission context) {}
 

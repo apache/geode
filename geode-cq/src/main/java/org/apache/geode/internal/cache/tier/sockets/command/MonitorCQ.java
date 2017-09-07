@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -23,8 +25,8 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class MonitorCQ extends BaseCQCommand {
 
@@ -81,7 +83,7 @@ public class MonitorCQ extends BaseCQCommand {
           regionName != null ? " RegionName: " + regionName : "");
     }
 
-    securityService.authorizeClusterRead();
+    securityService.authorize(Resource.CLUSTER, Operation.READ);
 
     try {
       CqService cqService = crHelper.getCache().getCqService();

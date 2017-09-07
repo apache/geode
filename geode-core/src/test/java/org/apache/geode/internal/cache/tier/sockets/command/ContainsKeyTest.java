@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +38,8 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -100,7 +107,7 @@ public class ContainsKeyTest {
 
     containsKey.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
+    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
     verify(this.replyMessage).send(this.serverConnection);
   }
 
@@ -108,12 +115,12 @@ public class ContainsKeyTest {
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService)
-        .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
+    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+        Operation.READ, REGION_NAME, KEY);
 
     containsKey.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
+    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
   }
 

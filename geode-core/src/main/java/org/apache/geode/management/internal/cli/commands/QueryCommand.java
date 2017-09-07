@@ -47,6 +47,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class QueryCommand implements GfshCommand {
   private static final Logger logger = LogService.getLogger();
@@ -95,7 +97,7 @@ public class QueryCommand implements GfshCommand {
 
       // authorize data read on these regions
       for (String region : regions) {
-        cache.getSecurityService().authorizeRegionRead(region);
+        cache.getSecurityService().authorize(Resource.DATA, Operation.READ, region);
       }
 
       regionsInQuery = Collections.unmodifiableSet(regions);

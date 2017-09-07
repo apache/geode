@@ -39,6 +39,8 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class KeySet extends BaseCommand {
 
@@ -94,7 +96,7 @@ public class KeySet extends BaseCommand {
     }
 
     try {
-      securityService.authorizeRegionRead(regionName);
+      securityService.authorize(Resource.DATA, Operation.READ, regionName);
     } catch (NotAuthorizedException ex) {
       writeChunkedException(clientMessage, ex, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

@@ -45,6 +45,8 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Get70 extends BaseCommand {
 
@@ -132,7 +134,7 @@ public class Get70 extends BaseCommand {
     GetOperationContext getContext = null;
     try {
       // for integrated security
-      securityService.authorizeRegionRead(regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

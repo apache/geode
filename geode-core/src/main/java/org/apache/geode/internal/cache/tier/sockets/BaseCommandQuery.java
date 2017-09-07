@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.query.Query;
@@ -37,12 +43,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public abstract class BaseCommandQuery extends BaseCommand {
 
@@ -87,7 +89,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
     try {
       // integrated security
       for (Object regionName : regionNames) {
-        securityService.authorizeRegionRead(regionName.toString());
+        securityService.authorize(Resource.DATA, Operation.READ, regionName.toString());
       }
 
       // Execute query

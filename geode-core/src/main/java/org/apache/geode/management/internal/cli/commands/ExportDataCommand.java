@@ -34,6 +34,8 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.ExportDataFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class ExportDataCommand implements GfshCommand {
   private final ExportDataFunction exportDataFunction = new ExportDataFunction();
@@ -54,7 +56,7 @@ public class ExportDataCommand implements GfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.EXPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
-    getSecurityService().authorizeRegionRead(regionName);
+    getSecurityService().authorize(Resource.DATA, Operation.READ, regionName);
     final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
     if (targetMember == null) {
       return ResultBuilder.createUserErrorResult(

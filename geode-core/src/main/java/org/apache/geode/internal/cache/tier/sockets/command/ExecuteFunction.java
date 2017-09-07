@@ -48,6 +48,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * This is the base command which read the parts for the MessageType.EXECUTE_FUNCTION.<br>
@@ -121,7 +123,7 @@ public class ExecuteFunction extends BaseCommand {
 
       FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId());
 
-      securityService.authorizeDataWrite();
+      securityService.authorize(Resource.DATA, Operation.WRITE);
 
       // check if the caller is authorized to do this operation on server
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();

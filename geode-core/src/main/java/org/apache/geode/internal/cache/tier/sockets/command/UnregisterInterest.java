@@ -30,6 +30,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class UnregisterInterest extends BaseCommand {
 
@@ -103,9 +105,9 @@ public class UnregisterInterest extends BaseCommand {
 
     try {
       if (interestType == InterestType.REGULAR_EXPRESSION) {
-        securityService.authorizeRegionRead(regionName);
+        securityService.authorize(Resource.DATA, Operation.READ, regionName);
       } else {
-        securityService.authorizeRegionRead(regionName, key.toString());
+        securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
       }
     } catch (NotAuthorizedException ex) {
       writeException(clientMessage, ex, false, serverConnection);
