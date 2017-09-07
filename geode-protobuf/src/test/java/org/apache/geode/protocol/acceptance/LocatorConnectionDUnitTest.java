@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.protocol;
+package org.apache.geode.protocol.acceptance;
 
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
@@ -22,6 +22,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,13 +32,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.Config;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI;
+import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
@@ -45,19 +44,12 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.util.Properties;
-
+/*
+ * Test sending ProtoBuf messages to the locator
+ */
 @Category(DistributedTest.class)
-public class RoundTripLocatorConnectionDUnitTest extends JUnit4CacheTestCase {
+public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
   private Socket socket;
 

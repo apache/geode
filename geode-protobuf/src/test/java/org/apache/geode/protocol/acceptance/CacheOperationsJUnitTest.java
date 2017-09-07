@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.protocol;
+package org.apache.geode.protocol.acceptance;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -22,18 +22,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.disconnectAllFromDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -58,16 +55,13 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
-import org.apache.geode.internal.cache.tier.sockets.GenericProtocolServerConnection;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.statistics.StatArchiveReader;
+import org.apache.geode.protocol.MessageUtil;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
@@ -81,13 +75,11 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
- * Test that switching on the header byte makes instances of
- * {@link GenericProtocolServerConnection}.
+ * Test operations using ProtoBuf
  */
 @Category(IntegrationTest.class)
-public class RoundTripCacheConnectionJUnitTest {
+public class CacheOperationsJUnitTest {
   private final String TEST_KEY = "testKey";
-  private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
   private final int TEST_PUT_CORRELATION_ID = 574;
   private final int TEST_GET_CORRELATION_ID = 68451;
@@ -115,7 +107,6 @@ public class RoundTripCacheConnectionJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
-  private File statisticsArchiveFile;
 
   @Before
   public void setup() throws Exception {
@@ -131,12 +122,6 @@ public class RoundTripCacheConnectionJUnitTest {
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
-    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
-    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
-    statisticsArchiveFile =
-        new File(getClass().getSimpleName() + "_" + testName.getMethodName() + ".gfs");
-    cacheFactory.set(ConfigurationProperties.STATISTIC_ARCHIVE_FILE,
-        statisticsArchiveFile.getName());
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
@@ -166,21 +151,6 @@ public class RoundTripCacheConnectionJUnitTest {
     cache.close();
     socket.close();
     SocketCreatorFactory.close();
-  }
-
-  @Test
-  public void testNewProtocolHeaderLeadsToNewProtocolServerConnection() throws Exception {
-    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    ClientProtocol.Message putMessage =
-        MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
-            ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
-    protobufProtocolSerializer.serialize(putMessage, outputStream);
-    validatePutResponse(socket, protobufProtocolSerializer);
-
-    ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
-        TEST_KEY, TEST_REGION, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
-    protobufProtocolSerializer.serialize(getMessage, outputStream);
-    validateGetResponse(socket, protobufProtocolSerializer, TEST_VALUE);
   }
 
   @Test
@@ -219,51 +189,6 @@ public class RoundTripCacheConnectionJUnitTest {
         ProtobufUtilities.createProtobufRequestWithGetAllRequest(getAllRequest));
     protobufProtocolSerializer.serialize(getAllMessage, outputStream);
     validateGetAllResponse(socket, protobufProtocolSerializer);
-    long startTime = System.currentTimeMillis();
-    Thread.sleep(3000);
-
-    long endTime = System.currentTimeMillis();
-
-    disconnectAllFromDS();
-
-    StatArchiveReader.ValueFilter filter = new StatArchiveReader.ValueFilter() {
-      @Override
-      public boolean archiveMatches(File archive) {
-        return true;
-      }
-
-      @Override
-      public boolean typeMatches(String type) {
-        return type.equals("ProtobufServerStats");
-      }
-
-      @Override
-      public boolean statMatches(String statName) {
-        return true;
-      }
-
-      @Override
-      public boolean instanceMatches(String textId, long numericId) {
-        return true;
-      }
-    };
-
-    StatArchiveReader reader = new StatArchiveReader(new File[] {statisticsArchiveFile},
-        new StatArchiveReader.ValueFilter[] {filter}, true);
-    List resourceInstList = reader.getResourceInstList();
-    // for (Object inst : resourceInstList) {
-    // StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) inst;
-    // String resourceName = ri.getName();
-    // String resourceTypeName = ri.getType().getName();
-    // System.out.println("===> resource name: " + resourceName + "; type name: " +
-    // resourceTypeName);
-    // }
-    assertEquals(1, resourceInstList.size());
-    StatArchiveReader.ResourceInst resourceInst =
-        (StatArchiveReader.ResourceInst) resourceInstList.iterator().next();
-    StatArchiveReader.StatValue statValue =
-        resourceInst.getStatValue("currentClientConnections").createTrimmed(startTime, endTime);
-    assertEquals(2.0, statValue.getSnapshotsMinimum(), 0.01);
   }
 
   @Test
@@ -314,7 +239,7 @@ public class RoundTripCacheConnectionJUnitTest {
   }
 
   @Test
-  public void testNullResponse() throws Exception {
+  public void testResponseToGetWithNoData() throws Exception {
     // Get request without any data set must return a null
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
@@ -328,85 +253,6 @@ public class RoundTripCacheConnectionJUnitTest {
     RegionAPI.GetResponse getResponse = response.getGetResponse();
 
     assertFalse(getResponse.hasResult());
-  }
-
-  @Test
-  public void testConnectionCountIsProperlyDecremented() throws Exception {
-    CacheServer cacheServer = this.cache.getCacheServers().stream().findFirst().get();
-    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
-      return acceptor.getClientServerCnxCount() == 1;
-    });
-    // run another test that creates a connection to the server
-    testNewProtocolGetRegionNamesCallSucceeds();
-    assertFalse(socket.isClosed());
-    socket.close();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
-      return acceptor.getClientServerCnxCount() == 0;
-    });
-  }
-
-  @Test
-  public void testNewProtocolRespectsMaxConnectionLimit() throws IOException, InterruptedException {
-    cache.getDistributedSystem().disconnect();
-
-    CacheFactory cacheFactory = new CacheFactory();
-    cacheFactory.set(ConfigurationProperties.LOCATORS, "");
-    cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
-    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
-    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
-    cacheFactory.set(ConfigurationProperties.STATISTIC_ARCHIVE_FILE,
-        getClass().getSimpleName() + "_" + testName.getMethodName() + ".gfs");
-    cache = cacheFactory.create();
-
-    CacheServer cacheServer = cache.addCacheServer();
-    final int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    cacheServer.setPort(cacheServerPort);
-    cacheServer.setMaxConnections(16);
-    cacheServer.setMaxThreads(16);
-    cacheServer.start();
-
-    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
-
-    // Start 16 sockets, which is exactly the maximum that the server will support.
-    Socket[] sockets = new Socket[16];
-    for (int i = 0; i < 16; i++) {
-      Socket socket = new Socket("localhost", cacheServerPort);
-      sockets[i] = socket;
-      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-      socket.getOutputStream()
-          .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    }
-
-    // try to start a new socket, expecting it to be disconnected.
-    try (Socket socket = new Socket("localhost", cacheServerPort)) {
-      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-      socket.getOutputStream()
-          .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-      assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
-    }
-
-    Thread.sleep(15000);
-    for (Socket currentSocket : sockets) {
-      currentSocket.close();
-    }
-
-    // Once all connections are closed, the acceptor should have a connection count of 0.
-    Awaitility.await().atMost(5, TimeUnit.SECONDS)
-        .until(() -> acceptor.getClientServerCnxCount() == 0);
-
-    // Try to start 16 new connections, again at the limit.
-    for (int i = 0; i < 16; i++) {
-      Socket socket = new Socket("localhost", cacheServerPort);
-      sockets[i] = socket;
-      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-      socket.getOutputStream()
-          .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    }
-
-    for (Socket currentSocket : sockets) {
-      currentSocket.close();
-    }
   }
 
   @Test
@@ -425,12 +271,7 @@ public class RoundTripCacheConnectionJUnitTest {
   }
 
   @Test
-  public void useSSL_testNewProtocolHeaderLeadsToNewProtocolServerConnection() throws Exception {
-    testNewProtocolHeaderLeadsToNewProtocolServerConnection();
-  }
-
-  @Test
-  public void testNewProtocolGetRegionCallSucceeds() throws Exception {
+  public void testNewProtocolGetRegionCall() throws Exception {
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
     Socket socket = new Socket("localhost", cacheServerPort);
@@ -458,14 +299,6 @@ public class RoundTripCacheConnectionJUnitTest {
     assertEquals("", region.getKeyConstraint());
     assertEquals("", region.getValueConstraint());
     assertEquals(Scope.DISTRIBUTED_NO_ACK, Scope.fromString(region.getScope()));
-  }
-
-  private void validatePutResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_PUT_CORRELATION_ID);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
-        response.getResponseAPICase());
   }
 
   private void validateGetResponse(Socket socket,
@@ -561,10 +394,8 @@ public class RoundTripCacheConnectionJUnitTest {
   }
 
   private void updatePropertiesForSSLCache(Properties properties) {
-    String keyStore =
-        TestUtil.getResourcePath(RoundTripCacheConnectionJUnitTest.class, DEFAULT_STORE);
-    String trustStore =
-        TestUtil.getResourcePath(RoundTripCacheConnectionJUnitTest.class, DEFAULT_STORE);
+    String keyStore = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
+    String trustStore = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
 
     properties.put(SSL_ENABLED_COMPONENTS, "server");
     properties.put(ConfigurationProperties.SSL_PROTOCOLS, SSL_PROTOCOLS);
@@ -579,10 +410,8 @@ public class RoundTripCacheConnectionJUnitTest {
   }
 
   private Socket getSSLSocket() throws IOException {
-    String keyStorePath =
-        TestUtil.getResourcePath(RoundTripCacheConnectionJUnitTest.class, DEFAULT_STORE);
-    String trustStorePath =
-        TestUtil.getResourcePath(RoundTripCacheConnectionJUnitTest.class, DEFAULT_STORE);
+    String keyStorePath = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
+    String trustStorePath = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
 
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setEnabled(true);
