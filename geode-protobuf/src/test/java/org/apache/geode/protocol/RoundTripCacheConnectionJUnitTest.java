@@ -56,15 +56,16 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.GenericProtocolServerConnection;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
+import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
@@ -144,7 +145,7 @@ public class RoundTripCacheConnectionJUnitTest {
     }
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
     serializationService = new ProtobufSerializationService();
   }
@@ -178,7 +179,7 @@ public class RoundTripCacheConnectionJUnitTest {
     Socket socket = new Socket("localhost", cacheServerPort);
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     OutputStream outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     Set<BasicTypes.Entry> putEntries = new HashSet<>();
@@ -220,7 +221,7 @@ public class RoundTripCacheConnectionJUnitTest {
     Socket socket = new Socket("localhost", cacheServerPort);
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     OutputStream outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     Set<BasicTypes.Entry> putEntries = new HashSet<>();
@@ -290,6 +291,62 @@ public class RoundTripCacheConnectionJUnitTest {
   }
 
   @Test
+  public void testNewProtocolRespectsMaxConnectionLimit() throws IOException, InterruptedException {
+    cache.close();
+
+    CacheFactory cacheFactory = new CacheFactory();
+    Cache cache = cacheFactory.create();
+
+    CacheServer cacheServer = cache.addCacheServer();
+    final int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    cacheServer.setPort(cacheServerPort);
+    cacheServer.setMaxConnections(16);
+    cacheServer.setMaxThreads(16);
+    cacheServer.start();
+
+    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+
+    // Start 16 sockets, which is exactly the maximum that the server will support.
+    Socket[] sockets = new Socket[16];
+    for (int i = 0; i < 16; i++) {
+      Socket socket = new Socket("localhost", cacheServerPort);
+      sockets[i] = socket;
+      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+      socket.getOutputStream()
+          .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    }
+
+    // try to start a new socket, expecting it to be disconnected.
+    try (Socket socket = new Socket("localhost", cacheServerPort)) {
+      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+      socket.getOutputStream()
+          .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+      assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
+    }
+
+    for (Socket currentSocket : sockets) {
+      currentSocket.close();
+    }
+
+    // Once all connections are closed, the acceptor should have a connection count of 0.
+    Awaitility.await().atMost(5, TimeUnit.SECONDS)
+        .until(() -> acceptor.getClientServerCnxCount() == 0);
+
+    // Try to start 16 new connections, again at the limit.
+    for (int i = 0; i < 16; i++) {
+      Socket socket = new Socket("localhost", cacheServerPort);
+      sockets[i] = socket;
+      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+      socket.getOutputStream()
+          .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    }
+
+    for (Socket currentSocket : sockets) {
+      currentSocket.close();
+    }
+  }
+
+  @Test
   public void testNewProtocolGetRegionNamesCallSucceeds() throws Exception {
     int correlationId = TEST_GET_CORRELATION_ID; // reuse this value for this test
 
@@ -316,7 +373,7 @@ public class RoundTripCacheConnectionJUnitTest {
     Socket socket = new Socket("localhost", cacheServerPort);
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     OutputStream outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message getRegionMessage = MessageUtil.makeGetRegionRequestMessage(TEST_REGION,
