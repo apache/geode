@@ -15,13 +15,22 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.rules.ExternalResource;
 
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
@@ -37,14 +46,25 @@ public class CQUnitTestRule extends ExternalResource {
   public Message message;
   public ServerConnection connection;
   public InternalCache cache;
+  public CqService cqService;
+  public InternalCqQuery internalCqQuery;
 
   protected void before() throws Throwable {
     securityService = mock(SecurityService.class);
     message = mock(Message.class);
     connection = mock(ServerConnection.class);
     cache = mock(InternalCache.class);
+    cqService = mock(CqService.class);
+    internalCqQuery = mock(InternalCqQuery.class);
+    String regionName = "regionName";
     Part part = mock(Part.class);
     CachedRegionHelper crHelper = mock(CachedRegionHelper.class);
+
+    DefaultQueryService queryService = mock(DefaultQueryService.class);
+    DefaultQuery query = mock(DefaultQuery.class);
+
+    Set<String> regionsInQuery = new HashSet();
+    regionsInQuery.add(regionName);
 
     when(connection.getCachedRegionHelper()).thenReturn(crHelper);
     when(connection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
@@ -54,7 +74,12 @@ public class CQUnitTestRule extends ExternalResource {
     when(part.getString()).thenReturn("CQ");
     when(part.getInt()).thenReturn(10);
     when(crHelper.getCache()).thenReturn(cache);
-    when(cache.getCqService()).thenReturn(mock(CqService.class));
+    when(cache.getCqService()).thenReturn(cqService);
+    when(cache.getLocalQueryService()).thenReturn(queryService);
+    when(queryService.newQuery(anyString())).thenReturn(query);
+    when(query.getRegionsInQuery(null)).thenReturn(regionsInQuery);
+    when(cqService.getCq("CQ")).thenReturn(internalCqQuery);
+    when(internalCqQuery.getRegionName()).thenReturn(regionName);
   }
 
 }

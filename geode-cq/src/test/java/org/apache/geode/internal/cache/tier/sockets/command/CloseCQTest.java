@@ -25,7 +25,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.security.ResourcePermission.Target;
 import org.apache.geode.test.dunit.rules.CQUnitTestRule;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -36,13 +35,13 @@ public class CloseCQTest {
   public CQUnitTestRule cqRule = new CQUnitTestRule();
 
   @Test
-  public void needClusterManageQueryToStopCQ() throws Exception {
+  public void needDataReadRegionToClose() throws Exception {
     CloseCQ closeCQ = mock(CloseCQ.class);
     doCallRealMethod().when(closeCQ).cmdExecute(cqRule.message, cqRule.connection,
         cqRule.securityService, 0);
 
     closeCQ.cmdExecute(cqRule.message, cqRule.connection, cqRule.securityService, 0);
 
-    verify(cqRule.securityService).authorize(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
+    verify(cqRule.securityService).authorize(Resource.DATA, Operation.READ, "regionName");
   }
 }
