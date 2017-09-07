@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -103,9 +102,5 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
     }
   }
 
-  @Override
-  public Collection<Document> toDocuments(Object value) {
-    return null;
-  }
 
 }

@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
@@ -62,10 +61,5 @@ public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.Luc
   public void create(final String indexName, final String regionPath) {
     service.createIndex(indexName, regionPath, fields);
 
-  }
-
-  @Override
-  public LuceneIndexFactory setLuceneSerializer(LuceneSerializer luceneSerializer) {
-    return this;
   }
 }

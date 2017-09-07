@@ -15,8 +15,6 @@
 
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
-import java.util.Collection;
-
 import org.apache.lucene.document.Document;
 
 /**
@@ -29,8 +27,4 @@ public interface LuceneSerializer {
    */
   void toDocument(Object value, Document doc);
 
-  /**
-   * Add the fields of the given value to a set of documents
-   */
-  Collection<Document> toDocuments(Object value);
 }
