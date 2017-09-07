@@ -21,6 +21,7 @@ import org.apache.lucene.document.Document;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.PdxInstance;
 

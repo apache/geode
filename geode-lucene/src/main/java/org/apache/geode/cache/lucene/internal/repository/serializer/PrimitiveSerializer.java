@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 
 import org.apache.lucene.document.Document;

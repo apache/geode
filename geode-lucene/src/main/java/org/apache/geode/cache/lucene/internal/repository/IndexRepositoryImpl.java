@@ -17,7 +17,7 @@ package org.apache.geode.cache.lucene.internal.repository;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionConfig;

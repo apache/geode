@@ -15,7 +15,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 

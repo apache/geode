@@ -20,6 +20,8 @@ import java.util.Collection;
 
 import org.apache.lucene.document.Document;
 
+import org.apache.geode.cache.lucene.LuceneSerializer;
+
 public class SerializerTestHelper {
   static Document invokeSerializer(LuceneSerializer mapper, Object object) {
     Collection<Document> docs = mapper.toDocuments(object);

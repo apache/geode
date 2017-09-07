@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.logging.LogService;
 
 /**
