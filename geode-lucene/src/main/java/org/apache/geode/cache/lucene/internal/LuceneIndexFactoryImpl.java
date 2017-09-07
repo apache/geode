@@ -65,5 +65,7 @@ public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.Luc
   }
 
   @Override
-  public void setLuceneSerializer(LuceneSerializer luceneSerializer) {}
+  public LuceneIndexFactory setLuceneSerializer(LuceneSerializer luceneSerializer) {
+    return this;
+  }
 }
