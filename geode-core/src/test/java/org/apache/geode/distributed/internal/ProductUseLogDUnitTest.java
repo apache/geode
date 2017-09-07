@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,6 +60,7 @@ public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
     return p;
   }
 
+  @Category(FlakyTest.class) // GEODE-3581 - test has Thread.sleep() and fails intermittently
   @Test
   public void testMembershipMonitoring() throws Exception {
     Host host = Host.getHost(0);
