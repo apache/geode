@@ -24,7 +24,7 @@ limitations under the License.
 
 The query monitoring feature prevents out-of-memory exceptions from occurring when you execute queries or create indexes.
 
-This feature is automatically enabled when you set a `critical-heap-percentage` attribute for the resource-manager element in cache.xml or by using the `cache.getResourceManager().setCriticalHelpPercentage(float                     heapPercentage)` API. Use this feature to cancel out queries that are taking too long and to warn the user that there are low memory conditions when they are running queries or creating indexes.
+This feature is automatically enabled when you set a `critical-heap-percentage` attribute for the resource-manager element in cache.xml or by using the `cache.getResourceManager().setCriticalHeapPercentage(float heapPercentage)` API. Use this feature to cancel out queries that are taking too long and to warn the user that there are low memory conditions when they are running queries or creating indexes.
 
 You can override this feature by setting the system property `gemfire.cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY` to true.
 
