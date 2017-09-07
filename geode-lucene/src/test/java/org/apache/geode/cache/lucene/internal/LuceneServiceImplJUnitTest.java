@@ -58,7 +58,7 @@ public class LuceneServiceImplJUnitTest {
   @Test
   public void shouldThrowIllegalArgumentExceptionIfFieldsMapIsMissing() {
     thrown.expect(IllegalArgumentException.class);
-    service.createIndex("index", "region", Collections.emptyMap());
+    service.createIndex("index", "region", Collections.emptyMap(), null);
   }
 
   @Test
