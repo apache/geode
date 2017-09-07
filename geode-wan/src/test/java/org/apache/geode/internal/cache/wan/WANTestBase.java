@@ -2822,7 +2822,8 @@ public class WANTestBase extends JUnit4DistributedTestCase {
                 true, (regionSize <= r.keySet().size())));
     for (int i = 0; i < regionSize; i++) {
       LogWriterUtils.getLogWriter().info("For Key : Key_" + i + " : Values : " + r.get("Key_" + i));
-      assertEquals(new SimpleClass(i, (byte) i), r.get("Key_" + i));
+      assertEquals("keySet = " + r.keySet() + " values() = " + r.values(),
+          new SimpleClass(i, (byte) i), r.get("Key_" + i));
     }
   }
 
