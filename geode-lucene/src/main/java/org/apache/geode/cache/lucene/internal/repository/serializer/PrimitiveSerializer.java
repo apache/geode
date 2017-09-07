@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.geode.cache.lucene.LuceneService;
 
@@ -27,12 +28,9 @@ import org.apache.lucene.document.Document;
 public class PrimitiveSerializer implements LuceneSerializer {
 
   @Override
-  public void toDocument(final Object value, final Document doc) {
+  public Collection<Document> toDocuments(final Object value) {
+    Document doc = new Document();
     SerializerUtil.addField(doc, LuceneService.REGION_VALUE_FIELD, value);
-  }
-
-  @Override
-  public Collection<Document> toDocuments(Object value) {
-    return null;
+    return Collections.singleton(doc);
   }
 }

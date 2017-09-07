@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
+import static org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper.invokeSerializer;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -35,15 +36,14 @@ public class PdxFieldMapperJUnitTest {
     String[] fields = new String[] {"s", "i"};
     PdxLuceneSerializer mapper = new PdxLuceneSerializer(fields);
 
-    PdxInstance i = mock(PdxInstance.class);
+    PdxInstance pdxInstance = mock(PdxInstance.class);
 
-    when(i.hasField("s")).thenReturn(true);
-    when(i.hasField("i")).thenReturn(true);
-    when(i.getField("s")).thenReturn("a");
-    when(i.getField("i")).thenReturn(5);
+    when(pdxInstance.hasField("s")).thenReturn(true);
+    when(pdxInstance.hasField("i")).thenReturn(true);
+    when(pdxInstance.getField("s")).thenReturn("a");
+    when(pdxInstance.getField("i")).thenReturn(5);
 
-    Document doc = new Document();
-    mapper.toDocument(i, doc);
+    Document doc = invokeSerializer(mapper, pdxInstance);
 
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
@@ -55,19 +55,18 @@ public class PdxFieldMapperJUnitTest {
     String[] fields = new String[] {"s", "i", "s2", "o"};
     PdxLuceneSerializer mapper = new PdxLuceneSerializer(fields);
 
-    PdxInstance i = mock(PdxInstance.class);
+    PdxInstance pdxInstance = mock(PdxInstance.class);
 
-    when(i.hasField("s")).thenReturn(true);
-    when(i.hasField("i")).thenReturn(true);
-    when(i.hasField("o")).thenReturn(true);
-    when(i.hasField("o2")).thenReturn(true);
-    when(i.getField("s")).thenReturn("a");
-    when(i.getField("i")).thenReturn(5);
-    when(i.getField("o")).thenReturn(new Object());
-    when(i.getField("o2")).thenReturn(new Object());
+    when(pdxInstance.hasField("s")).thenReturn(true);
+    when(pdxInstance.hasField("i")).thenReturn(true);
+    when(pdxInstance.hasField("o")).thenReturn(true);
+    when(pdxInstance.hasField("o2")).thenReturn(true);
+    when(pdxInstance.getField("s")).thenReturn("a");
+    when(pdxInstance.getField("i")).thenReturn(5);
+    when(pdxInstance.getField("o")).thenReturn(new Object());
+    when(pdxInstance.getField("o2")).thenReturn(new Object());
 
-    Document doc = new Document();
-    mapper.toDocument(i, doc);
+    Document doc = invokeSerializer(mapper, pdxInstance);
 
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
@@ -79,15 +78,14 @@ public class PdxFieldMapperJUnitTest {
     String[] fields = new String[] {"s", "i"};
     PdxLuceneSerializer mapper = new PdxLuceneSerializer(fields);
 
-    PdxInstance i = mock(PdxInstance.class);
+    PdxInstance pdxInstance = mock(PdxInstance.class);
 
-    when(i.hasField("s")).thenReturn(true);
-    when(i.hasField("i")).thenReturn(true);
-    when(i.getField("s")).thenReturn("a");
-    when(i.getField("i")).thenReturn(null);
+    when(pdxInstance.hasField("s")).thenReturn(true);
+    when(pdxInstance.hasField("i")).thenReturn(true);
+    when(pdxInstance.getField("s")).thenReturn("a");
+    when(pdxInstance.getField("i")).thenReturn(null);
 
-    Document doc = new Document();
-    mapper.toDocument(i, doc);
+    Document doc = invokeSerializer(mapper, pdxInstance);
 
     assertEquals(1, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());

@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -72,18 +73,20 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
   }
 
   @Override
-  public void toDocument(Object value, Document doc) {
+  public Collection<Document> toDocuments(Object value) {
 
     if (value == null) {
-      return;
+      return Collections.emptyList();
     }
 
     LuceneSerializer mapper = getFieldMapper(value);
 
-    mapper.toDocument(value, doc);
+    Collection<Document> docs = mapper.toDocuments(value);
     if (logger.isDebugEnabled()) {
-      logger.debug("HeterogeneousLuceneSerializer.toDocument:" + doc);
+      logger.debug("HeterogeneousLuceneSerializer.toDocuments:" + docs);
     }
+
+    return docs;
   }
 
   /**
@@ -101,11 +104,6 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
       }
       return mapper;
     }
-  }
-
-  @Override
-  public Collection<Document> toDocuments(Object value) {
-    return null;
   }
 
 }

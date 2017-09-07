@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,7 +62,8 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
   }
 
   @Override
-  public void toDocument(Object value, Document doc) {
+  public Collection<Document> toDocuments(Object value) {
+    Document doc = new Document();
     for (Field field : fields) {
       try {
         Object fieldValue = field.get(value);
@@ -76,10 +78,6 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
     if (logger.isDebugEnabled()) {
       logger.debug("ReflectionLuceneSerializer.toDocument:" + doc);
     }
-  }
-
-  @Override
-  public Collection<Document> toDocuments(Object value) {
-    return null;
+    return Collections.singleton(doc);
   }
 }

@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.PdxInstance;
@@ -37,7 +38,8 @@ class PdxLuceneSerializer implements LuceneSerializer {
   }
 
   @Override
-  public void toDocument(Object value, Document doc) {
+  public Collection<Document> toDocuments(Object value) {
+    Document doc = new Document();
     PdxInstance pdx = (PdxInstance) value;
     for (String field : indexedFields) {
       if (pdx.hasField(field)) {
@@ -51,10 +53,6 @@ class PdxLuceneSerializer implements LuceneSerializer {
     if (logger.isDebugEnabled()) {
       logger.debug("PdxLuceneSerializer.toDocument:" + doc);
     }
-  }
-
-  @Override
-  public Collection<Document> toDocuments(Object value) {
-    return null;
+    return Collections.singleton(doc);
   }
 }
