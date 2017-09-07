@@ -1264,7 +1264,7 @@ public abstract class ServerConnection implements Runnable {
     this.requestSpecificTimeout = -1;
   }
 
-  int getClientReadTimeout() {
+  protected int getClientReadTimeout() {
     if (this.requestSpecificTimeout == -1)
       return this.handshake.getClientReadTimeout();
     else
