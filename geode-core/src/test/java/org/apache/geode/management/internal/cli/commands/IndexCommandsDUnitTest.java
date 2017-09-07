@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Properties;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,6 +36,7 @@ import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -42,6 +44,10 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class IndexCommandsDUnitTest {
+  // This test seemed to be leaving behind state that caused ConnectCommandWithSSLTest to fail if it
+  // was run afterwards. So, this rule ensures we leave behind a clean state.
+  @ClassRule
+  public static CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
