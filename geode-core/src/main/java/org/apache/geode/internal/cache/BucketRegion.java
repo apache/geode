@@ -2454,5 +2454,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  @Override
+  protected void postDestroyRegion(boolean destroyDiskRegion, RegionEventImpl event) {
+    DiskRegion dr = this.getDiskRegion();
+    if (dr != null && destroyDiskRegion) {
+      dr.statsClear(this);
+    }
+    super.postDestroyRegion(destroyDiskRegion, event);
+  }
 }
 
