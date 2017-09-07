@@ -51,6 +51,7 @@ import javax.management.ObjectName;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
@@ -1247,7 +1248,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   private ServerState createNoResponseState(final Exception cause, final String errorMessage) {
-    debug(cause);
+    debug(ExceptionUtils.getFullStackTrace(cause) + errorMessage);
     return new ServerState(this, Status.NOT_RESPONDING, errorMessage);
   }
 

@@ -50,6 +50,7 @@ import javax.management.ObjectName;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
@@ -1089,7 +1090,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   private LocatorState createNoResponseState(final Exception cause, final String errorMessage) {
-    debug(cause + ": " + errorMessage);
+    debug(ExceptionUtils.getFullStackTrace(cause) + errorMessage);
     return new LocatorState(this, Status.NOT_RESPONDING, errorMessage);
   }
 
