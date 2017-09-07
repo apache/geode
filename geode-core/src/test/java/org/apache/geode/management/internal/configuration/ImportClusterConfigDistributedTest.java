@@ -71,9 +71,9 @@ public class ImportClusterConfigDistributedTest {
     gfsh.executeAndVerifyCommand(
         "export cluster-configuration --zip-file-name=" + exportedClusterConfig.getCanonicalPath());
 
-    lsRule.stopMember(0);
+    lsRule.stopVM(0);
 
-    lsRule.stopMember(1);
+    lsRule.stopVM(1);
 
     assertThat(this.exportedClusterConfig).exists();
     assertThat(this.exportedClusterConfig.length()).isGreaterThan(100);

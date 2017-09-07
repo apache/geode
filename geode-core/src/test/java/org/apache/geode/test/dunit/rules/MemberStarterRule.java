@@ -103,10 +103,7 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
     // invoke stopMember() first and then ds.disconnect
     stopMember();
 
-    DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-    if (ds != null) {
-      ds.disconnect();
-    }
+    disconnectDSIfAny();
 
     if (temporaryFolder != null) {
       temporaryFolder.delete();
@@ -116,6 +113,13 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
       System.clearProperty("user.dir");
     } else {
       System.setProperty("user.dir", oldUserDir);
+    }
+  }
+
+  public static void disconnectDSIfAny() {
+    DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+    if (ds != null) {
+      ds.disconnect();
     }
   }
 

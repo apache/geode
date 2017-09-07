@@ -141,8 +141,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     });
 
     // Restart the data member cache to make sure that the index is destroyed.
-
-    startupRule.stopMember(1);
+    startupRule.stopVM(1);
 
     Properties props = new Properties();
     props.setProperty(GROUPS, groupName);

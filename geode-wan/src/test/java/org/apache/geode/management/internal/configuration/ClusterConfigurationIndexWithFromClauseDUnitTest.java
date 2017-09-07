@@ -71,7 +71,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-    lsRule.stopMember(1);
+    lsRule.stopVM(1);
     lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
   }
