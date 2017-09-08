@@ -85,16 +85,15 @@ public abstract class ServerConnection implements Runnable {
    */
   private static final int TIMEOUT_BUFFER_FOR_CONNECTION_CLEANUP_MS = 5000;
 
-  public static final String ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME =
-      "geode.allow-internal-messages-without-credentials";
+  public static final String DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME =
+      "geode.disallow-internal-messages-without-credentials";
 
   /**
-   * This property allows folks to perform a rolling upgrade from pre-1.2.1 to a post-1.2.1 cluster.
-   * Normally internal messages that can affect server state require credentials but pre-1.2.1 this
-   * wasn't the case. See GEODE-3249
+   * When true requires some formerly credential-less messages to carry credentials. See GEODE-3249
+   * and ServerConnection.isInternalMessage()
    */
-  private static final boolean ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS =
-      Boolean.getBoolean(ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME);
+  public static boolean allowInternalMessagesWithoutCredentials =
+      !(Boolean.getBoolean(DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME));
 
   private Map commands;
 
@@ -774,7 +773,7 @@ public abstract class ServerConnection implements Runnable {
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do
         // authorization later
         if (AcceptorImpl.isIntegratedSecurity()
-            && !isInternalMessage(this.requestMsg, ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS)
+            && !isInternalMessage(this.requestMsg, allowInternalMessagesWithoutCredentials)
             && !this.communicationMode.isWAN()) {
           long uniqueId = getUniqueId();
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
@@ -1078,7 +1077,7 @@ public abstract class ServerConnection implements Runnable {
     if (AcceptorImpl.isAuthenticationRequired()
         && this.handshake.getVersion().compareTo(Version.GFE_65) >= 0
         && !this.communicationMode.isWAN() && !this.requestMsg.getAndResetIsMetaRegion()
-        && !isInternalMessage(this.requestMsg, ALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS)) {
+        && !isInternalMessage(this.requestMsg, allowInternalMessagesWithoutCredentials)) {
       setSecurityPart();
       return this.securePart;
     } else {

@@ -21,6 +21,7 @@ import static org.apache.geode.test.dunit.IgnoredException.*;
 import static org.apache.geode.test.dunit.LogWriterUtils.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -28,16 +29,22 @@ import java.util.Properties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Tests for authorization from client to server. This tests for authorization of all operations
@@ -47,7 +54,25 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  * @since GemFire 5.5
  */
 @Category({DistributedTest.class, SecurityTest.class})
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    List<String> result = VersionManager.getInstance().getVersions();
+    if (result.size() < 1) {
+      throw new RuntimeException("No older versions of Geode were found to test against");
+    } else {
+      System.out.println("running against these versions: " + result);
+    }
+    return result;
+  }
+
+  public ClientAuthorizationDUnitTest(String version) {
+    super();
+    clientVersion = version;
+  }
+
 
   @Override
   public final void preTearDownClientAuthorizationTestBase() throws Exception {
@@ -111,6 +136,13 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
     String authenticator = cGen.getAuthenticator();
     String authInit = cGen.getAuthInit();
     String accessor = gen.getAuthorizationCallback();
+
+    // this test registers a PDX type and needs the servers to accept it without
+    // credentials in old clients
+    if (clientVersion.compareTo("130") < 0 && !VersionManager.isCurrentVersion(clientVersion)) {
+      server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = true);
+      server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = true);
+    }
 
     getLogWriter().info("testPutAllWithSecurity: Using authinit: " + authInit);
     getLogWriter().info("testPutAllWithSecurity: Using authenticator: " + authenticator);
@@ -518,19 +550,7 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
         new OperationWithAction(OperationCode.DESTROY, 3,
             OpFlags.USE_NEWVAL | OpFlags.CHECK_NOTAUTHZ, 4),
         new OperationWithAction(OperationCode.DESTROY),
-        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.CHECK_FAIL, 4), // bruce:
-                                                                                                    // added
-                                                                                                    // check_nokey
-                                                                                                    // because
-                                                                                                    // we
-                                                                                                    // now
-                                                                                                    // bring
-                                                                                                    // tombstones
-                                                                                                    // to
-                                                                                                    // the
-                                                                                                    // client
-                                                                                                    // in
-                                                                                                    // 8.0
+        new OperationWithAction(OperationCode.GET, 2, OpFlags.USE_OLDCONN | OpFlags.CHECK_FAIL, 4),
         // Repopulate the region
         new OperationWithAction(OperationCode.PUT, 1, OpFlags.USE_NEWVAL, 4),
 
@@ -582,6 +602,7 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
             OpFlags.USE_GET_ENTRY_IN_TX | OpFlags.CHECK_FAIL, 4),
 
         OperationWithAction.OPBLOCK_END};
+
   }
 
   private Properties getUserPassword(final String userName) {

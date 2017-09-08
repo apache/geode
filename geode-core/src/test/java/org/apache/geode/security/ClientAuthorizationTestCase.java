@@ -55,14 +55,17 @@ import org.apache.geode.internal.AvailablePort.*;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.AbstractRegionEntry;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.AuthzCredentialGenerator.ClassCode;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
  * Base class for tests for authorization from client to server. It contains utility functions for
@@ -78,6 +81,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   protected static VM server2 = null;
   protected static VM client1 = null;
   protected static VM client2 = null;
+
+  public String clientVersion = VersionManager.CURRENT_VERSION;
 
   protected static final String regionName = REGION_NAME; // TODO: remove
   protected static final String SUBREGION_NAME = "AuthSubregion";
@@ -103,10 +108,18 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   }
 
   private void setUpClientAuthorizationTestBase() throws Exception {
-    server1 = getHost(0).getVM(0);
-    server2 = getHost(0).getVM(1);
-    client1 = getHost(0).getVM(2);
-    client2 = getHost(0).getVM(3);
+    Host host = getHost(0);
+    server1 = host.getVM(0);
+    server2 = host.getVM(1);
+    server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
+    server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
+    if (VersionManager.isCurrentVersion(clientVersion)) {
+      client1 = host.getVM(2);
+      client2 = host.getVM(3);
+    } else {
+      client1 = host.getVM(clientVersion, 2);
+      client2 = host.getVM(clientVersion, 3);
+    }
     setUpIgnoredExceptions();
   }
 
@@ -155,10 +168,10 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
   public final void postTearDown() throws Exception {}
 
   private final void tearDownClientAuthorizationTestBase() throws Exception {
-    // close the clients first
+    server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = true);
+    server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = true);
     client1.invoke(() -> closeCache());
     client2.invoke(() -> closeCache());
-    // then close the servers
     server1.invoke(() -> closeCache());
     server2.invoke(() -> closeCache());
   }
@@ -292,10 +305,6 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         + OpFlags.description(flags));
     boolean exceptionOccurred = false;
     boolean breakLoop = false;
-
-    if (op.isGet() || op.isContainsKey() || op.isKeySet() || op.isQuery() || op.isExecuteCQ()) {
-      Thread.sleep(PAUSE);
-    }
 
     for (int indexIndex = 0; indexIndex < numOps; ++indexIndex) {
       if (breakLoop) {
