@@ -47,6 +47,11 @@ public class AddPdxEnum extends BaseCommand {
           serverConnection.getName(), clientMessage.getNumberOfParts(),
           serverConnection.getSocketString());
     }
+
+    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
+      serverConnection.getAuthzRequest();
+    }
+
     int noOfParts = clientMessage.getNumberOfParts();
 
     EnumInfo enumInfo = (EnumInfo) clientMessage.getPart(0).getObject();

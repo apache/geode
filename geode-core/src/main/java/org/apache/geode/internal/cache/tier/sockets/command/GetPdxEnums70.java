@@ -44,6 +44,10 @@ public class GetPdxEnums70 extends BaseCommand {
           serverConnection.getSocketString());
     }
 
+    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
+      serverConnection.getAuthzRequest();
+    }
+
     Map<Integer, EnumInfo> enums;
     try {
       InternalCache cache = serverConnection.getCache();

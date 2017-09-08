@@ -44,6 +44,11 @@ public class GetPDXEnumById extends BaseCommand {
           serverConnection.getName(), clientMessage.getNumberOfParts(),
           serverConnection.getSocketString());
     }
+
+    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
+      serverConnection.getAuthzRequest();
+    }
+
     int enumId = clientMessage.getPart(0).getInt();
 
     EnumInfo result;

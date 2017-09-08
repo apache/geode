@@ -14,13 +14,20 @@
  */
 package org.apache.geode.security;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Test for authentication from client to server. This tests for both valid and invalid
@@ -30,7 +37,24 @@ import org.junit.experimental.categories.Category;
  * @since GemFire 5.5
  */
 @Category({DistributedTest.class, SecurityTest.class})
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase {
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    List<String> result = VersionManager.getInstance().getVersions();
+    if (result.size() < 1) {
+      throw new RuntimeException("No older versions of Geode were found to test against");
+    } else {
+      System.out.println("running against these versions: " + result);
+    }
+    return result;
+  }
+
+  public ClientAuthenticationDUnitTest(String version) {
+    super();
+    clientVersion = version;
+  }
 
   @Test
   public void testValidCredentials() throws Exception {

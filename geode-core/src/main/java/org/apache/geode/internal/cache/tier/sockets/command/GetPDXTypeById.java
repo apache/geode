@@ -44,6 +44,11 @@ public class GetPDXTypeById extends BaseCommand {
           serverConnection.getName(), clientMessage.getNumberOfParts(),
           serverConnection.getSocketString());
     }
+
+    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
+      serverConnection.getAuthzRequest();
+    }
+
     int pdxId = clientMessage.getPart(0).getInt();
 
     PdxType type;
