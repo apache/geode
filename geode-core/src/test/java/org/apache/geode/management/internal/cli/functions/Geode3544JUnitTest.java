@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -36,7 +37,7 @@ import org.junit.experimental.categories.Category;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Category(IntegrationTest.class)
-public class Bug3544JUnitTest {
+public class Geode3544JUnitTest {
 
   private static Cache cache;
 
@@ -124,12 +125,7 @@ public class Bug3544JUnitTest {
 
     @Override
     public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + (int) (empNumber ^ (empNumber >>> 32));
-      result = (int) (prime * result + empAccount);
-      result = prime * result + empId;
-      return result;
+      return Objects.hash(empAccount, empNumber, empId);
     }
   }
 
@@ -156,19 +152,6 @@ public class Bug3544JUnitTest {
    */
   @Test
   public void testLocateKeyIsObject() throws Exception {
-    DataCommandFunction dataCmdFn = new DataCommandFunction();
-
-    DataCommandResult result = dataCmdFn.locateEntry(emp_key, EmpData.class.getName(),
-        String.class.getName(), PARTITIONED_REGION, false);
-
-    assertNotNull(result);
-    result.aggregate(null);
-    List<DataCommandResult.KeyInfo> keyInfos = result.getLocateEntryLocations();
-    assertEquals(1, keyInfos.size());
-  }
-
-  @Test
-  public void testLocateKeyIsEmpData() throws Exception {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
     DataCommandResult result = dataCmdFn.locateEntry(emp_key, EmpData.class.getName(),
