@@ -2016,7 +2016,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           GemFireVersion.getGemFireVersion(), // gemfireVersion
           System.getProperty("java.version"), // javaVersion
           null, // logFile
-          getBindAddressAsString(launcher), // host
+          launcher.getBindAddressAsString(), // host
           launcher.getPortAsString(), // port
           null);// memberName
     }
