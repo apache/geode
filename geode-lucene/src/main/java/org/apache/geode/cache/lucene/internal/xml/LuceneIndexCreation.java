@@ -87,7 +87,8 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     Analyzer analyzer = this.fieldAnalyzers == null ? new StandardAnalyzer()
         : new PerFieldAnalyzerWrapper(new StandardAnalyzer(), this.fieldAnalyzers);
     try {
-      service.createIndex(getName(), getRegionPath(), analyzer, this.fieldAnalyzers,
+      // TODO: the null should be replaced with real serializer
+      service.createIndex(getName(), getRegionPath(), analyzer, this.fieldAnalyzers, null,
           getFieldNames());
     } catch (LuceneIndexExistsException e) {
       logger

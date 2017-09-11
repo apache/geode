@@ -28,6 +28,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingFixedResolver;
@@ -55,8 +56,11 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
-  protected RepositoryManager createRepositoryManager() {
-    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+  protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
+    LuceneSerializer mapper = luceneSerializer;
+    if (mapper == null) {
+      mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+    }
     PartitionedRepositoryManager partitionedRepositoryManager =
         new PartitionedRepositoryManager(this, mapper);
     return partitionedRepositoryManager;
