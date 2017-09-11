@@ -29,6 +29,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.InternalCache;
@@ -145,11 +146,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
   }
 
-  protected void setupRepositoryManager() {
-    repositoryManager = createRepositoryManager();
+  protected void setupRepositoryManager(LuceneSerializer luceneSerializer) {
+    repositoryManager = createRepositoryManager(luceneSerializer);
   }
 
-  protected abstract RepositoryManager createRepositoryManager();
+  protected abstract RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer);
 
   protected abstract void createLuceneListenersAndFileChunkRegions(
       AbstractPartitionedRepositoryManager partitionedRepositoryManager);

@@ -195,11 +195,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
     Set<String> fieldsSet = fieldAnalyzers.keySet();
     String[] fields = (String[]) fieldsSet.toArray(new String[fieldsSet.size()]);
 
-    createIndex(indexName, regionPath, analyzer, fieldAnalyzers, fields);
+    createIndex(indexName, regionPath, analyzer, fieldAnalyzers, serializer, fields);
   }
 
   public void createIndex(final String indexName, String regionPath, final Analyzer analyzer,
-      final Map<String, Analyzer> fieldAnalyzers, final String... fields) {
+      final Map<String, Analyzer> fieldAnalyzers, final LuceneSerializer serializer,
+      final String... fields) {
 
     if (!regionPath.startsWith("/")) {
       regionPath = "/" + regionPath;
@@ -215,7 +216,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
 
     cache.addRegionListener(new LuceneRegionListener(this, cache, indexName, regionPath, fields,
-        analyzer, fieldAnalyzers));
+        analyzer, fieldAnalyzers, serializer));
   }
 
   /**
@@ -234,12 +235,13 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   public LuceneIndexImpl beforeDataRegionCreated(final String indexName, final String regionPath,
       RegionAttributes attributes, final Analyzer analyzer,
-      final Map<String, Analyzer> fieldAnalyzers, String aeqId, final String... fields) {
+      final Map<String, Analyzer> fieldAnalyzers, String aeqId, final LuceneSerializer serializer,
+      final String... fields) {
     LuceneIndexImpl index = createIndexObject(indexName, regionPath);
     index.setSearchableFields(fields);
     index.setAnalyzer(analyzer);
     index.setFieldAnalyzers(fieldAnalyzers);
-    index.setupRepositoryManager();
+    index.setupRepositoryManager(serializer);
     index.setupAEQ(attributes, aeqId);
     return index;
 
