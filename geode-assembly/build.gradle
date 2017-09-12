@@ -38,10 +38,10 @@ gradle.taskGraph.whenReady( { graph ->
     tar.extension = 'tar.gz'
   }
   tasks.srcDistZip {
-    classifier 'sources'
+    classifier 'src'
   }
   tasks.srcDistTar {
-    classifier 'sources'
+    classifier 'src'
   }
 })
 
@@ -292,7 +292,7 @@ gradle.taskGraph.whenReady( { graph ->
 
 distributions {
   src {
-    baseName = 'apache-geode-src'
+    baseName = 'apache-geode'
     contents {
       from writeBuildInfo
       from (rootDir) {
