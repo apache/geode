@@ -86,6 +86,8 @@ public class DefaultQuery implements Query {
   public static boolean QUERY_VERBOSE =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE");
 
+  public static boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Query.allowUntrustedMethodInvocation");
+
   /**
    * System property to cleanup the compiled query. The compiled query will be removed if it is not
    * used for more than the set value. By default its set to 10 minutes, the time is set in

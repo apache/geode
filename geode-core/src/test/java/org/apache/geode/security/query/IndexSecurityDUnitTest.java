@@ -79,5 +79,41 @@ public class IndexSecurityDUnitTest extends QuerySecurityBase {
 
   }
 
+  @Test
+  @Parameters(method = "getAllUsersOnlyAllowedWrite")
+  public void indexCreatedButPutWithNoReadCredentialsShouldNotThrowSecurityException(String user) throws Exception {
+    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
+    createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
+
+    String region = UserPermissions.REGION_NAME;
+
+    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + 1, REGION_PUT_KEY + 2};
+    Object[] values = {new QuerySecurityDUnitTest.QueryTestObject(1, "Mary"), new QuerySecurityDUnitTest.QueryTestObject(2, "Joe"),
+        new QuerySecurityDUnitTest.QueryTestObject(3, "Joe")};
+    QueryService queryService = server.getCache().getQueryService();
+    Index idIndex = queryService.createIndex("IdIndex", "id", "/" + UserPermissions.REGION_NAME);
+
+    putIntoRegion(specificUserClient, keys, values, region);
+
+  }
+
+  @Test
+  @Parameters(method = "getAllUsersOnlyAllowedWrite")
+  public void indexCreatedWithRegionEntriesButPutWithNoReadCredentialsShouldNotThrowSecurityException(String user) throws Exception {
+    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
+    createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
+
+    String region = UserPermissions.REGION_NAME;
+
+    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + 1, REGION_PUT_KEY + 2};
+    Object[] values = {new QuerySecurityDUnitTest.QueryTestObject(1, "Mary"), new QuerySecurityDUnitTest.QueryTestObject(2, "Joe"),
+        new QuerySecurityDUnitTest.QueryTestObject(3, "Joe")};
+    QueryService queryService = server.getCache().getQueryService();
+    Index idIndex = queryService.createIndex("IdIndex", "e.id", "/" + UserPermissions.REGION_NAME + ".entries e");
+
+    putIntoRegion(specificUserClient, keys, values, region);
+  }
+
+
 
 }

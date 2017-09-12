@@ -64,7 +64,7 @@ public class MethodDispatch {
     Object[] argsArray = args.toArray();
 
     try {
-      FunctionInvocationAuthorizer.authorizeFunctionInvocation(_securityService, _method);
+      MethodInvocationAuthorizer.authorizeFunctionInvocation(_securityService, _method, target);
       return _method.invoke(target, argsArray);
     } catch (IllegalAccessException e) {
       throw new NameNotFoundException(

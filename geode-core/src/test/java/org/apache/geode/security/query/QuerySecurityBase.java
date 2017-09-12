@@ -142,7 +142,6 @@ public class QuerySecurityBase extends JUnit4DistributedTestCase {
       qs.newQuery(query).execute(bindParams);
       fail();
     } catch (Exception e) {
-      System.out.println("Got exception" + e);
       if (!e.getMessage().matches(authErrorRegexp)) {
         Throwable cause = e.getCause();
         while (cause != null) {

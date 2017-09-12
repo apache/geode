@@ -103,6 +103,7 @@ public class AttributeDescriptor {
     try {
       if (m instanceof Method) {
         try {
+          MethodInvocationAuthorizer.authorizeFunctionInvocation(_securityService, m, target);
           return ((Method) m).invoke(target, (Object[]) null);
         } catch (EntryDestroyedException e) {
           // eat the Exception
@@ -162,7 +163,7 @@ public class AttributeDescriptor {
       m = (Member) _local_method_cache.get(key);
 
       if (m != null) {
-        FunctionInvocationAuthorizer.authorizeFunctionInvocation(_securityService, m);
+        MethodInvocationAuthorizer.authorizeFunctionInvocation(m);
         return m;
       }
     }
@@ -215,7 +216,7 @@ public class AttributeDescriptor {
   private Method getReadMethod(Class targetType, String methodName) {
     try {
       Method m = targetType.getMethod(methodName, (Class[]) null);
-      FunctionInvocationAuthorizer.authorizeFunctionInvocation(_securityService, m);
+      MethodInvocationAuthorizer.authorizeFunctionInvocation(m);
       return m;
     } catch (NoSuchMethodException e) {
       updateClassToMethodsMap(targetType.getCanonicalName(), _name);

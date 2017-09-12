@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.internal.FunctionInvocationAuthorizer;
+import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -203,9 +203,9 @@ public class UserPermissions {
       String.format(SELECT_FROM_REGION_BY_FORMAT, "class", "'org.apache'");
   public static final String SELECT_CLASS_FROM_REGION =
       String.format(SELECT_FORMAT_FROM_REGION, "class");
-  public static final String SELECT_FROM_REGION_BY_CAPITOL_CLASS =
+  public static final String SELECT_FROM_REGION_BY_CAPITAL_CLASS =
       String.format(SELECT_FROM_REGION_BY_FORMAT, "Class", "'org.apache'");
-  public static final String SELECT_CAPITOL_CLASS_FROM_REGION =
+  public static final String SELECT_CAPITAL_CLASS_FROM_REGION =
       String.format(SELECT_FORMAT_FROM_REGION, "Class");
   public static final String SELECT_FROM_REGION_GET_CLASS =
       String.format(SELECT_FROM_REGION_FORMAT, "getClass");
@@ -278,7 +278,8 @@ public class UserPermissions {
       }
     }
 
-    RESTRICTED_METHOD_ACCESS_PERMISSIONS = Arrays.asList(FunctionInvocationAuthorizer.UNAUTHORIZED_STRING + ".*)|" + securityString);
+    RESTRICTED_METHOD_ACCESS_PERMISSIONS = Arrays.asList(
+        MethodInvocationAuthorizer.UNAUTHORIZED_STRING + ".*)|" + securityString);
     perms.put(SELECT_ALL_FROM_REGION, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
 
     // Public field access
@@ -367,8 +368,8 @@ public class UserPermissions {
     perms.put(SELECT_GET_CLASS_PAREN_FROM_REGION, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
     perms.put(SELECT_FROM_REGION_BY_CLASS, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
     perms.put(SELECT_CLASS_FROM_REGION, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
-    perms.put(SELECT_FROM_REGION_BY_CAPITOL_CLASS, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
-    perms.put(SELECT_CAPITOL_CLASS_FROM_REGION, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
+    perms.put(SELECT_FROM_REGION_BY_CAPITAL_CLASS, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
+    perms.put(SELECT_CAPITAL_CLASS_FROM_REGION, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
     perms.put(SELECT_FROM_REGION_GET_CLASS, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
     perms.put(SELECT_FROM_REGION_GET_CLASS_PAREN, RESTRICTED_METHOD_ACCESS_PERMISSIONS);
     perms.put(SELECT_FROM_REGION_CLASS, RESTRICTED_METHOD_ACCESS_PERMISSIONS);

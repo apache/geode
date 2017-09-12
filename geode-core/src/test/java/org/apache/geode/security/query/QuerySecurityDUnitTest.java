@@ -14,12 +14,15 @@
  */
 package org.apache.geode.security.query;
 
+import static org.junit.Assert.fail;
+
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import junitparams.JUnitParamsRunner;
@@ -28,8 +31,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.index.DummyQRegion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -1274,7 +1279,7 @@ public class QuerySecurityDUnitTest extends QuerySecurityBase {
     createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
     createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
 
-    String query = UserPermissions.SELECT_FROM_REGION_BY_CAPITOL_CLASS;
+    String query = UserPermissions.SELECT_FROM_REGION_BY_CAPITAL_CLASS;
     String regionName = UserPermissions.REGION_NAME;
 
     Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + "1"};
@@ -1291,7 +1296,7 @@ public class QuerySecurityDUnitTest extends QuerySecurityBase {
     createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
     createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
 
-    String query = UserPermissions.SELECT_CAPITOL_CLASS_FROM_REGION;
+    String query = UserPermissions.SELECT_CAPITAL_CLASS_FROM_REGION;
     String regionName = UserPermissions.REGION_NAME;
 
     Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + "1"};
@@ -1406,6 +1411,74 @@ public class QuerySecurityDUnitTest extends QuerySecurityBase {
 
     List<Object> expectedResults = new ArrayList<>();
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, user, regionName, expectedResults);
+  }
+
+  @Test
+  public void userWithRegionAccessAndPassingInWrappedbindParameterShouldExecute() {
+    String user = "dataReaderRegion";
+    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
+    createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
+
+    String regionName = UserPermissions.REGION_NAME;
+
+    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + "1"};
+    Object[] values = {new QueryTestObject(0, "John"), new QueryTestObject(3, "Beth")};
+    putIntoRegion(superUserClient, keys, values, regionName);
+
+    String query = "select v from $1 r, r.values() v";
+    String regexForExpectedException = ".*DATA:READ.*";
+    specificUserClient.invoke(()-> {
+      Region region = getClientCache().getRegion(regionName);
+      HashSet hashset = new HashSet();
+      hashset.add(region);
+      getClientCache().getQueryService().newQuery(query).execute(new Object[]{hashset});
+    });
+  }
+
+  @Test
+  public void userWithoutRegionAccessAndPassingInWrappedBindParameterShouldThrowException() {
+    String user = "dataReaderRegionKey";
+    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
+    createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
+
+    String regionName = UserPermissions.REGION_NAME;
+
+    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + "1"};
+    Object[] values = {new QueryTestObject(0, "John"), new QueryTestObject(3, "Beth")};
+    putIntoRegion(superUserClient, keys, values, regionName);
+
+    String query = "select v from $1 r, r.values() v";
+    String regexForExpectedException = ".*DATA:READ.*";
+    specificUserClient.invoke(()-> {
+      Region region = getClientCache().getRegion(regionName);
+      HashSet hashset = new HashSet();
+      hashset.add(region);
+      assertExceptionOccurred(getClientCache().getQueryService(), query, new Object[]{hashset}, regexForExpectedException);
+    });
+  }
+
+  //If DummyQRegion is every serializable, then this test will fail and a security hole with query will have been opened
+  //That means a user could wrap a region in a dummy region and bypass the MethodInvocationAuthorizer
+  @Test
+  public void userWithoutRegionAccessAndPassingInWrappedInDummyQRegionBindParameterShouldThrowSerializationException() {
+    String user = "dataReaderRegionKey";
+    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
+    createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
+
+    String regionName = UserPermissions.REGION_NAME;
+
+    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + "1"};
+    Object[] values = {new QueryTestObject(0, "John"), new QueryTestObject(3, "Beth")};
+    putIntoRegion(superUserClient, keys, values, regionName);
+
+    String query = "select v from $1 r, r.values() v";
+    String regexForExpectedException = ".*failed serializing object.*";
+    specificUserClient.invoke(()-> {
+      Region region = getClientCache().getRegion(regionName);
+      HashSet hashset = new HashSet();
+      hashset.add(new DummyQRegion(region));
+      assertExceptionOccurred(getClientCache().getQueryService(), query, new Object[]{hashset}, regexForExpectedException);
+    });
   }
 
   public static class QueryTestObject implements Serializable {

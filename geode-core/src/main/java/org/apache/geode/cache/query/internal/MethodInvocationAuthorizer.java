@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.internal;
 import java.lang.reflect.Member;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.Security;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,15 +27,17 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.index.DummyQRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 
-public class FunctionInvocationAuthorizer {
+public class MethodInvocationAuthorizer {
 
   public static final String UNAUTHORIZED_STRING = "Unauthorized access to method: ";
   // List of methods that can be invoked by
@@ -88,6 +91,7 @@ public class FunctionInvocationAuthorizer {
     mapMethods.add("containsKey");
     whiteListedClassMethods.put(QRegion.class.getName(), mapMethods);
     whiteListedClassMethods.put(DummyQRegion.class.getName(), mapMethods);
+    whiteListedClassMethods.put(PartitionedRegion.class.getName(), mapMethods);
 
     Set<String> mapEntryMethods = new HashSet<>();
     mapEntryMethods.add("getKey");
@@ -101,9 +105,13 @@ public class FunctionInvocationAuthorizer {
     stringMethods.add("toLowerCase");
     stringMethods.add("toUpperCase");
     whiteListedClassMethods.put(String.class.getName(), stringMethods);
+
+    Set<String> localRegionMethods = new HashSet<>();
+    localRegionMethods.add("values");
+    whiteListedClassMethods.put(LocalRegion.class.getName(), localRegionMethods);
   }
 
-  public FunctionInvocationAuthorizer() {
+  public MethodInvocationAuthorizer() {
 
   }
 
@@ -120,8 +128,7 @@ public class FunctionInvocationAuthorizer {
   }
 
   public static boolean isWhitelisted(String className, String methodName) {
-    System.out.println("JASON whitelist?:" + className + ",method:" + methodName);
-    if (whiteListedMethods.contains((methodName))) {
+    if (DefaultQuery.ALLOW_UNTRUSTED_METHOD_INVOCATION || whiteListedMethods.contains((methodName))) {
       return true;
     }
 
@@ -131,10 +138,16 @@ public class FunctionInvocationAuthorizer {
     }
     return false;
   }
+  public static void authorizeFunctionInvocation(Member method) {
+    if (!isWhitelisted(method) ) {
+      throw new NotAuthorizedException(UNAUTHORIZED_STRING + method.getName());
+    }
+  }
 
-  public static void authorizeFunctionInvocation(SecurityService securityService, Member method) {
+  public static void authorizeFunctionInvocation(SecurityService securityService, Member method, Object target) {
     if (!isWhitelisted(method)) {
       throw new NotAuthorizedException(UNAUTHORIZED_STRING + method.getName());
     }
+    allowedRegionAccess(securityService, method, target);
   }
 }
