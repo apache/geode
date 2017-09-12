@@ -163,6 +163,7 @@ public class RestoreScript {
 
     public void writePreamble(PrintWriter writer) {
       writer.println("echo off");
+      writer.println("cd %~dp0");
     }
 
     public void writeComment(PrintWriter writer, String string) {
