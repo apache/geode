@@ -36,20 +36,23 @@ public class GenericProtocolServerConnection extends ServerConnection {
   private final ClientProtocolMessageHandler messageHandler;
   private final SecurityManager securityManager;
   private final Authenticator authenticator;
+  private boolean cleanedUp;
 
   /**
    * Creates a new <code>GenericProtocolServerConnection</code> that processes messages received
    * from an edge client over a given <code>Socket</code>.
    */
-  public GenericProtocolServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,
-      CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-      byte communicationMode, Acceptor acceptor, ClientProtocolMessageHandler newClientProtocol,
-      SecurityService securityService, Authenticator authenticator) {
-    super(s, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr, communicationMode,
-        acceptor, securityService);
+  public GenericProtocolServerConnection(Socket socket, InternalCache cache,
+      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
+      String communicationModeStr, byte communicationMode, Acceptor acceptor,
+      ClientProtocolMessageHandler newClientProtocol, SecurityService securityService,
+      Authenticator authenticator) {
+    super(socket, cache, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
+        communicationMode, acceptor, securityService);
     securityManager = securityService.getSecurityManager();
     this.messageHandler = newClientProtocol;
     this.authenticator = authenticator;
+    this.messageHandler.getStatistics().clientConnected();
   }
 
   @Override
@@ -62,8 +65,8 @@ public class GenericProtocolServerConnection extends ServerConnection {
       if (!authenticator.isAuthenticated()) {
         authenticator.authenticate(inputStream, outputStream, securityManager);
       } else {
-        messageHandler.receiveMessage(inputStream, outputStream,
-            new MessageExecutionContext(this.getCache(), authenticator.getAuthorizer()));
+        messageHandler.receiveMessage(inputStream, outputStream, new MessageExecutionContext(
+            this.getCache(), authenticator.getAuthorizer(), messageHandler.getStatistics()));
       }
     } catch (EOFException e) {
       this.setFlagProcessMessagesAsFalse();
@@ -73,6 +76,17 @@ public class GenericProtocolServerConnection extends ServerConnection {
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
     }
+  }
+
+  @Override
+  public boolean cleanup() {
+    synchronized (this) {
+      if (!cleanedUp) {
+        cleanedUp = true;
+        messageHandler.getStatistics().clientDisconnected();
+      }
+    }
+    return super.cleanup();
   }
 
   @Override

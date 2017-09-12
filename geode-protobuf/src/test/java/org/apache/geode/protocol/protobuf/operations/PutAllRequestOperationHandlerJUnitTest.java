@@ -14,6 +14,21 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
@@ -21,6 +36,7 @@ import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.security.server.NoOpAuthorizer;
@@ -29,20 +45,6 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -74,9 +76,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecAlreadyRegisteredForTypeException, InvalidExecutionContextException {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(false, true),
-            new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(false, true),
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -89,9 +91,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithInvalidEntrySucceedsAndReturnsFailedKey() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(true, true),
-            new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(true, true),
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
 
     assertTrue(result instanceof Success);
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
@@ -109,9 +111,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithNoEntriesPasses() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(false, false),
-            new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(false, false),
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
 
     assertTrue(result instanceof Success);
 

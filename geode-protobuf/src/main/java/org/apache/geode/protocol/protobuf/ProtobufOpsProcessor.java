@@ -19,6 +19,7 @@ import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
+import org.apache.geode.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.serialization.SerializationService;
 
@@ -49,6 +50,7 @@ public class ProtobufOpsProcessor {
         result = operationContext.getOperationHandler().process(serializationService,
             operationContext.getFromRequest().apply(request), context);
       } else {
+        recordAuthorizationViolation(context);
         result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
             ProtocolErrorCode.AUTHORIZATION_FAILED.codeValue,
             "User isn't authorized for this operation."));
@@ -62,5 +64,10 @@ public class ProtobufOpsProcessor {
     builder = (ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
         operationContext.getToErrorResponse());
     return builder.build();
+  }
+
+  private void recordAuthorizationViolation(MessageExecutionContext context) {
+    ProtobufClientStatistics statistics = (ProtobufClientStatistics) context.getStatistics();
+    statistics.incAuthorizationViolations();
   }
 }

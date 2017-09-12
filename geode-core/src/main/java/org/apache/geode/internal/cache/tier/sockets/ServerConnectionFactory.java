@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -24,6 +25,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.server.Authenticator;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,12 +51,14 @@ public class ServerConnectionFactory {
     }
   }
 
-  private synchronized ClientProtocolMessageHandler initializeMessageHandler() {
+  private synchronized ClientProtocolMessageHandler initializeMessageHandler(
+      StatisticsFactory statisticsFactory, String statisticsName) {
     if (protocolHandler != null) {
       return protocolHandler;
     }
 
     protocolHandler = new MessageHandlerFactory().makeMessageHandler();
+    protocolHandler.initializeStatistics(statisticsName, statisticsFactory);
 
     return protocolHandler;
   }
@@ -78,17 +82,18 @@ public class ServerConnectionFactory {
     }
   }
 
-  private ClientProtocolMessageHandler getClientProtocolMessageHandler() {
+  private ClientProtocolMessageHandler getOrCreateClientProtocolMessageHandler(
+      StatisticsFactory statisticsFactory, Acceptor acceptor) {
     if (protocolHandler == null) {
-      initializeMessageHandler();
+      return initializeMessageHandler(statisticsFactory, acceptor.getServerName());
     }
     return protocolHandler;
   }
 
-  public ServerConnection makeServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,
-      CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-      byte communicationMode, Acceptor acceptor, SecurityService securityService)
-      throws IOException {
+  public ServerConnection makeServerConnection(Socket socket, InternalCache cache,
+      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
+      String communicationModeStr, byte communicationMode, Acceptor acceptor,
+      SecurityService securityService, InetAddress bindAddress) throws IOException {
     if (communicationMode == ProtobufClientServerProtocol.getModeNumber()) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
@@ -96,12 +101,13 @@ public class ServerConnectionFactory {
         String authenticationMode =
             System.getProperty("geode.protocol-authentication-mode", "NOOP");
 
-        return new GenericProtocolServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,
-            communicationModeStr, communicationMode, acceptor, getClientProtocolMessageHandler(),
+        return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
+            socketBufferSize, communicationModeStr, communicationMode, acceptor,
+            getOrCreateClientProtocolMessageHandler(cache.getDistributedSystem(), acceptor),
             securityService, findStreamAuthenticator(authenticationMode));
       }
     } else {
-      return new LegacyServerConnection(s, c, helper, stats, hsTimeout, socketBufferSize,
+      return new LegacyServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
           communicationModeStr, communicationMode, acceptor, securityService);
     }
   }
