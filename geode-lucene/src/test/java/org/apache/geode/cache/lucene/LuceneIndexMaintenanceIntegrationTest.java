@@ -109,7 +109,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void useSerializerToIndex() throws Exception {
-    luceneService.createIndexFactory().setFields("title", "description")
+    luceneService.createIndexFactory().setFields("title", "name")
         .setLuceneSerializer(
             new HeterogeneousLuceneSerializer(new String[] {"title", "description"}))
         .create(INDEX_NAME, REGION_NAME);
