@@ -41,7 +41,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
-import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -126,7 +125,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     InternalCache cache = Fakes.cache();
-    HeterogeneousLuceneSerializer serializer = mock(HeterogeneousLuceneSerializer.class);
+    LuceneSerializer serializer = mock(LuceneSerializer.class);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index = spy(index);
@@ -140,15 +139,15 @@ public class LuceneIndexForPartitionedRegionTest {
     String regionPath = "regionName";
     String fields[] = {"field1", "field2"};
     InternalCache cache = Fakes.cache();
-    ArgumentCaptor<HeterogeneousLuceneSerializer> serializerCaptor =
-        ArgumentCaptor.forClass(HeterogeneousLuceneSerializer.class);
+    ArgumentCaptor<LuceneSerializer> serializerCaptor =
+        ArgumentCaptor.forClass(LuceneSerializer.class);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index = spy(index);
     when(index.getFieldNames()).thenReturn(fields);
     index.setupRepositoryManager(null);
     verify(index).createRepositoryManager(serializerCaptor.capture());
-    HeterogeneousLuceneSerializer serializer = serializerCaptor.getValue();
+    LuceneSerializer serializer = serializerCaptor.getValue();
     assertNull(serializer);
   }
 

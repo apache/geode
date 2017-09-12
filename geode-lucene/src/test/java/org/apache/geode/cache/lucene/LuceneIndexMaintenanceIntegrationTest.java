@@ -41,6 +41,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -104,6 +105,28 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
         TimeUnit.MILLISECONDS);
 
     assertEquals(3, query.findPages().size());
+  }
+
+  @Test
+  public void useSerializerToIndex() throws Exception {
+    luceneService.createIndexFactory().setFields("title", "description")
+        .setLuceneSerializer(
+            new HeterogeneousLuceneSerializer(new String[] {"title", "description"}))
+        .create(INDEX_NAME, REGION_NAME);
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    region.put("object-1", new TestObject("title 1", "hello world"));
+    region.put("object-2", new TestObject("title 2", "this will not match"));
+    region.put("object-3", new TestObject("title 3", "hello world"));
+    region.put("object-4", new TestObject("hello world", "hello world"));
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "description:\"hello world\"", DEFAULT_FIELD);
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(3, results.size());
   }
 
   @Test
