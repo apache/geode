@@ -62,6 +62,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -1334,6 +1335,12 @@ public class InternalLocator extends Locator implements ConnectListener {
     try {
       this.stats.hookupStats(sys,
           SocketCreator.getLocalHost().getCanonicalHostName() + '-' + this.server.getBindAddress());
+      ClientProtocolMessageHandler messageHandler = this.server.getMessageHandler();
+      if (messageHandler != null) {
+        // GEODE-3546 - this should create locator-specific stats but is creating client/server
+        // stats
+        messageHandler.initializeStatistics("LocatorStats", sys);
+      }
     } catch (UnknownHostException e) {
       logger.warn(e);
     }

@@ -22,15 +22,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.disconnectAllFromDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +67,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
+import org.apache.geode.internal.statistics.StatArchiveReader;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
@@ -111,6 +115,7 @@ public class RoundTripCacheConnectionJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
+  private File statisticsArchiveFile;
 
   @Before
   public void setup() throws Exception {
@@ -126,6 +131,12 @@ public class RoundTripCacheConnectionJUnitTest {
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
+    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
+    statisticsArchiveFile =
+        new File(getClass().getSimpleName() + "_" + testName.getMethodName() + ".gfs");
+    cacheFactory.set(ConfigurationProperties.STATISTIC_ARCHIVE_FILE,
+        statisticsArchiveFile.getName());
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
@@ -208,6 +219,51 @@ public class RoundTripCacheConnectionJUnitTest {
         ProtobufUtilities.createProtobufRequestWithGetAllRequest(getAllRequest));
     protobufProtocolSerializer.serialize(getAllMessage, outputStream);
     validateGetAllResponse(socket, protobufProtocolSerializer);
+    long startTime = System.currentTimeMillis();
+    Thread.sleep(3000);
+
+    long endTime = System.currentTimeMillis();
+
+    disconnectAllFromDS();
+
+    StatArchiveReader.ValueFilter filter = new StatArchiveReader.ValueFilter() {
+      @Override
+      public boolean archiveMatches(File archive) {
+        return true;
+      }
+
+      @Override
+      public boolean typeMatches(String type) {
+        return type.equals("ProtobufServerStats");
+      }
+
+      @Override
+      public boolean statMatches(String statName) {
+        return true;
+      }
+
+      @Override
+      public boolean instanceMatches(String textId, long numericId) {
+        return true;
+      }
+    };
+
+    StatArchiveReader reader = new StatArchiveReader(new File[] {statisticsArchiveFile},
+        new StatArchiveReader.ValueFilter[] {filter}, true);
+    List resourceInstList = reader.getResourceInstList();
+    // for (Object inst : resourceInstList) {
+    // StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) inst;
+    // String resourceName = ri.getName();
+    // String resourceTypeName = ri.getType().getName();
+    // System.out.println("===> resource name: " + resourceName + "; type name: " +
+    // resourceTypeName);
+    // }
+    assertEquals(1, resourceInstList.size());
+    StatArchiveReader.ResourceInst resourceInst =
+        (StatArchiveReader.ResourceInst) resourceInstList.iterator().next();
+    StatArchiveReader.StatValue statValue =
+        resourceInst.getStatValue("currentClientConnections").createTrimmed(startTime, endTime);
+    assertEquals(2.0, statValue.getSnapshotsMinimum(), 0.01);
   }
 
   @Test
@@ -297,6 +353,10 @@ public class RoundTripCacheConnectionJUnitTest {
     CacheFactory cacheFactory = new CacheFactory();
     cacheFactory.set(ConfigurationProperties.LOCATORS, "");
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
+    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
+    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
+    cacheFactory.set(ConfigurationProperties.STATISTIC_ARCHIVE_FILE,
+        getClass().getSimpleName() + "_" + testName.getMethodName() + ".gfs");
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
@@ -326,6 +386,7 @@ public class RoundTripCacheConnectionJUnitTest {
       assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
     }
 
+    Thread.sleep(15000);
     for (Socket currentSocket : sockets) {
       currentSocket.close();
     }

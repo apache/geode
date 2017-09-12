@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+
 
 /**
  * This is an interface that other modules can implement to hook into
@@ -29,6 +32,10 @@ import java.io.OutputStream;
  * {@link GenericProtocolServerConnection}.
  */
 public interface ClientProtocolMessageHandler {
+  void initializeStatistics(String statisticsName, StatisticsFactory factory);
+
+  ClientProtocolStatistics getStatistics();
+
   void receiveMessage(InputStream inputStream, OutputStream outputStream,
       MessageExecutionContext executionContext) throws IOException;
 }
