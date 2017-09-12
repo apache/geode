@@ -50,6 +50,12 @@ public abstract class Acceptor {
   public abstract int getPort();
 
   /**
+   * returns the server's name string, including the inet address and port that the server is
+   * listening on
+   */
+  public abstract String getServerName();
+
+  /**
    * Closes this acceptor thread
    */
   public abstract void close();

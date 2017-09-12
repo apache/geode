@@ -155,6 +155,13 @@ public class TcpServer {
     GOSSIP_TO_GEMFIRE_VERSION_MAP.put(OLDGOSSIPVERSION, Version.GFE_57.ordinal());
   }
 
+  /**
+   * returns the message handler used for client/locator communications processing
+   */
+  public ClientProtocolMessageHandler getMessageHandler() {
+    return messageHandler;
+  }
+
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
       ThreadGroup threadGroup, String threadName, InternalLocator internalLocator,
@@ -575,4 +582,5 @@ public class TcpServer {
   public static Map getGossipVersionMapForTestOnly() {
     return GOSSIP_TO_GEMFIRE_VERSION_MAP;
   }
+
 }

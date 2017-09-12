@@ -19,13 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.protocol.protobuf.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.protocol.protobuf.statistics.ProtobufClientStatistics;
+import org.apache.geode.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 
@@ -38,11 +42,22 @@ import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredF
 public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   private final ProtobufProtocolSerializer protobufProtocolSerializer;
   private final ProtobufOpsProcessor protobufOpsProcessor;
+  private ProtobufClientStatistics statistics;
 
   public ProtobufStreamProcessor() throws CodecAlreadyRegisteredForTypeException {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
     protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
         new OperationContextRegistry());
+  }
+
+  @Override
+  public void initializeStatistics(String statisticsName, StatisticsFactory factory) {
+    statistics = new ProtobufClientStatisticsImpl(factory, statisticsName, "ProtobufServerStats");
+  }
+
+  @Override
+  public ClientProtocolStatistics getStatistics() {
+    return statistics;
   }
 
   @Override
@@ -62,6 +77,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
     if (message == null) {
       throw new EOFException("Tried to deserialize protobuf message at EOF");
     }
+    statistics.messageReceived(message.getSerializedSize());
 
     ClientProtocol.Request request = message.getRequest();
     ClientProtocol.Response response = protobufOpsProcessor.process(request, executionContext);
@@ -69,6 +85,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
         ProtobufUtilities.createMessageHeaderForRequest(message);
     ClientProtocol.Message responseMessage =
         ProtobufUtilities.createProtobufResponse(responseHeader, response);
+    statistics.messageSent(responseMessage.getSerializedSize());
     protobufProtocolSerializer.serialize(responseMessage, outputStream);
   }
 }

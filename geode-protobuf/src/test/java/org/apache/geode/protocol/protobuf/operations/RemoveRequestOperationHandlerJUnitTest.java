@@ -14,17 +14,31 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.UnsupportedEncodingException;
+
 import com.google.protobuf.ByteString;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Failure;
 import org.apache.geode.protocol.protobuf.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.security.server.NoOpAuthorizer;
@@ -32,18 +46,6 @@ import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException
 import org.apache.geode.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.UnsupportedEncodingException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @Category(UnitTest.class)
 public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
@@ -74,7 +76,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, false).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+        removeRequest,
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
 
     assertTrue(result instanceof Success);
     verify(regionStub).remove(TEST_KEY);
@@ -86,7 +89,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(true, false).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+        removeRequest,
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
@@ -99,7 +103,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, true).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+        removeRequest,
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
 
     assertTrue(result instanceof Success);
   }
@@ -122,7 +127,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     RegionAPI.RemoveRequest removeRequest =
         ProtobufRequestUtilities.createRemoveRequest(TEST_REGION, encodedKey).getRemoveRequest();;
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+        removeRequest,
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,

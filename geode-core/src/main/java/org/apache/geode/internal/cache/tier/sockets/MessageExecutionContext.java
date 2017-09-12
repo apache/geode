@@ -28,10 +28,14 @@ public class MessageExecutionContext {
   private Cache cache;
   private Locator locator;
   private Authorizer authorizer;
+  private ClientProtocolStatistics statistics;
 
-  public MessageExecutionContext(Cache cache, Authorizer streamAuthorizer) {
+
+  public MessageExecutionContext(Cache cache, Authorizer streamAuthorizer,
+      ClientProtocolStatistics statistics) {
     this.cache = cache;
     this.authorizer = streamAuthorizer;
+    this.statistics = statistics;
   }
 
   public MessageExecutionContext(InternalLocator locator) {
@@ -39,6 +43,7 @@ public class MessageExecutionContext {
     // set a no-op authorizer until such time as locators implement authentication
     // and authorization checks
     this.authorizer = new NoOpAuthorizer();
+    this.statistics = new NoOpStatistics();
   }
 
   /**
@@ -76,4 +81,16 @@ public class MessageExecutionContext {
   public Authorizer getAuthorizer() {
     return authorizer;
   }
+
+  /**
+   * Returns the statistics for recording operation stats. In a unit test environment this may not
+   * be a protocol-specific statistics implementation.
+   * 
+   * @return
+   */
+  public ClientProtocolStatistics getStatistics() {
+    return statistics;
+  }
+
+
 }

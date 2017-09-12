@@ -107,7 +107,7 @@ public class ServerConnectionFactoryTest {
 
     return new ServerConnectionFactory().makeServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "", communicationMode,
-        mock(AcceptorImpl.class), mock(SecurityService.class));
+        mock(AcceptorImpl.class), mock(SecurityService.class), InetAddress.getLocalHost());
   }
 
 }

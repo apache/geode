@@ -32,6 +32,7 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.protocol.protobuf.Result;
 import org.apache.geode.protocol.protobuf.Success;
+import org.apache.geode.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.serialization.exception.UnsupportedEncodingTypeException;
@@ -68,7 +69,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
         serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer()));
+        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
     Assert.assertTrue(result instanceof Success);
 
     RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
@@ -92,9 +93,10 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
-        serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
-        new MessageExecutionContext(emptyCache, new NoOpAuthorizer()));
+    Result<RegionAPI.GetRegionNamesResponse> result =
+        operationHandler.process(serializationServiceStub,
+            ProtobufRequestUtilities.createGetRegionNamesRequest(), new MessageExecutionContext(
+                emptyCache, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
     Assert.assertTrue(result instanceof Success);
 
     RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();

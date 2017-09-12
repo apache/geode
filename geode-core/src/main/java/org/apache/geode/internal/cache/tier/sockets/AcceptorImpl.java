@@ -511,7 +511,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
         }
       }
       this.localPort = port;
-      String sockName = this.serverSock.getLocalSocketAddress().toString();
+      String sockName = getServerName();
       logger.info(LocalizedMessage.create(
           LocalizedStrings.AcceptorImpl_CACHE_SERVER_CONNECTION_LISTENER_BOUND_TO_ADDRESS_0_WITH_BACKLOG_1,
           new Object[] {sockName, Integer.valueOf(backLog)}));
@@ -1178,6 +1178,17 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
     return localPort;
   }
 
+  @Override
+  public String getServerName() {
+    String name = this.serverSock.getLocalSocketAddress().toString();
+    try {
+      name = SocketCreator.getLocalHost().getCanonicalHostName() + "-" + name;
+    } catch (Exception e) {
+    }
+    return name;
+  }
+
+
   public InetAddress getServerInetAddr() {
     return this.serverSock.getInetAddress();
   }
@@ -1487,7 +1498,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
 
     ServerConnection serverConn = serverConnectionFactory.makeServerConnection(socket, this.cache,
         this.crHelper, this.stats, AcceptorImpl.handShakeTimeout, this.socketBufferSize,
-        communicationModeStr, communicationMode, this, this.securityService);
+        communicationModeStr, communicationMode, this, this.securityService, this.getBindAddress());
 
     synchronized (this.allSCsLock) {
       this.allSCs.add(serverConn);

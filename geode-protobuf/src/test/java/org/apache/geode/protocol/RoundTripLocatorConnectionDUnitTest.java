@@ -19,6 +19,7 @@ import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufCli
 import static org.junit.Assert.assertEquals;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -29,7 +30,9 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.Config;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
@@ -51,6 +54,7 @@ import org.junit.experimental.categories.Category;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class RoundTripLocatorConnectionDUnitTest extends JUnit4CacheTestCase {
@@ -127,6 +131,20 @@ public class RoundTripLocatorConnectionDUnitTest extends JUnit4CacheTestCase {
         messageResponse.getResponseAPICase());
     assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
         messageResponse.getErrorResponse().getError().getErrorCode());
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
+    properties.put(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
+    String statFileName = getUniqueName() + ".gfs";
+    properties.put(ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statFileName);
+    File statFile = new File(statFileName);
+    if (statFile.exists()) {
+      statFile.delete();
+    }
+    return properties;
   }
 
   private Integer startCacheWithCacheServer() throws IOException {

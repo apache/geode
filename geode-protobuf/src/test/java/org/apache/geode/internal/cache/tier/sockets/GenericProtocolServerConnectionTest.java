@@ -69,6 +69,8 @@ public class GenericProtocolServerConnectionTest {
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
 
     ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
+    ClientProtocolStatistics statisticsMock = mock(ClientProtocolStatistics.class);
+    when(clientProtocolMock.getStatistics()).thenReturn(statisticsMock);
     doThrow(new IOException()).when(clientProtocolMock).receiveMessage(any(), any(), any());
 
     return getGenericProtocolServerConnection(socketMock, clientProtocolMock);
