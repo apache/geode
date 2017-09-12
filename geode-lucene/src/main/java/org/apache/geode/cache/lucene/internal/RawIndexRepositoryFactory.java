@@ -25,7 +25,7 @@ import org.apache.lucene.store.RAMDirectory;
 
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 

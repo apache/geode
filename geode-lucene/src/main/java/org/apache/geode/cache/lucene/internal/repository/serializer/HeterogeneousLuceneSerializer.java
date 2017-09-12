@@ -15,11 +15,14 @@
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
@@ -71,18 +74,20 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
   }
 
   @Override
-  public void toDocument(Object value, Document doc) {
+  public Collection<Document> toDocuments(Object value) {
 
     if (value == null) {
-      return;
+      return Collections.emptyList();
     }
 
     LuceneSerializer mapper = getFieldMapper(value);
 
-    mapper.toDocument(value, doc);
+    Collection<Document> docs = mapper.toDocuments(value);
     if (logger.isDebugEnabled()) {
-      logger.debug("HeterogeneousLuceneSerializer.toDocument:" + doc);
+      logger.debug("HeterogeneousLuceneSerializer.toDocuments:" + docs);
     }
+
+    return docs;
   }
 
   /**
@@ -101,6 +106,5 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
       return mapper;
     }
   }
-
 
 }

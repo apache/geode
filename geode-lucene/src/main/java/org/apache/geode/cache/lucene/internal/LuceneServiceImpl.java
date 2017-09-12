@@ -41,6 +41,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
@@ -185,8 +186,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
   }
 
-  public void createIndex(String indexName, String regionPath,
-      Map<String, Analyzer> fieldAnalyzers) {
+  public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers,
+      LuceneSerializer serializer) {
     if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
       throw new IllegalArgumentException("At least one field must be indexed");
     }

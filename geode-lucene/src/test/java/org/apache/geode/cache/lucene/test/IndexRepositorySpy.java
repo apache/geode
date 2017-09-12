@@ -24,7 +24,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 import org.mockito.Mockito;

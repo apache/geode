@@ -17,7 +17,7 @@ package org.apache.geode.cache.lucene.internal.repository;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -33,6 +33,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.geode.distributed.LockNotHeldException;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.IntSupplier;
 
 /**
@@ -82,10 +83,9 @@ public class IndexRepositoryImpl implements IndexRepository {
   public void create(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
     try {
-      Document doc = new Document();
-      SerializerUtil.addKey(key, doc);
-      serializer.toDocument(value, doc);
-      writer.addDocument(doc);
+      Collection<Document> docs = serializer.toDocuments(value);
+      docs.forEach(doc -> SerializerUtil.addKey(key, doc));
+      writer.addDocuments(docs);
     } finally {
       stats.endUpdate(start);
     }
@@ -95,10 +95,10 @@ public class IndexRepositoryImpl implements IndexRepository {
   public void update(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
     try {
-      Document doc = new Document();
-      SerializerUtil.addKey(key, doc);
-      serializer.toDocument(value, doc);
-      writer.updateDocument(SerializerUtil.getKeyTerm(doc), doc);
+      Collection<Document> docs = serializer.toDocuments(value);
+      docs.forEach(doc -> SerializerUtil.addKey(key, doc));
+      Term keyTerm = SerializerUtil.toKeyTerm(key);
+      writer.updateDocuments(keyTerm, docs);
     } finally {
       stats.endUpdate(start);
     }
