@@ -102,7 +102,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   /**
-   * This constructor should only be used by {@link JUnit3DistributedTestCase}.
+   * This constructor should only be used internally, not by tests.
    */
   protected JUnit4DistributedTestCase(final DistributedTestFixture distributedTestFixture) {
     if (distributedTestFixture == null) {
