@@ -48,23 +48,23 @@ Stop the gateway receiver on a member or members.
 **Syntax:**
 
 ``` pre
-stop gateway-receiver [--group=value(,value)*] [--member=value]
+stop gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 ```
 
 <a id="topic_CD1D526FD6F84A7B80B25C741129ED30__table_knl_r5g_2w"></a>
 
 | Name                                            | Description                                                                                                       |
 |-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to stop the Gateway Receiver. Use a comma-separated list for multiple member groups. |
-| <span class="keyword parmname">&#8209;&#8209;member </span> | Name/Id of the member on which to stop the Gateway Receiver.                                                      |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to stop the Gateway Receiver. Use a comma-separated list for multiple member groups. |
+| <span class="keyword parmname">&#8209;&#8209;members </span> | Name/Id of the member(s) on which to stop the Gateway Receiver.                                                      |
 
 <span class="tablecap">Table 1. Stop Gateway-Receiver Parameters</span>
 
 **Example Commands:**
 
 ``` pre
-stop gateway-receiver --member=receiver1-LN 
-stop gateway-receiver --group=LN-Group1
+stop gateway-receiver --members=receiver1-LN 
+stop gateway-receiver --groups=LN-Group1
 ```
 
 **Sample Output:**
@@ -78,10 +78,10 @@ pc13(Manager:2242)<v5>:57631| Error  | GatewayReceiver is not available on membe
 pc13(2275)<v7>:47480        | OK     | GatewayReceiver is stopped on member pc13(2275)<v7>:47480
 pc13(2293)<v8>:55472        | OK     | GatewayReceiver is stopped on member pc13(2293)<v8>:55472
 
-gfsh>stop gateway-receiver --member=pc13(2266)<v14>:36579
+gfsh>stop gateway-receiver --members=pc13(2266)<v14>:36579
 GatewayReceiver is stopped on member pc13(2266)<v14>:36579
 
-gfsh>stop gateway-receiver --group=RG1
+gfsh>stop gateway-receiver --groups=RG1
          Member      | Result | Message
 -------------------- | -------| ----------------------------------------------------------
 pc13(2275)<v23>:27484| OK     | GatewayReceiver is stopped on member pc13(2275)<v23>:27484
@@ -101,7 +101,7 @@ Use caution with the `stop gateway-sender` command (or equivalent `GatewaySender
 **Syntax:**
 
 ``` pre
-stop gateway-sender --id=value [--group=value(,value)*] [--member=value]
+stop gateway-sender --id=value [--groups=value(,value)*] [--members=value(,value)*]
 ```
 
 <a id="topic_0BBDD4B3B8A44A65A610F766C9E85519__table_ggf_55g_2w"></a>
@@ -109,15 +109,15 @@ stop gateway-sender --id=value [--group=value(,value)*] [--member=value]
 | Name                                            | Description                                                |
 |-------------------------------------------------|------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-id </span>    | *Required.* ID of the Gateway Sender.                      |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to stop the Gateway Sender.   |
-| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member on which to stop the Gateway Sender. |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to stop the Gateway Sender.   |
+| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) on which to stop the Gateway Sender. |
 
 <span class="tablecap">Table 2. Stop Gateway-Sender Parameters</span>
 
 **Example Commands:**
 
 ``` pre
-stop gateway-sender --id=ln --member=server1
+stop gateway-sender --id=ln --members=server1
 ```
 
 **Sample Output:**
@@ -130,10 +130,11 @@ pc13(5184)<v7>:41914         | OK     | GatewaySender ln is stopped on member pc
 pc13(5192)<v8>:25704         | OK     | GatewaySender ln is stopped on member pc13(5192)<v8>:25704
 pc13(5174)<v6>:53996         | OK     | GatewaySender ln is stopped on member pc13(5174)<v6>:53996
 pc13(Manager:5148)<v5>:64040 | Error  | GatewaySender ln is not available on member pc13(Manager:5148)<v5>:64040
-gfsh>stop gateway-sender --id=ln --member=pc13(5174)<v14>:17819
+
+gfsh>stop gateway-sender --id=ln --members=pc13(5174)<v14>:17819
 GatewaySender ln is stopped on member pc13(5174)<v14>:17819
 
-gfsh>stop gateway-sender --id=ln --group=SenderGroup1
+gfsh>stop gateway-sender --id=ln --groups=SenderGroup1
 
 Member                | Result | Message
 --------------------- | ------ | -----------------------------------------------------------

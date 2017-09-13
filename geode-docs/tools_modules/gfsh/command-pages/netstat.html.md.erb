@@ -28,7 +28,7 @@ Report important network usage information/statistics for the given member.
 **Syntax:**
 
 ``` pre
-netstat [--member=value(,value)*] [--group=value] [--file=value] 
+netstat [--members=value(,value)*] [--group=value] [--file=value] 
 [--with-lsof(=value)?]
 ```
 
@@ -36,7 +36,7 @@ netstat [--member=value(,value)*] [--group=value] [--file=value]
 
 | Name                                              | Description                                                                                                                                               | Default Value |
 |---------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-member </span>   | Name or ID of the member(s) on which to run the `netstat` command.                                                                                        |               |
+| <span class="keyword parmname">\\-\\-members </span>   | Name or ID of the member(s) on which to run the `netstat` command.                                                                                        |               |
 | <span class="keyword parmname">\\-\\-group</span>     | Group of members on which to run the `netstat` command.                                                                                                   |               |
 | <span class="keyword parmname">\\-\\-file</span>      | Text file to which output from the `netstat` command will be written. A "`.txt`" extension will be added if it is not already part of the specified name. |               |
 | <span class="keyword parmname">&#8209;&#8209;with&#8209;lsof</span> | Specifies whether `lsof` (list open files) command output should also be displayed. Not applicable for Microsoft Windows hosts.                           | false         |
@@ -47,8 +47,8 @@ netstat [--member=value(,value)*] [--group=value] [--file=value]
 
 ``` pre
 netstat
-netstat --member=server1
-netstat --member=server1 --file=server1_netstat.txt
+netstat --members=server1
+netstat --members=server1 --file=server1_netstat.txt
 ```
 
 **Sample Output:**

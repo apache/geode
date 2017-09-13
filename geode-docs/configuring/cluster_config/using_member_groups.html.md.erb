@@ -35,7 +35,7 @@ You define group names in the `groups` property of your member's `gemfire.proper
 **Note:**
 Any roles defined in the currently existing `roles` property will now be considered a group. If you wish to add membership roles to your distributed system, you should add them as member groups in the `groups` property. The `roles` property has been deprecated in favor of using the `groups` property.
 
-To add a member to a group, add the name of a member group to the `gemfire.properties` file of the member prior to startup or you can start up a member in `gfsh` and pass in the `--group` argument at startup time.
+To add a member to a group, add the name of a member group to the `gemfire.properties` file of the member prior to startup or you can start up a member in `gfsh` and pass in the `--groups` argument at startup time.
 
 A single member can belong to more than one group.
 

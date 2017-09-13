@@ -262,7 +262,7 @@ If a CQ name is provided, it counts the number of events in the subscription que
 
 ``` pre
 show subscription-queue-size --durable-client-Id=value
- [--member=value] [--group=value]
+ [--members=value(,value)*] [--groups=value(,value)*]
 ```
 
 <a id="topic_395C96B500AD430CBF3D3C8886A4CD2E__table_rcq_zjf_2w"></a>
@@ -271,8 +271,8 @@ show subscription-queue-size --durable-client-Id=value
 |------------------------------------------------------------|------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-durable-client-id </span> | *Required.* The ID used to identify the durable client.                      |
 | <span class="keyword parmname">\\-\\-durable-cq-name </span>   | The name that identifies the CQ.                                             |
-| <span class="keyword parmname">\\-\\-member </span>            | Name/Id of the member for which subscription queue events are to be counted. |
-| <span class="keyword parmname">\\-\\-group</span>              | Group of members for which subscription queue events are to be counted.      |
+| <span class="keyword parmname">\\-\\-members </span>            | Name/Id of the member(s) for which subscription queue events are to be counted. |
+| <span class="keyword parmname">\\-\\-groups</span>             | Group(s) of members for which subscription queue events are to be counted.   |
 
 <span class="tablecap">Table 4. Show Subscription-Queue-Size Parameters</span>
 

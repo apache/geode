@@ -64,7 +64,7 @@ See [Configuring Multi-Site (WAN) Event Queues](../../../developing/events/confi
 **Syntax:**
 
 ``` pre
-create async-event-queue --id=value --listener=value [--group=value(nullvalue)*]
+create async-event-queue --id=value --listener=value [--groups=value(,value)*]
     [--parallel(=value)?] [--enable-batch-conflation(=value)?] [--batch-size=value]
     [--batch-time-interval=value] [--persistent(=value)?] [--disk-store=value]
     [--disk-synchronous(=value)?] [--max-queue-memory=value]
@@ -95,8 +95,8 @@ create async-event-queue --id=value --listener=value [--group=value(nullvalue)*]
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
-<td>The queue is created on all members of this group. If you do not specify a group the queue is created on all members.</td>
+<td><span class="keyword parmname">\-\-groups</span></td>
+<td>The queue is created on all members of the group(s). If you do not specify a group, the queue is created on all members.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -196,15 +196,15 @@ See also [define index](define.html) and [clear defined indexes](clear.html).
 **Syntax:**
 
 ``` pre
-create defined indexes [--member=value] [--group=value]
+create defined indexes [--members=value(,value)*] [--groups=value(,value)*]
 ```
 
 **Parameters, create defined indexes:**
 
 | Name                                           | Description                                                        | Default |
 |------------------------------------------------|--------------------------------------------------------------------|---------|
-| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member on which index will be created.              |         |
-| <span class="keyword parmname">\\-\\-group</span>  | The index will be created on all the members in this member group. |         |
+| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) on which index will be created.              |         |
+| <span class="keyword parmname">\\-\\-groups</span>  | The index will be created on all the members in the member group(s). |         |
 
 
 **Example Commands:**
@@ -243,7 +243,8 @@ See [Disk Storage](../../../managing/disk_storage/chapter_overview.html)
 ``` pre
 create disk-store --name=value --dir=value(,value)* [--allow-force-compaction(=value)?] 
 [--auto-compact(=value)?] [--compaction-threshold=value] [--max-oplog-size=value]
-[--queue-size=value] [--time-interval=value] [--write-buffer-size=value] [--group=value(,value)*] 
+[--queue-size=value] [--time-interval=value] [--write-buffer-size=value]
+[--groups=value(,value)*]
 [--disk-usage-warning-percentage=value] [--disk-usage-critical-percentage=value]
 ```
 
@@ -308,8 +309,8 @@ If the specified directory does not exist, the command will create the directory
 <td>1000</td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname"> --group</span></td>
-<td>The name of a group of distributed system members. The disk store is created on all members of this group. If no group is specified, the disk store is created on all members.</td>
+<td><span class="keyword parmname"> --groups</span></td>
+<td>The disk store is created on all members of the group(s). If no group is specified, the disk store is created on all members.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -358,7 +359,7 @@ See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite
 **Syntax:**
 
 ``` pre
-create gateway-receiver [--group=value(,value)*] [--member=value(,value)*] 
+create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*] 
   [--manual-start=value] [--start-port=value] [--end-port=value] [--bind-address=value] 
   [--maximum-time-between-pings=value] [--socket-buffer-size=value]
   [--gateway-transport-filter=value(,value)*]
@@ -381,13 +382,13 @@ create gateway-receiver [--group=value(,value)*] [--member=value(,value)*]
 </thead>
 <tbody>
 <tr class="odd">
-<td><span class="keyword parmname">\-\-group</span></td>
-<td>Gateway receivers are created on the members of this group.</td>
+<td><span class="keyword parmname">\-\-groups</span></td>
+<td>Gateway receivers are created on the members of the group(s).</td>
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-member</span></td>
-<td>Name of the distributed system member on which to create the gateway receiver.</td>
+<td><span class="keyword parmname">\-\-members</span></td>
+<td>Name of the distributed system member(s) on which to create the gateway receiver.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -433,13 +434,13 @@ create gateway-receiver [--group=value(,value)*] [--member=value(,value)*]
 **Example Commands:**
 
 ``` pre
-gfsh>create gateway-receiver --member=server1
+gfsh>create gateway-receiver --members=server1
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>create gateway-receiver --member=server1
+gfsh>create gateway-receiver --members=server1
 Member  | Status
 ------- | ---------------------------------------------------------------------------
 server1 | GatewayReceiver created on member "server1" and will listen on the port "0"
@@ -460,7 +461,7 @@ The gateway sender configuration for a specific sender `id` must be identical on
 
 ``` pre
 create gateway-sender --id=value --remote-distributed-system-id=value 
-   [--group=value(,value)*] [--member=value(,value)*] [--parallel=value] 
+   [--groups=value(,value)*] [--members=value(,value)*] [--parallel=value] 
    [--manual-start=value] [--socket-buffer-size=value] [--socket-read-timeout=value] 
    [--enable-batch-conflation=value] [--batch-size=value] [--batch-time-interval=value]
    [--enable-persistence=value] [--disk-store-name=value] [--disk-synchronous=value] 
@@ -496,13 +497,13 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">\-\-group</span></td>
-<td>Gateway senders are created on the members of this group.</td>
+<td><span class="keyword parmname">\-\-groups</span></td>
+<td>Gateway senders are created on the members of the group(s).</td>
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-member</span></td>
-<td>Name of the distributed system member on which to create the gateway sender.</td>
+<td><span class="keyword parmname">\-\-members</span></td>
+<td>Name of the distributed system member(s) on which to create the gateway sender.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -624,7 +625,7 @@ See [Working with Indexes](../../../developing/query_index/query_index.html).
 
 ``` pre
 create index --name=value --expression=value --region=value 
-[--member=value] [--type=value] [--group=value]
+[--members=value(,value)*] [--type=value] [--groups=value(,value)*]
 ```
 
 **Parameters: create index:**
@@ -634,9 +635,9 @@ create index --name=value --expression=value --region=value
 | <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the index to create.                                               |         |
 | <span class="keyword parmname">&#8209;&#8209;expression</span> | *Required.* Field of the region values that are referenced by the index.               |         |
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
-| <span class="keyword parmname">\\-\\-member</span>     | Name/Id of the member on which index will be created.                                  |         |
+| <span class="keyword parmname">\\-\\-members</span>     | Name/Id of the member(s) on which index will be created.                                  |         |
 | <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: `range`, `key` and `hash`.                        | `range` |
-| <span class="keyword parmname">\\-\\-group</span>      | The index will be created on all the members in this member group.                     |         |
+| <span class="keyword parmname">\\-\\-groups</span>      | The index will be created on all the members in the group(s).                     |         |
 
 
 **Example Commands:**
@@ -725,7 +726,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 
 ``` pre
  create region --name=value [--type=value] [--template-region=value]
-    [--group=value(,value)*] [--skip-if-exists(=value)?]
+    [--groups=value(,value)*] [--skip-if-exists(=value)?]
     [--key-constraint=value] [--value-constraint=value]
     [--enable-statistics=value] [--entry-idle-time-expiration=value]
     [--entry-idle-time-expiration-action=value]
@@ -781,7 +782,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
+<td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) of members on which the region will be created.</td>
 <td> </td>
 </tr>
