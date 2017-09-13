@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -149,7 +150,7 @@ public class JsonUtil {
     try {
       GfJsonObject jsonObject = new GfJsonObject(jsonString);
       objectFromJson = klass.newInstance();
-      Method[] declaredMethods = klass.getDeclaredMethods();
+      Method[] declaredMethods = klass.getMethods();
       Map<String, Method> methodsMap = new HashMap<String, Method>();
       for (Method method : declaredMethods) {
         methodsMap.put(method.getName(), method);
@@ -168,7 +169,8 @@ public class JsonUtil {
 
             Object value = jsonObject.get(key);
             if (isPrimitiveOrWrapper(parameterType)) {
-              value = getPrimitiveOrWrapperValue(parameterType, value);
+              value = ConvertUtils.convert(getPrimitiveOrWrapperValue(parameterType, value),
+                  parameterType);
             }
             // Bug #51175
             else if (isArray(parameterType)) {
