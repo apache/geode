@@ -91,8 +91,9 @@ public class JSONCodecJUnitTest {
 
     byte[] encodedJSONByte = new JSONCodec().encode(pdxInstance);
 
-    String expectedJsonString =
-        "{\n" + "  \"string\" : \"someString\",\n" + "  \"boolean\" : true\n" + "}";
+    String lineSeparator = System.lineSeparator();
+    String expectedJsonString = "{" + lineSeparator + "" + "  \"string\" : \"someString\","
+        + lineSeparator + "" + "  \"boolean\" : true" + lineSeparator + "}";
     assertArrayEquals(expectedJsonString.getBytes(), encodedJSONByte);
   }
 
