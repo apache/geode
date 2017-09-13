@@ -107,15 +107,17 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   @Override
   protected void after() {
-    DUnitLauncher.closeAndCheckForSuspects();
+    try {
+      DUnitLauncher.closeAndCheckForSuspects();
+    } finally {
+      MemberStarterRule.disconnectDSIfAny();
+      IntStream.range(0, DUnitLauncher.NUM_VMS).forEach(this::stopVM);
 
-    MemberStarterRule.disconnectDSIfAny();
-    IntStream.range(0, DUnitLauncher.NUM_VMS).forEach(this::stopVM);
-
-    if (useTempWorkingDir()) {
-      tempWorkingDir.delete();
+      if (useTempWorkingDir()) {
+        tempWorkingDir.delete();
+      }
+      restoreSystemProperties.after();
     }
-    restoreSystemProperties.after();
   }
 
   public MemberVM<Locator> startLocatorVM(int index) throws Exception {

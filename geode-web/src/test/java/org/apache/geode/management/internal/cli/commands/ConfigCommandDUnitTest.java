@@ -54,7 +54,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @RunWith(JUnitParamsRunner.class)
 public class ConfigCommandDUnitTest {
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  public LocatorServerStartupRule startupRule =
+      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
@@ -211,6 +212,156 @@ public class ConfigCommandDUnitTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput())
         .contains("Could not set \"log-disk-space-limit\" to \"2,000,000,000\"");
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void alterRuntimeConfig_logDiskSpaceLimitWithFileSizeLimitNotSet_OK(
+      final boolean connectOverHttp) throws Exception {
+
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "error");
+    MemberVM locator = startupRule.startLocatorVM(0, props);
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    }
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
+
+    gfsh.executeAndVerifyCommand(csb.toString());
+    String resultStr = gfsh.getGfshOutput();
+
+    server1.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
+    });
+    server2.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
+    });
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void alterRuntimeConfig_logDiskSpaceLimitWithFileSizeLimitSet_OK(
+      final boolean connectOverHttp) throws Exception {
+
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "error");
+    MemberVM locator = startupRule.startLocatorVM(0, props);
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    }
+
+    CommandStringBuilder csbSetFileSizeLimit =
+        new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    csbSetFileSizeLimit.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "50");
+    gfsh.executeAndVerifyCommand(csbSetFileSizeLimit.toString());
+
+    server2.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
+    });
+
+    CommandStringBuilder csbSetDiskSpaceLimit =
+        new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    csbSetDiskSpaceLimit.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "50");
+    csbSetDiskSpaceLimit.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
+
+    gfsh.executeAndVerifyCommand(csbSetDiskSpaceLimit.toString());
+    String resultStr = gfsh.getGfshOutput();
+
+    server1.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
+    server2.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void alterRuntimeConfig_logDiskSpaceLimitOnMember_OK(final boolean connectOverHttp)
+      throws Exception {
+
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "error");
+    MemberVM locator = startupRule.startLocatorVM(0, props);
+    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    }
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    csb.addOption(CliStrings.MEMBERS, server1.getName());
+    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
+
+    gfsh.executeAndVerifyCommand(csb.toString());
+    String resultStr = gfsh.getGfshOutput();
+
+    server1.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
+    server2.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
   }
 
   @Test
