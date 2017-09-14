@@ -1919,6 +1919,18 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *         declarable
    */
   private Declarable createDeclarable() {
+    return createDeclarable(cache, stack);
+  }
+
+  /**
+   * Creates and initializes an instance of {@link Declarable} from the contents of the stack.
+   *
+   * @throws CacheXmlException Something goes wrong while instantiating or initializing the
+   *         declarable
+   * @param cache
+   * @param stack
+   */
+  public static Declarable createDeclarable(CacheCreation cache, Stack<Object> stack) {
     Properties props = new Properties();
     Object top = stack.pop();
     while (top instanceof Parameter) {
@@ -1948,7 +1960,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = (Declarable) o;
     d.init(props);
 
-    this.cache.addDeclarableProperties(d, props);
+    cache.addDeclarableProperties(d, props);
 
     return d;
   }

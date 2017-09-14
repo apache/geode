@@ -17,10 +17,21 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import javax.xml.XMLConstants;
 
+import org.apache.geode.cache.Declarable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.CLASS_NAME;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.DECLARABLE;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.NAME;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.PARAMETER;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.STRING;
 
 /**
  * Utilities for use in {@link XmlGenerator} implementation to provide common helper methods.
@@ -122,6 +133,55 @@ public class XmlGeneratorUtils {
       final String localName, final AttributesImpl attributes) throws SAXException {
     startElement(contentHandler, prefix, localName, attributes);
     endElement(contentHandler, prefix, localName);
+  }
+
+
+
+  static public void addDeclarable(final ContentHandler handler, Declarable declarable)
+      throws SAXException {
+    AttributesImpl EMPTY = new AttributesImpl();
+
+    String className = declarable.getClass().getName();
+    handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
+    handler.characters(className.toCharArray(), 0, className.length());
+    handler.endElement("", CLASS_NAME, CLASS_NAME);
+
+    if (!(declarable instanceof Declarable2)) {
+      return;
+    }
+
+    Properties props = ((Declarable2) declarable).getConfig();
+    if (props == null) {
+      return;
+    }
+
+    for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
+      Map.Entry entry = (Map.Entry) iter.next();
+      String name = (String) entry.getKey();
+      Object value = entry.getValue();
+
+      AttributesImpl atts = new AttributesImpl();
+      atts.addAttribute("", "", NAME, "", name);
+
+      handler.startElement("", PARAMETER, PARAMETER, atts);
+
+      if (value instanceof String) {
+        String sValue = (String) value;
+        handler.startElement("", STRING, STRING, EMPTY);
+        handler.characters(sValue.toCharArray(), 0, sValue.length());
+        handler.endElement("", STRING, STRING);
+
+      } else if (value instanceof Declarable) {
+        handler.startElement("", DECLARABLE, DECLARABLE, EMPTY);
+        addDeclarable(handler, (Declarable) value);
+        handler.endElement("", DECLARABLE, DECLARABLE);
+
+      } else {
+        // Ignore it
+      }
+
+      handler.endElement("", PARAMETER, PARAMETER);
+    }
   }
 
 }

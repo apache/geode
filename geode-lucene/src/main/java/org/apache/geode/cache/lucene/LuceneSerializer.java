@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene;
 
 import java.util.Collection;
 
+import org.apache.geode.cache.Declarable;
 import org.apache.lucene.document.Document;
 
 import org.apache.geode.annotations.Experimental;
@@ -25,7 +26,7 @@ import org.apache.geode.annotations.Experimental;
  * An interface for writing the fields of an object into a lucene document
  */
 @Experimental
-public interface LuceneSerializer {
+public interface LuceneSerializer extends Declarable {
 
   /**
    * Add the fields of the given value to a set of documents

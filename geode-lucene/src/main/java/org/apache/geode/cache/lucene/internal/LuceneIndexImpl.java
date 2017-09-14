@@ -53,6 +53,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
   protected Analyzer analyzer;
+  protected LuceneSerializer luceneSerializer;
   protected LocalRegion dataRegion;
 
   protected LuceneIndexImpl(String indexName, String regionPath, InternalCache cache) {
@@ -113,6 +114,14 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
   public Analyzer getAnalyzer() {
     return this.analyzer;
+  }
+
+  public LuceneSerializer getLuceneSerializer() {
+    return this.luceneSerializer;
+  }
+
+  public void setLuceneSerializer(LuceneSerializer serializer) {
+    this.luceneSerializer = serializer;
   }
 
   public Cache getCache() {
@@ -209,6 +218,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.addFieldNames(this.getFieldNames());
     creation.setRegion(dataRegion);
     creation.setFieldAnalyzers(this.getFieldAnalyzers());
+    creation.setLuceneSerializer(this.getLuceneSerializer());
     dataRegion.getExtensionPoint().addExtension(creation);
   }
 
