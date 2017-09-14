@@ -14,16 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -42,6 +32,16 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.SSLSocket;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A single client to server connection.
@@ -184,8 +184,10 @@ public class ConnectionImpl implements Connection {
     }
     try {
       if (theSocket != null) {
-        theSocket.getOutputStream().flush();
-        theSocket.shutdownOutput();
+        if (!(theSocket instanceof SSLSocket)) {
+          theSocket.getOutputStream().flush();
+          theSocket.shutdownOutput();
+        }
         theSocket.close();
       }
     } catch (Exception e) {
