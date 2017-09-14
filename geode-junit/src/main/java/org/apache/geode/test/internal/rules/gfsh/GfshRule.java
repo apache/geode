@@ -40,7 +40,7 @@ import org.apache.geode.test.internal.rules.RequiresGeodeHome;
  * a forked JVM. The {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
  */
 public class GfshRule extends ExternalResource {
-  private static final String SINGLE_QUOTE = "\"";
+  private static final String DOUBLE_QUOTE = "\"";
 
   public TemporaryFolder getTemporaryFolder() {
     return temporaryFolder;
@@ -155,12 +155,12 @@ public class GfshRule extends ExternalResource {
   }
 
   private String quoteArgument(String argument) {
-    if (!argument.startsWith(SINGLE_QUOTE)) {
-      argument = SINGLE_QUOTE + argument;
+    if (!argument.startsWith(DOUBLE_QUOTE)) {
+      argument = DOUBLE_QUOTE + argument;
     }
 
-    if (!argument.endsWith(SINGLE_QUOTE)) {
-      argument = argument + SINGLE_QUOTE;
+    if (!argument.endsWith(DOUBLE_QUOTE)) {
+      argument = argument + DOUBLE_QUOTE;
     }
 
     return argument;
