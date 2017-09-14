@@ -196,7 +196,9 @@ public class ShellCommands implements GfshCommand {
               operationInvoker.toString()));
           LogWrapper.getInstance().info(CliStrings.format(CliStrings.DISCONNECT__MSG__DISCONNECTED,
               operationInvoker.toString()));
-          gfshInstance.setPromptPath(RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+          if (!gfshInstance.isHeadlessMode()){
+            gfshInstance.setPromptPath(RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+          }
         } else {
           infoResultData.addLine(CliStrings.DISCONNECT__MSG__NOTCONNECTED);
         }
