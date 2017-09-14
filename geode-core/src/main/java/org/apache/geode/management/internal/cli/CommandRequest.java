@@ -14,11 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
-
-import org.springframework.web.util.UriComponentsBuilder;
 
 import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.management.cli.CliMetaData;
@@ -33,10 +30,6 @@ import org.apache.geode.management.cli.CliMetaData;
  */
 @SuppressWarnings("unused")
 public class CommandRequest {
-  protected static final String CMD_QUERY_PARAMETER = "cmd";
-  protected static final String REST_API_MANAGEMENT_COMMANDS_URI = "/management/commands";
-  protected static final String OPTION_SPECIFIER = "--";
-
   private final byte[][] fileData;
   private final GfshParseResult parseResult;
   private final Map<String, String> env;
@@ -100,10 +93,4 @@ public class CommandRequest {
   public Map<String, String> getParameters() {
     return getParseResult().getParamValueStrings();
   }
-
-  public URI getHttpRequestUrl(String baseUrl) {
-    return UriComponentsBuilder.fromHttpUrl(baseUrl).path(REST_API_MANAGEMENT_COMMANDS_URI)
-        .queryParam(CMD_QUERY_PARAMETER, getUserInput()).build().encode().toUri();
-  }
-
 }
