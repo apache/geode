@@ -38,12 +38,10 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
 import org.springframework.shell.core.CommandMarker;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;

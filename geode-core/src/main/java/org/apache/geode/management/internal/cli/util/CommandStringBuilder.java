@@ -33,7 +33,7 @@ public class CommandStringBuilder {
   private static final String ARG_SEPARATOR = GfshParser.OPTION_SEPARATOR;
   private static final String OPTION_SEPARATOR = GfshParser.OPTION_SEPARATOR;
   private static final String SINGLE_SPACE = " ";
-  private static final String SINGLE_QUOTE = "\"";
+  private static final String DOUBLE_QUOTE = "\"";
 
   private final StringBuffer buffer;
   private volatile boolean hasOptions;
@@ -96,12 +96,12 @@ public class CommandStringBuilder {
   }
 
   private String quoteArgument(String argument) {
-    if (!argument.startsWith(SINGLE_QUOTE)) {
-      argument = SINGLE_QUOTE + argument;
+    if (!argument.startsWith(DOUBLE_QUOTE)) {
+      argument = DOUBLE_QUOTE + argument;
     }
 
-    if (!argument.endsWith(SINGLE_QUOTE)) {
-      argument = argument + SINGLE_QUOTE;
+    if (!argument.endsWith(DOUBLE_QUOTE)) {
+      argument = argument + DOUBLE_QUOTE;
     }
 
     return argument;
