@@ -1342,6 +1342,7 @@ public class CachePerfStats {
   public void decDiskTasksWaiting() {
     this.stats.incInt(diskTasksWaitingId, -1);
   }
+
   public int getDiskTasksWaiting() {
     return this.stats.getInt(diskTasksWaitingId);
   }
