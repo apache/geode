@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.rules.gfsh;
+package org.apache.geode.test.internal.rules.gfsh;
 
 import static org.apache.commons.lang.SystemUtils.PATH_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,17 +31,17 @@ import java.util.stream.Collectors;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.management.internal.cli.commands.StatusLocatorRealGfshTest;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
+import org.apache.geode.test.internal.rules.RequiresGeodeHome;
+
 
 /**
  * The {@code GfshRule} allows a test to execute Gfsh commands via the actual (fully-assembled) gfsh
- * binaries. For a usage example, see {@link StatusLocatorRealGfshTest}. Each call to
- * {@link GfshRule#execute(GfshScript)} will invoke the given gfsh script in a forked JVM. The
- * {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
+ * binaries. Each call to {@link GfshRule#execute(GfshScript)} will invoke the given gfsh script in
+ * a forked JVM. The {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
  */
 public class GfshRule extends ExternalResource {
+  private static final String SINGLE_QUOTE = "\"";
+
   public TemporaryFolder getTemporaryFolder() {
     return temporaryFolder;
   }
@@ -139,8 +139,7 @@ public class GfshRule extends ExternalResource {
   }
 
   private void stopServerInDir(File dir) {
-    String stopServerCommand =
-        new CommandStringBuilder("stop server").addOption("dir", dir).toString();
+    String stopServerCommand = "stop server --dir=" + quoteArgument(dir.toString());
 
     GfshScript stopServerScript =
         new GfshScript(stopServerCommand).withName("teardown-stop-server").awaitQuietly();
@@ -148,12 +147,23 @@ public class GfshRule extends ExternalResource {
   }
 
   private void stopLocatorInDir(File dir) {
-    String stopLocatorCommand =
-        new CommandStringBuilder("stop locator").addOption("dir", dir).toString();
+    String stopLocatorCommand = "stop locator --dir=" + quoteArgument(dir.toString());
 
     GfshScript stopServerScript =
         new GfshScript(stopLocatorCommand).withName("teardown-stop-locator").awaitQuietly();
     execute(stopServerScript);
+  }
+
+  private String quoteArgument(String argument) {
+    if (!argument.startsWith(SINGLE_QUOTE)) {
+      argument = SINGLE_QUOTE + argument;
+    }
+
+    if (!argument.endsWith(SINGLE_QUOTE)) {
+      argument = argument + SINGLE_QUOTE;
+    }
+
+    return argument;
   }
 
 }
