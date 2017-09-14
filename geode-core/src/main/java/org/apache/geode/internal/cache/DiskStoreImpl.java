@@ -2832,7 +2832,6 @@ public class DiskStoreImpl implements DiskStore {
      * missed. Notifications need not be sent if the thread is already compaction
      */
     public void run() {
-      getCache().getCachePerfStats().decDiskTasksWaiting();
       if (!this.scheduled)
         return;
       boolean compactedSuccessfully = false;

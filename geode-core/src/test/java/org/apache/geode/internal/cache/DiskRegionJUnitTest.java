@@ -2721,6 +2721,9 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     boolean compacted = ((LocalRegion) region).getDiskStore().forceCompaction();
     assertEquals(true, oplog.testConfirmCompacted());
     assertEquals(true, compacted);
+    CachePerfStats stats = ((InternalCache) cache).getCachePerfStats();
+    assertTrue("expected " + stats.getDiskTasksWaiting() + " to be >= 0",
+        stats.getDiskTasksWaiting() >= 0);
   }
 
   @Test
