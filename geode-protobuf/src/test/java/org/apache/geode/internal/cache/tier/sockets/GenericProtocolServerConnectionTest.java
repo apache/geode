@@ -24,6 +24,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.security.server.NoOpAuthenticator;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -56,8 +57,10 @@ public class GenericProtocolServerConnectionTest {
     Socket socketMock = mock(Socket.class);
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
 
+    ClientProtocolMessageHandler mockHandler = mock(ClientProtocolMessageHandler.class);
+    when(mockHandler.getStatistics()).thenReturn(new NoOpProtobufStatistics());
     GenericProtocolServerConnection genericProtocolServerConnection =
-        getGenericProtocolServerConnection(socketMock, mock(ClientProtocolMessageHandler.class));
+        getGenericProtocolServerConnection(socketMock, mockHandler);
 
     genericProtocolServerConnection.emergencyClose();
 
