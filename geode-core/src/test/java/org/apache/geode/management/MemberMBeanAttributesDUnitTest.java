@@ -14,265 +14,220 @@
  */
 package org.apache.geode.management;
 
+import static org.apache.geode.management.MXBeanAwaitility.await;
+import static org.apache.geode.management.MXBeanAwaitility.getSystemManagementService;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.lang.management.ManagementFactory;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.internal.statistics.HostStatSampler;
+import org.apache.geode.internal.statistics.SampleCollector;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
- * This test class checks around 89 attributes of Member MBeans
- *
+ * Distributed tests for {@link MemberMXBean} attributes.
  */
 @Category(DistributedTest.class)
+@SuppressWarnings({"serial", "unused"})
 public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
 
-
-  private static final long serialVersionUID = 1L;
-
-  /**
-   * Factor converting bytes to MB
-   */
-  private static final long MBFactor = 1024 * 1024;
-
-  // This must be bigger than the dunit ack-wait-threshold for the revoke
-  // tests. The command line is setting the ack-wait-threshold to be
-  // 60 seconds.
-  private static final int MAX_WAIT = 70 * 1000;
-
-  protected static final long SLEEP = 100;
-
-
-
-  public MemberMBeanAttributesDUnitTest() {
-    super();
-  }
-
-  protected void sample(VM vm1) {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        InternalDistributedSystem.getConnectedInstance().getStatSampler().getSampleCollector()
-            .sample(NanoTimer.getTime());
-      }
-
-    });
-  }
-
-
+  private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
 
   @Test
   public void testReplRegionAttributes() throws Exception {
     initManagement(false);
     setupForReplicateRegionAttributes(managedNodeList.get(0), 1);
     setupForReplicateRegionAttributes(managedNodeList.get(1), 201);
-    sample(managedNodeList.get(1));// Sample now
-    isReplicatedRegionAttrsOK(managedNodeList.get(1));
 
+    sampleStatistics(managedNodeList.get(1));// Sample now
+
+    validateReplicateRegionAttributes(managedNodeList.get(1));
   }
-
 
   @Test
   public void testPRRegionAttributes() throws Exception {
     initManagement(false);
     setupForPartitionedRegionAttributes(managedNodeList.get(0), 1);
-    sample(managedNodeList.get(0));// Sample now
-    isPartitionedRegionAttrsOK(managedNodeList.get(0));
 
+    sampleStatistics(managedNodeList.get(0));// Sample now
+
+    validatePartitionedRegionAttributes(managedNodeList.get(0));
   }
 
   @Test
   public void testOSAttributes() throws Exception {
     initManagement(false);
-    isOSRelatedAttrsOK(managedNodeList.get(0));
+
+    validateSystemAndOSAttributes(managedNodeList.get(0));
   }
 
   @Category(FlakyTest.class) // GEODE-1482
   @Test
   public void testConfigAttributes() throws Exception {
     initManagement(false);
-    isConfigRelatedAttrsOK(managedNodeList.get(0));
+
+    validateConfigAttributes(managedNodeList.get(0));
   }
 
-
-  public void setupForReplicateRegionAttributes(VM vm1, final int offset) {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-        LogWriterUtils.getLogWriter().info("Creating Dist Region");
-        rf.create("testRegion1");
-        rf.create("testRegion2");
-        rf.create("testRegion3");
-
-
-        Region r1 = cache.getRegion("/testRegion1");
-        rf.createSubregion(r1, "testSubRegion1");
-
-        Region r2 = cache.getRegion("/testRegion2");
-        rf.createSubregion(r2, "testSubRegion2");
-
-        Region r3 = cache.getRegion("/testRegion3");
-        rf.createSubregion(r3, "testSubRegion3");
-
-
-        for (int i = offset; i < offset + 200; i++) {
-          r1.put(new Integer(i), new Integer(i));
-          r2.put(new Integer(i), new Integer(i));
-          r3.put(new Integer(i), new Integer(i));
-        }
-
-      }
+  private void sampleStatistics(final VM vm) {
+    vm.invoke("sampleStatistics", () -> {
+      InternalDistributedSystem system = getInternalDistributedSystem();
+      HostStatSampler sampler = system.getStatSampler();
+      SampleCollector sampleCollector = sampler.getSampleCollector();
+      sampleCollector.sample(NanoTimer.getTime());
     });
-
   }
 
-  public void setupForPartitionedRegionAttributes(VM vm1, final int offset) {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        RegionFactory prRF = cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
+  private void setupForReplicateRegionAttributes(final VM vm, final int offset) {
+    vm.invoke("setupForReplicateRegionAttributes", () -> {
+      Cache cache = getInternalCache();
 
-        prRF.create("testPRRegion1");
-        prRF.create("testPRRegion2");
-        prRF.create("testPRRegion3");
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      regionFactory.create("testRegion1");
+      regionFactory.create("testRegion2");
+      regionFactory.create("testRegion3");
 
-        Region pr1 = cache.getRegion("/testPRRegion1");
-        Region pr2 = cache.getRegion("/testPRRegion2");
-        Region pr3 = cache.getRegion("/testPRRegion3");
+      Region region1 = cache.getRegion("/testRegion1");
+      regionFactory.createSubregion(region1, "testSubRegion1");
 
-        for (int i = offset; i < offset + 200; i++) {
-          pr1.put(new Integer(i), new Integer(i));
-          pr2.put(new Integer(i), new Integer(i));
-          pr3.put(new Integer(i), new Integer(i));
-        }
+      Region region2 = cache.getRegion("/testRegion2");
+      regionFactory.createSubregion(region2, "testSubRegion2");
 
+      Region region3 = cache.getRegion("/testRegion3");
+      regionFactory.createSubregion(region3, "testSubRegion3");
 
+      for (int i = offset; i < offset + 200; i++) {
+        region1.put(i, i);
+        region2.put(i, i);
+        region3.put(i, i);
       }
     });
-
   }
 
-  /**
-   * This will check all the attributes which does not depend on any distribution message.
-   * 
-   * @param vm1
-   * @throws Exception
-   */
-  @SuppressWarnings("serial")
-  public void isPartitionedRegionAttrsOK(VM vm1) {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        MemberMXBean bean = managementService.getMemberMXBean();
-        assertEquals(3, bean.getPartitionRegionCount());
-        assertEquals(339, bean.getTotalBucketCount());
-        assertEquals(339, bean.getTotalPrimaryBucketCount());
+  private void setupForPartitionedRegionAttributes(final VM vm, final int offset) {
+    vm.invoke("setupForPartitionedRegionAttributes", () -> {
+      Cache cache = getInternalCache();
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT);
 
+      regionFactory.create("testPRRegion1");
+      regionFactory.create("testPRRegion2");
+      regionFactory.create("testPRRegion3");
+
+      Region region1 = cache.getRegion("/testPRRegion1");
+      Region region2 = cache.getRegion("/testPRRegion2");
+      Region region3 = cache.getRegion("/testPRRegion3");
+
+      for (int i = offset; i < offset + 200; i++) {
+        region1.put(i, i);
+        region2.put(i, i);
+        region3.put(i, i);
       }
     });
-
   }
 
   /**
    * This will check all the attributes which does not depend on any distribution message.
-   * 
-   * @param vm1
-   * @throws Exception
    */
-  @SuppressWarnings("serial")
-  public void isReplicatedRegionAttrsOK(VM vm1) {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        MemberMXBean bean = managementService.getMemberMXBean();
+  private void validatePartitionedRegionAttributes(final VM vm) {
+    vm.invoke("validatePartitionedRegionAttributes", () -> {
+      MemberMXBean memberMXBean = getSystemManagementService().getMemberMXBean();
 
-        assertEquals(6, bean.getTotalRegionCount());
-        assertEquals(1200, bean.getTotalRegionEntryCount());
-
-        assertEquals(3, bean.getRootRegionNames().length);
-        assertEquals(600, bean.getInitialImageKeysReceived());
-        assertEquals(6, bean.listRegions().length);
-      }
+      assertEquals(3, memberMXBean.getPartitionRegionCount());
+      assertEquals(339, memberMXBean.getTotalBucketCount());
+      assertEquals(339, memberMXBean.getTotalPrimaryBucketCount());
     });
-
   }
 
   /**
    * This will check all the attributes which does not depend on any distribution message.
-   * 
-   * @param vm1
-   * @throws Exception
    */
-  @SuppressWarnings("serial")
-  public void isOSRelatedAttrsOK(VM vm1) {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        MemberMXBean bean = managementService.getMemberMXBean();
+  private void validateReplicateRegionAttributes(final VM vm) {
+    vm.invoke("validateReplicateRegionAttributes", () -> {
+      MemberMXBean memberMXBean = getSystemManagementService().getMemberMXBean();
 
-        try {
-          assertEquals(ProcessUtils.identifyPid(), bean.getProcessId());
-        } catch (PidUnavailableException e) {
-          e.printStackTrace();
-        }
-        assertEquals(ManagementFactory.getRuntimeMXBean().getClassPath(), bean.getClassPath());
+      assertEquals(6, memberMXBean.getTotalRegionCount());
+      assertEquals(1200, memberMXBean.getTotalRegionEntryCount());
 
-        assertTrue(bean.getCurrentTime() > 0);
-        // Sleep for one second
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        assertTrue(bean.getMemberUpTime() > 0);
-        assertTrue(bean.getCurrentHeapSize() > 10);
-        assertTrue(bean.getFreeHeapSize() > 0);
-        assertEquals(bean.getMaximumHeapSize(),
-            ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax() / MBFactor);
-
-        // @TODO Need more definitive test case
-        assertTrue(bean.fetchJvmThreads().length > 0);
-
-        // @TODO Need more definitive test case
-        // System.out.println(" CPU Usage is "+ bean.getCpuUsage());
-        // assertTrue(bean.getCpuUsage() > 0.0f);
-
-        // bean.getFileDescriptorLimit()
-      }
+      assertEquals(3, memberMXBean.getRootRegionNames().length);
+      assertEquals(600, memberMXBean.getInitialImageKeysReceived());
+      assertEquals(6, memberMXBean.listRegions().length);
     });
-
   }
 
-  @SuppressWarnings("serial")
-  public void isConfigRelatedAttrsOK(VM vm1) {
-    vm1.invoke(new SerializableRunnable("Create Cache") {
-      public void run() {
-        MemberMXBean bean = managementService.getMemberMXBean();
+  /**
+   * This will check all the attributes which does not depend on any distribution message.
+   */
+  private void validateSystemAndOSAttributes(final VM vm) {
+    vm.invoke("validateSystemAndOSAttributes", () -> {
+      MemberMXBean memberMXBean = getSystemManagementService().getMemberMXBean();
 
-        assertFalse(bean.hasGatewayReceiver());
-        assertFalse(bean.hasGatewaySender());
-        assertFalse(bean.isLocator());
-        assertFalse(bean.isManager());
-        assertFalse(bean.isServer());
-        assertFalse(bean.isManagerCreated());
+      assertThat(memberMXBean.getProcessId()).isEqualTo(ProcessUtils.identifyPid());
+      assertThat(memberMXBean.getClassPath()).isEqualTo(getClassPath());
+      assertThat(memberMXBean.getCurrentTime()).isGreaterThan(0);
 
+      await().until(() -> assertThat(memberMXBean.getMemberUpTime()).isGreaterThan(0));
 
-      }
+      assertThat(memberMXBean.getUsedMemory()).isGreaterThan(10);
+      assertThat(memberMXBean.getCurrentHeapSize()).isGreaterThan(10);
+
+      assertThat(memberMXBean.getFreeMemory()).isGreaterThan(0);
+      assertThat(memberMXBean.getFreeHeapSize()).isGreaterThan(0);
+
+      assertThat(memberMXBean.getMaxMemory()).isEqualTo(getHeapMemoryUsageMegabytes());
+      assertThat(memberMXBean.getMaximumHeapSize()).isEqualTo(getHeapMemoryUsageMegabytes());
+
+      assertThat(memberMXBean.fetchJvmThreads().length).isGreaterThan(0);
+
+      // TODO: provide better/more validation
+      // System.out.println(" CPU Usage is "+ bean.getCpuUsage());
+      // assertTrue(bean.getCpuUsage() > 0.0f);
+
+      // bean.getFileDescriptorLimit()
     });
+  }
 
+  private void validateConfigAttributes(final VM vm) {
+    vm.invoke("validateConfigAttributes", () -> {
+      MemberMXBean memberMXBean = getSystemManagementService().getMemberMXBean();
+
+      assertFalse(memberMXBean.hasGatewayReceiver());
+      assertFalse(memberMXBean.hasGatewaySender());
+      assertFalse(memberMXBean.isLocator());
+      assertFalse(memberMXBean.isManager());
+      assertFalse(memberMXBean.isServer());
+      assertFalse(memberMXBean.isManagerCreated());
+    });
+  }
+
+  private String getClassPath() {
+    return ManagementFactory.getRuntimeMXBean().getClassPath();
+  }
+
+  private long getHeapMemoryUsageMegabytes() {
+    return ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax() / BYTES_PER_MEGABYTE;
+  }
+
+  private InternalDistributedSystem getInternalDistributedSystem() {
+    return InternalDistributedSystem.getConnectedInstance();
+  }
+
+  private InternalCache getInternalCache() {
+    return GemFireCacheImpl.getInstance();
   }
 }

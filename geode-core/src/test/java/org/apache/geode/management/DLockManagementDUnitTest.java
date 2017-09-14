@@ -14,10 +14,11 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.internal.process.ProcessUtils.*;
-import static org.apache.geode.management.internal.MBeanJMXAdapter.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedLockServiceName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getLockServiceMBeanName;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @SuppressWarnings({"serial", "unused"})
 public class DLockManagementDUnitTest implements Serializable {
 
-  private static final int MAX_WAIT_MILLIS = 120 * 1000; // 2 MINUTES
+  private static final int MAX_WAIT_MILLIS = 2 * 60 * 1000; // 2 MINUTES
 
   private static final String LOCK_SERVICE_NAME =
       DLockManagementDUnitTest.class.getSimpleName() + "_testLockService";

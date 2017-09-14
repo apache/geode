@@ -32,7 +32,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Extracted from {@link TypedJsonPdxIntegrationTest}.<p>
+ * Extracted from {@link TypedJsonPdxIntegrationTest}.
+ * <p>
  *
  * TODO: add actual assertions
  */

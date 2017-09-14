@@ -109,8 +109,11 @@ public class QueryDataFunctionIntegrationTest {
   }
 
   /**
-   * #Issue 51048 Tests a model where Objects have a circular reference with object reference. e.g.
-   * Order1-- Has--> Items each Item --Has --> OrderN where (OrderN == Order1)
+   * Tests a model where Objects have a circular reference with object reference. e.g. Order1--
+   * Has--> Items each Item --Has --> OrderN where (OrderN == Order1)
+   * <p>
+   *
+   * RegressionTest for TRAC #51048: Disk Read/ Write shows negative at cluster level JMX
    */
   @Test
   public void testCyclicWithNestedObjectReference() throws Exception {
@@ -316,5 +319,4 @@ public class QueryDataFunctionIntegrationTest {
     }
     return portfolios;
   }
-
 }

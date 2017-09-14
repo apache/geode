@@ -18,12 +18,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CompositeTestMBean implements CompositeTestMXBean {
+
   private final String connectionStatsType = "AX";
-  private long connectionsOpened = 100;
-  private long connectionsClosed = 50;
-  private long connectionsAttempted = 120;
-  private long connectionsFailed = 20;
-  private long connectionLifeTime = 100;
+  private final long connectionsOpened = 100;
+  private final long connectionsClosed = 50;
+  private final long connectionsAttempted = 120;
+  private final long connectionsFailed = 20;
+  private final long connectionLifeTime = 100;
 
   @Override
   public CompositeStats getCompositeStats() {
@@ -46,7 +47,6 @@ public class CompositeTestMBean implements CompositeTestMXBean {
 
   @Override
   public CompositeStats[] getCompositeArray() {
-
     CompositeStats[] arr = new CompositeStats[2];
     for (int i = 0; i < arr.length; i++) {
       arr[i] = new CompositeStats("AX" + i, connectionsOpened, connectionsClosed,

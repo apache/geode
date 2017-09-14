@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;

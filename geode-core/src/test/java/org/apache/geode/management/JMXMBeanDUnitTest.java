@@ -38,32 +38,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
-import com.google.common.collect.Maps;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
-import org.apache.geode.test.dunit.rules.Locator;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.util.test.TestUtil;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
+
+import com.google.common.collect.Maps;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import javax.management.MBeanServerConnection;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * All the non-ssl enabled locators need to be in a different VM than the ssl enabled locators in
@@ -71,7 +68,9 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
  * ssl settings cleanly.
  */
 @Category(DistributedTest.class)
+@SuppressWarnings({"serial", "unused"})
 public class JMXMBeanDUnitTest implements Serializable {
+
   private LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
   private transient MBeanServerConnectionRule jmxConnector = new MBeanServerConnectionRule();
   private transient RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -182,7 +181,6 @@ public class JMXMBeanDUnitTest implements Serializable {
     });
   }
 
-
   private Map<String, Object> getClientEnvironment(boolean withAlias) {
     System.setProperty("javax.net.ssl.keyStore", withAlias ? multiKeystore : singleKeystore);
     System.setProperty("javax.net.ssl.keyStoreType", "JKS");
@@ -194,7 +192,6 @@ public class JMXMBeanDUnitTest implements Serializable {
     environment.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
     return environment;
   }
-
 
   private void validateJmxConnection(MBeanServerConnectionRule mBeanServerConnectionRule)
       throws Exception {
