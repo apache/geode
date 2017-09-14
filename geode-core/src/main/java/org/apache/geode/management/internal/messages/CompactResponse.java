@@ -24,8 +24,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.admin.remote.AdminResponse;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 // NOTE: This is copied from org/apache/geode/internal/admin/remote/CompactResponse.java

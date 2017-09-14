@@ -422,13 +422,13 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
      * AsyncInvocationArrSize = 1; AsyncInvocation[] async = new
      * AsyncInvocation[AsyncInvocationArrSize]; async[0] = empty.invokeAsync(() ->
      * DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
-     * 
+     *
      * replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.closeCache());
-     * 
+     *
      * replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
      * replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(
      * DataPolicy.REPLICATE ));
-     * 
+     *
      * DistributedTestCase.join(async[0], 50 * 1000, getLogWriter()); if (async[0].getException() !=
      * null) { fail("UnExpected Exception Occurred : ", async[0].getException()); } List l =
      * (List)async[0].getReturnValue();

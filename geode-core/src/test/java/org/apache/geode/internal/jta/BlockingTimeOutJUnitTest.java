@@ -14,22 +14,9 @@
  */
 package org.apache.geode.internal.jta;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.test.TestUtil;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertNotNull;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -37,8 +24,23 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.Random;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertNotNull;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(IntegrationTest.class)
 public class BlockingTimeOutJUnitTest {

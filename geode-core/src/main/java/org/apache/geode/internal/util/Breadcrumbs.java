@@ -21,7 +21,7 @@ import org.apache.geode.internal.cache.EventID;
 /**
  * Breadcrumbs establishes traces in thread names that are useful in figuring out what is going on
  * in a distributed system given only stack traces.
- * 
+ *
  * @since GemFire 20 May 2014
  *
  */
@@ -34,10 +34,10 @@ public class Breadcrumbs {
 
 
   /** delimiter for crumb numbers */
-  final static String CrumbDelimiter = "/";
+  static final String CrumbDelimiter = "/";
 
   /** string that starts a crumb */
-  final static String CommonBreadcrumbStart = "\n\t" + CrumbDelimiter;
+  static final String CommonBreadcrumbStart = "\n\t" + CrumbDelimiter;
 
   /** all known types of breadcrumbs */
   private enum CrumbType {
@@ -144,7 +144,7 @@ public class Breadcrumbs {
 
   /**
    * This method does all of the work of setting/clearing individual breadcrumbs in thread names
-   * 
+   *
    * @param t the thread to modify
    * @param type the type of breadcrumb
    * @param crumb the crumb to insert, or null to clear

@@ -52,7 +52,7 @@ public interface DM extends ReplySender {
 
   /**
    * Get a set of all other members (both admin ones and normal).
-   * 
+   *
    * @since GemFire 5.7
    */
   public Set getAllOtherMembers();
@@ -66,7 +66,7 @@ public interface DM extends ReplySender {
   /**
    * removes members that have older versions from the given collection, typically a Set from a
    * distribution advisor
-   * 
+   *
    * @since GemFire 8.0
    */
   public void retainMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
@@ -75,7 +75,7 @@ public interface DM extends ReplySender {
   /**
    * removes members that have the given version or later from the given collection, typically a Set
    * from a distribution advisor
-   * 
+   *
    * @since GemFire 8.0
    */
   public void removeMembersWithSameOrNewerVersion(Collection<InternalDistributedMember> members,
@@ -96,7 +96,7 @@ public interface DM extends ReplySender {
   /**
    * Returns an unmodifiable set containing the identities of all of the known distribution managers
    * including admin members.
-   * 
+   *
    * @since GemFire 5.7
    */
   public Set getDistributionManagerIdsIncludingAdmin();
@@ -119,7 +119,7 @@ public interface DM extends ReplySender {
   /**
    * Add a membership listener for all members and return other DistribtionManagerIds as an atomic
    * operation
-   * 
+   *
    * @since GemFire 5.7
    */
   public Set addAllMembershipListenerAndGetAllIds(MembershipListener l);
@@ -138,9 +138,9 @@ public interface DM extends ReplySender {
 
   /**
    * Returns the identity of the oldest DM in this group.
-   * 
+   *
    * Note that this method may return null (no valid elders exist).
-   * 
+   *
    * @return the elder member, possibly null
    * @since GemFire 4.0
    */
@@ -163,7 +163,7 @@ public interface DM extends ReplySender {
    * <p>
    * If useTryLock is true, then it will attempt to get a try-lock and throw IllegalStateException
    * if another thread already holds the try-lock.
-   * 
+   *
    * @param force if true then this DM must become the elder.
    * @param useTryLock if true then a try-lock will be used
    * @throws IllegalStateException if elder try lock fails
@@ -191,7 +191,7 @@ public interface DM extends ReplySender {
 
   /**
    * Sends a message, guaranteed to be serialized
-   * 
+   *
    * @see #putOutgoingUserData(DistributionMessage)
    * @param msg
    * @return recipients who did not receive the message
@@ -231,7 +231,7 @@ public interface DM extends ReplySender {
   /**
    * Used to get the DistributionConfig so that Connection can figure out if it is configured for
    * async comms.
-   * 
+   *
    * @since GemFire 4.2.1
    */
   public DistributionConfig getConfig();
@@ -283,7 +283,7 @@ public interface DM extends ReplySender {
   /**
    * Returns the oldest member in the given set of distribution managers. The current implementation
    * may use n*n/2 comparisons, so use this judiciously
-   * 
+   *
    * @return the oldest member of the given collection
    * @throws NoSuchElementException when none of the given members is actually a member of the
    *         distributed system.
@@ -312,7 +312,7 @@ public interface DM extends ReplySender {
 
   /**
    * Remove given member from list of members who are pending a startup reply
-   * 
+   *
    * @param m the member
    * @param departed true if we're removing them due to membership
    */
@@ -322,35 +322,35 @@ public interface DM extends ReplySender {
 
   /**
    * Return the CancelCriterion for this DM.
-   * 
+   *
    * @return CancelCriterion for this DM
    */
   public CancelCriterion getCancelCriterion();
 
   /**
    * Return the membership manager for this DM
-   * 
+   *
    * @return the membership manager
    */
   public MembershipManager getMembershipManager();
 
   /**
    * Set the root cause for DM failure
-   * 
+   *
    * @param t the underlying failure
    */
   public void setRootCause(Throwable t);
 
   /**
    * Return the underlying root cause for DM failure, possibly null
-   * 
+   *
    * @return the underlying root cause
    */
   public Throwable getRootCause();
 
   /**
    * Return all members that are on the the this host
-   * 
+   *
    * @return set of {@link InternalDistributedMember} including this VM
    * @since GemFire 5.9
    */
@@ -379,7 +379,7 @@ public interface DM extends ReplySender {
   /**
    * Returns true is the two members are on the same equivalent host machine based on overlapping IP
    * addresses collected for all NICs on each member's machine.
-   * 
+   *
    * @param member1 First member
    * @param member2 Second member
    */
@@ -396,10 +396,10 @@ public interface DM extends ReplySender {
    * bind-addr[port].
    * <p>
    * This currently only tracks stand-alone/dedicated locators, not embedded locators.
-   * 
+   *
    * @param isSharedConfigurationEnabled flag to determine if the locator has enabled shared
    *        configuration
-   * 
+   *
    * @since GemFire 6.6.3
    */
   public void addHostedLocators(InternalDistributedMember member, Collection<String> locators,
@@ -412,7 +412,7 @@ public interface DM extends ReplySender {
    * bind-addr[port].
    * <p>
    * This currently only tracks stand-alone/dedicated locators, not embedded locators.
-   * 
+   *
    * @since GemFire 6.6.3
    */
   public Collection<String> getHostedLocators(InternalDistributedMember member);
@@ -425,7 +425,7 @@ public interface DM extends ReplySender {
    *
    * <p>
    * This currently only tracks stand-alone/dedicated locators, not embedded locators.
-   * 
+   *
    * @since GemFire 6.6.3
    */
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocators();
@@ -436,14 +436,14 @@ public interface DM extends ReplySender {
    * then the form is bind-addr[port].
    * <p>
    * This currently only tracks stand-alone/dedicated locators, not embedded locators.
-   * 
+   *
    * @since GemFire 8.0
    */
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocatorsWithSharedConfiguration();
 
   /****
    * Determines if the distributed system has the shared configuration service enabled or not.
-   * 
+   *
    * @return true if the distributed system was started or had a locator with
    *         enable-cluster-configuration = true
    */

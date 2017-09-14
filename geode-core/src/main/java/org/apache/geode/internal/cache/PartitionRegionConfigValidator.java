@@ -36,8 +36,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * 
- * 
+ *
+ *
  */
 public class PartitionRegionConfigValidator {
 
@@ -205,7 +205,7 @@ public class PartitionRegionConfigValidator {
   /**
    * The 2nd step of Eviction Attributes validation to ensure that all VMs are reasonably similar to
    * prevent weird config. issues.
-   * 
+   *
    * @param prconfEa the eviction attributes currently used by other VMs
    * @see AttributesFactory#validateAttributes(RegionAttributes)
    * @see #validateEvictionAttributesAgainstLocalMaxMemory()
@@ -258,7 +258,7 @@ public class PartitionRegionConfigValidator {
    * The 3rd step of EvictionAttributes validation, where mutation is acceptible This should be done
    * before buckets are created. Validate EvictionAttributes with respect to localMaxMemory
    * potentially changing the eviction attributes.
-   * 
+   *
    * @see AttributesFactory#validateAttributes(RegionAttributes)
    * @see #validateDistributedEvictionAttributes(EvictionAttributes)
    */

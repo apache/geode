@@ -265,7 +265,7 @@ public class GatewayReceiverStats extends CacheServerStats {
 
   /**
    * Returns the current time (ns).
-   * 
+   *
    * @return the current time (ns)
    */
   public long startTime() {

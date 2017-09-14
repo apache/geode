@@ -137,7 +137,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitT
   /**
    * Test the test method PartitionedRegion.getAllNodes Verify that it returns nodes after a value
    * has been placed into the PartitionedRegion.
-   * 
+   *
    * @see PartitionedRegion#getAllNodes()
    */
   public static class TestGetNodesKey implements DataSerializable {
@@ -346,7 +346,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitT
   /**
    * Test the test method PartitionedRegion.getAllNodes Verify that it returns nodes after a value
    * has been placed into the PartitionedRegion.
-   * 
+   *
    * @see PartitionedRegion#getAllNodes()
    */
   @Test

@@ -14,6 +14,16 @@
  */
 package org.apache.geode.internal.cache.functions;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.control.RebalanceFactory;
@@ -39,16 +49,6 @@ import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 public class TestFunction extends FunctionAdapter implements Declarable2 {
   public static final String TEST_FUNCTION10 = "TestFunction10";
@@ -116,7 +116,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
 
   /**
    * Application execution implementation
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   @Override
@@ -1033,7 +1033,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
 
   /**
    * Get the function identifier, used by clients to invoke this function
-   * 
+   *
    * @return an object identifying this function
    * @since GemFire 5.8Beta
    */
@@ -1063,7 +1063,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
   public Properties getConfig() {
@@ -1072,7 +1072,7 @@ public class TestFunction extends FunctionAdapter implements Declarable2 {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
    */
   public void init(Properties props) {

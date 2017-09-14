@@ -2732,7 +2732,7 @@ public class DataSerializableJUnitTest implements Serializable {
   /**
    * A <code>DataSerializer</code> that provides default implementations of its methods.
    */
-  private static abstract class DataSerializerImpl extends DataSerializer {
+  private abstract static class DataSerializerImpl extends DataSerializer {
 
     public DataSerializerImpl() {}
 

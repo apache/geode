@@ -14,6 +14,14 @@
  */
 package org.apache.geode.cache.client.internal.pooling;
 
+import java.net.SocketException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
@@ -32,18 +40,11 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import java.net.SocketException;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Manages client to server connections for the connection pool. This class contains all of the
  * pooling logic to checkout/checkin connections.
- * 
+ *
  * @since GemFire 5.7
  *
  */
@@ -87,7 +88,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /**
    * Create a connection manager
-   * 
+   *
    * @param poolName the name of the pool that owns us
    * @param factory the factory for new connections
    * @param maxConnections The maximum number of connections that can exist
@@ -144,7 +145,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#borrowConnection(long)
    */
   public Connection borrowConnection(long acquireTimeout)
@@ -458,7 +459,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.pooling.ConnectionManager#invalidateServer(org.apache.
    * geode.distributed.internal.ServerLocation)
@@ -522,7 +523,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.pooling.ConnectionManager#returnConnection(org.apache.
    * geode.cache.client.internal.Connection)
@@ -613,7 +614,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#close(boolean, long)
    */
   public void close(boolean keepAlive) {
@@ -881,7 +882,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /**
    * Offer the replacement "con" to any cnx currently connected to "currentServer".
-   * 
+   *
    * @return true if someone takes our offer; false if not
    */
   private boolean offerReplacementConnection(Connection con, ServerLocation currentServer) {
@@ -927,7 +928,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * at a time so this guy should block until this connection replaces an existing one. Note that if
    * a connection is created here it must not count against the pool max and its idle time and
    * lifetime must not begin until it actually replaces the existing one.
-   * 
+   *
    * @param currentServer the server the candidate connection is connected to
    * @param idlePossible true if we have more cnxs than minPoolSize
    * @return true if caller should recheck for expired lifetimes; false if a background check was
@@ -1152,7 +1153,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     /**
      * Returns a pooled connection that can have its underlying cnx to currentServer replaced by a
      * new connection.
-     * 
+     *
      * @return null if a target could not be found
      */
     public synchronized PooledConnection findReplacementTarget(ServerLocation currentServer) {
@@ -1237,7 +1238,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
      * See if any of the expired connections (that have not idle expired) are already connected to
      * this sl and have not idle expired. If so then just update them in-place to simulate a
      * replace.
-     * 
+     *
      * @param sl the location of the server we should see if we are connected to
      * @return true if we were able to extend an existing connection's lifetime or if we have no
      *         connection's whose lifetime has expired. false if we need to create a replacement

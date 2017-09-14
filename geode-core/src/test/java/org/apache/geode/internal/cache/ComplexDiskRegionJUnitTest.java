@@ -44,7 +44,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /**
    * Test method for 'org.apache.geode.internal.cache.ComplexDiskRegion.addToBeCompacted(Oplog)'
-   * 
+   *
    * The test will test that an oplog is correctly being added to be rolled
    */
   @Test
@@ -101,7 +101,7 @@ public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /**
    * Test method for 'org.apache.geode.internal.cache.ComplexDiskRegion.removeFirstOplog(Oplog)'
-   * 
+   *
    * The test verifies the FIFO property of the oplog set (first oplog to be added should be the
    * firs to be rolled).
    */

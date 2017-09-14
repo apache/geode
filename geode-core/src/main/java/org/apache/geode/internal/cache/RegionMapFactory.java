@@ -27,7 +27,7 @@ package org.apache.geode.internal.cache;
 class RegionMapFactory {
   /**
    * Creates a RegionMap that is stored in the VM.
-   * 
+   *
    * @param owner the region that will be the owner of the map
    * @param attrs attributes used to create the map and its entries
    */
@@ -48,7 +48,7 @@ class RegionMapFactory {
   /**
    * Creates a RegionMap that is stored in the VM. Called during DiskStore recovery before the
    * region actually exists.
-   * 
+   *
    * @param owner the place holder disk region that will be the owner of the map until the actual
    *        region is created.
    */

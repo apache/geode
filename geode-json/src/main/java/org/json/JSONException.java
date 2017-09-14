@@ -30,7 +30,7 @@ package org.json;
  * <p>
  * Although this is a checked exception, it is rarely recoverable. Most callers should simply wrap
  * this exception in an unchecked exception and rethrow:
- * 
+ *
  * <pre>
  *   public JSONArray toJSONObject() {
  *     try {

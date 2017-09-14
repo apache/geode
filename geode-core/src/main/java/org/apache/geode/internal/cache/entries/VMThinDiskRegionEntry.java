@@ -16,8 +16,6 @@
 package org.apache.geode.internal.cache.entries;
 
 
-// import org.apache.geode.cache.*;
-// import org.apache.geode.distributed.internal.DM;
 
 import org.apache.geode.internal.cache.RegionEntryContext;
 

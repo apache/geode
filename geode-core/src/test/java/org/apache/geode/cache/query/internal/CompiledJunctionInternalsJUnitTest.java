@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -48,12 +47,13 @@ import org.apache.geode.cache.query.data.Address;
 import org.apache.geode.cache.query.data.Employee;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
- *  
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class CompiledJunctionInternalsJUnitTest {
@@ -1165,7 +1165,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * Tests the functionality of organizedOperands function of a RangeJunction which is an AND with
    * no IterOperand. If the RangeJunction boils down to a single condition which can be evalauted as
    * a CompiledComparison then the filter operand will be a CompiledComparison
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsOfSingleRangeJunctionWithNoIterOperandForAND_1() {
@@ -1206,7 +1206,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * no IterOperand but where the operator needs reflection. as the condition is Key > Path ( which
    * means Path less than Key) If the RangeJunction boils down toa single condition which can be
    * evalauted as a CompiledComparison then the filter operand will be a CompiledComparison
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsOfSingleRangeJunctionWithNoIterOperandForAND_2() {
@@ -1251,7 +1251,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * evalauted as a CompiledComparison so the filter operand will be a CompiledComparison. Thus the
    * organizdeOperand's filter operand will be a CompiledComparison while its Iteroperand will be a
    * CompiledComparison
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsOfSingleRangeJunctionWithIterOperandForAND_1() {
@@ -1295,7 +1295,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * evalauted as a CompiledComparison so the filter operand will be a CompiledComparison. Thus the
    * organizdeOperand's filter operand will be a CompiledComparison while its Iteroperand will be a
    * CompiledJunction
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsOfSingleRangeJunctionWithTwoIterOperandsForAND_2() {
@@ -1342,7 +1342,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * which means Path less than Key) The RangeJunction boils down to a condition and a NOT EQUAL
    * which will be evalauted as a SingleCondnEvaluator so the filter operand will be a
    * SingleCondnEvaluator. Its Iter operand will be a CompiledJunction
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsOfSingleRangeJunctionWithTwoIterOperandsForAND_3() {
@@ -1403,7 +1403,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * which will be evalauted as a SingleCondnEvaluator so the filter operand will be a
    * SingleCondnEvaluator. Its Iter operand will be a CompiledJunction. This checks for the
    * SingleCondnEvaluator with > operator
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsOfSingleRangeJunctionWithTwoIterOperandsForAND_4() {
@@ -1458,7 +1458,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * combinations of GREATER THAN and Not equal conditions etc which results in a
    * SingleCondnEvaluator or CompiledComparison for a AND junction. It checks the correctness of the
    * operator & the evaluated key
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsSingleCondnEvalMultipleGreaterThanInEqualities_AND() {
@@ -1794,7 +1794,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * combinations of LESS THAN and Not equal conditions etc which results in a SingleCondnEvaluator
    * or CompiledComparison for a AND junction. It checks the correctness of the operator & the
    * evaluated key
-   * 
+   *
    */
   @Test
   public void testOrganizedOperandsSingleCondnEvalMultipleLessThanInEqualities_AND() {
@@ -2136,7 +2136,7 @@ public class CompiledJunctionInternalsJUnitTest {
 
   /**
    * Tests the correct creation of NotEqualConditionEvaluator For AND junction
-   * 
+   *
    */
   @Test
   public void testNotEqualConditionEvaluator_AND() {
@@ -2215,7 +2215,7 @@ public class CompiledJunctionInternalsJUnitTest {
    * rangeJunction.NotEqualConditionEvaluator for evaluating a !=7 , which however is the case now.
    * May be at some point, we should either try to club null & undefined as a part of
    * RangeJunctionEvaluator or we should not create an object of NotEqualConditionEvaluator.
-   * 
+   *
    */
   @Ignore
   @Test

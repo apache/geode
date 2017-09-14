@@ -40,7 +40,7 @@ import org.apache.geode.internal.tcp.ReenteredConnectException;
 /**
  * A Log4j Appender which will notify listeners whenever a message of the requested level is written
  * to the log file.
- * 
+ *
  */
 public class AlertAppender extends AbstractAppender implements PropertyChangeListener {
   private static final String APPENDER_NAME = AlertAppender.class.getName();
@@ -255,7 +255,7 @@ public class AlertAppender extends AbstractAppender implements PropertyChangeLis
   /**
    * Will add (or replace) a listener to the list of sorted listeners such that listeners with a
    * narrower level (e.g. FATAL) will be at the end of the list.
-   * 
+   *
    * @param listener The listener to add to the list.
    */
   private void addListenerToSortedList(final Listener listener) {
@@ -275,7 +275,7 @@ public class AlertAppender extends AbstractAppender implements PropertyChangeLis
 
   /**
    * Converts an int alert level to an int log level.
-   * 
+   *
    * @param alertLevel The int value for the alert level
    * @return The int value for the matching log level
    * @throws java.lang.IllegalArgumentException If there is no matching log level
@@ -297,7 +297,7 @@ public class AlertAppender extends AbstractAppender implements PropertyChangeLis
 
   /**
    * Converts an int log level to an int alert level.
-   * 
+   *
    * @param logLevel The int value for the log level
    * @return The int value for the matching alert level
    * @throws java.lang.IllegalArgumentException If there is no matching log level

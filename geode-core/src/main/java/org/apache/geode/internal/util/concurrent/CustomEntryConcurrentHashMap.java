@@ -16,7 +16,7 @@
  * ConcurrentHashMap implementation adapted from JSR 166 backport
  * (http://backport-jsr166.sourceforge.net) JDK5 version release 3.1 with modifications to use
  * generics where appropriate: backport-util-concurrent-Java60-3.1-src.tar.gz
- * 
+ *
  * Primary change is to allow HashEntry be an interface so that custom HashEntry implementations can
  * be plugged in. These HashEntry objects are now assumed to be immutable in the sense that they
  * cannot and should not be cloned in a rehash, and the rehash mechanism has been recoded using
@@ -30,7 +30,7 @@
  * equality with a provided object). In addition, the segments are now locked using read-write
  * locks. File has been reformatted to conform to GemStone conventions. GemStone additions have been
  * marked with "GemStone addition". GemStone changes have been marked with "GemStone change(s)".
- * 
+ *
  * Original license follows below.
  */
 /*
@@ -59,9 +59,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -74,7 +74,7 @@ import org.apache.geode.internal.util.ArrayUtils;
  * there is <em>not</em> any support for locking the entire table in a way that prevents all access.
  * This class is fully interoperable with <tt>Hashtable</tt> in programs that rely on its thread
  * safety but not on its synchronization details.
- * 
+ *
  * <p>
  * Retrieval operations (including <tt>get</tt>) generally do not block, so may overlap with update
  * operations (including <tt>put</tt> and <tt>remove</tt>). Retrievals reflect the results of the
@@ -85,7 +85,7 @@ import org.apache.geode.internal.util.ArrayUtils;
  * iterator/enumeration. They do <em>not</em> throw
  * {@link java.util.ConcurrentModificationException}. However, iterators are designed to be used by
  * only one thread at a time.
- * 
+ *
  * <p>
  * The allowed concurrency among update operations is guided by the optional
  * <tt>concurrencyLevel</tt> constructor argument (default <tt>16</tt>), which is used as a hint for
@@ -99,19 +99,19 @@ import org.apache.geode.internal.util.ArrayUtils;
  * others will only read. Also, resizing this or any other kind of hash table is a relatively slow
  * operation, so, when possible, it is a good idea to provide estimates of expected table sizes in
  * constructors.
- * 
+ *
  * <p>
  * This class and its views and iterators implement all of the <em>optional</em> methods of the
  * {@link Map} and {@link Iterator} interfaces.
- * 
+ *
  * <p>
  * Like {@link java.util.Hashtable} but unlike {@link java.util.HashMap}, this class does
  * <em>not</em> allow <tt>null</tt> to be used as a key or value.
- * 
+ *
  * <p>
  * This class is a member of the <a href="{@docRoot} /../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
- * 
+ *
  * @since Java 1.5
  * @author Doug Lea
  * @param <K> the type of keys maintained by this map
@@ -230,7 +230,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * Returns the segment that should be used for key with given hash
-   * 
+   *
    * @param hash the hash code for the key
    * @return the segment
    */
@@ -250,7 +250,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * [sumedh] Interface for ConcurrentHashMap list entry. Note that this is never exported out as a
    * user-visible Map.Entry.
-   * 
+   *
    * Made this public so RegionEntries can directly implement this to reduce memory overhead of
    * separate
    * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
@@ -296,7 +296,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * ConcurrentHashMap list entry. Note that this is never exported out as a user-visible Map.Entry.
-   * 
+   *
    * Because the value field is volatile, not final, it is legal wrt the Java Memory Model for an
    * unsynchronized reader to see null instead of initial value when read via a data race. Although
    * a reordering leading to this is not likely to ever actually occur, the
@@ -458,7 +458,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * The load factor for the hash table. Even though this value is same for all segments, it is
      * replicated to avoid needing links to outer object.
-     * 
+     *
      * @serial
      */
     final float loadFactor;
@@ -1062,9 +1062,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * Extension of
    * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Segment} using
    * reference-equality comparison for key, value equality instead of equals method.
-   * 
+   *
    * swale
-   * 
+   *
    * @since GemFire 7.0
    */
   static class IdentitySegment<K, V> extends Segment<K, V> implements Serializable {
@@ -1102,7 +1102,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Creates a new, empty map with the specified initial capacity, load factor and concurrency
    * level.
-   * 
+   *
    * @param initialCapacity the initial capacity. The implementation performs internal sizing to
    *        accommodate this many elements.
    * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
@@ -1122,7 +1122,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Creates a new, empty map with the specified initial capacity, load factor and concurrency
    * level.
-   * 
+   *
    * @param initialCapacity the initial capacity. The implementation performs internal sizing to
    *        accommodate this many elements.
    * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
@@ -1142,7 +1142,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Creates a new, empty map with the specified initial capacity, load factor, concurrency level
    * and custom {@link HashEntryCreator}.
-   * 
+   *
    * @param initialCapacity the initial capacity. The implementation performs internal sizing to
    *        accommodate this many elements.
    * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
@@ -1152,7 +1152,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @param isIdentityMap if true then this will use reference-equality instead of equals like an
    *        {@link IdentityHashMap}
    * @param entryCreator a custom {@link HashEntryCreator} for creating the map entries
-   * 
+   *
    * @throws IllegalArgumentException if the initial capacity is negative or the load factor or
    *         concurrencyLevel are nonpositive.
    */
@@ -1229,14 +1229,14 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Creates a new, empty map with the specified initial capacity and load factor and with the
    * default concurrencyLevel (16).
-   * 
+   *
    * @param initialCapacity The implementation performs internal sizing to accommodate this many
    *        elements.
    * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
    *        performed when the average number of elements per bin exceeds this threshold.
    * @throws IllegalArgumentException if the initial capacity of elements is negative or the load
    *         factor is nonpositive
-   * 
+   *
    * @since GemFire 1.6
    */
   public CustomEntryConcurrentHashMap(final int initialCapacity, final float loadFactor) {
@@ -1246,7 +1246,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Creates a new, empty map with the specified initial capacity, and with default load factor
    * (0.75) and concurrencyLevel (16).
-   * 
+   *
    * @param initialCapacity the initial capacity. The implementation performs internal sizing to
    *        accommodate this many elements.
    * @throws IllegalArgumentException if the initial capacity of elements is negative.
@@ -1267,7 +1267,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * Creates a new map with the same mappings as the given map. The map is created with a capacity
    * of 1.5 times the number of mappings in the given map or 16 (whichever is greater), and a
    * default load factor (0.75) and concurrencyLevel (16).
-   * 
+   *
    * @param m the map
    */
   public CustomEntryConcurrentHashMap(final Map<? extends K, ? extends V> m) {
@@ -1278,7 +1278,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * Returns <tt>true</tt> if this map contains no key-value mappings.
-   * 
+   *
    * @return <tt>true</tt> if this map contains no key-value mappings
    */
   @Override
@@ -1315,7 +1315,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Returns the number of key-value mappings in this map. If the map contains more than
    * <tt>Integer.MAX_VALUE</tt> elements, returns <tt>Integer.MAX_VALUE</tt>.
-   * 
+   *
    * @return the number of key-value mappings in this map
    */
   @Override
@@ -1371,12 +1371,12 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Returns the value to which the specified key is mapped, or {@code null} if this map contains no
    * mapping for the key.
-   * 
+   *
    * <p>
    * More formally, if this map contains a mapping from a key {@code k} to a value {@code v} such
    * that {@code key.equals(k)}, then this method returns {@code v}; otherwise it returns
    * {@code null}. (There can be at most one such mapping.)
-   * 
+   *
    * @throws NullPointerException if the specified key is null
    */
   @Override
@@ -1388,7 +1388,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * Tests if the specified object is a key in this table.
-   * 
+   *
    * @param key possible key
    * @return <tt>true</tt> if and only if the specified object is a key in this table, as determined
    *         by the <tt>equals</tt> method; <tt>false</tt> otherwise.
@@ -1405,7 +1405,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * Returns <tt>true</tt> if this map maps one or more keys to the specified value. Note: This
    * method requires a full internal traversal of the hash table, and so is much slower than method
    * <tt>containsKey</tt>.
-   * 
+   *
    * @param value value whose presence in this map is to be tested
    * @return <tt>true</tt> if this map maps one or more keys to the specified value
    * @throws NullPointerException if the specified value is null
@@ -1470,7 +1470,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * identical in functionality to {@link #containsValue}, and exists solely to ensure full
    * compatibility with class {@link java.util.Hashtable}, which supported this method prior to
    * introduction of the Java Collections framework.
-   * 
+   *
    * @param value a value to search for
    * @return <tt>true</tt> if and only if some key maps to the <tt>value</tt> argument in this table
    *         as determined by the <tt>equals</tt> method; <tt>false</tt> otherwise
@@ -1483,11 +1483,11 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Maps the specified key to the specified value in this table. Neither the key nor the value can
    * be null.
-   * 
+   *
    * <p>
    * The value can be retrieved by calling the <tt>get</tt> method with a key that is equal to the
    * original key.
-   * 
+   *
    * @param key key with which the specified value is to be associated
    * @param value value to be associated with the specified key
    * @return the previous value associated with <tt>key</tt>, or <tt>null</tt> if there was no
@@ -1506,7 +1506,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @return the previous value associated with the specified key, or <tt>null</tt> if there was no
    *         mapping for the key
    * @throws NullPointerException if the specified key or value is null
@@ -1528,10 +1528,10 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * acquires a write lock on the segment which this acquires a write lock only if entry was not
    * found. In other words this method is more efficient for the case when number of entries is
    * small and same entries are being updated repeatedly.
-   * 
+   *
    * @return true if the key was successfully put in the map or false if there was an existing
    *         mapping for the key in the map
-   * 
+   *
    * @throws NullPointerException if the specified key is null
    */
   public boolean create(final K key, final V value) {
@@ -1551,9 +1551,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * <p>
    * Also allows invoking a method when removing from map by a call to
    * {@link #removeConditionally(Object, MapCallback, Object, Object)}.
-   * 
+   *
    * @since GemFire 7.0
-   * 
+   *
    * @param <K> the type of key of the map
    * @param <V> the type of value of the map
    * @param <C> the type of context parameter passed to the creation/removal methods
@@ -1564,7 +1564,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * Create a new instance of the value object given the key and provided parameters for
      * construction.
-     * 
+     *
      * @param key the key for which the value is being created
      * @param context any context in which this method has been invoked
      * @param createParams parameters, if any, required for construction of a new value object
@@ -1575,7 +1575,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * Invoked when an existing value in map is read by the
      * {@link #create(Object, MapCallback, Object, Object, boolean)} method in the segment when
      * segment is locked for read, or by
-     * 
+     *
      * @param value the value read by create that will be returned
      */
     public void oldValueRead(V value);
@@ -1583,7 +1583,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * Check if the existing value should be removed by the
      * {@link CustomEntryConcurrentHashMap#removeConditionally} method.
-     * 
+     *
      * @param value the value to be removed from the map
      * @param context any context in which this method has been invoked
      * @param removeParams parameters, if any, to be passed for cleanup of the object
@@ -1623,7 +1623,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * read lock on the segment, if required, to provide better guarantees w.r.t. remove/replace that
    * checks against old value when the value may be changed structurally by reading (e.g. a list as
    * value changed after a call to this method).
-   * 
+   *
    * @param key key with which the specified value is to be associated
    * @param valueCreator factory object to create the value to be associated with the specified key,
    *        if required
@@ -1634,11 +1634,11 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * @param lockForRead if passed as true, then the read from the map prior to creation is done
    *        under the segment read lock; this provides better guarantees with respect to other
    *        threads that may be manipulating the value object in place after reading from the map
-   * 
+   *
    * @return the previous value associated with the specified key, or the new value obtained by
    *         invoking {@link MapCallback#newValue} if there was no mapping for the key; this is
    *         paired with the segment read lock
-   * 
+   *
    * @throws NullPointerException if the specified key or value is null
    */
   public <C, P> V create(final K key, final MapCallback<K, V, C, P> valueCreator, final C context,
@@ -1651,16 +1651,16 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Returns the value to which the specified key is mapped, or {@code null} if this map contains no
    * mapping for the key.
-   * 
+   *
    * <p>
    * More formally, if this map contains a mapping from a key {@code k} to a value {@code v} such
    * that {@code key.equals(k)}, then this method returns {@code v}; otherwise it returns
    * {@code null}. (There can be at most one such mapping.)
-   * 
+   *
    * <p>
    * This variant locks the segment for reading and if the given {@link MapCallback} is non-null
    * then its {@link MapCallback#oldValueRead(Object)} method is invoked in the lock.
-   * 
+   *
    * @throws NullPointerException if the specified key is null
    */
   public V get(final Object key, final MapCallback<K, V, ?, ?> readCallback) {
@@ -1672,7 +1672,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Removes the entry for a key only if the given condition ( {@link MapCallback#doRemoveValue}
    * evaluates to true. This is equivalent to:
-   * 
+   *
    * <pre>
    * if (map.containsKey(key) &amp;&amp; condition.doRemoveInstance(map.get(key), removeParams)) {
    *   map.remove(key);
@@ -1681,9 +1681,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *   return false;
    * }
    * </pre>
-   * 
+   *
    * except that the action is performed atomically.
-   * 
+   *
    * @param key key with which the specified value is associated
    * @param condition {@link MapCallback#doRemoveValue} is invoked and checked inside the segment
    *        lock if removal should be done
@@ -1691,10 +1691,10 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *        <code>condition</code> {@link MapCallback#doRemoveValue} method to create the new
    *        instance
    * @param removeParams parameters to be passed to the <code>onSuccess</code> parameter
-   * 
+   *
    * @return the previous value associated with <tt>key</tt>, or <tt>null</tt> if there was no
    *         mapping for <tt>key</tt>
-   * 
+   *
    * @throws UnsupportedOperationException if the <tt>remove</tt> operation is not supported by this
    *         map
    * @throws ClassCastException if the key or value is of an inappropriate type for this map
@@ -1714,7 +1714,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Copies all of the mappings from the specified map to this one. These mappings replace any
    * mappings that this map had for any of the keys currently in the specified map.
-   * 
+   *
    * @param m mappings to be stored in this map
    */
   @Override
@@ -1727,7 +1727,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   /**
    * Removes the key (and its corresponding value) from this map. This method does nothing if the
    * key is not in the map.
-   * 
+   *
    * @param key the key that needs to be removed
    * @return the previous value associated with <tt>key</tt>, or <tt>null</tt> if there was no
    *         mapping for <tt>key</tt>
@@ -1742,7 +1742,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @throws NullPointerException if the specified key is null
    */
   public boolean remove(final Object key, final Object value) {
@@ -1756,7 +1756,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @throws NullPointerException if any of the arguments are null
    */
   public boolean replace(final K key, final V oldValue, final V newValue) {
@@ -1770,7 +1770,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @return the previous value associated with the specified key, or <tt>null</tt> if there was no
    *         mapping for the key
    * @throws NullPointerException if the specified key or value is null
@@ -1838,7 +1838,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * which removes the corresponding mapping from this map, via the <tt>Iterator.remove</tt>,
    * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt> operations. It
    * does not support the <tt>add</tt> or <tt>addAll</tt> operations.
-   * 
+   *
    * <p>
    * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
    * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
@@ -1858,7 +1858,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * the <tt>Iterator.remove</tt>, <tt>Collection.remove</tt>, <tt>removeAll</tt>,
    * <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not support the <tt>add</tt> or
    * <tt>addAll</tt> operations.
-   * 
+   *
    * <p>
    * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
    * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
@@ -1877,7 +1877,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * removal, which removes the corresponding mapping from the map, via the
    * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
    * <tt>clear</tt> operations. It does not support the <tt>add</tt> or <tt>addAll</tt> operations.
-   * 
+   *
    * <p>
    * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
    * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
@@ -1898,13 +1898,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    * removal, which removes the corresponding mapping from the map, via the
    * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
    * <tt>clear</tt> operations. It does not support the <tt>add</tt> or <tt>addAll</tt> operations.
-   * 
+   *
    * <p>
    * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
    * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
    * existed upon construction of the iterator, and may (but is not guaranteed to) reflect any
    * modifications subsequent to construction.
-   * 
+   *
    * <p>
    * This set provides entries that are reused during iteration so caller cannot store the returned
    * <code>Map.Entry</code> objects.
@@ -1918,7 +1918,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * Returns an enumeration of the keys in this table.
-   * 
+   *
    * @return an enumeration of the keys in this table
    * @see #keySet()
    */
@@ -1928,7 +1928,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * Returns an enumeration of the values in this table.
-   * 
+   *
    * @return an enumeration of the values in this table
    * @see #values()
    */
@@ -1994,7 +1994,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       /*
        * (original code) if (this.nextEntry != null && (this.nextEntry =
        * this.nextEntry.getNextEntry()) != null) { return; }
-       * 
+       *
        * while (this.nextTableIndex >= 0) { if ((this.nextEntry =
        * this.currentTable[this.nextTableIndex--]) != null) { return; } }
        */
@@ -2026,7 +2026,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * Copy the tail of list of current matched entry ({@link #nextEntry}) to a temporary list, so
      * that the read lock can be released after the copy.
-     * 
+     *
      * Read lock on {@link #currentSegmentIndex}'s listUpdateLock should already be acquired.
      */
     private void copyEntriesToList() {
@@ -2100,7 +2100,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * Creates an entry representing a mapping from the specified key to the specified value.
-     * 
+     *
      * @param key the key represented by this entry
      * @param value the value represented by this entry
      */
@@ -2111,7 +2111,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * Creates an entry representing the same mapping as the specified entry.
-     * 
+     *
      * @param entry the entry to copy
      */
     public SimpleReusableEntry(final Entry<? extends K, ? extends V> entry) {
@@ -2121,7 +2121,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * Returns the key corresponding to this entry.
-     * 
+     *
      * @return the key corresponding to this entry
      */
     public K getKey() {
@@ -2130,7 +2130,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * Returns the value corresponding to this entry.
-     * 
+     *
      * @return the value corresponding to this entry
      */
     public V getValue() {
@@ -2139,7 +2139,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * Replaces the value corresponding to this entry with the specified value.
-     * 
+     *
      * @param value new value to be stored in this entry
      * @return the old value corresponding to the entry
      */
@@ -2153,15 +2153,15 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * Compares the specified object with this entry for equality. Returns {@code true} if the given
      * object is also a map entry and the two entries represent the same mapping. More formally, two
      * entries {@code e1} and {@code e2} represent the same mapping if
-     * 
+     *
      * <pre>
      * (e1.getKey() == null ? e2.getKey() == null : e1.getKey().equals(e2.getKey()))
      *     &amp;&amp; (e1.getValue() == null ? e2.getValue() == null : e1.getValue().equals(e2.getValue()))
      * </pre>
-     * 
+     *
      * This ensures that the {@code equals} method works properly across different implementations
      * of the {@code Map.Entry} interface.
-     * 
+     *
      * @param o object to be compared for equality with this map entry
      * @return {@code true} if the specified object is equal to this map entry
      * @see #hashCode
@@ -2182,16 +2182,16 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * Returns the hash code value for this map entry. The hash code of a map entry {@code e} is
      * defined to be:
-     * 
+     *
      * <pre>
      * (e.getKey() == null ? 0 : e.getKey().hashCode())
      *     &circ; (e.getValue() == null ? 0 : e.getValue().hashCode())
      * </pre>
-     * 
+     *
      * This ensures that {@code e1.equals(e2)} implies that {@code e1.hashCode()==e2.hashCode()} for
      * any two Entries {@code e1} and {@code e2}, as required by the general contract of
      * {@link Object#hashCode}.
-     * 
+     *
      * @return the hash code value for this map entry
      * @see #equals
      */
@@ -2208,7 +2208,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * Returns a String representation of this map entry. This implementation returns the string
      * representation of this entry's key followed by the equals character ("<tt>=</tt>") followed
      * by the string representation of this entry's value.
-     * 
+     *
      * @return a String representation of this map entry
      */
     @Override
@@ -2227,7 +2227,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * Creates an entry representing a mapping from the specified key to the specified value.
-     * 
+     *
      * @param key the key represented by this entry
      * @param value the value represented by this entry
      */
@@ -2383,7 +2383,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * Save the state of the <tt>ConcurrentHashMap</tt> instance to a stream (i.e., serialize it).
-   * 
+   *
    * @param s the stream
    * @serialData the key (Object) and value (Object) for each key-value mapping, followed by a null
    *             pair. The key-value mappings are emitted in no particular order.
@@ -2413,7 +2413,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   /**
    * Reconstitute the <tt>ConcurrentHashMap</tt> instance from a stream (i.e., deserialize it).
-   * 
+   *
    * @param s the stream
    */
   @SuppressWarnings("unchecked")

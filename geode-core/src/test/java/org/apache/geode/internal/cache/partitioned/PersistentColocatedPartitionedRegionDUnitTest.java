@@ -27,7 +27,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -64,23 +82,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Category(DistributedTest.class)
 public class PersistentColocatedPartitionedRegionDUnitTest
@@ -1151,9 +1152,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * The colocation tree has the regions started in a specific order so that the logging is
    * predictable. For each entry in the list, the array values are:
-   * 
+   *
    * <pre>
-   *  
+   *
    *   [0] - the region name
    *   [1] - the name of that region's parent
    *   [2] - the number of warnings that will be logged after the region is created (1 warning for
@@ -1243,7 +1244,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that all missing persistent PRs in a colocation tree hierarchy are logged as warnings.
    * This test is a combines the "multiple children" and "hierarchy of children" tests. This is the
    * colocation tree for this test
-   * 
+   *
    * <pre>
    *                  Parent
    *                /         \
@@ -1590,7 +1591,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test that if we replace an offline member, even if colocated regions are in different disk
    * stores, we still keep our metadata consistent.
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1648,11 +1649,11 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test for support issue 7870. 1. Run three members with redundancy 1 and recovery delay 0 2.
    * Kill one of the members, to trigger replacement of buckets 3. Shutdown all members and restart.
-   * 
+   *
    * What was happening is that in the parent PR, we discarded our offline data in one member, but
    * in the child PR the other members ended up waiting for the child bucket to be created in the
    * member that discarded it's offline data.
-   * 
+   *
    * @throws Throwable
    */
   public void replaceOfflineMemberAndRestart(SerializableRunnable createPRs) throws Throwable {
@@ -1869,14 +1870,14 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test for support issue 7870. 1. Run three members with redundancy 1 and recovery delay 0 2.
    * Kill one of the members, to trigger replacement of buckets 3. Shutdown all members and restart.
-   * 
+   *
    * What was happening is that in the parent PR, we discarded our offline data in one member, but
    * in the child PR the other members ended up waiting for the child bucket to be created in the
    * member that discarded it's offline data.
-   * 
+   *
    * In this test case, we're creating the child PR later, after the parent buckets have already
    * been completely created.
-   * 
+   *
    * @throws Throwable
    */
   public void replaceOfflineMemberAndRestartCreateColocatedPRLate(
@@ -1981,7 +1982,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
   /**
    * Test what happens when we crash in the middle of satisfying redundancy for a colocated bucket.
-   * 
+   *
    * @throws Throwable
    */
   // This test method is disabled because it is failing
@@ -2303,7 +2304,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
   /**
    * Test that a rebalance will regions are in the middle of recovery doesn't cause issues.
-   * 
+   *
    * This is slightly different than {{@link #testRebalanceWithOfflineChildRegion()} because in this
    * case all of the regions have been created, but they are in the middle of actually recovering
    * buckets from disk.
@@ -2478,7 +2479,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
   /**
    * Test that a user is not allowed to change the colocation of a PR with persistent data.
-   * 
+   *
    * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-900: disk dependency, filesystem sensitive
@@ -2726,7 +2727,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Create three PRs on a VM, named region1, region2, and region3. The colocated with attribute
    * describes which region region3 should be colocated with.
-   * 
+   *
    * @param colocatedWith
    */
   private void createColocatedPRs(final String colocatedWith) {
@@ -2756,7 +2757,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test for bug 43570. Rebalance a persistent parent PR before we recover the persistent child PR
    * from disk.
-   * 
+   *
    * @throws Throwable
    */
   public void rebalanceWithOfflineChildRegion(SerializableRunnable createParentPR,

@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A message that is sent in response to a {@link DurableClientInfoRequest}.
- * 
+ *
  * @since GemFire 5.6
  */
 public class DurableClientInfoResponse extends AdminResponse {

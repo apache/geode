@@ -58,7 +58,7 @@ import org.apache.geode.security.SecurityManager;
  *
  * <p>
  * The format of the JSON for configuration is as follows:
- * 
+ *
  * <pre>
  * <code>
  * {

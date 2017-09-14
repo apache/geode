@@ -97,7 +97,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
 
     /*
      * modification for LIFO Logic incubation
-     * 
+     *
      */
     if (ea == EvictionAlgorithm.LIFO_ENTRY || ea == EvictionAlgorithm.LIFO_MEMORY) {
       _setLruList(new NewLIFOClockHand(owner, _getCCHelper(), internalRegionArgs));
@@ -167,7 +167,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
 
   /**
    * Used when a CachedDeserializable's value changes form. PRECONDITION: caller has le synced
-   * 
+   *
    * @param le the entry whose CachedDeserializable's value changed.
    * @param cd the CachedDeserializable whose form has changed
    * @param v the new form of the CachedDeserializable's value.
@@ -270,7 +270,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   /**
    * Evicts the given entry from the cache. Returns the total number of bytes evicted. 1. For action
    * local destroy, returns size(key + value) 2. For action evict to disk, returns size(value)
-   * 
+   *
    * @return number of bytes evicted, zero if no eviction took place
    */
   protected int evictEntry(LRUEntry entry, LRUStatistics stats) throws RegionClearedException {
@@ -402,7 +402,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
 
   /**
    * return the current size of all the entries.
-   * 
+   *
    * @return The current size of all the entries.
    */
   protected long getTotalEntrySize() {
@@ -630,7 +630,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
 
   /**
    * Update counter related to limit in list
-   * 
+   *
    * @since GemFire 5.7
    */
   // TODO this method acts as LRUupdateCallbacks
@@ -689,7 +689,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   /*
    * Asif : Motivation: An entry which is no longer existing in the system due to clear operation,
    * should not be present the LRUList being used by the region.
-   * 
+   *
    * Case1 : An entry has been written to disk & on its return code path, it invokes lruCreate or
    * lruUpdate. Before starting the operation of writing to disk, the HTree reference is set in the
    * threadlocal. A clear operation changes the Htree reference in a write lock. Thus if the htree
@@ -697,7 +697,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    * clear operation is in progress but has not changed the Htree Reference . Since we store the
    * LRUList in a local variable, it implies that if clear occurs , it will go in the stale list &
    * if not it goes in the right list. Both ways we are safe.
-   * 
+   *
    * Case 2: The Htree reference has changed ( implying a clear conflic with put) but the entry is
    * valid. This is possible as we first set the Htree Ref in thread local. Now before the update
    * operation has acquired the entry , clear happens. As a result the update operation has become
@@ -707,7 +707,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    * bound to be the new List. Since our code checks if the entry reference exists in the region in
    * case of conflict & if yes, we append the entry to the List. It is guaranteed to be added to the
    * new List.
-   * 
+   *
    * Also it is necessary that when we clear the region, first the concurrent map of the region
    * containing entries needs to be cleared. The Htree Reference should be reset after that. And
    * then we should be resetting the LRUList. Previously the Htree reference was being set before
@@ -717,9 +717,9 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    * time the clear proceeds & it has reset the LRUList & cleared the entries. But as the Htree ref
    * has not changed, we would take the locally available LRUList ( which may be the new List) &
    * append the entry to the List.
-   * 
-   * 
-   * 
+   *
+   *
+   *
    */
   @Override
   protected void lruEntryCreate(RegionEntry re) {

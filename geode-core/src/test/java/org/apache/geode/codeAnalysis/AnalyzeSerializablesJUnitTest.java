@@ -28,16 +28,6 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
-import org.apache.geode.codeAnalysis.decode.CompiledClass;
-import org.apache.geode.codeAnalysis.decode.CompiledField;
-import org.apache.geode.codeAnalysis.decode.CompiledMethod;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -50,6 +40,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
+import org.apache.geode.codeAnalysis.decode.CompiledField;
+import org.apache.geode.codeAnalysis.decode.CompiledMethod;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class AnalyzeSerializablesJUnitTest {

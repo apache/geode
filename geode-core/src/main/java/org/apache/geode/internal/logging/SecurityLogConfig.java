@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 import java.io.File;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * LogConfig implementation for Security logging configuration that delegates to a
  * DistributionConfig.
- * 
+ *
  */
 public class SecurityLogConfig implements LogConfig {
 

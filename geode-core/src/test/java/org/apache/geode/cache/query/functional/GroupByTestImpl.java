@@ -46,7 +46,7 @@ import org.apache.geode.cache.query.types.StructType;
 
 /**
  * Tests the group by queries with or without aggreagte functions
- * 
+ *
  *
  *
  */

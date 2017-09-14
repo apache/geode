@@ -14,15 +14,15 @@
  */
 package org.apache.geode.admin;
 
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.DistributedMember;
-
 import java.io.File;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Administrative interface for managing an entire GemFire distributed system. This interface should
@@ -245,7 +245,7 @@ public interface AdminDistributedSystem {
   /**
    * Registers a cache event listener. Does nothing if the listener is already registered. The
    * listeners are called in the order they are registered.
-   * 
+   *
    * @param listener the listener to register.
    * @since GemFire 5.0
    */
@@ -253,7 +253,7 @@ public interface AdminDistributedSystem {
 
   /**
    * Unregisters a cache listener. Does nothing if the listener is not registered.
-   * 
+   *
    * @param listener the listener to unregister.
    * @since GemFire 5.0
    */
@@ -282,7 +282,7 @@ public interface AdminDistributedSystem {
   /**
    * Returns all the cache server members of the distributed system which are hosting a client queue
    * for the particular durable-client having the given durableClientId
-   * 
+   *
    * @param durableClientId - durable-id of the client
    * @return array of CacheServer(s) having the queue for the durable client
    * @throws AdminException
@@ -323,7 +323,7 @@ public interface AdminDistributedSystem {
    * from a set of persistent files, it will wait for other members that were also persisting the
    * same region to start up. If the persistent files for those other members were lost, this method
    * can be used to tell the remaining members to stop waiting for the lost data.
-   * 
+   *
    * @param host The host of the member whose files were lost.
    * @param directory The directory where those files resided.
    * @since GemFire 6.5
@@ -336,10 +336,10 @@ public interface AdminDistributedSystem {
    * from a set of persistent files, it will wait for other members that were also persisting the
    * same region to start up. If the persistent files for those other members were lost, this method
    * can be used to tell the remaining members to stop waiting for the lost data.
-   * 
+   *
    * @param diskStoreID The unique id of the disk store which you are revoking. The unique id can be
    *        discovered from {@link #getMissingPersistentMembers()}
-   * 
+   *
    * @since GemFire 7.0
    */
   public void revokePersistentMember(UUID diskStoreID) throws AdminException;
@@ -347,12 +347,12 @@ public interface AdminDistributedSystem {
   /**
    * Retrieve the set of persistent files that the existing members are waiting for. See
    * {@link AdminDistributedSystem#revokePersistentMember(InetAddress, String)}
-   * 
+   *
    * @return The persistent members that were known to the existing persistent members, when the
    *         existing members were last online.
    * @throws AdminException
    * @since GemFire 6.5
-   * 
+   *
    */
   public Set<PersistentID> getMissingPersistentMembers() throws AdminException;
 
@@ -361,13 +361,13 @@ public interface AdminDistributedSystem {
    * connected to, excluding the stand-alone locators. Calling this method will ensure that regions
    * with the {@link DataPolicy#PERSISTENT_PARTITION} to be shutdown in a way which allows for a
    * faster recovery when the members are restarted.
-   * 
+   *
    * Killing individual members can lead to inconsistencies in the members persistent data, which
    * gemfire repairs on startup. Calling shutDownAllMembers makes sure that the persistent files are
    * consistent on shutdown, which makes recovery faster.
-   * 
+   *
    * This is equivalent to calling shutDownAllMembers(0);
-   * 
+   *
    * @return The set of members that were shutdown
    * @since GemFire 6.5
    */
@@ -378,14 +378,14 @@ public interface AdminDistributedSystem {
    * connected to, excluding the stand-alone locators. Calling this method will ensure that regions
    * with the {@link DataPolicy#PERSISTENT_PARTITION} to be shutdown in a way which allows for a
    * faster recovery when the members are restarted.
-   * 
+   *
    * Killing individual members can lead to inconsistencies in the members persistent data, which
    * gemfire repairs on startup. Calling shutDownAllMembers makes sure that the persistent files are
    * consistent on shutdown, which makes recovery faster.
-   * 
+   *
    * @param timeout The amount of time to wait (in milliseconds) for the shutdown all to complete.
    * @return The set of members that were shutdown, or null if the timeout is exceeded.
-   * 
+   *
    * @since GemFire 6.5
    */
   public Set<DistributedMember> shutDownAllMembers(long timeout) throws AdminException;
@@ -393,9 +393,9 @@ public interface AdminDistributedSystem {
   /**
    * Backup the persistent files for all of the members of the distributed system that the admin
    * member is connected to.
-   * 
+   *
    * @param targetDir The directory where each member's backup should be placed.
-   * 
+   *
    * @return The status of the backup, which includes the set of members that were backed up and the
    *         set of members that were known to be offline at the time of backup.
    * @since GemFire 6.5
@@ -407,12 +407,12 @@ public interface AdminDistributedSystem {
    * the admin member is connected to. Only new operation log files since the previous backup will
    * be copied during this backup. The generated restore script will reference and copy operation
    * log files from the previous backup.
-   * 
+   *
    * @param targetDir The directory where each member's backup should be placed.
    * @param baselineDir The directory of a previous backup. If this parameter is null or the
    *        directory does not exist (on a member by member basis) a full backup will be performed
    *        for the member.
-   * 
+   *
    * @return The status of the backup, which includes the set of members that were backed up and the
    *         set of members that were known to be offline at the time of backup.
    * @since GemFire 6.5
@@ -422,12 +422,11 @@ public interface AdminDistributedSystem {
   /**
    * Compact the persistent files for all of the members of the distributed system that the admin
    * member connected to.
-   * 
+   *
    * This is equivalent to calling {DiskStore#forceCompaction} on all members.
-   * 
+   *
    * @return The set of members that compacted their disk stores.
    * @since GemFire 6.5
    */
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException;
 }
-

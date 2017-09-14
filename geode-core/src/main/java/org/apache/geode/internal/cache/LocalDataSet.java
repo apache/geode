@@ -67,15 +67,15 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 
 /**
- * 
+ *
  *
  */
 public class LocalDataSet implements Region, QueryExecutor {
 
   private static final Logger logger = LogService.getLogger();
 
-  final private PartitionedRegion proxy;
-  final private Set<Integer> buckets;
+  private final PartitionedRegion proxy;
+  private final Set<Integer> buckets;
   private InternalRegionFunctionContext rfContext;
 
   public LocalDataSet(PartitionedRegion pr, Set<Integer> buckets) {
@@ -166,7 +166,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    * not support equijoin queries on PartitionedRegions unless they are colocated and the the
    * colocated columns ACTUALLY EXIST IN WHERE CLAUSE , AND IN CASE OF MULTI COLUMN PARTITIONING ,
    * SHOULD HAVE AND CLAUSE.
-   * 
+   *
    * If not , this method will return wrong results. We DO NOT DETECT COLOCATION CRITERIA IN THE
    * MULTI REGION PR BASED QUERIES.
    */
@@ -580,7 +580,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
    */
   public Object putIfAbsent(Object key, Object value) {
@@ -589,7 +589,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
    */
   public boolean remove(Object key, Object value) {
@@ -598,7 +598,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
    */
   public Object replace(Object key, Object value) {
@@ -607,7 +607,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
    * java.lang.Object)
    */

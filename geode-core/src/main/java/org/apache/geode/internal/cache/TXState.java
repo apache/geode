@@ -191,7 +191,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getTransactionId()
    */
   public TransactionId getTransactionId() {
@@ -225,7 +225,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#readRegion(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -243,7 +243,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#writeRegion(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -267,7 +267,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getBeginTime()
    */
   public long getBeginTime() {
@@ -276,7 +276,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getChanges()
    */
   public int getChanges() {
@@ -291,7 +291,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#isInProgress()
    */
   public boolean isInProgress() {
@@ -300,7 +300,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#nextModSerialNum()
    */
   public int nextModSerialNum() {
@@ -310,7 +310,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#needsLargeModCount()
    */
   public boolean needsLargeModCount() {
@@ -362,7 +362,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#commit()
    */
   public void commit() throws CommitConflictException {
@@ -449,10 +449,10 @@ public class TXState implements TXStateInterface {
          * In order to preserve data consistency, we need to: 1. Modify the cache first
          * (applyChanges) 2. Ask for advice on who to send to (buildMessage) 3. Send out to other
          * members.
-         * 
+         *
          * If this is done out of order, we will have problems with GII, split brain, and HA. See
          * bug #41187
-         * 
+         *
          * @gregp
          */
 
@@ -566,7 +566,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#rollback()
    */
   public void rollback() {
@@ -582,7 +582,7 @@ public class TXState implements TXStateInterface {
   /**
    * This is a fix for bug #42228 where a client fails over from one server to another but gets a
    * conflict on completion because completion had already been initiated and had not yet completed
-   * 
+   *
    * @return true if a previous completion was in progress
    */
   public boolean waitForPreviousCompletion() {
@@ -609,7 +609,7 @@ public class TXState implements TXStateInterface {
   /**
    * Generate an event id for each operation that will be done by this tx during the application
    * phase of its commit.
-   * 
+   *
    * @return a sorted list of TXEntryStateWithRegionAndKey that will be used to apply the ops on the
    *         nearside in the correct order.
    */
@@ -740,7 +740,7 @@ public class TXState implements TXStateInterface {
 
   /**
    * this builds a new TXCommitMessage and returns it
-   * 
+   *
    * @return the new message
    */
   protected TXCommitMessage buildMessage() {
@@ -759,7 +759,7 @@ public class TXState implements TXStateInterface {
 
   /**
    * this builds a new TXCommitMessage and returns it
-   * 
+   *
    * @return the new message
    */
   protected TXCommitMessage buildCompleteMessage() {
@@ -902,7 +902,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getEvents()
    */
   public List getEvents() {
@@ -942,7 +942,7 @@ public class TXState implements TXStateInterface {
   /**
    * Used to keep track of the region and key associated with a TXEntryState. Also used to sort the
    * entries into the order in which they will be applied.
-   * 
+   *
    * @since GemFire 5.7
    */
   static class TXEntryStateWithRegionAndKey implements Comparable {
@@ -983,7 +983,7 @@ public class TXState implements TXStateInterface {
   //////////////////////////////////////////////////////////////////
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#beforeCompletion()
    */
   public void beforeCompletion() throws SynchronizationCommitConflictException {
@@ -1042,7 +1042,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#afterCompletion(int)
    */
   public void afterCompletion(int status) {
@@ -1177,7 +1177,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getCache()
    */
   public Cache getCache() {
@@ -1186,7 +1186,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getRegions()
    */
   public Collection<LocalRegion> getRegions() {
@@ -1286,7 +1286,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#containsValueForKey(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -1306,7 +1306,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry(org.apache.geode.internal
    * .cache.EntryEventImpl, boolean, java.lang.Object)
@@ -1331,7 +1331,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry(org.apache.geode.
    * internal.cache.EntryEventImpl, boolean, boolean)
    */
@@ -1352,7 +1352,7 @@ public class TXState implements TXStateInterface {
   /**
    * Write an existing entry. This form takes an expectedOldValue which, if not null, must be equal
    * to the current value of the entry. If it is not, an EntryNotFoundException is thrown.
-   * 
+   *
    * @param event
    * @param expectedOldValue
    * @return the tx entry object
@@ -1389,7 +1389,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getEntry(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -1460,7 +1460,7 @@ public class TXState implements TXStateInterface {
       /*
        * This means it isn't in the cache and rememberReads = false. This should only happen from
        * test hooks at this point.
-       * 
+       *
        */
       if (txr != null) {
         txr.cleanupNonDirtyEntries(dataReg);
@@ -1486,7 +1486,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -1508,7 +1508,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getSerializedValue(org.apache.geode.internal.
    * cache.LocalRegion, java.lang.Object, java.lang.Object)
@@ -1538,7 +1538,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#entryCount(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -1561,7 +1561,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#containsKey(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -1576,7 +1576,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getValueInVM(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -1592,7 +1592,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#putEntry(org.apache.geode.internal.cache.
    * EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
    */
@@ -1605,7 +1605,7 @@ public class TXState implements TXStateInterface {
 
   /**
    * throws an exception when cloning is disabled while using delta
-   * 
+   *
    * @param event
    */
   private void validateDelta(EntryEventImpl event) {
@@ -1617,7 +1617,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#isStatsDeferred()
    */
   public boolean isDeferredStats() {
@@ -1626,7 +1626,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#findObject(org.apache.geode.internal.cache.
    * LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
@@ -1655,7 +1655,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#getEntryForIterator(org.apache.geode.internal.
    * cache.LocalRegion, java.lang.Object, boolean)
@@ -1687,7 +1687,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getKeyForIterator(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -1703,7 +1703,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getAdditionalKeysForIterator(org.apache.geode.
    * internal.cache.LocalRegion)
@@ -1735,7 +1735,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#isInProgressAndSameAs(org.apache.geode.
    * internal.cache.TXStateInterface)
    */
@@ -1746,7 +1746,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(org.apache.geode.internal.
    * cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
@@ -1802,7 +1802,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getBucketKeys(org.apache.geode.internal.cache.
    * LocalRegion, int)
@@ -1814,7 +1814,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getEntryOnRemote(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -1834,7 +1834,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getSemaphore()
    */
   public ReentrantLock getLock() {
@@ -1843,7 +1843,7 @@ public class TXState implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getRegionKeysForIteration(org.apache.geode.
    * internal.cache.LocalRegion)

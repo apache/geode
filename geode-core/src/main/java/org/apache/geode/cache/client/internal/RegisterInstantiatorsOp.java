@@ -28,14 +28,14 @@ import org.apache.geode.internal.util.BlobHelper;
 
 /**
  * Register a bunch of instantiators on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class RegisterInstantiatorsOp {
   /**
    * Register a bunch of instantiators on a server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param instantiators the instantiators to register
    * @param eventId the id of this event
@@ -48,7 +48,7 @@ public class RegisterInstantiatorsOp {
   /**
    * Register a bunch of instantiators on a server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param holders the {@link InstantiatorAttributesHolder}s containing info about the
    *        instantiators to register

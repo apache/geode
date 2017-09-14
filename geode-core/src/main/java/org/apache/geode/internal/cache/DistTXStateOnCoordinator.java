@@ -28,8 +28,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * TxState on TX coordinator, created when coordinator is also a data node
- * 
- * 
+ *
+ *
  */
 public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoordinatorInterface {
 
@@ -99,7 +99,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateStub#putEntry(org.apache.geode
    * .internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
    */
@@ -126,7 +126,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(org
    * .apache.geode.internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long,
    * boolean)
@@ -154,7 +154,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, java.lang.Object)
    */
@@ -173,7 +173,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#destroyOnRemote(java .lang.Integer,
    * org.apache.geode.internal.cache.EntryEventImpl, java.lang.Object)
    */
@@ -192,7 +192,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
@@ -207,7 +207,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
@@ -320,7 +320,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   /**
    * {@inheritDoc}
-   * 
+   *
    */
   @Override
   protected boolean applyIndividualOp(DistTxEntryEvent dtop) throws DataLocationException {

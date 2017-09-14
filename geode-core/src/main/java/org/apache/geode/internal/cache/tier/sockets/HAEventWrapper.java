@@ -44,9 +44,9 @@ import org.apache.geode.internal.logging.LogService;
  * instead that of <code>ClientUpdateMessagesImpl</code>. It implements the <code>Conflatable</code>
  * interface to fit itself into the <code>HARegionQueue</code> mechanics. It also has a property to
  * indicate the number of <code>HARegionQueue</code>s referencing this instance.
- * 
+ *
  * @since GemFire 5.7
- * 
+ *
  */
 public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Sizeable {
   private static final long serialVersionUID = 5874226899495609988L;
@@ -111,7 +111,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /**
    * Parameterized constructor.
-   * 
+   *
    * @param event
    */
   public HAEventWrapper(ClientUpdateMessage event) {
@@ -136,13 +136,13 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /**
    * Default constructor
-   * 
+   *
    */
   public HAEventWrapper() {}
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.Conflatable#getEventId()
    */
   public EventID getEventId() {
@@ -151,7 +151,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.Conflatable#getKeyToConflate()
    */
   public Object getKeyToConflate() {
@@ -160,7 +160,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.Conflatable#getRegionToConflate()
    */
   public String getRegionToConflate() {
@@ -169,7 +169,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.Conflatable#getValueToConflate()
    */
   public Object getValueToConflate() {
@@ -178,7 +178,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.Conflatable#setLatestValue(java.lang.Object)
    */
   public void setLatestValue(Object value) {
@@ -187,7 +187,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.Conflatable#shouldBeConflated()
    */
   public boolean shouldBeConflated() {
@@ -201,7 +201,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /**
    * Use this method <B>only</B> when put operation on HARegionQueue is in progress. It'll always
    * return null otherwise.
-   * 
+   *
    * @return an instance of <code>ClientUpdateMessage</code> implementation.
    */
   public ClientUpdateMessage getClientUpdateMessage() {
@@ -235,9 +235,9 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /**
    * This implementation considers only the EventID of <code>HAEventWrapper</code> for the equality
    * test. It allows an instance of {@link EventID} to be tested for equality.
-   * 
+   *
    * @param other The instance of HAEventWrapper or EventID to be tested for equality.
-   * 
+   *
    * @return boolean true if <code>this</code> object's event id matches with that of other.
    */
   @Override
@@ -251,7 +251,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
 
   /**
    * Returns the hash code of underlying event id.
-   * 
+   *
    * @return int The hash code of underlying EventID instance.
    */
   @Override
@@ -280,7 +280,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /**
    * Calls toData() on its clientUpdateMessage present in the haContainer (client-messages-region or
    * the map).
-   * 
+   *
    * @param out The output stream which the object should be written to.
    */
   public void toData(DataOutput out) throws IOException {
@@ -308,7 +308,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   /**
    * Calls fromData() on ClientUpdateMessage and sets it as its member variable. Also, sets the
    * referenceCount to zero.
-   * 
+   *
    * @param in The input stream from which the object should be constructed.
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -391,7 +391,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    * Returning zero as default size. This is because this method will be called only in case of
    * ha-overflow, in which case, we ignore size of instances of <code>HAEventWrapper</code>, as they
    * are never overflown to disk.
-   * 
+   *
    * @return int Size of this instance in bytes.
    */
   public int getSizeInBytes() {

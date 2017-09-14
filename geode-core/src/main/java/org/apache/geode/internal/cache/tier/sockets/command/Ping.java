@@ -13,22 +13,22 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
+import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.*;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
 
 public class Ping extends BaseCommand {
 
-  private final static Ping singleton = new Ping();
+  private static final Ping singleton = new Ping();
 
   public static Command getCommand() {
     return singleton;

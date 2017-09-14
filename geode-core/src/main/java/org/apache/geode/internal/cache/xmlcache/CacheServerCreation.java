@@ -52,7 +52,7 @@ public class CacheServerCreation extends AbstractCacheServer {
 
   /**
    * Constructor for retaining bridge server information during auto-reconnect
-   * 
+   *
    * @param cache
    * @param other
    */
@@ -193,7 +193,7 @@ public class CacheServerCreation extends AbstractCacheServer {
    * Compare configured cacheServer port against the running cacheServer port. If the current
    * cacheServer port is set to 0 a random ephemeral port will be used so there is no need to
    * compare returning <code>true</code>. If a port is specified, return the proper comparison.
-   * 
+   *
    * @param other CacheServer
    * @return
    */

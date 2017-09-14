@@ -14,12 +14,6 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.process.StartupStatusListener;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.BreakIterator;
@@ -31,6 +25,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.process.StartupStatusListener;
 
 /**
  * Abstract implementation of {@link InternalLogWriter}. Each logger has a level and it will only
@@ -64,13 +64,13 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    * A bit mask to remove any potential flags added to the msgLevel. Intended to be used in
    * {@link #getRealLogLevel}.
    */
-  private final static int LOGGING_FLAGS_MASK = 0x00FFFFFF;
+  private static final int LOGGING_FLAGS_MASK = 0x00FFFFFF;
 
   /**
    * A flag to indicate the {@link SecurityLogWriter#SECURITY_PREFIX} should be appended to the log
    * level.
    */
-  protected final static int SECURITY_LOGGING_FLAG = 0x40000000;
+  protected static final int SECURITY_LOGGING_FLAG = 0x40000000;
 
   static {
     Assert.assertTrue(ALL_LEVEL == Level.ALL.intValue());
@@ -200,7 +200,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Gets the level code for the given <code>levelName</code>.
-   * 
+   *
    * @throws IllegalArgumentException if an unknown level name is given.
    * @deprecated
    */
@@ -249,7 +249,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Gets a String representation of the current time.
-   * 
+   *
    * @return a String representation of the current time.
    */
   protected String getTimeStamp() {
@@ -258,7 +258,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Convert a Date to a timestamp String.
-   * 
+   *
    * @param d a Date to format as a timestamp String.
    * @return a String representation of the current time.
    */
@@ -316,7 +316,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object[] params, Throwable ex) {
@@ -327,7 +327,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object param, Throwable ex) {
@@ -338,7 +338,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Throwable ex) {
@@ -347,7 +347,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object[] params) {
@@ -356,7 +356,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object param) {
@@ -365,7 +365,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID) {
@@ -404,7 +404,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object[] params, Throwable ex) {
@@ -415,7 +415,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object param, Throwable ex) {
@@ -426,7 +426,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Throwable ex) {
@@ -435,7 +435,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object[] params) {
@@ -444,7 +444,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object param) {
@@ -453,7 +453,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID) {
@@ -492,7 +492,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object[] params, Throwable ex) {
@@ -503,7 +503,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object param, Throwable ex) {
@@ -514,7 +514,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Throwable ex) {
@@ -523,7 +523,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object[] params) {
@@ -532,7 +532,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object param) {
@@ -541,7 +541,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID) {
@@ -581,7 +581,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object[] params, Throwable ex) {
@@ -592,7 +592,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object param, Throwable ex) {
@@ -603,7 +603,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Throwable ex) {
@@ -612,7 +612,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object[] params) {
@@ -621,7 +621,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object param) {
@@ -630,7 +630,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID) {
@@ -669,7 +669,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object[] params, Throwable ex) {
@@ -680,7 +680,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object param, Throwable ex) {
@@ -691,7 +691,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Throwable ex) {
@@ -700,7 +700,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object[] params) {
@@ -709,7 +709,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object param) {
@@ -718,7 +718,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID) {
@@ -793,7 +793,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    * <p>
    * The logging is done using the <code>finer</code> level. The string message will start with
    * <code>"ENTRY"</code> and include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
@@ -808,7 +808,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    * <p>
    * The logging is done using the <code>finer</code> level. The string message will start with
    * <code>"RETURN"</code> and include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
@@ -827,7 +827,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    * This is a convenience method that could be done instead by calling
    * {@link #finer(String, Throwable)}. The string message will start with <code>"THROW"</code> and
    * include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    * @param thrown The Throwable that is being thrown.
@@ -873,7 +873,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   /**
    * Writes both a message and exception to this writer. If a startup listener is registered, the
    * message will be written to the listener as well to be reported to a user.
-   * 
+   *
    * @since GemFire 7.0
    */
   public void startup(StringId msgID, Object[] params) {
@@ -892,7 +892,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   // internal implemenation methods
   /**
    * Logs a message and an exception of the given level.
-   * 
+   *
    * @param msgLevel the level code for the message to log
    * @param msg the actual message to log
    * @param exception the actual Exception to log
@@ -901,7 +901,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /**
    * Logs a message and an exception of the given level.
-   * 
+   *
    * @param msgLevel the level code for the message to log
    * @param msgId A locale agnostic form of the message
    * @param params the Object arguments to plug into the message
@@ -960,7 +960,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   /**
    * Check if a message of the given level would actually be logged by this logger. This check is
    * based on the Logger effective level.
-   * 
+   *
    * @param level a message logging level
    * @return true if the given message level is currently being logged.
    */
@@ -971,7 +971,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   /**
    * Log a message, with associated Throwable information. If the logger is currently enabled for
    * the given message level then the given message is logged.
-   * 
+   *
    * @param level One of the message level identifiers, e.g. SEVERE
    * @param message The string message
    * @param thrown - Throwable associated with log message.
@@ -985,7 +985,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   /**
    * Log a message. If the logger is currently enabled for the given message level then the given
    * message is logged.
-   * 
+   *
    * @param level One of the message level identifiers, e.g. SEVERE
    * @param message The string message
    */
@@ -1009,7 +1009,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   /**
    * Utility to periodically log a stack trace for a thread. The thread should be alive when this
    * method is invoked.
-   * 
+   *
    * @param toStdout whether to log to stdout or to this log writer
    * @param targetThread the thread to snapshot
    * @param interval millis to wait betweeen snaps
@@ -1076,7 +1076,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /*
    * @see org.apache.geode.LogWriter
-   * 
+   *
    * @since GemFire 6.0
    */
   public org.apache.geode.LogWriter convertToLogWriter() {
@@ -1085,7 +1085,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   /*
    * @see org.apache.geode.LogWriterI18n
-   * 
+   *
    * @since GemFire 6.0
    */
   public LogWriterI18n convertToLogWriterI18n() {

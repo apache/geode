@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal;
 

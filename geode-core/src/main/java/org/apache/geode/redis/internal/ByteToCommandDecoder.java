@@ -14,12 +14,12 @@
  */
 package org.apache.geode.redis.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This is the first part of the channel pipeline for Netty. Here incoming bytes are read and a
@@ -34,14 +34,14 @@ import java.util.List;
  * amount of cpu time. The simplicity of the Redis protocol allows us to just back out and wait for
  * more data, while exceptions are left to malformed requests which should never happen if using a
  * proper Redis client.
- * 
+ *
  *
  */
 public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
   /**
    * Important note
-   * 
+   *
    * Do not use '' <-- java primitive chars. Redis uses {@link Coder#CHARSET} encoding so we should
    * not risk java handling char to byte conversions, rather just hard code {@link Coder#CHARSET}
    * chars as bytes
@@ -114,7 +114,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
   /**
    * Helper method to parse a bulk string when one is seen
-   * 
+   *
    * @param buffer Buffer to read from
    * @return byte[] representation of the Bulk String read
    * @throws RedisCommandParserException Thrown when there is illegal syntax
@@ -142,7 +142,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
   /**
    * Helper method to parse the number at the beginning of the buffer
-   * 
+   *
    * @param buffer Buffer to read
    * @return The number found at the beginning of the buffer
    */
@@ -167,7 +167,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
   /**
    * Helper method that is called when the next characters are supposed to be "\r\n"
-   * 
+   *
    * @param buffer Buffer to read from
    * @throws RedisCommandParserException Thrown when the next two characters are not "\r\n"
    */

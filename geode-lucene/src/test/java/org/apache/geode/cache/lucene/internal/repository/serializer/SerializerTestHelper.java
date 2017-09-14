@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.apache.lucene.document.Document;
 import org.mockito.Mockito;
+
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 

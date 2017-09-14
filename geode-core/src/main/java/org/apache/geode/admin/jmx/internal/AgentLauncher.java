@@ -57,7 +57,7 @@ import org.apache.geode.internal.util.JavaCommandBuilder;
  * A command line utility inspired by the <code>CacheServerLauncher</code> that is responsible for
  * administering a stand-along GemFire JMX {@link Agent}.
  * <p/>
- * 
+ *
  * @since GemFire 3.5
  */
 public class AgentLauncher {
@@ -114,7 +114,7 @@ public class AgentLauncher {
    * constructor is package private to prevent direct instantiation or subclassing by classes
    * outside this package, but does allow the class to be tested as needed.
    * <p/>
-   * 
+   *
    * @param basename base name for the application to be launched
    */
   AgentLauncher(final String basename) {
@@ -573,7 +573,7 @@ public class AgentLauncher {
    * Note, the status of the Agent, as indicated in the .agent.ser status file, should never have a
    * written value of UNKNOWN.
    * <p/>
-   * 
+   *
    * @param states an array of possible acceptable states satisfying the condition of the Agent's
    *        status.
    * @return a boolean value indicating whether the Agent's status satisfies one of the specified
@@ -603,7 +603,7 @@ public class AgentLauncher {
    * Reads the GemFire JMX Agent's status from the status file (.agent.ser) in it's working
    * directory.
    * <p/>
-   * 
+   *
    * @return a Status object containing the state persisted to the .agent.ser file in the working
    *         directory and representing the status of the Agent
    * @throws IOException if the status file was unable to be read.
@@ -634,7 +634,7 @@ public class AgentLauncher {
   /**
    * A wrapper method for the readStatus method to make one last check for the GemFire JMX Agent
    * process if running with the native libraries.
-   * 
+   *
    * @return the Status object as returned from readStatus unless running in native mode and a
    *         determination is made such that the Agent process is not running.
    * @throws IOException if the state of the Agent process could not be read from the .agent.ser
@@ -656,7 +656,7 @@ public class AgentLauncher {
    * Reads the JMX Agent's status from the .agent.ser status file. If the status file cannot be read
    * due to I/O problems, the method will keep attempting to read the file for up to 20 seconds.
    * <p/>
-   * 
+   *
    * @return the Status of the GemFire JMX Agent as determined by the .agent.ser status file, or
    *         natively based on the presence/absence of the Agent process.
    */
@@ -689,7 +689,7 @@ public class AgentLauncher {
    * Sets the status of the GemFire JMX Agent by serializing a <code>Status</code> object to a
    * status file in the Agent's working directory.
    * <p/>
-   * 
+   *
    * @param status the Status object representing the state of the Agent process to persist to disk.
    * @return the written Status object.
    * @throws IOException if the Status could not be successfully persisted to disk.
@@ -766,7 +766,7 @@ public class AgentLauncher {
   /**
    * Prints usage information for the AgentLauncher to the command line.
    * <p/>
-   * 
+   *
    * @param message a String to output to the command line indicating the user error.
    */
   private static void usage(final String message) {
@@ -856,7 +856,7 @@ public class AgentLauncher {
    * class are serialized to a {@linkplain #statusFileName file} on disk in the specified working
    * directory {@linkplain #workingDirectory}.
    * <p/>
-   * 
+   *
    * @see #SHUTDOWN
    * @see #STARTING
    * @see #RUNNING

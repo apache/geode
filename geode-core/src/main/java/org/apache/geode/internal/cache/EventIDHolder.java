@@ -22,7 +22,7 @@ public class EventIDHolder extends EntryEventImpl {
   /*
    * This constructor is used to create a bridge event in server-side command classes. Events
    * created with this are not intended to be used in cache operations.
-   * 
+   *
    * @param id the identity of the client's event
    */
   public EventIDHolder(EventID id) {

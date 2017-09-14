@@ -14,21 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -39,6 +33,7 @@ import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedSystem;
@@ -50,9 +45,13 @@ import org.apache.geode.internal.cache.lru.HeapEvictor;
 import org.apache.geode.internal.cache.lru.HeapLRUCapacityController;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {

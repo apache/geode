@@ -14,19 +14,14 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import static org.apache.geode.cache.query.Utils.*;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -40,6 +35,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTestCase {
@@ -66,7 +64,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
 
   /**
    * Tests basic index creation on a partitioned system.
-   * 
+   *
    * @throws Exception if an exception is generated
    */
   @Test
@@ -213,7 +211,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
   /**
    * Test creation of multiple index on partitioned regions and then adding a new node to the system
    * and checking it has created all the indexes already in the system.
-   * 
+   *
    */
   @Test
   public void testCreatePartitionedRegionThroughXMLAndAPI() {
@@ -401,7 +399,7 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
 
   /**
    * Test index usage with query on a partitioned region with bucket indexes.
-   * 
+   *
    * @throws Throwable
    */
   @Test

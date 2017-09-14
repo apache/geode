@@ -24,7 +24,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for ProcessWrapper.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class ProcessWrapperJUnitTest {

@@ -14,16 +14,16 @@
  */
 package org.apache.geode.modules.util;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CustomExpiry;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Class <code>RegionConfiguration</code> encapsulates the configuration attributes for a
@@ -293,4 +293,3 @@ public class RegionConfiguration implements DataSerializable {
     return cacheWriterName;
   }
 }
-

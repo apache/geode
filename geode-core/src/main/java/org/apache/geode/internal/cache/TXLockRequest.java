@@ -15,17 +15,17 @@
 
 package org.apache.geode.internal.cache;
 
+import java.util.*;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.cache.locks.*;
-
-import java.util.*;
 
 /**
  * TXLockRequest represents all the locks that need to be made for a single transaction.
  *
- * 
+ *
  * @since GemFire 4.0
- * 
+ *
  */
 public class TXLockRequest {
   private boolean localLockHeld;
@@ -137,7 +137,7 @@ public class TXLockRequest {
     releaseDistributed();
   }
 
-  static private final TXReservationMgr resMgr = new TXReservationMgr(true);
+  private static final TXReservationMgr resMgr = new TXReservationMgr(true);
 
   /**
    * @param localLocks is a list of TXRegionLockRequest instances

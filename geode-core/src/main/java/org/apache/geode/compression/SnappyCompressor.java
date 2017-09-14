@@ -23,7 +23,7 @@ import org.iq80.snappy.Snappy;
 /**
  * An implementation of {@link Compressor} for Google's Snappy compression codec. Utilizes the
  * java-snappy wrapper.
- * 
+ *
  * @since GemFire 8.0
  */
 public class SnappyCompressor implements Compressor, Serializable {
@@ -36,7 +36,7 @@ public class SnappyCompressor implements Compressor, Serializable {
 
   /**
    * Get the single, default instance of the SnappyCompressor.
-   * 
+   *
    * @deprecated As of Geode 1.0, getDefaultInstance is deprecated. Use constructor instead.
    */
   public static SnappyCompressor getDefaultInstance() {

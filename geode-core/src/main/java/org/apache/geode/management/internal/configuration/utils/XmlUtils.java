@@ -64,7 +64,7 @@ public class XmlUtils {
 
   /**
    * Create an XML {@link Document} from the given {@link Reader}.
-   * 
+   *
    * @param reader to create document from.
    * @return {@link Document} if successful, otherwise false.
    * @throws ParserConfigurationException
@@ -117,7 +117,7 @@ public class XmlUtils {
 
   /*****
    * Adds a new node or replaces an existing node in the Document
-   * 
+   *
    * @param doc Target document where the node will added
    * @param xmlEntity contains definition of the xml entity
    * @throws IOException
@@ -229,7 +229,7 @@ public class XmlUtils {
 
   /****
    * Creates a node from the String xml definition
-   * 
+   *
    * @param owner
    * @param xmlDefinition
    * @return Node representing the xml definition
@@ -268,10 +268,10 @@ public class XmlUtils {
 
   /**
    * Build schema location map of schemas used in given <code>schemaLocationAttribute</code>.
-   * 
+   *
    * @see <a href="http://www.w3.org/TR/xmlschema-0/#schemaLocation">XML Schema Part 0: Primer
    *      Second Edition | 5.6 schemaLocation</a>
-   * 
+   *
    * @param schemaLocation attribute value to build schema location map from.
    * @return {@link Map} of schema namespace URIs to location URLs.
    * @since GemFire 8.1
@@ -294,7 +294,7 @@ public class XmlUtils {
 
   /*****
    * Deletes all the node from the document which match the definition provided by xmlEntity
-   * 
+   *
    * @param doc
    * @param xmlEntity
    * @throws Exception
@@ -313,7 +313,7 @@ public class XmlUtils {
 
   /****
    * Gets all the nodes matching the definition given by the xml entity
-   * 
+   *
    * @param doc
    * @param xmlEntity
    * @return Nodes
@@ -331,7 +331,7 @@ public class XmlUtils {
 
   /**
    * An object used by an XPath query that maps namespaces to uris.
-   * 
+   *
    * @see NamespaceContext
    *
    */
@@ -370,7 +370,7 @@ public class XmlUtils {
 
   /****
    * Converts the document to a well formatted Xml string
-   * 
+   *
    * @param doc
    * @return pretty xml string
    * @throws IOException
@@ -403,7 +403,7 @@ public class XmlUtils {
 
   /****
    * Convert the xmlString to pretty well formatted xmlString
-   * 
+   *
    * @param xmlContent
    * @return pretty xml string
    * @throws IOException
@@ -421,7 +421,7 @@ public class XmlUtils {
 
   /***
    * Create a document from the xml
-   * 
+   *
    * @param xmlContent
    * @return Document
    * @throws IOException
@@ -456,7 +456,7 @@ public class XmlUtils {
   /**
    * Upgrade the schema of a given Config XMl <code>document</code> to the given
    * <code>namespace</code>, <code>schemaLocation</code> and <code>version</code>.
-   * 
+   *
    * @param document Config XML {@link Document} to upgrade.
    * @param namespaceUri Namespace URI to upgrade to.
    * @param schemaLocation Schema location to upgrade to.
@@ -524,10 +524,10 @@ public class XmlUtils {
   /**
    * Set the <code>schemaLocationAttribute</code> to the values of the
    * <code>schemaLocationMap</code>.
-   * 
+   *
    * @see <a href="http://www.w3.org/TR/xmlschema-0/#schemaLocation">XML Schema Part 0: Primer
    *      Second Edition | 5.6 schemaLocation</a>
-   * 
+   *
    * @param schemaLocationMap {@link Map} to get schema locations from.
    * @since GemFire 8.1
    */
@@ -565,8 +565,8 @@ public class XmlUtils {
    * Change the namespace URI of a <code>node</code> and its children to
    * <code>newNamespaceUri</code> if that node is in the given <code>oldNamespaceUri</code>
    * namespace URI.
-   * 
-   * 
+   *
+   *
    * @param node {@link Node} to change namespace URI on.
    * @param oldNamespaceUri old namespace URI to change from.
    * @param newNamespaceUri new Namespace URI to change to.
@@ -593,7 +593,7 @@ public class XmlUtils {
 
   /****
    * Method to modify the root attribute (cache) of the XML
-   * 
+   *
    * @param doc Target document whose root attributes must be modified
    * @param xmlEntity xml entity for the root , it also contains the attributes
    * @throws IOException

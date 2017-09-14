@@ -58,13 +58,13 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -76,7 +76,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * <p>
  * This code was factored out of GossipServer.java to allow multiple handlers to share the same
  * gossip server port.
- * 
+ *
  * @since GemFire 5.7
  */
 public class TcpServer {
@@ -94,12 +94,12 @@ public class TcpServer {
    * with the addition of support for all old versions of clients you can no longer change this
    * version number
    */
-  public final static int GOSSIPVERSION = 1002;
-  public final static int NON_GOSSIP_REQUEST_VERSION = 0;
+  public static final int GOSSIPVERSION = 1002;
+  public static final int NON_GOSSIP_REQUEST_VERSION = 0;
   // Don't change it ever. We did NOT send GemFire version in a Gossip request till 1001 version.
   // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a
   // GossipServer.
-  public final static int OLDGOSSIPVERSION = 1001;
+  public static final int OLDGOSSIPVERSION = 1001;
 
   private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
@@ -289,7 +289,7 @@ public class TcpServer {
   /**
    * Returns the value of the bound port. If the server was initialized with a port of 0 indicating
    * that any ephemeral port should be used, this method will return the actual bound port.
-   * 
+   *
    * @return the locator's tcp/ip port. This will be zero if the locator hasn't been started.
    */
   public int getPort() {
@@ -570,7 +570,7 @@ public class TcpServer {
 
   /**
    * Returns GossipVersion for older Gemfire versions.
-   * 
+   *
    * @return gossip version
    */
   public static int getGossipVersionForOrdinal(short ordinal) {

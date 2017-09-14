@@ -30,7 +30,7 @@ import org.apache.geode.internal.InternalStatisticsDisabledException;
 /**
  * Sends the region name and key of the entry that we want the last access time for. If for any
  * reason this message can not obtain the last access time then zero will be returned.
- * 
+ *
  * @since Geode 1.4
  */
 public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage

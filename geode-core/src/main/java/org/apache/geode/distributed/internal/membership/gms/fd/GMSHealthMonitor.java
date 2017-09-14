@@ -19,31 +19,6 @@ import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_REQUES
 import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_RESPONSE;
 import static org.apache.geode.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
 
-import org.apache.geode.CancelException;
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
-import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
-import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.logging.log4j.Logger;
-import org.jgroups.util.UUID;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -78,6 +53,32 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+import org.jgroups.util.UUID;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
+import org.apache.geode.internal.ConnectionWatcher;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+
 /**
  * Failure Detection
  * <p>
@@ -99,11 +100,11 @@ import java.util.stream.Collectors;
 public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   private Services services;
-  volatile private NetView currentView;
-  volatile private InternalDistributedMember nextNeighbor;
+  private volatile NetView currentView;
+  private volatile InternalDistributedMember nextNeighbor;
 
   long memberTimeout;
-  volatile private boolean isStopping = false;
+  private volatile boolean isStopping = false;
   private final AtomicInteger requestId = new AtomicInteger();
 
   /**
@@ -147,24 +148,24 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /**
    * Members currently being suspected and the view they were suspected in
    */
-  final private ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberInView =
+  private final ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberInView =
       new ConcurrentHashMap<>();
 
   /**
    * Members undergoing final checks
    */
-  final private List<InternalDistributedMember> membersInFinalCheck =
+  private final List<InternalDistributedMember> membersInFinalCheck =
       Collections.synchronizedList(new ArrayList<>(30));
 
   /**
    * Replies to messages
    */
-  final private Map<Integer, Response> requestIdVsResponse = new ConcurrentHashMap<>();
+  private final Map<Integer, Response> requestIdVsResponse = new ConcurrentHashMap<>();
 
   /**
    * Members suspected in a particular view
    */
-  final private Map<NetView, Set<SuspectRequest>> viewVsSuspectedMembers = new HashMap<>();
+  private final Map<NetView, Set<SuspectRequest>> viewVsSuspectedMembers = new HashMap<>();
 
   private ScheduledExecutorService scheduler;
 
@@ -508,7 +509,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /**
    * During final check, establish TCP connection between current member and suspect member. And
    * exchange PING/PONG message to see if the suspect member is still alive.
-   * 
+   *
    * @param suspectMember member that does not respond to HeartbeatRequestMessage
    * @return true if successfully exchanged PING/PONG with TCP connection, otherwise false.
    */

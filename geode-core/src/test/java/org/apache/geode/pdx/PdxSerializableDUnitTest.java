@@ -19,6 +19,14 @@ import static org.apache.geode.internal.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
@@ -48,13 +56,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Category({DistributedTest.class, SerializationTest.class})
 public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
@@ -448,7 +449,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     assertEquals(ANOBJECT, r.get(1));
   }
 
-  static private class MyTestTransactionListener implements TransactionWriter, TransactionListener {
+  private static class MyTestTransactionListener implements TransactionWriter, TransactionListener {
     private MyTestTransactionListener() {
 
     }

@@ -19,10 +19,10 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.Map.Entry;
 
+import com.examples.snapshot.MyObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.examples.snapshot.MyObject;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;

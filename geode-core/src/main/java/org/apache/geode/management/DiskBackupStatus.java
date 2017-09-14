@@ -20,7 +20,7 @@ import org.apache.geode.cache.persistence.PersistentID;
 
 /**
  * Composite data type used to distribute the status of disk backup operations.
- * 
+ *
  * @since GemFire 7.0
  */
 public interface DiskBackupStatus {

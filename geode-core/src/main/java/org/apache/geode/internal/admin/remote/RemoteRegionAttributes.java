@@ -556,7 +556,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
     public ExpirationAttributes getExpiry(Entry entry) {
@@ -565,7 +565,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
     public void init(Properties props) {}

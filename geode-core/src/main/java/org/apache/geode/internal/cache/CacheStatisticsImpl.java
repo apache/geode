@@ -17,9 +17,6 @@ package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-// import org.apache.geode.InternalGemFireException;
-// import org.apache.geode.internal.util.Callable;
-// import org.apache.geode.util.concurrent.locks.Lock;
 
 /**
  *

@@ -90,4 +90,3 @@ public class DiskBackupStatusImpl implements DiskBackupStatus {
     setOfflineDiskStores(diskStores);
   }
 }
-

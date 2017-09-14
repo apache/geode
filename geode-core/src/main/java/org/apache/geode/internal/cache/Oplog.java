@@ -79,13 +79,13 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
-import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
@@ -120,7 +120,7 @@ import org.apache.geode.pdx.internal.PdxWriterImpl;
 /**
  * Implements an operation log to write to disk. As of prPersistSprint2 this file only supports
  * persistent regions. For overflow only regions see {@link OverflowOplog}.
- * 
+ *
  * @since GemFire 5.1
  */
 public class Oplog implements CompactableOplog, Flushable {
@@ -199,7 +199,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Set to true once compact is called on this oplog.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   private volatile boolean compacting = false;
@@ -234,7 +234,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Written to CRF. Followed by 8 bytes which is the BASE_ID to use for any NEW_ENTRY records. 1:
    * EndOfRecord Only needs to be written once per oplog and must preceed any OPLOG_NEW_ENTRY_0ID
    * records.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_NEW_ENTRY_BASE_ID = 63;
@@ -507,7 +507,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Persist oplog file magic number. Written once at the beginning of every oplog file; CRF, DRF,
    * KRF, IF and IRF. Followed by 6 byte magic number. Each oplog type has a different magic number
    * Followed by EndOfRecord Fix for bug 43824
-   * 
+   *
    * @since GemFire 8.0
    */
   static final byte OPLOG_MAGIC_SEQ_ID = 92;
@@ -556,10 +556,10 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Creates new {@code Oplog} for the given region.
-   * 
+   *
    * @param oplogId int identifying the new oplog
    * @param dirHolder The directory in which to create new Oplog
-   * 
+   *
    * @throws DiskAccessException if the disk files can not be initialized
    */
   Oplog(long oplogId, PersistentOplogSet parent, DirectoryHolder dirHolder) {
@@ -626,7 +626,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * A copy constructor used for creating a new oplog based on the previous Oplog. This constructor
    * is invoked only from the function switchOplog
-   * 
+   *
    * @param oplogId integer identifying the new oplog
    * @param dirHolder The directory in which to create new Oplog
    * @param prevOplog The previous oplog
@@ -792,7 +792,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Write the RVV record for the given regions.
-   * 
+   *
    * @param olf the oplog to write to
    * @param diskRegions the set of disk regions we should write the RVV of
    * @param writeGCRVV true to write write the GC RVV
@@ -1175,7 +1175,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * Given a set of Oplog file names return a Set of the oplog files that match those names that are
    * managed by this Oplog.
-   * 
+   *
    * @param oplogFileNames a Set of operation log file names.
    */
   Set<String> gatherMatchingOplogFiles(Set<String> oplogFileNames) {
@@ -1207,7 +1207,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * Returns a map of baseline oplog files to copy that match this oplog's files for a currently
    * running backup.
-   * 
+   *
    * @param baselineOplogFiles a List of files to match this oplog's filenames against.
    * @return a map of baslineline oplog files to copy. May be empty if total current set for this
    *         oplog does not match the baseline.
@@ -1255,7 +1255,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Returns the unserialized bytes and bits for the given Entry. If Oplog is destroyed while
    * querying, then the DiskRegion is queried again to obatin the value This method should never get
    * invoked for an entry which has been destroyed
-   * 
+   *
    * @since GemFire 3.2.1
    * @param id The DiskId for the entry @param offset The offset in this OpLog where the entry is
    *        present. @param faultingIn @param bitOnly boolean indicating whether to extract just the
@@ -1324,7 +1324,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * only. As such, it bypasses the buffer and goes directly to the disk. This is not a thread safe
    * function , in the sense, it is possible that by the time the OpLog is queried , data might move
    * HTree with the oplog being destroyed
-   * 
+   *
    * @param id A DiskId object for which the value on disk will be fetched
    */
   @Override
@@ -1408,19 +1408,19 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Used during recovery to calculate the OplogEntryId of the next NEW_ENTRY record.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   private long recoverNewEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during writing to remember the last MOD_ENTRY OplogEntryId written to this oplog.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   private long writeModEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during recovery to calculate the OplogEntryId of the next MOD_ENTRY record.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   private long recoverModEntryId = DiskStoreImpl.INVALID_ID;
@@ -1434,13 +1434,13 @@ public class Oplog implements CompactableOplog, Flushable {
   private long recoverDelEntryIdHWM = DiskStoreImpl.INVALID_ID;
   /**
    * Used during writing to remember the last DEL_ENTRY OplogEntryId written to this oplog.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   private long writeDelEntryId = DiskStoreImpl.INVALID_ID;
   /**
    * Used during recovery to calculate the OplogEntryId of the next DEL_ENTRY record.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   private long recoverDelEntryId = DiskStoreImpl.INVALID_ID;
@@ -2232,7 +2232,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Recovers one oplog
-   * 
+   *
    * @param latestOplog - true if this oplog is the latest oplog in the disk store.
    */
   long recoverCrf(OplogEntryIdSet deletedIds, boolean recoverValues, boolean recoverValuesSync,
@@ -2457,7 +2457,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Reads an oplog entry of type Create
-   * 
+   *
    * @param dis DataInputStream from which the oplog is being read
    * @param opcode byte whether the id is short/int/long
    */
@@ -2643,7 +2643,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Reads an oplog entry of type Modify
-   * 
+   *
    * @param dis DataInputStream from which the oplog is being read
    * @param opcode byte whether the id is short/int/long
    */
@@ -2864,7 +2864,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Reads an oplog entry of type ModifyWithKey
-   * 
+   *
    * @param dis DataInputStream from which the oplog is being read
    * @param opcode byte whether the id is short/int/long
    */
@@ -3055,7 +3055,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Reads an oplog entry of type Delete
-   * 
+   *
    * @param dis DataInputStream from which the oplog is being read
    * @param opcode byte whether the id is short/int/long
    * @param parent instance of disk region
@@ -3363,7 +3363,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Destroys this oplog. First it will call close which will cleanly close all Async threads and
    * then the oplog file will be deleted. The deletion of lock files will be taken care of by the
    * close.
-   * 
+   *
    */
   public void destroy() {
     lockCompactor();
@@ -3399,7 +3399,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * A check to confirm that the oplog has been closed because of the cache being closed
-   * 
+   *
    */
   private void checkClosed() {
     getParent().getCancelCriterion().checkCancelInProgress(null);
@@ -3445,7 +3445,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * This function records all the data for the current op into this.opState.
-   * 
+   *
    * @param opCode The int value identifying whether it is create/modify or delete operation
    * @param entry The DiskEntry object being operated upon
    * @param value The byte array representing the value
@@ -3494,7 +3494,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Modified the code so as to reuse the already created ByteBuffer during transition. Creates a
    * key/value pair from a region entry on disk. Updates all of the necessary
    * {@linkplain DiskStoreStats statistics} and invokes basicCreate
-   * 
+   *
    * @param entry The DiskEntry object for this key/value pair.
    * @param value byte array representing the value
    */
@@ -3558,7 +3558,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * A helper function which identifies whether to create the entry in the current oplog or to make
    * the switch to the next oplog. This function enables us to reuse the byte buffer which got
    * created for an oplog which no longer permits us to use itself
-   * 
+   *
    * @param entry DiskEntry object representing the current Entry
    */
   private void basicCreate(DiskRegion dr, DiskEntry entry, ValueWrapper value, byte userBits,
@@ -3748,7 +3748,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * directory. If the operation causing the switching is on an Entry which already is referencing
    * the oplog to be compacted, then the compactor thread will skip compaction that entry & the
    * switching thread will roll the entry explicitly.
-   * 
+   *
    * @param lengthOfOperationCausingSwitch length of the operation causing the switch
    * @param entryCausingSwitch DiskEntry object operation on which caused the switching of Oplog.
    *        This can be null if the switching has been invoked by the forceRolling which does not
@@ -4131,7 +4131,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * Create the KRF file for this oplog. It is ok for this method to be async. finishKRF will be
    * called and it must block until KRF generation is complete.
-   * 
+   *
    * @param cancel if true then prevent the krf from being created if possible
    */
   void createKrf(boolean cancel) {
@@ -4261,7 +4261,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * oplog being compacted. Attempt is made to retrieve the value from in memory , if available,
    * else from asynch buffers ( if asynch mode is enabled), else from the Oplog being compacted. It
    * is invoked from switchOplog as well as OplogCompactor's compact function.
-   * 
+   *
    * @param entry DiskEntry being compacted referencing the Oplog being compacted
    * @param wrapper Object of type BytesAndBitsForCompactor. The data if found is set in the wrapper
    *        Object. The wrapper Object also contains the user bit associated with the entry
@@ -4416,9 +4416,9 @@ public class Oplog implements CompactableOplog, Flushable {
    * Modified the code so as to reuse the already created ByteBuffer during transition. Minimizing
    * the synchronization allowing multiple put operations for different entries to proceed
    * concurrently for asynch mode
-   * 
+   *
    * @param entry DiskEntry object representing the current Entry
-   * 
+   *
    * @param value byte array representing the value
    */
   public void modify(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
@@ -4588,7 +4588,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * the switch to the next oplog. This function enables us to reuse the byte buffer which got
    * created for an oplog which no longer permits us to use itself. It will also take acre of
    * compaction if required
-   * 
+   *
    * @param entry DiskEntry object representing the current Entry
    */
   private void basicModify(DiskRegionView dr, DiskEntry entry, ValueWrapper value, byte userBits,
@@ -4901,7 +4901,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Removes the key/value pair with the given id on disk.
-   * 
+   *
    * @param entry DiskEntry object on which remove operation is called
    */
   public void remove(InternalRegion region, DiskEntry entry, boolean async, boolean isClear) {
@@ -5039,7 +5039,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * to make the switch to the next oplog. This function enables us to reuse the byte buffer which
    * got created for an oplog which no longer permits us to use itself. It will also take acre of
    * compaction if required
-   * 
+   *
    * @param entry DiskEntry object representing the current Entry
    */
   private void basicRemove(DiskRegionView dr, DiskEntry entry, boolean async, boolean isClear)
@@ -5301,7 +5301,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * asynch write because the fault in operations can clash with the asynch writing. Write the
    * specified bytes to the oplog. Note that since extending a file is expensive this code will
    * possibly write OPLOG_EXTEND_SIZE zero bytes to reduce the number of times the file is extended.
-   * 
+   *
    *
    * @param olf the file to write the bytes to
    * @return The long offset at which the data present in the ByteBuffer gets written to
@@ -5383,7 +5383,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * If crfRAF has been closed then attempt to reopen the oplog for this read. Verify that this only
    * happens when test methods are invoked.
-   * 
+   *
    * @return true if oplog file is open and can be read from; false if not
    */
   private boolean reopenFileIfClosed() throws IOException {
@@ -5501,7 +5501,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Extracts the Value byte array & UserBit from the OpLog
-   * 
+   *
    * @param offsetInOplog The starting position from which to read the data in the opLog
    * @param bitOnly boolean indicating whether the value needs to be extracted along with the
    *        UserBit or not.
@@ -5557,7 +5557,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * Extracts the Value byte array & UserBit from the OpLog and inserts it in the wrapper Object of
    * type BytesAndBitsForCompactor which is passed
-   * 
+   *
    * @param offsetInOplog The starting position from which to read the data in the opLog
    * @param bitOnly boolean indicating whether the value needs to be extracted along with the
    *        UserBit or not.
@@ -5823,7 +5823,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Helper function for the test
-   * 
+   *
    * @return FileChannel object representing the Oplog
    */
   UninterruptibleFileChannel getFileChannel() {
@@ -5838,7 +5838,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * The current size of Oplog. It may be less than the actual Oplog file size ( in case of asynch
    * writing as it also takes into account data present in asynch buffers which will get flushed in
    * course of time o
-   * 
+   *
    * @return long value indicating the current size of the oplog.
    */
   long getOplogSize() {
@@ -5957,7 +5957,7 @@ public class Oplog implements CompactableOplog, Flushable {
     createKrf(true);
   }
 
-  private final static ThreadLocal isCompactorThread = new ThreadLocal();
+  private static final ThreadLocal isCompactorThread = new ThreadLocal();
 
   private boolean calledByCompactorThread() {
     if (!this.compacting)
@@ -6399,7 +6399,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Method to be used only for testing
-   * 
+   *
    * @param ch Object to replace the channel in the Oplog.crf
    * @return original channel object
    */
@@ -7087,7 +7087,7 @@ public class Oplog implements CompactableOplog, Flushable {
     /**
      * Adds any live entries in this list to liveEntries and returns the index of the next free
      * slot.
-     * 
+     *
      * @param liveEntries the array to fill with the live entries
      * @param idx the first free slot in liveEntries
      * @param drv the disk region these entries are on
@@ -7110,7 +7110,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.internal.cache.DiskEntry#getVersionStamp()
      */
     @Override
@@ -7464,7 +7464,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    synchronized public boolean testAndSetUnrecovered() {
+    public synchronized boolean testAndSetUnrecovered() {
       boolean result = !this.unrecovered;
       if (result) {
         this.unrecovered = true;
@@ -7474,12 +7474,12 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    synchronized public boolean getUnrecovered() {
+    public synchronized boolean getUnrecovered() {
       return this.unrecovered;
     }
 
     @Override
-    synchronized public boolean testAndSetRecovered(DiskRegionView dr) {
+    public synchronized boolean testAndSetRecovered(DiskRegionView dr) {
       boolean result = this.unrecovered;
       if (result) {
         this.unrecovered = false;
@@ -7626,7 +7626,7 @@ public class Oplog implements CompactableOplog, Flushable {
      * Return true if we are the first guy to set it to true
      */
     @Override
-    synchronized public boolean testAndSetUnrecovered() {
+    public synchronized boolean testAndSetUnrecovered() {
       boolean result = super.testAndSetUnrecovered();
       if (result) {
         this.liveEntries.clear();
@@ -7830,7 +7830,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * Used in offline mode to prevent pdx deserialization of keys. The raw bytes are a serialized
    * pdx.
-   * 
+   *
    * @since GemFire 6.6
    */
   private static class RawByteKey implements Sendable {
@@ -7864,7 +7864,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Enumeration of operation log file types.
-   * 
+   *
    */
   enum OplogFileType {
     OPLOG_CRF, // Creates and updates
@@ -7874,7 +7874,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * Enumeration of the possible results of the okToSkipModifyRecord
-   * 
+   *
    *
    */
   private static enum OkToSkipResult {

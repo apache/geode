@@ -25,7 +25,7 @@ public interface CacheServiceProfile {
 
   /**
    * Return the id of this profile
-   * 
+   *
    * @return the id of this profile
    */
   String getId();
@@ -40,7 +40,7 @@ public interface CacheServiceProfile {
   /**
    * Answers the missing profile message to be returned when a profile exists in one member but not
    * another
-   * 
+   *
    * @param existsInThisMember Whether or not the profile exists in this member
    * @return the missing profile message to be returned when a profile exists in one member but not
    *         another

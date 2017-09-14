@@ -16,6 +16,16 @@ package org.apache.geode.admin.jmx.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.net.InetAddress;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.management.*;
+
+import mx4j.AbstractDynamicMBean;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.admin.*;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.cache.InterestPolicy;
@@ -26,24 +36,16 @@ import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import mx4j.AbstractDynamicMBean;
-import org.apache.logging.log4j.Logger;
-
-import javax.management.*;
-import java.net.InetAddress;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class uses the JMX Attributes/Operations that use (return/throw) GemFire types. This is the
  * single MBean accessible with ObjectName string {@link MemberInfoWithStatsMBean#MBEAN_NAME}}. This
  * MBean can be used to retrieve the all member details as plain java types.
- * 
+ *
  * This MBean also acts as a Notification Hub for all the Notifications that are defined for Admin
  * Distributed System.
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
  */
 public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements NotificationEmitter {
@@ -87,7 +89,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Default Constructor
-   * 
+   *
    * @param agent Admin Agent instance
    * @throws OperationsException if ObjectName can't be formed for this MBean
    * @throws MBeanRegistrationException
@@ -105,7 +107,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns attributes defined for this MBean as an array of MBeanAttributeInfo objects.
-   * 
+   *
    * @return attributes defined as an array of MBeanAttributeInfo objects.
    */
   @Override
@@ -139,7 +141,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns operations defined for this MBean as an array of MBeanOperationInfo objects.
-   * 
+   *
    * @return operations defined as an array of MBeanOperationInfo objects.
    */
   @Override
@@ -174,7 +176,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns notifications defined for this MBean as an array of MBeanNotificationInfo objects.
-   * 
+   *
    * @return notification definitions as an array of MBeanNotificationInfo objects.
    */
   @Override
@@ -234,7 +236,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   }
 
   /**
-   * 
+   *
    * @return ObjectName of this MBean
    */
   /* default */ ObjectName getObjectName() {
@@ -243,7 +245,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns the version of the GemFire Enterprise instance as a string.
-   * 
+   *
    * @return GemFire Enterprise version string derived from {@link GemFireVersion}
    */
   /* getter for attribute - Version */
@@ -267,7 +269,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Connects the Admin Agent in the DS
-   * 
+   *
    * @return AdminDistributedSystem MBean ObjectName
    * @throws OperationsException if connection to the DS fails
    * @throws AdminException if connection to the DS fails
@@ -288,7 +290,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   }
 
   /**
-   * 
+   *
    * @param memberId
    * @return SystemMemberJmx instance for given memberId
    * @throws AdminException
@@ -321,7 +323,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Return ObjectNames for all the Member MBeans in the DS.
-   * 
+   *
    * @return Array of ObjectNames of all Member MBeans
    * @throws OperationsException if (1)agent could not connect in the DS OR (2)Notification Listener
    *         could not be registered for the Admin DS MBean OR (3)fails to retrieve information from
@@ -372,7 +374,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns information including ObjectNames for all regions on a member with given member id.
-   * 
+   *
    * @param memberId member identifier as a String
    * @return Map of details of all regions on a member with given id
    * @throws OperationsException if fails to retrieve the regions information
@@ -415,7 +417,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /* **************************************************************************/
   /**
    * Initializes all the possible MBeans for all the members.
-   * 
+   *
    */
   private void initializeAll() throws OperationsException {
     try {
@@ -458,7 +460,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Initializes Cache, Regions & Statistics Types MBeans for the given Member.
-   * 
+   *
    * @param memberJmx Member Mbean instance
    * @throws OperationsException if fails to initialize required MBeans
    * @throws AdminException if fails to initialize required MBeans
@@ -477,7 +479,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Initializes statistics for a member with the given mbean.
-   * 
+   *
    * @param memberJmx Member Mbean instance
    * @throws AdminException if fails to initialize required statistic MBeans
    */
@@ -491,7 +493,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * Initializes all regions & its subregions using the Cache MBean and the RegionSubRegionSnapshot
    * for this cache MBean.
-   * 
+   *
    * @param cache Cache MBean resource
    * @param regionSnapshot RegionSubRegionSnapshot instance for the cache
    * @throws MalformedObjectNameException if fails to initialize the region MBean
@@ -624,7 +626,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       DistributionConfig.GEMFIRE_PREFIX + "client.stats.threads.int";
 
   /**
-   * 
+   *
    * @param memberId
    * @return All the required details for a member with given memberId
    * @throws OperationsException
@@ -727,7 +729,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   }
 
   /**
-   * 
+   *
    * @param snapshot
    * @return Map of client details
    */
@@ -777,7 +779,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns a Map containing information about regions.
-   * 
+   *
    * @param cache Reference to an MBean representing a Cache on a member
    * @param existingRegionMbeans Map of Path against Region MBean ObjectNames
    * @return Map of all region details
@@ -809,7 +811,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * Collects all the region details from the RegionSubRegionSnapshot instance passed and the Cache
    * MBean. Checks in the set of existingRegionMbeans before initializing Region Mbeans if there are
    * not initialized yet.
-   * 
+   *
    * @param cache Cache MBean instance
    * @param regionSnapshot RegionSubRegionSnapshot instance
    * @param regionsInfo Map of regions information that gets populated recursively
@@ -875,7 +877,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Checks if the given host name string contains ':' as in IPv6 host address.
-   * 
+   *
    * @param host host name string
    * @return true if the host string contains ':', false otherwise
    */
@@ -885,7 +887,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Checks if the given host name is actually a String representation of an IPv4 address.
-   * 
+   *
    * @param host host name string
    * @return true if given host name is a String representation of an IPv4 address, false otherwise
    */
@@ -899,10 +901,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * Excludes the host name from the client id and returns the String. If the host name can not be
    * detected, returns an empty string. Typically, the client id looks like:
    * HOST(VM_PID:VM_KIND):PORT:RANDOM_STRING:CLIENT_NAME
-   * 
+   *
    * Extracts the client name from the client id. If the client id is not in the expected format,
    * returns 'N/A'
-   * 
+   *
    * @param clientId string identifier for a client
    * @param host host name (FQDN) the client is running on
    * @return name extracted from given client id
@@ -910,9 +912,9 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /*
    * Some examples of Client Id format: (1) Java Client:
    * nase(21716:loner):51789:42e9a0bf:client_nase_21716 nase(2560:loner):2:7a84729a:Feeder
-   * 
+   *
    * (2) Native Client: nase(21045:loner):2:GFNative_OnNnEpyRWL:ExampleDistributedSystem
-   * 
+   *
    * (3) IPv6 Host whose name can not be resolved:
    * fdf0:76cf:a0ed:9449:0:0:0:1001(21716:loner):51789:42e9a0b:client_nase_21716
    * fdf0:76cf:a0ed:9449:0:0:0:1001:51789:42e9a0b:client_nase_21716
@@ -951,7 +953,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * Returns a Map of all the statistics required for Hyperic currently. It relies on the attribute
    * of the StatisticsResource Mbeans.
-   * 
+   *
    * @param member instance for which the stats are needed
    * @return Map of all the statistics required for Hyperic currently.
    * @throws OperationsException exceptions thrown while retrieving the attributes
@@ -1080,8 +1082,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns attribute with given attribute name on MBean with given ObjectName.
-   * 
-   * 
+   *
+   *
    * @param objectName ObjectName for the MBean
    * @param attribute attribute name
    * @param unavailableValue return this value if the attribute value is null
@@ -1106,7 +1108,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Return Map of region full against the ObjectName of existing region MBeans.
-   * 
+   *
    * @param memberId string identifier of a member
    * @return Map of region path vs ObjectName for existing region MBeans
    * @throws MalformedObjectNameException If the query expression used is not valid
@@ -1128,7 +1130,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    * Returns an array of ObjectNames existing statistics types MBeans
-   * 
+   *
    * @param memberId string identifier of a member
    * @param name text id of the stats which appears in the stats ObjectName as name keyProperty
    * @return Array of Stats MBean ObjectNames
@@ -1151,7 +1153,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * Queries the MBean server with the string formed using placing the params in the parameterized
    * string passed as queryStr.
-   * 
+   *
    * @param queryStr parameterized string
    * @param params params to put in the string
    * @return results of an ObjectName query
@@ -1214,8 +1216,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
  * MBeans. This acts as a listener for these notifications and broadcasts them as notifications from
  * the {@link MemberInfoWithStatsMBean} MBean. This class extends
  * {@link NotificationBroadcasterSupport} only to have the functionality to send notifications.
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
  */
 class NotificationForwarder extends NotificationBroadcasterSupport implements NotificationListener {
@@ -1230,7 +1232,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
 
   /**
    * Default Constructor
-   * 
+   *
    * @param mBeanServer reference to the MBeanServer instance
    */
   /* default */ NotificationForwarder(MBeanServer mBeanServer) {
@@ -1243,13 +1245,13 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
    * NotificationForwarder as a notification listener for Cache/Region Notifications. 3.
    * AdminDistributedSystem Disconnected: Unregisters this NotificationForwarder as a notification
    * listener for member Notifications.
-   * 
+   *
    * Forwards the notifications to the JMX Clients that have registered for notifications on this
    * MBean
-   * 
+   *
    * @param notification notification to be handled
    * @param handback handback object used while NotificationForwarder was registered
-   * 
+   *
    * @see NotificationListener#handleNotification(Notification, Object)
    */
   public void handleNotification(Notification notification, Object handback) {
@@ -1321,7 +1323,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
   /**
    * Registers itself as a NotificationListener for Notifications sent from MBean with the
    * ObjectName given as source.
-   * 
+   *
    * @param source source of notifications
    * @throws InstanceNotFoundException The MBean name provided does not match any of the registered
    *         MBeans.
@@ -1334,7 +1336,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
   /**
    * Unregisters itself as a NotificationListener for Notifications sent from MBean with the
    * ObjectName given as source.
-   * 
+   *
    * @param source source of notifications
    * @throws InstanceNotFoundException The MBean name provided does not match any of the registered
    *         MBeans.

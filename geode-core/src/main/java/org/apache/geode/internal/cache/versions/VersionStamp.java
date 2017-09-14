@@ -27,7 +27,7 @@ public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<
 
   /**
    * Sets the version information with what is in the tag
-   * 
+   *
    * @param tag the entryVersion to set
    */
   void setVersions(VersionTag<T> tag);
@@ -52,7 +52,7 @@ public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<
   /**
    * Perform a versioning check with the given GII information. Throws a
    * ConcurrentCacheModificationException if there is a problem.
-   * 
+   *
    * @param region the region being modified
    * @param tag the version info for the modification
    * @param isTombstoneFromGII it's a tombstone

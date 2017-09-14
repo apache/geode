@@ -14,15 +14,15 @@
  */
 package org.apache.geode.modules.util;
 
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * Touches the keys contained in the set of keys by performing a get on the replicated region. This
@@ -86,4 +86,3 @@ public class TouchReplicatedRegionEntriesFunction implements Function, Declarabl
 
   public void init(Properties properties) {}
 }
-

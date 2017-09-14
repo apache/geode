@@ -18,7 +18,7 @@ import org.apache.geode.Statistics;
 
 /**
  * Null implementation of OffHeapMemoryStats for testing.
- * 
+ *
  */
 public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
   private boolean isClosed;

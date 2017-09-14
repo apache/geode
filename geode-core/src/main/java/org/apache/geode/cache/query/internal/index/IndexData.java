@@ -15,8 +15,8 @@
 package org.apache.geode.cache.query.internal.index;
 
 /**
- * 
- * 
+ *
+ *
  * Object of this class contains information of various attributes of Range Index for a filter
  * evaluatable condition , from the perspective of the query from clause. It identifies the match
  * level & the maping of Iterators of the Group to the index result fields.
@@ -42,7 +42,7 @@ public class IndexData {
    * example the second Iterator of the group ( 0 indxe based , hence 1 ) will map to the field
    * position in the Index Result given by the value maping[1]. If an iterator has no mapping , the
    * value will be 0. *
-   * 
+   *
    */
   int[] mapping = null;
 

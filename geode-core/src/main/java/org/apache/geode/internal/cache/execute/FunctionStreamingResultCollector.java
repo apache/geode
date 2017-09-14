@@ -49,7 +49,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * 
+ *
  *
  */
 public class FunctionStreamingResultCollector extends ReplyProcessor21 implements ResultCollector {
@@ -423,7 +423,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
 
   /**
    * Waits for the response from the recipient
-   * 
+   *
    * @throws CacheException if the recipient threw a cache exception during message processing
    * @throws ForceReattemptException if the recipient left the distributed system before the
    *         response was received.

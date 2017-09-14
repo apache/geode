@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Properties;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.transaction.NotSupportedException;
@@ -277,4 +278,3 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     return sb.toString();
   }
 }
-

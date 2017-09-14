@@ -16,15 +16,15 @@ package org.apache.geode.management.internal.cli.util;
 
 import static org.apache.geode.internal.Assert.assertNotNull;
 
+import java.io.FileNotFoundException;
+import java.util.EmptyStackException;
+import java.util.Stack;
+
 import org.apache.geode.GemFireException;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-
-import java.io.FileNotFoundException;
-import java.util.EmptyStackException;
-import java.util.Stack;
 
 public class JdkTool {
   protected static final String JAVA_HOME = System.getProperty("java.home");

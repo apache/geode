@@ -17,6 +17,7 @@ package org.apache.geode.management.bean.stats;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import io.codearte.catchexception.shade.mockito.Mockito;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -25,8 +26,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.management.internal.beans.GatewaySenderMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import io.codearte.catchexception.shade.mockito.Mockito;
 
 /**
  */

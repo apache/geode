@@ -22,7 +22,7 @@ import org.apache.geode.distributed.Role;
 
 /**
  * Composite data type used to distribute the membership attributes for a {@link Region}.
- * 
+ *
  * @deprecated this API is scheduled to be removed
  */
 public class MembershipAttributesData {
@@ -45,7 +45,7 @@ public class MembershipAttributesData {
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
-   * 
+   *
    * @param requiredRoles Array of required role names by this process for reliable access to the
    *        region
    * @param lossAction The configuration defining how this process behaves when there are missing

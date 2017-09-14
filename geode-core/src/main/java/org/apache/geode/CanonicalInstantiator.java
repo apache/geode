@@ -52,7 +52,7 @@ public abstract class CanonicalInstantiator extends Instantiator {
   /**
    * This method is not supported and if called will throw UnsupportedOperationException. Use
    * {@link #newInstance(DataInput)} instead.
-   * 
+   *
    * @throws UnsupportedOperationException in all cases
    */
   @Override
@@ -63,7 +63,7 @@ public abstract class CanonicalInstantiator extends Instantiator {
   /**
    * Creates a new "empty" instance of a <Code>DataSerializable</code> class whose state will be
    * filled in by invoking its {@link DataSerializable#fromData fromData} method.
-   * 
+   *
    * @param in the data input that can be read to decide what instance to create.
    * @return the new "empty" instance.
    * @throws IOException if a read from <code>in</code> fails.

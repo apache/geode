@@ -15,6 +15,8 @@
  */
 package org.apache.geode.management.internal.configuration.functions;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.Locator;
@@ -22,7 +24,6 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
 
 public class UploadJarFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();

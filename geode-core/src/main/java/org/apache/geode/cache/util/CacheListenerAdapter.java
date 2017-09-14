@@ -25,12 +25,12 @@ import org.apache.geode.cache.RegionEvent;
  * implementations. Applications can subclass this class and only override the methods for the
  * events of interest.
  * <p>
- * 
+ *
  * <p>
  * Subclasses declared in a Cache XML file, it must also implement {@link Declarable}
  * </p>
- * 
- * 
+ *
+ *
  * @since GemFire 3.0
  */
 public abstract class CacheListenerAdapter<K, V> implements CacheListener<K, V> {

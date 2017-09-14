@@ -18,9 +18,9 @@ package org.apache.geode.internal.jta;
  * <p>
  * TransactionManager: A JTA compatible Transaction Manager.
  * </p>
- * 
+ *
  * @since GemFire 4.1.1
- * 
+ *
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager instead.
  */
 import java.io.Serializable;
@@ -74,7 +74,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * Transaction TimeOut Class
    */
-  transient private TransactionTimeOutThread cleaner;
+  private transient TransactionTimeOutThread cleaner;
   /**
    * Singleton transactionManager
    */
@@ -82,7 +82,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * Transaction TimeOut thread
    */
-  transient private Thread cleanUpThread = null;
+  private transient Thread cleanUpThread = null;
   /**
    * Default Transaction Time Out
    */
@@ -107,7 +107,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    */
   private boolean isActive = true;
 
-  transient private final AtomicBoolean loggedJTATransactionManagerDeprecatedWarning =
+  private final transient AtomicBoolean loggedJTATransactionManagerDeprecatedWarning =
       new AtomicBoolean(false);
 
   /**
@@ -143,14 +143,14 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * Create a new transaction and associate it with the current thread if none exists with the
    * current thread else throw an exception since nested transactions are not supported
-   * 
+   *
    * Create a global transaction and associate the transaction created with the global transaction
-   * 
+   *
    * @throws NotSupportedException - Thrown if the thread is already associated with a transaction
    *         and the Transaction Manager implementation does not support nested transactions.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
    *         condition.
-   * 
+   *
    * @see javax.transaction.TransactionManager#begin()
    */
   public void begin() throws NotSupportedException, SystemException {
@@ -196,7 +196,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    * Complete the transaction associated with the current thread by calling the
    * GlobalTransaction.commit(). When this method completes, the thread is no longer associated with
    * a transaction.
-   * 
+   *
    * @throws RollbackException - Thrown to indicate that the transaction has been rolled back rather
    *         than committed.
    * @throws HeuristicMixedException - Thrown to indicate that a heuristic decision was made and
@@ -209,7 +209,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *         transaction.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
    *         condition.
-   * 
+   *
    * @see javax.transaction.TransactionManager#commit()
    */
   public void commit() throws HeuristicRollbackException, RollbackException,
@@ -387,14 +387,14 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    * Rolls back the transaction associated with the current thread by calling the
    * GlobalTransaction.rollback(). When this method completes, the thread is no longer associated
    * with a transaction.
-   * 
+   *
    * @throws java.lang.SecurityException - Thrown to indicate that the thread is not allowed to
    *         commit the transaction.
    * @throws java.lang.IllegalStateException - Thrown if the current thread is not associated with a
    *         transaction.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
    *         condition.
-   * 
+   *
    * @see javax.transaction.TransactionManager#commit()
    */
   public void rollback() throws IllegalStateException, SecurityException, SystemException {
@@ -492,9 +492,9 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
 
   /**
    * Set the Global Transaction status (Associated with the current thread) to be RollBackOnly
-   * 
+   *
    * Becauce we are using one phase commit, we are not considering Prepared and preparing states.
-   * 
+   *
    * @see javax.transaction.TransactionManager#setRollbackOnly()
    */
   public void setRollbackOnly() throws IllegalStateException, SystemException {
@@ -538,7 +538,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
 
   /**
    * Get the status of the global transaction associated with this thread
-   * 
+   *
    * @see javax.transaction.TransactionManager#getStatus()
    */
   public int getStatus() throws SystemException {
@@ -555,7 +555,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
 
   /**
    * not supported
-   * 
+   *
    * @see javax.transaction.TransactionManager#setTransactionTimeout(int)
    */
   public void setTransactionTimeout(int seconds) throws SystemException {
@@ -696,7 +696,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
 
   /**
    * Get the transaction associated with the calling thread
-   * 
+   *
    * @see javax.transaction.TransactionManager#getTransaction()
    */
   public Transaction getTransaction() throws SystemException {

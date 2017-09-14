@@ -33,7 +33,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 /**
  * The GetDeliveredOrders class is a gemfire function that gives details about delivered orders.
  * <p/>
- * 
+ *
  * @since GemFire 8.0
  */
 

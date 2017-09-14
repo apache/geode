@@ -54,7 +54,7 @@ public class MessageExecutionContext {
   /**
    * Returns the cache associated with this execution
    * <p>
-   * 
+   *
    * @throws InvalidExecutionContextException if there is no cache available
    */
   public Cache getCache() throws InvalidExecutionContextException {
@@ -68,7 +68,7 @@ public class MessageExecutionContext {
   /**
    * Returns the locator associated with this execution
    * <p>
-   * 
+   *
    * @throws InvalidExecutionContextException if there is no locator available
    */
   public Locator getLocator() throws InvalidExecutionContextException {

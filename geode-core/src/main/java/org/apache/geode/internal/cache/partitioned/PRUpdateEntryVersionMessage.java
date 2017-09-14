@@ -52,8 +52,8 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * This message is generated based on event received on GatewayReceiver for updating the time-stamp
  * in a version tag for a RegionEntry.
- * 
- * 
+ *
+ *
  */
 public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply {
 
@@ -100,7 +100,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   @Override
@@ -110,7 +110,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.partitioned.PartitionMessage# operateOnPartitionedRegion
    * (org.apache.geode.distributed.internal.DistributionManager,
    * org.apache.geode.internal.cache.PartitionedRegion, long)
@@ -198,7 +198,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
 
   /**
    * Assists the toString method in reporting the contents of this message
-   * 
+   *
    * @see PartitionMessage#toString()
    * @param buff
    */
@@ -219,7 +219,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
 
   /**
    * Response for PartitionMessage {@link PRUpdateEntryVersionMessage}.
-   * 
+   *
    */
   public static class UpdateEntryVersionResponse extends PartitionResponse {
 

@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A message that is sent in response to a {@link CacheConfigRequest}.
- * 
+ *
  * @since GemFire 3.5
  */
 public class CacheConfigResponse extends AdminResponse {

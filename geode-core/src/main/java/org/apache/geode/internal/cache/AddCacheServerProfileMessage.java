@@ -156,4 +156,3 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
     return this.getShortClassName() + "(processorId=" + this.processorId + ")";
   }
 }
-

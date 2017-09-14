@@ -309,7 +309,7 @@ public class AttributesFactoryJUnitTest {
 
   /**
    * Tests the cacheListener functionality
-   * 
+   *
    * @since GemFire 5.0
    */
   @Test
@@ -410,7 +410,7 @@ public class AttributesFactoryJUnitTest {
 
   /**
    * Trivial cache listener impl
-   * 
+   *
    * @since GemFire 5.0
    */
   private static class MyCacheListener extends CacheListenerAdapter {

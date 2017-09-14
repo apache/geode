@@ -120,7 +120,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Abstracts the logging mechanism.
-   * 
+   *
    * @param message a message to log.
    */
   private void log(String message) {
@@ -168,7 +168,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the directory for a given member.
-   * 
+   *
    * @param vm a distributed system member.
    * @return the disk directories for a member.
    */
@@ -183,7 +183,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Invokes {@link AdminDistributedSystem#getMissingPersistentMembers()} on a member.
-   * 
+   *
    * @param vm a member of the distributed system.
    * @return a set of missing members for the distributed system.
    */
@@ -200,7 +200,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
-   * 
+   *
    * @param vm a member of the distributed system
    * @return the status of the backup.
    */
@@ -263,7 +263,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Invokes {@link DistributedSystem#getDistributedMember()} on a member.
-   * 
+   *
    * @param vm a distributed system member.
    * @return the member's id.
    */
@@ -291,7 +291,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Locates the PersistentID for the testStore disk store for a distributed member.
-   * 
+   *
    * @param vm a distributed member.
    * @return a PersistentID for a member's disk store.
    */
@@ -311,7 +311,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Locates the PersistentID for the testStore disk store for a distributed member.
-   * 
+   *
    * @param vm a distributed member.
    * @return a PersistentID for a member's disk store.
    */
@@ -321,7 +321,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Invokes {@link DistributedSystem#disconnect()} on a member.
-   * 
+   *
    * @param disconnectVM a member of the distributed system to disconnect.
    * @param testVM a member of the distributed system to test for the missing member (just
    *        disconnected).
@@ -363,7 +363,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Invokes {@link CacheFactory#create()} on a member.
-   * 
+   *
    * @param vm a member of the distributed system.
    */
   private void openCache(VM vm) {
@@ -372,7 +372,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Blocks and waits for a backup operation to finish on a distributed member.
-   * 
+   *
    * @param vm a member of the distributed system.
    */
   private void waitForBackup(VM vm) {
@@ -396,7 +396,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performs a full backup.
-   * 
+   *
    * @return the backup status.
    */
   private BackupStatus performBaseline() {
@@ -405,7 +405,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performs an incremental backup.
-   * 
+   *
    * @return the backup status.
    */
   private BackupStatus performIncremental() {
@@ -448,7 +448,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns an individual member's backup directory.
-   * 
+   *
    * @param rootDir the directory to begin searching for the member's backup dir from.
    * @param memberId the member's identifier.
    * @return the member's backup directory.
@@ -484,7 +484,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Executes a shell command in an external process.
-   * 
+   *
    * @param command a shell command.
    * @return the exit value of processing the shell command.
    */
@@ -544,7 +544,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Peforms an operation log restore for a member.
-   * 
+   *
    * @param backupDir the member's backup directory containing the restore script.
    */
   private void performRestore(File memberDir, File backupDir)
@@ -582,7 +582,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Adds an incomplete marker to the baseline backup for a member.
-   * 
+   *
    * @param vm a distributed system member.
    */
   private void markAsIncomplete(VM vm) throws IOException {
@@ -617,7 +617,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Used to confirm valid BackupStatus data. Confirms fix for defect #45657
-   * 
+   *
    * @param backupStatus contains a list of members that were backed up.
    */
   private void assertBackupStatus(final BackupStatus backupStatus) {
@@ -796,7 +796,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    * Successful if a member performs a full backup when its backup data is not present in the
    * baseline (for whatever reason). This also tests what happens when a member is offline during
    * the baseline backup.
-   * 
+   *
    * The test is regarded as successful when all of the missing members oplog files are backed up
    * during an incremental backup. This means that the member peformed a full backup because its
    * oplogs were missing in the baseline.

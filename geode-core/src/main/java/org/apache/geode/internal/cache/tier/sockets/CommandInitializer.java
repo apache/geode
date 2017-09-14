@@ -118,7 +118,7 @@ public class CommandInitializer {
 
   /**
    * Register a new command with the system.
-   * 
+   *
    * @param messageType - An ordinal for this message. This must be something defined in MessageType
    *        that has not already been allocated to a different command.
    * @param versionToNewCommand The command to register, for different versions. The key is the

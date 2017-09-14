@@ -14,14 +14,14 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.cache.lucene.LuceneIndexFactory;
-import org.apache.geode.cache.lucene.LuceneSerializer;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 
 public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.LuceneIndexFactory {
   private final LuceneServiceImpl service;

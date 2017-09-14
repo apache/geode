@@ -250,9 +250,9 @@ public class TypeRegistry {
 
   /**
    * Test hook that returns the most recently allocated type id
-   * 
+   *
    * Note that this method will not work on clients.
-   * 
+   *
    * @return the most recently allocated type id
    */
   public int getLastAllocatedTypeId() {
@@ -467,7 +467,7 @@ public class TypeRegistry {
 
   /**
    * Returns the currently defined types.
-   * 
+   *
    * @return the types
    */
   public Map<Integer, PdxType> typeMap() {
@@ -476,7 +476,7 @@ public class TypeRegistry {
 
   /**
    * Returns the currently defined enums.
-   * 
+   *
    * @return the enums
    */
   public Map<Integer, EnumInfo> enumMap() {
@@ -485,11 +485,11 @@ public class TypeRegistry {
 
   /**
    * searches a field in different versions (PdxTypes) of a class in the distributed type registry
-   * 
+   *
    * @param fieldName the field to look for in the PdxTypes
    * @param className the PdxTypes for this class would be searched
    * @return PdxType having the field or null if not found
-   * 
+   *
    */
   PdxType getPdxTypeForField(String fieldName, String className) {
     return this.distributedTypeRegistry.getPdxTypeForField(fieldName, className);

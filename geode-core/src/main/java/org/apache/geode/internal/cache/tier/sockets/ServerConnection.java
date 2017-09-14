@@ -72,7 +72,7 @@ import org.apache.geode.security.GemFireSecurityException;
  * Provides an implementation for the server socket end of the hierarchical cache connection. Each
  * server connection runs in its own thread to maximize concurrency and improve response times to
  * edge requests
- * 
+ *
  * @since GemFire 2.0.2
  */
 public abstract class ServerConnection implements Runnable {
@@ -99,7 +99,7 @@ public abstract class ServerConnection implements Runnable {
 
   private final SecurityService securityService;
 
-  final protected CacheServerStats stats;
+  protected final CacheServerStats stats;
 
   // private static boolean useDataStream =
   // System.getProperty("hct.useDataStream", "false").equals("true");
@@ -313,19 +313,19 @@ public abstract class ServerConnection implements Runnable {
     return this.acceptor;
   }
 
-  static private final ThreadLocal<Byte> executeFunctionOnLocalNodeOnly = new ThreadLocal<Byte>() {
+  private static final ThreadLocal<Byte> executeFunctionOnLocalNodeOnly = new ThreadLocal<Byte>() {
     @Override
     protected Byte initialValue() {
       return 0x00;
     }
   };
 
-  static public void executeFunctionOnLocalNodeOnly(Byte value) {
+  public static void executeFunctionOnLocalNodeOnly(Byte value) {
     byte b = value.byteValue();
     executeFunctionOnLocalNodeOnly.set(b);
   }
 
-  static public Byte isExecuteFunctionOnLocalNodeOnly() {
+  public static Byte isExecuteFunctionOnLocalNodeOnly() {
     return executeFunctionOnLocalNodeOnly.get();
   }
 
@@ -1072,7 +1072,7 @@ public abstract class ServerConnection implements Runnable {
   /**
    * MessageType of the messages (typically internal commands) which do not need to participate in
    * security should be added in the following if block.
-   * 
+   *
    * @return Part
    * @see AbstractOp#processSecureBytes(Connection, Message)
    * @see AbstractOp#needsUserId()
@@ -1499,7 +1499,7 @@ public abstract class ServerConnection implements Runnable {
 
   /**
    * Just ensure that this class gets loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {

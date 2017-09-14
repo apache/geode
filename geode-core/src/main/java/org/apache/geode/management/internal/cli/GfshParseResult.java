@@ -31,14 +31,14 @@ import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 /**
  * Immutable representation of the outcome of parsing a given shell line. * Extends
  * {@link ParseResult} to add a field to specify the command string that was input by the user.
- * 
+ *
  * <p>
  * Some commands are required to be executed on a remote GemFire managing member. These should be
  * marked with the annotation {@link CliMetaData#shellOnly()} set to <code>false</code>.
  * {@link GfshExecutionStrategy} will detect whether the command is a remote command and send it to
  * ManagementMBean via {@link OperationInvoker}.
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class GfshParseResult extends ParseResult {
@@ -48,7 +48,7 @@ public class GfshParseResult extends ParseResult {
 
   /**
    * Creates a GfshParseResult instance to represent parsing outcome.
-   * 
+   *
    * @param method Method associated with the command
    * @param instance Instance on which this method has to be executed
    * @param arguments arguments of the method

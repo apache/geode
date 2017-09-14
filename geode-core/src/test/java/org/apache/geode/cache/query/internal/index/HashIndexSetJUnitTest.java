@@ -72,7 +72,7 @@ public class HashIndexSetJUnitTest {
   /**
    * we are "indexed" on indexKey. Equality of portfolios is based on ID indexKeys are based on 0 ->
    * numEntries IDs are startID -> startID + numEntries
-   * 
+   *
    * @param numToCreate how many portfolios to create
    * @param startID the ID value to start incrementing from
    */

@@ -21,10 +21,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class DescribeConfigCommandJUnitTest {

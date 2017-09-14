@@ -14,7 +14,6 @@
  */
 package org.apache.geode.rest.internal.web.swagger.config;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -26,6 +25,8 @@ import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 @PropertySource({"classpath:swagger.properties"})
 @Configuration

@@ -17,12 +17,6 @@ package org.apache.geode.test.dunit.standalone;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +35,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
 
 /**
  *

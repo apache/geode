@@ -48,7 +48,7 @@ public class ResultBuilder {
    * <p/>
    * Note: To build your own error result, use {@link #createErrorResultData()} to build
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
-   * 
+   *
    * @param message Message to be shown to the user
    */
   public static CommandResult createConnectionErrorResult(String message) {
@@ -70,7 +70,7 @@ public class ResultBuilder {
    * <p/>
    * Note: To build your own error result, use {@link #createErrorResultData()} to build
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
-   * 
+   *
    * @param message Message to be shown to the user
    */
   public static CommandResult createParsingErrorResult(String message) {
@@ -86,7 +86,7 @@ public class ResultBuilder {
    * <p/>
    * Note: To build your own error result, use {@link #createErrorResultData()} to build
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
-   * 
+   *
    * @param message Message to be shown to the user
    */
   public static CommandResult createGemFireErrorResult(String message) {
@@ -107,7 +107,7 @@ public class ResultBuilder {
    * <p/>
    * Note: To build your own error result, use {@link #createErrorResultData()} to build
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
-   * 
+   *
    * @param message Message to be shown to the user
    */
   public static CommandResult createBadResponseErrorResult(String message) {
@@ -120,7 +120,7 @@ public class ResultBuilder {
    * <p/>
    * Note: To build your own error result, use {@link #createErrorResultData()} to build
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
-   * 
+   *
    * @param errorCode error code should be one of ResultBuilder.ERRORCODE_**
    * @param message message for the error
    */
@@ -133,7 +133,7 @@ public class ResultBuilder {
 
   /**
    * Convenience method to create a simple Info Result that takes a message.
-   * 
+   *
    * @param message Message for the OK Result
    */
   public static Result createInfoResult(String message) {
@@ -145,7 +145,7 @@ public class ResultBuilder {
   /**
    * Creates a {@link TabularResultData} object to start building result that should be shown in a
    * Tabular Format.
-   * 
+   *
    * @return TabularResultData instance
    */
   public static TabularResultData createTabularResultData() {
@@ -163,7 +163,7 @@ public class ResultBuilder {
   /**
    * Creates a {@link InfoResultData} object to start building result that is required to be shown
    * as an information without any specific format.
-   * 
+   *
    * @return InfoResultData instance
    */
   public static InfoResultData createInfoResultData() {
@@ -172,7 +172,7 @@ public class ResultBuilder {
 
   /**
    * Creates a {@link ErrorResultData} object to start building result for an error.
-   * 
+   *
    * @return ErrorResultData instance
    */
   public static ErrorResultData createErrorResultData() {
@@ -181,7 +181,7 @@ public class ResultBuilder {
 
   /**
    * Build a Result object from the given ResultData
-   * 
+   *
    * @param resultData data to use to build Result
    */
   public static CommandResult buildResult(ResultData resultData) {
@@ -192,7 +192,7 @@ public class ResultBuilder {
    * Prepare Result from JSON. Type of result is expected to there in the JSON as 'contentType'
    * which should be one of {@link ResultData#TYPE_TABULAR}, {@link ResultData#TYPE_COMPOSITE},
    * {@link ResultData#TYPE_INFO}, {@link ResultData#TYPE_ERROR}, {@link ResultData#TYPE_OBJECT}.
-   * 
+   *
    * @param gfJsonObject GemFire JSON Object to use to prepare Result
    */
   public static CommandResult fromJson(GfJsonObject gfJsonObject) {
@@ -203,7 +203,7 @@ public class ResultBuilder {
   /**
    * Prepare a Result object from a JSON String. This is useful on gfsh/client to read the response
    * & prepare a Result object from the JSON response
-   * 
+   *
    * @param json JSON string for Result
    */
   public static CommandResult fromJson(String json) {
@@ -266,7 +266,7 @@ public class ResultBuilder {
   /**
    * Wraps a given ResultData and wraps it into appropriate ResultData of the same type but the
    * returned object is immutable & throws UnsupportedOperationException on invoking those methods.
-   * 
+   *
    * @param resultData to be wrapped
    * @return Read only ResultData of the same type
    */

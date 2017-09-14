@@ -18,7 +18,7 @@ import org.apache.geode.cache.query.Aggregator;
 
 /**
  * Abstract Aggregator class providing support for downcasting the result
- * 
+ *
  *
  */
 public abstract class AbstractAggregator implements Aggregator {

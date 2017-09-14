@@ -15,6 +15,12 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import java.util.*;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CommitConflictException;
@@ -35,11 +41,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Provides lock grantor authority to a distributed lock service. This is responsible for granting,
@@ -85,7 +86,7 @@ public class DLockGrantor {
   /**
    * Map of grant tokens for tracking grantor-side state of distributed locks. Key: Object name,
    * Value: DLockGrantToken grant
-   * 
+   *
    * guarded.By grantTokens
    */
   private final Map grantTokens = new HashMap();
@@ -111,7 +112,7 @@ public class DLockGrantor {
    * be replied to until a successor is found, registers transfer intentions with the elder and
    * sends this process a transfer grantorship request. At that point the state will be HALTED as
    * described above.
-   * 
+   *
    * guarded.By this
    */
   private volatile int state = INITIALIZING;
@@ -127,7 +128,7 @@ public class DLockGrantor {
    * Key: Object batchId, Value: DLockBatch batch
    * <p>
    * Handling of batch locks synchronizes on this to assure serial processing.
-   * 
+   *
    * guarded.By batchLocks
    */
   private final Map batchLocks = new HashMap();
@@ -172,7 +173,7 @@ public class DLockGrantor {
 
   /**
    * Identifies remote thread that has currently suspended locking or null.
-   * 
+   *
    * Concurrency: protected by synchronization of {@link #suspendLock}
    */
   protected RemoteThread lockingSuspendedBy = null;
@@ -184,14 +185,14 @@ public class DLockGrantor {
 
   /**
    * Identifies the lockId used by the remote thread to suspend locking.
-   * 
+   *
    * Concurrency: protected by synchronization of {@link #suspendLock}
    */
   protected int suspendedLockId = INVALID_LOCK_ID;
 
   /**
    * FIFO queue for suspend read and write lock waiters.
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private final LinkedList suspendQueue = new LinkedList();
@@ -200,35 +201,35 @@ public class DLockGrantor {
    * Map of read lock counts for each RemoteThread currently holding locks.
    * <p>
    * Key=RemoteThread, Value=ReadLockCount
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private final HashMap readLockCountMap = new HashMap();
 
   /**
    * Number of suspend waiters waiting for write lock.
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private int writeLockWaiters = 0;
 
   /**
    * Total number of read locks held against suspend write lock.
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private int totalReadLockCount = 0;
 
   /**
    * List of next requests to process after handling an unlock or resume.
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private ArrayList permittedRequests = new ArrayList();
 
   /**
    * List of active drains of permittedRequests. TODO: does this need to be a synchronizedList?
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private final List permittedRequestsDrain = Collections.synchronizedList(new LinkedList());
@@ -326,7 +327,7 @@ public class DLockGrantor {
   /**
    * Returns the grantor's version id which was assigned by an elder. Required to help uniquely
    * identify this grantor instance.
-   * 
+   *
    * @return the grantor's version id which was assigned by an elder
    */
   public long getVersionId() {
@@ -336,7 +337,7 @@ public class DLockGrantor {
   /**
    * Sets the version id after the elder tells us what it is. This is called during the explicit
    * become grantor process.
-   * 
+   *
    * @param v the elder assigned version id for this grantor
    */
   public void setVersionId(long v) {
@@ -346,7 +347,7 @@ public class DLockGrantor {
   /**
    * Waits uninterruptibly while this grantor is initializing. Returns when grantor is ready to
    * handle lock requests.
-   * 
+   *
    * @throws DistributedSystemDisconnectedException if system shuts down before grantor is ready
    */
   public void waitWhileInitializing() throws InterruptedException {
@@ -374,7 +375,7 @@ public class DLockGrantor {
   /**
    * Waits uninterruptibly until this service is destroyed. Returns when grantor has been completely
    * destroyed.
-   * 
+   *
    * @throws DistributedSystemDisconnectedException if system shuts down before grantor is destroyed
    */
   public void waitUntilDestroyed() throws InterruptedException {
@@ -405,7 +406,7 @@ public class DLockGrantor {
 
   /**
    * Returns true if this grantor is ready to handle lock requests.
-   * 
+   *
    * @return true if this grantor is ready to handle lock requests
    */
   boolean isReady() {
@@ -414,7 +415,7 @@ public class DLockGrantor {
 
   /**
    * Returns true if this grantor is still initializing and not yet ready for lock requests.
-   * 
+   *
    * @return true if this grantor is still initializing
    */
   boolean isInitializing() {
@@ -423,7 +424,7 @@ public class DLockGrantor {
 
   /**
    * Returns true if this grantor has been destroyed.
-   * 
+   *
    * @return true if this grantor has been destroyed
    */
   public boolean isDestroyed() {
@@ -441,7 +442,7 @@ public class DLockGrantor {
 
   /**
    * Throws LockGrantorDestroyedException if destroyed is true.
-   * 
+   *
    * @param destroyed if true then throw LockGrantorDestroyedException
    * @throws LockGrantorDestroyedException if destroyed is true
    */
@@ -456,7 +457,7 @@ public class DLockGrantor {
    * Handles request for a batch of locks using optimization for transactions.
    * <p>
    * Synchronizes on {@link #batchLocks}.
-   * 
+   *
    * @throws LockGrantorDestroyedException if grantor is destroyed
    */
   void handleLockBatch(DLockRequestMessage request) throws InterruptedException {
@@ -543,7 +544,7 @@ public class DLockGrantor {
    * Returns transaction optimized lock batches that were created by the specified owner.
    * <p>
    * Synchronizes on batchLocks.
-   * 
+   *
    * @param owner member that owned the lock batches to return
    * @return lock batches that were created by owner
    */
@@ -568,7 +569,7 @@ public class DLockGrantor {
    * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
    * <p>
    * see org.apache.geode.internal.cache.TXCommitMessage#updateLockMembers()
-   * 
+   *
    * @param batchId the identifier for the batch to retrieve
    * @return the transaction lock batch identified by the given batchId
    * @see org.apache.geode.internal.cache.locks.TXLockUpdateParticipantsMessage
@@ -606,7 +607,7 @@ public class DLockGrantor {
    * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
    * <p>
    * see org.apache.geode.internal.cache.locks.TXCommitMessage#updateLockMembers()
-   * 
+   *
    * @param batchId the identify of the transaction lock batch
    * @param newBatch the new lock batch to be used
    * @see org.apache.geode.internal.cache.locks.TXLockUpdateParticipantsMessage
@@ -642,7 +643,7 @@ public class DLockGrantor {
    * Releases the transaction optimized lock batch.
    * <p>
    * Acquires acquireDestroyReadLock. Synchronizes on batchLocks.
-   * 
+   *
    * @param batchId the identify of the transaction lock batch to release
    * @param owner the member that has created and locked the lock batch
    * @throws LockGrantorDestroyedException if grantor is destroyed or interrupted
@@ -679,7 +680,7 @@ public class DLockGrantor {
 
   /**
    * Returns true if the request comes from the local member.
-   * 
+   *
    * @param request the lock request to check
    * @return true if the request comes from the local member
    */
@@ -708,7 +709,7 @@ public class DLockGrantor {
    * Handles a DLockQueryMessage. Returns DLockGrantToken for the lock or null.
    * <p>
    * Acquires destroyReadLock. Synchronizes on grantTokens.
-   * 
+   *
    * @param query the dlock query message to handle
    * @return DLockGrantToken for the lock or null
    */
@@ -732,7 +733,7 @@ public class DLockGrantor {
    * scheduled at end of waiting queue to eventually be granted or timed out.
    * <p>
    * Acquires destroyReadLock. Synchronizes on grantTokens, suspendLock and the grant token.
-   * 
+   *
    * @param request the lock request to be processed by this grantor
    * @throws LockGrantorDestroyedException if grantor is destroyed
    */
@@ -786,7 +787,7 @@ public class DLockGrantor {
    * <p>
    * Calling thread must hold destroyReadLock. Synchronizes on grantTokens, suspendLock and the
    * grant token.
-   * 
+   *
    * @param request the lock request to be processed by this grantor guarded.By
    *        {@link #acquireDestroyReadLock(long)}
    */
@@ -834,7 +835,7 @@ public class DLockGrantor {
    * <p>
    * Acquires destroyReadLock. Synchronizes on this grantor, grantTokens, suspendLock, the grant
    * token.
-   * 
+   *
    * @param owner the member that owns the tokens to be scheduled
    * @param tokens set of DLockRemoteTokens to be scheduled for owner
    */
@@ -931,7 +932,7 @@ public class DLockGrantor {
    * Handles a request for extending the lease time of an already held lock.
    * <p>
    * Acquires destroyReadLock. Synchronizes on grantTokens and the grant token.
-   * 
+   *
    * @param request the lock request to be reentered for lease extension
    * @return new extended leaseExpireTime or 0 if requestor no longer holds lock
    */
@@ -984,7 +985,7 @@ public class DLockGrantor {
    * for remote unlock.
    * <p>
    * Acquires destroyReadLock. Synchronizes on grantTokens and the grant token.
-   * 
+   *
    * @param name the name of the lock to release
    * @param owner the member releasing the lock
    * @param lockId the identity of the lease used by the owner
@@ -1010,7 +1011,7 @@ public class DLockGrantor {
    * DLockReleaseMessage.basicProcess -> releaseIfLocked -> getAndReleaseGrantIfLockedBy
    * <p>
    * Caller must hold destroyReadLock. Synchronizes on grantTokens and the grant token.
-   * 
+   *
    * @param name the name of the lock to release
    * @param owner the member attempting to release the granted lock
    * @param lockId the id of the lease used by the owner guarded.By
@@ -1043,7 +1044,7 @@ public class DLockGrantor {
    * the reply has been sent.
    * <p>
    * Acquires destroyReadLock. Synchronizes on grantTokens and the grant token.
-   * 
+   *
    * @param name the name of the lock to grant
    * @throws LockGrantorDestroyedException if grantor is destroyed
    */
@@ -1068,7 +1069,7 @@ public class DLockGrantor {
    * Handles the departure of a member by releasing every lock it owned.
    * <p>
    * Acquires destroyReadLock. Synchronizes on grantTokens, suspendLock, and the grant token.
-   * 
+   *
    * @param owner the member that departed
    */
   void handleDepartureOf(InternalDistributedMember owner) throws InterruptedException {
@@ -1239,7 +1240,7 @@ public class DLockGrantor {
    * <p>
    * Caller must acquire destroyWriteLock. Synchronizes on suspendLock, grantTokens, and each grant
    * token.
-   * 
+   *
    * guarded.By {@link #acquireDestroyWriteLock(long)}
    */
   private void destroyGrantor() {
@@ -1305,7 +1306,7 @@ public class DLockGrantor {
    * Send responses to specified requests informing the senders that this is no longer the grantor.
    * <p>
    * Caller must acquire destroyWriteLock.
-   * 
+   *
    * @param requests the requests to respond to guarded.By {@link #acquireDestroyWriteLock(long)}
    */
   private void respondWithNotGrantor(Iterator requests) {
@@ -1348,7 +1349,7 @@ public class DLockGrantor {
    * Make this grantor ready for handling lock requests.
    * <p>
    * Synchronizes on this grantor.
-   * 
+   *
    * @param enforceInitializing true if this should assert isInitializing
    * @return true if grantor was successfully made ready
    */
@@ -1384,7 +1385,7 @@ public class DLockGrantor {
    * Drain currently permitted requests and grant lock to next requestor.
    * <p>
    * Acquires destroyReadLock. Synchronizes on suspendLock, grantTokens, and the grant token.
-   * 
+   *
    * @param objectName the lock to perform post release tasks for
    */
   void postRemoteReleaseLock(Object objectName) throws InterruptedException {
@@ -1407,7 +1408,7 @@ public class DLockGrantor {
   /**
    * Acquires a read lock on the destroy ReadWrite lock uninterruptibly using millis for try-lock
    * attempt.
-   * 
+   *
    * @param millis the milliseconds to try to acquire lock within
    * @return true if destroy read lock was acquired
    * @throws DistributedSystemDisconnectedException if system has been disconnected
@@ -1444,7 +1445,7 @@ public class DLockGrantor {
 
   /**
    * Acquires the write lock on the destroy ReadWrite lock within specified millis.
-   * 
+   *
    * @param millis the milliseconds to attempt to acquire the lock within
    * @throws DistributedSystemDisconnectedException if system has been disconnected
    */
@@ -1476,7 +1477,7 @@ public class DLockGrantor {
 
   /**
    * Returns time to wait in millis from now based on start and wait in request.
-   * 
+   *
    * @return the current wait time for the request before it times out
    */
   private long calcWaitMillisFromNow(DLockRequestMessage request) {
@@ -1515,7 +1516,7 @@ public class DLockGrantor {
    * Returns a snapshot of the current grant tokens.
    * <p>
    * Synchronizes on grantTokens.
-   * 
+   *
    * @return a snapshot of the current grant tokens
    */
   protected Collection snapshotGrantTokens() {
@@ -1530,7 +1531,7 @@ public class DLockGrantor {
    * Fetches or creates a new grant token for the named lock.
    * <p>
    * Synchronizes on grantTokens and the grant token.
-   * 
+   *
    * @param name the name of the lock
    * @return the grant token for the named lock
    */
@@ -1562,7 +1563,7 @@ public class DLockGrantor {
    * for testing purposes only.
    * <p>
    * Synchronizes on grantTokens.
-   * 
+   *
    * @return unmodifible collection of the grant tokens
    */
   public Collection getGrantTokens() {
@@ -1575,7 +1576,7 @@ public class DLockGrantor {
    * Remove the grant token if it is unused.
    * <p>
    * Synchronizes on grantTokens and the grant token.
-   * 
+   *
    * @param grant the grant token to remove
    */
   protected void removeGrantIfUnused(DLockGrantToken grant) {
@@ -1597,7 +1598,7 @@ public class DLockGrantor {
    * Iterates over grants and attempts to remove any that are no longer in use.
    * <p>
    * Synchronizes on grantTokens and the grant token.
-   * 
+   *
    * @param grants the grants to be checked for removal
    */
   protected void removeUnusedGrants(Iterator grants) {
@@ -1622,7 +1623,7 @@ public class DLockGrantor {
    * Fetches the grant token value stored in the map under key name.
    * <p>
    * Caller must synchronize on grantTokens
-   * 
+   *
    * @param name the key to fetch the grant token value for
    * @return the grant token stored under key name guarded.By {@link #grantTokens}
    */
@@ -1634,7 +1635,7 @@ public class DLockGrantor {
    * Stores the grant token as a value in the map under the key of its name.
    * <p>
    * Caller must synchronize on grantTokens
-   * 
+   *
    * @param grantToken the grant token to store in the map guarded.By {@link #grantTokens}
    */
   private void basicPutGrantToken(DLockGrantToken grantToken) {
@@ -1646,7 +1647,7 @@ public class DLockGrantor {
    * Removes the grant token from the map.
    * <p>
    * Caller must synchronize on grantTokens and then the grantToken.
-   * 
+   *
    * @param grantToken the grant token to remove from the map. guarded.By {@link #grantTokens} and
    *        grantToken
    */
@@ -1666,7 +1667,7 @@ public class DLockGrantor {
    * Iterates over grants and handles any that have expired.
    * <p>
    * Synchronizes on each grant token.
-   * 
+   *
    * @param grants the grants to iterate over
    * @return the next smallest expiration time
    */
@@ -1689,7 +1690,7 @@ public class DLockGrantor {
    * Iterates over grants and handles any that have timed out.
    * <p>
    * Synchronizes on each grant token.
-   * 
+   *
    * @param grants the grants to iterate over
    * @return the next smallest timeout
    */
@@ -1712,7 +1713,7 @@ public class DLockGrantor {
    * TEST HOOK: Specifies time to sleep while handling suspend in order to cause a timeout.
    * <p>
    * Synchronizes on suspendLock.
-   * 
+   *
    * @param value
    */
   public void setDebugHandleSuspendTimeouts(int value) {
@@ -1723,7 +1724,7 @@ public class DLockGrantor {
 
   /**
    * True to enable test hook to sleep while handling suspend to cause timeout.
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private int debugHandleSuspendTimeouts = 0;
@@ -1732,7 +1733,7 @@ public class DLockGrantor {
    * Iterates through a copy of suspendQueue and handles any requests that have timed out.
    * <p>
    * Synchronizes on suspendLock.
-   * 
+   *
    * @return the next smallest timeout in the suspendQueue
    */
   protected long handleSuspendTimeouts() {
@@ -1808,7 +1809,7 @@ public class DLockGrantor {
 
   /**
    * Returns string representation for the enumerated grantor state.
-   * 
+   *
    * @param stateInt the number of the state to return a string for
    * @return string representation for the enumerated grantor state
    */
@@ -1837,7 +1838,7 @@ public class DLockGrantor {
 
   /**
    * Throws IllegalStateException if this grantor is not still initializing.
-   * 
+   *
    * @throws IllegalStateException if this grantor is not still initializing
    */
   private void assertInitializing() {
@@ -1853,9 +1854,9 @@ public class DLockGrantor {
    * Suspends locking by the remote thread and lease id.
    * <p>
    * Caller must synchronize on suspendLock.
-   * 
+   *
    * Concurrency: protected by synchronization of {@link #suspendLock}
-   * 
+   *
    * @param myRThread the remote thread that is about to suspend locking
    * @param lockId the id of the lock request used to suspend locking
    */
@@ -1895,9 +1896,9 @@ public class DLockGrantor {
    * Returns true if locking has been suspended.
    * <p>
    * Caller must synchronize on suspendLock.
-   * 
+   *
    * Concurrency: protected by synchronization of {@link #suspendLock}
-   * 
+   *
    * @return true if locking has been suspended
    */
   protected boolean isLockingSuspended() {
@@ -1911,7 +1912,7 @@ public class DLockGrantor {
    * Returns true if locking has been suspended.
    * <p>
    * Synchronizes on suspendLock.
-   * 
+   *
    * @return true if locking has been suspended
    */
   protected boolean isLockingSuspendedWithSync() {
@@ -1924,9 +1925,9 @@ public class DLockGrantor {
    * Returns true if locking has been suspended by the remote thread.
    * <p>
    * Caller must synchronize on suspendLock.
-   * 
+   *
    * Concurrency: protected by synchronization of {@link #suspendLock}
-   * 
+   *
    * @return true if locking has been suspended by the remote thread
    */
   protected boolean isLockingSuspendedBy(final RemoteThread rThread) {
@@ -2082,7 +2083,7 @@ public class DLockGrantor {
    * Handles post release lock tasks including tracking the current suspend locking states.
    * <p>
    * Synchronizes on suspendLock.
-   * 
+   *
    * @param rThread the remote thread that released the lock
    * @param lock the named lock that was released
    */
@@ -2108,7 +2109,7 @@ public class DLockGrantor {
    * was already permitted to request. This needs to be invoked for both regular and suspend locks.
    * <p>
    * Synchronizes on suspendLock.
-   * 
+   *
    * @param request the request to cleanup after due to departure of sender
    */
   protected void cleanupSuspendState(DLockRequestMessage request) {
@@ -2121,7 +2122,7 @@ public class DLockGrantor {
    * <p>
    * Caller must acquire destroyReadLock. Synchronizes on suspendLock, grantTokens and each grant
    * token.
-   * 
+   *
    * Concurrency: protected by {@link #destroyLock} via invoking
    * {@link #acquireDestroyReadLock(long)}
    */
@@ -2280,7 +2281,7 @@ public class DLockGrantor {
    * suspendQueue and returns false.
    * <p>
    * Synchronizes on suspendLock.
-   * 
+   *
    * @param request the lock request to acquire permission for
    */
   private boolean acquireLockPermission(final DLockRequestMessage request) {
@@ -2301,7 +2302,7 @@ public class DLockGrantor {
   /**
    * Throws InterruptedException if local lock request exists and is interruptible or
    * CancelException if DistributionManager is forcing us to cancel for shutdown.
-   * 
+   *
    * @param e the throwable that caused this check
    */
   private void throwIfInterruptible(InterruptedException e) throws InterruptedException {
@@ -2338,7 +2339,7 @@ public class DLockGrantor {
 
   /**
    * Verify the waiters (for debugging)
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private void checkWriteLockWaiters() {
@@ -2359,7 +2360,7 @@ public class DLockGrantor {
 
   /**
    * Debugging method
-   * 
+   *
    * guarded.By {@link #suspendLock}
    */
   private void checkTotalReadLockCount() {
@@ -2400,7 +2401,7 @@ public class DLockGrantor {
 
     /**
      * Pending requests queued up for the lock
-     * 
+     *
      * guarded.By this
      */
     private LinkedList pendingRequests;
@@ -2408,14 +2409,14 @@ public class DLockGrantor {
     /**
      * The reply processor id is used to identify the specific lock operation used by the lessee to
      * lease this lock
-     * 
+     *
      * guarded.By this
      */
     private int leaseId = -1;
 
     /**
      * Distributed member that currently has a lease on this lock
-     * 
+     *
      * guarded.By this
      */
     private InternalDistributedMember lessee;
@@ -2424,35 +2425,35 @@ public class DLockGrantor {
      * Absolute time in milliseconds when the current lease will expire. When this lock is not
      * leased out, the value is -1. When the lock is leased out, the value is > 0. A value of
      * Long.MAX_VALUE indicates a non-expiring (infinite) lease.
-     * 
+     *
      * guarded.By this
      */
     private long leaseExpireTime = -1;
 
     /**
      * Current count of threads attempting to access this grant token.
-     * 
+     *
      * guarded.By this
      */
     private int accessCount = 0;
 
     /**
      * True if this token has been destroyed and removed from usage.
-     * 
+     *
      * guarded.By this
      */
     private boolean destroyed = false;
 
     /**
      * RemoteThread identity of thread currently holding lease on this lock
-     * 
+     *
      * guarded.By this
      */
     private RemoteThread lesseeThread = null;
 
     /**
      * Instatiates a new instance of DLockGrantToken.
-     * 
+     *
      * @param dlock the lock service scope for this lock
      * @param grantor the grantor handling locks for the lock service
      * @param name the name of this lock
@@ -2469,7 +2470,7 @@ public class DLockGrantor {
      * queue.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @param request the request to grant or schedule
      * @return true if the lock request was immediately granted
      */
@@ -2526,7 +2527,7 @@ public class DLockGrantor {
      * NOTE: expiration is only as accurate as clock synchronization on the hardware that the
      * members are running on probably should have Requestors handle expirations and send Release
      * msg - need an Evictor thread in each Requestor
-     * 
+     *
      * @return the lease expiration time in millis for the currently held lock or Long.MAX_VALUE if
      *         lock has no owner
      */
@@ -2550,7 +2551,7 @@ public class DLockGrantor {
      * Caller must synchronize on this grant token.
      *
      * Concurrency: protected by synchronization of *this* DLockGrantToken
-     * 
+     *
      * @return true if there are pending requests waiting to lock this
      */
     protected synchronized boolean hasWaitingRequests() {
@@ -2563,7 +2564,7 @@ public class DLockGrantor {
      * Grant this lock to the request if possible. Returns true if lock was granted to the request.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @param request the lock request asking for this lock
      * @return true if lock was granted to the request
      */
@@ -2597,9 +2598,9 @@ public class DLockGrantor {
      * <p>
      * Call stack: DLockReleaseMessage -> releaseIfLocked -> getAndReleaseGrantIfLockedBy ->
      * grant.releaseIfLockedBy
-     * 
+     *
      * Concurrency: protected by synchronization of *this* DLockGrantToken
-     * 
+     *
      * @param owner the member to release the lock for
      * @param lockId the lock id that the member used to acquire the lock
      */
@@ -2633,9 +2634,9 @@ public class DLockGrantor {
      * Returns true if lock is currently leased by the owner with the specified lock id.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * Concurrency: protected by synchronization of *this* DLockGrantToken
-     * 
+     *
      * @param owner the member to check for lock ownership
      * @param lockId the lock id that the member used for locking
      * @return true if lock is currently leased by the owner with the specified lock id
@@ -2650,7 +2651,7 @@ public class DLockGrantor {
      * this lock.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @return next smallest timeout of the requests still waiting on this lock
      */
     protected long handleRequestTimeouts() {
@@ -2690,7 +2691,7 @@ public class DLockGrantor {
      * released. Any pending lock requests for this member will be removed.
      * <p>
      * Synchronizes on this grant token, suspendLock, and grantTokens.
-     * 
+     *
      * @param member the departed member
      */
     protected void handleDepartureOf(final InternalDistributedMember member,
@@ -2772,7 +2773,7 @@ public class DLockGrantor {
      * Adds this grant to the list if it references the departed member.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @param member the departed member
      * @param grantsReferencingMember list to add grant to if it references departed member
      */
@@ -2802,7 +2803,7 @@ public class DLockGrantor {
      * Remove all the specified pending requests.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @param requestsToRemove the pending requests to remove guarded.By this
      */
     private void removeRequests(Collection requestsToRemove) {
@@ -2818,9 +2819,9 @@ public class DLockGrantor {
      * Grants this lock to the next waiting request if one exists.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * Concurrency: protected by synchronization of *this* DLockGrantToken
-     * 
+     *
      * @return true if the lock was granted to next request
      */
     protected boolean grantLockToNextRequest() {
@@ -2873,7 +2874,7 @@ public class DLockGrantor {
      * request.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @param request the request to grant the lock to
      * @return leaseExpireTime or -1 if failed to grant. guarded.By this
      */
@@ -2932,7 +2933,7 @@ public class DLockGrantor {
     /**
      * Returns the absolute time at which the specified lease time will expire from now. This call
      * does not change or check any state other than current time.
-     * 
+     *
      * @param leaseTime the desired length of lease time
      * @return the absolute time at which the lease will expire
      */
@@ -2958,9 +2959,9 @@ public class DLockGrantor {
      * Returns true if this grant token is currently granted.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * Concurrency: protected by synchronization of *this* DLockGrantToken
-     * 
+     *
      * @param checkForExpiration true if expiration should be attempted before checking if this
      *        grant token is currently granted
      * @return true if this grant token is currently granted
@@ -2976,7 +2977,7 @@ public class DLockGrantor {
      * Creates a string of the pending requests for logging or debugging.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @return a string of the pending requests for logging or debugging guarded.By this
      */
     private String pendingRequestsToString() {
@@ -3009,7 +3010,7 @@ public class DLockGrantor {
      * <p>
      * Synchronizes on this grant token.
      * <p>
-     * 
+     *
      * @param displayPendingRequests true if string should include pendingRequests
      */
     public String toString(boolean displayPendingRequests) {
@@ -3034,7 +3035,7 @@ public class DLockGrantor {
 
     /**
      * Returns the name of this lock.
-     * 
+     *
      * @return the name of this lock
      */
     Object getName() {
@@ -3043,7 +3044,7 @@ public class DLockGrantor {
 
     /**
      * Returns true if this lock represents suspend locking.
-     * 
+     *
      * @return true if this lock represents suspend locking
      * @see org.apache.geode.distributed.DistributedLockService#suspendLocking(long)
      */
@@ -3055,7 +3056,7 @@ public class DLockGrantor {
      * Returns the lock id used to lease this lock.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @return the lock id used to lease this lock guarded.By this
      */
     int getLockId() {
@@ -3066,7 +3067,7 @@ public class DLockGrantor {
      * Returns the identity of the thread that has this lock leased.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @return the identity of the thread that has this lock leased guarded.By this
      */
     RemoteThread getRemoteThread() {
@@ -3077,7 +3078,7 @@ public class DLockGrantor {
      * Increments or decrements access count by the specified amount.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @param amount the amount to inc or dec access count by
      */
     private synchronized void incAccess(int amount) {
@@ -3110,7 +3111,7 @@ public class DLockGrantor {
      * Returns true if the access count is greater than zero.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @return true if the access count is greater than zero
      */
     boolean isBeingAccessed() {
@@ -3123,7 +3124,7 @@ public class DLockGrantor {
      * Returns the member that currently holds a lease on this lock.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @return the member that currently holds a lease on this lock
      */
     public synchronized InternalDistributedMember getOwner() {
@@ -3135,9 +3136,9 @@ public class DLockGrantor {
      * lease will expire.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * Concurrency: protected by synchronization of *this* DLockGrantToken
-     * 
+     *
      * @return the lease expiration time
      */
     public long getLeaseExpireTime() {
@@ -3148,7 +3149,7 @@ public class DLockGrantor {
      * Returns true if this grant token has been destroyed.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @return true if this grant token has been destroyed
      */
     public synchronized boolean isDestroyed() {
@@ -3157,7 +3158,7 @@ public class DLockGrantor {
 
     /**
      * Returns the current time in milliseconds.
-     * 
+     *
      * @return the current time in milliseconds
      */
     long getCurrentTime() {
@@ -3169,7 +3170,7 @@ public class DLockGrantor {
      * grant token.
      * <p>
      * Synchronizes on this grant token.
-     * 
+     *
      * @return true if the lease is expired
      */
     synchronized boolean checkForExpiration() {
@@ -3208,7 +3209,7 @@ public class DLockGrantor {
      * Grants this lock.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @param owner the member that is being granted the lock
      * @param newLeaseExpireTime the absolute expiration time
      * @param lockId the lock id used to request the lock
@@ -3225,7 +3226,7 @@ public class DLockGrantor {
      * Modify grant token state to mark the lock as granted.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @param owner the member that has been granted the lock
      * @param newLeaseExpireTime the absolute expiration time
      * @param lockId the lock id used to request the lock
@@ -3249,7 +3250,7 @@ public class DLockGrantor {
      * Returns true if this lock is currently leased out.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @return true if this lock is currently leased out guarded.By this
      */
     boolean isLeaseHeld() {
@@ -3277,7 +3278,7 @@ public class DLockGrantor {
      * Throws IllegalStateException if this grant token has been destroyed.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @throws IllegalStateException if this grant token has been destroyed guarded.By this
      */
     private void checkDestroyed() {
@@ -3294,7 +3295,7 @@ public class DLockGrantor {
      * member and lockId.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @param member the member to release the lock from
      * @param lockId the lock id that the member used when locking
      * @return true if lock was released guarded.By this
@@ -3328,7 +3329,7 @@ public class DLockGrantor {
      * Returns true if the sender holds a lease on this lock using lockId.
      * <p>
      * Caller must synchronize on this grant token.
-     * 
+     *
      * @param sender the member that potentially holds a lease
      * @param lockId the lock id provided by the member
      * @return true if the sender holds a lease on this lock guarded.By this
@@ -3697,4 +3698,3 @@ public class DLockGrantor {
   };
 
 }
-

@@ -17,22 +17,21 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.VM;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test class is intended to contain basic integration tests of the lucene query class that

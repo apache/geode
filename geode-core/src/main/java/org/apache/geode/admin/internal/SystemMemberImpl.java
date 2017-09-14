@@ -14,6 +14,11 @@
  */
 package org.apache.geode.admin.internal;
 
+import java.net.InetAddress;
+import java.util.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.*;
@@ -28,10 +33,6 @@ import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
-import java.net.InetAddress;
-import java.util.*;
 
 /**
  * Member of a GemFire system.
@@ -105,12 +106,12 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   /**
    * Constructs the instance of SystemMember using the corresponding InternalDistributedMember
    * instance of a DS member for the given AdminDistributedSystem.
-   * 
+   *
    * @param system Current AdminDistributedSystem instance
    * @param member InternalDistributedMember instance for which a SystemMember instance is to be
    *        constructed.
    * @throws AdminException if construction of SystemMember fails
-   * 
+   *
    * @since GemFire 6.5
    */
   protected SystemMemberImpl(AdminDistributedSystem system, InternalDistributedMember member)
@@ -402,9 +403,9 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
 
   /**
    * Updates this SystemMember instance using the corresponding InternalDistributedMember
-   * 
+   *
    * @param member InternalDistributedMember instance to update this SystemMember
-   * 
+   *
    * @since GemFire 6.5
    */
   private void updateByInternalDistributedMember(InternalDistributedMember member) {
@@ -484,4 +485,3 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return this.internalId;
   }
 }
-

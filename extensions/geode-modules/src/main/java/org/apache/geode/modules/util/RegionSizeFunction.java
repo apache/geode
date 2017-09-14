@@ -14,12 +14,12 @@
  */
 package org.apache.geode.modules.util;
 
+import java.util.Properties;
+
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
-
-import java.util.Properties;
 
 public class RegionSizeFunction implements Function, Declarable {
 

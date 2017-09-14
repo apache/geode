@@ -61,20 +61,20 @@ import org.apache.geode.security.GemFireSecurityException;
  * specify it in a dynamic-region-factory element in your cache.xml.
  *
  * <li>Before you've created a GemFire Cache in your application, add a line of code as follows:<br>
- * 
+ *
  * <pre>
  * {
  *   DynamicRegionFactory factory = DynamicRegionFactory.get();
  *   factory.open(config);
  * }
  * </pre>
- * 
+ *
  * <pre>
  * {
  *   DynamicRegionFactory myFactoryHandle = DynamicRegionFactory.get().open(config);
  * }
  * </pre>
- * 
+ *
  * or just use a dynamic-region-factory element in the cache.xml.
  *
  * <li>Create the GemFire Cache. During cache creation, the list of dynamic Regions will either be
@@ -90,14 +90,14 @@ import org.apache.geode.security.GemFireSecurityException;
  * <p>
  * All other instances of GemFire across the distributed system that instantiate and open a
  * DynamicRegionFactory will also get the dynamic distributed Regions.
- * 
+ *
  * <li>Non-dynamic parent Regions should be declared in cache.xml so that they can be created before
  * the dynamic Region factory goes active and starts creating Regions. You will have cache creation
  * problems if this isn't done.
- * 
+ *
  * <li>A DynamicRegionListener can be registered before open is called and before cache creation so
  * that the listener will be called if dynamic Regions are created during cache creation.
- * 
+ *
  * </ul>
  * <p>
  * Saving the factory on disk: If {@link DynamicRegionFactory.Config#persistBackup} is configured
@@ -117,18 +117,18 @@ import org.apache.geode.security.GemFireSecurityException;
  * <li>DynamicRegionFactories in non-client VMs must not be configured with a pool.
  * <li>If {@link #open()} is called before cache creation and the cache.xml has a
  * dynamic-region-factory element then the cache.xml will override the open call's configuration.
- * 
+ *
  * <li>Since the RegionAttributes of a dynamically created Region are copied from the parent Region,
  * any callbacks, ({@link CacheListener}, {@link CacheWriter}, and {@link CacheLoader} are shared by
  * the parent and all its dynamic children so make sure the callback is thread-safe and that its
  * {@link CacheCallback#close} implementation does not stop it from functioning. However the
  * products LRUAlgorithm instances will be cloned so that each dynamic Region has its own callback.
- * 
+ *
  * <li>The root Region name "DynamicRegions" is reserved. The factory creates a root Region of that
  * name and uses it to keep track of what dynamic Regions exist. Applications should not directly
  * access this Region; instead use the methods on this factory.
  * </ul>
- * 
+ *
  * @since GemFire 4.3
  * @deprecated This class is deprecated. Use {@link FunctionService} to create regions on other
  *             members instead.
@@ -170,7 +170,7 @@ public abstract class DynamicRegionFactory {
    * Opens the factory with the given settings. This should be sent to the factory before creating a
    * cache. The cache will otherwise open a factory with default settings. This does not need to be
    * sent if the cache.xml declares the use of dynamic regions.
-   * 
+   *
    * @param conf the configuration for this factory.
    */
   public void open(Config conf) {
@@ -228,7 +228,7 @@ public abstract class DynamicRegionFactory {
    * This method is called internally during cache initialization at the correct time. Initialize
    * the factory with a GemFire Cache. We create the metadata Region which holds all our dynamically
    * created regions.
-   * 
+   *
    * @param theCache The GemFire {@code Cache}
    */
   protected void doInternalInit(InternalCache theCache) throws CacheException {
@@ -348,7 +348,7 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Returns the {@code DynamicRegionFactory} singleton instance.
-   * 
+   *
    * @return the {@code DynamicRegionFactory} singleton instance
    */
   public static DynamicRegionFactory get() {
@@ -357,7 +357,7 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Registers a {@code DynamicRegionListener} for callbacks.
-   * 
+   *
    * @param listener The {@code DynamicRegionListener} to be registered
    */
   public void registerDynamicRegionListener(DynamicRegionListener listener) {
@@ -373,7 +373,7 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Unregisters a {@code DynamicRegionListener} for callbacks.
-   * 
+   *
    * @param listener The {@code DynamicRegionListener} to be unregistered
    */
   public void unregisterDynamicRegionListener(DynamicRegionListener listener) {
@@ -514,7 +514,7 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Creates the dynamic Region in the local cache and distributes the creation to other caches.
-   * 
+   *
    * @param parentRegionName the new region is created as a subregion of the region having this path
    * @param regionName the name of the new subregion
    * @return the {@code Region} created
@@ -532,7 +532,7 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Destroys the dynamic Region in the local cache and distributes the destruction to other caches.
-   * 
+   *
    * @param fullRegionName The full path of the {@code Region} to be dynamically destroyed
    * @throws RegionDestroyedException if the dynamic region was never created or has already been
    *         destroyed
@@ -679,7 +679,7 @@ public abstract class DynamicRegionFactory {
    * <li>persistBackup: {@code true}
    * <li>registerInterest: {@code true}
    * </ul>
-   * 
+   *
    * @since GemFire 4.3
    */
   public static class Config {

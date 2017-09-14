@@ -154,7 +154,7 @@ public class HAContainerMap implements HAContainerWrapper {
     throw new UnsupportedOperationException("values() not supported.");
   }
 
-  static protected class Entry implements Map.Entry {
+  protected static class Entry implements Map.Entry {
     private Object key = null;
 
     private Object value = null;

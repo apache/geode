@@ -28,7 +28,7 @@ import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 /**
  * Creates LogWriterLogger instances.
- * 
+ *
  */
 public class LogWriterFactory {
 
@@ -40,7 +40,7 @@ public class LogWriterFactory {
   /**
    * Creates the log writer for a distributed system based on the system's parsed configuration. The
    * initial banner and messages are also entered into the log by this method.
-   * 
+   *
    * @param isLoner Whether the distributed system is a loner or not
    * @param isSecure Whether a logger for security related messages has to be created
    * @param config The DistributionConfig for the target distributed system

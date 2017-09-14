@@ -14,16 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
-import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
-import org.apache.geode.internal.cache.InitialImageOperation.RegionStateMessage;
-import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
-import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -33,9 +23,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
+import org.apache.geode.internal.cache.InitialImageOperation.RegionStateMessage;
+import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
+import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+
 /**
  * A helper class for serializing the event state map.
- * 
+ *
  * TODO - Store the event state map in DataSerializable object that keeps the map in this compressed
  * format in memory.
  *

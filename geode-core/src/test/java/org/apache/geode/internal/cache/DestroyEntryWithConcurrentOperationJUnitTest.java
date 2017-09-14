@@ -14,20 +14,21 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TestCase that emulates the conditions that entry destroy with concurrent destroy region or cache
@@ -73,7 +74,7 @@ public class DestroyEntryWithConcurrentOperationJUnitTest {
 
   /**
    * Close a cache.
-   * 
+   *
    * @param gfc the cache to close.
    */
   protected void closeCache(GemFireCacheImpl gfc) {
@@ -110,7 +111,7 @@ public class DestroyEntryWithConcurrentOperationJUnitTest {
 
   /**
    * Creates and returns the test region.
-   * 
+   *
    * @param concurrencyChecksEnabled concurrency checks will be enabled if true.
    */
   protected Region<Object, Object> createRegion(boolean concurrencyChecksEnabled,

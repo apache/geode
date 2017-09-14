@@ -15,7 +15,6 @@
 
 package org.apache.geode.admin;
 
-// import org.apache.geode.GemFireException;
 
 /**
  * Thrown when an administration operation that accesses information in a remote system member is

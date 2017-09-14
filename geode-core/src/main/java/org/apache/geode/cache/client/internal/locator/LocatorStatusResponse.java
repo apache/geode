@@ -15,13 +15,6 @@
 
 package org.apache.geode.cache.client.internal.locator;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.process.PidUnavailableException;
-import org.apache.geode.internal.process.ProcessUtils;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,10 +24,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.process.PidUnavailableException;
+import org.apache.geode.internal.process.ProcessUtils;
+
 /**
  * The LocatorStatusResponse class...
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.client.internal.locator.ServerLocationResponse
  * @since GemFire 7.0
  */

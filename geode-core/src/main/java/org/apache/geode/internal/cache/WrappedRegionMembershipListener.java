@@ -32,7 +32,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /**
    * has initMembers been invoked?
-   * 
+   *
    * @guarded.By initLock
    */
   private boolean initialized;
@@ -56,7 +56,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.RegionMembershipListener#afterRemoteRegionCrash(org.apache.geode.cache.
    * RegionEvent)
@@ -71,7 +71,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.RegionMembershipListener#afterRemoteRegionCreate(org.apache.geode.cache.
    * RegionEvent)
@@ -86,7 +86,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.RegionMembershipListener#afterRemoteRegionDeparture(org.apache.geode.
    * cache.RegionEvent)
@@ -101,7 +101,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.RegionMembershipListener#initialMembers(org.apache.geode.cache.Region,
    * org.apache.geode.distributed.DistributedMember[])
@@ -117,7 +117,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheListener#afterCreate(org.apache.geode.cache.EntryEvent)
    */
   public void afterCreate(EntryEvent event) {
@@ -126,7 +126,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheListener#afterDestroy(org.apache.geode.cache.EntryEvent)
    */
   public void afterDestroy(EntryEvent event) {
@@ -135,7 +135,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheListener#afterInvalidate(org.apache.geode.cache.EntryEvent)
    */
   public void afterInvalidate(EntryEvent event) {
@@ -144,7 +144,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheListener#afterRegionClear(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionClear(RegionEvent event) {
@@ -153,7 +153,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheListener#afterRegionCreate(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionCreate(RegionEvent event) {
@@ -162,7 +162,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.CacheListener#afterRegionDestroy(org.apache.geode.cache.RegionEvent)
    */
@@ -172,7 +172,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.CacheListener#afterRegionInvalidate(org.apache.geode.cache.RegionEvent)
    */
@@ -182,7 +182,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheListener#afterRegionLive(org.apache.geode.cache.RegionEvent)
    */
   public void afterRegionLive(RegionEvent event) {
@@ -191,7 +191,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheListener#afterUpdate(org.apache.geode.cache.EntryEvent)
    */
   public void afterUpdate(EntryEvent event) {
@@ -200,7 +200,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheCallback#close()
    */
   public void close() {
@@ -209,7 +209,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -219,7 +219,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -229,7 +229,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override

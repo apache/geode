@@ -23,17 +23,17 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -45,17 +45,17 @@ import com.gemstone.gemfire.OldClientSupportProvider;
 @SuppressWarnings("deprecation")
 public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
 
-  static private final List<String> allGeodeThrowableClasses =
+  private static final List<String> allGeodeThrowableClasses =
       Arrays.asList(new String[] {"org.apache.geode.cache.execute.EmptyRegionFunctionException",});
 
-  static private final List<String> newArrayClassNames = Arrays.asList(new String[] {
+  private static final List<String> newArrayClassNames = Arrays.asList(new String[] {
       "[Lorg.apache.geode.class1", "[[Lorg.apache.geode.class1", "[[[Lorg.apache.geode.class1"});
 
-  static private final List<String> oldArrayClassNames =
+  private static final List<String> oldArrayClassNames =
       Arrays.asList(new String[] {"[Lcom.gemstone.gemfire.class1", "[[Lcom.gemstone.gemfire.class1",
           "[[[Lcom.gemstone.gemfire.class1"});
 
-  static private final List<String> allNonconformingArrayClassNames = Arrays.asList(
+  private static final List<String> allNonconformingArrayClassNames = Arrays.asList(
       new String[] {"[Lmypackage.org.apache.geode.class2", "[[Lmypackage.org.apache.geode.class2"});
 
   private Cache myCache;

@@ -15,6 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
+import java.util.*;
+import java.util.Map.Entry;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -22,17 +27,12 @@ import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
-import java.util.*;
-import java.util.Map.Entry;
-
-import org.apache.logging.log4j.Logger;
-
 /**
  * TXRegionState is the entity that tracks all the changes a transaction has made to a region.
  *
- * 
+ *
  * @since GemFire 4.0
- * 
+ *
  * @see TXManagerImpl
  */
 public class TXRegionState {
@@ -172,7 +172,7 @@ public class TXRegionState {
 
   /**
    * Fills in a set of any entries created by this transaction for the provided region.
-   * 
+   *
    * @param ret the HashSet to fill in with key objects
    */
   void fillInCreatedEntryKeys(HashSet ret) {
@@ -246,7 +246,7 @@ public class TXRegionState {
 
   /**
    * Returns a set of entry keys that this tx needs to request a lock for at commit time.
-   * 
+   *
    * @return <code>null</code> if no entries need to be locked.
    */
   private Set getLockRequestEntryKeys() {

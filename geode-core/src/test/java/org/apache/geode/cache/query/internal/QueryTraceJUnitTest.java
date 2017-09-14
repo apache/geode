@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal;
 
@@ -74,7 +74,7 @@ public class QueryTraceJUnitTest {
 
   /**
    * Tests tracing on queries with <TRACE> or <trace> tag.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -153,7 +153,7 @@ public class QueryTraceJUnitTest {
 
   /**
    * negative testing: if <TRACE> is in comments not tracing is done.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -195,7 +195,7 @@ public class QueryTraceJUnitTest {
 
   /**
    * negative testing: if <TRACE> is in comments not tracing is done.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -235,7 +235,7 @@ public class QueryTraceJUnitTest {
 
   /**
    * No Query comments
-   * 
+   *
    * @throws Exception
    */
   @Test

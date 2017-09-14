@@ -53,7 +53,7 @@ public enum OffHeapIdentifier {
 
   /**
    * Creates a new OffHeapIdentifier.
-   * 
+   *
    * @param id a unique identifier.
    */
   OffHeapIdentifier(final String id) {

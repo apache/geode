@@ -16,7 +16,13 @@ package org.apache.geode.internal.cache.persistence;
 
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
@@ -32,11 +38,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
 
 public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 

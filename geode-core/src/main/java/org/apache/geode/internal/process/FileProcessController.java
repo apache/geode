@@ -33,7 +33,7 @@ import org.apache.geode.lang.AttachAPINotFoundException;
 
 /**
  * Controls a {@link ControllableProcess} using files to communicate between processes.
- * 
+ *
  * @since GemFire 8.0
  */
 class FileProcessController implements ProcessController {
@@ -46,10 +46,10 @@ class FileProcessController implements ProcessController {
 
   /**
    * Constructs an instance for controlling a local process.
-   * 
+   *
    * @param parameters details about the controllable process
    * @param pid process id identifying the process to control
-   * 
+   *
    * @throws IllegalArgumentException if pid is not a positive integer
    */
   FileProcessController(final FileControllerParameters parameters, final int pid) {
@@ -58,12 +58,12 @@ class FileProcessController implements ProcessController {
 
   /**
    * Constructs an instance for controlling a local process.
-   * 
+   *
    * @param parameters details about the controllable process
    * @param pid process id identifying the process to control
    * @param timeout the timeout that operations must complete within
    * @param units the units of the timeout
-   * 
+   *
    * @throws IllegalArgumentException if pid is not a positive integer
    */
   FileProcessController(final FileControllerParameters parameters, final int pid,

@@ -28,7 +28,7 @@ public class GlobPattern {
 
   /**
    * Construct the glob pattern object with a glob pattern string
-   * 
+   *
    * @param globPattern the glob pattern string
    */
   public GlobPattern(String globPattern) {
@@ -44,7 +44,7 @@ public class GlobPattern {
 
   /**
    * Compile glob pattern string
-   * 
+   *
    * @param globPattern the glob pattern
    * @return the pattern object
    */
@@ -54,7 +54,7 @@ public class GlobPattern {
 
   /**
    * Match input against the compiled glob pattern
-   * 
+   *
    * @param s input chars
    * @return true for successful matches
    */
@@ -64,7 +64,7 @@ public class GlobPattern {
 
   /**
    * Set and compile a glob pattern
-   * 
+   *
    * @param glob the glob pattern string
    */
   public void set(String glob) {

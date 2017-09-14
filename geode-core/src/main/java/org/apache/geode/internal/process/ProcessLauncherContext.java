@@ -23,7 +23,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 /**
  * Thread based context for launching a process. GemFire internals can acquire optional
  * configuration details from a process launcher via this context.
- * 
+ *
  * @since GemFire 7.0
  */
 public class ProcessLauncherContext {
@@ -53,7 +53,7 @@ public class ProcessLauncherContext {
 
   /**
    * Returns true if this process should redirect output to the system log.
-   * 
+   *
    * @return true if this process should redirect output to the system log
    */
   public static boolean isRedirectingOutput() {
@@ -68,7 +68,7 @@ public class ProcessLauncherContext {
    * Returns the gemfire properties to be used if none of the specified properties are defined by
    * any other mechanism. This will only override default values. If a property is defined by System
    * property, API, or within gemfire.properties then the contingent value will be ignored.
-   * 
+   *
    * @return the contingent gemfire properties values to be used as an alternative default value
    */
   public static Properties getOverriddenDefaults() {

@@ -14,11 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -27,6 +22,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
   private String memberIdOrName;
@@ -223,7 +223,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   /**
    * Remove elements from the list that are not instances of CliFunctionResult and then sort the
    * results.
-   * 
+   *
    * @param results The results to clean.
    * @return The cleaned results.
    */

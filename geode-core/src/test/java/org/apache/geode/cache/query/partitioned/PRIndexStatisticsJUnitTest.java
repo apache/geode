@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.partitioned;
 
@@ -101,7 +101,7 @@ public class PRIndexStatisticsJUnitTest {
    */
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -171,7 +171,7 @@ public class PRIndexStatisticsJUnitTest {
 
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -241,7 +241,7 @@ public class PRIndexStatisticsJUnitTest {
 
   /**
    * Test CompactMapRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -313,7 +313,7 @@ public class PRIndexStatisticsJUnitTest {
 
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -389,7 +389,7 @@ public class PRIndexStatisticsJUnitTest {
 
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -467,7 +467,7 @@ public class PRIndexStatisticsJUnitTest {
 
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -544,7 +544,7 @@ public class PRIndexStatisticsJUnitTest {
 
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -625,7 +625,7 @@ public class PRIndexStatisticsJUnitTest {
 
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test

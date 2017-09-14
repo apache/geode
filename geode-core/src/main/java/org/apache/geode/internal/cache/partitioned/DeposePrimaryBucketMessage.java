@@ -62,7 +62,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
 
   /**
    * Sends a message to depose the primary bucket.
-   * 
+   *
    * @param recipient the member to depose as primary
    * @param region the PartitionedRegion of the bucket
    * @param bucketId the bucket to depose primary for

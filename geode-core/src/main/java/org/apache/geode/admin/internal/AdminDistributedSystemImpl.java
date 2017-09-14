@@ -14,6 +14,16 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.*;
+import java.util.concurrent.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.*;
@@ -39,16 +49,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.util.concurrent.FutureResult;
-
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.*;
-import java.util.concurrent.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Represents a GemFire distributed system for remote administration/management.
@@ -126,7 +126,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * <p>
    * This is volatile to allow SystemFailure to deliver fatal poison-pill to thisAdminDS without
    * waiting on synchronization.
-   * 
+   *
    * @guarded.By CONNECTION_SYNC
    */
   private static volatile AdminDistributedSystemImpl thisAdminDS;
@@ -434,9 +434,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     return this.controller;
   }
 
-  static private final String TIMEOUT_MS_NAME = "AdminDistributedSystemImpl.TIMEOUT_MS";
-  static private final int TIMEOUT_MS_DEFAULT = 60000; // 30000 -- see bug36470
-  static private final int TIMEOUT_MS =
+  private static final String TIMEOUT_MS_NAME = "AdminDistributedSystemImpl.TIMEOUT_MS";
+  private static final int TIMEOUT_MS_DEFAULT = 60000; // 30000 -- see bug36470
+  private static final int TIMEOUT_MS =
       Integer.getInteger(TIMEOUT_MS_NAME, TIMEOUT_MS_DEFAULT).intValue();
 
 
@@ -569,7 +569,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   /**
    * Sets the distribution-related portion of the given managed entity's configuration so that the
    * entity is part of this distributed system.
-   * 
+   *
    * @throws AdminException TODO-javadocs
    */
   private void setDistributionParameters(SystemMember member) throws AdminException {
@@ -1223,7 +1223,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   /**
    * Override createSystemMember by instantiating SystemMemberImpl
-   * 
+   *
    * @throws AdminException TODO-javadocs
    */
   protected SystemMember createSystemMember(ApplicationVM app)
@@ -1234,7 +1234,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   /**
    * Constructs & returns a SystemMember instance using the corresponding InternalDistributedMember
    * object.
-   * 
+   *
    * @param member InternalDistributedMember instance for which a SystemMember instance is to be
    *        constructed.
    * @return constructed SystemMember instance
@@ -1405,8 +1405,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * <code>GemFireVM</code> or <code>null</code> if no Finds and returns the
    * <code>SystemMember</code> that corresponds to the given <code>GemFireVM</code> or
    * <code>null</code> if no <code>SystemMember</code> corresponds.
-   * 
-   * 
+   *
+   *
    * @param vm GemFireVM instance
    * @param compareConfig Should the members' configurations be compared? <code>true</code> when the
    *        member has joined, <code>false</code> when the member has left Should the members'
@@ -1752,7 +1752,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   /**
    * Returns the instance of system member that is running either as a CacheVm or only ApplicationVm
    * for the given string representation of the id.
-   * 
+   *
    * @param memberId string representation of the member identifier
    * @return instance of system member which could be either as a CacheVm or Application VM
    */
@@ -1900,11 +1900,11 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   /**
    * Returns all the cache server members of the distributed system which are hosting a client queue
    * for the particular durable-client having the given durableClientId
-   * 
+   *
    * @param durableClientId - durable-id of the client
    * @return array of CacheServer(s) having the queue for the durable client
    * @throws AdminException
-   * 
+   *
    * @since GemFire 5.6
    */
   public CacheServer[] getCacheServers(String durableClientId) throws AdminException {
@@ -1946,7 +1946,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override // GemStoneAddition
@@ -1960,7 +1960,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * <p>
    * TODO: remove this static method during reimplementation of
    * {@link SystemMemberCacheEventProcessor}
-   * 
+   *
    * @return AdminDistributedSystem
    */
   public static AdminDistributedSystemImpl getConnectedInstance() {
@@ -2243,7 +2243,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   }
 
   /**
-   * 
+   *
    * @deprecated use {@link #revokePersistentMember(UUID)} instead
    */
   public static void revokePersistentMember(DM dm, InetAddress host, String directory) {
@@ -2284,7 +2284,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   /**
    * Shutdown all members.
-   * 
+   *
    * @param dm
    * @param timeout the amount of time (in ms) to spending trying to shutdown the members
    *        gracefully. After this time period, the members will be forceable shut down. If the
@@ -2334,10 +2334,10 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   /**
    * This method can be used to process ClientMembership events sent for BridgeMembership by bridge
    * servers to all admin members.
-   * 
+   *
    * NOTE: Not implemented currently. JMX implementation which is a subclass of this class i.e.
    * AdminDistributedSystemJmxImpl implements it.
-   * 
+   *
    * @param senderId id of the member that sent the ClientMembership changes for processing (could
    *        be null)
    * @param clientId id of a client for which the notification was sent
@@ -2366,4 +2366,3 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     return getAlertLevel().getName();
   }
 }
-

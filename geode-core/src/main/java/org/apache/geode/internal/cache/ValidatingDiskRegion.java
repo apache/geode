@@ -43,7 +43,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A disk region that is created when doing offline validation.
- * 
+ *
  * @since GemFire prPersistSprint3
  */
 public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStore {
@@ -255,7 +255,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.internal.cache.DiskEntry#getVersionStamp()
      */
     @Override

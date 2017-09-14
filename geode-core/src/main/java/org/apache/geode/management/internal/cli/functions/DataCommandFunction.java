@@ -766,7 +766,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   /**
    * Returns a sorted list of all region full paths found in the specified cache.
-   * 
+   *
    * @param cache The cache to search.
    * @param recursive recursive search for sub-regions
    * @return Returns a sorted list of all region paths defined in the distributed system.

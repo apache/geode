@@ -13,19 +13,20 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -41,8 +42,8 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
@@ -51,11 +52,9 @@ import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Verifies that the {@link org.apache.geode.cache.PartitionResolver} is called only once on a node,
@@ -65,8 +64,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Category(DistributedTest.class)
 public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
-  final private static String CUSTOMER = "custRegion";
-  final private static String ORDER = "orderRegion";
+  private static final String CUSTOMER = "custRegion";
+  private static final String ORDER = "orderRegion";
   Host host;
   VM accessor;
   VM datastore1;

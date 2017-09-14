@@ -14,14 +14,15 @@
  */
 package org.apache.geode.internal.protocol.state;
 
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadState;
 
 public class ConnectionShiroAuthorizingStateProcessor implements ConnectionStateProcessor {
   private final SecurityService securityService;

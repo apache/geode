@@ -27,10 +27,10 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * is using a GemFire system.
  */
 public class OSXProcessStats {
-  // private final static int imageSizeINT = 0;
-  // private final static int rssSizeINT = 1;
+  // private static final int imageSizeINT = 0;
+  // private static final int rssSizeINT = 1;
 
-  private final static StatisticsType myType;
+  private static final StatisticsType myType;
 
   private static void checkOffset(String name, int offset) {
     int id = myType.nameToId(name);

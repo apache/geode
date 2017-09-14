@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,10 +43,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * bug test for bug 36805
@@ -54,7 +53,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
  * When server is running but region is not created on server. Client sends register interest
  * request, server checks for region, and if region is not exist on server, it throws an exception
  * to the client. Hence, client marks server as dead.
- * 
+ *
  * To avoid this, there should not be any check of region before registration. And region
  * registration should not fail due to non existent region.
  */

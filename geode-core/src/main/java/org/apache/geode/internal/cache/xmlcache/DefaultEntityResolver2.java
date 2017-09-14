@@ -52,7 +52,7 @@ public abstract class DefaultEntityResolver2 implements EntityResolver2 {
 
   /**
    * Get {@link InputSource} for path in class path.
-   * 
+   *
    * @param path to resource to get {@link InputSource} for.
    * @return InputSource if resource found, otherwise null.
    * @since GemFire 8.1

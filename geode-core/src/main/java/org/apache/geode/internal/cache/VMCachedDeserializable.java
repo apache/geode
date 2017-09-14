@@ -73,7 +73,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
   /**
    * Create a new instance with an object and it's size. Note the caller decides if objectSize is
    * the memory size or the serialized size.
-   * 
+   *
    * @param object
    * @param objectSize
    */
@@ -272,4 +272,3 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     return true;
   }
 }
-

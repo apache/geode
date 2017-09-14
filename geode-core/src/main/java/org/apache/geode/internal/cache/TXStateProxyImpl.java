@@ -54,7 +54,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   private boolean isJTA;
   private TXId txId;
-  final protected TXManagerImpl txMgr;
+  protected final TXManagerImpl txMgr;
   protected DistributedMember target;
   private boolean commitRequestedByOwner;
   private boolean isJCATransaction;
@@ -109,7 +109,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   /**
    * This returns either the TXState for the current transaction or a proxy for the state if it is
    * held in another member. If no state currently exists, one is created
-   * 
+   *
    * @param key the key of the entry that is currently being modified
    * @param r the region that is currently being modified
    * @return the state or a proxy for the state

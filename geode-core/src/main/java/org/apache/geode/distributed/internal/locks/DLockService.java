@@ -15,6 +15,24 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
@@ -44,23 +62,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.internal.util.concurrent.FutureResult;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implements the distributed locking service with distributed lock grantors.
@@ -197,7 +198,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Create a new LockServiceDestroyedException for this lock service.
-   * 
+   *
    * @param message the detail message that explains the exception
    * @return new LockServiceDestroyedException
    */
@@ -207,7 +208,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Returns the string message to use in a LockServiceDestroyedException for this lock service.
-   * 
+   *
    * @return the detail message that explains LockServiceDestroyedException
    */
   protected String generateLockServiceDestroyedMessage() {
@@ -217,7 +218,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Returns true if {@link #lockGrantorId} is the same as the specified LockGrantorId. Caller must
    * synchronize on {@link #lockGrantorIdLock}.
-   * 
+   *
    * @param someLockGrantorId the LockGrantorId to check
    */
   private boolean checkLockGrantorId(LockGrantorId someLockGrantorId) {
@@ -231,7 +232,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Returns true if lockGrantorId is the same as the specified LockGrantorId. Caller must
    * synchronize on lockGrantorIdLock.
-   * 
+   *
    * @param someLockGrantorId the LockGrantorId to check
    */
   public boolean isLockGrantorId(LockGrantorId someLockGrantorId) {
@@ -373,7 +374,7 @@ public class DLockService extends DistributedLockService {
    * Creates a local {@link DLockGrantor}.
    *
    * if (!createLocalGrantor(xxx)) { theLockGrantorId = this.lockGrantorId; }
-   * 
+   *
    * @param elder the elder that told us to be the grantor
    * @param needsRecovery true if recovery is required
    * @param myLockGrantorId lockGrantorId to use
@@ -534,7 +535,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Set {@link #lockGrantorId} to the given new value if the current value is null or is an older
    * grantor version. Caller must hold {@link #lockGrantorIdLock}.
-   * 
+   *
    * @param newLockGrantorId the new value for lockGrantorId
    */
   private boolean setLockGrantorId(LockGrantorId newLockGrantorId) {
@@ -564,7 +565,7 @@ public class DLockService extends DistributedLockService {
    * Set {@link #lockGrantorId} to the <code>localLockGrantorId</code> if current value is null or
    * is an older grantor version. This also atomically sets {@link #grantor} to ensure that the two
    * fields are kept in sync. Caller must hold {@link #lockGrantorIdLock}.
-   * 
+   *
    * @param localLockGrantorId the new value for lockGrantorId
    * @param localGrantor the new local intance of DLockGrantor
    */
@@ -582,7 +583,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Deposes {@link #lockGrantorId} if <code>newLockGrantorId</code> is newer.
-   * 
+   *
    * @param newLockGrantorId the new lock grantor
    */
   void deposeOlderLockGrantorId(LockGrantorId newLockGrantorId) {
@@ -609,7 +610,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Sets {@link #lockGrantorId} to null if the current value equals the expected old value. Caller
    * must hold {@link #lockGrantorIdLock}.
-   * 
+   *
    * @param oldLockGrantorId the expected old value
    * @return true if lockGrantorId was set to null
    */
@@ -650,7 +651,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Returns true if the grantor version of <code>dlockGrantor</code> equals the
    * <code>grantorVersion</code>.
-   * 
+   *
    * @param dlockGrantor the grantor instance to compare to grantorVersion
    * @param grantorVersion the grantor version number
    * @return true if dlockGrantor is the same grantor version
@@ -664,7 +665,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Returns true if <code>someLockGrantor</code> equals the current {@link #lockGrantorId}.
-   * 
+   *
    * @param someLockGrantor
    * @return true if someLockGrantor equals the current lockGrantorId
    */
@@ -730,7 +731,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Returns lockGrantorId when lockGrantorFutureResultRef has been set by another thread.
-   * 
+   *
    * @param lockGrantorFutureResultRef FutureResult to wait for
    * @param timeToWait how many ms to wait, 0 = forever
    * @param timeUnit the unit of measure for timeToWait
@@ -773,7 +774,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * nulls out grantor to force call to elder
-   * 
+   *
    * @param timeToWait how long to wait for a new grantor. -1 don't wait, 0 no time limit
    * @param timeUnit the unit of measure of timeToWait
    */
@@ -1090,7 +1091,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Attempt to destroy and remove lock token. Synchronizes on tokens map and the lock token.
-   * 
+   *
    * @param name the name of the lock token
    * @return true if token has been destroyed and removed
    */
@@ -1336,16 +1337,16 @@ public class DLockService extends DistributedLockService {
    * @param name the name of the lock to acquire in this service. This object must conform to the
    *        general contract of <code>equals(Object)</code> and <code>hashCode()</code> as described
    *        in {@link java.lang.Object#hashCode()}.
-   * 
+   *
    * @param waitTimeMillis the number of milliseconds to try to acquire the lock before giving up
    *        and returning false. A value of -1 causes this method to block until the lock is
    *        acquired.
-   * 
+   *
    * @param leaseTimeMillis the number of milliseconds to hold the lock after granting it, before
    *        automatically releasing it if it hasn't already been released by invoking
    *        {@link #unlock(Object)}. If <code>leaseTimeMillis</code> is -1, hold the lock until
    *        explicitly unlocked.
-   * 
+   *
    * @param tryLock true if the lock should be acquired or fail if currently held. waitTimeMillis
    *        will be ignored if the lock is currently held by another client.
    *
@@ -1356,7 +1357,7 @@ public class DLockService extends DistributedLockService {
    *
    * @return true if the lock was acquired, false if the timeout <code>waitTimeMillis</code> passed
    *         without acquiring the lock.
-   * 
+   *
    * @throws InterruptedException if the thread is interrupted before or during this method.
    *
    * @throws UnsupportedOperationException if attempt to lock batch involves non-tryLocks
@@ -1839,7 +1840,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Query the grantor for current leasing information of a lock. Returns the current lease info.
-   * 
+   *
    * @param name the named lock to get lease information for
    * @return snapshot of the remote lock information
    * @throws LockServiceDestroyedException if local instance of lock service has been destroyed
@@ -1884,7 +1885,7 @@ public class DLockService extends DistributedLockService {
    * instance.
    * <p>
    * Caller must be synchronized on {@link DLockService#services}.
-   * 
+   *
    * @see org.apache.geode.distributed.DistributedLockService#create(String, DistributedSystem)
    */
   static DLockService basicCreate(String serviceName, InternalDistributedSystem ds,
@@ -2133,7 +2134,7 @@ public class DLockService extends DistributedLockService {
    * Returns copy of the tokens map. Synchronizes on token map.
    * <p>
    * Called by {@link org.apache.geode.internal.admin.remote.FetchDistLockInfoResponse}.
-   * 
+   *
    * @return copy of the tokens map
    */
   public Map<Object, DLockToken> snapshotService() {
@@ -2183,7 +2184,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Returns true if any tokens in this service are currently held. Synchronizes on tokens map and
    * on each token to check the lease.
-   * 
+   *
    * @return true if any tokens in this service are currently held
    */
   boolean hasHeldLocks() {
@@ -2272,7 +2273,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Destroys an existing service and removes it from the map
-   * 
+   *
    * @since GemFire 3.5
    */
   public void destroyAndRemove() {
@@ -2470,7 +2471,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Returns the named lock token or null if it doesn't exist. Synchronizes on tokens map.
-   * 
+   *
    * @return the named lock token or null if it doesn't exist
    */
   public DLockToken getToken(Object name) {
@@ -2482,7 +2483,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Returns the named lock token or null if it doesn't exist. Caller must synchronize on tokens
    * map.
-   * 
+   *
    * @return the named lock token or null if it doesn't exist
    */
   private DLockToken basicGetToken(Object name) {
@@ -2492,7 +2493,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Returns an unmodifiable collection backed by the values of the DLockToken map for testing
    * purposes only. Synchronizes on tokens map.
-   * 
+   *
    * @return an unmodifiable collection of the tokens map values
    */
   public Collection getTokens() {
@@ -2536,7 +2537,7 @@ public class DLockService extends DistributedLockService {
   /**
    * Returns number of lock tokens currently leased by this member. Synchronizes on tokens map and
    * each lock token.
-   * 
+   *
    * @return number of lock tokens currently leased by this member
    */
   private int numLocksHeldInThisVM() {
@@ -2615,7 +2616,7 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
 
   /** Destroys all named locking services on disconnect from system */
-  protected final static InternalDistributedSystem.DisconnectListener disconnectListener =
+  protected static final InternalDistributedSystem.DisconnectListener disconnectListener =
       new InternalDistributedSystem.DisconnectListener() {
         @Override
         public String toString() {
@@ -2683,7 +2684,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Incrementing serial number used to identify order of DLS creation
-   * 
+   *
    * @see DLockService#getSerialNumber()
    */
   private static final AtomicInteger serialNumberSequencer = new AtomicInteger(START_SERIAL_NUMBER);
@@ -2698,7 +2699,7 @@ public class DLockService extends DistributedLockService {
    * Generates a serial number for identifying a DLS. Later instances of the same named DLS will
    * have a greater serial number than earlier instances. This number increments statically
    * throughout the life of this JVM. Rollover to negative is allowed.
-   * 
+   *
    * @return the new serial number
    */
   protected static int createSerialNumber() {
@@ -2814,7 +2815,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Fills lists of service names.
-   * 
+   *
    * @param grantors filled with service names of all services we are currently the grantor of.
    * @param grantorVersions elder assigned grantor version ids
    * @param grantorSerialNumbers member specific DLS serial number hosting grantor
@@ -2848,7 +2849,7 @@ public class DLockService extends DistributedLockService {
    * Called when an elder is doing recovery. For every service that we are the grantor for add it to
    * the grantorMap For every service we have that is not in the grantorMap add its name to
    * needsRecovery set.
-   * 
+   *
    * @param dm our local DM
    */
   public static void recoverLocalElder(DM dm, Map grantors, Set needsRecovery) {
@@ -2948,7 +2949,7 @@ public class DLockService extends DistributedLockService {
 
   /**
    * Return a timestamp that represents the current time for locking purposes.
-   * 
+   *
    * @since GemFire 3.5
    */
   static long getLockTimeStamp(DM dm) {
@@ -3092,7 +3093,7 @@ public class DLockService extends DistributedLockService {
 
     /**
      * Creates a new DLockStopper for the specified DLockService and DM.
-     * 
+     *
      * @param dm the DM to check for shutdown
      * @param dls the DLockService to check for DLS destroy
      */
@@ -3139,4 +3140,3 @@ public class DLockService extends DistributedLockService {
   }
 
 }
-

@@ -14,6 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
@@ -21,19 +30,11 @@ import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
 
 /**
  * Test for simluating the deadLock condition as in bug#37244
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class Bug37244JUnitTest {
@@ -127,12 +128,12 @@ public class Bug37244JUnitTest {
 
   /**
    * Test Implementation class of NewLRUClockHand for bug37244.
-   * 
-   * 
-   * 
+   *
+   *
+   *
    */
 
-  static public class TestLRUClockHand extends NewLRUClockHand {
+  public static class TestLRUClockHand extends NewLRUClockHand {
 
     protected static Object mutex = new Object();
 
@@ -142,7 +143,7 @@ public class Bug37244JUnitTest {
 
     /**
      * Constructor
-     * 
+     *
      * @param region
      * @param ccHelper
      */
@@ -179,9 +180,9 @@ public class Bug37244JUnitTest {
     }
 
     /**
-     * 
+     *
      * clearThread
-     * 
+     *
      */
     protected static class clearThread implements Runnable {
       LocalRegion region = null;
@@ -220,9 +221,9 @@ public class Bug37244JUnitTest {
     }
 
     /**
-     * 
+     *
      * putThread
-     * 
+     *
      */
 
     protected static class putThread implements Runnable {

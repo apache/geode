@@ -34,9 +34,9 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.memcached.ConnectionHandler;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * This is the Server that listens for incoming memcached client connections. This server
@@ -47,9 +47,9 @@ import org.apache.geode.internal.memcached.ConnectionHandler;
  * <p>
  * "gemcached" region is {@link RegionShortcut#PARTITION} by default, though a cache.xml can be
  * provided to override region attributes.
- * 
+ *
  * This class has a Main method that can be used to start the server.
- * 
+ *
  *
  */
 public class GemFireMemcachedServer {
@@ -117,7 +117,7 @@ public class GemFireMemcachedServer {
 
   /**
    * Create an instance of the server. to start the server {@link #start()} must be called.
-   * 
+   *
    * @param port the port on which the server listens for new memcached client connections.
    */
   public GemFireMemcachedServer(int port) {
@@ -132,7 +132,7 @@ public class GemFireMemcachedServer {
 
   /**
    * Create an instance of the server. to start the server {@link #start()} must be called.
-   * 
+   *
    * @param bindAddress the address on which the server listens for new memcached client
    *        connections.
    * @param port the port on which the server listens for new memcached client connections.
@@ -239,7 +239,7 @@ public class GemFireMemcachedServer {
   }
 
   /**
-   * 
+   *
    * @param args
    */
   public static void main(String[] args) {

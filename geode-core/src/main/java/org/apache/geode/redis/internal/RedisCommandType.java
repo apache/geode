@@ -131,7 +131,7 @@ import org.apache.geode.redis.internal.executor.transactions.WatchExecutor;
 /**
  * The redis command type used by the server. Each command is directly from the redis protocol and
  * calling {@link #getExecutor()} on a type returns the executor class for that command.
- * 
+ *
  *
  */
 public enum RedisCommandType {
@@ -2884,7 +2884,7 @@ public enum RedisCommandType {
   /**
    * Abstract method overridden by each value in enum to get the executor associated with that
    * command type
-   * 
+   *
    * @return {@link Executor} for command type
    */
   public abstract Executor getExecutor();

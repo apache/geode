@@ -14,9 +14,9 @@
  */
 package org.apache.geode.admin;
 
-import org.apache.geode.distributed.DistributedMember;
-
 import java.net.InetAddress;
+
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Administrative interface for monitoring a GemFire system member.
@@ -142,4 +142,3 @@ public interface SystemMember {
    */
   public DistributedMember getDistributedMember();
 }
-

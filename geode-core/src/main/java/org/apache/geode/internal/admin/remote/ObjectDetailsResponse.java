@@ -16,13 +16,12 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
 
 /**
@@ -119,7 +118,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
 
 
   // Holds the last result of getObjectName to optimize the next call
-  static private Object lastObjectNameFound = null;
+  private static Object lastObjectNameFound = null;
 
   static Object getObjectName(Region r, Object objName) throws CacheException {
     if (objName instanceof RemoteObjectName) {

@@ -24,15 +24,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.internal.cache.CachedDeserializable;
-import org.apache.geode.internal.cache.EntrySnapshot;
-import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
+import org.apache.lucene.document.Document;
 import org.awaitility.Awaitility;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.ExpirationAction;
@@ -47,8 +43,12 @@ import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.query.data.PortfolioPdx;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.lucene.document.Document;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest {

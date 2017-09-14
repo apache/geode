@@ -17,11 +17,12 @@ package org.apache.geode.internal.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class CallbackInstantiatorTest {

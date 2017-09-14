@@ -49,4 +49,3 @@ public enum ResourceEvent {
   CACHE_SERVICE_REMOVE
 
 }
-

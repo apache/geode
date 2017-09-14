@@ -14,12 +14,12 @@
  */
 package org.apache.geode.cache.lucene.internal.partition;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.internal.cache.PartitionedRegion;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A partition resolver that expects the actual bucket id to be the callback argument of all

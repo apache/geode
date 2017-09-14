@@ -25,14 +25,14 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.net.InetAddress;
 
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
 import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -194,7 +194,7 @@ public class GMSMemberJUnitTest {
    * <p>
    * This must be backward-compatible with Geode 1.0 (Version.GFE_90)
    * </p>
-   * 
+   *
    * @throws Exception
    */
   @Test

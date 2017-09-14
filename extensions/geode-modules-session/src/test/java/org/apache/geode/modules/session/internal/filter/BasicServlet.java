@@ -16,6 +16,7 @@
 package org.apache.geode.modules.session.internal.filter;
 
 import java.io.IOException;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;

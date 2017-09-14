@@ -20,14 +20,14 @@ import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.Support;
 
 /**
- * 
+ *
  *
  */
 public class ASTUnary extends GemFireAST {
   private static final long serialVersionUID = -3906821390970046083L;
 
   /**
-   * 
+   *
    * @param t
    */
   public ASTUnary(Token t) {
@@ -35,7 +35,7 @@ public class ASTUnary extends GemFireAST {
   }
 
   /**
-   * 
+   *
    *
    */
   public ASTUnary() {}

@@ -37,6 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
@@ -67,18 +69,17 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
-import org.apache.logging.log4j.Logger;
 
 /**
  * The internal implementation of the {@link CacheTransactionManager} interface returned by
  * {@link InternalCache#getCacheTransactionManager}. Internal operations
- * 
+ *
  * {@code TransactionListener} invocation, Region synchronization, transaction statistics and
- * 
+ *
  * transaction logging are handled here
  *
  * @since GemFire 4.0
- * 
+ *
  * @see CacheTransactionManager
  */
 public class TXManagerImpl implements CacheTransactionManager, MembershipListener {
@@ -197,7 +198,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Get the TransactionWriter for the cache
-   * 
+   *
    * @return the current TransactionWriter
    * @see TransactionWriter
    */
@@ -612,7 +613,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * sets {@link TXStateProxy#setInProgress(boolean)} when a txContext is present. This method must
    * only be used in fail-over scenarios.
-   * 
+   *
    * @param progress value of the progress flag to be set
    * @return the previous value of inProgress flag
    * @see TXStateProxy#setInProgress(boolean)
@@ -701,7 +702,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * If the current thread is in a transaction then internal suspend will cause it to no longer be
    * in a transaction. The thread can start a new transaction after it internal suspended a
    * transaction.
-   * 
+   *
    * @return the state of the transaction or null. to reactivate the suspended transaction.
    */
   public TXStateProxy internalSuspend() {
@@ -843,7 +844,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * Associate the remote txState with the thread processing this message. Also, we acquire a lock
    * on the txState, on which this thread operates. Some messages like SizeMessage should not create
    * a new txState.
-   * 
+   *
    * @return {@link TXStateProxy} the txProxy for the transactional message
    */
   public TXStateProxy masqueradeAs(TransactionMessage msg) throws InterruptedException {
@@ -922,7 +923,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * Associate the remote txState with the thread processing this message. Also, we acquire a lock
    * on the txState, on which this thread operates. Some messages like SizeMessage should not create
    * a new txState.
-   * 
+   *
    * @param probeOnly - do not masquerade; just look up the TX state
    * @return {@link TXStateProxy} the txProxy for the transactional message
    */
@@ -972,7 +973,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Associate the transactional state with this thread.
-   * 
+   *
    * @param txState the transactional state.
    */
   public void masqueradeAs(TXStateProxy txState) {
@@ -995,7 +996,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Cleanup the remote txState after commit and rollback
-   * 
+   *
    * @return the TXStateProxy
    */
   public TXStateProxy removeHostedTXState(TXId txId) {
@@ -1029,7 +1030,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Used to verify if a transaction with a given id is hosted by this txManager.
-   * 
+   *
    * @return true if the transaction is in progress, false otherwise
    */
   public boolean isHostedTxInProgress(TXId txId) {
@@ -1090,7 +1091,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * retrieve the transaction TXIds for the given client
-   * 
+   *
    * @param id the client's membership ID
    * @return a set of the currently open TXIds
    */
@@ -1108,7 +1109,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * retrieve the transaction states for the given client
-   * 
+   *
    * @param id the client's membership ID
    * @return a set of the currently open transaction states
    */
@@ -1190,7 +1191,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * If the given transaction is already being completed by another thread this will wait for that
    * completion to finish and will ensure that the result is saved in the client failover map.
-   * 
+   *
    * @return true if a wait was performed
    */
   public boolean waitForCompletingTransaction(TXId txId) {
@@ -1217,7 +1218,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Returns the TXCommitMessage for a transaction that has been successfully completed.
-   * 
+   *
    * @return the commit message or an exception token e.g {@link TXCommitMessage#CMT_CONFLICT_MSG}
    *         if the transaction threw an exception
    * @see #isExceptionToken(TXCommitMessage)
@@ -1240,7 +1241,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * Generates exception messages for the three TXCommitMessage tokens that represent exceptions
    * during transaction execution.
-   * 
+   *
    * @param msg the token that represents the exception
    * @return the exception
    */
@@ -1445,7 +1446,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * The timeout after which any suspended transactions are rolled back if they are not resumed. If
    * a negative timeout is passed, suspended transactions will never expire.
-   * 
+   *
    * @param timeout the timeout in minutes
    */
   public void setSuspendedTransactionTimeout(long timeout) {
@@ -1454,7 +1455,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Return the timeout after which suspended transactions are rolled back.
-   * 
+   *
    * @return the timeout in minutes
    * @see #setSuspendedTransactionTimeout(long)
    */
@@ -1470,7 +1471,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * schedules the transaction to expire after {@link #suspendedTXTimeout}
-   * 
+   *
    * @param expiryTimeUnit the time unit to use when scheduling the expiration
    */
   private void scheduleExpiry(TransactionId txId, TimeUnit expiryTimeUnit) {
@@ -1745,7 +1746,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * Find all client originated transactions sent from the departed proxy server. Remove them from
    * the hostedTXStates map after the set TransactionTimeToLive period.
-   * 
+   *
    * @param proxyServer the departed proxy server
    */
   public void removeTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
@@ -1774,9 +1775,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /*
    * retrieve the transaction states for the given client from a certain proxy server. if
    * transactions failed over, the new proxy server information should be stored in the TXState
-   * 
+   *
    * @param id the proxy server
-   * 
+   *
    * @return a set of the currently open transaction states
    */
   private Set<TXId> getTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {

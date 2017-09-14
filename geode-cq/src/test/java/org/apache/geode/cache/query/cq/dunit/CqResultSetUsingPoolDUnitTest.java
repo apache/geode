@@ -14,19 +14,14 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
@@ -47,6 +42,10 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the ContinuousQuery mechanism in GemFire.
@@ -126,7 +125,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -181,7 +180,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set with Compact Range Index.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -226,7 +225,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set with Range Index.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -285,7 +284,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -342,7 +341,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set with Compact Range Index.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -391,7 +390,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set with Range Index.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -464,7 +463,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -586,7 +585,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -713,7 +712,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -809,7 +808,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Set caching for destroy events.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -928,7 +927,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests CQ Result Caching with CQ Failover.
-   * 
+   *
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1251

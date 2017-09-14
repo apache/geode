@@ -14,6 +14,17 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Properties;
+import java.util.UUID;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -27,16 +38,6 @@ import org.apache.geode.internal.cache.entries.VMThinRegionEntryOffHeapStringKey
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryOffHeapStringKey2;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryOffHeapUUIDKey;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.UUID;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class InlineKeyJUnitTest {

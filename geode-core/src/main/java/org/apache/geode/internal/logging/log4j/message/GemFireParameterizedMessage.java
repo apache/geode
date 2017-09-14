@@ -85,7 +85,7 @@ public class GemFireParameterizedMessage implements Message {
 
   /**
    * Creates a parameterized message.
-   * 
+   *
    * @param messagePattern The message "format" string. This will be a String containing "{}"
    *        placeholders where parameters should be substituted.
    * @param stringArgs The arguments for substitution.
@@ -100,7 +100,7 @@ public class GemFireParameterizedMessage implements Message {
 
   /**
    * Creates a parameterized message.
-   * 
+   *
    * @param messagePattern The message "format" string. This will be a String containing "{}"
    *        placeholders where parameters should be substituted.
    * @param objectArgs The arguments for substitution.
@@ -133,7 +133,7 @@ public class GemFireParameterizedMessage implements Message {
 
   /**
    * Constructor with a pattern and a single parameter.
-   * 
+   *
    * @param messagePattern The message pattern.
    * @param arg The parameter.
    */
@@ -143,7 +143,7 @@ public class GemFireParameterizedMessage implements Message {
 
   /**
    * Constructor with a pattern and two parameters.
-   * 
+   *
    * @param messagePattern The message pattern.
    * @param arg1 The first parameter.
    * @param arg2 The second parameter.
@@ -183,7 +183,7 @@ public class GemFireParameterizedMessage implements Message {
 
   /**
    * Returns the formatted message.
-   * 
+   *
    * @return the formatted message.
    */
   @Override
@@ -196,7 +196,7 @@ public class GemFireParameterizedMessage implements Message {
 
   /**
    * Returns the message pattern.
-   * 
+   *
    * @return the message pattern.
    */
   @Override
@@ -206,7 +206,7 @@ public class GemFireParameterizedMessage implements Message {
 
   /**
    * Returns the message parameters.
-   * 
+   *
    * @return the message parameters.
    */
   @Override
@@ -377,7 +377,7 @@ public class GemFireParameterizedMessage implements Message {
    * This means, in effect, that logging would produce a usable output even if an ordinary
    * System.out.println(o) would produce a relatively hard-to-debug StackOverflowError.
    * </p>
-   * 
+   *
    * @param o The object.
    * @return The String representation.
    */

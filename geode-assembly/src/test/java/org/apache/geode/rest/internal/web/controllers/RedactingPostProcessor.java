@@ -14,10 +14,10 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import org.apache.geode.security.PostProcessor;
-
 import java.security.Principal;
 import java.util.Properties;
+
+import org.apache.geode.security.PostProcessor;
 
 /**
  * This is example that implements PostProcessor that will redact Social Security Numbers from

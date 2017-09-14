@@ -15,6 +15,13 @@
 
 package org.apache.geode.internal.cache.locks;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -25,12 +32,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
-import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /** Provides clean separation of implementation from public facade */
 public class TXLockServiceImpl extends TXLockService {
@@ -279,4 +280,3 @@ public class TXLockServiceImpl extends TXLockService {
   }
 
 }
-

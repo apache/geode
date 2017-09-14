@@ -56,8 +56,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <P>
  * (1) testPut() - Tests teh put() functionality for the partitioned region.
  * </P>
- * 
- * 
+ *
+ *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Category(IntegrationTest.class)
@@ -89,8 +89,8 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
    * 2)test the put() operation and validate that old values are returned in case of PR with scope
    * D_ACK.
    * </p>
-   * 
-   * 
+   *
+   *
    */
   @Test
   public void test000Put() throws Exception {
@@ -178,7 +178,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * This is a test for PartitionedRegion destroy(key) operation.
-   * 
+   *
    */
   @Test
   public void test001Destroy() throws Exception {
@@ -241,7 +241,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * This is a test for PartitionedRegion get(key) operation.
-   * 
+   *
    */
   @Test
   public void test002Get() throws Exception {
@@ -350,7 +350,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * Tests getCache() API of PR. This should return same value as the cache used.
-   * 
+   *
    */
   @Test
   public void test004GetCache() throws Exception {
@@ -370,7 +370,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * Tests getFullPath() API of PartitionedRegion.
-   * 
+   *
    */
   @Test
   public void test005GetFullPath() throws Exception {
@@ -388,7 +388,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * Tests getParentRegion() API of PR. This should return null as PR doesnt have a parentRegion
-   * 
+   *
    */
   @Test
   public void test006GetParentRegion() throws Exception {
@@ -407,7 +407,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * Tests getName() API of PR. Name returned should be same as the one used to create PR.
-   * 
+   *
    */
   @Test
   public void test007GetName() throws Exception {
@@ -469,7 +469,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
   /**
    * Tests close() API of PR. It should close the accessor and delete the data-store and related
    * meta-data information.
-   * 
+   *
    */
   @Test
   public void test010Close() throws Exception {
@@ -507,7 +507,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
   /**
    * Tests localDestroyRegion() API of PR. It should locallyDestroy the accessor, data store and
    * meta-data.
-   * 
+   *
    */
   @Test
   public void test011LocalDestroyRegion() throws Exception {
@@ -541,7 +541,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * This method is used to test the isDestroyed() functionality.
-   * 
+   *
    */
   @Test
   public void test012IsDestroyed() throws Exception {
@@ -571,23 +571,23 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
   /**
    * This method validates that PR closed behavior matches that of local region closed behavior.
-   * 
+   *
    */
   /*
    * public void xxNoTestValidateCloseFunction() throws Exception { String partitionRegionName =
    * "testValidateCloseFunction"; PartitionedRegion pr =
    * (PartitionedRegion)PartitionedRegionTestHelper .createPartitionedRegion(partitionRegionName,
    * String.valueOf(200), 2, Scope.DISTRIBUTED_ACK); String diRegion = "diRegion";
-   * 
+   *
    * Region distRegion = null;
-   * 
+   *
    * AttributesFactory af = new AttributesFactory(); RegionAttributes regionAttributes; // setting
    * property af.setScope(Scope.DISTRIBUTED_ACK); // creating region attributes regionAttributes =
    * af.create(); try { distRegion = PartitionedRegionTestHelper.createCache().createRegion(
    * diRegion, regionAttributes); } catch (RegionExistsException rex) { distRegion =
    * PartitionedRegionTestHelper.createCache() .getRegion(diRegion); } // Closing the regions
    * distRegion.close(); pr.close();
-   * 
+   *
    * if (!pr.getCache().equals(distRegion.getCache())) {
    * fail("testValidateCloseFunction: getCache is not matching. "); } else { if
    * (logger.fineEnabled()) { logger.fine("getCache() matched on closed PR and distributed region
@@ -595,12 +595,12 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
    * fail("testValidateCloseFunction: getName behavior not matching. "); } else { if
    * (logger.fineEnabled()) { logger.fine("getName) matched on closed PR and distributed region ");
    * } }
-   * 
+   *
    * if (distRegion.getFullPath().length() != pr.getFullPath().length()) {
    * fail("testValidateCloseFunction: getFullPath behavior not matching. "); } else { if
    * (logger.fineEnabled()) { logger .fine("getFullPath) matched on closed PR and distributed region
    * "); } }
-   * 
+   *
    * if (logger.fineEnabled()) { logger .fine("PartitionedRegionSingleNodeOperationsJUnitTest -
    * testValidateCloseFunction() Completed successfully ... "); } }
    */
@@ -888,7 +888,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
    * This method is used to test the setUserAttributes functionality. It verifies that it sets the
    * UserAttributes on an open PR without throwing any exception. It also verifies that it throws
    * RegionDestroyedException on a closed PR.
-   * 
+   *
    */
   @Test
   public void test015SetUserAttributes() throws Exception {
@@ -923,7 +923,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
    * This method is used to test the getUserAttributes functionality. It verifies that it gets the
    * UserAttributes on an open PR without throwing any exception. It also verifies that it throws
    * RegionDestroyedException on a closed PR.
-   * 
+   *
    */
   @Test
   public void test016GetUserAttributes() throws Exception {
@@ -953,7 +953,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
    * This method is used to test the getAttributesMutator functionality. It verifies that it gets
    * the handle for attributes mutator on an open PR without throwing any exception. It also
    * verifies that it throws RegionDestroyedException on a closed PR.
-   * 
+   *
    */
   @Test
   public void test017GetAttributesMutator() throws Exception {
@@ -1035,18 +1035,18 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     /*
      * PartitionedRegion pr1 = (PartitionedRegion)PartitionedRegionTestHelper
      * .createPartitionedRegion(regionName + 2, String.valueOf(200), 0, Scope.DISTRIBUTED_ACK);
-     * 
+     *
      * putSomeValues(pr1); java.util.Iterator buckRegionIterator1 =
      * pr1.getDataStore().localBucket2RegionMap .values().iterator(); while
      * (buckRegionIterator1.hasNext()) { Region bucket = (Region)buckRegionIterator1.next();
      * assertIndexDetailsEquals(Scope.DISTRIBUTED_ACK, bucket.getAttributes().getScope());
      * assertIndexDetailsEquals(MirrorType.KEYS_VALUES, bucket.getAttributes() .getMirrorType()); }
-     * 
+     *
      * pr1.destroyRegion();
-     * 
+     *
      * PartitionedRegion pr2 = (PartitionedRegion)PartitionedRegionTestHelper
      * .createPartitionedRegion(regionName + 2, String.valueOf(200), 0, Scope.DISTRIBUTED_NO_ACK);
-     * 
+     *
      * putSomeValues(pr2); java.util.Iterator buckRegionIterator2 =
      * pr2.getDataStore().localBucket2RegionMap .values().iterator(); while
      * (buckRegionIterator2.hasNext()) { Region bucket = (Region)buckRegionIterator2.next();

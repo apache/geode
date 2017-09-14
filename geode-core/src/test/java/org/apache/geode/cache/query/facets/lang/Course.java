@@ -18,8 +18,6 @@ package org.apache.geode.cache.query.facets.lang;
 import org.apache.geode.cache.query.CacheUtils;
 
 
-// import java.util.*;
-
 
 public class Course {
   private String _title;

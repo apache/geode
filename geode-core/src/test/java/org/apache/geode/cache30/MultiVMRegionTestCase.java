@@ -40,7 +40,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Ignore;
@@ -87,6 +86,7 @@ import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -1413,7 +1413,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   /**
    * Indicate whether this region supports netload
-   * 
+   *
    * @return true if it supports netload
    */
   protected boolean supportsNetLoad() {
@@ -2777,7 +2777,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   /**
    * Indicate whether replication/GII supported
-   * 
+   *
    * @return true if replication is supported
    */
   protected boolean supportsReplication() {
@@ -6232,7 +6232,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   /**
    * Indicate whether this region supports transactions
-   * 
+   *
    * @return true if it supports transactions
    */
   protected boolean supportsTransactions() {
@@ -6248,7 +6248,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void testTXUpdateLoadNoConflict() throws Exception {
     /*
      * this no longer holds true - we have load conflicts now
-     * 
+     *
      */
     if (true) {
       return;

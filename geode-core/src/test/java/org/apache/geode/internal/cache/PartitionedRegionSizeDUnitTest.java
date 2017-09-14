@@ -14,16 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import java.io.File;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -46,13 +42,16 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test verifies the size API for 100 thousand put operations (done synch/asynch) on
  * PartitionedRegions with different combinations of Scope and Redundancy (Scope DIST_ACK,
  * Redundancy 1 AND Scope DIST_NO_ACK, Redundancy 0).
- * 
- * 
+ *
+ *
  */
 @Category(DistributedTest.class)
 public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCase {
@@ -65,9 +64,9 @@ public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCa
 
   static final Boolean value = new Boolean(true);
 
-  final static int MAX_REGIONS = 1;
+  static final int MAX_REGIONS = 1;
 
-  final static int cnt = 100;
+  static final int cnt = 100;
 
   final int totalNumBuckets = 5;
 
@@ -75,7 +74,7 @@ public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCa
    * This method creates Partitioned Region (Scope DIST_ACK, Redundancy = 1) with DataStores on 3
    * VMs and only accessor on 4th VM. Then it does put operations synchronosly and checks that size
    * is matched.
-   * 
+   *
    * @throws Exception
    */
   public void sizeOpsForDistAckSync() throws Exception {
@@ -163,7 +162,7 @@ public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCa
    * This method creates Partitioned Region (Scope DIST_ACK, Redundancy = 1) with DataStores on 3
    * VMs and only accessor on 4th VM. Then it does put operations Asynchronosly and checks that size
    * is matched.
-   * 
+   *
    * @throws Exception
    */
   public void sizeOpsForDistAckASync() throws Throwable {
@@ -261,7 +260,7 @@ public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCa
    * VMs and then it does put operations synchronosly. After that it brings up two VMs with
    * datastore again and does size validation. After that it disconnects first and last VM and
    * validates size again.
-   * 
+   *
    * @throws Exception
    */
   public void sizeOpsForDistAckSyncChangingVMCount() throws Exception {
@@ -350,7 +349,7 @@ public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCa
 
   /**
    * This test method invokes methods doing size validation on PRs.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -552,10 +551,10 @@ public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCa
   /**
    * This private methods sets the passed attributes and returns RegionAttribute object, which is
    * used in create region
-   * 
+   *
    * @param redundancy
    * @param localMaxMem
-   * 
+   *
    * @return
    */
   protected RegionAttributes createRegionAttributesForPR(int redundancy, int localMaxMem) {

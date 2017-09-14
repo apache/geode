@@ -56,8 +56,8 @@ import org.apache.geode.management.RegionMXBean;
 
 /**
  * Utility class to interact with the JMX server
- * 
- * 
+ *
+ *
  */
 public class MBeanJMXAdapter implements ManagementConstants {
 
@@ -65,7 +65,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
   public static MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
 
   /**
-   * 
+   *
    */
   private Map<ObjectName, Object> localGemFireMBean;
 
@@ -83,11 +83,11 @@ public class MBeanJMXAdapter implements ManagementConstants {
   /**
    * This method will register an MBean in GemFire domain. Even if the client provides a domain name
    * it will be ignored and GemFire domain name will be used.
-   * 
+   *
    * This method checks the local Filter for registering the MBean. If filtered the MBean wont be
    * registered. Although the filter will remember the filtered MBean and register it once the
    * filter is removed.
-   * 
+   *
    * @param object
    * @param objectName
    * @return modified ObjectName
@@ -114,7 +114,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
   /**
    * Checks whether an MBean implements notification support classes or not
-   * 
+   *
    * @param objectName
    * @return if this MBean can be a notification broadcaster
    */
@@ -146,11 +146,11 @@ public class MBeanJMXAdapter implements ManagementConstants {
   /**
    * This method will register an MBean in GemFire domain. Even if the client provides a domain name
    * it will be ignored and GemFire domain name will be used.
-   * 
+   *
    * This method checks the local Filter for registering the MBean. If filtered the MBean wont be
    * registered. Although the filter will remember the filtered MBean and register it once the
    * filter is removed.
-   * 
+   *
    * @param object
    * @param objectName
    */
@@ -168,9 +168,9 @@ public class MBeanJMXAdapter implements ManagementConstants {
   }
 
   /**
-   * 
+   *
    * This method will unregister the MBean from GemFire Domain
-   * 
+   *
    * @param objectName
    */
   public void unregisterMBean(ObjectName objectName) {
@@ -198,7 +198,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
   /**
    * Finds the MBean instance by {@link javax.management.ObjectName}
-   * 
+   *
    * @param objectName
    * @param interfaceClass
    * @return instance of MBean
@@ -219,7 +219,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
   /**
    * Method to unregister all the local GemFire MBeans
-   * 
+   *
    */
 
   public void unregisterAll() {
@@ -249,7 +249,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
   /**
    * This method returns the name that will be used for a DistributedMember when it is registered as
    * a JMX bean.
-   * 
+   *
    * @param member Member to find the name for
    * @return The name used to register this member as a JMX bean.
    */
@@ -271,7 +271,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
    * If value is empty, this method will return the string "nothing".
    * <p>
    * Note: this is <code>public</code> because certain tests call this from outside of the package.
-   * 
+   *
    * @param value the potentially non-compliant ObjectName property
    * @return the value modified to be compliant as an ObjectName property
    */
@@ -309,7 +309,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
   }
 
   /**
-   * 
+   *
    */
 
   public static String makeCompliantRegionNameAppender(String value) {
@@ -320,7 +320,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
   /**
    * returns Member MBean if any
-   * 
+   *
    */
   public MemberMXBean getMemberMXBean() {
     ObjectName objName = getMemberMBeanName(distMember);
@@ -495,7 +495,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
 
   /**
    * Without special character transformation
-   * 
+   *
    * @param regionPath region path
    * @return ObjectName MBean name
    */

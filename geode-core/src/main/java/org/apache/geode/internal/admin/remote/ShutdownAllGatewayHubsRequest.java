@@ -23,14 +23,14 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
 
 /**
- * 
+ *
  * This ShutdownAllGatewayHubsRequest just reply with ignored bit true so that old version member's
  * request will be ignored and no exception will be thrown.
- * 
+ *
  * From 9.0 old wan support is removed. Ideally ShutdownAllGatewayHubsRequest should be removed but
  * it it there for rolling upgrade support when request come from old version member to shut down
  * hubs.
- * 
+ *
  * @since Geode 1.0
  *
  */

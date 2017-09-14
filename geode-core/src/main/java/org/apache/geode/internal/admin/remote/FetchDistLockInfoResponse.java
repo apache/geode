@@ -16,15 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-import org.apache.geode.internal.admin.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.locks.*;
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.locks.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class FetchDistLockInfoResponse extends AdminResponse {
   // instance variables

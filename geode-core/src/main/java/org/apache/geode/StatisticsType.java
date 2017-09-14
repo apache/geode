@@ -14,9 +14,6 @@
  */
 package org.apache.geode;
 
-// import org.apache.geode.internal.Assert;
-// import java.io.*;
-// import java.util.*;
 
 /**
  * Used to describe a logical collection of statistics. These descriptions are used to create an

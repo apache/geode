@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
  * enabled, the proxy function will use a {@link WindowedExporter} to rate the data gathering prior
  * to forwarding back to the client. The client uses a custom {@link ResultCollector} to write
  * entries immediately into the snapshot file.
- * 
+ *
  *
  * @param <K> the key type
  * @param <V> the value type

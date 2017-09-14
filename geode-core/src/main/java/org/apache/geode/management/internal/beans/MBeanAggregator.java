@@ -37,8 +37,8 @@ import org.apache.geode.management.internal.SystemManagementService;
 /**
  * This class is responsible for creating Aggregate MBeans at GemFire layer. It acts as a
  * ProxyListener and add/remove/update the corresponding MBean aggregates accordingly.
- * 
- * 
+ *
+ *
  */
 public class MBeanAggregator implements ProxyListener {
 
@@ -107,7 +107,7 @@ public class MBeanAggregator implements ProxyListener {
 
   /**
    * Public constructor.
-   * 
+   *
    * @param distributedSystemBridge
    */
   public MBeanAggregator(DistributedSystemBridge distributedSystemBridge) {
@@ -125,7 +125,7 @@ public class MBeanAggregator implements ProxyListener {
   }
 
   /**
-   * 
+   *
    * @param interfaceClass class of the proxy interface
    * @return appropriate handler instance to handle the proxy addition or removal
    */
@@ -189,8 +189,8 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Handler class for CacheServer MBeans only to provide data to Distributed System MBean As of
    * today there wont be any Distributed counterpart of Cache Server MBean
-   * 
-   * 
+   *
+   *
    */
   private class CacheServerHandler implements AggregateHandler {
 
@@ -225,8 +225,8 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Handler class for GatewayReceiverHandler MBeans only to provide data to Distributed System
    * MBean As of today there wont be any Distributed counterpart of GatewayReceiverHandler MBean
-   * 
-   * 
+   *
+   *
    */
   private class GatewayReceiverHandler implements AggregateHandler {
 
@@ -263,8 +263,8 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Handler class for GatewayReceiverHandler MBeans only to provide data to Distributed System
    * MBean As of today there wont be any Distributed counterpart of GatewayReceiverHandler MBean
-   * 
-   * 
+   *
+   *
    */
   private class GatewaySenderHandler implements AggregateHandler {
 
@@ -296,8 +296,8 @@ public class MBeanAggregator implements ProxyListener {
 
   /**
    * Handler class for DistributedRegion
-   * 
-   * 
+   *
+   *
    */
   private class RegionHandler implements AggregateHandler {
 
@@ -329,8 +329,8 @@ public class MBeanAggregator implements ProxyListener {
 
   /**
    * Handler class for Distributed System
-   * 
-   * 
+   *
+   *
    */
   private class MemberHandler implements AggregateHandler {
 
@@ -363,8 +363,8 @@ public class MBeanAggregator implements ProxyListener {
 
   /**
    * Handler class for Distributed Lock Service
-   * 
-   * 
+   *
+   *
    */
   private class LockServiceHandler implements AggregateHandler {
 

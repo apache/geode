@@ -18,14 +18,14 @@
 //
 package org.apache.geode.cache.query.internal;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.internal.index.CompactMapRangeIndex;
@@ -170,7 +170,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
 
     /**
      * Adds a results map (mostly a bucket index lookup results) to the "this" IndexInfo.
-     * 
+     *
      * @param rslts
      */
     public void addResults(Map rslts) {

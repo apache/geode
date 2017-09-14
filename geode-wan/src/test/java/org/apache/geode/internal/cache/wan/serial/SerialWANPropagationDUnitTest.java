@@ -19,14 +19,14 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Scope;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -1016,9 +1016,9 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
   /**
    * Local site:: vm4: Primary vm5: Secondary
-   * 
+   *
    * Remote site:: vm2, vm3, vm6, vm7: All hosting receivers
-   * 
+   *
    * vm4 is killed, so vm5 takes primary charge
    *
    * SUR: disabling due to connection information not available in open source enable this once in
@@ -1092,9 +1092,9 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
   /**
    * Local site:: vm4: Primary vm5: Secondary
-   * 
+   *
    * Remote site:: vm2, vm3, vm6, vm7: All hosting receivers
-   * 
+   *
    * vm4 is killed, so vm5 takes primary charge. vm4 brought up. vm5 is killed, so vm4 takes primary
    * charge again.
    *

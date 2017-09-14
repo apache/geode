@@ -14,17 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -33,6 +23,12 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
@@ -51,9 +47,12 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * 
+ *
  */
 @Category(DistributedTest.class)
 public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {

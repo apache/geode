@@ -14,7 +14,7 @@
  */
 /*
  * @test
- * 
+ *
  * @synopsis Exercise multithreaded maps, by default ConcurrentHashMap. Each thread does a random
  * walk though elements of "key" array. On each iteration, it checks if table includes key. If
  * absent, with probablility pinsert it inserts it, and if present, with probablility premove it
@@ -219,4 +219,3 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
     }
   }
 }
-

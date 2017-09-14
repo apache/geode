@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import java.util.Set;
+
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
@@ -22,8 +24,6 @@ import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-
-import java.util.Set;
 
 public interface TXRegionStub {
 

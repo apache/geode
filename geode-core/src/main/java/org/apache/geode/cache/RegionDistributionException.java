@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
 
@@ -41,7 +42,7 @@ public class RegionDistributionException extends RegionRoleException {
 
   /**
    * Constructs a <code>RegionDistributionException</code> with a message.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    * @param failedRoles the required roles that caused this exception
@@ -56,7 +57,7 @@ public class RegionDistributionException extends RegionRoleException {
 
   /**
    * Constructs a <code>RegionDistributionException</code> with a message and a cause.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    * @param failedRoles the required roles that caused this exception
@@ -74,7 +75,7 @@ public class RegionDistributionException extends RegionRoleException {
   /**
    * Returns the required roles that caused this exception. One or more roles failed to receive a
    * cache distribution message or acknowledge receipt of that message.
-   * 
+   *
    * @return the required roles that caused this exception
    */
   public Set getFailedRoles() {
@@ -113,4 +114,3 @@ public class RegionDistributionException extends RegionRoleException {
   }
 
 }
-

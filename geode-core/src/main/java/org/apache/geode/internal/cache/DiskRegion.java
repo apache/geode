@@ -18,15 +18,17 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import joptsimple.internal.Strings;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
 import org.apache.geode.internal.cache.LocalRegion.RegionEntryCallback;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
@@ -34,7 +36,6 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
-import joptsimple.internal.Strings;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both persistent recoverable
@@ -354,7 +355,7 @@ public class DiskRegion extends AbstractDiskRegion {
   /**
    * Returns the value of the key/value pair with the given diskId. Updates all of the necessary
    * {@linkplain DiskRegionStats statistics}
-   * 
+   *
    * @see #getBytesAndBitsWithoutLock(DiskId, boolean, boolean)
    */
   Object get(DiskId id) {
@@ -365,7 +366,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * Gets the Object from the OpLog . It can be invoked from OpLog , if by the time a get operation
    * reaches the OpLog, the entry gets compacted or if we allow concurrent put & get operations. It
    * will also minimize the synch lock on DiskId
-   * 
+   *
    * @param id DiskId object for the entry
    * @return value of the entry
    */
@@ -393,12 +394,12 @@ public class DiskRegion extends AbstractDiskRegion {
 
   /**
    * Asif: THIS SHOULD ONLY BE USED FOR TESTING PURPOSES AS IT IS NOT THREAD SAFE
-   * 
+   *
    * Returns the object stored on disk with the given id. This method is used for testing purposes
    * only. As such, it bypasses the buffer and goes directly to the disk. This is not a thread safe
    * function , in the sense, it is possible that by the time the OpLog is queried , data might move
    * HTree with the oplog being destroyed
-   * 
+   *
    * @return null if entry has nothing stored on disk (id == INVALID_ID)
    * @throws IllegalArgumentException If <code>id</code> is less than zero, no action is taken.
    */
@@ -435,7 +436,7 @@ public class DiskRegion extends AbstractDiskRegion {
 
   /**
    * Get serialized form of data off the disk
-   * 
+   *
    * @param id
    * @since GemFire 5.7
    */
@@ -512,7 +513,7 @@ public class DiskRegion extends AbstractDiskRegion {
   /**
    * Returns true if the state of the specified entry was recovered from disk. If so it will also
    * set it to no longer be recovered.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   public boolean testIsRecoveredAndClear(RegionEntry re) {

@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.util.List;
 
-import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.statistics.TestSampleHandler.Info;
 import org.apache.geode.internal.statistics.TestSampleHandler.ResourceInstanceInfo;
 import org.apache.geode.internal.statistics.TestSampleHandler.ResourceTypeInfo;
@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SampleCollector}.
- * 
+ *
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)

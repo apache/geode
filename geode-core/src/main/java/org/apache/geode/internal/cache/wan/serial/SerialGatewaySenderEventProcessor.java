@@ -46,12 +46,12 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender.EventWrapper;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySender.EventWrapper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
@@ -60,7 +60,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
  * @since GemFire 7.0
- * 
+ *
  */
 public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEventProcessor {
   private static final Logger logger = LogService.getLogger();
@@ -99,7 +99,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * When the Number of unchecked events exceeds this threshold and the number of tokens in the map
    * exceeds this threshold then a check will be done for old tokens.
    */
-  static protected final int REAP_THRESHOLD = 1000;
+  protected static final int REAP_THRESHOLD = 1000;
 
   /*
    * How many events have happened without a reap check being done?
@@ -254,7 +254,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   /**
    * Handle failover. This method is called when a secondary <code>GatewaySender</code> becomes a
    * primary <code>GatewaySender</code>.
-   * 
+   *
    * Once this secondary becomes the primary, it must:
    * <ul>
    * <li>Remove the queue's CacheListener
@@ -540,17 +540,17 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * <code>GatewaySender</code> to store a gateway event until it is processed by a primary
    * <code>GatewaySender</code>. The complexity of this method is the fact that the event could be
    * processed first by either the primary or secondary <code>GatewaySender</code>.
-   * 
+   *
    * If the primary processes the event first, the map will already contain an entry for the event
    * (through
    * {@link org.apache.geode.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterDestroy}
    * ). When the secondary processes the event, it will remove it from the map.
-   * 
+   *
    * If the secondary processes the event first, it will add it to the map. When the primary
    * processes the event (through
    * {@link org.apache.geode.internal.cache.wan.serial.SerialSecondaryGatewayListener#afterDestroy}
    * ), it will then be removed from the map.
-   * 
+   *
    * @param senderEvent The event being processed
    */
   protected void handleSecondaryEvent(GatewaySenderEventImpl senderEvent) {
@@ -565,14 +565,14 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * event has been added to the queue, the secondary no longer needs to keep track of it in the
    * unprocessed events map. The complexity of this method is the fact that the event could be
    * processed first by either the primary or secondary <code>Gateway</code>.
-   * 
+   *
    * If the primary processes the event first, the map will not contain an entry for the event. It
    * will be added to the map in this case so that when the secondary processes it, it will know
    * that the primary has already processed it, and it can be safely removed.
-   * 
+   *
    * If the secondary processes the event first, the map will already contain an entry for the
    * event. In this case, the event can be removed from the map.
-   * 
+   *
    * @param gatewayEvent The event being processed
    */
   protected void handlePrimaryEvent(final GatewaySenderEventImpl gatewayEvent) {

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.protocol.state;
 
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
-
 import java.util.Properties;
+
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
 public interface ConnectionAuthenticatingStateProcessor extends ConnectionStateProcessor {
   @Override

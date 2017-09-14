@@ -45,7 +45,7 @@ public interface PersistenceAdvisor {
   /**
    * Determine the state of this member on it's peers, along with the PersistentMemberID of those
    * peers.
-   * 
+   *
    * @return a map from the peers persistentId to the state of this member according to that peer.
    */
   PersistentStateQueryResults getMyStateOnMembers(Set<InternalDistributedMember> members)
@@ -90,7 +90,7 @@ public interface PersistenceAdvisor {
   /**
    * Update the membership on this member to reflect changes that have happened since the member was
    * last online. This method should be called before the member is online.
-   * 
+   *
    * @param replicate the replicate to initialize from.
    */
   public void updateMembershipView(InternalDistributedMember replicate,
@@ -98,11 +98,11 @@ public interface PersistenceAdvisor {
 
   /**
    * Indicate that the current member is online.
-   * 
+   *
    * @param didGII - indicates that the member did a GII (for updating stats)
    * @param atomicCreation - indicates that we are coming online as part of an atomic bucket
    *        creation.
-   * 
+   *
    */
   public void setOnline(boolean didGII, boolean atomicCreation, PersistentMemberID newId);
 
@@ -142,7 +142,7 @@ public interface PersistenceAdvisor {
 
   /**
    * Check to see if the other members know about the current member .
-   * 
+   *
    * @param replicates
    * @throws ConflictingPersistentDataException if the other members were not part of the same
    *         distributed system as the persistent data on in this VM.
@@ -156,9 +156,9 @@ public interface PersistenceAdvisor {
   /**
    * Returns the member id of the member who has the latest copy of the persistent region. This may
    * be the local member ID if this member has the latest known copy.
-   * 
+   *
    * This method will block until the latest member is online.
-   * 
+   *
    * @param recoverFromDisk
    * @throws ConflictingPersistentDataException if there are active members which are not based on
    *         the state that is persisted in this member.
@@ -173,7 +173,7 @@ public interface PersistenceAdvisor {
 
   /*
    * Persist members to be offline and equal
-   * 
+   *
    * @param Map<InternalDistributedMember, PersistentMemberID> map of current online members
    */
   public void persistMembersOfflineAndEqual(Map<InternalDistributedMember, PersistentMemberID> map);

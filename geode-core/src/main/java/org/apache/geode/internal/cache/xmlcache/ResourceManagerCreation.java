@@ -43,7 +43,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#createRebalanceFactory()
    */
   public RebalanceFactory createRebalanceFactory() {
@@ -52,7 +52,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#getRebalanceOperations()
    */
   public Set<RebalanceOperation> getRebalanceOperations() {
@@ -61,7 +61,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#getCriticalHeapPercentage()
    */
   public float getCriticalHeapPercentage() {
@@ -70,7 +70,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#setCriticalHeapPercentage(int)
    */
   public void setCriticalHeapPercentage(float heapPercentage) {
@@ -84,7 +84,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /**
    * Determine if the critical heap was configured
-   * 
+   *
    * @return true if it was configured
    */
   public boolean hasCriticalHeap() {
@@ -93,7 +93,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#getCriticalOffHeapPercentage()
    */
   @Override
@@ -103,7 +103,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#setCriticalOffHeapPercentage(int)
    */
   @Override
@@ -118,7 +118,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /**
    * Determine if the critical off-heap was configured
-   * 
+   *
    * @return true if it was configured
    */
   public boolean hasCriticalOffHeap() {
@@ -172,7 +172,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#getEvictionHeapPercentage()
    */
   public float getEvictionHeapPercentage() {
@@ -181,7 +181,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#setEvictionHeapPercentage(int)
    */
   public void setEvictionHeapPercentage(float heapPercentage) {
@@ -195,7 +195,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /**
    * Determine if the eviction heap was configured
-   * 
+   *
    * @return true if the eviction heap was configured
    */
   public boolean hasEvictionHeap() {
@@ -204,7 +204,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#getEvictionOffHeapPercentage()
    */
   public float getEvictionOffHeapPercentage() {
@@ -213,7 +213,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#setEvictionOffHeapPercentage(int)
    */
   public void setEvictionOffHeapPercentage(final float offHeapPercentage) {
@@ -227,7 +227,7 @@ public class ResourceManagerCreation implements ResourceManager {
 
   /**
    * Determine if the eviction off-heap was configured
-   * 
+   *
    * @return true if the eviction off-heap was configured
    */
   public boolean hasEvictionOffHeap() {

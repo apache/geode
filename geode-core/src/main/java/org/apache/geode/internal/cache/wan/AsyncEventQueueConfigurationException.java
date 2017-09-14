@@ -18,7 +18,7 @@ import org.apache.geode.cache.OperationAbortedException;
 
 /**
  * Exception to inform user that AsyncEventQueue is wrongly configured.
- * 
+ *
  *
  */
 public class AsyncEventQueueConfigurationException extends OperationAbortedException {
@@ -35,7 +35,7 @@ public class AsyncEventQueueConfigurationException extends OperationAbortedExcep
   /**
    * Constructor. Creates an instance of <code>AsyncEventQueueConfigurationException</code> with the
    * specified detail message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -47,7 +47,7 @@ public class AsyncEventQueueConfigurationException extends OperationAbortedExcep
   /**
    * Constructor. Creates an instance of <code>GatewaySenderException</code> with the specified
    * detail message.
-   * 
+   *
    * @param msg the detail message
    */
   public AsyncEventQueueConfigurationException(String msg) {
@@ -57,7 +57,7 @@ public class AsyncEventQueueConfigurationException extends OperationAbortedExcep
   /**
    * Constructor. Creates an instance of <code>AsyncEventQueueConfigurationException</code> with the
    * specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public AsyncEventQueueConfigurationException(Throwable cause) {

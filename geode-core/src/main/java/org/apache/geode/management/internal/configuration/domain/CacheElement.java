@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathCo
 /**
  * Domain class to determine the order of an element Currently being used to store order information
  * of child elements of "cache"
- * 
+ *
  *
  */
 // UnitTest CacheElementJUnitTest
@@ -96,7 +96,7 @@ public class CacheElement {
   /**
    * Build <code>cache</code> element map for given <cod>doc</code>'s schemaLocation for
    * {@link CacheXml#GEODE_NAMESPACE}.
-   * 
+   *
    * @param doc {@link Document} to parse schema for.
    * @return Element map
    * @throws IOException
@@ -128,7 +128,7 @@ public class CacheElement {
   /**
    * Resolve schema from <code>schemaLocationsNape</code> or <code>namespaceUri</code> for given
    * <code>namespaceUri</code>.
-   * 
+   *
    * @param schemaLocationMap {@link Map} of namespaceUri to URLs.
    * @param namespaceUri Namespace URI for schema.
    * @return {@link InputSource} for schema if found.
@@ -160,7 +160,7 @@ public class CacheElement {
 
   /**
    * Build element map adding to existing <code>elementMap</code>.
-   * 
+   *
    * @param elementMap to add elements to.
    * @param inputSource to parse elements from.
    * @throws SAXException
@@ -187,7 +187,7 @@ public class CacheElement {
   /**
    * Build element map for elements matching <code>xPath</code> relative to <code>parent</code> into
    * <code>elementMap</code> .
-   * 
+   *
    * @param elementMap to add elements to
    * @param schema {@link Document} for schema.
    * @param parent {@link Element} to query XPath.
@@ -228,7 +228,7 @@ public class CacheElement {
 
   /**
    * Tests if element allows multiple.
-   * 
+   *
    * @param element to test for multiple.
    * @return true if multiple allowed, otherwise false.
    * @since GemFire 8.1

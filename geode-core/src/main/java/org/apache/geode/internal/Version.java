@@ -27,11 +27,11 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for client / server and p2p version.
- * 
+ *
  * There are dependencies in versioning code that require newer versions to have ordinals higher
  * than older versions in order to protect against deserialization problems. Client/server code also
  * uses greater-than comparison of ordinals in backward-compatibility checks.
- * 
+ *
  * @since GemFire 5.7
  */
 public class Version implements Comparable<Version> {
@@ -272,7 +272,7 @@ public class Version implements Comparable<Version> {
 
   /**
    * return the version corresponding to the given ordinal, or CURRENT if the ordinal isn't valid
-   * 
+   *
    * @param ordinal
    * @return the corresponding ordinal
    */
@@ -291,7 +291,7 @@ public class Version implements Comparable<Version> {
    * Write the given ordinal (result of {@link #ordinal()}) to given {@link DataOutput}. This keeps
    * the serialization of ordinal compatible with previous versions writing a single byte to
    * DataOutput when possible, and a token with 2 bytes if it is large.
-   * 
+   *
    * @param out the {@link DataOutput} to write the ordinal write to
    * @param ordinal the version to be written
    * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
@@ -316,7 +316,7 @@ public class Version implements Comparable<Version> {
    * Write this {@link Version}'s ordinal (result of {@link #ordinal()}) to given
    * {@link DataOutput}. This keeps the serialization of ordinal compatible with previous versions
    * writing a single byte to DataOutput when possible, and a token with 2 bytes if it is large.
-   * 
+   *
    * @param out the {@link DataOutput} to write the ordinal write to
    * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
    *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}; former
@@ -354,7 +354,7 @@ public class Version implements Comparable<Version> {
    * Write the given ordinal (result of {@link #ordinal()}) to given {@link ByteBuffer}. This keeps
    * the serialization of ordinal compatible with previous versions writing a single byte to
    * DataOutput when possible, and a token with 2 bytes if it is large.
-   * 
+   *
    * @param buffer the {@link ByteBuffer} to write the ordinal write to
    * @param ordinal the version to be written
    * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
@@ -385,16 +385,16 @@ public class Version implements Comparable<Version> {
   /**
    * Return the <code>Version</code> reading from given {@link DataInput} as serialized by
    * {@link #writeOrdinal(DataOutput, boolean)}.
-   * 
+   *
    * If the incoming ordinal is greater than or equal to current ordinal then this will return null
    * or {@link #CURRENT} indicating that version is same as that of {@link #CURRENT} assuming that
    * peer will support this JVM.
-   * 
+   *
    * This method is not meant to be used for client-server protocol since servers cannot support
    * higher version clients, rather is only meant for P2P/JGroups messaging where a mixed version of
    * servers can be running at the same time. Similarly cannot be used when recovering from disk
    * since higher version data cannot be read.
-   * 
+   *
    * @param in the {@link DataInput} to read the version from
    * @param returnNullForCurrent if true then return null if incoming version >= {@link #CURRENT}
    *        else return {@link #CURRENT}
@@ -480,7 +480,7 @@ public class Version implements Comparable<Version> {
 
   /**
    * Returns whether this <code>Version</code> is compatible with the input <code>Version</code>
-   * 
+   *
    * @param version The <code>Version</code> to compare
    * @return whether this <code>Version</code> is compatible with the input <code>Version</code>
    */
@@ -491,7 +491,7 @@ public class Version implements Comparable<Version> {
   /**
    * Finds the Version instance corresponding to the given ordinal and returns the result of
    * compareTo(Version)
-   * 
+   *
    * @param other the ordinal of the other Version object
    * @return negative if this version is older, positive if this version is newer, 0 if this is the
    *         same version
@@ -523,7 +523,7 @@ public class Version implements Comparable<Version> {
 
   /**
    * Returns a string representation for this <code>Version</code>.
-   * 
+   *
    * @return the name of this operation.
    */
   @Override

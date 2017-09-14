@@ -15,11 +15,12 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(IntegrationTest.class)
 public class ExportLogsOverHttpIntegrationTest extends ExportLogsIntegrationTest {

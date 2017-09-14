@@ -18,14 +18,14 @@ package org.apache.geode.internal.datasource;
  * This class models a datasource factory.The datasource factory has funtions to create 3 types of
  * datasources. 1) Basic datasource without any connection pooling. 2) Datasource with pooled
  * connections. 3) Datasource with pooled connection and transaction capabilities.
- * 
+ *
  * The invokeAllMethods was setting only some specific properties Modified the code so that any key
  * value mentioned in <property>tag is attempted for setting. If the property has a key as
  * serverName , then the setter method is invoked with the name setServerName & the value present in
  * value attribute is passed Made the Exception handling robust
- * 
+ *
  * Changed invokeAllMethods wrt the change in cache.xml for vendor specific properties.
- * 
+ *
  */
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -57,7 +57,7 @@ public class DataSourceFactory {
 
   /**
    * This function returns the Basic datasource without any pooling.
-   * 
+   *
    * @param configMap a map containing configurations required for datasource.
    * @throws DataSourceCreateException
    * @return ??
@@ -95,7 +95,7 @@ public class DataSourceFactory {
   /**
    * This function creats a data dource from the ManagedConnectionFactory class using the
    * connectionManager.
-   * 
+   *
    * @param configMap
    * @param props
    * @return javax.sql.DataSource
@@ -150,7 +150,7 @@ public class DataSourceFactory {
 
   /**
    * This function returns the datasource with connection pooling.
-   * 
+   *
    * @param configMap a map containing configurations required for datasource.
    * @throws DataSourceCreateException
    * @return ???
@@ -185,7 +185,7 @@ public class DataSourceFactory {
   /**
    * This function returns the datasource with connection pooling and transaction participation
    * capabilities.
-   * 
+   *
    * @param configMap a map containing configurations required for datasource.
    * @throws DataSourceCreateException
    * @return ???
@@ -225,7 +225,7 @@ public class DataSourceFactory {
 
   /**
    * Creates ConfiguredDataSourceProperties from map.
-   * 
+   *
    * @param configMap a map containing configurations required for datasource.
    * @return ConfiguredDataSourceProperties
    */
@@ -308,17 +308,17 @@ public class DataSourceFactory {
 
 
   /**
-   * 
+   *
    * dynamically invokes all the methods in the specified object.
-   * 
+   *
    * Asif: Rewrote the function as the number of properties to be set for a given datasource is
    * dynamic
-   * 
+   *
    * Rohit: Rewrote to accomodate the change in cache.xml. property tag is now replaced by
    * config-property for vendor specific data to get the Class name dynamically. CLass name is
    * specified in config-property-type tag and is stored in ConfigProperty Data Object after parsing
    * cache.xml.
-   * 
+   *
    * @param c class of the object
    * @param cpdsObj The object
    */

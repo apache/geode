@@ -36,7 +36,7 @@ public interface ConnectionStateProcessor {
 
   /**
    * This indicates whether this specific state processor is able to handle authentication requests.
-   * 
+   *
    * @return specialized ConnectionAuthenticatingStateProcessor interface implementation which can
    *         move to a new state
    * @throws ConnectionStateException if unable to handle handshakes in this state.
@@ -49,7 +49,7 @@ public interface ConnectionStateProcessor {
 
   /**
    * This indicates whether this specific state processor is able to handle handshake requests.
-   * 
+   *
    * @return specialized ConnectionHandshakingStateProcessor interface implementation which can move
    *         to a new state
    * @throws ConnectionStateException if unable to handle handshakes in this state.

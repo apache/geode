@@ -43,7 +43,7 @@ public class CompiledClassUtils {
   /**
    * Parse the given class files and return a map of name->Dclass. Any IO exceptions are consumed by
    * this method and written to stderr.
-   * 
+   *
    * @param classFiles
    * @return the parsed classes
    */
@@ -66,7 +66,7 @@ public class CompiledClassUtils {
   /**
    * Parse the files in the given jar file and return a map of name->CompiledClass. Any IO
    * exceptions are consumed by this method and written to stderr.
-   * 
+   *
    * @param jar the jar file holding classes
    */
   public static Map<String, CompiledClass> parseClassFilesInJar(File jar) {
@@ -119,7 +119,7 @@ public class CompiledClassUtils {
 
   /**
    * returns a collection of all of the .class files in the given list of files and directories.
-   * 
+   *
    * @param filenames a list of the files and directories to examine
    * @param recursive whether to recurse into subdirectories
    * @return a sorted list of the .class files found

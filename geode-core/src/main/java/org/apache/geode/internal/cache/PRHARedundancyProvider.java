@@ -15,6 +15,17 @@
 
 package org.apache.geode.internal.cache;
 
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
@@ -48,16 +59,6 @@ import org.apache.geode.internal.cache.persistence.PersistentStateListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class provides the redundancy management for partitioned region. It will provide the
@@ -70,7 +71,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * gracefully. i.e. Cache.close()</br>
  * <br>
  * (4) Redundancy management at random node failure.</br>
- * 
+ *
  */
 public class PRHARedundancyProvider {
   private static final Logger logger = LogService.getLogger();
@@ -120,7 +121,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Constructor for PRHARedundancyProvider.
-   * 
+   *
    * @param region The PartitionedRegion for which the HA redundancy is required to be managed.
    */
   public PRHARedundancyProvider(final PartitionedRegion region) {
@@ -137,7 +138,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Display bucket allocation status
-   * 
+   *
    * @param prRegion the given region
    * @param allStores the list of available stores. If null, unknown.
    * @param alreadyUsed stores allocated; only used if allStores != null
@@ -170,12 +171,12 @@ public class PRHARedundancyProvider {
     return sb.toString();
   }
 
-  static public final StringId TIMEOUT_MSG =
+  public static final StringId TIMEOUT_MSG =
       LocalizedStrings.PRHARedundancyProvider_IF_YOUR_SYSTEM_HAS_SUFFICIENT_SPACE_PERHAPS_IT_IS_UNDER_MEMBERSHIP_OR_REGION_CREATION_STRESS;
 
   /**
    * Indicate a timeout due to excessive retries among available peers
-   * 
+   *
    * @param allStores all feasible stores. If null, we don't know.
    * @param alreadyUsed those that have already accepted, only used if allStores != null
    * @param opString description of the operation which timed out
@@ -207,7 +208,7 @@ public class PRHARedundancyProvider {
   /**
    * This is for FPR, for given partition, we have to return the set of datastores on which the
    * given partition is defined
-   * 
+   *
    * @param partitionName name of the partition for which datastores need to be found out
    */
   private Set<InternalDistributedMember> getFixedPartitionStores(String partitionName) {
@@ -229,13 +230,13 @@ public class PRHARedundancyProvider {
   /**
    * Signature string indicating that not enough stores are available.
    */
-  static public final StringId INSUFFICIENT_STORES_MSG =
+  public static final StringId INSUFFICIENT_STORES_MSG =
       LocalizedStrings.PRHARedundancyProvider_CONSIDER_STARTING_ANOTHER_MEMBER;
 
   /**
    * Signature string indicating that there are enough stores available.
    */
-  static public final StringId SUFFICIENT_STORES_MSG =
+  public static final StringId SUFFICIENT_STORES_MSG =
       LocalizedStrings.PRHARRedundancyProvider_FOUND_A_MEMBER_TO_HOST_A_BUCKET;
 
   /**
@@ -247,7 +248,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Indicate that we are unable to allocate sufficient stores and the timeout period has passed
-   * 
+   *
    * @param allStores stores we know about
    * @param alreadyUsed ones already committed
    * @param onlyLog true if only a warning log messages should be generated.
@@ -280,7 +281,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Create a single copy of this bucket on one node. The bucket must already be locked.
-   * 
+   *
    * @param bucketId The bucket we are working on
    * @param newBucketSize size to create it
    * @param excludedMembers
@@ -412,7 +413,7 @@ public class PRHARedundancyProvider {
   public static final long INSUFFICIENT_LOGGING_THROTTLE_TIME = TimeUnit.SECONDS.toNanos(
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "InsufficientLoggingThrottleTime", 2)
           .intValue());
-  public volatile static boolean TEST_MODE = false;
+  public static volatile boolean TEST_MODE = false;
   // since 6.6, please use the distributed system property enforce-unique-host instead.
   // public static final boolean ENFORCE_UNIQUE_HOST_STORAGE_ALLOCATION =
   // DistributionConfig.DEFAULT_ENFORCE_UNIQUE_HOST;
@@ -474,15 +475,15 @@ public class PRHARedundancyProvider {
    * BucketBackupMessage is sent to the nodes to make copies of a bucket that was only partially
    * created. Other VMs are informed of bucket creation through updates through their
    * {@link BucketAdvisor.BucketProfile}s.
-   * 
+   *
    * <p>
    * This method is synchronized to enforce a single threaded ordering, allowing for a more accurate
    * picture of bucket distribution in the face of concurrency. See bug 37275.
    * </p>
-   * 
+   *
    * This method is now slightly misnamed. Another member could be in the process of creating this
    * same bucket at the same time.
-   * 
+   *
    * @param bucketId Id of the bucket to be created.
    * @param newBucketSize size of the first entry.
    * @param startTime a time stamp prior to calling the method, used to update bucket creation stats
@@ -731,7 +732,7 @@ public class PRHARedundancyProvider {
   /**
    * Figure out which member should be primary for a bucket among the members that have created the
    * bucket, and tell that member to become the primary.
-   * 
+   *
    * @param acceptedMembers The members that now host the bucket
    */
   private void endBucketCreation(int bucketId,
@@ -889,10 +890,10 @@ public class PRHARedundancyProvider {
 
   /**
    * Get buddy data stores on the same Host as the accepted member
-   * 
+   *
    * @return set of members on the same host, not including accepted member
    * @since GemFire 5.9
-   * 
+   *
    */
   private Set<InternalDistributedMember> getBuddyMembersInZone(
       final InternalDistributedMember acceptedMember,
@@ -911,7 +912,7 @@ public class PRHARedundancyProvider {
   /**
    * Early check for resources. This code may be executed for every put operation if there are no
    * datastores present, limit excessive logging.
-   * 
+   *
    * @since GemFire 5.8
    */
   private void earlySufficientStoresCheck(String partitionName) {
@@ -928,7 +929,7 @@ public class PRHARedundancyProvider {
   /**
    * Limit the frequency for logging the {@link #INSUFFICIENT_STORES_MSG} message to once per PR
    * after which once every {@link #INSUFFICIENT_LOGGING_THROTTLE_TIME} second
-   * 
+   *
    * @return true if it's time to log
    * @since GemFire 5.8
    */
@@ -948,7 +949,7 @@ public class PRHARedundancyProvider {
    * Compute timeout for waiting for a bucket. Prefer
    * {@link #DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS} over
    * {@link PartitionedRegion#getRetryTimeout()}
-   * 
+   *
    * @return the milliseconds to wait for a bucket creation operation
    */
   private long computeTimeout() {
@@ -964,7 +965,7 @@ public class PRHARedundancyProvider {
   /**
    * Check to determine that there are enough datastore VMs to start the bucket creation processes.
    * Log a warning or throw an exception indicating when there are not enough datastore VMs.
-   * 
+   *
    * @param allStores All known data store instances (including local)
    * @param loggedInsufficentStores indicates whether a warning has been logged
    * @return true when a warning has been logged, false if a warning should be logged.
@@ -1001,7 +1002,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Clean up locally created bucket and tell other VMs to attempt recovering redundancy
-   * 
+   *
    * @param buck the bucket identifier
    */
   private void cleanUpBucket(int buck) {
@@ -1023,7 +1024,7 @@ public class PRHARedundancyProvider {
   /**
    * Creates bucket with ID bucketId on targetNode. This method will also create the bucket for all
    * of the child colocated PRs.
-   * 
+   *
    * @param bucketId
    * @param targetNMember
    * @param isRebalance true if bucket creation is directed by rebalancing
@@ -1127,7 +1128,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Creates bucket with ID bucketId on targetNode.
-   * 
+   *
    * @param bucketId
    * @param targetNMember
    * @param newBucketSize
@@ -1228,7 +1229,7 @@ public class PRHARedundancyProvider {
    * Select the member with which is hosting the same bucketid for the PR it is colocated with In
    * case of primary it returns the same node whereas in case of secondary it will return the least
    * loaded datastore which is hosting the bucketid.
-   * 
+   *
    * @param alreadyUsed
    * @param bucketId
    * @param prName
@@ -1267,10 +1268,10 @@ public class PRHARedundancyProvider {
 
   /**
    * Select the member with the fewest buckets, among those with the fewest randomly select one.
-   * 
+   *
    * Under concurrent access, the data that this method uses, may be somewhat volatile, note that
    * createBucketAtomically synchronizes to enhance the consistency of the data used in this method.
-   * 
+   *
    * @param candidates ArrayList of InternalDistributedMember, potential datastores
    * @param alreadyUsed data stores already in use
    * @return a member with the fewest buckets or null if no datastores
@@ -1410,16 +1411,16 @@ public class PRHARedundancyProvider {
 
   /**
    * Log bucket allocation in the log files in this format:
-   * 
+   *
    * <pre>
    * member1: +5/20
    * member2: -10/5
    * </pre>
-   * 
+   *
    * After the member name, the +/- indicates whether or not this bucket is already hosted on the
    * given member. This is followed by the number of hosted primaries followed by the number of
    * hosted non-primary buckets.
-   * 
+   *
    * @param prefix first part of message to print
    * @param dataStores list of stores
    * @param existingStores to mark those already in use
@@ -1492,7 +1493,7 @@ public class PRHARedundancyProvider {
    * Verifies the members and removes the members that are either not present in the
    * DistributedSystem or are no longer part of the PartitionedRegion (close/localDestroy has been
    * performed.) .
-   * 
+   *
    * @param members collection of members to scan and modify
    */
   void verifyBucketNodes(Collection<InternalDistributedMember> members, String partitionName) {
@@ -1701,19 +1702,19 @@ public class PRHARedundancyProvider {
 
     /*
      * Spawn a separate thread for bucket that we previously hosted to recover that bucket.
-     * 
+     *
      * That thread will get to the point at which it has determined that at least one member
      * (possibly the local member) has fully initialized the bucket, at which it will count down the
      * someMemberRecoveredLatch latch on the bucket.
-     * 
+     *
      * Once at least one copy of each bucket has been created in the distributed system, the
      * initPRInternals method will exit. Some of the threads spawned here will still be doing GII's
      * in the background. This allows the system to become usable as fast as possible.
-     * 
+     *
      * If we used a bounded thread pool here, we end up waiting for some buckets to finish there GII
      * before returning from initPRInternals. In the future maybe we could let the create bucket
      * return and pass the GII task to a separate thread pool.
-     * 
+     *
      */
     for (final ProxyBucketRegion proxyBucket : proxyBucketArray) {
       if (proxyBucket.getPersistenceAdvisor().wasHosting()) {
@@ -1772,7 +1773,7 @@ public class PRHARedundancyProvider {
    * Check to see if any colocated region of the current region is persistent. It's not enough to
    * check just the leader region, because a child region might be a persistent parallel WAN queue,
    * which is allowed.
-   * 
+   *
    * @return the most senior region in the colocation chain (closest to the leader) that is
    *         persistent.
    */
@@ -1818,7 +1819,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Creates and fills in a PartitionMemberDetails for the partitioned region.
-   * 
+   *
    * @param internal true if internal-only details should be included
    * @param loadProbe the LoadProbe to use
    * @return PartitionRegionInfo for the partitioned region
@@ -1902,7 +1903,7 @@ public class PRHARedundancyProvider {
 
   /**
    * Creates and fills in a PartitionMemberDetails for the local member.
-   * 
+   *
    * @param internal true if internal-only details should be included
    * @param loadProbe the LoadProbe to use
    * @return PartitionMemberDetails for the local member
@@ -2029,9 +2030,9 @@ public class PRHARedundancyProvider {
   }
 
   private static class ManageBucketRsp {
-    final static ManageBucketRsp NO = new ManageBucketRsp("NO");
-    final static ManageBucketRsp YES = new ManageBucketRsp("YES");
-    final static ManageBucketRsp NO_INITIALIZING = new ManageBucketRsp("NO_INITIALIZING");
+    static final ManageBucketRsp NO = new ManageBucketRsp("NO");
+    static final ManageBucketRsp YES = new ManageBucketRsp("YES");
+    static final ManageBucketRsp NO_INITIALIZING = new ManageBucketRsp("NO_INITIALIZING");
     public static final ManageBucketRsp CLOSED = new ManageBucketRsp("CLOSED");
 
     private final String name;
@@ -2063,7 +2064,7 @@ public class PRHARedundancyProvider {
     }
   }
 
-  static private class BucketMembershipObserverResults {
+  private static class BucketMembershipObserverResults {
     final boolean problematicDeparture;
     final InternalDistributedMember primary;
 
@@ -2131,7 +2132,7 @@ public class PRHARedundancyProvider {
      * Wait for expected number of owners to be recognized. When the expected number have been seen,
      * then fetch the primary and report it. If while waiting for the owners to be recognized there
      * is a departure which compromises redundancy
-     * 
+     *
      * @param expectedCount the number of bucket owners to wait for
      * @param expectedOwners the list of owners used when a departure is detected
      * @return if no problematic departures are detected, the primary
@@ -2208,7 +2209,7 @@ public class PRHARedundancyProvider {
 
   /**
    * This class extends MembershipListener to perform cleanup when a node leaves DistributedSystem.
-   * 
+   *
    */
   protected class PRMembershipListener implements MembershipListener {
     public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
@@ -2256,7 +2257,7 @@ public class PRHARedundancyProvider {
   /**
    * This class extends MembershipListener to start redundancy recovery when a persistent member is
    * revoked
-   * 
+   *
    */
   protected class PRPersistenceListener extends PersistentStateListener.PersistentStateAdapter {
 

@@ -23,7 +23,7 @@ import org.apache.geode.GemFireCheckedException;
 
 /**
  * Exception thrown from the connection provider.
- * 
+ *
  */
 public class ConnectionProviderException extends GemFireCheckedException {
   private static final long serialVersionUID = -7406652144153958227L;
@@ -45,7 +45,7 @@ public class ConnectionProviderException extends GemFireCheckedException {
   /**
    * Single Argument constructor to construct a new exception with the specified detail message.
    * Calls Exception class constructor.
-   * 
+   *
    * @param message The detail message. The detail message is saved for later retrieval.
    */
   public ConnectionProviderException(String message, Exception ex) {

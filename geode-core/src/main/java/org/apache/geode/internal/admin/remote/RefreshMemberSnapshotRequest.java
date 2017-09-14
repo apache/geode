@@ -15,13 +15,14 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
 import java.io.*;
+
+import org.apache.geode.distributed.internal.*;
 
 /**
  * A message that is sent to a particular distribution manager to get its current
  * {@link org.apache.geode.admin.GemFireMemberStatus}
- * 
+ *
  */
 public class RefreshMemberSnapshotRequest extends AdminRequest {
   /**

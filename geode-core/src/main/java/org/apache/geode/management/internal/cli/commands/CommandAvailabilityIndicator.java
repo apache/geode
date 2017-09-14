@@ -15,10 +15,11 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class CommandAvailabilityIndicator implements CommandMarker {
 

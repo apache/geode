@@ -36,9 +36,9 @@ import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class HttpOperationInvokerSecurityTest {

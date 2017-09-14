@@ -14,18 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.internal.cache.entries.VersionedThinDiskRegionEntryHeapObjectKey;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -35,14 +31,17 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.entries.VersionedThinDiskRegionEntryHeapObjectKey;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Bug37377 DUNIT Test: The Clear operation during a GII in progress can leave a Entry in the Oplog
  * due to a race condition wherein the clearFlag getting set after the entry gets written to the
  * disk, The Test verifies the existence of the scenario.
- * 
+ *
  */
 
 @Category(DistributedTest.class)
@@ -62,7 +61,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
 
   private static final int maxEntries = 10000;
 
-  transient private static CountDownLatch clearLatch = new CountDownLatch(1);
+  private static transient CountDownLatch clearLatch = new CountDownLatch(1);
 
   static Boolean clearOccurred = false;
 
@@ -235,7 +234,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
    * The Clear operation during a GII in progress can leave a Entry in the Oplog due to a race
    * condition wherein the clearFlag getting set after the entry gets written to the disk, The Test
    * verifies the existence of the scenario.
-   * 
+   *
    */
 
   @Test
@@ -253,7 +252,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
   }
 
   static class TestAbstractDiskRegionEntry extends VersionedThinDiskRegionEntryHeapObjectKey {
-    static private VM thisVM, otherVM;
+    private static VM thisVM, otherVM;
 
     static void setMembers(VM localVM, VM remoteVM) {
       thisVM = localVM;
@@ -316,4 +315,3 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
     }
   }
 }
-

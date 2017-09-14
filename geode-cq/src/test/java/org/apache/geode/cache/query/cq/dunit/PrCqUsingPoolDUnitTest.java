@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -51,12 +54,10 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Test class for Partitioned Region and CQs
- * 
+ *
  * @since GemFire 5.5
  */
 @Category(DistributedTest.class)
@@ -66,9 +67,9 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     super();
   }
 
-  static public final String[] regions = new String[] {"regionA", "regionB"};
+  public static final String[] regions = new String[] {"regionA", "regionB"};
 
-  static public final String KEY = "key-";
+  public static final String KEY = "key-";
 
   private final CqQueryUsingPoolDUnitTest cqHelper = new CqQueryUsingPoolDUnitTest();
 
@@ -179,11 +180,11 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // invalidate some entries.
     /*
      * final int numInvalidates = 5;
-     * 
+     *
      * server2.invoke(new CacheSerializableRunnable("Invalidate values") { public void run2() throws
      * CacheException { Region region1 = getRootRegion().getSubregion(regions[0]); for (int i =
      * numInvalidates; i <= (numInvalidates+4); i++) { region1.invalidate(KEY+i); } } });
-     * 
+     *
      * cqHelper.waitForInvalidated(client, "testCQEvents_0", KEY+(numInvalidates+4));
      */
     // cqHelper.validateCQ(client, "testCQEvents_0",
@@ -595,7 +596,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * test cqs with invalidates on bridge server not hosting datastores.
-   * 
+   *
    */
   @Test
   public void testPRCqWithInvalidatesOnAccessorBridgeServer() throws Exception {
@@ -775,7 +776,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * test cqs on multiple partitioned region hosted by bridge servers.
-   * 
+   *
    */
   @Test
   public void testPRCqWithMultipleRegionsOnServer() throws Exception {
@@ -894,7 +895,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * tests multiple cqs on partitioned region on bridge servers with profile update for not
    * requiring old values.
-   * 
+   *
    */
   @Test
   public void testPRWithCQsAndProfileUpdates() throws Exception {
@@ -1015,7 +1016,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
      * "ize of requires old value at server1 before closing cqs : " + requiresOldValue.size());
      * assertTrue("The size of requiresOldValue shoule be zero on server1", (0 ==
      * requiresOldValue.size())); } });
-     * 
+     *
      * server2.invoke(new CacheSerializableRunnable("Check requires old value") { public void run2()
      * { Cache cc = getCache(); PartitionedRegion region1 = (PartitionedRegion)cc
      * .getRegion("/root/regionA"); Set requiresOldValue = region1.getRegionAdvisor()
@@ -1037,8 +1038,8 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
      * "size of requires old value set at the end server1 : " + requiresOldValue.size());
      * assertTrue("The size of requiresOldValue shoule be zero on server1", (0 ==
      * requiresOldValue.size())); } });
-     * 
-     * 
+     *
+     *
      * server2.invoke(new CacheSerializableRunnable("Check requires old value") { public void run2()
      * { Cache cc = getCache(); PartitionedRegion region1 = (PartitionedRegion)cc
      * .getRegion("/root/regionA"); Set requiresOldValue = region1.getRegionAdvisor()
@@ -1060,7 +1061,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * executeWithInitialResults there may be possibility that the region changes during that time may
    * not be reflected in the query result set thus making the query data and region data
    * inconsistent.
-   * 
+   *
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1181, 1253: random ports, eats exceptions (fixed some), async
@@ -1605,7 +1606,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * create accessor vm if the given accessor parameter variable is true.
-   * 
+   *
    * @param server VM to create bridge server.
    * @param accessor boolean if true creates an accessor bridge server.
    */
@@ -1615,7 +1616,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * create server with partitioned region with redundant copies.
-   * 
+   *
    * @param server VM where to create the bridge server.
    * @param accessor boolean if true create partitioned region with local max memory zero.
    * @param redundantCopies number of redundant copies for a partitioned region.
@@ -1626,7 +1627,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Create a bridge server with partitioned region.
-   * 
+   *
    * @param server VM where to create the bridge server.
    * @param port bridge server port.
    * @param isAccessor if true the under lying partitioned region will not host data on this vm.
@@ -1871,5 +1872,3 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
 
 }
-
-

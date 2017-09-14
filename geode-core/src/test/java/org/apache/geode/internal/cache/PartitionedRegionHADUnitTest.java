@@ -14,14 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -29,6 +22,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -51,9 +47,12 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- *  
+ *
  */
 @Category(DistributedTest.class)
 public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase {
@@ -68,16 +67,16 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
 
   Properties props = new Properties();
 
-  volatile static int regionCnt = 0;
+  static volatile int regionCnt = 0;
 
-  final static int MAX_REGIONS = 1;
+  static final int MAX_REGIONS = 1;
 
   final int totalNumBuckets = 5;
 
   /**
    * Test to ensure that we have proper bucket failover, with no data loss, in the face of
    * sequential cache.close() events.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -380,7 +379,7 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
 
   /**
    * This verifies the Bucket Regions on the basis of redundantCopies set in RegionAttributes.
-   * 
+   *
    * @see PartitionedRegionSingleNodeOperationsJUnitTest#test018BucketScope()
    * @throws Exception
    */
@@ -471,10 +470,10 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
   /**
    * This private methods sets the passed attributes and returns RegionAttribute object, which is
    * used in create region
-   * 
+   *
    * @param redundancy
    * @param localMaxMem
-   * 
+   *
    * @return
    */
   protected RegionAttributes createRegionAttributesForPR(int redundancy, int localMaxMem) {

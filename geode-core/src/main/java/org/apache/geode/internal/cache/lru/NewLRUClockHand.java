@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.lru;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -25,7 +27,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.logging.log4j.Logger;
 
 /**
  * AbstractLRUClockHand holds the lrulist, and the behavior for maintaining the list in a cu-pipe
@@ -44,17 +45,17 @@ public class NewLRUClockHand {
   protected LRUClockNode head = new GuardNode();
 
   /** The object for locking the head of the cu-pipe. */
-  final protected HeadLock lock;
+  protected final HeadLock lock;
 
   /** Description of the Field */
-  final private LRUStatistics stats;
+  private final LRUStatistics stats;
   /** Counter for the size of the LRU list */
   protected int size = 0;
 
   public static final boolean debug =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "verbose-lru-clock");
 
-  static private final int maxEntries;
+  private static final int maxEntries;
 
   static {
     String squelch = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "lru.maxSearchEntries");
@@ -461,4 +462,3 @@ public class NewLRUClockHand {
     }
   }
 }
-

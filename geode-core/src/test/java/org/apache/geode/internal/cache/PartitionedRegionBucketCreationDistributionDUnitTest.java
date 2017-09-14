@@ -531,7 +531,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
   /**
    * This function performs destroy(key) operations in multiple Partiton Regions. The range of keys
    * to be destroyed is from 100 to 200. Each Vm destroys different set of the keys.
-   * 
+   *
    * @param startIndexForRegion
    * @param endIndexForRegion
    * @param startIndexForDestroy
@@ -571,7 +571,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
   /**
    * This function performs destroy(key) operations in multiple Partiton Regions. The range of keys
    * to be destroyed is from 100 to 200. Each Vm destroys different set of the keys.
-   * 
+   *
    * @param startIndexForRegion
    * @param endIndexForRegion
    * @param startIndexForInvalidate
@@ -639,7 +639,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
 
   /**
    * This function performs put() operation from the single vm in multiple partition regions.
-   * 
+   *
    * @param vm0
    * @param startIndexForRegion
    * @param endIndexForRegion
@@ -673,7 +673,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
 
   /**
    * This function performs put() in multiple partition regions for the given node.
-   * 
+   *
    * @param startIndexForKey
    * @param endIndexForKey
    * @param startIndexForRegion
@@ -978,7 +978,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
    * <br>
    * (4) In case of the partition regions with redundancy > 0 no two bucket regions with same
    * bucketId should be generated on the same node.</br>
-   * 
+   *
    * @param startIndexForRegion
    * @param endIndexForRegion
    * @return
@@ -1107,7 +1107,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
    * (3) Size of bucket2Node region should be 0.</br>
    * <br>
    * (4) Parent region of the bucket2Node region shoud be root i.e. region with name "PRRoot".</br>
-   * 
+   *
    * @param startIndexForRegion
    * @param endIndexForRegion
    * @return
@@ -1308,7 +1308,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
    * and redundancy=2. 5. third quarter of total partition regions are of scope = DISTRIBUTED_NO_ACK
    * and redundancy=0. 4. fourth quarter of total partition regions are of scope =
    * DISTRIBUTED_NO_ACK and redundancy=2.
-   * 
+   *
    * @param startIndexForRegion
    * @param endIndexForRegion
    */
@@ -1405,7 +1405,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
 
   /**
    * This function calculates memory of partition region at each node and puts it in storage region.
-   * 
+   *
    * @param startIndexForKey
    * @param endIndexForKey
    * @return

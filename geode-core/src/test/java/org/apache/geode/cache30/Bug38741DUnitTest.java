@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -60,6 +59,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -77,7 +77,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
   /**
    * Test that CopyOnRead doesn't cause {@link HARegionQueue#peek()} to create a copy, assuming that
    * creating copies performs a serialize and de-serialize operation.
-   * 
+   *
    * @throws Exception when there is a failure
    * @since GemFire bugfix5.7
    */
@@ -267,7 +267,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
   /**
    * Test to ensure that a PartitionedRegion doesn't make more than the expected number of copies
    * when copy-on-read is set to true
-   * 
+   *
    * @throws Exception
    */
   @Test

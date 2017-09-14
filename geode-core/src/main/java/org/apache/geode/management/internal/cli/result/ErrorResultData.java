@@ -19,8 +19,8 @@ import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class ErrorResultData extends InfoResultData {
@@ -48,7 +48,7 @@ public class ErrorResultData extends InfoResultData {
   }
 
   /**
-   * 
+   *
    * @param errorCode
    * @return this ErrorResultData
    * @throws ResultDataException If the errorCode value is a non-finite number or invalid.
@@ -64,7 +64,7 @@ public class ErrorResultData extends InfoResultData {
   }
 
   /**
-   * 
+   *
    * @param headerText
    * @return this ErrorResultData
    * @throws ResultDataException
@@ -74,7 +74,7 @@ public class ErrorResultData extends InfoResultData {
   }
 
   /**
-   * 
+   *
    * @param line message to add
    * @return this ErrorResultData
    */
@@ -83,7 +83,7 @@ public class ErrorResultData extends InfoResultData {
   }
 
   /**
-   * 
+   *
    * @param footerText
    * @return this InfoResultData
    * @throws ResultDataException

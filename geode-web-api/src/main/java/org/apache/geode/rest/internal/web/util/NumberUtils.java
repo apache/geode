@@ -17,14 +17,12 @@ package org.apache.geode.rest.internal.web.util;
 
 import org.springframework.util.StringUtils;
 
-import org.springframework.util.StringUtils;
-
 import org.apache.geode.internal.lang.ClassUtils;
 
 /**
  * The NumberUtils class is a utility class for working with numbers.
  * <p/>
- * 
+ *
  * @see java.lang.Number
  * @since GemFire 8.0
  */

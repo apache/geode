@@ -641,4 +641,3 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   }
 
 }
-

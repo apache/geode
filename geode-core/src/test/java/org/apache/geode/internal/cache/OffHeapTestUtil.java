@@ -20,10 +20,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.MemoryBlock;
 import org.apache.geode.internal.offheap.RefCountChangeInfo;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
-import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {
@@ -60,4 +60,3 @@ public class OffHeapTestUtil {
   }
 
 }
-

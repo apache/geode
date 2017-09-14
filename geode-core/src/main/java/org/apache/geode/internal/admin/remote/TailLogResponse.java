@@ -16,6 +16,10 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -26,12 +30,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
-import org.apache.logging.log4j.Logger;
 
-import java.io.*;
-
-// import org.apache.geode.distributed.DistributedSystem;
-// import java.util.*;
 
 public class TailLogResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();

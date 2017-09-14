@@ -56,7 +56,7 @@ import org.apache.geode.management.membership.MembershipListener;
 /**
  * This is the concrete implementation of ManagementService which is the gateway to various JMX
  * operations over a GemFire System
- * 
+ *
  * @since GemFire 7.0
  */
 public class SystemManagementService extends BaseManagementService {
@@ -149,7 +149,7 @@ public class SystemManagementService extends BaseManagementService {
 
   /**
    * This method will initialize all the internal components for Management and Monitoring
-   * 
+   *
    * It will a)start an JMX connectorServer b) create a notification hub c)register the
    * ManagementFunction
    */

@@ -29,9 +29,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class PeerAuthenticatorDUnitTest {

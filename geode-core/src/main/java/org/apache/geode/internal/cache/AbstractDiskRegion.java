@@ -14,6 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.PrintStream;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
+import joptsimple.internal.Strings;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.compression.Compressor;
@@ -33,16 +44,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
-import org.apache.logging.log4j.Logger;
-
-import java.io.PrintStream;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import joptsimple.internal.Strings;
 
 /**
  * Code shared by both DiskRegion and RecoveredDiskRegion.
@@ -90,7 +91,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
    * vector of what is in memory, because updates may be written asynchronously to disk. We need to
    * keep track of exactly what has been written to disk so that we can record a version vector at
    * the beginning of each oplog.
-   * 
+   *
    * The version vector of what is in memory is held in is held in LocalRegion.versionVector.
    */
   private RegionVersionVector versionVector;
@@ -191,7 +192,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   /**
    * Used to initialize a PlaceHolderDiskRegion for a region that is being closed
-   * 
+   *
    * @param drv the region that is being closed
    */
   protected AbstractDiskRegion(DiskRegionView drv) {
@@ -742,7 +743,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   /**
    * gets the number of entries recovered
-   * 
+   *
    * @since GemFire 3.2.1
    */
   public int getRecoveredEntryCount() {
@@ -913,7 +914,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   /**
    * Dump the (bucket specific) persistent view to the string builder
-   * 
+   *
    * @param msg
    */
   public void dumpPersistentView(StringBuilder msg) {
@@ -938,7 +939,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   /**
    * Dump the attributes which are common across the PR to the string builder.
-   * 
+   *
    * @param msg
    */
   public void dumpCommonAttributes(StringBuilder msg) {
@@ -965,7 +966,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   /**
    * This method was added to fix bug 40192. It is like getBytesAndBits except it will return
    * Token.REMOVE_PHASE1 if the htreeReference has changed (which means a clear was done).
-   * 
+   *
    * @return an instance of BytesAndBits or Token.REMOVED_PHASE1
    */
   public Object getRaw(DiskId id) {

@@ -31,8 +31,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * Class verifies Region#query(Select Query) API for PartitionedRegion on a single VM.,As
  * region#query doesn't support Select Query for Local Querying it should throw
  * QueryInvalidException
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class PRInvalidQueryJUnitTest {
@@ -49,7 +49,7 @@ public class PRInvalidQueryJUnitTest {
 
   /**
    * Populates the region with the Objects stores in the data Object array.
-   * 
+   *
    * @param region
    * @param data
    */

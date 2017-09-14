@@ -51,7 +51,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * The base PartitionedRegion message type upon which other messages should be based.
- * 
+ *
  * @since GemFire 6.5
  */
 public abstract class RemoteOperationMessage extends DistributionMessage
@@ -134,7 +134,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * Severe alert processing enables suspect processing at the ack-wait-threshold and issuing of a
    * severe alert at the end of the ack-severe-alert-threshold. Some messages should not support
    * this type of processing (e.g., GII, or DLockRequests)
-   * 
+   *
    * @return whether severe-alert processing may be performed on behalf of this message
    */
   @Override
@@ -173,7 +173,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   /**
    * check to see if the distributed system is closing
-   * 
+   *
    * @return true if the distributed system is closing
    */
   public boolean checkDSClosing(DistributionManager dm) {
@@ -185,7 +185,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * Upon receipt of the message, both process the message and send an acknowledgement, not
    * necessarily in that order. Note: Any hang in this message may cause a distributed deadlock for
    * those threads waiting for an acknowledgement.
-   * 
+   *
    * @throws PartitionedRegionException if the region does not exist (typically, if it has been
    *         destroyed)
    */
@@ -313,7 +313,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * Send a generic ReplyMessage. This is in a method so that subclasses can override the reply
    * message type
-   * 
+   *
    * @param pr the Partitioned Region for the message whose statistics are incremented
    * @param startTime the start time of the operation in nanoseconds
    * @see PutMessage#sendReply
@@ -331,7 +331,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * Allow classes that over-ride to choose whether a RegionDestroyException is thrown if no
    * partitioned region is found (typically occurs if the message will be sent before the
    * PartitionedRegion has been fully constructed.
-   * 
+   *
    * @return true if throwing a {@link RegionDestroyedException} is acceptable
    */
   protected boolean failIfRegionMissing() {
@@ -428,7 +428,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     return txMemberId;
   }
 
-  private final static String PN_TOKEN = ".cache.";
+  private static final String PN_TOKEN = ".cache.";
 
   @Override
   public String toString() {
@@ -448,7 +448,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   /**
    * Helper class of {@link #toString()}
-   * 
+   *
    * @param buff buffer in which to append the state of this instance
    */
   protected void appendFields(StringBuffer buff) {
@@ -473,7 +473,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   /**
    * added to support old value to be written on wire.
-   * 
+   *
    * @param value true or false
    * @since GemFire 6.5
    */
@@ -508,7 +508,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * A processor on which to await a response from the {@link RemoteOperationMessage} recipient,
    * capturing any CacheException thrown by the recipient and handle it as an expected exception.
-   * 
+   *
    * @since GemFire 6.5
    * @see #waitForCacheException()
    */
@@ -579,7 +579,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
     /**
      * Waits for the response from the {@link RemoteOperationMessage}'s recipient
-     * 
+     *
      * @throws CacheException if the recipient threw a cache exception during message processing
      */
     public void waitForCacheException()

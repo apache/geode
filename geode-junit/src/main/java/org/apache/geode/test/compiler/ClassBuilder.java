@@ -40,7 +40,7 @@ import javax.tools.ToolProvider;
 /**
  * Test framework utility class to programmatically create classes, JARs and ClassLoaders that
  * include the classes.
- * 
+ *
  * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
@@ -51,7 +51,7 @@ public class ClassBuilder implements Serializable {
   /**
    * Write a JAR with an empty class using the given class name. The className may have a package
    * separated by /. For example: my/package/myclass
-   * 
+   *
    * @param className Name of the class to create
    * @param outputFile Where to write the JAR file
    * @throws IOException If there is a problem creating the output stream for the JAR file.
@@ -63,7 +63,7 @@ public class ClassBuilder implements Serializable {
   /**
    * Write a JAR with a class of the given name with the provided content. The className may have a
    * package separated by /. For example: my/package/myclass
-   * 
+   *
    * @param className Name of the class to create
    * @param content Content of the created class
    * @param outputFile Where to write the JAR file
@@ -79,7 +79,7 @@ public class ClassBuilder implements Serializable {
   /**
    * Create a JAR with an empty class using the given class name. The className may have a package
    * separated by /. For example: my/package/myclass
-   * 
+   *
    * @param className Name of the class to create
    * @return The JAR file contents
    * @throws IOException If there is a problem creating the output stream for the JAR file.
@@ -90,7 +90,7 @@ public class ClassBuilder implements Serializable {
 
   /**
    * Create a JAR using the given file contents and with the given file name.
-   * 
+   *
    * @param fileName Name of the file to create
    * @param content Content of the created file
    * @return The JAR file content
@@ -113,7 +113,7 @@ public class ClassBuilder implements Serializable {
 
   /**
    * Create a JAR using the given class contents and with the given class name.
-   * 
+   *
    * @param className Name of the class to create
    * @param content Content of the created class
    * @return The JAR file content
@@ -129,7 +129,7 @@ public class ClassBuilder implements Serializable {
   /**
    * Write a JAR with a class of the given name with the provided content. The className may have a
    * package separated by /. For example: my/package/myclass
-   * 
+   *
    * @param className Name of the class to create
    * @param content Content of the created class
    * @param outStream Stream to write the JAR to
@@ -157,7 +157,7 @@ public class ClassBuilder implements Serializable {
   /**
    * Creates a ClassLoader that contains an empty class with the given name using the given content.
    * The className may have a package separated by /. For example: my/package/myclass
-   * 
+   *
    * @param className Name of the class to create
    * @param content Content of the created class
    * @return The class loader
@@ -174,7 +174,7 @@ public class ClassBuilder implements Serializable {
   /**
    * Compile the provided class. The className may have a package separated by /. For example:
    * my/package/myclass
-   * 
+   *
    * @param className Name of the class to compile.
    * @param classCode Plain text contents of the class
    * @return The byte contents of the compiled class.
@@ -208,7 +208,7 @@ public class ClassBuilder implements Serializable {
 
   /***
    * Add to the ClassPath used when compiling.
-   * 
+   *
    * @param path Path to add
    * @return The complete, new ClassPath
    */
@@ -219,7 +219,7 @@ public class ClassBuilder implements Serializable {
 
   /**
    * Get the current ClassPath used when compiling.
-   * 
+   *
    * @return The ClassPath used when compiling.
    */
   public String getClassPath() {

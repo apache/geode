@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.awaitility.Awaitility.*;
 import static java.util.concurrent.TimeUnit.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.*;
 import static org.junit.Assert.*;
 
 import java.io.DataInput;
@@ -34,9 +34,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -76,9 +78,9 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
-import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage.ManageBucketReplyMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -96,7 +98,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.awaitility.Awaitility;
 
 /**
  * Tests the basic use cases for PR persistence.
@@ -234,7 +235,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
 
   /**
    * Test to make sure that we can recover from a complete system shutdown with redundancy 0
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -244,7 +245,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
 
   /**
    * Test to make sure that we can recover from a complete system shutdown with redundancy 1
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -889,7 +890,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
 
   /**
    * Test to make sure that we recreate a bucket if a member is revoked
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -967,7 +968,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Test to make sure that we recreate a bucket if a member is revoked, and that we do it
    * immediately if recovery delay is set to 0.
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1686,7 +1687,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
    * member A that it hosts the bucket 3. Member A crashes 4. Member B destroys the bucket and
    * throws a partition offline exception, because it wasn't able to complete initialization. 5.
    * Member A recovers, and gets stuck waiting for member B.
-   * 
+   *
    * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-1208: time sensitive, multiple non-thread-safe test hooks,
@@ -1768,7 +1769,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * A test to make sure that we allow the PR to be used after at least one copy of every bucket is
    * recovered, but before the secondaries are initialized.
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1936,10 +1937,10 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
   /**
    * Another test for bug 41436. If the GII source crashes before the GII is complete, we need to
    * make sure that later we can recover redundancy.
-   * 
+   *
    * In this test case, we bring the GII down before we bring the source back up, to make sure the
    * source still discovers that the GII target is no longer hosting the bucket.
-   * 
+   *
    * @throws InterruptedException
    */
   @Test

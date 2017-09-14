@@ -20,12 +20,12 @@ import org.apache.geode.admin.AdminDistributedSystem;
 /**
  * Thrown when a member with persistence is recovering, and it discovers that other members in the
  * system have revoked the persistent data stored on this member.
- * 
+ *
  * This exception can also occur if set of persistent files was thought to be lost and was revoked,
  * but is later brought online. Once a persistent member is revoked, that member cannot rejoin the
  * distributed system unless the persistent files are removed. See
  * {@link AdminDistributedSystem#revokePersistentMember(java.net.InetAddress, String)}
- * 
+ *
  * @since GemFire 7.0
  */
 public class RevokedPersistentDataException extends GemFireException {

@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializable;
 
 /****
- * 
+ *
  *
  */
 public class SharedConfigurationStatusRequest implements DataSerializable {

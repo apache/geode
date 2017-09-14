@@ -23,6 +23,10 @@ import java.util.concurrent.TimeoutException;
 
 import javax.transaction.Status;
 
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.GemFireException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -41,9 +45,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({DistributedTest.class})
 public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {

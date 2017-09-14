@@ -261,7 +261,7 @@ public class DefaultQuery implements Query {
 
   /**
    * Should be constructed from DefaultQueryService
-   * 
+   *
    * @see QueryService#newQuery
    */
   public DefaultQuery(String queryString, InternalCache cache, boolean isForRemote) {
@@ -1014,7 +1014,7 @@ public class DefaultQuery implements Query {
 
   /**
    * For queries which are executed from a Function "with a Filter".
-   * 
+   *
    * @return returns if this query is coming from a {@link Function}.
    */
   public boolean isQueryWithFunctionContext() {

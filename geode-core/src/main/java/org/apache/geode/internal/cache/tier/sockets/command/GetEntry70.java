@@ -25,12 +25,12 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 /**
  * getEntry(key) operation performed on server. Extends Request, and overrides getValueAndIsObject()
  * in Request so as to not invoke loader.
- * 
+ *
  * @since GemFire 6.6
  */
 public class GetEntry70 extends Get70 {
 
-  private final static GetEntry70 singleton = new GetEntry70();
+  private static final GetEntry70 singleton = new GetEntry70();
 
   public static Command getCommand() {
     return singleton;

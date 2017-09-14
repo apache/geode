@@ -20,6 +20,16 @@ import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTI
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.assertj.core.util.Strings;
+import org.json.JSONArray;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -35,16 +45,6 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-
-import org.assertj.core.util.Strings;
-import org.json.JSONArray;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 @Category(DistributedTest.class)
 public class FunctionCommandsDUnitTest {

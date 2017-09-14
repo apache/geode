@@ -19,14 +19,6 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.geode.internal.cache.CachedDeserializable;
-import org.apache.geode.internal.cache.CachedDeserializableFactory;
-import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.FilterProfile;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.ImageState;
-import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -52,6 +44,14 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.FilterProfile;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.ImageState;
+import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -203,7 +203,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
    * This sets the lastModified time for the entry. In subclasses with statistics it will also set
    * the lastAccessed time unless the system property gemfire.disableAccessTimeUpdateOnPut is set to
    * true.
-   * 
+   *
    * @param lastModified the time of last modification of the entry
    */
   public void setLastModified(long lastModified) {
@@ -213,7 +213,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   /**
    * This sets the lastModified and lastAccessed time for the entry. Subclasses that do not keep
    * track of lastAccessed time will ignore the second parameter.
-   * 
+   *
    * @param lastModified the time of last modification of the entry
    * @param lastAccessed the time the entry was last accessed
    */
@@ -313,7 +313,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   /**
    * Return true if the object is removed.
-   * 
+   *
    * TODO this method does NOT return true if the object is Token.DESTROYED. dispatchListenerEvents
    * relies on that fact to avoid removing destroyed tokens from the map. We should refactor so that
    * this method calls Token.isRemoved, and places that don't want a destroyed Token can explicitly
@@ -425,7 +425,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   /**
    * To fix bug 49901 if v is a GatewaySenderEventImpl then make a heap copy of it if it is offheap.
-   * 
+   *
    * @return the value to provide to the gii request; null if no value should be provided.
    */
   static Object prepareValueForGII(Object v) {
@@ -529,7 +529,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
    *
    * @param context the values context.
    * @param value a region entry value.
-   * 
+   *
    * @return the decompressed form of the value parameter.
    */
   static Object decompress(RegionEntryContext context, Object value) {
@@ -551,7 +551,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
    *
    * @param context the values context.
    * @param value a region entry value.
-   * 
+   *
    * @return the compressed form of the value parameter.
    */
   protected static Object compress(RegionEntryContext context, Object value, EntryEventImpl event) {
@@ -1503,7 +1503,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   /**
    * Reads the value of this region entry. Provides low level access to the value field.
-   * 
+   *
    * @return possible OFF_HEAP_OBJECT (caller uses region entry reference)
    */
   @Unretained
@@ -1511,7 +1511,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   /**
    * Set the value of this region entry. Provides low level access to the value field.
-   * 
+   *
    * @param v the new value to set
    */
   protected abstract void setValueField(@Unretained Object v);
@@ -1668,20 +1668,20 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   /**
    * This performs a concurrency check.
-   * 
+   *
    * This check compares the version number first, followed by the member ID.
-   * 
+   *
    * Wraparound of the version number is detected and handled by extending the range of versions by
    * one bit.
-   * 
+   *
    * The normal membership ID comparison method is used.
    * <p>
-   * 
+   *
    * Note that a tag from a remote (WAN) system may be in the event. If this is the case this method
    * will either invoke a user plugin that allows/disallows the event (and may modify the value) or
    * it determines whether to allow or disallow the event based on timestamps and
    * distributedSystemIDs.
-   * 
+   *
    * @throws ConcurrentCacheModificationException if the event conflicts with an event that has
    *         already been applied to the entry.
    */

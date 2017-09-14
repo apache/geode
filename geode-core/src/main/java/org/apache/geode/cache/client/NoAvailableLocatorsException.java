@@ -17,7 +17,7 @@ package org.apache.geode.cache.client;
 
 /**
  * An exception indicating that there are no active locators available to connect to.
- * 
+ *
  * @since GemFire 5.7
  */
 public class NoAvailableLocatorsException extends ServerConnectivityException {
@@ -30,7 +30,7 @@ public class NoAvailableLocatorsException extends ServerConnectivityException {
 
   /**
    * Create a new instance of NoAvailableServersException with a detail message
-   * 
+   *
    * @param message the detail message
    */
   public NoAvailableLocatorsException(String message) {
@@ -39,7 +39,7 @@ public class NoAvailableLocatorsException extends ServerConnectivityException {
 
   /**
    * Create a new instance of NoAvailableLocatorsException with a detail message and cause
-   * 
+   *
    * @param message the detail message
    * @param cause the cause
    */
@@ -49,7 +49,7 @@ public class NoAvailableLocatorsException extends ServerConnectivityException {
 
   /**
    * Create a new instance of NoAvailableLocatorsException with a and cause
-   * 
+   *
    * @param cause the cause
    */
   public NoAvailableLocatorsException(Throwable cause) {

@@ -39,7 +39,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * A message sent to determine the most recent PartitionedRegion identity
- * 
+ *
  * @since GemFire 5.0
  */
 public class IdentityRequestMessage extends DistributionMessage implements MessageWithReply {
@@ -60,7 +60,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
 
   /**
    * Method public for test reasons
-   * 
+   *
    * @return the latest identity
    */
   public static synchronized int getLatestId() {
@@ -119,7 +119,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
    * Sends a <code>IdentityRequest</code> to each <code>PartitionedRegion</code>
    * {@link org.apache.geode.internal.cache.Node}. The <code>IdentityResponse</code> is used to
    * fetch the highest current identity value.
-   * 
+   *
    * @param recipients
    * @return the response object to wait upon
    */
@@ -163,7 +163,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
   /**
    * The message that contains the <code>Integer</code> identity response to the
    * {@link IdentityRequestMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class IdentityReplyMessage extends HighPriorityDistributionMessage {
@@ -240,7 +240,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
 
     /**
      * Fetch the current Identity number
-     * 
+     *
      * @return the identity Integer from the sender or null if the sender did not have the Integer
      *         initialized
      */
@@ -255,7 +255,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
   /**
    * The response to a {@link IdentityRequestMessage} use {@link #waitForId()} to capture the
    * identity
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class IdentityResponse extends ReplyProcessor21 {
@@ -299,10 +299,10 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
     /**
      * Fetch the next <code>PartitionedRegion</code> identity, used to uniquely identify (globally)
      * each instance of a <code>PartitionedRegion</code>
-     * 
+     *
      * @return the next highest Integer for the <code>PartitionedRegion</code> or null if this is
      *         the first identity
-     * 
+     *
      * @see PartitionMessage#getRegionId()
      */
     public Integer waitForId() {

@@ -14,6 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -29,21 +36,14 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 /***
- * 
+ *
  * since 7.0
  */
 
 public class GetMemberInformationFunction extends FunctionAdapter implements InternalEntity {
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 1L;
 

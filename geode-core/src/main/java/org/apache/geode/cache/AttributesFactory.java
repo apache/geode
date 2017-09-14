@@ -111,7 +111,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * cache that is initiating an operation; it does not matter what it is set to on the cache that
  * receives the operation.<br>
  * {@link #setEarlyAck} {@link RegionAttributes#getEarlyAck}</dd>
- * 
+ *
  * <dt>{@link SubscriptionAttributes} [<em>default:</em> {@link InterestPolicy#DEFAULT}]</dt>
  * <dd>How will the region in this cache subscribe to other distributed instances of this region.
  * <br>
@@ -128,7 +128,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * <dd>Whether or not this region is a client that is to use connections from the named pool to
  * communicate with servers. If {@code null}, then it is not a client. If {@code non-null}, then the
  * named pool will be used. {@link #setPoolName} {@link RegionAttributes#getPoolName}</dd>
- * 
+ *
  *
  * <dt>EnableSubscriptionConflation [<em>default:</em> {@code false}]</dt>
  * <dd>Whether or not conflation is enabled for sending messages from a cache server to its clients.
@@ -191,7 +191,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * impact. A value of one is appropriate when it is known that only one thread will modify and all
  * others will only read. <br>
  * {@link #setConcurrencyLevel} {@link RegionAttributes#getConcurrencyLevel}</dd>
- * 
+ *
  * <dt>ConcurrencyChecksEnabled [<em>default:</em> {@code false}]</dt>
  * <dd>Enables a distributed versioning algorithm that detects concurrency conflicts in regions and
  * ensures that changes to an entry are not applied in a different order in other members. This can
@@ -221,7 +221,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * conflated if the same entry is written while a previous operation for the same entry is still in
  * the queue.<br>
  * {@link #setDiskSynchronous} {@link RegionAttributes#isDiskSynchronous}</dd>
- * 
+ *
  * <dt>PersistBackup [<em>default:</em> {@code false}]</dt>
  * <dd>Whether or not a persistent backup should be made of the region.<br>
  * {@link #setPersistBackup} {@link RegionAttributes#getPersistBackup}</dd>
@@ -325,7 +325,7 @@ public class AttributesFactory<K, V> {
    * The default disk synchronous write setting
    * <p>
    * Current value: {@code true} each.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static final boolean DEFAULT_DISK_SYNCHRONOUS = true;
@@ -469,7 +469,7 @@ public class AttributesFactory<K, V> {
   /**
    * Sets the CacheListener for the next {@code RegionAttributes} created. Any existing cache
    * listeners on this factory are removed.
-   * 
+   *
    * @param aListener a user defined CacheListener, null if no listener
    * @deprecated as of GemFire 5.0, use {@link #addCacheListener} instead.
    */
@@ -490,7 +490,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Adds a cache listener to the end of the list of cache listeners on this factory.
-   * 
+   *
    * @param aListener the cache listener to add to the factory.
    * @throws IllegalArgumentException if {@code aListener} is null
    * @since GemFire 5.0
@@ -508,7 +508,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Removes all cache listeners and then adds each listener in the specified array.
-   * 
+   *
    * @param newListeners a possibly null or empty array of listeners to add to this factory.
    * @throws IllegalArgumentException if the {@code newListeners} array has a null element
    * @since GemFire 5.0
@@ -552,7 +552,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets the idleTimeout CustomExpiry for the next {@code RegionAttributes} created.
-   * 
+   *
    * @param custom the CustomExpiry to use; null means none will be used.
    */
   public void setCustomEntryIdleTimeout(CustomExpiry<K, V> custom) {
@@ -579,7 +579,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets the custom timeToLive for the next {@code RegionAttributes} created.
-   * 
+   *
    * @param custom the CustomExpiry to use, none if the default for the region is to be used.
    */
   public void setCustomEntryTimeToLive(CustomExpiry<K, V> custom) {
@@ -628,7 +628,7 @@ public class AttributesFactory<K, V> {
   /**
    * Sets the scope for the next {@code RegionAttributes} created. Default scope is
    * DISTRIBUTED_NO_ACK. Refer gemfire documentation for more details on this.
-   * 
+   *
    * @param scopeType the type of Scope to use for the region
    * @throws IllegalArgumentException if scopeType is null
    */
@@ -661,7 +661,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets the mirror type for the next {@code RegionAttributes} created.
-   * 
+   *
    * @param mirrorType The type of mirroring to use for the region
    * @throws IllegalArgumentException if mirrorType is null
    * @deprecated use {@link #setDataPolicy} instead.
@@ -691,7 +691,7 @@ public class AttributesFactory<K, V> {
   /**
    * Sets the data policy for the next {@code RegionAttributes} created. Default data policy is
    * 'Normal'. Please refer gemfire documentation for more details on this.
-   * 
+   *
    * @param dataPolicy The data policy to use for the region
    * @throws IllegalArgumentException if dataPolicy is null
    */
@@ -716,7 +716,7 @@ public class AttributesFactory<K, V> {
    * Sets the key constraint for the next {@code RegionAttributes} created. Keys in the region will
    * be constrained to this class (or subclass). Any attempt to store a key of an incompatible type
    * in the region will cause a {@code ClassCastException} to be thrown.
-   * 
+   *
    * @param keyConstraint The Class to constrain the keys to, or null if no constraint
    * @throws IllegalArgumentException if {@code keyConstraint} is a class denoting a primitive type
    */
@@ -733,7 +733,7 @@ public class AttributesFactory<K, V> {
    * Sets the value constraint for the next {@code RegionAttributes} created. Values in the region
    * will be constrained to this class (or subclass). Any attempt to store a value of an
    * incompatible type in the region will cause a {@code ClassCastException} to be thrown.
-   * 
+   *
    * @param valueConstraint The Class to constrain the values to, or null if no constraint
    * @throws IllegalArgumentException if {@code valueConstraint} is a class denoting a primitive
    *         type
@@ -753,7 +753,7 @@ public class AttributesFactory<K, V> {
   /**
    * Sets the entry initial capacity for the next {@code RegionAttributes} created. This value is
    * used in initializing the map that holds the entries. Default is 16.
-   * 
+   *
    * @param initialCapacity the initial capacity of the entry map
    * @throws IllegalArgumentException if initialCapacity is negative.
    * @see java.util.HashMap
@@ -769,7 +769,7 @@ public class AttributesFactory<K, V> {
   /**
    * Sets the entry load factor for the next {@code RegionAttributes} created. This value is used in
    * initializing the map that holds the entries. Default is 0.75.
-   * 
+   *
    * @param loadFactor the load factor of the entry map
    * @throws IllegalArgumentException if loadFactor is nonpositive
    * @see java.util.HashMap
@@ -786,7 +786,7 @@ public class AttributesFactory<K, V> {
   /**
    * Sets the concurrency level of the next {@code RegionAttributes} created. This value is used in
    * initializing the map that holds the entries. Default is 16.
-   * 
+   *
    * @param concurrencyLevel the concurrency level of the entry map
    * @throws IllegalArgumentException if concurrencyLevel is nonpositive
    */
@@ -800,7 +800,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Enables or disabled concurrent modification checks. Concurrency checks are enabled by default.
-   * 
+   *
    * @since GemFire 7.0
    * @param concurrencyChecksEnabled whether to perform concurrency checks on operations
    */
@@ -886,7 +886,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * adds a gateway sender to the end of list of gateway senders on this factory
-   * 
+   *
    * @param gatewaySenderId
    * @throws IllegalArgumentException if {@code gatewaySender} is null
    * @since GemFire 7.0
@@ -903,7 +903,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Adds a AsyncEventQueue to the end of list of async event queues on this factory
-   * 
+   *
    * @param asyncEventQueueId
    * @throws IllegalArgumentException if {@code gatewaySender} is null
    * @since GemFire 7.0
@@ -996,7 +996,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets the DiskStore name attribute. This causes the region to use the {@link DiskStore}.
-   * 
+   *
    * @param name the name of the diskstore
    * @since GemFire 6.5
    */
@@ -1012,7 +1012,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets whether or not the writing to the disk is synchronous. Default is true.
-   * 
+   *
    * @param isSynchronous boolean if true indicates synchronous writes
    * @since GemFire 6.5
    */
@@ -1151,7 +1151,7 @@ public class AttributesFactory<K, V> {
   // STATISTICS
   /**
    * Sets whether statistics are enabled for this region and its entries. Default is false.
-   * 
+   *
    * @param statisticsEnabled whether statistics are enabled
    */
   public void setStatisticsEnabled(boolean statisticsEnabled) {
@@ -1161,7 +1161,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets the flag telling a region to ignore JTA transactions. Default is false.
-   * 
+   *
    * @since GemFire 5.0
    */
   public void setIgnoreJTA(boolean flag) {
@@ -1171,7 +1171,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets whether this region should become lock grantor. Default value is false.
-   * 
+   *
    * @param isLockGrantor whether this region should become lock grantor
    */
   public void setLockGrantor(boolean isLockGrantor) {
@@ -1183,7 +1183,7 @@ public class AttributesFactory<K, V> {
    * Sets whether distributed operations on this region should attempt to use multicast. Multicast
    * must also be enabled in the cache's DistributedSystem (see <a
    * href=../distributed/DistributedSystem.html#mcast-port">"mcast-port"</a>). Default is false.
-   * 
+   *
    * @since GemFire 5.0
    * @see RegionAttributes#getMulticastEnabled
    */
@@ -1195,7 +1195,7 @@ public class AttributesFactory<K, V> {
   /**
    * Sets cloning on region. Default is false. Note: off-heap regions always behave as if cloning is
    * enabled.
-   * 
+   *
    * @since GemFire 6.1
    * @see RegionAttributes#getCloningEnabled()
    */
@@ -1214,7 +1214,7 @@ public class AttributesFactory<K, V> {
    * <p>
    * The named connection pool must exist on the cache at the time these attributes are used to
    * create a region. See {@link PoolManager#createFactory} for how to create a connection pool.
-   * 
+   *
    * @param name the name of the connection pool to use; if {@code null} or {@code ""} then the
    *        connection pool is disabled for regions using these attributes.
    * @since GemFire 5.7
@@ -1231,7 +1231,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets this region's compressor for compressing entry values.
-   * 
+   *
    * @since GemFire 8.0
    * @param compressor a compressor.
    */
@@ -1247,7 +1247,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Enables this region's usage of off-heap memory if true.
-   * 
+   *
    * @since Geode 1.0
    * @param offHeap boolean flag to enable off-heap memory
    */
@@ -1264,7 +1264,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Creates a {@code RegionAttributes} with the current settings.
-   * 
+   *
    * @return the newly created {@code RegionAttributes}
    * @throws IllegalStateException if the current settings violate the
    *         <a href="#compatibility">compatibility rules</a>
@@ -1277,7 +1277,7 @@ public class AttributesFactory<K, V> {
 
   /**
    * Creates a {@code RegionAttributes} with the current settings.
-   * 
+   *
    * @return the newly created {@code RegionAttributes}
    * @throws IllegalStateException if the current settings violate the
    *         <a href="#compatibility">compatibility rules</a>
@@ -1350,7 +1350,7 @@ public class AttributesFactory<K, V> {
    * <li>{@link EvictionAttributes Eviction} is incompatible with the {@link DataPolicy#EMPTY} data
    * policy</li>
    * </ul>
-   * 
+   *
    * @param attrs the attributes to validate
    * @throws IllegalStateException if the attributes are not consistent with each other.
    * @since GemFire 3.5
@@ -1593,7 +1593,7 @@ public class AttributesFactory<K, V> {
 
     /**
      * Constructs an instance of {@code RegionAttributes} with default settings.
-     * 
+     *
      * @see AttributesFactory
      */
     public RegionAttributesImpl() {}

@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +45,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

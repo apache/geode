@@ -39,7 +39,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * This message is used be a replicate region to perform region-level ops like clear() and
  * invalidateRegion(). It is used when the target region has concurrency control enabled so that
  * region-version-vectors must be used to execute these operations.
- * 
+ *
  * @since GemFire 7.0
  */
 public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply {
@@ -50,7 +50,7 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
     // INVALIDATE
   }
 
-  transient private DistributedRegion region;
+  private transient DistributedRegion region;
   private Operation op;
 
   public RemoteRegionOperation() {}
@@ -157,7 +157,7 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override

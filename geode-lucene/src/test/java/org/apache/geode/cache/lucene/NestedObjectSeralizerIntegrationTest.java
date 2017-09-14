@@ -27,6 +27,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.Customer;
@@ -38,9 +42,6 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
 public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest {
@@ -648,7 +649,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
     /**
      * Getter for property type.S
-     * 
+     *
      * @return Value of property type.
      */
     public boolean boolFunction(String strArg) {

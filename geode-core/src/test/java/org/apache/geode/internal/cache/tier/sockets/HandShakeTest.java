@@ -19,10 +19,11 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.security.AuthenticationRequiredException;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class HandShakeTest {

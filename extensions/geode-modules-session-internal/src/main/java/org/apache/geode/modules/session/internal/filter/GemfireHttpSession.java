@@ -15,14 +15,6 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Delta;
-import org.apache.geode.Instantiator;
-import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
-import org.apache.geode.modules.session.internal.filter.attributes.SessionAttributes;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -33,13 +25,22 @@ import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
-import org.apache.geode.modules.util.ClassLoaderObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.Instantiator;
+import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
+import org.apache.geode.modules.session.internal.filter.attributes.SessionAttributes;
+import org.apache.geode.modules.util.ClassLoaderObjectInputStream;
 
 /**
  * Class which implements a Gemfire persisted {@code HttpSession}
@@ -47,7 +48,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("deprecation")
 public class GemfireHttpSession implements HttpSession, DataSerializable, Delta {
 
-  private static transient final Logger LOG =
+  private static final transient Logger LOG =
       LoggerFactory.getLogger(GemfireHttpSession.class.getName());
 
   /**
@@ -464,4 +465,3 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
     return null;
   }
 }
-

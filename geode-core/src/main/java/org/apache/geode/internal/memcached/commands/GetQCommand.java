@@ -24,7 +24,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * Does not send a response on a cache miss.
- * 
+ *
  */
 public class GetQCommand extends GetCommand {
 

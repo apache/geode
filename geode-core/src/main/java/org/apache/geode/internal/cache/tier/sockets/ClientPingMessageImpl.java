@@ -26,8 +26,8 @@ import org.apache.geode.internal.cache.tier.MessageType;
 /**
  * Class <code>ClientPingMessageImpl</code> is a ping message that is periodically placed in the
  * <code>CacheClientProxy</code>'s queue to verify the client connection is still alive.
- * 
- * 
+ *
+ *
  * @since GemFire 6.6.2.x
  */
 public class ClientPingMessageImpl implements ClientMessage {

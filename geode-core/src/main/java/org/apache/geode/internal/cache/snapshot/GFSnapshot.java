@@ -51,7 +51,7 @@ public class GFSnapshot {
   public interface SnapshotWriter {
     /**
      * Appends a cache entry to the snapshot.
-     * 
+     *
      * @param entry the cache entry
      */
     void snapshotEntry(SnapshotRecord entry) throws IOException;
@@ -109,7 +109,7 @@ public class GFSnapshot {
 
   /**
    * Creates a snapshot file and provides a serializer to write entries to the snapshot.
-   * 
+   *
    * @param snapshot the snapshot file
    * @param region the region name
    * @return the callback to allow the invoker to provide the snapshot entries
@@ -132,12 +132,12 @@ public class GFSnapshot {
 
   /**
    * Reads a snapshot file.
-   * 
+   *
    * @param <K> the key type
    * @param <V> the value type
    * @param snapshot the snapshot file
    * @return the snapshot iterator
-   * 
+   *
    * @throws IOException error reading the snapshot file
    * @throws ClassNotFoundException unable to deserialize entry
    */
@@ -239,7 +239,7 @@ public class GFSnapshot {
 
     /**
      * Writes an entry in the snapshot.
-     * 
+     *
      * @param entry the snapshot entry
      * @throws IOException unable to write entry
      */
@@ -350,7 +350,7 @@ public class GFSnapshot {
 
     /**
      * Returns the snapshot file version.
-     * 
+     *
      * @return the version
      */
     public byte getVersion() {
@@ -359,7 +359,7 @@ public class GFSnapshot {
 
     /**
      * Returns the original pathname of the region used to create the snapshot.
-     * 
+     *
      * @return the region name (full pathname)
      */
     public String getRegionName() {
@@ -368,7 +368,7 @@ public class GFSnapshot {
 
     /**
      * Returns the pdx types defined in the snapshot file.
-     * 
+     *
      * @return the pdx types
      */
     public ExportedRegistry getPdxTypes() {
@@ -377,7 +377,7 @@ public class GFSnapshot {
 
     /**
      * Reads a snapshot entry. If the last entry has been read, a null value will be returned.
-     * 
+     *
      * @return the entry or null
      * @throws IOException unable to read entry
      * @throws ClassNotFoundException unable to create entry

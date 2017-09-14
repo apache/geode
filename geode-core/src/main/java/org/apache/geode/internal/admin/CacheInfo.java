@@ -17,7 +17,7 @@ package org.apache.geode.internal.admin;
 
 /**
  * Describes a cache from a GemFireVM's point of view.
- * 
+ *
  * @since GemFire 3.5
  */
 public interface CacheInfo {

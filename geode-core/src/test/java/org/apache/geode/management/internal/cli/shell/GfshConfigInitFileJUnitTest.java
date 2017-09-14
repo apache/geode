@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,8 +27,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import java.io.File;
 
 @Category(IntegrationTest.class)
 public class GfshConfigInitFileJUnitTest {

@@ -14,13 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.junit.Assert.*;
 import com.examples.snapshot.MyObject;
+
 import org.apache.geode.cache.snapshot.SnapshotIterator;
 import org.apache.geode.cache.snapshot.SnapshotReader;
 

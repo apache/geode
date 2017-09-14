@@ -14,14 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,8 +39,9 @@ import javax.transaction.UserTransaction;
 
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.Region.Entry;
@@ -67,11 +66,8 @@ import org.apache.geode.internal.jta.TransactionImpl;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 import org.apache.geode.test.dunit.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests the basic client-server transaction functionality
@@ -218,7 +214,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.RemoteTransactionDUnitTest#getVMForTransactions(dunit.VM,
    * dunit.VM)
    */
@@ -1681,7 +1677,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   /**
    * there is one txState and zero or more txProxyStates
-   * 
+   *
    * @throws Exception
    */
   @Test

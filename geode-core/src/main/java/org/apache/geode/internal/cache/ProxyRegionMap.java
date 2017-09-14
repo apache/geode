@@ -51,7 +51,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 /**
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is proxy. Proxy maps are
  * always empty.
- * 
+ *
  * @since GemFire 5.0
  */
 class ProxyRegionMap implements RegionMap {

@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -29,7 +29,7 @@ import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
  * buckets. And then at search coordinator level for merging results from members. Use of same
  * collector in both phases is expected to produce deterministic merge result irrespective of the
  * way buckets are distributed.
- * 
+ *
  * @param <C> Type of IndexResultCollector created by this manager
  */
 public interface CollectorManager<C extends IndexResultCollector> {
@@ -48,7 +48,7 @@ public interface CollectorManager<C extends IndexResultCollector> {
    *
    * @param results - Collection of the results of a Lucene query execution.
    * @return IndexResultCollector containing a reduced set of the results of the Lucene query.
-   * 
+   *
    */
   C reduce(Collection<C> results);
 }

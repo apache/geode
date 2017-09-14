@@ -15,15 +15,15 @@
 
 package org.apache.geode.i18n;
 
-import org.apache.geode.internal.i18n.AbstractStringIdResourceBundle;
-
 import java.text.MessageFormat;
 import java.util.Locale;
+
+import org.apache.geode.internal.i18n.AbstractStringIdResourceBundle;
 
 /**
  * This class forms the basis of the i18n strategy. Its primary function is to be used as a key to
  * be passed to an instance of StringIdResourceBundle.
- * 
+ *
  * @since GemFire 6.0
  */
 public class StringId {
@@ -34,7 +34,7 @@ public class StringId {
   /**
    * A unique identifier that is written when this StringId is logged to allow for reverse
    * translation.
-   * 
+   *
    * @see org.apache.geode.internal.logging.LogWriterImpl
    */
   public final int id;
@@ -62,7 +62,7 @@ public class StringId {
   /*
    * Update {@link #currentlocale} and {@link #rb} This method should be used sparingly as there is
    * a small window for a race condition.
-   * 
+   *
    * @params locale switch to use this locale. if null then {@link Locale#getDefault()} is used.
    */
   public static void setLocale(Locale l) {
@@ -98,7 +98,7 @@ public class StringId {
 
   /**
    * Accessor for the raw (unformatted) text of this StringId
-   * 
+   *
    * @return unformated text
    **/
   public String getRawText() {
@@ -116,7 +116,7 @@ public class StringId {
 
   /**
    * Substitutes parameter Objects into the text
-   * 
+   *
    * @see java.text.MessageFormat
    * @return the English translation of this StringId
    **/
@@ -137,7 +137,7 @@ public class StringId {
 
   /**
    * Substitutes parameter Objects into the text
-   * 
+   *
    * @see java.text.MessageFormat
    * @return the translation of this StringId based on the current {@link java.util.Locale}
    **/

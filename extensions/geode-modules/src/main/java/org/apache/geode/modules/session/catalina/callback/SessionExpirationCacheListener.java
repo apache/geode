@@ -14,17 +14,18 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
+import java.util.Properties;
+
+import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.session.ManagerBase;
+
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 import org.apache.geode.modules.util.ContextMapper;
-
-import javax.servlet.http.HttpSession;
-import java.util.Properties;
-
-import org.apache.catalina.session.ManagerBase;
 
 public class SessionExpirationCacheListener extends CacheListenerAdapter<String, HttpSession>
     implements Declarable {

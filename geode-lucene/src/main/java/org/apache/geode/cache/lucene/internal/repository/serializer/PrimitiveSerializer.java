@@ -17,11 +17,11 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.lucene.document.Document;
+
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
-
-import org.apache.lucene.document.Document;
 
 /**
  * A LuceneSerializer that can serialize a primitive value (String, int, long, double) by creating a

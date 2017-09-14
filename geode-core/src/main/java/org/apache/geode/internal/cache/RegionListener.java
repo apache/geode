@@ -19,10 +19,10 @@ import org.apache.geode.cache.RegionAttributes;
 
 /**
  * Callback on a cache that receives notifications about region creates.
- * 
+ *
  * If there are multiple listeners added to a cache they are invoked in a random order. See
  * {@link GemFireCacheImpl#addRegionListener(RegionListener)}
- * 
+ *
  * If any of these callbacks throw an exception, that exception will get thrown out to the user
  * creating the region and the region creation will fail.
  */

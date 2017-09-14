@@ -18,8 +18,6 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -38,6 +36,7 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -46,6 +45,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -171,7 +171,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * This function checks the regionqueue size before expiration. size should be > 0.
-   * 
+   *
    * @throws Exception
    */
   public static void checkSizeBeforeExpiration() throws Exception {
@@ -197,7 +197,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * This function checks the regionqueue size After expiration. size should be = 0.
-   * 
+   *
    * @throws Exception
    */
   public static void checkSizeAfterExpiration() throws Exception {

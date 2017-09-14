@@ -17,11 +17,12 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Host.getHostCount;
 
-import org.apache.geode.test.dunit.VM;
+import java.io.Serializable;
+
 import org.junit.After;
 import org.junit.rules.ExternalResource;
 
-import java.io.Serializable;
+import org.apache.geode.test.dunit.VM;
 
 public class CleanupDUnitVMsRule extends ExternalResource implements Serializable {
 

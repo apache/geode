@@ -15,6 +15,17 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -33,24 +44,14 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
 
 /**
  * TXEntryState is the entity that tracks transactional changes, except for those tracked by
  * {@link TXEntryUserAttrState}, to an entry.
- * 
- * 
+ *
+ *
  * @since GemFire 4.0
- * 
+ *
  */
 public class TXEntryState implements Releasable {
   private static final Logger logger = LogService.getLogger();
@@ -69,13 +70,13 @@ public class TXEntryState implements Releasable {
   protected int modSerialNum;
   /**
    * Used to remember the event id to use on the farSide for this entry. See bug 39434.
-   * 
+   *
    * @since GemFire 5.7
    */
   private int farSideEventOffset = -1;
   /**
    * Used to remember the event id to use on the nearSide for this entry. See bug 39434.
-   * 
+   *
    * @since GemFire 5.7
    */
   private int nearSideEventOffset = -1;
@@ -318,9 +319,9 @@ public class TXEntryState implements Releasable {
 
   /**
    * Fetches the current modification serial number from the txState and puts it in this entry.
-   * 
+   *
    * @param modNum the next modified serial number gotten from TXState
-   * 
+   *
    * @since GemFire 5.0
    */
   public void updateForWrite(final int modNum) {
@@ -330,7 +331,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Returns true if this entry has been written; false if only read
-   * 
+   *
    * @since GemFire 5.1
    */
   public boolean isDirty() {
@@ -339,7 +340,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Return true if entry has an operation.
-   * 
+   *
    * @since GemFire 5.5
    */
   public boolean hasOp() {
@@ -474,7 +475,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Returns true if this operation has an event for the tx listener
-   * 
+   *
    * @since GemFire 5.0
    */
   boolean isOpAnyEvent(LocalRegion r) {
@@ -648,7 +649,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Calculate and return the event offset based on the sequence id on TXState.
-   * 
+   *
    * @since GemFire 5.7
    */
   private static int generateEventOffset(TXState txState) {
@@ -660,7 +661,7 @@ public class TXEntryState implements Releasable {
   /**
    * Generate offsets for different eventIds; one for nearside and one for farside for the ops for
    * this entry.
-   * 
+   *
    * @since GemFire 5.7
    */
   private void generateBothEventOffsets(TXState txState) {
@@ -672,7 +673,7 @@ public class TXEntryState implements Releasable {
   /**
    * Generate the offset for an eventId that will be used for both a farside and nearside op for
    * this entry.
-   * 
+   *
    * @since GemFire 5.7
    */
   private void generateSharedEventOffset(TXState txState) {
@@ -684,7 +685,7 @@ public class TXEntryState implements Releasable {
   /**
    * Generate the offset for an eventId that will be used for the nearside op for this entry. No
    * farside op will be done.
-   * 
+   *
    * @since GemFire 5.7
    */
   private void generateNearSideOnlyEventOffset(TXState txState) {
@@ -709,7 +710,7 @@ public class TXEntryState implements Releasable {
   /**
    * Calculate (if farside has not already done so) and return then eventID to use for near side op
    * applications.
-   * 
+   *
    * @since GemFire 5.7
    */
   private EventID getNearSideEventId(TXState txState) {
@@ -719,7 +720,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Calculate and return the event offset for this entry's farSide operation.
-   * 
+   *
    * @since GemFire 5.7
    */
   void generateEventOffsets(TXState txState) {
@@ -813,7 +814,7 @@ public class TXEntryState implements Releasable {
   /**
    * Gets the operation code for the operation done on this entry in caches remote from the
    * originator of the tx (i.e. the "far side").
-   * 
+   *
    * @return null if no far side operation
    */
   private Operation getFarSideOperation() {
@@ -966,7 +967,7 @@ public class TXEntryState implements Releasable {
   /**
    * @param event the event object for this operation, with the exception that the oldValue
    *        parameter is not yet filled in. The oldValue will be filled in by this operation.
-   * 
+   *
    * @param ifNew true if this operation must not overwrite an existing key
    * @param originRemote value for cacheWriter's isOriginRemote flag
    * @return true if put was done; otherwise returns false
@@ -1025,7 +1026,7 @@ public class TXEntryState implements Releasable {
    * We will try to establish TXState on members with dataPolicy REPLICATE, this is done for the
    * first region to be involved in a transaction. For subsequent region if the dataPolicy is not
    * REPLICATE, we fetch the VersionTag from replicate members.
-   * 
+   *
    * @param event
    */
   private void fetchRemoteVersionTag(EntryEventImpl event) {
@@ -1047,7 +1048,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Perform operation algebra
-   * 
+   *
    * @return false if operation was not done
    */
   private byte adviseOp(byte requestedOpCode, EntryEventImpl event) {
@@ -1596,7 +1597,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * If the entry is not dirty (read only) then clean it up.
-   * 
+   *
    * @return true if this entry is not dirty.
    */
   boolean cleanupNonDirty(LocalRegion r) {
@@ -1840,12 +1841,12 @@ public class TXEntryState implements Releasable {
   /**
    * Serializes this entry state to a data output stream for a far side consumer. Make sure this
    * method is backwards compatible if changes are made.
-   * 
+   *
    * @param largeModCount true if modCount needs to be represented by an int; false if a byte is
    *        enough
    * @param sendVersionTag true if versionTag should be sent to clients 7.0 and above
    * @param sendShadowKey true if wan shadowKey should be sent to peers 7.0.1 and above
-   * 
+   *
    * @since GemFire 5.0
    */
   void toFarSideData(DataOutput out, boolean largeModCount, boolean sendVersionTag,
@@ -1890,7 +1891,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Creates a queued op and returns it for this entry on the far side of the tx.
-   * 
+   *
    * @param key the key for this op
    * @since GemFire 5.0
    */
@@ -1926,7 +1927,7 @@ public class TXEntryState implements Releasable {
 
   /**
    * Just like an EntryEventImpl but also has access to TxEntryState to make it Comparable
-   * 
+   *
    * @since GemFire 5.0
    */
   public class TxEntryEventImpl extends EntryEventImpl implements Comparable {
@@ -1968,7 +1969,7 @@ public class TXEntryState implements Releasable {
   }
 
 
-  private final static TXEntryStateFactory factory = new TXEntryStateFactory() {
+  private static final TXEntryStateFactory factory = new TXEntryStateFactory() {
 
     public TXEntryState createEntry() {
       return new TXEntryState();
@@ -2052,13 +2053,13 @@ public class TXEntryState implements Releasable {
 
   /**
    * For Distributed Transaction Usage
-   * 
+   *
    * This class is used to bring relevant information for DistTxEntryEvent from primary, after end
    * of precommit. Same information are sent to all replicates during commit.
-   * 
+   *
    * Whereas @see DistTxEntryEvent is used forstoring entry event information on TxCordinator and
    * carry same to replicates.
-   * 
+   *
    */
   public static class DistTxThinEntryState implements DataSerializableFixedID {
 

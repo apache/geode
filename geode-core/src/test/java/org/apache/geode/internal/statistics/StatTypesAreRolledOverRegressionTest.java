@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,6 +39,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 

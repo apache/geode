@@ -14,27 +14,28 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * JUnit test for verifying the proper functioning of HARegionQueue related statistics.
- * 
- * 
+ *
+ *
  */
 @Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class HARegionQueueStatsJUnitTest {
@@ -44,7 +45,7 @@ public class HARegionQueueStatsJUnitTest {
 
   /**
    * Create the cache in setup. Currently the HA related stats are active under fine logging only.
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in setUp
    */
   @Before
@@ -54,7 +55,7 @@ public class HARegionQueueStatsJUnitTest {
 
   /**
    * Close the cache in tear down *
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in tearDown
    */
   @After
@@ -64,7 +65,7 @@ public class HARegionQueueStatsJUnitTest {
 
   /**
    * Creates the cache instance for the test
-   * 
+   *
    * @return the cache instance
    * @throws CacheException - thrown if any exception occurs in cache creation
    */
@@ -74,7 +75,7 @@ public class HARegionQueueStatsJUnitTest {
 
   /**
    * Creates a HARegionQueue object.
-   * 
+   *
    * @param name - name of the underlying region for region-queue
    * @return the HARegionQueue instance
    * @throws IOException
@@ -91,7 +92,7 @@ public class HARegionQueueStatsJUnitTest {
 
   /**
    * Creates a HARegionQueue object.
-   * 
+   *
    * @param name - name of the underlying region for region-queue
    * @param attrs - attributes for the HARegionQueue
    * @return the HARegionQueue instance
@@ -117,7 +118,7 @@ public class HARegionQueueStatsJUnitTest {
    * 3)Verify that statistics object is not null<br>
    * 4)Verify that total events added matches the eventsEnqued stats<br>
    * 5)Verify that eventsConflated stats is zero.
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -150,7 +151,7 @@ public class HARegionQueueStatsJUnitTest {
    * 3)Verify that statistics object is not null<br>
    * 4)Verify that total events added matches the eventsEnqued stats<br>
    * 5)Verify that eventsConflated stats is total events added minus 1.
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -185,7 +186,7 @@ public class HARegionQueueStatsJUnitTest {
    * 4)Verify that total events added matches the eventsEnqued stats<br>
    * 5)Verify that eventsExpired stats is same as total events added as all events should have
    * expired by 1 sec.
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -222,7 +223,7 @@ public class HARegionQueueStatsJUnitTest {
    * 5)Verify that total events added matches the eventsEnqued stats<br>
    * 6)Verify that eventsRemoved stats is same as the maximum batch size peeked in above peek
    * operations(step 3).
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -267,7 +268,7 @@ public class HARegionQueueStatsJUnitTest {
    * 5)Verify that total events added matches the eventsEnqued stats<br>
    * 6)Verify that eventsTaken stats is same as the sum of events taken in batch and individually
    * (Step 3)
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -310,7 +311,7 @@ public class HARegionQueueStatsJUnitTest {
    * 5)Verify that total events added matches the eventsEnqued stats<br>
    * 6)Verify that eventsRemovedByQrm stats is same as the number of events removed by QRM (upto the
    * event having lastDispatchedSeqId, step 3).
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -349,7 +350,7 @@ public class HARegionQueueStatsJUnitTest {
    * 4)Verify that total events added matches the eventsEnqued stats<br>
    * 5)Verify that threadIdentifiers stats is same as the number of events added as all the events
    * had different ThreadIdentifier objects.
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -385,7 +386,7 @@ public class HARegionQueueStatsJUnitTest {
    * 6)Verify that total events added matches the eventsEnqued stats<br>
    * 7)Verify that numVoidRemovals stats is same as the total events added since all the peeked
    * events were removed by take() call and remove() was a void operation.
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -424,7 +425,7 @@ public class HARegionQueueStatsJUnitTest {
    * 4)Verify that numSequenceViolated stats is same as number of duplicate events.<br>
    * 5)Verify that eventsEnqued stats is same as the queue size ( i.e. eventsEnqued stats is not
    * updated for duplicate events.)
-   * 
+   *
    * @throws Exception
    */
   @Test

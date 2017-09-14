@@ -16,12 +16,12 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
-import org.apache.geode.internal.*;
 import java.io.*;
-// import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.*;
 
 /**
  * A message that is sent to a particular distribution manager to get its current {@link Config}.

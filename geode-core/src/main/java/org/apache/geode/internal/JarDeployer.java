@@ -78,7 +78,7 @@ public class JarDeployer implements Serializable {
   /**
    * Writes the jarBytes for the given jarName to the next version of that jar file (if the bytes do
    * not match the latest deployed version)
-   * 
+   *
    * @return the DeployedJar that was written from jarBytes, or null if those bytes matched the
    *         latest deployed version
    */
@@ -106,7 +106,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Get a list of all currently deployed jars.
-   * 
+   *
    * @return The list of DeployedJars
    */
   public List<DeployedJar> findDeployedJars() {
@@ -155,7 +155,7 @@ public class JarDeployer implements Serializable {
    * Attempt to write the given bytes to the given file. If this VM is able to successfully write
    * the contents to the file, or another VM writes the exact same contents, then the write is
    * considered to be successful.
-   * 
+   *
    * @param file File of the JAR file to deploy.
    * @param jarBytes Contents of the JAR file to deploy.
    * @return True if the file was successfully written, false otherwise
@@ -179,7 +179,7 @@ public class JarDeployer implements Serializable {
    * method first checks to see if the file is actively being written by checking the length over
    * time. If it appears that the file is actively being written, then it loops waiting for that to
    * complete before doing the comparison.
-   * 
+   *
    * @param file File to compare
    * @param bytes Bytes to compare
    * @return True if there's an exact match, false otherwise
@@ -240,7 +240,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Find the version number that's embedded in the name of this file
-   * 
+   *
    * @param filename Filename to get the version number from
    * @return The version number embedded in the filename
    */
@@ -271,7 +271,7 @@ public class JarDeployer implements Serializable {
   /**
    * Find all versions of the JAR file that are currently on disk and return them sorted from newest
    * (highest version) to oldest
-   * 
+   *
    * @param unversionedJarName Name of the JAR file that we want old versions of
    * @return Sorted array of files that are older versions of the given JAR
    */
@@ -305,7 +305,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Make sure that the deploy directory is writable.
-   * 
+   *
    * @throws IOException If the directory isn't writable
    */
   public void verifyWritableDeployDirectory() throws IOException {
@@ -481,7 +481,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Deploy the given JAR files.
-   * 
+   *
    * @param jarNames Array of names of the JAR files to deploy.
    * @param jarBytes Array of contents of the JAR files to deploy.
    * @return An array of newly created JAR class loaders. Entries will be null for an JARs that were
@@ -533,7 +533,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Returns the latest registered {@link DeployedJar} for the given JarName
-   * 
+   *
    * @param jarName - the unversioned jar name, e.g. myJar.jar
    */
   public DeployedJar findDeployedJar(String jarName) {
@@ -563,7 +563,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Undeploy the given JAR file.
-   * 
+   *
    * @param jarName The name of the JAR file to undeploy
    * @return The path to the location on disk where the JAR file had been deployed
    * @throws IOException If there's a problem deleting the file

@@ -19,7 +19,32 @@ import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -80,41 +105,17 @@ import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * This test will not run properly in eclipse at this point due to having to bounce vms Currently,
  * bouncing vms is necessary because we are starting gemfire with different class loaders and the
  * class loaders are lingering (possibly due to daemon threads - the vm itself is still running)
- * 
+ *
  * Note: to run in eclipse, I had to copy over the jg-magic-map.txt file into my GEMFIRE_OUTPUT
  * location, in the same directory as #MagicNumberReader otherwise the two systems were unable to
  * talk to one another due to one using a magic number and the other not. Also turnOffBounce will
  * need to be set to true so that bouncing a vm doesn't lead to a NPE.
- * 
+ *
  * @author jhuynh
  */
 @Category({DistributedTest.class, BackwardCompatibilityTest.class})
@@ -1284,13 +1285,13 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   /*
    * @param rollServer
-   * 
+   *
    * @param createRegionMethod
-   * 
+   *
    * @param regionName
-   * 
+   *
    * @param locatorPorts if null, uses dunit locator
-   * 
+   *
    * @throws Exception
    */
   private VM rollServerToCurrentAndCreateRegion(VM oldServer, RegionShortcut shortcut,
@@ -1319,13 +1320,13 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   /*
    * @param rollClient
-   * 
+   *
    * @param createRegionMethod
-   * 
+   *
    * @param regionName
-   * 
+   *
    * @param locatorPorts if null, uses dunit locator
-   * 
+   *
    * @throws Exception
    */
   private VM rollClientToCurrentAndCreateRegion(VM oldClient, ClientRegionShortcut shortcut,
@@ -1966,7 +1967,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Get the port that the standard dunit locator is listening on.
-   * 
+   *
    * @return
    */
   public static String getDUnitLocatorAddress() {
@@ -2003,4 +2004,3 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 }
-

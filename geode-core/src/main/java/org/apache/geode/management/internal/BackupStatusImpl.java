@@ -24,7 +24,7 @@ import org.apache.geode.management.BackupStatus;
 
 /**
  * Holds the result of a backup operation.
- * 
+ *
  *
  */
 public class BackupStatusImpl implements BackupStatus, Serializable {

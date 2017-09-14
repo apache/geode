@@ -23,8 +23,8 @@ import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Represents the {@link ServerLocation} of a {@link BucketRegion}
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
  */
 @SuppressWarnings("serial")

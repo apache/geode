@@ -29,7 +29,6 @@ import java.util.SortedSet;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
-
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
@@ -92,7 +91,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   /**
    * For internal use. Just add the Object[] values for a struct with same type
-   * 
+   *
    * public boolean addFieldValues(Object[] fieldValues) { //return super.add(fieldValues);
    * StructImpl s = new StructImpl(this.structType, fieldValues); return super.add(s); }
    */
@@ -113,7 +112,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   /**
    * Does this set contain a Struct of the correct type with the specified values?
-   * 
+   *
    * public boolean containsFieldValues(Object[] fieldValues) { return super.contains(fieldValues);
    * }
    */
@@ -252,7 +251,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   /**
    * Getter for property modifiable.
-   * 
+   *
    * @return Value of property modifiable.
    */
   public boolean isModifiable() {
@@ -265,7 +264,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
 
   /**
    * Setter for property modifiable.
-   * 
+   *
    * @param modifiable New value of property modifiable.
    */
   public void setModifiable(boolean modifiable) {
@@ -292,7 +291,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   /**
    * Iterator wrapper to construct Structs on demand.
    */
-  static private class StructIterator implements Iterator {
+  private static class StructIterator implements Iterator {
 
     private final Iterator itr;
 

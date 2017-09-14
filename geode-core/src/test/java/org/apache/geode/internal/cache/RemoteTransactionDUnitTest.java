@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.transaction.RollbackException;
@@ -420,10 +421,10 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         /*
          * assertNotNull(orderRegion.getEntry(orderId)); assertIndexDetailsEquals(expectedOrder,
          * orderRegion.getEntry(orderId).getValue());
-         * 
+         *
          * assertNotNull(orderRegion.getEntry(orderId2)); assertIndexDetailsEquals(expectedOrder2,
          * orderRegion.getEntry(orderId2).getValue());
-         * 
+         *
          * assertNotNull(orderRegion.getEntry(orderId3)); assertIndexDetailsEquals(expectedOrder3,
          * orderRegion.getEntry(orderId3).getValue());
          */

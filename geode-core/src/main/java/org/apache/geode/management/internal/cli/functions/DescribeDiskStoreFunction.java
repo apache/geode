@@ -15,7 +15,14 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
@@ -34,12 +41,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * The DescribeDiskStoreFunction class is an implementation of a GemFire Function used to collect

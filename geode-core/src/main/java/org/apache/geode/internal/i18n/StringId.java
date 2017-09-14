@@ -18,13 +18,13 @@ package org.apache.geode.internal.i18n;
 /**
  * This class forms the basis of the i18n strategy. Its primary function is to be used as a key to
  * be passed to an instance of StringIdResourceBundle.
- * 
+ *
  * @since GemFire 6.0
  */
 public interface StringId {
   /**
    * Accessor for the raw (unformatted) text of this StringId
-   * 
+   *
    * @return unformated text
    **/
   public String getRawText();
@@ -38,7 +38,7 @@ public interface StringId {
 
   /**
    * Substitutes parameter Objects into the text
-   * 
+   *
    * @see java.text.MessageFormat
    * @return the English translation of this StringId
    **/
@@ -51,7 +51,7 @@ public interface StringId {
 
   /**
    * Substitutes parameter Objects into the text
-   * 
+   *
    * @see java.text.MessageFormat
    * @return the translation of this StringId based on the current {@link java.util.Locale}
    **/

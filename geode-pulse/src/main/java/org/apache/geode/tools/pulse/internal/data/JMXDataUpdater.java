@@ -69,7 +69,7 @@ import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInf
 
 /**
  * Class JMXDataUpdater Class used for creating JMX connection and getting all the required MBeans
- * 
+ *
  * @since GemFire version 7.0.Beta 2012-09-23
  */
 public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
@@ -380,7 +380,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster System and map them to cluster vo
-   * 
+   *
    * @param mbeanName Cluster System MBean
    */
   private void updateClusterSystem(ObjectName mbeanName) throws IOException {
@@ -533,7 +533,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used to get attribute values of Gateway Receiver and map them to GatewayReceiver inner
    * class object
-   * 
+   *
    * @return GatewayReceiver object
    */
   private Cluster.GatewayReceiver initGatewayReceiver(ObjectName mbeanName)
@@ -861,7 +861,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * Add member specific region information on the region
-   * 
+   *
    * @param regionObjectName: used to construct the jmx objectname. For region name that has special
    *        characters in, it will have double quotes around it.
    */
@@ -1034,7 +1034,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster Region and map them to cluster region vo
-   * 
+   *
    * @param mbeanName Cluster Region MBean
    */
   private void updateClusterRegion(ObjectName mbeanName) throws IOException {
@@ -1403,7 +1403,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster Member and map them to cluster member vo
-   * 
+   *
    * @param mbeanName Cluster Member MBean
    */
   private void updateClusterMember(ObjectName mbeanName) throws IOException {
@@ -1588,7 +1588,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Member Region and map them to Member vo
-   * 
+   *
    * @param mbeanName Member Region MBean
    */
   private void updateMemberRegion(ObjectName mbeanName) throws IOException {
@@ -1687,7 +1687,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
        * Rolling upgrade handled gracefully CompositeData compositeData = (CompositeData)
        * (this.mbs.invoke(mbeanName, PulseConstants.MBEAN_OPERATION_LISTREGIONATTRIBUTES, null,
        * null));
-       * 
+       *
        * if (compositeData != null) { if
        * (compositeData.containsKey(PulseConstants.COMPOSITE_DATA_KEY_SCOPE)) {
        * region.setScope((String) compositeData .get(PulseConstants.COMPOSITE_DATA_KEY_SCOPE)); }
@@ -1702,8 +1702,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
        * //logger.
        * warning("Some of the Pulse elements are not available currently. There might be a GemFire upgrade going on."
        * ); }
-       * 
-       * 
+       *
+       *
        * // Remove deleted regions from member's regions list for (Iterator<String> it =
        * cluster.getDeletedRegions().iterator(); it .hasNext();) { String deletedRegion = it.next();
        * if (member.getMemberRegions().get(deletedRegion) != null) {

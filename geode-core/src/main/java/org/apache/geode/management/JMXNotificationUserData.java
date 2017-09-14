@@ -17,7 +17,7 @@ package org.apache.geode.management;
 /**
  * This interface acts as UserData section of JMX notifications of type "system.alert". It contains
  * some additional information apart from the Notification details.
- * 
+ *
  * @since GemFire 8.0
  */
 public interface JMXNotificationUserData {

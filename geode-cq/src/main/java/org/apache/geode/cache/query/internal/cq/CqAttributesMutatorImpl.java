@@ -28,7 +28,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
 
   /**
    * Adds a cq listener to the end of the list of cq listeners on this CqQuery.
-   * 
+   *
    * @param aListener the user defined cq listener to add to the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    */
@@ -44,7 +44,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
    * specified listener has not been added. If the specified listener has been added then
    * {@link org.apache.geode.cache.CacheCallback#close} will be called on it; otherwise does
    * nothing.
-   * 
+   *
    * @param aListener the cq listener to remove from the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    */
@@ -58,7 +58,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
   /**
    * Removes all cq listeners, calling on each of them, and then adds each listener in the specified
    * array.
-   * 
+   *
    * @param newListeners a possibly null or empty array of listeners to add to this CqQuery.
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    */

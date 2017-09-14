@@ -24,7 +24,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 public class RegionDestroyFunction implements Function, InternalEntity {

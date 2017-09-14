@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -22,10 +24,9 @@ import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.logging.log4j.Logger;
 
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 public class FetchRegionAttributesFunction extends FunctionAdapter {

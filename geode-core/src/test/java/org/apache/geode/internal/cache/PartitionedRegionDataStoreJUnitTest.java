@@ -14,25 +14,26 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test checks functionality of the PartitionedRegionDatastore on a sinle node.
- * 
+ *
  * Created on Dec 23, 2005
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class PartitionedRegionDataStoreJUnitTest {
@@ -106,7 +107,7 @@ public class PartitionedRegionDataStoreJUnitTest {
   /**
    * This method checks whether the canAccomodateMoreBytesSafely returns false after reaching the
    * localMax memory.
-   * 
+   *
    */
   @Test
   public void testCanAccommodateMoreBytesSafely() throws Exception {

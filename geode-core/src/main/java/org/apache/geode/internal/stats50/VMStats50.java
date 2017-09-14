@@ -41,94 +41,94 @@ import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
-import org.apache.geode.internal.logging.LogService;
 
 /**
  * Statistics related to a Java VM. This version is hardcoded to use 1.5 MXBean stats from
  * java.lang.management.
  */
 public class VMStats50 implements VMStatsContract {
-  private final static Logger logger = LogService.getLogger(VMStats50.class.getName());
+  private static final Logger logger = LogService.getLogger(VMStats50.class.getName());
 
-  private final static StatisticsType vmType;
+  private static final StatisticsType vmType;
 
-  private final static ClassLoadingMXBean clBean;
-  private final static MemoryMXBean memBean;
-  private final static OperatingSystemMXBean osBean;
+  private static final ClassLoadingMXBean clBean;
+  private static final MemoryMXBean memBean;
+  private static final OperatingSystemMXBean osBean;
   /**
    * This is actually an instance of UnixOperatingSystemMXBean but this class is not available on
    * Windows so needed to make this a runtime check.
    */
-  private final static Object unixBean;
-  private final static Method getMaxFileDescriptorCount;
-  private final static Method getOpenFileDescriptorCount;
-  private final static Method getProcessCpuTime;
-  private final static ThreadMXBean threadBean;
+  private static final Object unixBean;
+  private static final Method getMaxFileDescriptorCount;
+  private static final Method getOpenFileDescriptorCount;
+  private static final Method getProcessCpuTime;
+  private static final ThreadMXBean threadBean;
 
-  private final static int pendingFinalizationCountId;
-  private final static int loadedClassesId;
-  private final static int unloadedClassesId;
+  private static final int pendingFinalizationCountId;
+  private static final int loadedClassesId;
+  private static final int unloadedClassesId;
 
-  private final static int daemonThreadsId;
-  private final static int peakThreadsId;
-  private final static int threadsId;
-  private final static int threadStartsId;
+  private static final int daemonThreadsId;
+  private static final int peakThreadsId;
+  private static final int threadsId;
+  private static final int threadStartsId;
 
-  private final static int cpusId;
-  private final static int freeMemoryId;
-  private final static int totalMemoryId;
-  private final static int maxMemoryId;
+  private static final int cpusId;
+  private static final int freeMemoryId;
+  private static final int totalMemoryId;
+  private static final int maxMemoryId;
 
-  private final static StatisticsType memoryUsageType;
-  private final static int mu_initMemoryId;
-  private final static int mu_maxMemoryId;
-  private final static int mu_usedMemoryId;
-  private final static int mu_committedMemoryId;
+  private static final StatisticsType memoryUsageType;
+  private static final int mu_initMemoryId;
+  private static final int mu_maxMemoryId;
+  private static final int mu_usedMemoryId;
+  private static final int mu_committedMemoryId;
 
-  private final static StatisticsType gcType;
-  private final static int gc_collectionsId;
-  private final static int gc_collectionTimeId;
+  private static final StatisticsType gcType;
+  private static final int gc_collectionsId;
+  private static final int gc_collectionTimeId;
   private final Map<GarbageCollectorMXBean, Statistics> gcMap =
       new HashMap<GarbageCollectorMXBean, Statistics>();
 
-  private final static StatisticsType mpType;
-  private final static int mp_l_initMemoryId;
-  private final static int mp_l_maxMemoryId;
-  private final static int mp_l_usedMemoryId;
-  private final static int mp_l_committedMemoryId;
-  // private final static int mp_gc_initMemoryId;
-  // private final static int mp_gc_maxMemoryId;
-  private final static int mp_gc_usedMemoryId;
-  // private final static int mp_gc_committedMemoryId;
-  private final static int mp_usageThresholdId;
-  private final static int mp_collectionUsageThresholdId;
-  private final static int mp_usageExceededId;
-  private final static int mp_collectionUsageExceededId;
+  private static final StatisticsType mpType;
+  private static final int mp_l_initMemoryId;
+  private static final int mp_l_maxMemoryId;
+  private static final int mp_l_usedMemoryId;
+  private static final int mp_l_committedMemoryId;
+  // private static final int mp_gc_initMemoryId;
+  // private static final int mp_gc_maxMemoryId;
+  private static final int mp_gc_usedMemoryId;
+  // private static final int mp_gc_committedMemoryId;
+  private static final int mp_usageThresholdId;
+  private static final int mp_collectionUsageThresholdId;
+  private static final int mp_usageExceededId;
+  private static final int mp_collectionUsageExceededId;
   private final Map<MemoryPoolMXBean, Statistics> mpMap =
       new HashMap<MemoryPoolMXBean, Statistics>();
 
-  private final static int unix_fdLimitId;
-  private final static int unix_fdsOpenId;
-  private final static int processCpuTimeId;
+  private static final int unix_fdLimitId;
+  private static final int unix_fdsOpenId;
+  private static final int processCpuTimeId;
 
   private long threadStartCount = 0;
   private long[] allThreadIds = null;
-  private final static boolean THREAD_STATS_ENABLED =
+  private static final boolean THREAD_STATS_ENABLED =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableThreadStats");
   private final Map<Long, ThreadStatInfo> threadMap =
       THREAD_STATS_ENABLED ? new HashMap<Long, ThreadStatInfo>() : null;
-  private final static StatisticsType threadType;
-  private final static int thread_blockedId;
-  private final static int thread_lockOwnerId;
-  private final static int thread_waitedId;
-  private final static int thread_inNativeId;
-  private final static int thread_suspendedId;
-  private final static int thread_blockedTimeId;
-  private final static int thread_waitedTimeId;
-  private final static int thread_cpuTimeId;
-  private final static int thread_userTimeId;
+  private static final StatisticsType threadType;
+  private static final int thread_blockedId;
+  private static final int thread_lockOwnerId;
+  private static final int thread_waitedId;
+  private static final int thread_inNativeId;
+  private static final int thread_suspendedId;
+  private static final int thread_blockedTimeId;
+  private static final int thread_waitedTimeId;
+  private static final int thread_cpuTimeId;
+  private static final int thread_userTimeId;
 
   static {
     clBean = ManagementFactory.getClassLoadingMXBean();

@@ -23,8 +23,8 @@ package org.apache.geode.cache.query.data;
 /**
  *
  */
-import java.util.*;
 import java.io.Serializable;
+import java.util.*;
 
 public class Quote implements Serializable {
   public int cusip;

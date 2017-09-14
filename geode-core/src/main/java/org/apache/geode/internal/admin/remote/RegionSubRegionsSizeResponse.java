@@ -94,7 +94,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
   /**
    * Populates the collection of sub-region snapshots for the parentSnapShot with snapshots for the
    * regions given.
-   * 
+   *
    * @param parentSnapShot RegionSubRegionSnapshot of a parent region
    * @param regions collection of sub-regions of the region represented by parentSnapShot
    * @param cache cache instance is used for to get the LogWriter instance to log exceptions if any

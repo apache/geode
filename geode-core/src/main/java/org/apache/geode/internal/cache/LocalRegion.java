@@ -54,6 +54,8 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.CopyHelper;
@@ -220,7 +222,6 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReadWriteLock;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different meaning starting
@@ -237,7 +238,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Internal interface used to simulate failures when performing entry operations
-   * 
+   *
    * @since GemFire 5.7
    */
   public interface TestCallable {
@@ -521,14 +522,14 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * ThreadLocal used to set the current region being initialized.
-   * 
+   *
    * Currently used by the OpLog layer.
    */
   private static final ThreadLocal<LocalRegion> initializingRegion = new ThreadLocal<LocalRegion>();
 
   /**
    * Get the current initializing region as set in the ThreadLocal.
-   * 
+   *
    * Note that this value is cleared after the initialization of LocalRegion is done so is valid
    * only for the duration of region creation and initialization.
    */
@@ -745,7 +746,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Test hook - returns the version stamp for an entry in the form of a version tag
-   * 
+   *
    * @return the entry version information
    */
   public VersionTag getVersionTag(Object key) {
@@ -1143,7 +1144,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Fetch the de-serialized value from non-transactional state.
-   * 
+   *
    * @param keyInfo to which the value is associated
    * @param updateStats true if the entry stats should be updated.
    * @param disableCopyOnRead if true then disable copy on read
@@ -1311,7 +1312,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * The result of this operation may be an off-heap reference that the caller must release.
-   * 
+   *
    * @param opScopeIsLocal if true then just check local storage for a value; if false then try to
    *        find the value if it is not local
    */
@@ -1379,7 +1380,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Update region and potentially entry stats for the miss case
-   * 
+   *
    * @param re optional region entry, fetched if null
    * @param key the key used to fetch the region entry
    */
@@ -1398,7 +1399,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * optimized to only allow one thread to do a search/load, other threads wait on a future
-   * 
+   *
    * @param isCreate true if call found no entry; false if updating an existing entry
    * @param localValue the value retrieved from the region for this object.
    * @param disableCopyOnRead if true then do not make a copy
@@ -1731,7 +1732,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Just like getEntry but also updates the stats that get would have depending on a flag. See bug
    * 42410. Also skips discovering JTA
-   * 
+   *
    * @return the entry if it exists; otherwise null.
    */
   public Entry accessEntry(Object key, boolean updateStats) {
@@ -1856,7 +1857,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Flavor of keys that will not do repeatable read
-   * 
+   *
    * @since GemFire 5.5
    */
   public Set testHookKeys() {
@@ -1876,7 +1877,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * return a set of the keys in this region
-   * 
+   *
    * @param allowTombstones whether destroyed entries should be included
    * @return the keys
    */
@@ -1995,7 +1996,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Convenience method to get region name for logging/exception messages. if this region is an
    * instanceof bucket region, it returns the bucket region name
-   * 
+   *
    * @return name of the region or the owning partitioned region
    */
   public String getDisplayName() {
@@ -2725,7 +2726,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * This method should be called when the caller cannot locate an entry and that condition is
    * unexpected. This will first double check the cache and region state before throwing an
    * EntryNotFoundException. EntryNotFoundException should be a last resort exception.
-   * 
+   *
    * @param entryKey the missing entry's key.
    */
   void checkEntryNotFound(Object entryKey) {
@@ -2736,11 +2737,11 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   }
 
   /**
-   * 
+   *
    * Search for the value in a server (if one exists), then try a loader.
-   * 
+   *
    * If we find a value, we put it in the cache.
-   * 
+   *
    * @param preferCD return the CacheDeserializable, if that's what the value is.
    * @param requestingClient the client making the request, if any
    * @param clientEvent the client's event, if any. If not null, we set the version tag
@@ -2875,7 +2876,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * Returns true if the cache already has this key as an invalid entry with a version >= the one in
    * the given event. This is used in cache-miss processing to avoid overwriting the entry when it
    * is not necessary, so that we avoid invoking cache listeners.
-   * 
+   *
    * @return whether the entry is already invalid
    */
   private boolean alreadyInvalid(Object key, EntryEventImpl event) {
@@ -3027,7 +3028,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Destroy an entry on the server given its event.
-   * 
+   *
    * @since GemFire 5.7
    */
   void serverDestroy(EntryEventImpl event, Object expectedOldValue) {
@@ -3268,7 +3269,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * remove any tombstones from the given member that are <= the given version
-   * 
+   *
    * @param eventID event identifier for the GC operation
    * @param clientRouting routing info (if null a routing is computed)
    */
@@ -3303,7 +3304,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * pass tombstone garbage-collection info to clients
-   * 
+   *
    * @param eventID the ID of the event (see bug #50683)
    * @param routing routing info (routing is computed if this is null)
    */
@@ -3423,7 +3424,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * This is a test hook method used to find out what keys the current tx has read or written.
-   * 
+   *
    * @return an unmodifiable set of keys that have been read or written by the transaction on this
    *         thread.
    * @throws IllegalStateException if not tx in progress
@@ -3504,7 +3505,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Does a get that attempts to not fault values in from disk or make the entry the most recent in
    * the LRU.
-   * 
+   *
    * @param adamant fault in and affect LRU as a last resort
    * @param allowTombstone also return Token.TOMBSTONE if the entry is deleted
    * @param serializedFormOkay if the serialized form can be returned
@@ -4852,23 +4853,23 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Fix up our RVV by iterating over the entries in the region and making sure they are applied to
    * the RVV.
-   * 
+   *
    * If we failed to do a GII, we may have applied the RVV from a remote member. That RVV may not
    * have seen some of the events in our local RVV. Those entries were supposed to be replaced with
    * the results of the GII. However, if we failed the GII, those entries may still be in the cache,
    * but are no longer reflected in the local RVV. This method iterates over those keys and makes
    * sure their versions are applied to the local RVV.
-   * 
+   *
    * TODO - this method should probably rebuild the RVV from scratch, instead of starting with the
    * existing RVV. By starting with the existing RVV, we may claim to have entries that we actually
    * don't have. Unfortunately, we can't really rebuild the RVV from scratch because we will end up
    * with huge exception lists.
-   * 
+   *
    * However, if we are in the state of recovering from disk with an untrusted RVV, we must be newer
    * than any other surviving members. So they shouldn't have any entries in their cache that match
    * entries that we failed to receive through the GII but are reflected in our current RVV. So it
    * should be safe to start with the current RVV.
-   * 
+   *
    */
   void repairRVV() {
     RegionVersionVector rvv = this.getVersionVector();
@@ -5423,7 +5424,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Clear the region from a server request.
-   * 
+   *
    * @param callbackArgument The callback argument. This is currently null since
    *        {@link java.util.Map#clear} supports no parameters.
    * @param processedMarker Whether the marker has been processed (for durable clients)
@@ -5658,7 +5659,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Checks to see if the event should be rejected because of sick state either due to exceeding
    * local critical threshold or a remote member exceeding critical threshold
-   * 
+   *
    * @param key the key for the operation
    * @throws LowMemoryException if the target member for this operation is sick
    */
@@ -5786,7 +5787,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * To lower latency, PRs generate the local filter routing in DistributedCacheOperation after
    * message distribution and before waiting for responses.
-   * 
+   *
    * Warning: Even if you comment out bucket condition in following method, getLocalRoutingInfo()
    * does NOT process CQs for bucket regions internally. See
    * {@link FilterProfile#getFilterRoutingInfoPart2(FilterRoutingInfo, CacheEvent)} .
@@ -5930,7 +5931,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * Record the event state encapsulated in the given Map.
    * <p>
    * This is intended for state transfer during GII.
-   * 
+   *
    * @param provider the member that provided this state
    * @param state a Map obtained from getEventState()
    */
@@ -5971,7 +5972,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * has the Region's event state seen this event?
-   * 
+   *
    * @return true if the Region's event state has seen the event
    */
   public boolean hasSeenEvent(EntryEventImpl event) {
@@ -5980,7 +5981,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * tries to find the version tag for a event
-   * 
+   *
    * @return the version tag, if known. Null if not
    */
   public VersionTag findVersionTagForEvent(EventID eventId) {
@@ -5989,7 +5990,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * tries to find the version tag for a replayed client event
-   * 
+   *
    * @return the version tag, if known. Null if not
    */
   public VersionTag findVersionTagForClientBulkOp(EventID eventId) {
@@ -6001,7 +6002,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * Event, not an ID, but with transactions we do not have an event at the time the check needs to
    * be made. Consequently, this method may cause events to be recorded that would otherwise be
    * ignored.
-   * 
+   *
    * @param eventID the identifier of the event
    * @return true if the Region's event state has seen the event
    */
@@ -6012,7 +6013,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * A routine to provide synchronization running based on <memberShipID, threadID> of the
    * requesting client for the region's event state
-   * 
+   *
    * @param task - a Runnable to wrap the processing of the bulk op
    * @param eventId - the base event ID of the bulk op
    *
@@ -6420,7 +6421,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Do the expensive work of discovering an existing JTA transaction Only needs to be called at
    * Region.Entry entry points e.g. Region.put, Region.invalidate, etc.
-   * 
+   *
    * @since GemFire tx
    */
   void discoverJTA() {
@@ -6570,7 +6571,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Creates an event for EVICT_DESTROY operations. It is intended that this method be overridden to
    * allow for special handling of Partitioned Regions.
-   * 
+   *
    * @param key - the key that this event is related to
    * @return an event for EVICT_DESTROY
    */
@@ -7207,7 +7208,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Release the client connection pool if we have one
-   * 
+   *
    * @since GemFire 5.7
    */
   private void detachPool() {
@@ -7379,7 +7380,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * For each region entry in this region call the callback
-   * 
+   *
    * @since GemFire prPersistSprint2
    */
   @Override
@@ -7391,7 +7392,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Used by {@link #foreachRegionEntry}.
-   * 
+   *
    * @since GemFire prPersistSprint2
    */
   public interface RegionEntryCallback {
@@ -7604,7 +7605,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Returns the object sizer on this region or null if it has no sizer.
-   * 
+   *
    * @since GemFire 6.1.2.9
    */
   public ObjectSizer getObjectSizer() {
@@ -7867,7 +7868,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     /**
      * Returns the entry's RegionEntry if it "checks" out. The check is to see if the region entry
      * still exists.
-     * 
+     *
      * @throws EntryNotFoundException if the RegionEntry has been removed.
      */
     private RegionEntry getCheckedRegionEntry() throws EntryNotFoundException {
@@ -8027,7 +8028,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Used by unit tests to get access to the EntryExpiryTask of the given key. Returns null if the
    * entry exists but does not have an expiry task.
-   * 
+   *
    * @throws EntryNotFoundException if no entry exists key.
    */
   public EntryExpiryTask getEntryExpiryTask(Object key) {
@@ -8698,7 +8699,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
     /**
      * To get the value from region in serialized form
-     * 
+     *
      * @return {@link VMCachedDeserializable}
      */
     public Object getRawValue() {
@@ -8819,7 +8820,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * returns an estimate of the number of entries in this region. This method should be preferred
    * over size() for hdfs regions where an accurate size is not needed. This method is not supported
    * on a client
-   * 
+   *
    * @return the estimated size of this region
    */
   public int sizeEstimate() {
@@ -9307,7 +9308,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Called on a bridge server when it has a received a putAll command from a client.
-   * 
+   *
    * @param map a map of key->value for the entries we are putting
    * @param retryVersions a map of key->version tag. If any of the entries are the result of a
    *        retried client event, we need to make sure we send the original version tag along with
@@ -9345,7 +9346,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Called on a bridge server when it has a received a removeAll command from a client.
-   * 
+   *
    * @param keys a collection of the keys we are putting
    * @param retryVersions a collection of version tags. If the client is retrying a key then that
    *        keys slot will be non-null in this collection. Note that keys and retryVersions are
@@ -9979,7 +9980,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * This performs the putAll operation for a specific key and value
-   * 
+   *
    * @param key the cache key
    * @param value the cache value
    * @param putallOp the DistributedPutAllOperation associated with the event
@@ -10255,7 +10256,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * This method determines whether this region should synchronize with peer replicated regions when
    * the given member has crashed.
-   * 
+   *
    * @param id the crashed member
    * @return true if synchronization should be attempted
    */
@@ -10267,7 +10268,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * forces the diskRegion to switch the oplog
-   * 
+   *
    * @since GemFire 5.1
    */
   @Override
@@ -10279,7 +10280,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * TODO: return value is never used
-   * 
+   *
    * @deprecated as of prPersistSprint1 use forceCompaction instead
    */
   @Deprecated
@@ -10293,7 +10294,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   FilterProfile filterProfile;
 
   /**
-   * 
+   *
    * @return int array containing the IDs of the oplogs which will potentially get rolled else null
    *         if no oplogs were available at the time of signal or region is not having disk
    *         persistence. Pls note that the actual number of oplogs rolled may be more than what is
@@ -10368,7 +10369,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * A convenience method to get the PartitionedRegion for a Bucket
-   * 
+   *
    * @return If this is an instance of {@link BucketRegion}, returns the {@link PartitionedRegion}
    *         otherwise throws an IllegalArgumentException
    */
@@ -10492,7 +10493,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Called by ccn when a client goes away
-   * 
+   *
    * @since GemFire 5.7
    */
   void cleanupForClient(CacheClientNotifier clientNotifier, ClientProxyMembershipID client) {
@@ -10629,7 +10630,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * Execute the provided named function in all locations that contain the given keys. So function
    * can be executed on just one fabric node, executed in parallel on a subset of nodes in parallel
    * across all the nodes.
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public ResultCollector executeFunction(final DistributedRegionFunctionExecutor execution,
@@ -10799,7 +10800,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Fetch the Region which stores the given key The resulting Region will be used for a read
    * operation e.g. Region.get
-   * 
+   *
    * @param entryKey key to evaluate to determine the returned region
    * @return region that stores the key
    */
@@ -10810,7 +10811,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Fetch the Region which stores the given key. The resulting Region will be used for a write
    * operation e.g. Region.put
-   * 
+   *
    * @param entryKey key to evaluate to determine the returned region
    * @return region that stores the key
    */
@@ -10832,7 +10833,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Used to bootstrap txState.
-   * 
+   *
    * @return localMember for local and distributedRegions, member with parimary bucket for
    *         partitionedRegions
    */
@@ -11462,14 +11463,14 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * If the specified key is not already associated with a value, associate it with the given value.
    * This is equivalent to
-   * 
+   *
    * <pre>
    * if (!region.containsKey(key))
    *   return region.put(key, value);
    * else
    *   return region.get(key);
    * </pre>
-   * 
+   *
    * Except that the action is performed atomically.
    *
    * <i>Note that if this method returns null then there is no way to determine definitely whether
@@ -11950,10 +11951,10 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   /**
    * Return an IndexMap that is persisted to the disk store used by this region.
-   * 
+   *
    * This IndexMap should be used as the backing map for any regions that are using the Soplog
    * persistence.
-   * 
+   *
    * Calling this method may create a branch new index map on disk, or it may recover an index map
    * that was previously persisted, depending on whether the index previously existed.
    *
@@ -11962,14 +11963,14 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * @param indexName the name of the index
    * @param indexedExpression the index expression
    * @param fromClause the from clause.
-   * 
+   *
    * @return The index map.
-   * 
+   *
    * @throws IllegalStateException if this region is not using soplog persistence
-   * 
+   *
    * @throws IllegalStateException if this index was previously persisted with a different
    *         expression or from clause.
-   * 
+   *
    */
   public IndexMap getIndexMap(String indexName, String indexedExpression, String fromClause) {
     return new IndexMapImpl();

@@ -77,7 +77,7 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
 
   /**
    * Returns if corresponding receiver WAN site of this GatewaySender has GemfireVersion > 7.0.1
-   * 
+   *
    * @param disp
    * @return true if remote site Gemfire Version is >= 7.0.1
    */

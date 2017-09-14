@@ -27,13 +27,13 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 
 /**
- * 
+ *
  * @since GemFire 6.0tx
  */
 public class LocalRegionDataView implements InternalDataView {
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getDeserializedValue(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -46,7 +46,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#txDestroyExistingEntry(org.apache.geode.
    * internal.cache.EntryEventImpl, boolean)
    */
@@ -59,7 +59,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#txInvalidateExistingEntry(org.apache.geode.
    * internal.cache.EntryEventImpl, boolean, boolean)
@@ -86,7 +86,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#entryCount(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -97,7 +97,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getValueInVM(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -107,7 +107,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#containsKey(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -117,7 +117,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#containsValueForKey(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -127,7 +127,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getEntry(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -142,7 +142,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#putEntry(org.apache.geode.internal.cache.
    * EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
    */
@@ -155,7 +155,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#isStatsDeferred()
    */
   public boolean isDeferredStats() {
@@ -164,7 +164,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#findObject(org.apache.geode.internal.cache.
    * LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
@@ -179,7 +179,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getEntryForIterator(org.apache.geode.internal.
    * cache.LocalRegion, java.lang.Object, boolean)
@@ -195,7 +195,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getKeyForIterator(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -220,7 +220,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getAdditionalKeysForIterator(org.apache.geode.
    * internal.cache.LocalRegion)
@@ -231,7 +231,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getSerializedValue(org.apache.geode.internal.
    * cache.BucketRegion, java.lang.Object, java.lang.Object)
@@ -255,7 +255,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote(org.apache.geode.internal.
    * cache.EntryEventImpl, boolean, boolean)
@@ -267,7 +267,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getBucketKeys(int)
    */
   public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
@@ -276,7 +276,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getEntryOnRemote(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -300,7 +300,7 @@ public class LocalRegionDataView implements InternalDataView {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getRegionKeysForIteration(org.apache.geode.
    * internal.cache.LocalRegion)

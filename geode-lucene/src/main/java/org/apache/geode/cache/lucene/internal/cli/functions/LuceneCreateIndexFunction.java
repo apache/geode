@@ -43,7 +43,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 /**
  * The LuceneCreateIndexFunction class is a function used to create Lucene indexes.
  * </p>
- * 
+ *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function
  * @see FunctionAdapter

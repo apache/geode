@@ -58,7 +58,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * functionality of the ListIndexFunction GemFire function.
  * </p>
  * </p>
- * 
+ *
  * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery

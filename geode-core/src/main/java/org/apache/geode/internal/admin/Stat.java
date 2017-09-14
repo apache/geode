@@ -37,4 +37,3 @@ public interface Stat extends GfObject {
   public boolean isCounter();
 
 }
-

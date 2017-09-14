@@ -33,7 +33,7 @@ public abstract class EnumListenerEvent {
 
   /**
    * Invoke the correct listener method for this event.
-   * 
+   *
    * @since GemFire 5.0
    */
   public abstract void dispatchEvent(CacheEvent event, CacheListener listener);
@@ -386,9 +386,9 @@ public abstract class EnumListenerEvent {
   }
 
   /**
-   * 
+   *
    * This method returns the EnumListenerEvent object corresponding to the cCode given.
-   * 
+   *
    * The mapping of cCode to EnumListenerEvent is :
    * <ul>
    * <li>1 - AFTER_CREATE
@@ -409,7 +409,7 @@ public abstract class EnumListenerEvent {
    * <li>16 - AFTER_REGISTER_DATASERIALIZER
    * <li>17 - AFTER_TOMBSTONE_EXPIRATION
    * </ul>
-   * 
+   *
    * @param eventCode the eventCode corresponding to the EnumListenerEvent object desired
    * @return the EnumListenerEvent object corresponding to the cCode
    */

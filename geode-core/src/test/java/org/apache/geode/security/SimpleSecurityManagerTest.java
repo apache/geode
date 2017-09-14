@@ -19,16 +19,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.apache.geode.security.ResourcePermission.Target;
+
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
-import java.util.Properties;
+import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class SimpleSecurityManagerTest {

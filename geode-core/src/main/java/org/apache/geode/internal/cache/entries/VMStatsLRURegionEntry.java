@@ -32,4 +32,3 @@ public abstract class VMStatsLRURegionEntry extends AbstractLRURegionEntry {
   // Do not add any instance fields to this class.
   // Instead add them to the STATS section of LeafRegionEntry.cpp.
 }
-

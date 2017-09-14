@@ -20,18 +20,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.security.templates.DummyAuthenticator;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import java.util.Properties;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.templates.DummyAuthenticator;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class PeerSecurityWithEmbeddedLocatorDUnitTest {

@@ -24,11 +24,11 @@ import org.apache.geode.security.AuthenticationFailedException;
 /**
  * An {@link AuthInitialize} implementation that obtains the user name and password as the
  * credentials from the given set of properties.
- * 
+ *
  * To use this class the {@code security-client-auth-init} property should be set to the fully
  * qualified name the static {@code create} method viz.
  * {@code org.apache.geode.security.templates.UserPasswordAuthInit.create}
- * 
+ *
  * @since GemFire 5.5
  */
 public class UserPasswordAuthInit implements AuthInitialize {

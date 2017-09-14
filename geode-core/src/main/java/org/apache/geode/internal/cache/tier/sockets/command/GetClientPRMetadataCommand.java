@@ -35,13 +35,13 @@ import org.apache.geode.internal.security.SecurityService;
 
 /**
  * {@link Command} for {@link GetClientPRMetadataCommand}
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
  */
 public class GetClientPRMetadataCommand extends BaseCommand {
 
-  private final static GetClientPRMetadataCommand singleton = new GetClientPRMetadataCommand();
+  private static final GetClientPRMetadataCommand singleton = new GetClientPRMetadataCommand();
 
   public static Command getCommand() {
     return singleton;

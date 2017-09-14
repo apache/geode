@@ -17,17 +17,17 @@ package org.apache.geode.test.dunit;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-
-import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * {@code DistributedTestUtils} provides static utility methods that affect the runtime environment
@@ -54,7 +54,7 @@ public class DistributedTestUtils {
   /**
    * Fetches the GemFireDescription for this test and adds its DistributedSystem properties to the
    * provided props parameter.
-   * 
+   *
    * @param properties the properties to add hydra's test properties to
    */
   public static void addHydraProperties(final Properties properties) {

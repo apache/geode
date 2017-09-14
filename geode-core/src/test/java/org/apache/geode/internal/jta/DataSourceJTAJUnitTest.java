@@ -14,27 +14,29 @@
  */
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * This test case is to test the following test scenarios: 1) Get Simple DS outside transaction,
@@ -425,75 +427,75 @@ public class DataSourceJTAJUnitTest {
   /*
    * public static void testInsertsOnTwoXAdsRollback () { Host host = Host.getHost (0); VM vm0 =
    * host.getVM (0); vm0.invoke (DataSourceJTAJUnitTest.class, "Scenario3"); }
-   * 
+   *
    * public static void Scenario3 () throws Exception { Region currRegion=null; Cache cache; int
    * tblIDFld; String tblNameFld; String tblName; String tableName=null; boolean to_continue = true;
    * final int XA_INSERTS_BEFORE=3; final int XA_INSERTS_AFTER=2;
-   * 
+   *
    * //call to init method try { tableName = CacheUtils.init("JTATest"); //System.out.println
    * ("Table name: " + tableName); tblName = tableName;
-   * 
+   *
    * if (tableName == null || tableName.equals ("")) { to_continue = false; fail
    * (" table name not created, Aborting test..."); } } catch (Exception e) { to_continue = false;
    * fail (" Aborting test at set up...[" + e + "]"); }
-   * 
+   *
    * System.out.println("init for testscenario 3 Successful!");
-   * 
+   *
    * //test task cache = CacheUtils.getCache (); tblName = tableName; currRegion =
    * cache.getRegion("/root"); tblIDFld = 1; tblNameFld = "test3"; JTAUtils jtaObj = new JTAUtils
    * (cache, currRegion);
-   * 
+   *
    * //to delete all rows inserted in creatTable () of CacheUtils class //deleteRows method of
    * JTAUtils class is used. int rowsDeleted = jtaObj.deleteRows(tblName);
-   * 
+   *
    * //initialize cache and get user transaction Context ctx = cache.getJNDIContext();
    * UserTransaction ta = null; Connection xaConnBeforeTxn = null; Connection xaConnAfterTxn = null;
    * try { ta = (UserTransaction)ctx.lookup("java:/UserTransaction");
-   * 
+   *
    * } catch (NamingException e) { fail (" fail in user txn lookup " + e); }
-   * 
+   *
    * try{
-   * 
+   *
    * //get the XADataSource before the transaction begins DataSource
    * xads=(DataSource)ctx.lookup("java:/XAPooledDataSource");
    * System.out.println("XA data source obtained outside transaction");
-   * 
+   *
    * //Begin the user transaction ta.begin(); System.out.println("Transaction begun successfully");
-   * 
+   *
    * //Obtain XAPooledDataSource DataSource da = (DataSource)ctx.lookup("java:/XAPooledDataSource");
    * System.out.println("XA data source obtained within transaction");
-   * 
+   *
    * //obtain connection from SimpleDataSource and XAPooledDataSource xaConnAfterTxn =
    * da.getConnection(); System.out.println("Done with xaConnAfterTxn"); xaConnBeforeTxn =
    * xads.getConnection(); //xaConnAfterTxn = da.getConnection();
    * System.out.println("Done with xaConnBeforeTxn");
-   * 
+   *
    * Statement stmtBefore = xaConnBeforeTxn.createStatement(); Statement stmtAfter =
    * xaConnAfterTxn.createStatement(); System.out.println("Done with both the statements");
-   * 
+   *
    * //perform inserts and updates using both XA DataSources //String sqlSTR = "insert into " +
    * tblName + " values (" + tblIDFld + "," + "'" + tblNameFld + "'" + ")" ;
-   * 
+   *
    * String sqlSTR;
-   * 
+   *
    * //insert XA_INSERTS rows into timestamped table for (int i=0; i<XA_INSERTS_BEFORE;i++){
    * tblIDFld=tblIDFld+i; sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'" +
    * tblNameFld + "'" + ")" ; stmtBefore.executeUpdate(sqlSTR); }
    * System.out.println("Done with inserts by stmtBefore");
-   * 
+   *
    * //insert SM_INSERTS rows into timestamped table for (int j=0; j<XA_INSERTS_AFTER;j++){
    * tblIDFld=tblIDFld+j+5; sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'" +
    * tblNameFld + "'" + ")" ; stmtAfter.executeUpdate(sqlSTR); }
    * System.out.println("Done with inserts by stmtAfter");
-   * 
+   *
    * //close both the XA statements stmtBefore.close(); stmtAfter.close();
    * System.out.println("Closed both the statements");
-   * 
-   * 
+   *
+   *
    * //close the connections xaConnBeforeTxn.close(); xaConnAfterTxn.close();
    * System.out.println("Closed both the connections");
-   * 
-   * 
+   *
+   *
    * //rollback the transaction ta.rollback ();
    * System.out.println("Rows are rolled back in the database"); } catch (SQLException e) {
    * e.printStackTrace(); } catch (Exception e){ fail (" failed " + e); } finally { if
@@ -501,29 +503,29 @@ public class DataSourceJTAJUnitTest {
    * xaConnBeforeTxn.close(); xaConnAfterTxn.close();
    * System.out.println("Closed both the statements"); } catch (Exception e) { e.printStackTrace();
    * } } } //get the number of rows in time stamped table //using getRows method of JTAUtils
-   * 
+   *
    * try{ int num_rows = jtaObj.getRows(tblName);
    * System.out.println("\nNumber of rows in Table under tests are: " +num_rows);
-   * 
+   *
    * //determine what got commited and what not
-   * 
+   *
    * switch (num_rows) { case 0:
    * System.out.println("Both XA DataSource transactions got rolled back!!"); break;
-   * 
+   *
    * case XA_INSERTS_BEFORE: System.out.println(
    * "Only XA DataSource transactions got committed...which was obtained before txn!" ); break;
-   * 
+   *
    * case XA_INSERTS_AFTER:
    * System.out.println("Only XA DataSource transactions within txn got committed!" ); break;
-   * 
+   *
    * default: System.out.println("Looks like that things are messed up...look into it");
-   * 
+   *
    * }
-   * 
+   *
    * } catch (SQLException sqle){ sqle.printStackTrace(); }
-   * 
+   *
    * System.out.println("test task for testScenario3 Succeessful");
-   * 
+   *
    * //destroying table try { System.out.println ("Destroying table: " + tblName);
    * CacheUtils.destroyTable(tblName); System.out.println ("Closing cache...");
    * System.out.println("destroyTable for testscenario 3 Successful!"); } catch (Exception e) { fail
@@ -869,81 +871,81 @@ public class DataSourceJTAJUnitTest {
   /*
    * public static void testXAResourceBtoCommit () { Host host = Host.getHost (0); VM vm0 =
    * host.getVM (0); vm0.invoke (DataSourceJTAJUnitTest.class, "Scenario6"); }
-   * 
+   *
    * public static void Scenario6 () throws Exception { Region currRegion=null; Cache cache; int
    * tblIDFld; String tblNameFld; String tblName; String tableName=null; boolean to_continue = true;
    * final int XA_INSERTS=3;
-   * 
+   *
    * //call to init method try { tableName = CacheUtils.init("JTATest"); //System.out.println
    * ("Table name: " + tableName); tblName = tableName;
-   * 
+   *
    * if (tableName == null || tableName.equals ("")) { to_continue = false; fail
    * (" table name not created, Aborting test..."); } } catch (Exception e) { to_continue = false;
    * fail (" Aborting test at set up...[" + e + "]"); }
-   * 
+   *
    * System.out.println("init for testscenario 6 Successful!");
-   * 
+   *
    * //test task cache = CacheUtils.getCache (); tblName = tableName; currRegion =
    * cache.getRegion("/root"); tblIDFld = 1; tblNameFld = "test6"; JTAUtils jtaObj = new JTAUtils
    * (cache, currRegion);
-   * 
+   *
    * //to delete all rows inserted in creatTable () of CacheUtils class //deleteRows method of
    * JTAUtils class is used. int rowsDeleted = jtaObj.deleteRows(tblName);
-   * 
+   *
    * //initialize cache and get user transaction Context ctx = cache.getJNDIContext();
    * UserTransaction ta = null; Connection xaCon1=null,xaCon2=null,xaCon3=null; try { ta =
    * (UserTransaction)ctx.lookup("java:/UserTransaction");
-   * 
+   *
    * } catch (NamingException e) { fail (" fail in user txn lookup " + e); }
-   * 
+   *
    * try{
-   * 
+   *
    * //Begin the user transaction ta.begin();
-   * 
+   *
    * //Operation with first XA Resource DataSource da1 =
    * (DataSource)ctx.lookup("java:/XAPooledDataSource"); xaCon1 = da1.getConnection(); Statement
    * stmt1 = xaCon1.createStatement(); String sqlSTR; for (int i=0; i<XA_INSERTS;i++){
    * tblIDFld=tblIDFld+i; sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'" +
    * tblNameFld + "'" + ")" ; stmt1.executeUpdate(sqlSTR); } stmt1.close(); xaCon1.close();
-   * 
+   *
    * //Operation with second XA Resource DataSource da2 =
    * (DataSource)ctx.lookup("java:/XAPooledDataSource"); xaCon2 = da2.getConnection(); Statement
    * stmt2 = xaCon2.createStatement(); for (int i=0; i<XA_INSERTS;i++){ tblIDFld=tblIDFld+i+5;
    * sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'" + tblNameFld + "'" + ")"
    * ; stmt2.executeUpdate(sqlSTR); } stmt2.close(); xaCon2.close();
-   * 
+   *
    * //Operation with third XA Resource DataSource da3 =
    * (DataSource)ctx.lookup("java:/XAPooledDataSource"); xaCon3 = da3.getConnection(); Statement
    * stmt3 = xaCon3.createStatement(); for (int i=0; i<XA_INSERTS;i++){ tblIDFld=tblIDFld+ 10;
    * sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'" + tblNameFld + "'" + ")"
    * ; stmt3.executeUpdate(sqlSTR); } Thread.sleep(22*1000); //stmt3.close(); //xaCon3.close();
-   * 
+   *
    * //commit the transaction ta.commit ();
    * System.out.println("Rows are rolled back in the database");
-   * 
+   *
    * } catch (SQLException e) { e.printStackTrace(); } catch (Exception e){ fail (" failed " + e); }
    * finally { if (xaCon1!=null || xaCon2!=null || xaCon3!=null) { try { //close the connections
    * xaCon1.close(); xaCon2.close(); xaCon3.close(); } catch (Exception e) { e.printStackTrace(); }
    * } } //get the number of rows in time stamped table //using getRows method of JTAUtils
-   * 
+   *
    * try{ int num_rows = jtaObj.getRows(tblName);
    * System.out.println("\nNumber of rows in Table under tests are: " +num_rows);
-   * 
+   *
    * //determine what got commited and what not
-   * 
+   *
    * switch (num_rows) { case 0: System.out.println("Nothing is committed to database"); break;
-   * 
+   *
    * case 3*XA_INSERTS: System.out.println(
    * "All inserts successfully are committed to database...this is NOT EXPECTED" ); break;
-   * 
+   *
    * default: System.out.println("Looks like that things are messed up...look into it");
-   * 
+   *
    * }
-   * 
+   *
    * } catch (SQLException sqle){ sqle.printStackTrace(); }
-   * 
+   *
    * System.out.println("test task for testScenario6 Succeessful");
-   * 
+   *
    * //destroying table try { System.out.println ("Destroying table: " + tblName);
    * CacheUtils.destroyTable(tblName); System.out.println ("Closing cache...");
    * System.out.println("destroyTable for testscenario 6 Successful!"); } catch (Exception e) { fail

@@ -15,15 +15,14 @@
 
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.ConfigurationParameter;
-import org.apache.geode.admin.UnmodifiableConfigurationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.File;
-// import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.UnmodifiableConfigurationException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A single configuration parameter of a system member.
@@ -279,4 +278,3 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   }
 
 }
-

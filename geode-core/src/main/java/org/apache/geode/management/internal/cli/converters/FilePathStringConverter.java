@@ -14,19 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.management.cli.ConverterHint;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.MethodTarget;
+
+import org.apache.geode.management.cli.ConverterHint;
+
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 public class FilePathStringConverter implements Converter<String> {

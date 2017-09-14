@@ -65,9 +65,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category(DistributedTest.class)
 public class AcceptorImplClientQueueDUnitTest implements Serializable {
   private final Host host = Host.getHost(0);
-  private final static int numberOfEntries = 200;
-  private final static AtomicInteger eventCount = new AtomicInteger(0);
-  private final static AtomicBoolean completedClient2 = new AtomicBoolean(false);
+  private static final int numberOfEntries = 200;
+  private static final AtomicInteger eventCount = new AtomicInteger(0);
+  private static final AtomicBoolean completedClient2 = new AtomicBoolean(false);
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();

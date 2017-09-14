@@ -29,7 +29,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * Processes the replies from a LatestLastAccessTimeMessage. This reply processor only keeps the
  * largest value returned. It waits for every recipient to respond.
- * 
+ *
  * @since Geode 1.4
  */
 public class LatestLastAccessTimeReplyProcessor extends ReplyProcessor21 {

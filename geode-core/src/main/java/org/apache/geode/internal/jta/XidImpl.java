@@ -18,9 +18,9 @@ package org.apache.geode.internal.jta;
  * <p>
  * XidImpl: A JTA compatible implementation of Xid
  * </p>
- * 
+ *
  * @since GemFire 4.0
- * 
+ *
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
  *             transactions.
  */
@@ -53,7 +53,7 @@ public class XidImpl implements Xid {
 
   /**
    * Returns the FormatId
-   * 
+   *
    * @see javax.transaction.xa.Xid#getFormatId()
    */
   public int getFormatId() {
@@ -62,7 +62,7 @@ public class XidImpl implements Xid {
 
   /**
    * Returns the BranchQualifier
-   * 
+   *
    * @see javax.transaction.xa.Xid#getBranchQualifier()
    */
   public byte[] getBranchQualifier() {
@@ -71,7 +71,7 @@ public class XidImpl implements Xid {
 
   /**
    * Returns the GlobalTransactionId
-   * 
+   *
    * @see javax.transaction.xa.Xid#getGlobalTransactionId()
    */
   public byte[] getGlobalTransactionId() {

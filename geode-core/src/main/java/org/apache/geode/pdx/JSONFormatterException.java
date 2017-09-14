@@ -27,7 +27,7 @@ public class JSONFormatterException extends GemFireException {
 
   /**
    * Create the exception with the given message.
-   * 
+   *
    * @param message the message of the new exception
    */
   public JSONFormatterException(String message) {
@@ -36,7 +36,7 @@ public class JSONFormatterException extends GemFireException {
 
   /**
    * Create the exception with the given message and cause.
-   * 
+   *
    * @param message the message of the new exception
    * @param cause the cause of the new exception
    */

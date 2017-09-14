@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * Tests peer to peer authentication in Gemfire
- * 
+ *
  * @since GemFire 5.5
  */
 @Category({DistributedTest.class, SecurityTest.class})
@@ -315,7 +315,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * The strategy is to test view change reject by having two different authenticators on different
    * VMs.
-   * 
+   *
    * Here locator will accept the credentials from peer2 but the first peer will reject them due to
    * different authenticator. Hence the number of members reported by the first peer should be only
    * two while others will report as three.
@@ -429,7 +429,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * The strategy is to test credential size greater than UDP datagram size.
-   * 
+   *
    * Here locator will accept the credentials from peer2 and the large credential from the first
    * peer. Number of members in the DS should be four
    */

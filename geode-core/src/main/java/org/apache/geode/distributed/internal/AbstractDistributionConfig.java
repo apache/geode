@@ -229,7 +229,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
    * <p>
    * Starting in 5.1.0.4, we accept locators in the format "host@bind-address[port]" to allow use of
    * numeric IPv6 addresses
-   * 
+   *
    * @return The locator string in the traditional "host:bind-address[port]" format.
    *
    * @throws IllegalArgumentException If <code>value</code> is not a valid locator configuration
@@ -681,7 +681,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   /**
    * child class can override this method to return a list of modifiable attributes no matter what
    * the default is
-   * 
+   *
    * @return an empty list
    */
   public List<String> getModifiableAttributes() {
@@ -694,7 +694,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   /**
    * child class can override this method to return a list of unModifiable attributes no matter what
    * the default is
-   * 
+   *
    * @return an empty list
    */
   public List<String> getUnModifiableAttributes() {
@@ -1228,7 +1228,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   /**
    * Used by unit tests.
    */
-  static public String[] _getAttNames() {
+  public static String[] _getAttNames() {
     return dcValidAttributeNames;
   }
 

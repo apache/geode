@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 /**
  * Extends {@link ResultCollector} interface to provide for methods that are required internally by
  * the product.
- * 
+ *
  */
 public interface LocalResultCollector<T, S> extends ResultCollector<T, S> {
 

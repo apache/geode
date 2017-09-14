@@ -14,6 +14,19 @@
  */
 package org.apache.geode.cache.lucene.internal.management;
 
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.junit.Assert.*;
+
+import java.io.Serializable;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.ObjectName;
+
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
@@ -29,18 +42,6 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.management.ObjectName;
-
-import java.io.Serializable;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
-import static org.junit.Assert.*;
 
 @Category(DistributedTest.class)
 public class LuceneManagementDUnitTest extends ManagementTestBase {

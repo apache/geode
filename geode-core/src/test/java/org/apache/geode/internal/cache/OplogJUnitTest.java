@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
-import org.awaitility.Awaitility;
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -73,7 +73,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
   static final int OP_DEL = 3;
 
-  protected volatile static Random random = new Random();
+  protected static volatile Random random = new Random();
 
   protected long expectedOplogSize = Oplog.OPLOG_NEW_ENTRY_BASE_REC_SIZE;
 
@@ -89,7 +89,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
   protected boolean flushOccurredAtleastOnce = false;
 
-  volatile protected boolean assertDone = false;
+  protected volatile boolean assertDone = false;
 
   boolean failure = false;
 
@@ -3079,7 +3079,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   /**
    * Test to force a recovery to follow the path of switchOutFilesForRecovery and ensuring that
    * IOExceptions do not come as a result. This is also a bug test for bug 37682
-   * 
+   *
    * @throws Exception
    */
   @Test

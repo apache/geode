@@ -16,6 +16,7 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.*;
+
 import org.apache.geode.cache.query.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -111,4 +112,3 @@ public class CompiledFunction extends AbstractCompiledValue {
     }
   }
 }
-

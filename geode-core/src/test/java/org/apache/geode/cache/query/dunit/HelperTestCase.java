@@ -270,4 +270,3 @@ public class HelperTestCase extends JUnit4CacheTestCase {
     return p;
   }
 }
-

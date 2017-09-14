@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -335,9 +336,9 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
    * DistributedSystem. This method calls the destroyTable method of this class.
    */
   /*
-   * 
+   *
    * public static void calldestroyTable (String tableName){
-   * 
+   *
    * //the sleep below is given to give the time to threads to start and perform before destroyTable
    * is called. try { Thread.sleep(20*1000); } catch (InterruptedException ie) {
    * ie.printStackTrace(); } try { String tblName = tableName; getLogWriter().fine
@@ -450,27 +451,27 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
    * AsyncInvocation asyncObj1 = vm0.invokeAsync(TxnManagerMultiThreadDUnitTest.class,
    * "callCommitandBlockingTimeOutThreads"); try { asyncObj1.join (); } catch (InterruptedException
    * e) { fail ("Current thread experienced Interrupted Exception !"); }
-   * 
+   *
    * //vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
-   * 
+   *
    * }//end of test3Commit2Rollback
-   * 
+   *
    */
   /*
    * public static void callCommitandBlockingTimeOutThreads(){
-   * 
+   *
    * getLogWriter().fine("This is callCommitandBlockingTimeOutThreads method"); try{ CommitThread
    * ct1 = new CommitThread ("ct1"); CommitThread ct2 = new CommitThread ("ct2"); CommitThread ct3 =
    * new CommitThread ("ct3"); BlockingTimeOutThread bto1 = new BlockingTimeOutThread ("bto1");
    * BlockingTimeOutThread bto2 = new BlockingTimeOutThread ("bto2"); } catch (Exception e){
    * fail("Failed in Commit and Blocking Time Out Threads" + e); e.printStackTrace(); }
-   * 
+   *
    * //make thread to sleep for more than blocking time out just to avoid call to destroyTable
    * method //This will help to have db in place and try commit after blocking time out is passed by
    * thread try { Thread.sleep(25*1000); } catch (InterruptedException ie) { ie.printStackTrace(); }
-   * 
+   *
    * }//end of callCommitandRollbackThreads
-   * 
+   *
    */
 
 }

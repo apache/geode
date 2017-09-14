@@ -14,13 +14,13 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import java.net.InetAddress;
+
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-
-import java.net.InetAddress;
+import org.apache.geode.internal.net.SocketCreator;
 
 public class ServiceConfig {
 

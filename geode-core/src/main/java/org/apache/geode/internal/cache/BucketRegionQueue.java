@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
@@ -59,7 +59,7 @@ import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
- * 
+ *
  */
 public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
@@ -505,7 +505,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   /**
    * It removes the first key from the queue.
-   * 
+   *
    * @return Returns the key for which value was destroyed.
    * @throws ForceReattemptException
    */
@@ -519,7 +519,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   /**
    * It removes the first key from the queue.
-   * 
+   *
    * @return Returns the value.
    * @throws InterruptedException
    * @throws ForceReattemptException

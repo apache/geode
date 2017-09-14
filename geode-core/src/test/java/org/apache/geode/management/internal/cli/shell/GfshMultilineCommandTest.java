@@ -14,18 +14,19 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.NO_MEMBERS_FOUND_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
 @Category(IntegrationTest.class)

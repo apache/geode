@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * The SerializableObjectHttpMessageConverterJUnitTest class is a test suite of test cases testing
  * the contract and functionality of the SerializableObjectHttpMessageConverter class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter
  * @see org.jmock.Mockery
  * @see org.junit.Assert

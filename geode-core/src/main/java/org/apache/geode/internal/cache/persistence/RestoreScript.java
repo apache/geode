@@ -31,7 +31,7 @@ import org.apache.geode.internal.lang.SystemUtils;
  * This class is used to automatically generate a restore script for a backup. It keeps a list of
  * files that were backed up, and a list of files that we should test for to avoid overriding when
  * we restore the backup.
- * 
+ *
  * <p>
  * It generates either a restore.sh for unix or a restore.bat for windows.
  */

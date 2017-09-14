@@ -443,7 +443,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * given moment in time. The ServiceState associates the Locator with it's state at the exact
    * moment an instance of this class is constructed.
    */
-  public static abstract class ServiceState<T extends Comparable<T>> {
+  public abstract static class ServiceState<T extends Comparable<T>> {
 
     protected static final String JSON_CLASSPATH = "classpath";
     protected static final String JSON_GEMFIREVERSION = "gemFireVersion";

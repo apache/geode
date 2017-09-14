@@ -74,7 +74,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
   /**
    * Encapsulates the context necessary for processing a given grantor request for a given
    * InternalDistributedSystem
-   * 
+   *
    */
   public static class GrantorRequestContext {
     /**
@@ -89,21 +89,21 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     /**
      * Our notion of the current elder
-     * 
+     *
      * guarded.By {@link #elderLock}
      */
     InternalDistributedMember currentElder = null;
 
     /**
      * Count of the elder calls in-flight
-     * 
+     *
      * guarded.By {@link #elderLock}
      */
     int elderCallsInProgress = 0;
 
     /**
      * If true, we're cooling our heels waiting for the elders to pass the baton
-     * 
+     *
      * guarded.By {@link #elderLock}
      */
     boolean waitingToChangeElder = false;
@@ -152,7 +152,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
   /**
    * Waits until elder recovery can proceed safely. Currently this is done by waiting until any in
    * progress calls to an old elder are complete
-   * 
+   *
    * @param elderId the member id of the new elder; null if new elder is local
    */
   static void readyForElderRecovery(InternalDistributedSystem sys,
@@ -187,7 +187,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /**
    * elderSyncWait
-   * 
+   *
    * @param newElder
    * @param dls
    */
@@ -270,7 +270,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
   /**
    * Asks the elder who the grantor is for the specified service. If no grantor exists then makes us
    * the grantor.
-   * 
+   *
    * @param service the service we want to know the grantor of.
    * @param sys the distributed system
    * @return information describing the current grantor of this service and if it needs recovery.
@@ -282,7 +282,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /**
    * Asks the elder who the grantor is for the specified service.
-   * 
+   *
    * @param service the service we want to know the grantor of.
    * @param sys th distributed system
    * @return information describing the current grantor of this service and if recovery is needed
@@ -297,7 +297,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /**
    * Tells the elder we want to become the grantor
-   * 
+   *
    * @param service the service we want to be the grantor of.
    * @param oldTurk if non-null then only become grantor if it is currently oldTurk.
    * @param sys the distributed system
@@ -311,7 +311,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /**
    * Tells the elder we are doing a clean destroy of our grantor
-   * 
+   *
    * @param service the service we are no longer the grantor of.
    * @param sys the distributed system
    */
@@ -468,7 +468,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     private InternalDistributedMember oldTurk;
 
     /**
-     * 
+     *
      * @param serviceName
      * @param elder
      * @param dm
@@ -694,4 +694,3 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
   }
 }
-

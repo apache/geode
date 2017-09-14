@@ -60,7 +60,7 @@ public class ClusterConfigurationLoader {
   /**
    * Deploys the jars received from shared configuration, it undeploys any other jars that were not
    * part of shared configuration
-   * 
+   *
    * @param cache Cache of this member
    * @param response {@link ConfigurationResponse} received from the locators
    */
@@ -153,7 +153,7 @@ public class ClusterConfigurationLoader {
 
   /***
    * Apply the gemfire properties cluster configuration on this member
-   * 
+   *
    * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
    * @param config this member's config
    */
@@ -201,7 +201,7 @@ public class ClusterConfigurationLoader {
    * Request the shared configuration for group(s) from locator(s) this member is bootstrapped with.
    *
    * This will request the group config this server belongs plus the "cluster" config
-   * 
+   *
    * @param config this member's configuration.
    * @return {@link ConfigurationResponse}
    */
