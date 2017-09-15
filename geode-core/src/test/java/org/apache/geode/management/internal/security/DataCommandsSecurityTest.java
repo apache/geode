@@ -86,7 +86,7 @@ public class DataCommandsSecurityTest {
   public void testRegionAccess() {
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2"))
         .isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
 
     assertThatThrownBy(
         () -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value"))

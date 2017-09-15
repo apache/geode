@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -50,8 +51,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * @since GemFire 6.6
@@ -180,7 +179,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     int earlierClientReadTimeout = handShake.getClientReadTimeout();
     handShake.setClientReadTimeout(functionTimeout);
     ServerToClientFunctionResultSender resultSender = null;
-    Function functionObject = null;
+    Function<?> functionObject = null;
     try {
       if (function instanceof String) {
         functionObject = FunctionService.getFunction((String) function);
@@ -211,9 +210,9 @@ public class ExecuteRegionFunction66 extends BaseCommand {
         functionObject = (Function) function;
       }
 
-      securityService.authorize(Resource.DATA, Operation.WRITE);
-
       // check if the caller is authorized to do this operation on server
+      functionObject.getRequiredPermissions(Optional.of(regionName))
+          .forEach(securityService::authorize);
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       final String functionName = functionObject.getId();
       final String regionPath = region.getFullPath();

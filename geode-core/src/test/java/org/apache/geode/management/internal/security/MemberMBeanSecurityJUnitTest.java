@@ -96,9 +96,9 @@ public class MemberMBeanSecurityJUnitTest {
     assertThatThrownBy(() -> bean.compactAllDiskStores())
         .hasMessageContaining(TestCommand.clusterManageDisk.toString());
     assertThatThrownBy(() -> bean.shutDownMember())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     assertThatThrownBy(() -> bean.createManager())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     bean.showJVMMetrics();
     bean.status();
   }
@@ -109,31 +109,31 @@ public class MemberMBeanSecurityJUnitTest {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> bean.shutDownMember())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     softly.assertThatThrownBy(() -> bean.createManager())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     softly.assertThatThrownBy(() -> bean.compactAllDiskStores())
         .hasMessageContaining(TestCommand.clusterManageDisk.toString());
     softly.assertThatThrownBy(() -> bean.fetchJvmThreads())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getName())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getDiskStores())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.hasGatewayReceiver())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.isCacheServer())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.isServer())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.listConnectedGatewayReceivers())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     softly.assertThatThrownBy(() -> bean.showJVMMetrics())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.status())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
 
     softly.assertAll();
   }

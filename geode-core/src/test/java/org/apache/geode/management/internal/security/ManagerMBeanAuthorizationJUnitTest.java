@@ -81,9 +81,9 @@ public class ManagerMBeanAuthorizationJUnitTest {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> managerMXBean.start())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     softly.assertThatThrownBy(() -> managerMXBean.getPulseURL())
-        .hasMessageContaining(TestCommand.clusterWrite.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_WRITE.toString());
 
     softly.assertAll();
     managerMXBean.isRunning();

@@ -57,7 +57,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   public void testDataAdmin() throws Exception {
     bean.removeIndex("foo");
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataRead.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_READ.toString());
     bean.fetchLoadProbe();
     bean.getActiveCQCount();
     assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
@@ -72,9 +72,9 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testClusterAdmin() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataRead.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_READ.toString());
     bean.fetchLoadProbe();
   }
 
@@ -83,10 +83,10 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testDataUser() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     bean.executeContinuousQuery("bar");
     assertThatThrownBy(() -> bean.fetchLoadProbe())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
   }
 
   @Test
@@ -95,21 +95,21 @@ public class CacheServerMBeanAuthorizationJUnitTest {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> bean.removeIndex("foo"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     softly.assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataRead.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_READ.toString());
     softly.assertThatThrownBy(() -> bean.fetchLoadProbe())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getActiveCQCount())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
         .hasMessageContaining(TestCommand.clusterManageQuery.toString());
     softly.assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
         .hasMessageContaining(TestCommand.clusterManageQuery.toString());
     softly.assertThatThrownBy(() -> bean.isRunning())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.showClientQueueDetails("bar"))
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
 
     softly.assertAll();
   }

@@ -25,7 +25,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.shell.event.ParseResult;
 
-import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
@@ -97,7 +96,9 @@ public class GfshParseResult extends ParseResult {
     return userInput;
   }
 
-  @TestingOnly
+  /**
+   * Used only in tests and command pre-execution for validating arguments
+   */
   public String getParamValue(String param) {
     return paramValueStringMap.get(param);
   }
