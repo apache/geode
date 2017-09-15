@@ -43,6 +43,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -106,6 +107,9 @@ public class CacheConnectionJUnitTest {
   }
 
   @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
@@ -123,10 +127,9 @@ public class CacheConnectionJUnitTest {
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
-    statisticsArchiveFile =
-        new File(getClass().getSimpleName() + "_" + testName.getMethodName() + ".gfs");
+    statisticsArchiveFile = temporaryFolder.newFile();
     cacheFactory.set(ConfigurationProperties.STATISTIC_ARCHIVE_FILE,
-        statisticsArchiveFile.getName());
+        statisticsArchiveFile.getPath());
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
@@ -300,6 +303,4 @@ public class CacheConnectionJUnitTest {
     SocketCreator socketCreator = new SocketCreator(sslConfig);
     return socketCreator.connectForClient("localhost", cacheServerPort, 5000);
   }
-
-
 }
