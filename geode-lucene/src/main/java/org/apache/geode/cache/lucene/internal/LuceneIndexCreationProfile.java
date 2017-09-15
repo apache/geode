@@ -38,12 +38,13 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   private Map<String, String> fieldAnalyzers;
 
-  private String serializerClass;
+  private String serializerClass = HeterogeneousLuceneSerializer.class.getSimpleName();
 
   private String regionPath;
 
   /* Used by DataSerializer */
-  public LuceneIndexCreationProfile() {}
+  public LuceneIndexCreationProfile() {
+  }
 
   public LuceneIndexCreationProfile(String indexName, String regionPath, String[] fieldNames,
       Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer) {
@@ -52,9 +53,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
     this.fieldNames = fieldNames;
     this.analyzerClass = analyzer.getClass().getSimpleName();
     initializeFieldAnalyzers(fieldAnalyzers);
-    if (serializer == null) {
-      this.serializerClass = HeterogeneousLuceneSerializer.class.getSimpleName();
-    } else {
+    if (serializer != null) {
       this.serializerClass = serializer.getClass().getSimpleName();
     }
   }

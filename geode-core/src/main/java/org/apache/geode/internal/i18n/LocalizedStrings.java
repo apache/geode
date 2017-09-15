@@ -7613,7 +7613,7 @@ public class LocalizedStrings {
           "Cannot create Lucene index {0} on region {1} with analyzer {2} on field {3} because another member defines the same index with analyzer {4} on that field.");
   public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_SERIALIZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_DIFFERENT_SERIALIZER_3 =
       new StringId(6632,
-          "Cannot create Lucene index {0} on region {1} with Serializer {2} because another member defines the same index with different serializer {3}.");
+          "Cannot create Lucene index {0} on region {1} with serializer {2} because another member defines the same index with different serializer {3}.");
 
   public static final StringId AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0 = new StringId(6633,
       "SSL communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");
