@@ -103,7 +103,7 @@ public class LuceneRegionListener implements RegionListener {
 
       // Add index creation profile
       internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(this.indexName,
-          this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers, null));
+          this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers, serializer));
 
       luceneIndex = this.service.beforeDataRegionCreated(this.indexName, this.regionPath, attrs,
           this.analyzer, this.fieldAnalyzers, aeqId, serializer, this.fields);
