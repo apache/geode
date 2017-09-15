@@ -323,4 +323,35 @@ public class GfshParserParsingTest {
     GfshParseResult result = parser.parse(command);
     assertThat(result.getParamValue("key")).isEqualTo("('name' : 'id')");
   }
+
+  @Test
+  public void optionValueWillNotBeTrimmedIfInQuotes() throws Exception {
+    String command = "start locator --name=' test '";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo(" test ");
+  }
+
+  @Test
+  public void optionValueWithExtraSpaceInBetween() throws Exception {
+    String command = "start locator --name= test    --bind-address=123";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("test");
+    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+  }
+
+  @Test
+  public void optionValueWithEmptyString() throws Exception {
+    String command = "start locator --name= --bind-address=123";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isNull();
+    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+  }
+
+  @Test
+  public void optionValueWithQuotedEmptyString() throws Exception {
+    String command = "start locator --name='' --bind-address=123";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isNull();
+    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+  }
 }

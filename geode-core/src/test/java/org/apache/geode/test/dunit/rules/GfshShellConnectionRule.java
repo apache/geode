@@ -173,6 +173,27 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     connected = (result.getStatus() == Result.Status.OK);
   }
 
+  // when calling this method, the test needs to be in either geode-web or geode-assembly
+  public void executeOverJmxAndHttp(Member member, Runnable runnable) throws Exception {
+    connectAndVerify(member.getJmxPort(), PortType.jmxManger);
+    runnable.run();
+    disconnect();
+    connectAndVerify(member.getHttpPort(), PortType.http);
+    runnable.run();
+    disconnect();
+  }
+
+  // when calling this method, the test needs to be in either geode-web or geode-assembly
+  public void secureExecuteOverJmxAndHttp(Member member, String username, String password,
+      Runnable runnable) throws Exception {
+    secureConnectAndVerify(member.getJmxPort(), PortType.jmxManger, username, password);
+    runnable.run();
+    disconnect();
+    secureConnectAndVerify(member.getHttpPort(), PortType.http, username, password);
+    runnable.run();
+    disconnect();
+  }
+
   @Override
   protected void after(Description description) throws Throwable {
     close();
@@ -206,9 +227,14 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return gfsh.getGfsh();
   }
 
-  public CommandResult executeCommand(String command) throws Exception {
+  public CommandResult executeCommand(String command) {
     gfsh.executeCommand(command);
-    CommandResult result = (CommandResult) gfsh.getResult();
+    CommandResult result = null;
+    try {
+      result = (CommandResult) gfsh.getResult();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     if (StringUtils.isBlank(gfsh.outputString) && result != null && result.getContent() != null) {
       if (result.getStatus() == Result.Status.ERROR) {
         gfsh.outputString = result.toString();

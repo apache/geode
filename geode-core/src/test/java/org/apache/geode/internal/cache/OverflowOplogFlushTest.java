@@ -82,9 +82,9 @@ public class OverflowOplogFlushTest extends DiskRegionTestingBase {
     }
   }
 
-  class FakeChannelWriteArrayBB implements Answer<Integer> {
+  class FakeChannelWriteArrayBB implements Answer<Long> {
     @Override
-    public Integer answer(InvocationOnMock invocation) throws Throwable {
+    public Long answer(InvocationOnMock invocation) throws Throwable {
       System.out.println("### in FakeChannelWriteArrayBB.answer :");
       return fakeWriteArrayBB(bbArray);
     }
@@ -93,7 +93,7 @@ public class OverflowOplogFlushTest extends DiskRegionTestingBase {
   /**
    * This method tries to write half of the byte buffer to the channel.
    */
-  private int fakeWriteArrayBB(ByteBuffer[] bbArray) throws IOException {
+  private long fakeWriteArrayBB(ByteBuffer[] bbArray) throws IOException {
     nFakeChannelWrites++;
     for (ByteBuffer b : bbArray) {
       int numFakeWrite = b.limit() / 2;

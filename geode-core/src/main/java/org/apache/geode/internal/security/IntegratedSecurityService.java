@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
@@ -53,6 +54,7 @@ import org.apache.geode.security.SecurityManager;
  */
 public class IntegratedSecurityService implements SecurityService {
   private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
+  public static final String CREDENTIALS_SESSION_ATTRIBUTE = "credentials";
 
   private final PostProcessor postProcessor;
   private final SecurityManager securityManager;
@@ -141,6 +143,8 @@ public class IntegratedSecurityService implements SecurityService {
           "Authentication error. Please check your credentials.", e);
     }
 
+    Session currentSession = currentUser.getSession();
+    currentSession.setAttribute(CREDENTIALS_SESSION_ATTRIBUTE, credentials);
     return currentUser;
   }
 

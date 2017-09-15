@@ -82,13 +82,13 @@ public class LockServiceMBeanAuthorizationJUnitTest {
     SoftAssertions softly = new SoftAssertions();
     lockServiceMBean.becomeLockGrantor(); // c:m
     softly.assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> lockServiceMBean.getMemberCount())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> lockServiceMBean.isDistributed())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertAll();
   }
 
@@ -97,7 +97,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
   public void testClusterRead() throws Exception {
     SoftAssertions softly = new SoftAssertions();
     softly.assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     lockServiceMBean.fetchGrantorMember();
     lockServiceMBean.getMemberCount();
     lockServiceMBean.isDistributed();
@@ -111,15 +111,15 @@ public class LockServiceMBeanAuthorizationJUnitTest {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> lockServiceMBean.becomeLockGrantor())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     softly.assertThatThrownBy(() -> lockServiceMBean.fetchGrantorMember())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> lockServiceMBean.getMemberCount())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> lockServiceMBean.isDistributed())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> lockServiceMBean.listThreadsHoldingLock())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
 
     softly.assertAll();
   }

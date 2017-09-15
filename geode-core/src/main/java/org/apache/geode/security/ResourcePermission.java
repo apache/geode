@@ -14,6 +14,9 @@
  */
 package org.apache.geode.security;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Region;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -113,7 +116,7 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   /**
-   * returns the regionName, could be "*", meaning all regions
+   * returns the regionName, or cluster target, could be "*", meaning all regions or all targets
    */
   public String getTarget() {
     return target;

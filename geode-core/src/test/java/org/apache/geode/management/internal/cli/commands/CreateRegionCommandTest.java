@@ -28,6 +28,8 @@ import org.mockito.Mockito;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -46,8 +48,10 @@ public class CreateRegionCommandTest {
     doReturn(dsMBean).when(spy).getDSMBean(cache);
 
     String command = "create region --name=region3 --type=PARTITION --partition-resolver=Foo";
-    assertThatThrownBy(() -> parser.executeCommandWithInstance(spy, command))
-        .hasMessageContaining("Foo is an invalid Partition Resolver");
+    CommandResult result = parser.executeCommandWithInstance(spy, command);
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString()).contains("Foo is an invalid Partition Resolver");
   }
 
   @Test

@@ -89,7 +89,7 @@ public class GatewayReceiverMBeanSecurityTest {
   public void testNoAccess() throws Exception {
     SoftAssertions softly = new SoftAssertions();
     softly.assertThatThrownBy(() -> bean.getTotalConnectionsTimedOut())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.start())
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
     softly.assertThatThrownBy(() -> bean.stop())

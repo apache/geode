@@ -43,10 +43,6 @@ public class ResultBuilder {
   public static final int ERRORCODE_BADCONFIG_ERROR = 515;
   public static final int ERRORCODE_USER_ERROR = 520;
 
-  // Result with constant message & error code
-  public static final Result ERROR_RESULT_DEFAULT =
-      createErrorResult(ERRORCODE_DEFAULT, "Error occurred while executing command.");
-
   /**
    * Method for convenience to create error result for connection error.
    * <p/>
@@ -56,17 +52,17 @@ public class ResultBuilder {
    * @param message Message to be shown to the user
    * @return Result for connection error
    */
-  public static Result createConnectionErrorResult(String message) {
+  public static CommandResult createConnectionErrorResult(String message) {
     String errorMessage = message != null ? message : "Connection Error occurred.";
 
     return createErrorResult(ERRORCODE_CONNECTION_ERROR, errorMessage);
   }
 
-  public static Result createShellClientErrorResult(String message) {
+  public static CommandResult createShellClientErrorResult(String message) {
     return createErrorResult(ERRORCODE_SHELLCLIENT_ERROR, message);
   }
 
-  public static Result createShellClientAbortOperationResult(String message) {
+  public static CommandResult createShellClientAbortOperationResult(String message) {
     return createErrorResult(CODE_SHELLCLIENT_ABORT_OP, message);
   }
 
@@ -79,11 +75,11 @@ public class ResultBuilder {
    * @param message Message to be shown to the user
    * @return Result for parsing error
    */
-  public static Result createParsingErrorResult(String message) {
+  public static CommandResult createParsingErrorResult(String message) {
     return createErrorResult(ERRORCODE_PARSING_ERROR, "Could not parse command string. " + message);
   }
 
-  public static Result createBadConfigurationErrorResult(String message) {
+  public static CommandResult createBadConfigurationErrorResult(String message) {
     return createErrorResult(ERRORCODE_BADCONFIG_ERROR, "Configuration error. " + message);
   }
 
@@ -96,16 +92,16 @@ public class ResultBuilder {
    * @param message Message to be shown to the user
    * @return Result for error in Geode while executing command.
    */
-  public static Result createGemFireErrorResult(String message) {
+  public static CommandResult createGemFireErrorResult(String message) {
     return createErrorResult(ERRORCODE_GEODE_ERROR,
         "Could not process command due to error. " + message);
   }
 
-  public static Result createGemFireUnAuthorizedErrorResult(String message) {
+  public static CommandResult createGemFireUnAuthorizedErrorResult(String message) {
     return createErrorResult(ERRORCODE_UNAUTHORIZED, message);
   }
 
-  public static Result createUserErrorResult(String message) {
+  public static CommandResult createUserErrorResult(String message) {
     return createErrorResult(ERRORCODE_USER_ERROR, message);
   }
 
@@ -131,8 +127,7 @@ public class ResultBuilder {
    * 
    * @param errorCode error code should be one of ResultBuilder.ERRORCODE_**
    * @param message message for the error
-   * @return Result object with the given error code & message. If there's an exception while
-   *         building result object, returns {@link #ERROR_RESULT_DEFAULT}
+   * @return Result object with the given error code & message.
    */
   private static CommandResult createErrorResult(int errorCode, String message) {
     ErrorResultData errorResultData = new ErrorResultData();

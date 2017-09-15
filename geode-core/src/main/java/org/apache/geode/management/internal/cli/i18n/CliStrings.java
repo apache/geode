@@ -1314,7 +1314,7 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_MEMBER_1_ON_REGION_2_DETAILS_3 =
       "While executing function : {0} on member : {1} one region : {2} error occurred : {3}";
   public static final String EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION =
-      "Filters for executing on \"member\"/\"members of group\" is not supported.";
+      "Filters for executing on member or group is not supported.";
 
   /* exit command */
   public static final String EXIT = "exit";

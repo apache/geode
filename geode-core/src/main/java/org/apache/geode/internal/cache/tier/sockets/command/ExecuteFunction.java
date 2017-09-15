@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.LowMemoryException;
@@ -48,8 +49,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * This is the base command which read the parts for the MessageType.EXECUTE_FUNCTION.<br>
@@ -107,7 +106,7 @@ public class ExecuteFunction extends BaseCommand {
 
     // Execute function on the cache
     try {
-      Function functionObject = null;
+      Function<?> functionObject = null;
       if (function instanceof String) {
         functionObject = FunctionService.getFunction((String) function);
         if (functionObject == null) {
@@ -123,15 +122,16 @@ public class ExecuteFunction extends BaseCommand {
 
       FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId());
 
-      securityService.authorize(Resource.DATA, Operation.WRITE);
-
       // check if the caller is authorized to do this operation on server
+      functionObject.getRequiredPermissions(Optional.empty()).forEach(securityService::authorize);
+
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       ExecuteFunctionOperationContext executeContext = null;
       if (authzRequest != null) {
         executeContext = authzRequest.executeFunctionAuthorize(functionObject.getId(), null, null,
             args, functionObject.optimizeForWrite());
       }
+
       ChunkedMessage m = serverConnection.getFunctionResponseMessage();
       m.setTransactionId(clientMessage.getTransactionId());
       ResultSender resultSender = new ServerToClientFunctionResultSender(m,
@@ -148,6 +148,7 @@ public class ExecuteFunction extends BaseCommand {
       } else {
         context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender);
       }
+
       HandShake handShake = (HandShake) serverConnection.getHandshake();
       int earlierClientReadTimeout = handShake.getClientReadTimeout();
       handShake.setClientReadTimeout(0);

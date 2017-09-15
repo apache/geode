@@ -569,14 +569,16 @@ public class CliUtil {
    *
    * @param region region path for which members that have this region are required
    * @param cache cache instance to use to find members
-   * @param returnAll whether to return all members or only the first member we find. Returns all
-   *        when <code>true</code>
    * @return a Set of DistributedMember for members that have the specified <code>region</code>.
    */
-  public static Set<DistributedMember> getRegionAssociatedMembers(final String region,
-      final InternalCache cache, boolean returnAll) {
+  public static Set<DistributedMember> getRegionAssociatedMembers(String region,
+      final InternalCache cache) {
     if (region == null || region.isEmpty()) {
       return null;
+    }
+
+    if (!region.startsWith(Region.SEPARATOR)) {
+      region = Region.SEPARATOR + region;
     }
 
     ManagementService managementService = ManagementService.getExistingManagementService(cache);

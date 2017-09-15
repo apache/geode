@@ -293,7 +293,7 @@ public abstract class AbstractExecution implements InternalExecution {
   // Bug41118 : in case of lonerDistribuedSystem do local execution through
   // main thread otherwise give execution to FunctionExecutor from
   // DistributionManager
-  public void executeFunctionOnLocalNode(final Function fn, final FunctionContext cx,
+  public void executeFunctionOnLocalNode(final Function<?> fn, final FunctionContext cx,
       final ResultSender sender, DM dm, final boolean isTx) {
     if (dm instanceof DistributionManager && !isTx) {
       final DistributionManager newDM = (DistributionManager) dm;
@@ -317,7 +317,7 @@ public abstract class AbstractExecution implements InternalExecution {
     }
   }
 
-  public void executeFunctionLocally(final Function fn, final FunctionContext cx,
+  public void executeFunctionLocally(final Function<?> fn, final FunctionContext cx,
       final ResultSender sender, DM dm) {
 
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
@@ -329,6 +329,7 @@ public abstract class AbstractExecution implements InternalExecution {
         logger.debug("Executing Function: {} on local node with context: {}", fn.getId(),
             cx.toString());
       }
+
       fn.execute(cx);
       stats.endFunctionExecution(start, fn.hasResult());
     } catch (FunctionInvocationTargetException fite) {
