@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -324,6 +325,28 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex2, regionType));
   }
 
+  @Test
+  @Parameters("PARTITION")
+  public void verifyDifferentSerializerShouldFail(RegionTestableType regionType) {
+    SerializableRunnableIF createIndex1 = getIndexWithDefaultSerializer();
+    dataStore1.invoke(() -> initDataStore(createIndex1, regionType));
+
+    SerializableRunnableIF createIndex2 = getIndexWithDummySerializer();
+    dataStore2.invoke(() -> initDataStore(createIndex2, regionType,
+        CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER));
+  }
+
+  @Test
+  @Parameters("PARTITION")
+  public void verifyDifferentSerializerShouldFail2(RegionTestableType regionType) {
+    SerializableRunnableIF createIndex1 = getHeterogeneousLuceneSerializerCreationProfile();
+    dataStore1.invoke(() -> initDataStore(createIndex1, regionType));
+
+    SerializableRunnableIF createIndex2 = getIndexWithDummySerializer();
+    dataStore2.invoke(() -> initDataStore(createIndex2, regionType,
+        CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER));
+  }
+
   protected String getXmlFileForTest(String testName) {
     return TestUtil.getResourcePath(getClass(),
         getClassSimpleName() + "." + testName + ".cache.xml");
@@ -460,6 +483,31 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       analyzers.put("field1", new StandardAnalyzer());
       analyzers.put("field2", new KeywordAnalyzer());
       luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
+    };
+  }
+
+  protected SerializableRunnableIF getIndexWithDummySerializer() {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+          .setLuceneSerializer(new DummyLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
+    };
+  }
+
+  protected SerializableRunnableIF getIndexWithDefaultSerializer() {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+          .create(INDEX_NAME, REGION_NAME);
+    };
+  }
+
+  protected SerializableRunnableIF getHeterogeneousLuceneSerializerCreationProfile() {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+          .setLuceneSerializer(new HeterogeneousLuceneSerializer(new String[] {"field1", "field2"}))
+          .create(INDEX_NAME, REGION_NAME);
     };
   }
 }
