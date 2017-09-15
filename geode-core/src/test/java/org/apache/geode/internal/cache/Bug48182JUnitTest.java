@@ -161,6 +161,8 @@ public class Bug48182JUnitTest {
       // e.printStackTrace();
       fail("Did not receive a CacheClosedException.  Received a " + e.getClass().getName()
           + " instead.");
+    } finally {
+      AbstractRegionMap.testHookRunnableFor48182 = null;
     }
 
     assertTrue("A CacheClosedException was not triggered", correctException);
@@ -177,7 +179,14 @@ public class Bug48182JUnitTest {
     AbstractRegionMap.testHookRunnableFor48182 = new Runnable() {
       @Override
       public void run() {
-        getCache().getRegion(getRegionName()).destroyRegion();
+        Cache cache = getCache();
+        Region region = cache.getRegion(getRegionName());
+        region.destroyRegion();
+        if (cache.getLogger() != null) {
+          cache.getLogger()
+              .info("Region " + getRegionName() + " is destroyed : " + region.isDestroyed());
+        }
+        assertTrue("Region " + getRegionName() + " is not destroyed.", region.isDestroyed());
       }
     };
 
@@ -196,6 +205,8 @@ public class Bug48182JUnitTest {
       // e.printStackTrace();
       fail("Did not receive a RegionDestroyedException.  Received a " + e.getClass().getName()
           + " instead.");
+    } finally {
+      AbstractRegionMap.testHookRunnableFor48182 = null;
     }
 
     assertTrue("A RegionDestroyedException was not triggered", correctException);

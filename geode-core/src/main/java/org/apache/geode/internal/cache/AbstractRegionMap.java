@@ -93,7 +93,7 @@ public abstract class AbstractRegionMap implements RegionMap {
    * This test hook is used to force the conditions for defect 48182. This hook is used by
    * Bug48182JUnitTest.
    */
-  static Runnable testHookRunnableFor48182 = null;
+  static volatile Runnable testHookRunnableFor48182 = null;
 
   private RegionEntryFactory entryFactory;
 
