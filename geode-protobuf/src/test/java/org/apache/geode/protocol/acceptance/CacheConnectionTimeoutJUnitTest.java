@@ -15,6 +15,7 @@
 
 package org.apache.geode.protocol.acceptance;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -70,10 +71,15 @@ public class CacheConnectionTimeoutJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
+  private long monitorInterval;
+  private int maximumTimeBetweenPings;
+  private static final int pollInterval = 20;
 
   @Before
   public void setup() throws Exception {
     Properties properties = new Properties();
+    System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY, "25");
+
 
     CacheFactory cacheFactory = new CacheFactory(properties);
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
@@ -92,7 +98,6 @@ public class CacheConnectionTimeoutJUnitTest {
     regionFactory.create(TEST_REGION);
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
-    System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY, "100");
 
     socket = new Socket("localhost", cacheServerPort);
 
@@ -101,6 +106,13 @@ public class CacheConnectionTimeoutJUnitTest {
     outputStream.write(110);
 
     serializationService = new ProtobufSerializationService();
+
+    monitorInterval = ClientHealthMonitor.getInstance().getMonitorInterval();
+    maximumTimeBetweenPings = ClientHealthMonitor.getInstance().getMaximumTimeBetweenPings();
+
+    // sanity check to keep us from tweaking the test to the point where it gets brittle
+    assertTrue("monitor time: " + monitorInterval + " less than half of maximumTimeBetweenPings",
+        monitorInterval * 2 < maximumTimeBetweenPings);
   }
 
   @After
@@ -108,6 +120,7 @@ public class CacheConnectionTimeoutJUnitTest {
     cache.close();
     socket.close();
     SocketCreatorFactory.close();
+    ClientHealthMonitor.shutdownInstance();
   }
 
   @Test
@@ -117,9 +130,6 @@ public class CacheConnectionTimeoutJUnitTest {
         MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
             ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
 
-    int pollInterval = 20;
-    int maximumTimeBetweenPings = ClientHealthMonitor.getInstance().getMaximumTimeBetweenPings();
-    long monitorInterval = ClientHealthMonitor.getInstance().getMonitorInterval();
     long timeout = maximumTimeBetweenPings + monitorInterval + pollInterval;
 
     // wait for client to get disconnected
@@ -137,8 +147,7 @@ public class CacheConnectionTimeoutJUnitTest {
              */
             protobufProtocolSerializer.serialize(putMessage, outputStream);
             assertEquals(-1, socket.getInputStream().read());
-          } catch (IOException e) {
-            e.printStackTrace();
+          } catch (IOException expected) {
           }
         });
   }
@@ -150,8 +159,8 @@ public class CacheConnectionTimeoutJUnitTest {
         MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
             ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
 
-    int timeout = 1500;
-    int interval = 100;
+    int timeout = maximumTimeBetweenPings * 4;
+    int interval = maximumTimeBetweenPings / 4;
     for (int i = 0; i < timeout; i += interval) {
       // send a PUT message
       protobufProtocolSerializer.serialize(putMessage, outputStream);
