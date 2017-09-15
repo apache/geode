@@ -15,6 +15,9 @@
 package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.CopyHelper;
+import org.apache.geode.cache.lucene.DummyLuceneSerializer;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 import junitparams.JUnitParamsRunner;
@@ -80,19 +83,38 @@ public class LuceneIndexCreationProfileJUnitTest {
         new Object[] {getNullField2AnalyzerLuceneIndexCreationProfile(),
             getNullField1AnalyzerLuceneIndexCreationProfile(),
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1},
+        new Object[] {getDefaultSerializerCreationProfile(), getDummySerializerCreationProfile(),
+            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER},
+        new Object[] {getDefaultSerializerCreationProfile(),
+            getHeterogeneousLuceneSerializerCreationProfile(), null},
         new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile(),
             getNullField2AnalyzerLuceneIndexCreationProfile(),
             LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2});
   }
 
+  private LuceneIndexCreationProfile getDefaultSerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, null);
+  }
+
+  private LuceneIndexCreationProfile getDummySerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, new DummyLuceneSerializer());
+  }
+
+  private LuceneIndexCreationProfile getHeterogeneousLuceneSerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, new HeterogeneousLuceneSerializer(new String[] {"field1"}));
+  }
+
   private LuceneIndexCreationProfile getOneFieldLuceneIndexCreationProfile() {
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
-        new StandardAnalyzer(), null);
+        new StandardAnalyzer(), null, null);
   }
 
   private LuceneIndexCreationProfile getTwoFieldLuceneIndexCreationProfile() {
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
-        new String[] {"field1", "field2"}, new StandardAnalyzer(), null);
+        new String[] {"field1", "field2"}, new StandardAnalyzer(), null, null);
   }
 
   private LuceneIndexCreationProfile getOneAnalyzerLuceneIndexCreationProfile(Analyzer analyzer) {
@@ -100,7 +122,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field1", analyzer);
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private LuceneIndexCreationProfile getTwoAnalyzersLuceneIndexCreationProfile() {
@@ -109,7 +131,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private LuceneIndexCreationProfile getNullField1AnalyzerLuceneIndexCreationProfile() {
@@ -118,7 +140,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private LuceneIndexCreationProfile getNullField2AnalyzerLuceneIndexCreationProfile() {
@@ -127,7 +149,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field2", null);
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private Analyzer getPerFieldAnalyzerWrapper(Map<String, Analyzer> fieldAnalyzers) {

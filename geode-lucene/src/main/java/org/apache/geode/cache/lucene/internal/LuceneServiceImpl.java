@@ -206,8 +206,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
       regionPath = "/" + regionPath;
     }
 
-    registerDefinedIndex(indexName, regionPath,
-        new LuceneIndexCreationProfile(indexName, regionPath, fields, analyzer, fieldAnalyzers));
+    registerDefinedIndex(indexName, regionPath, new LuceneIndexCreationProfile(indexName,
+        regionPath, fields, analyzer, fieldAnalyzers, serializer));
 
     Region region = cache.getRegion(regionPath);
     if (region != null) {
