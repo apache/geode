@@ -43,8 +43,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
   private String regionPath;
 
   /* Used by DataSerializer */
-  public LuceneIndexCreationProfile() {
-  }
+  public LuceneIndexCreationProfile() {}
 
   public LuceneIndexCreationProfile(String indexName, String regionPath, String[] fieldNames,
       Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer) {
