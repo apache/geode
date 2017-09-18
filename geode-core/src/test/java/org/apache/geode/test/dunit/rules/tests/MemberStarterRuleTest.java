@@ -12,8 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.test.dunit.rules.test;
+package org.apache.geode.test.dunit.rules.tests;
 
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.assertj.core.api.Assertions.assertThat;

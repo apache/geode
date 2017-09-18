@@ -23,7 +23,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -31,7 +31,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * {@code disconnectAllFromDS} during tear down.
  */
 @Category(DistributedTest.class)
-public class OverridingGetPropertiesDisconnectsAllDUnitTest extends JUnit4DistributedTestCase {
+@SuppressWarnings("serial")
+public class OverridingGetPropertiesDisconnectsAllDUnitTest extends DistributedTestCase {
 
   @Override
   public final void preTearDownAssertions() throws Exception {

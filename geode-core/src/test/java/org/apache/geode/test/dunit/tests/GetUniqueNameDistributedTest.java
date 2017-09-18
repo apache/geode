@@ -12,21 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.rules;
+package org.apache.geode.test.dunit.tests;
 
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Request;
-import org.junit.runner.Result;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Used by JUnit rule unit tests to execute inner test cases.
- */
-public class TestRunner {
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 
-  protected TestRunner() {}
+import org.apache.geode.test.dunit.DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
-  public static Result runTest(Class<?> test) {
-    JUnitCore junitCore = new JUnitCore();
-    return junitCore.run(Request.aClass(test).getRunner());
+@Category(DistributedTest.class)
+@SuppressWarnings("serial")
+public class GetUniqueNameDistributedTest extends DistributedTestCase {
+
+  @Rule
+  public TestName testName = new TestName();
+
+  @Test
+  public void getUniqueNameShouldContainSimpleClassNameAndMethodName() throws Exception {
+    assertThat(getUniqueName()).startsWith(getClass().getSimpleName())
+        .endsWith(testName.getMethodName());
   }
 }

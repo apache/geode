@@ -14,20 +14,24 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 
+import org.apache.geode.test.junit.runners.TestRunner;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -38,13 +42,19 @@ public class RestoreLocaleRuleTest {
 
   private static Locale notDefaultLocale;
 
-  static {
+  @BeforeClass
+  public static void setUp() throws Exception {
     Locale[] locales = Locale.getAvailableLocales();
     while (notDefaultLocale == null) {
       Locale l = locales[new Random().nextInt(locales.length)];
       if (l != Locale.getDefault())
         notDefaultLocale = l;
     }
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    notDefaultLocale = null;
   }
 
   @Test

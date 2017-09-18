@@ -12,35 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.test.dunit.cache;
 
-package org.apache.geode.test.junit.runner;
-
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
- * used by SuiteRunner to override the test method name
+ * The abstract superclass of tests that require the creation of a {@link Cache}.
+ *
+ * @since GemFire 3.0
  */
-public class SuiteBlockRunner extends BlockJUnit4ClassRunner {
-
-  private Class<?> suiteClass;
-
-  /**
-   * Creates a BlockJUnit4ClassRunner to run {@code klass}
-   * 
-   * @param klass
-   * @throws InitializationError if the test class is malformed.
-   */
-  public SuiteBlockRunner(final Class parentClass, final Class<?> klass)
-      throws InitializationError {
-    super(klass);
-    this.suiteClass = parentClass;
-  }
-
-  @Override
-  protected String testName(FrameworkMethod method) {
-    return method.getName() + "@" + suiteClass.getName();
-  }
-
+public abstract class CacheTestCase extends JUnit4CacheTestCase {
 }
