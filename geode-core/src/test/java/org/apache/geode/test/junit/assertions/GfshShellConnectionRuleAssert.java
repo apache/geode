@@ -208,6 +208,31 @@ public class GfshShellConnectionRuleAssert
     return this;
   }
 
+  public GfshShellConnectionRuleAssert tableHasColumnWithValueMatchingOneOf(String header,
+      String... acceptedValues) {
+    GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
+    Object content = resultContentJSON.get(header);
+
+    if (content == null) {
+      failWithMessage("Command result did not contain a table with column header <" + header + ">: "
+          + resultContentJSON.toString());
+    }
+
+    Object[] actualValues = toArray((JSONArray) content);
+
+    for (Object actualValue : actualValues) {
+      String actualValueString = (String) actualValue;
+      boolean actualValueContainsAnAcceptedValue =
+          Arrays.stream(acceptedValues).anyMatch(actualValueString::contains);
+
+      if (actualValueContainsAnAcceptedValue) {
+        return this;
+      }
+    }
+    failWithMessage("No accepted value found.");
+    return this;
+  }
+
   public GfshShellConnectionRuleAssert hasResult() {
     containsKeyValuePair("Result", "true");
 
