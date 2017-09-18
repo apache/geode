@@ -64,8 +64,8 @@ public class ProtobufClientStatisticsImpl implements ProtobufClientStatistics {
     authenticationFailuresId = this.stats.nameToId("authenticationFailures");
     bytesReceivedId = this.stats.nameToId("bytesReceived");
     bytesSentId = this.stats.nameToId("bytesSent");
-    messagesReceivedId = this.stats.nameToId("bytesReceived");
-    messagesSentId = this.stats.nameToId("bytesSent");
+    messagesReceivedId = this.stats.nameToId("messagesReceived");
+    messagesSentId = this.stats.nameToId("messagesSent");
   }
 
   @Override

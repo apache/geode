@@ -22,17 +22,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.disconnectAllFromDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -48,11 +46,13 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -62,7 +62,6 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.statistics.StatArchiveReader;
 import org.apache.geode.protocol.MessageUtil;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.protocol.protobuf.ProtobufSerializationService;
@@ -114,7 +113,6 @@ public class CacheConnectionJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
-  private File statisticsArchiveFile;
 
   @Before
   public void setup() throws Exception {
@@ -127,9 +125,7 @@ public class CacheConnectionJUnitTest {
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
-    statisticsArchiveFile = temporaryFolder.newFile();
-    cacheFactory.set(ConfigurationProperties.STATISTIC_ARCHIVE_FILE,
-        statisticsArchiveFile.getPath());
+    cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
@@ -162,7 +158,7 @@ public class CacheConnectionJUnitTest {
   }
 
   @Test
-  public void testNewProtocolHeaderLeadsToNewProtocolServerConnection() throws Exception {
+  public void testBasicMessagesAndStats() throws Exception {
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message putMessage =
         MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
@@ -175,45 +171,21 @@ public class CacheConnectionJUnitTest {
     protobufProtocolSerializer.serialize(getMessage, outputStream);
     validateGetResponse(socket, protobufProtocolSerializer, TEST_VALUE);
 
-    long startTime = System.currentTimeMillis();
-    Thread.sleep(3000);
-
-    long endTime = System.currentTimeMillis();
-
-    disconnectAllFromDS();
-
-    StatArchiveReader.ValueFilter filter = new StatArchiveReader.ValueFilter() {
-      @Override
-      public boolean archiveMatches(File archive) {
-        return true;
-      }
-
-      @Override
-      public boolean typeMatches(String type) {
-        return type.equals("ProtobufServerStats");
-      }
-
-      @Override
-      public boolean statMatches(String statName) {
-        return true;
-      }
-
-      @Override
-      public boolean instanceMatches(String textId, long numericId) {
-        return true;
-      }
-    };
-
-    StatArchiveReader reader = new StatArchiveReader(new File[] {statisticsArchiveFile},
-        new StatArchiveReader.ValueFilter[] {filter}, true);
-    List resourceInstList = reader.getResourceInstList();
-
-    assertEquals(1, resourceInstList.size());
-    StatArchiveReader.ResourceInst resourceInst =
-        (StatArchiveReader.ResourceInst) resourceInstList.iterator().next();
-    StatArchiveReader.StatValue statValue =
-        resourceInst.getStatValue("currentClientConnections").createTrimmed(startTime, endTime);
-    assertEquals(2.0, statValue.getSnapshotsMinimum(), 0.01);
+    InternalDistributedSystem distributedSystem =
+        (InternalDistributedSystem) cache.getDistributedSystem();
+    Statistics[] protobufServerStats =
+        distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+    assertEquals(1, protobufServerStats.length);
+    Statistics statistics = protobufServerStats[0];
+    assertEquals(1, statistics.get("currentClientConnections"));
+    assertEquals(2L, statistics.get("messagesReceived"));
+    assertEquals(2L, statistics.get("messagesSent"));
+    assertTrue(statistics.get("bytesReceived").longValue() > 0);
+    assertTrue(statistics.get("bytesSent").longValue() > 0);
+    assertEquals(1, statistics.get("clientConnectionStarts"));
+    assertEquals(0, statistics.get("clientConnectionTerminations"));
+    assertEquals(0L, statistics.get("authorizationViolations"));
+    assertEquals(0L, statistics.get("authenticationFailures"));
   }
 
   @Test
