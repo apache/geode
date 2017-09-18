@@ -14,24 +14,31 @@
  */
 package org.apache.geode.test.junit.runners;
 
-import org.junit.runner.Runner;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.parameterized.ParametersRunnerFactory;
-import org.junit.runners.parameterized.TestWithParameters;
 
 /**
- * This class provides an early fix for JUnit issue <a
- * href="https://github.com/junit-team/junit4/issues/751>751</a>.
- *
- * Once JUnit 4.13 is released, this class can be removed.
- *
- * See also <a href="https://issues.apache.org/jira/browse/GEODE-1350">GEODE-1350</a>
+ * used by SuiteRunner to override the test method name
  */
-public class CategoryWithParameterizedRunnerFactory implements ParametersRunnerFactory {
+public class SuiteBlockRunner extends BlockJUnit4ClassRunner {
+
+  private Class<?> suiteClass;
+
+  /**
+   * Creates a BlockJUnit4ClassRunner to run {@code testClass}
+   * 
+   * @param testClass the test class
+   * @throws InitializationError if the test class is malformed.
+   */
+  public SuiteBlockRunner(final Class parentClass, final Class<?> testClass)
+      throws InitializationError {
+    super(testClass);
+    this.suiteClass = parentClass;
+  }
 
   @Override
-  public Runner createRunnerForTestWithParameters(TestWithParameters test)
-      throws InitializationError {
-    return new CategoryWithParameterizedRunner(test);
+  protected String testName(FrameworkMethod method) {
+    return method.getName() + "@" + suiteClass.getName();
   }
 }

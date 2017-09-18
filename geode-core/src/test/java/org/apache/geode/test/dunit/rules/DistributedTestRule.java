@@ -12,11 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache30;
+package org.apache.geode.test.dunit.rules;
+
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 
 /**
- * @deprecated Please use {@link org.apache.geode.test.dunit.cache.CacheTestCase} instead.
+ * JUnit Rule that launches DistributedTest VMs without {@code DistributedTestCase}. Class may need
+ * to implement {@code Serializable}.
+ *
+ * <p>
+ * DistributedTestRule can be used in DistributedTests:
+ *
+ * <pre>
+ * {@literal @}ClassRule
+ * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+ *
+ * {@literal @}Test
+ * public void shouldHaveFourDUnitVMsByDefault() {
+ *   assertThat(Host.getHost(0).getVMCount()).isEqualTo(4);
+ * }
+ * </pre>
  */
-@Deprecated
-public abstract class CacheTestCase extends org.apache.geode.test.dunit.cache.CacheTestCase {
+public class DistributedTestRule extends DistributedExternalResource {
+
+  @Override
+  protected void before() throws Throwable {
+    DUnitLauncher.launchIfNeeded();
+  }
 }

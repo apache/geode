@@ -14,17 +14,18 @@
  */
 package org.apache.geode.test.junit.runners;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.parameterized.BlockJUnit4ClassRunnerWithParameters;
 import org.junit.runners.parameterized.TestWithParameters;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
 public class CategoryWithParameterizedRunner extends BlockJUnit4ClassRunnerWithParameters
     implements ExposedGetAnnotations {
+
   public CategoryWithParameterizedRunner(TestWithParameters test) throws InitializationError {
     super(test);
   }

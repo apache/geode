@@ -22,7 +22,7 @@ import org.junit.runners.Suite;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runner.SuiteRunner;
+import org.apache.geode.test.junit.runners.SuiteRunner;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(SuiteRunner.class)

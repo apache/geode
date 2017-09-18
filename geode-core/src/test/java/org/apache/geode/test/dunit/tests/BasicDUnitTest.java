@@ -27,18 +27,18 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitEnv;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the basic functionality of the distributed unit test framework.
  */
-@SuppressWarnings("unused")
 @Category(DistributedTest.class)
-public class BasicDUnitTest extends JUnit4DistributedTestCase {
+@SuppressWarnings({"serial", "unused"})
+public class BasicDUnitTest extends DistributedTestCase {
 
   private static final String MESSAGE_FOR_remoteThrowException = "Test exception.  Please ignore.";
 

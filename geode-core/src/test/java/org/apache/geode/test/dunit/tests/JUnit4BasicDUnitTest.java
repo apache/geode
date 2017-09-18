@@ -37,11 +37,9 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the basic functionality of the distributed unit test framework.
- *
- * @see JUnit4BasicDUnitTest
  */
 @Category(DistributedTest.class)
-@SuppressWarnings("unused")
+@SuppressWarnings({"serial", "unused"})
 public class JUnit4BasicDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String MESSAGE_FOR_remoteThrowException = "Test exception.  Please ignore.";

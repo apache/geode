@@ -22,11 +22,16 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class is the superclass of all distributed tests using JUnit 3.
+ *
+ * @deprecated Please use {@link DistributedTestCase} which extends
+ *             {@link JUnit4DistributedTestCase} when writing new tests.
  */
+@Deprecated
 @Category(DistributedTest.class)
 public abstract class JUnit3DistributedTestCase extends TestCase
     implements DistributedTestFixture, Serializable {

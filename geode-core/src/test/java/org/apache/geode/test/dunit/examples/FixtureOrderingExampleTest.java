@@ -12,48 +12,52 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.tests;
+package org.apache.geode.test.dunit.examples;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- * Verifies that overriding {@code getDistributedSystemProperties} results in
- * {@code disconnectAllFromDS} during tear down.
- */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class OverridingGetPropertiesDisconnectsAllDUnitTest extends DistributedTestCase {
+public class FixtureOrderingExampleTest extends DistributedTestCase {
 
   @Override
-  public final void preTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNotNull(basicGetSystem()));
+  public void preSetUp() throws Exception {
+    System.out.println("@Override preSetUp");
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    System.out.println("@Before setUp");
   }
 
   @Override
-  public final void postTearDownAssertions() throws Exception {
-    invokeInEveryVM(() -> assertNull(basicGetSystem()));
+  public void postSetUp() throws Exception {
+    System.out.println("@Override postSetUp");
   }
 
   @Override
-  public Properties getDistributedSystemProperties() {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    return props;
+  public void preTearDown() throws Exception {
+    System.out.println("@Override preTearDown");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    System.out.println("@After tearDown");
+  }
+
+  @Override
+  public void postTearDown() throws Exception {
+    System.out.println("@Override postTearDown");
   }
 
   @Test
-  public void testDisconnects() throws Exception {
-    invokeInEveryVM(() -> assertFalse(getDistributedSystemProperties().isEmpty()));
-    invokeInEveryVM(() -> assertNotNull(getSystem()));
+  public void demoOrdering() throws Exception {
+    // nothing
   }
 }
