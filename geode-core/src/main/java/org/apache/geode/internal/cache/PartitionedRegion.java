@@ -100,6 +100,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.partition.PartitionNotAvailableException;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -9150,14 +9151,14 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public ExpirationAttributes setEntryTimeToLive(ExpirationAttributes timeToLive) {
     ExpirationAttributes attr = super.setEntryTimeToLive(timeToLive);
-    // Set to Bucket regions as well
-    if (this.getDataStore() != null) { // not for accessors
-      for (Object o : this.getDataStore().getAllLocalBuckets()) {
-        Map.Entry entry = (Map.Entry) o;
-        Region bucketRegion = (Region) entry.getValue();
-        bucketRegion.getAttributesMutator().setEntryTimeToLive(timeToLive);
-      }
-    }
+
+    /*
+     * All buckets must be created to make this change, otherwise it is possible for
+     * updatePRConfig(...) to make changes that cause bucket creation to live lock
+     */
+    PartitionRegionHelper.assignBucketsToPartitions(this);
+    dataStore.lockBucketCreationAndVisit(
+        (bucketId, r) -> r.getAttributesMutator().setEntryTimeToLive(timeToLive));
     updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
     return attr;
   }
@@ -9181,13 +9182,8 @@ public class PartitionedRegion extends LocalRegion
   public CustomExpiry setCustomEntryTimeToLive(CustomExpiry custom) {
     CustomExpiry expiry = super.setCustomEntryTimeToLive(custom);
     // Set to Bucket regions as well
-    if (this.getDataStore() != null) { // not for accessors
-      for (Object o : this.getDataStore().getAllLocalBuckets()) {
-        Map.Entry entry = (Map.Entry) o;
-        Region bucketRegion = (Region) entry.getValue();
-        bucketRegion.getAttributesMutator().setCustomEntryTimeToLive(custom);
-      }
-    }
+    dataStore.lockBucketCreationAndVisit(
+        (bucketId, r) -> r.getAttributesMutator().setCustomEntryTimeToLive(custom));
     return expiry;
   }
 
@@ -9206,14 +9202,14 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public ExpirationAttributes setEntryIdleTimeout(ExpirationAttributes idleTimeout) {
     ExpirationAttributes attr = super.setEntryIdleTimeout(idleTimeout);
+    /*
+     * All buckets must be created to make this change, otherwise it is possible for
+     * updatePRConfig(...) to make changes that cause bucket creation to live lock
+     */
+    PartitionRegionHelper.assignBucketsToPartitions(this);
     // Set to Bucket regions as well
-    if (this.getDataStore() != null) { // not for accessors
-      for (Object o : this.getDataStore().getAllLocalBuckets()) {
-        Map.Entry entry = (Map.Entry) o;
-        Region bucketRegion = (Region) entry.getValue();
-        bucketRegion.getAttributesMutator().setEntryIdleTimeout(idleTimeout);
-      }
-    }
+    dataStore.lockBucketCreationAndVisit(
+        (bucketId, r) -> r.getAttributesMutator().setEntryIdleTimeout(idleTimeout));
     updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
     return attr;
   }
@@ -9228,13 +9224,8 @@ public class PartitionedRegion extends LocalRegion
   public CustomExpiry setCustomEntryIdleTimeout(CustomExpiry custom) {
     CustomExpiry expiry = super.setCustomEntryIdleTimeout(custom);
     // Set to Bucket regions as well
-    if (this.getDataStore() != null) { // not for accessors
-      for (Object o : this.getDataStore().getAllLocalBuckets()) {
-        Map.Entry entry = (Map.Entry) o;
-        Region bucketRegion = (Region) entry.getValue();
-        bucketRegion.getAttributesMutator().setCustomEntryIdleTimeout(custom);
-      }
-    }
+    dataStore.lockBucketCreationAndVisit(
+        (bucketId, r) -> r.getAttributesMutator().setCustomEntryIdleTimeout(custom));
     return expiry;
   }
 
