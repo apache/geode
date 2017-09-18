@@ -20,6 +20,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -48,8 +49,7 @@ public class DisconnectCommand implements GfshCommand {
           LogWrapper.getInstance().info(CliStrings.format(CliStrings.DISCONNECT__MSG__DISCONNECTED,
               operationInvoker.toString()));
           if (!gfshInstance.isHeadlessMode()) {
-            gfshInstance.setPromptPath(
-                org.apache.geode.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+            gfshInstance.setPromptPath(RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
           }
         } else {
           infoResultData.addLine(CliStrings.DISCONNECT__MSG__NOTCONNECTED);

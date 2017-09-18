@@ -52,20 +52,7 @@ import org.apache.geode.management.internal.web.util.ConvertUtils;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
- * 
- * @see org.apache.geode.management.internal.cli.commands.ConnectCommand
- * @see org.apache.geode.management.internal.cli.commands.DebugCommand
- * @see org.apache.geode.management.internal.cli.commands.DescribeConnectionCommand
- * @see org.apache.geode.management.internal.cli.commands.DisconnectCommand
- * @see org.apache.geode.management.internal.cli.commands.EchoCommand
- * @see org.apache.geode.management.internal.cli.commands.ExecuteScriptCommand
- * @see org.apache.geode.management.internal.cli.commands.ExitCommand
- * @see org.apache.geode.management.internal.cli.commands.HistoryCommand
- * @see org.apache.geode.management.internal.cli.commands.SetVariableCommand
- * @see org.apache.geode.management.internal.cli.commands.ShCommand
- * @see org.apache.geode.management.internal.cli.commands.SleepCommand
- * @see org.apache.geode.management.internal.cli.commands.VersionCommand
- * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
+ *
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.RequestBody
  * @see org.springframework.web.bind.annotation.RequestMapping
@@ -106,12 +93,13 @@ public class ShellCommandsController extends AbstractCommandsController {
   }
 
   private ResponseEntity<InputStreamResource> getJsonResponse(String result) {
+    // if the command is successful, the output is the filepath, else we need to send the
+    // original result back so that the receiver will know to turn it into a Result object
+
     HttpHeaders respHeaders = new HttpHeaders();
-    InputStreamResource isr;// if the command is successful, the output is the filepath,
-    // else we need to send the orignal result back so that the receiver will know to turn it
-    // into a Result object
     try {
-      isr = new InputStreamResource(org.apache.commons.io.IOUtils.toInputStream(result, "UTF-8"));
+      InputStreamResource isr =
+          new InputStreamResource(org.apache.commons.io.IOUtils.toInputStream(result, "UTF-8"));
       respHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
       return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
     } catch (Exception e) {
