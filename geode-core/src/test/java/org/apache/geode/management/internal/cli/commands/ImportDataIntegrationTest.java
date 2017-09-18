@@ -19,7 +19,9 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -80,6 +82,22 @@ public class ImportDataIntegrationTest {
     String importCommand = buildBaseImportCommand()
         .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeAndVerifyCommand(importCommand);
+    assertThat(gfsh.getGfshOutput()).contains("Data imported from file");
+    validateImport("value");
+  }
+
+  @Test
+  public void testExportImportRelativePath() throws Exception {
+    String exportCommand = buildBaseExportCommand()
+        .addOption(CliStrings.EXPORT_DATA__FILE, SNAPSHOT_FILE).getCommandString();
+    gfsh.executeAndVerifyCommand(exportCommand);
+
+    loadRegion("");
+
+    String importCommand = buildBaseImportCommand()
+        .addOption(CliStrings.IMPORT_DATA__FILE, SNAPSHOT_FILE).getCommandString();
+    gfsh.executeAndVerifyCommand(importCommand);
+    Files.deleteIfExists(Paths.get(SNAPSHOT_FILE));
     assertThat(gfsh.getGfshOutput()).contains("Data imported from file");
     validateImport("value");
   }

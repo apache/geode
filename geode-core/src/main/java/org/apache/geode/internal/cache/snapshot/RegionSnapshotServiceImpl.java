@@ -333,7 +333,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       throw new IllegalArgumentException("Failure to export snapshot: "
           + snapshot.getCanonicalPath() + " is not a valid .gfd file");
     }
-    File directory = snapshot.getParentFile();
+    File directory = snapshot.getAbsoluteFile().getParentFile();
     if (directory == null) {
       throw new IllegalArgumentException("Failure to export snapshot: "
           + snapshot.getCanonicalPath() + " is not a valid location");
