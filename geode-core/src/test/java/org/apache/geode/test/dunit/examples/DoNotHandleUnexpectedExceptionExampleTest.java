@@ -12,42 +12,48 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.tests;
+package org.apache.geode.test.dunit.examples;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-@SuppressWarnings("serial")
-public class GetTestMethodNameDUnitTest extends DistributedTestCase {
+public class DoNotHandleUnexpectedExceptionExampleTest {
 
   @Test
-  public void testGetTestMethodName() {
-    assertGetTestMethodName("testGetTestMethodName");
+  public void thisIsTooVerbose() {
+    boolean success = false;
+    try {
+      success = doDangerousWork();
+    } catch (Exception unexpected) {
+      fail(unexpected.getMessage());
+    }
+    assertThat(success).isTrue();
   }
 
   @Test
-  public void testGetTestMethodNameChanges() {
-    assertGetTestMethodName("testGetTestMethodNameChanges");
-  }
-
-  @Test
-  public void testGetTestMethodNameInAllVMs() {
-    assertGetTestMethodName("testGetTestMethodNameInAllVMs");
-
-    for (int vmIndex = 0; vmIndex < Host.getHost(0).getVMCount(); vmIndex++) {
-      Host.getHost(0).getVM(vmIndex)
-          .invoke(() -> assertGetTestMethodName("testGetTestMethodNameInAllVMs"));
+  public void thisIsEvenWorse() {
+    try {
+      assertThat(doDangerousWork()).isTrue();
+    } catch (Error | Exception unexpected) {
+      fail(unexpected.getMessage());
     }
   }
 
-  private void assertGetTestMethodName(final String expected) {
-    assertThat(getTestMethodName()).isEqualTo(expected);
+  @Test
+  public void thisIsTheCorrectWay() throws Exception {
+    assertThat(doDangerousWork()).isTrue();
+  }
+
+  private boolean doDangerousWork() throws Exception {
+    if (false) {
+      throw new Exception("fatal");
+    }
+    return true;
   }
 }

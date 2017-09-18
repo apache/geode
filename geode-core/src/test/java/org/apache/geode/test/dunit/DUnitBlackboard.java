@@ -24,18 +24,22 @@ import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
 
 /**
  * DUnitBlackboard provides mailboxes and synchronization gateways for distributed unit tests.
+ *
  * <p>
  * Tests may use the blackboard to pass objects and status between JVMs with mailboxes instead of
  * using static variables in classes. The caveat being that the objects will be serialized using
  * Java serialization.
+ *
  * <p>
  * Gates may be used to synchronize operations between unit test JVMs. Combined with Awaitility
  * these can be used to test for conditions being met, actions having happened, etc.
+ *
  * <p>
  * Look for references to the given methods in your IDE for examples.
  */
 public class DUnitBlackboard {
-  InternalBlackboard blackboard;
+
+  private InternalBlackboard blackboard;
 
   public DUnitBlackboard() {
     blackboard = InternalBlackboardImpl.getInstance();
@@ -75,7 +79,6 @@ public class DUnitBlackboard {
     } catch (RemoteException e) {
       throw new RuntimeException("remote call failed", e);
     }
-
   }
 
   /**
@@ -121,5 +124,4 @@ public class DUnitBlackboard {
       throw new RuntimeException("remote call failed", e);
     }
   }
-
 }

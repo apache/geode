@@ -12,11 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache30;
+package org.apache.geode.test.dunit.cache.examples;
 
-/**
- * @deprecated Please use {@link org.apache.geode.test.dunit.cache.CacheTestCase} instead.
- */
-@Deprecated
-public abstract class CacheTestCase extends org.apache.geode.test.dunit.cache.CacheTestCase {
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+
+@Category(DistributedTest.class)
+@SuppressWarnings("serial")
+public class CacheTestCaseExampleTest extends CacheTestCase {
+
+  @Test
+  public void getCacheCreatesCache() throws Exception {
+    InternalCache cache = getCache();
+    assertThat(cache.isClosed()).isFalse();
+  }
 }

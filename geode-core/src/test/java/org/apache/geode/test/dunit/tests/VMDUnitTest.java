@@ -34,6 +34,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This class tests the functionality of the {@link VM} class.
  */
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class VMDUnitTest extends JUnit4DistributedTestCase {
 
   private static final AtomicInteger COUNTER = new AtomicInteger();

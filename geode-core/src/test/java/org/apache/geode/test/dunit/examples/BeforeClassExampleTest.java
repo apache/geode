@@ -12,11 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache30;
+package org.apache.geode.test.dunit.examples;
 
-/**
- * @deprecated Please use {@link org.apache.geode.test.dunit.cache.CacheTestCase} instead.
- */
-@Deprecated
-public abstract class CacheTestCase extends org.apache.geode.test.dunit.cache.CacheTestCase {
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.junit.categories.DistributedTest;
+
+@Category(DistributedTest.class)
+public class BeforeClassExampleTest {
+
+  @BeforeClass
+  public static void initializeDUnit() throws Exception {
+    DUnitLauncher.launchIfNeeded();
+  }
+
+  @Test
+  public void shouldHaveFourDUnitVMsByDefault() throws Exception {
+    assertThat(Host.getHost(0).getVMCount()).isEqualTo(4);
+  }
 }

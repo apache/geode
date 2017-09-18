@@ -24,6 +24,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class JUnit4GetTestMethodNameDUnitTest extends JUnit4DistributedTestCase {
 
   @Test

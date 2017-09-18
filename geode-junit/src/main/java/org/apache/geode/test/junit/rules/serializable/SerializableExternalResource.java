@@ -26,7 +26,7 @@ import org.junit.runners.model.Statement;
 public abstract class SerializableExternalResource extends ExternalResource
     implements SerializableTestRule {
 
-  public Statement apply(Statement base, Description description) {
+  public Statement apply(final Statement base, final Description description) {
     return statement(base);
   }
 

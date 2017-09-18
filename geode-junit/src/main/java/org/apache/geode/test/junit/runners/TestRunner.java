@@ -12,11 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache30;
+package org.apache.geode.test.junit.runners;
+
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Request;
+import org.junit.runner.Result;
 
 /**
- * @deprecated Please use {@link org.apache.geode.test.dunit.cache.CacheTestCase} instead.
+ * Used by JUnit rule unit tests to execute inner test cases.
  */
-@Deprecated
-public abstract class CacheTestCase extends org.apache.geode.test.dunit.cache.CacheTestCase {
+public class TestRunner {
+
+  protected TestRunner() {}
+
+  public static Result runTest(Class<?> test) {
+    JUnitCore junitCore = new JUnitCore();
+    return junitCore.run(Request.aClass(test).getRunner());
+  }
 }

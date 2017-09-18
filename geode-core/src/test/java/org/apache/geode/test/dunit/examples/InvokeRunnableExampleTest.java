@@ -12,42 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.tests;
+package org.apache.geode.test.dunit.examples;
 
-import static org.assertj.core.api.Assertions.*;
-
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-@SuppressWarnings("serial")
-public class GetTestMethodNameDUnitTest extends DistributedTestCase {
+public class InvokeRunnableExampleTest {
+
+  @ClassRule
+  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Test
-  public void testGetTestMethodName() {
-    assertGetTestMethodName("testGetTestMethodName");
-  }
-
-  @Test
-  public void testGetTestMethodNameChanges() {
-    assertGetTestMethodName("testGetTestMethodNameChanges");
-  }
-
-  @Test
-  public void testGetTestMethodNameInAllVMs() {
-    assertGetTestMethodName("testGetTestMethodNameInAllVMs");
-
-    for (int vmIndex = 0; vmIndex < Host.getHost(0).getVMCount(); vmIndex++) {
-      Host.getHost(0).getVM(vmIndex)
-          .invoke(() -> assertGetTestMethodName("testGetTestMethodNameInAllVMs"));
+  public void invokeHelloWorldForEachVMInGetAllVMs() throws Exception {
+    for (VM vm : Host.getHost(0).getAllVMs()) {
+      vm.invoke(() -> System.out.println(vm + " says Hello World!"));
     }
   }
 
-  private void assertGetTestMethodName(final String expected) {
-    assertThat(getTestMethodName()).isEqualTo(expected);
+  @Test
+  public void invokeHelloWorldInEachVMInOrder() throws Exception {
+    for (int whichVM = 0; whichVM < Host.getHost(0).getVMCount(); whichVM++) {
+      VM vm = Host.getHost(0).getVM(whichVM);
+      vm.invoke(() -> System.out.println(vm + " says Hello World!"));
+    }
   }
 }
