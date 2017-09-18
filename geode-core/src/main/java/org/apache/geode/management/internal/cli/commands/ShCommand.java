@@ -40,7 +40,7 @@ public class ShCommand implements GfshCommand {
       @CliOption(key = CliStrings.SH__USE_CONSOLE, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.SH__USE_CONSOLE__HELP) boolean useConsole) {
-    Result result = null;
+    Result result;
     try {
       result =
           ResultBuilder.buildResult(executeCommand(Gfsh.getCurrentInstance(), command, useConsole));
@@ -75,7 +75,7 @@ public class ShCommand implements GfshCommand {
 
     BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
-    String lineRead = "";
+    String lineRead;
     while ((lineRead = input.readLine()) != null) {
       infoResultData.addLine(lineRead);
     }

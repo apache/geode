@@ -22,6 +22,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -48,6 +51,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.JmxManagerLocatorResponse;
 import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
@@ -66,7 +70,7 @@ public class ConnectCommand implements GfshCommand {
   // millis that connect --locator will wait for a response from the locator.
   static final int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
 
-  private static UserInputProperty[] USERINPUTPROPERTIES =
+  private static final UserInputProperty[] USER_INPUT_PROPERTIES =
       {UserInputProperty.KEYSTORE, UserInputProperty.KEYSTORE_PASSWORD,
           UserInputProperty.KEYSTORE_TYPE, UserInputProperty.TRUSTSTORE,
           UserInputProperty.TRUSTSTORE_PASSWORD, UserInputProperty.TRUSTSTORE_TYPE,
@@ -123,7 +127,7 @@ public class ConnectCommand implements GfshCommand {
           .createInfoResult("Already connected to: " + getGfsh().getOperationInvoker().toString());
     }
 
-    // ssl options are passed in in the order defined in USERINPUTPROPERTIES, note the two types
+    // ssl options are passed in in the order defined in USER_INPUT_PROPERTIES, note the two types
     // are null, because we don't have connect command options for them yet
     Properties gfProperties = resolveSslProperties(gfsh, useSsl, null, gfSecurityPropertiesFile,
         keystore, keystorePassword, null, truststore, truststorePassword, null, sslCiphers,
@@ -161,7 +165,7 @@ public class ConnectCommand implements GfshCommand {
    *        config (considered only when the last three parameters are null)
    * @param gfPropertiesFile gemfire properties file, can be null
    * @param gfSecurityPropertiesFile gemfire security properties file, can be null
-   * @param sslOptionValues an array of 9 in this order, as defined in USERINPUTPROPERTIES
+   * @param sslOptionValues an array of 9 in this order, as defined in USER_INPUT_PROPERTIES
    * @return the properties
    */
   Properties resolveSslProperties(Gfsh gfsh, boolean useSsl, File gfPropertiesFile,
@@ -184,8 +188,8 @@ public class ConnectCommand implements GfshCommand {
 
     // if use ssl is implied by any of the options, then command option will add to/update the
     // properties loaded from file. If the ssl config is not specified anywhere, prompt user for it.
-    for (int i = 0; i < USERINPUTPROPERTIES.length; i++) {
-      UserInputProperty userInputProperty = USERINPUTPROPERTIES[i];
+    for (int i = 0; i < USER_INPUT_PROPERTIES.length; i++) {
+      UserInputProperty userInputProperty = USER_INPUT_PROPERTIES[i];
       String sslOptionValue = null;
       if (sslOptionValues != null && sslOptionValues.length > i) {
         sslOptionValue = sslOptionValues[i];
@@ -217,7 +221,7 @@ public class ConnectCommand implements GfshCommand {
     }
     for (File file : files) {
       if (file != null) {
-        properties.putAll(ShellCommandsLoadProperties.loadProperties(file));
+        properties.putAll(loadPropertiesFromFile(file));
       }
     }
     return properties;
@@ -229,7 +233,7 @@ public class ConnectCommand implements GfshCommand {
             || key.startsWith(JMX_MANAGER_SSL_PREFIX) || key.startsWith(HTTP_SERVICE_SSL_PREFIX));
   }
 
-  static boolean containsSSLConfig(Properties properties) {
+  private static boolean containsSSLConfig(Properties properties) {
     return properties.stringPropertyNames().stream().anyMatch(key -> key.startsWith("ssl-"));
   }
 
@@ -449,5 +453,35 @@ public class ConnectCommand implements GfshCommand {
     }
     return handleException(e, CliStrings.format(CliStrings.CONNECT__MSG__ERROR,
         hostPortToConnect.toString(false), e.getMessage()));
+  }
+
+  private static Properties loadPropertiesFromFile(File propertyFile) {
+    try {
+      return loadPropertiesFromUrl(propertyFile.toURI().toURL());
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(
+          CliStrings.format("Failed to load configuration properties from pathname (%1$s)!",
+              propertyFile.getAbsolutePath()),
+          e);
+    }
+  }
+
+  private static Properties loadPropertiesFromUrl(URL url) {
+    Properties properties = new Properties();
+
+    if (url == null) {
+      return properties;
+    }
+
+    try (InputStream inputStream = url.openStream()) {
+      properties.load(inputStream);
+    } catch (IOException io) {
+      throw new RuntimeException(
+          CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
+              CliUtil.decodeWithDefaultCharSet(url.getPath())),
+          io);
+    }
+
+    return properties;
   }
 }
