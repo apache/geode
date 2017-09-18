@@ -130,12 +130,6 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     Properties properties = super.getDistributedSystemProperties();
     properties.put(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
     properties.put(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
-    String statFileName = getUniqueName() + ".gfs";
-    properties.put(ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statFileName);
-    File statFile = new File(statFileName);
-    if (statFile.exists()) {
-      statFile.delete();
-    }
     return properties;
   }
 

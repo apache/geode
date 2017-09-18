@@ -83,9 +83,9 @@ public class ServerConnectionFactory {
   }
 
   private ClientProtocolMessageHandler getOrCreateClientProtocolMessageHandler(
-      StatisticsFactory statisticsFactory, Acceptor acceptor) {
+      StatisticsFactory statisticsFactory, String serverName) {
     if (protocolHandler == null) {
-      return initializeMessageHandler(statisticsFactory, acceptor.getServerName());
+      return initializeMessageHandler(statisticsFactory, serverName);
     }
     return protocolHandler;
   }
@@ -103,7 +103,8 @@ public class ServerConnectionFactory {
 
         return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
             socketBufferSize, communicationModeStr, communicationMode, acceptor,
-            getOrCreateClientProtocolMessageHandler(cache.getDistributedSystem(), acceptor),
+            getOrCreateClientProtocolMessageHandler(cache.getDistributedSystem(),
+                acceptor.getServerName()),
             securityService, findStreamAuthenticator(authenticationMode));
       }
     } else {
