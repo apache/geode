@@ -76,7 +76,7 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
 4.  Start <%=vars.product_name_long%> servers using the commands in the following example:
 
     ``` pre
-    gfsh>start server --name=server1 --group=group1
+    gfsh>start server --name=server1 --groups=group1
     Starting a <%=vars.product_name%> Server in /Users/username/my_geode/server1...
     .....
     Server in /Users/username/my_geode/server1 on 192.0.2.0[40404] as server1
@@ -92,7 +92,7 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
     Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
 
-    gfsh>start server --name=server2 --group=group1 --server-port=40405
+    gfsh>start server --name=server2 --groups=group1 --server-port=40405
     Starting a <%=vars.product_name%> Server in /Users/username/my_geode/server2...
     .....
     Server in /Users/username/my_geode/server2 on 192.0.2.0[40405] as server2
@@ -130,7 +130,7 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
 5.  Create some regions using the commands in the following example:
 
     ``` pre
-    gfsh>create region --name=region1 --group=group1 --type=REPLICATE
+    gfsh>create region --name=region1 --groups=group1 --type=REPLICATE
     Member  | Status
     ------- | --------------------------------------
     server2 | Region "/region1" created on "server2"
@@ -149,14 +149,14 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
 6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mx4j-3.0.1.jar` and `mx4j.jar` files from the distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
 
     ``` pre
-    gfsh>deploy --group=group1 --jar=/lib/mail.jar
-    Post substitution: deploy --group=group1 --jar=/Users/username/Apache_Geode_1.0.0_Linux/lib/mx4j-3.0.1.jar
+    gfsh>deploy --groups=group1 --jars=/lib/mail.jar
+    Post substitution: deploy --groups=group1 --jars=/Users/username/Apache_Geode_1.0.0_Linux/lib/mx4j-3.0.1.jar
     Member  |    Deployed JAR    | Deployed JAR Location
     ------- | ------------------ | -------------------------------------------------------
     server1 | mx4j-3.0.1.jar     | /Users/username/my_geode/server1/vf.gf#mx4j-3.0.1.jar#1
     server2 | mx4j-3.0.1.jar     | /Users/username/my_geode/server2/vf.gf#mx4j-3.0.1.jar#1
 
-    gfsh>deploy --jar=/lib/mx4j.jar
+    gfsh>deploy --jars=/lib/mx4j.jar
     Post substitution: deploy --jar=/Users/username/Apache_Geode_1.0.0_Linux/lib/ra.jar
     Member  | Deployed JAR | Deployed JAR Location
     ------- | ------------ | -----------------------------------------------
@@ -265,7 +265,7 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
 15. Start another server that references `group1`:
 
     ``` pre
-    gfsh>start server --name=server5 --group=group1 --server-port=40415
+    gfsh>start server --name=server5 --groups=group1 --server-port=40415
     Starting a <%=vars.product_name%> Server in /Users/username/new_geode/server5...
     .....
     Server in /Users/username/new_geode/server2 on 192.0.2.0[40415] as server5

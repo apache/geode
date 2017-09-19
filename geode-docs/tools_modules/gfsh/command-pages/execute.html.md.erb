@@ -30,7 +30,8 @@ Execute the function with the specified ID. By default, the function executes on
 **Syntax:**
 
 ``` pre
-execute function --id=value [--group=value] [--member=value] [--region=value] 
+execute function --id=value [--groups=value(,value)*]
+[--members=value(,value)*] [--region=value] 
 [--arguments=value(,value)*] [--result-collector=value] [--filter=value]
 ```
 
@@ -40,7 +41,7 @@ execute function --id=value [--group=value] [--member=value] [--region=value]
 |----------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-id</span>               | *Required.* ID of the function to execute.                                                            |
 | <span class="keyword parmname">\\-\\-groups</span>           | One or more groups of members on which this function should be executed.                              |
-| <span class="keyword parmname">\\-\\-member</span>           | Name/ID of the member on which the function will be executed.                                         |
+| <span class="keyword parmname">\\-\\-members</span>           | Name/ID of the member(s) on which the function will be executed.                                         |
 | <span class="keyword parmname">\\-\\-region</span>           | Region on which the data dependent function will be executed.                                         |
 | <span class="keyword parmname">\\-\\-arguments</span>        | Arguments to the function in comma separated string format.                                           |
 | <span class="keyword parmname">\\-\\-result-collector</span> | Fully qualified class name of the `ResultCollector` to instantiate for gathering results.             |
@@ -52,8 +53,8 @@ execute function --id=value [--group=value] [--member=value] [--region=value]
 
 ``` pre
 execute function --id=InterestCalculations --region=/InterestRegion
-execute function --id=InterestCalculations --member=server1
-execute function --id=InterestCalculations --group=Group1
+execute function --id=InterestCalculations --members=server1
+execute function --id=InterestCalculations --groups=Group1
 ```
 
 

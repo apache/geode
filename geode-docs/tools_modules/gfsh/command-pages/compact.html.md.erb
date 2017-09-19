@@ -44,7 +44,7 @@ See [Running Compaction on Disk Store Log Files](../../../managing/disk_storage/
 **Syntax:**
 
 ``` pre
-compact disk-store --name=value [--group=value(,value)*]
+compact disk-store --name=value [--groups=value(,value)*]
 ```
 
 <a id="topic_F113C95C076F424E9AA8AC4F1F6324CC__table_7039256EA2014AE5BFAB63697FF35AB6"></a>
@@ -52,7 +52,7 @@ compact disk-store --name=value [--group=value(,value)*]
 | Name                                          | Description                                                                                                                  |
 |-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name</span>  | *Required.* Name of the disk store to be compacted.                                                                          |
-| <span class="keyword parmname">\\-\\-group</span> | Group(s) of members that perform disk compaction. If no group is specified, then the disk store is compacted by all members. |
+| <span class="keyword parmname">\\-\\-groups</span> | Group(s) of members that perform disk compaction. If no group is specified, then the disk store is compacted by all members. |
 
 <span class="tablecap">Table 1. Compact Disk-Store Parameters</span>
 

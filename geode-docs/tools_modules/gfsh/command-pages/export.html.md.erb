@@ -92,14 +92,14 @@ If you do not specify any parameters, all member configuration will be exported.
 **Syntax:**
 
 ``` pre
-export config [--member=value(,value)*] [--group=value(,value)*]
+export config [--members=value(,value)*] [--groups=value(,value)*]
 [--dir=value]
 ```
 
 | Name                                           | Description                                                          |
 |------------------------------------------------|----------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member(s) whose configuration will be exported.       |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members whose configuration will be exported.            |
+| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) whose configuration will be exported.       |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose configuration will be exported.            |
 | <span class="keyword parmname">\\-\\-dir</span>    | Directory to which the exported configuration files will be written. |
 
 <span class="tablecap">Table 2. Export Config Parameters</span>
@@ -108,13 +108,13 @@ export config [--member=value(,value)*] [--group=value(,value)*]
 
 ``` pre
 export config
-export config --member=member1
+export config --members=member1
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>export config --member=member1
+gfsh>export config --members=member1
 Downloading Cache XML file: c:\PivotalGemFire70\Latest\.\member1-cache.xml
 Downloading properties file: c:\PivotalGemFire70\Latest\.\member1-gf.properties
 ```
@@ -168,7 +168,7 @@ The `--dir` parameter specifies a local directory to which log files will be wri
 **Syntax:**
 
 ``` pre
-export logs [--dir=value] [--group=value(,value)*] [--member=value(,value)*] 
+export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*] 
 [--log-level=value] [--only-log-level=value] [--merge-log=value] 
 [--start-time=value] [--end-time=value] [logs-only(=value)?] 
 [--stats-only(=value)?] [--file-size-limit(=value)?]
@@ -177,8 +177,8 @@ export logs [--dir=value] [--group=value(,value)*] [--member=value(,value)*]
 | Name                                                   | Description                                                                                                                | Default Value |
 |--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|---------------|
 | <span class="keyword parmname">\\-\\-dir</span>            | Local directory to which log files will be written when logs are exported using an http connection. Ignored when the command is executed over JMX.     |               | 
-| <span class="keyword parmname">\\-\\-group</span>          | Group of members whose log files will be exported.                                                                         |               |
-| <span class="keyword parmname">&#8209;&#8209;member</span>         | Name/ID of the member whose log files will be exported.                                                                    |               |
+| <span class="keyword parmname">\\-\\-groups</span>          | Group(s) of members whose log files will be exported.                                                                         |               |
+| <span class="keyword parmname">&#8209;&#8209;members</span>         | Name/ID of the member(s) whose log files will be exported.                                                            |               |
 | <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, and `ALL`. | `INFO`        |
 | <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include only entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
 | <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory (deprecated).                                                             | false         |
@@ -243,14 +243,14 @@ Export the stack trace for a member or members.
 **Syntax:**
 
 ``` pre
-export stack-traces --file=value [--member=value] [--group=value]
+export stack-traces --file=value [--members=value(,value)*] [--groups=value(,value)*]
 ```
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-file</span>   | *Required.* Filename to which the stack-traces will be written. |
-| <span class="keyword parmname">\\-\\-member</span> | Name or ID of the member whose log files will be exported.      |
-| <span class="keyword parmname">\\-\\-group</span>  | Group of members whose log files will be exported.              |
+| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) whose log files will be exported.      |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose log files will be exported.          |
 
 <span class="tablecap">Table 6. Export Stack-Traces Parameters</span>
 

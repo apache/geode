@@ -149,7 +149,7 @@ Alters the configuration of a region.
 **Syntax:**
 
 ``` pre
-alter region --name=value [--group=value(,value)*]
+alter region --name=value [--groups=value(,value)*]
     [--entry-idle-time-expiration(=value)?]
     [--entry-idle-time-expiration-action(=value)?]
     [--entry-time-to-live-expiration(=value)?]
@@ -283,7 +283,7 @@ Select one of the following expiration actions:
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
+<td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) of members where the region will be altered.</td>
 <td> </td>
 </tr>
@@ -389,7 +389,8 @@ For more information on these configuration properties, see [cache.xml](../../..
 **Syntax:**
 
 ``` pre
-alter runtime [--member=value] [--group=value] [--archive-disk-space-limit=value]
+alter runtime [--members=value(,value)*] [--groups=value(,value)*]
+    [--archive-disk-space-limit=value]
     [--archive-file-size-limit=value] [--log-disk-space-limit=value]
     [--log-file-size-limit=value] [--log-level=value]
     [--statistic-archive-file=value] [--statistic-sample-rate=value]
@@ -415,13 +416,13 @@ alter runtime [--member=value] [--group=value] [--archive-disk-space-limit=value
 </thead>
 <tbody>
 <tr class="odd">
-<td><span class="keyword parmname">\-\-member</span></td>
-<td>Name or ID of the member whose configuration is to be altered at runtime. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
+<td><span class="keyword parmname">\-\-members</span></td>
+<td>Name or ID of the member(s) whose configuration is to be altered at runtime. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
 <td>If not specified, all members using the cluster configuration service</td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
-<td>Name of the group whose members's runtime configuration is to be altered. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
+<td><span class="keyword parmname">\-\-groups</span></td>
+<td>Name of the group(s) whose members's runtime configuration is to be altered. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
 <td>If not specified, all members using the cluster configuration service</td>
 </tr>
 <tr class="odd">
@@ -498,13 +499,13 @@ Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OF
 **Example Commands:**
 
 ``` pre
-alter runtime --member=server1 --loglevel=WARN --enable-statistics=true
+alter runtime --members=server1 --loglevel=WARN --enable-statistics=true
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>alter runtime --member=server1 --loglevel=WARN --enable-statistics=true
+gfsh>alter runtime --members=server1 --loglevel=WARN --enable-statistics=true
 Runtime configuration altered successfully for the following member(s)
 192.0.2.0(server1:240)<v1>:64871
 ```

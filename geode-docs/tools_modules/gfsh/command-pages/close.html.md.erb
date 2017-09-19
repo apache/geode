@@ -38,7 +38,8 @@ Attempts to close a durable client. The client must be disconnected for this com
 **Syntax:**
 
 ``` pre
-close durable-client --durable-client-id=value [--member=value] [--group=value]
+close durable-client --durable-client-id=value [--members=value(,value)*]
+[--groups=value(,value)*]
 ```
 
 <a id="topic_4125AAAB9FE44CD787166E48B694C41D__table_618C978BA2B442A9A979243B50856885"></a>
@@ -46,8 +47,8 @@ close durable-client --durable-client-id=value [--member=value] [--group=value]
 | Name                                                       | Description                                                            |
 |------------------------------------------------------------|------------------------------------------------------------------------|
 | \\-\\-durable-client-id  | *Required.* The ID of the durable client.                              |
-| \\-\\-member             | Name or ID of the member for which the durable client is to be closed. |
-| \\-\\-group              | Group of members for which the durable client is to be closed.         |
+| \\-\\-members            | Name or ID of the member(s) for which the durable client is to be closed. |
+| \\-\\-groups             | Group(s) of members for which the durable client is to be closed.         |
 
 <span class="tablecap">Table 1. Close Durable-Client Parameters</span>
 
@@ -93,7 +94,7 @@ Closes the durable continuous query (CQ) registered by the durable client and dr
 
 ``` pre
 close durable-cq --durable-client-id=value --durable-cq-name=value 
-[--member=value] [--group=value]
+[--members=value(,value)*] [--groups=value(,value)*]
 ```
 
 <a id="topic_1BC15B3132BA480DB227921A9B3ABDD1__table_CEFFFECABBDF4DC4A37E8861422EEB5C"></a>
@@ -102,8 +103,8 @@ close durable-cq --durable-client-id=value --durable-cq-name=value
 |-----------------------------------------------------------|------------------------------------------------------------------------------------------------------|
 | \\-\\-durable-client-id | Required. The ID of the durable client.                                                              |
 | \\-\\-durable-cq-name   | Required. Name of the CQ to be closed.                                                               |
-| \\-\\-member            | Name or ID of the member for which the durable client is registered and the durable CQ to be closed. |
-| \\-\\-group             | Group of members for which the durable client is registered and the durable CQ to be closed.         |
+| \\-\\-members           | Name or ID of the member(s) for which the durable client is registered and the durable CQ to be closed. |
+| \\-\\-groups            | Group(s) of members for which the durable client is registered and the durable CQ to be closed.      |
 
 <span class="tablecap">Table 2. Close Durable-CQ Parameters</span>
 
