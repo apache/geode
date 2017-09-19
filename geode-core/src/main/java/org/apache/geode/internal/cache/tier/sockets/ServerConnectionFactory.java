@@ -21,6 +21,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.server.Authenticator;
 
@@ -31,12 +32,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import org.apache.logging.log4j.Logger;
+
 /**
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
   private ClientProtocolMessageHandler protocolHandler;
   private Map<String, Class<? extends Authenticator>> authenticators = null;
+  private static final Logger logger = LogService.getLogger();
 
   public ServerConnectionFactory() {}
 

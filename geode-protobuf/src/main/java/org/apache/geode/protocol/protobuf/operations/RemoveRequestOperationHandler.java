@@ -36,7 +36,7 @@ import org.apache.geode.serialization.registry.exception.CodecNotRegisteredForTy
 @Experimental
 public class RemoveRequestOperationHandler
     implements OperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse> {
-  private static Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   @Override
   public Result<RegionAPI.RemoveResponse> process(SerializationService serializationService,
@@ -46,6 +46,7 @@ public class RemoveRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
+      logger.error("Received Remove request for non-existing region {}", regionName);
       return Failure.of(ProtobufResponseUtilities
           .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
     }
@@ -57,9 +58,11 @@ public class RemoveRequestOperationHandler
       return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
     } catch (UnsupportedEncodingTypeException ex) {
       // can be thrown by encoding or decoding.
+      logger.error("Received Remove request with unsupported encoding: {}", ex);
       return Failure.of(ProtobufResponseUtilities.createAndLogErrorResponse(
           ProtocolErrorCode.VALUE_ENCODING_ERROR, "Encoding not supported.", logger, ex));
     } catch (CodecNotRegisteredForTypeException ex) {
+      logger.error("Got codec error when decoding Remove request: {}", ex);
       return Failure.of(ProtobufResponseUtilities.createAndLogErrorResponse(
           ProtocolErrorCode.VALUE_ENCODING_ERROR, "Codec error in protobuf deserialization.",
           logger, ex));

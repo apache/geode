@@ -14,10 +14,13 @@
  */
 package org.apache.geode.protocol.protobuf.operations;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.protocol.operations.OperationHandler;
 import org.apache.geode.protocol.protobuf.Failure;
@@ -32,6 +35,7 @@ import org.apache.geode.serialization.SerializationService;
 @Experimental
 public class GetRegionRequestOperationHandler
     implements OperationHandler<RegionAPI.GetRegionRequest, RegionAPI.GetRegionResponse> {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.GetRegionResponse> process(SerializationService serializationService,
@@ -41,6 +45,7 @@ public class GetRegionRequestOperationHandler
 
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
+      logger.error("Received GetRegion request for non-existing region {}", regionName);
       return Failure.of(
           ProtobufResponseUtilities.makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
               "No region exists for name: " + regionName));

@@ -19,11 +19,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.protocol.protobuf.registry.OperationContextRegistry;
@@ -43,6 +46,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   private final ProtobufProtocolSerializer protobufProtocolSerializer;
   private final ProtobufOpsProcessor protobufOpsProcessor;
   private ProtobufClientStatistics statistics;
+  private static final Logger logger = LogService.getLogger();
 
   public ProtobufStreamProcessor() throws CodecAlreadyRegisteredForTypeException {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
@@ -75,7 +79,9 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
       throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
     if (message == null) {
-      throw new EOFException("Tried to deserialize protobuf message at EOF");
+      String errorMessage = "Tried to deserialize protobuf message at EOF";
+      logger.warn(errorMessage);
+      throw new EOFException(errorMessage);
     }
     statistics.messageReceived(message.getSerializedSize());
 
