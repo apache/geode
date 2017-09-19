@@ -30,11 +30,16 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit3DistributedTestCase;
 
 /**
  * The abstract superclass of tests that require the creation of a {@link Cache}.
+ *
+ * @deprecated Please use {@link CacheTestCase} which extends {@link JUnit4CacheTestCase} when
+ *             writing new tests.
  */
+@Deprecated
 public abstract class JUnit3CacheTestCase extends JUnit3DistributedTestCase
     implements CacheTestFixture {
 
@@ -106,8 +111,11 @@ public abstract class JUnit3CacheTestCase extends JUnit3DistributedTestCase
 
   /**
    * Invokes {@link #getCache()} and casts the return to {@code GemFireCacheImpl}.
+   *
+   * @deprecated Please use {@link #getCache} which returns InternalCache instead.
    */
-  public final GemFireCacheImpl getGemfireCache() { // TODO: remove?
+  @Deprecated
+  public final GemFireCacheImpl getGemfireCache() {
     return delegate.getGemfireCache();
   }
 

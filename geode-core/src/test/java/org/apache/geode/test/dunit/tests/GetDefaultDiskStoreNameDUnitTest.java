@@ -20,13 +20,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class GetDefaultDiskStoreNameDUnitTest extends JUnit4DistributedTestCase {
+public class GetDefaultDiskStoreNameDUnitTest extends DistributedTestCase {
 
   @Test
   public void testGetTestMethodName() {

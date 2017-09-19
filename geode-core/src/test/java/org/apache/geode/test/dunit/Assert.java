@@ -14,11 +14,14 @@
  */
 package org.apache.geode.test.dunit;
 
+import org.assertj.core.api.Assertions;
+
 /**
- * Extends <code>org.junit.Assert</code> with additional assertion and fail methods.
- * 
- * These methods can be used directly: <code>Assert.assertIndexDetailsEquals(...)</code>, however,
- * they are intended to be referenced through static import:
+ * Extends {@code org.junit.Assert} with additional assertion and fail methods.
+ *
+ * <p>
+ * These methods can be used directly: {@code Assert.assertIndexDetailsEquals(...)}, however, they
+ * are intended to be referenced through static import:
  *
  * <pre>
  * import static org.apache.geode.test.dunit.Assert.*;
@@ -29,7 +32,10 @@ package org.apache.geode.test.dunit;
  * Extracted from DistributedTestCase.
  * 
  * @see java.lang.AssertionError
+ *
+ * @deprecated Please use AssertJ {@link Assertions} instead.
  */
+@Deprecated
 public class Assert extends org.junit.Assert {
 
   protected Assert() {}
