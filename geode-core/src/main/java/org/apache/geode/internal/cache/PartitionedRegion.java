@@ -8355,7 +8355,7 @@ public class PartitionedRegion extends LocalRegion
       // If the index is not successfully created, remove IndexTask from the map.
       if (index == null) {
         ind = this.indexes.get(indexTask);
-        if (index != null && !(index instanceof Index)) {
+        if (ind != null && !(ind instanceof Index)) {
           this.indexes.remove(indexTask);
         }
       }
