@@ -37,7 +37,7 @@ SnapshotFilter<Integer, MyObject> even = new SnapshotFilter<Integer, MyObject>()
 };
 
 RegionSnapshotService<Integer, MyObject> snapsrv = region.getSnapshotService();
-SnapshotOptions<Integer, MyObject> options = rss.createOptions().setFilter(even);
+SnapshotOptions<Integer, MyObject> options = snapsrv.createOptions().setFilter(even);
 
 // only save cache entries with an even key
 snapsrv.save(mySnapshot, SnapshotFormat.GEMFIRE, options);
