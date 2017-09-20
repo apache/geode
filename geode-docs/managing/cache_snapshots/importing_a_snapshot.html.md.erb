@@ -65,17 +65,16 @@ region.getSnapshotService().load(mySnapshot, SnapshotFormat.GEMFIRE);
 Open a gfsh prompt. After connecting to a <%=vars.product_name%> distributed system, at the prompt type:
 
 ``` pre
-gfsh>import data --region=Region --file=filename.gfd 
---member=membername
+gfsh>import data --region=Region --file=FileName.gfd --member=MemberName
 ```
 
-where *Region* corresponds to the name of the region that you want to import data into; *filename* (must end in .gfd) corresponds to the name of the file to be imported; and *membername* corresponds to the member where the region to be imported is hosted. For example:
+where *Region* corresponds to the name of the region that you want to import data into; *FileName* (must end in .gfd) corresponds to the name of the file to be imported; and *MemberName* corresponds to the member where the region to be imported is hosted. For example:
 
 ``` pre
-gfsh>import data --region=region1 --file=region1_2012_10_10.gfd 
---member=server2
+gfsh>import data --region=region1 --file=region1_2012_10_10.gfd --member=server2
 ```
 
 The snapshot file must already reside on the specified member at the location specified in the `--file` argument before import.
 
 For more information on this command, see [import data](../../tools_modules/gfsh/command-pages/import.html#topic_jw2_2ld_2l).
+For an example of how to invoke this command with additional options, see [Export Example with Options](exporting_a_snapshot.html#export_example_with_options).

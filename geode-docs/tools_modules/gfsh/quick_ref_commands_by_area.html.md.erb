@@ -35,8 +35,6 @@ limitations under the License.
 | [sleep](command-pages/sleep.html)                                                           | Delay `gfsh` command execution.                                                                                                                                 | online, offline |
 | [version](command-pages/version.html)                                                | Display product version information.                                                                                                                            | online, offline |
 
-<span class="tablecap">Table 1. Basic <%=vars.product_name%> gfsh Commands</span>
-
 ## <a id="topic_EB854534301A477BB01058B3B142AE1D" class="no-quick-link"></a>Configuration Commands
 
 <a id="topic_EB854534301A477BB01058B3B142AE1D__table_uyf_jz1_3l"></a>
@@ -101,8 +99,6 @@ limitations under the License.
 </tbody>
 </table>
 
-<span class="tablecap">Table 2. Configuration Commands</span>
-
 ## <a id="topic_C7DB8A800D6244AE8FF3ADDCF139DCE4" class="no-quick-link"></a>Data Commands
 
 <a id="topic_C7DB8A800D6244AE8FF3ADDCF139DCE4__table_rcv_jz1_3l"></a>
@@ -111,13 +107,11 @@ limitations under the License.
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|--------------|
 | [export data](command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734) | Export user data from a region to a file.                       | online       |
 | [get](command-pages/get.html)                                                               | Display an entry in a region.                                   | online       |
-| [import data](command-pages/import.html#topic_jw2_2ld_2l)                       |                                                                 | online       |
+| [import data](command-pages/import.html#topic_jw2_2ld_2l)                       | Import user data from a file to a region.                        | online       |
 | [locate entry](command-pages/locate.html#concept_73B980C1138743DDBBFACE68009BD1E3__section_04BD7EC0032147DFA9CCD1331EE3B694)      | Locate a region entry on a member.                              | online       |
 | [put](command-pages/put.html)                                                               | Add or update a region entry.                                   | online       |
 | [query](command-pages/query.html)                                                      | Run queries against <%=vars.product_name%> regions. | online       |
 | [remove](command-pages/remove.html)                                                        | Remove an entry from a region.                                  | online       |
-
-<span class="tablecap">Table 3. Data Commands</span>
 
 ## <a id="topic_1B47A0E110124EB6BF08A467EB510412" class="no-quick-link"></a>Deployment Commands
 
@@ -128,8 +122,6 @@ limitations under the License.
 | [deploy](command-pages/deploy.html)                                                                   | Deploy JAR-packaged applications to a member or members.                               | online       |
 | [list deployed](command-pages/list.html#topic_59DF60DE71AD4097B281749425254BFF) | Display a list of JARs that were deployed to members using the `deploy` command.       | online       |
 | [undeploy](command-pages/undeploy.html)                                   | Undeploy the JAR files that were deployed on members or groups using `deploy` command. | online       |
-
-<span class="tablecap">Table 4. Deployment Commands</span>
 
 ## <a id="topic_1ACC91B493EE446E89EC7DBFBBAE00EA" class="no-quick-link"></a>Disk Store Commands
 
@@ -150,8 +142,6 @@ limitations under the License.
 | [show missing-disk-stores](command-pages/show.html#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780)                                   | Display a summary of the disk stores that are currently missing from a distributed system.                                               | online          |
 | [validate offline-disk-store](command-pages/validate.html)                                                                                                                                | Validate offline disk stores.                                                                                                            | online, offline |
 
-<span class="tablecap">Table 5. Disk Store Commands</span>
-
 ## <a id="topic_10613D4850F04A3EB507F6B441AD3413" class="no-quick-link"></a>Durable CQ and Client Commands
 
 <a id="topic_10613D4850F04A3EB507F6B441AD3413__table_kqb_mz1_3l"></a>
@@ -163,8 +153,6 @@ limitations under the License.
 | [close durable-client](command-pages/close.html#topic_4125AAAB9FE44CD787166E48B694C41D)                                               | Attempts to close the durable client. The client must be disconnected.                                                                                         | online       |
 | [show subscription-queue-size](command-pages/show.html#topic_395C96B500AD430CBF3D3C8886A4CD2E)                                                                                | Shows the number of events in the subscription queue. If a CQ name is provided, it counts the number of events in the subscription queue for the specified CQ. | online       |
 
-<span class="tablecap">Table 6. Durable CQ and Client Commands</span>
-
 ## <a id="topic_8BB061D1A7A9488C819FE2B7881A1278" class="no-quick-link"></a>Function Execution Commands
 
 <a id="topic_8BB061D1A7A9488C819FE2B7881A1278__table_xqk_mz1_3l"></a>
@@ -174,8 +162,6 @@ limitations under the License.
 | [destroy function](command-pages/destroy.html#topic_E48C2DF809054C12A162026D8A2139BB)                                                       | Destroy or unregister a function. The default is for the function to be unregistered from all members. | online       |
 | [execute function](command-pages/execute.html#concept_F2ED1987126E4338AEB14A7C8F561A2A__section_FB435A8AC76E4E1A8E72DBEA64BA2E57)                                                     | Execute the function with the specified ID. By default, executes on all members.                       | online       |
 | [list functions](command-pages/list.html#topic_DCC7CCBBEF5942B783A8F2A4A5B2FABF) | Display a list of registered functions. The default is to display functions for all members.           | online       |
-
-<span class="tablecap">Table 7. Function Execution Commands</span>
 
 ## <a id="topic_F0AE5CE40D6D49BF92247F5EF4F871D2" class="no-quick-link"></a>Gateway (WAN) Commands
 
@@ -199,8 +185,6 @@ limitations under the License.
 | [stop gateway-receiver](command-pages/stop.html#topic_CD1D526FD6F84A7B80B25C741129ED30)                                                                                                                 | Stop the gateway receiver on a member or members.                                                                                          | online       |
 | [stop gateway-sender](command-pages/stop.html#topic_0BBDD4B3B8A44A65A610F766C9E85519)                                                                 | top a gateway sender with a given id on a specified member or members of a specified member group.                                         | online       |
 
-<span class="tablecap">Table 8. Gateway (WAN) Commands</span>
-
 ## <a id="topic_F0AE5CE40D6D49BF92247F5EF4F871D3" class="no-quick-link"></a><%=vars.product_name%> AsyncEventQueue Commands
 
 <a id="topic_F0AE5CE40D6D49BF92247F5EF4F871D3__table_vp5_mz1_3l"></a>
@@ -209,8 +193,6 @@ limitations under the License.
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|--------------|
 | [create async-event-queue](command-pages/create.html#topic_ryz_pb1_dk) | Creates an asynchronous event queue.                  | online       |
 | [list async-event-queues](command-pages/list.html#topic_j22_kzk_2l)                                                     | Display a list of async event queues for all members. | online       |
-
-<span class="tablecap">Table 9. <%=vars.product_name%> AsyncEventQueue Commands</span>
 
 ## <a id="topic_B742E9E862BA457082E2346581C97D03" class="no-quick-link"></a><%=vars.product_name%> Monitoring Commands
 
@@ -234,8 +216,6 @@ limitations under the License.
 | [start jvisualvm](command-pages/start.html#topic_5B5BF8BEE905463D8B7762B89E2D65E7)                                                                | Start the JDK's Java VisualVM monitoring application in a separate process.                                                                            | online, offline |
 | [start pulse](command-pages/start.html#topic_E906BA7D9E7F4C5890FEFA7ECD40DD77) | Launch the <%=vars.product_name%> Pulse monitoring dashboard tool in the user's default system browser.                                    | online, offline |
 
-<span class="tablecap">Table 10. <%=vars.product_name%> Monitoring Commands</span>
-
 ## <a id="topic_688C66526B4649AFA51C0F72F34FA45E" class="no-quick-link"></a>Index Commands
 
 <a id="topic_688C66526B4649AFA51C0F72F34FA45E__table_k3p_nz1_3l"></a>
@@ -249,8 +229,6 @@ limitations under the License.
 | [destroy index](command-pages/destroy.html#topic_D00219CCD6F64C1582A0802AC5CDF3F3)                                                                                      | Destroy or remove the specified index.                                                                     | online          |
 | [list indexes](command-pages/list.html#topic_B3B51B6DEA484EE086C4F657EC9831F2)                                                                            | Display the list of indexes created for all members.                                                       | online          |
 
-<span class="tablecap">Table 11. Index Commands</span>
-
 ## <a id="topic_2A6DA4078E4E496A9F725A29BC4CFD0D" class="no-quick-link"></a>JMX Connection Commands
 
 <a id="topic_2A6DA4078E4E496A9F725A29BC4CFD0D__table_ktf_4z1_3l"></a>
@@ -261,8 +239,6 @@ limitations under the License.
 | [describe connection](command-pages/describe.html#topic_591DC6B781B641168E6173E69AC6D201) | Display connection information details.                    | online, offline |
 | [disconnect](command-pages/disconnect.html)                                                       | Close any active connection(s).                            | online          |
 
-<span class="tablecap">Table 12. JMX Connection Commands</span>
-
 ## <a id="topic_1C82E6F1B2AF4A65A8DA6B3C846BAC13" class="no-quick-link"></a>Locator Commands
 
 <a id="topic_1C82E6F1B2AF4A65A8DA6B3C846BAC13__table_hy4_4z1_3l"></a>
@@ -272,8 +248,6 @@ limitations under the License.
 | [start locator](command-pages/start.html#topic_591260CF25D64562A0EDD7260D2AC6D4)                                | Start a locator. The command creates a subdirectory and log file named after the locator. If the locator detects that no other JMX Manager exists, then the locator will automatically start an embedded JMX Manager and connect the current `gfsh` session to the JMX Manager. | online, offline |
 | [status locator](command-pages/status.html#topic_E96D0EFA513C4CD79B833FCCDD69C832) | Displays the status of the specified locator.                                                                                                                                                                                                                                   | online, offline |
 | [stop locator](command-pages/stop.html#topic_EF61C54B35BA4AB7B14E58CF911F283E)                                   | Stop a locator.                                                                                                                                                                                                                                                                 | online, offline |
-
-<span class="tablecap">Table 13. Locator Commands</span>
 
 ## <a id="topic_lucene_commands" class="no-quick-link"></a>Lucene Commands
 
@@ -287,8 +261,6 @@ limitations under the License.
 | [list lucene indexes](command-pages/list.html#list_lucene_indexes) | List Lucene indexes created for all members. The optional `--with-stats` qualifier shows activity on the indexes. | online |
 | [search lucene](command-pages/search.html#search_lucene) | Search a Lucene index. | online |
 
-<span class="tablecap">Table 14. Lucene Commands</span>
-
 ## <a id="topic_cvg_bls_5q" class="no-quick-link"></a>PDX Commands
 
 <a id="topic_cvg_bls_5q__table_tdf_cls_5q"></a>
@@ -297,8 +269,6 @@ limitations under the License.
 |------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|-----------------|
 | [configure pdx](command-pages/configure.html#topic_jdkdiqbgphqh)                         | Configure Portable Data eXchange for all the cache(s) in the cluster. | online, offline |
 | [pdx rename](command-pages/pdx.html) | Renames PDX types in an offline disk store.                           | online, offline |
-
-<span class="tablecap">Table 15. PDX Commands</span>
 
 ## <a id="topic_EF03119A40EE492984F3B6248596E1DD" class="no-quick-link"></a>Region Commands
 
@@ -313,8 +283,6 @@ limitations under the License.
 | [list regions](command-pages/list.html#topic_F0ECEFF26086474498598035DD83C588) | Display regions of a member or members. If no parameter is specified, all regions in the <%=vars.product_name%> distributed system are listed. | online       |
 | [rebalance](command-pages/rebalance.html)                                                                                                                                     | Rebalance partitioned regions.                                                                                                                             | online       |
 
-<span class="tablecap">Table 16. Region Commands</span>
-
 ## <a id="topic_8A341FF86958466E9E64CF06CD21FED9" class="no-quick-link"></a>Server Commands
 
 <a id="topic_8A341FF86958466E9E64CF06CD21FED9__table_ehj_n31_3l"></a>
@@ -325,6 +293,5 @@ limitations under the License.
 | [status server](command-pages/status.html#topic_E5DB49044978404D9D6B1971BF5D400D) | Display the status of the specified <%=vars.product_name%> cache server. | online, offline |
 | [stop server](command-pages/stop.html#topic_723EE395A63A40D6819618AFC2902115)                                  | Stop a <%=vars.product_name%> cache server.                              | online, offline |
 
-<span class="tablecap">Table 17. Server Commands</span>
 
 
