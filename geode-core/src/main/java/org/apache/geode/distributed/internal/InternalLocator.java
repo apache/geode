@@ -1335,10 +1335,8 @@ public class InternalLocator extends Locator implements ConnectListener {
     try {
       this.stats.hookupStats(sys,
           SocketCreator.getLocalHost().getCanonicalHostName() + '-' + this.server.getBindAddress());
-      ClientProtocolMessageHandler messageHandler = this.server.getMessageHandler();
+      ClientProtocolMessageHandler messageHandler = this.server.getClientProtocolMessageHandler();
       if (messageHandler != null) {
-        // GEODE-3546 - this should create locator-specific stats but is creating client/server
-        // stats
         messageHandler.initializeStatistics("LocatorStats", sys);
       }
     } catch (UnknownHostException e) {

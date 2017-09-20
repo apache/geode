@@ -133,7 +133,7 @@ public class TcpServer {
   private final PoolStatHelper poolHelper;
   private final InternalLocator internalLocator;
   private final TcpHandler handler;
-  private ClientProtocolMessageHandler messageHandler;
+  private ClientProtocolMessageHandler clientProtocolMessageHandler;
 
 
   private PooledExecutorWithDMStats executor;
@@ -158,20 +158,20 @@ public class TcpServer {
   /**
    * returns the message handler used for client/locator communications processing
    */
-  public ClientProtocolMessageHandler getMessageHandler() {
-    return messageHandler;
+  public ClientProtocolMessageHandler getClientProtocolMessageHandler() {
+    return clientProtocolMessageHandler;
   }
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
       ThreadGroup threadGroup, String threadName, InternalLocator internalLocator,
-      ClientProtocolMessageHandler messageHandler) {
+      ClientProtocolMessageHandler clientProtocolMessageHandler) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
     this.poolHelper = poolHelper;
     this.internalLocator = internalLocator;
-    this.messageHandler = messageHandler;
+    this.clientProtocolMessageHandler = clientProtocolMessageHandler;
     // register DSFID types first; invoked explicitly so that all message type
     // initializations do not happen in first deserialization on a possibly
     // "precious" thread
@@ -381,8 +381,10 @@ public class TcpServer {
         if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
           if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-            messageHandler.receiveMessage(input, socket.getOutputStream(),
+            clientProtocolMessageHandler.getStatistics().clientConnected();
+            clientProtocolMessageHandler.receiveMessage(input, socket.getOutputStream(),
                 new MessageExecutionContext(internalLocator));
+            clientProtocolMessageHandler.getStatistics().clientDisconnected();
           } else {
             rejectUnknownProtocolConnection(socket, gossipVersion);
           }

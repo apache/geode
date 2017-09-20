@@ -17,21 +17,25 @@ package org.apache.geode.protocol.acceptance;
 
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI;
@@ -42,7 +46,10 @@ import org.apache.geode.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /*
@@ -51,29 +58,31 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
-  private Socket socket;
-
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public final DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Before
   public void setup() throws IOException {
-    Host host = Host.getHost(0);
-    int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     startCacheWithCacheServer();
 
     Host.getLocator().invoke(() -> System.setProperty("geode.feature-protobuf-protocol", "true"));
+  }
 
-    socket = new Socket(host.getHostName(), locatorPort);
+  private Socket createSocket() throws IOException {
+    Host host = Host.getHost(0);
+    int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
+    Socket socket = new Socket(host.getHostName(), locatorPort);
     DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
     dataOutputStream.writeInt(0);
     // Using the constant from AcceptorImpl to ensure that magic byte is the same
     dataOutputStream.writeByte(ProtobufClientServerProtocol.getModeNumber());
+    return socket;
   }
 
+  // Test getAvailableServers twice, validating stats before any messages, after 1, and after 2.
   @Test
-  public void testEchoProtobufMessageFromLocator()
-      throws IOException, InvalidProtocolMessageException {
+  public void testGetAvailableServersWithStats() throws Throwable {
     ClientProtocol.Request.Builder protobufRequestBuilder =
         ProtobufUtilities.createProtobufRequestBuilder();
     ClientProtocol.Message getAvailableServersRequestMessage =
@@ -81,12 +90,193 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
             protobufRequestBuilder.setGetAvailableServersRequest(
                 ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
 
-    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-        socket.getOutputStream());
+    try {
+      ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
+      try (Socket socket = createSocket()) {
+        long messagesReceived = getMessagesReceived();
+        long messagesSent = getMessagesSent();
+        int clientConnectionStarts = getClientConnectionStarts();
+        int clientConnectionTerminations = getClientConnectionTerminations();
+
+        protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
+            socket.getOutputStream());
+
+        validateGetAvailableServersResponse(protobufProtocolSerializer, socket.getInputStream());
+
+        Host.getLocator().invoke(() -> {
+          InternalDistributedSystem distributedSystem =
+              (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+          Statistics[] protobufServerStats = distributedSystem
+              .findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+          assertEquals(1, protobufServerStats.length);
+          Statistics statistics = protobufServerStats[0];
+          assertEquals(0, statistics.get("currentClientConnections"));
+          assertEquals(messagesReceived + 1, statistics.get("messagesReceived"));
+          assertEquals(messagesSent + 1, statistics.get("messagesSent"));
+          assertTrue(statistics.get("bytesReceived").longValue() > 0);
+          assertTrue(statistics.get("bytesSent").longValue() > 0);
+          assertEquals(clientConnectionStarts, statistics.get("clientConnectionStarts"));
+          assertEquals(clientConnectionTerminations + 1,
+              statistics.get("clientConnectionTerminations"));
+          assertEquals(0L, statistics.get("authorizationViolations"));
+          assertEquals(0L, statistics.get("authenticationFailures"));
+        });
+      }
+
+      try (Socket socket = createSocket()) {
+        long messagesReceived = getMessagesReceived();
+        long messagesSent = getMessagesSent();
+        int clientConnectionStarts = getClientConnectionStarts();
+        int clientConnectionTerminations = getClientConnectionTerminations();
+
+        protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
+            socket.getOutputStream());
+
+        validateGetAvailableServersResponse(protobufProtocolSerializer, socket.getInputStream());
+
+        Host.getLocator().invoke(() -> {
+          InternalDistributedSystem distributedSystem =
+              (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+          Statistics[] protobufServerStats = distributedSystem
+              .findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+          assertEquals(1, protobufServerStats.length);
+          Statistics statistics = protobufServerStats[0];
+          assertEquals(0, statistics.get("currentClientConnections"));
+          assertEquals(messagesReceived + 1, statistics.get("messagesReceived"));
+          assertEquals(messagesSent + 1, statistics.get("messagesSent"));
+          assertTrue(statistics.get("bytesReceived").longValue() > 0);
+          assertTrue(statistics.get("bytesSent").longValue() > 0);
+          assertEquals(clientConnectionStarts, statistics.get("clientConnectionStarts"));
+          assertEquals(clientConnectionTerminations + 1,
+              statistics.get("clientConnectionTerminations"));
+          assertEquals(0L, statistics.get("authorizationViolations"));
+          assertEquals(0L, statistics.get("authenticationFailures"));
+        });
+      }
+    } catch (RMIException e) {
+      throw e.getCause(); // so that assertions propagate properly.
+    }
+  }
+
+  @Test
+  public void testInvalidOperationReturnsFailure()
+      throws IOException, InvalidProtocolMessageException {
+    IgnoredException ignoredInvalidExecutionContext =
+        IgnoredException.addIgnoredException("Invalid execution context");
+    try (Socket socket = createSocket()) {
+
+      ClientProtocol.Request.Builder protobufRequestBuilder =
+          ProtobufUtilities.createProtobufRequestBuilder();
+      ClientProtocol.Message getRegionNamesRequestMessage =
+          ProtobufUtilities.createProtobufMessage(ProtobufUtilities.createMessageHeader(1233445),
+              protobufRequestBuilder
+                  .setGetRegionNamesRequest(ProtobufRequestUtilities.createGetRegionNamesRequest())
+                  .build());
+
+      long messagesReceived = getMessagesReceived();
+      long messagesSent = getMessagesSent();
+      int clientConnectionStarts = getClientConnectionStarts();
+      int clientConnectionTerminations = getClientConnectionTerminations();
+
+      ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+      protobufProtocolSerializer.serialize(getRegionNamesRequestMessage, socket.getOutputStream());
+
+      ClientProtocol.Message getAvailableServersResponseMessage =
+          protobufProtocolSerializer.deserialize(socket.getInputStream());
+      assertEquals(1233445,
+          getAvailableServersResponseMessage.getMessageHeader().getCorrelationId());
+      assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
+          getAvailableServersResponseMessage.getMessageTypeCase());
+      ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
+      assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
+          messageResponse.getResponseAPICase());
+      assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
+          messageResponse.getErrorResponse().getError().getErrorCode());
+
+      Host.getLocator().invoke(() -> {
+        InternalDistributedSystem distributedSystem =
+            (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+        Statistics[] protobufServerStats = distributedSystem
+            .findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+        assertEquals(1, protobufServerStats.length);
+        Statistics statistics = protobufServerStats[0];
+        assertEquals(0, statistics.get("currentClientConnections"));
+        assertEquals(messagesReceived + 1, statistics.get("messagesReceived"));
+        assertEquals(messagesSent + 1, statistics.get("messagesSent"));
+        assertTrue(statistics.get("bytesReceived").longValue() > 0);
+        assertTrue(statistics.get("bytesSent").longValue() > 0);
+        assertEquals(clientConnectionStarts, statistics.get("clientConnectionStarts"));
+        assertEquals(clientConnectionTerminations + 1,
+            statistics.get("clientConnectionTerminations"));
+        assertEquals(0L, statistics.get("authorizationViolations"));
+        assertEquals(0L, statistics.get("authenticationFailures"));
+      });
+    }
+    ignoredInvalidExecutionContext.remove();
+  }
+
+  private Long getMessagesReceived() {
+    return Host.getLocator().invoke(() -> {
+      InternalDistributedSystem distributedSystem =
+          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+      Statistics[] protobufServerStats =
+          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+      assertEquals(1, protobufServerStats.length);
+      Statistics statistics = protobufServerStats[0];
+      return statistics.get("messagesReceived").longValue();
+    });
+  }
+
+  private Long getMessagesSent() {
+    return Host.getLocator().invoke(() -> {
+      InternalDistributedSystem distributedSystem =
+          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+      Statistics[] protobufServerStats =
+          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+      assertEquals(1, protobufServerStats.length);
+      Statistics statistics = protobufServerStats[0];
+      return statistics.get("messagesSent").longValue();
+    });
+  }
+
+  private Integer getClientConnectionStarts() {
+    return Host.getLocator().invoke(() -> {
+      InternalDistributedSystem distributedSystem =
+          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+      Statistics[] protobufServerStats =
+          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+      assertEquals(1, protobufServerStats.length);
+      Statistics statistics = protobufServerStats[0];
+      return statistics.get("clientConnectionStarts").intValue();
+    });
+  }
+
+  private Integer getClientConnectionTerminations() {
+    return Host.getLocator().invoke(() -> {
+      InternalDistributedSystem distributedSystem =
+          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+      Statistics[] protobufServerStats =
+          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+      assertEquals(1, protobufServerStats.length);
+      Statistics statistics = protobufServerStats[0];
+      return statistics.get("clientConnectionTerminations").intValue();
+    });
+  }
+
+  private void validateGetAvailableServersResponse(
+      ProtobufProtocolSerializer protobufProtocolSerializer, InputStream inputStream)
+      throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message getAvailableServersResponseMessage =
-        protobufProtocolSerializer.deserialize(socket.getInputStream());
+        protobufProtocolSerializer.deserialize(inputStream);
+    assertNotNull(getAvailableServersResponseMessage);
     assertEquals(1233445, getAvailableServersResponseMessage.getMessageHeader().getCorrelationId());
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
         getAvailableServersResponseMessage.getMessageTypeCase());
@@ -96,33 +286,6 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     ServerAPI.GetAvailableServersResponse getAvailableServersResponse =
         messageResponse.getGetAvailableServersResponse();
     assertEquals(1, getAvailableServersResponse.getServersCount());
-  }
-
-  @Test
-  public void testInvalidOperationReturnsFailure()
-      throws IOException, InvalidProtocolMessageException {
-    ClientProtocol.Request.Builder protobufRequestBuilder =
-        ProtobufUtilities.createProtobufRequestBuilder();
-    ClientProtocol.Message getAvailableServersRequestMessage =
-        ProtobufUtilities.createProtobufMessage(ProtobufUtilities.createMessageHeader(1233445),
-            protobufRequestBuilder
-                .setGetRegionNamesRequest(ProtobufRequestUtilities.createGetRegionNamesRequest())
-                .build());
-
-    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-        socket.getOutputStream());
-
-    ClientProtocol.Message getAvailableServersResponseMessage =
-        protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(1233445, getAvailableServersResponseMessage.getMessageHeader().getCorrelationId());
-    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
-        getAvailableServersResponseMessage.getMessageTypeCase());
-    ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
-    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        messageResponse.getResponseAPICase());
-    assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
-        messageResponse.getErrorResponse().getError().getErrorCode());
   }
 
   @Override
