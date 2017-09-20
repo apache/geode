@@ -33,7 +33,7 @@ You can import data into a region or import an existing cluster configuration in
 
 ## <a id="topic_vnv_grz_ck" class="no-quick-link"></a>import cluster-configuration
 
-Imports a previously-exported cluster configuration from a zip file into a locator. This command is useful when spinning up a new cluster and when
+Imports a previously exported cluster configuration from a zip file into a locator. This command is useful when spinning up a new cluster and when
 upgrading from an older version of <%=vars.product_name%> to a new one.
 
 - In a given cluster, only one locator needs to perform the import. 
@@ -45,9 +45,9 @@ configuration changes have been made (such as new region definitions, for exampl
 So, to ensure a consistent cluster configuration throughout your distributed system, perform these steps in the following order:
 
 1. Spin up the new cluster
-2. If upgrading, an already-running cluster, shut down most (or all) data members (servers) before importing a shared configuration.
+2. If upgrading an already-running cluster, shut down most (or all) data members (servers) before importing a shared configuration.
 3. Import the cluster configuration.
-4. Start or re-start all data members (servers).
+4. Start or restart all data members (servers).
 
 **Availability:** Online. You must be connected in `gfsh` to a locator to use this command.
 
