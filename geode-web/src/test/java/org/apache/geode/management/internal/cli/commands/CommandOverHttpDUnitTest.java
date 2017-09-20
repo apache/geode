@@ -26,12 +26,13 @@ import org.apache.geode.test.junit.runners.SuiteRunner;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(SuiteRunner.class)
-@Suite.SuiteClasses({DeployWithGroupsDUnitTest.class, DiskStoreCommandsDUnitTest.class,
-    FunctionCommandsDUnitTest.class, GemfireDataCommandsDUnitTest.class,
+@Suite.SuiteClasses({ChangeLogLevelCommandDUnitTest.class, DeployWithGroupsDUnitTest.class,
+    DiskStoreCommandsDUnitTest.class, FunctionCommandsDUnitTest.class, GcCommandDUnitTest.class,
+    GemfireDataCommandsDUnitTest.class,
     GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class,
     ListAndDescribeDiskStoreCommandsDUnitTest.class, ListIndexCommandDUnitTest.class,
-    MiscellaneousCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
-    ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class, ShowMetricsDUnitTest.class,
+    ShutdownCommandDUnitTest.class, QueueCommandsDUnitTest.class, ShellCommandsDUnitTest.class,
+    ShowDeadlockDUnitTest.class, ShowLogCommandDUnitTest.class, ShowMetricsDUnitTest.class,
     ShowStackTraceDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
