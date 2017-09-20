@@ -252,7 +252,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(result.getStatus()).describedAs(getGfshOutput()).isEqualTo(Result.Status.OK);
     return result;
   }
 
