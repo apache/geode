@@ -161,6 +161,11 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_1_3_0_0(out);
+    DataSerializer.writeString(this.serializerClass, out);
+  }
+
+  public void toDataPre_GEODE_1_3_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.indexName, out);
     DataSerializer.writeString(this.regionPath, out);
     DataSerializer.writeStringArray(this.fieldNames, out);
@@ -170,6 +175,11 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_3_0_0(in);
+    this.serializerClass = DataSerializer.readString(in);
+  }
+
+  private void fromDataPre_GEODE_1_3_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.indexName = DataSerializer.readString(in);
     this.regionPath = DataSerializer.readString(in);
     this.fieldNames = DataSerializer.readStringArray(in);

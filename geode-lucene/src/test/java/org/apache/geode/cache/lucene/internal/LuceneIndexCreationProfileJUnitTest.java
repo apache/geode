@@ -15,11 +15,14 @@
 package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.CopyHelper;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.DummyLuceneSerializer;
-import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
 import org.apache.geode.test.junit.categories.UnitTest;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.analysis.Analyzer;
@@ -30,6 +33,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +63,41 @@ public class LuceneIndexCreationProfileJUnitTest {
     return $(new Object[] {getOneFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoAnalyzersLuceneIndexCreationProfile()},
+        new Object[] {getDummySerializerCreationProfile()},
         new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile()});
+  }
+
+  @Test
+  @Parameters(method = "getProfileWithSerializer")
+  public void toDataFromDataShouldContainSerializer(LuceneIndexCreationProfile profile,
+      String expectedSerializerCLassName) throws IOException, ClassNotFoundException {
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(profile, hdos);
+    byte[] outputArray = hdos.toByteArray();
+    ByteArrayInputStream bais = new ByteArrayInputStream(outputArray);
+    LuceneIndexCreationProfile profile2 = DataSerializer.readObject(new DataInputStream(bais));
+    assertEquals(expectedSerializerCLassName, profile2.getSerializerClass());
+  }
+
+  private Object[] getProfileWithSerializer() {
+    return $(new Object[] {getDefaultSerializerCreationProfile(), "HeterogeneousLuceneSerializer"},
+        new Object[] {getDummySerializerCreationProfile(), "DummyLuceneSerializer"}, new Object[] {
+            getHeterogeneousLuceneSerializerCreationProfile(), "HeterogeneousLuceneSerializer"});
+  }
+
+  private LuceneIndexCreationProfile getDefaultSerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, null);
+  }
+
+  private LuceneIndexCreationProfile getDummySerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, new DummyLuceneSerializer());
+  }
+
+  private LuceneIndexCreationProfile getHeterogeneousLuceneSerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, new HeterogeneousLuceneSerializer(new String[] {"field1"}));
   }
 
   @Test
@@ -90,21 +130,6 @@ public class LuceneIndexCreationProfileJUnitTest {
         new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile(),
             getNullField2AnalyzerLuceneIndexCreationProfile(),
             LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2});
-  }
-
-  private LuceneIndexCreationProfile getDefaultSerializerCreationProfile() {
-    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
-        new StandardAnalyzer(), null, null);
-  }
-
-  private LuceneIndexCreationProfile getDummySerializerCreationProfile() {
-    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
-        new StandardAnalyzer(), null, new DummyLuceneSerializer());
-  }
-
-  private LuceneIndexCreationProfile getHeterogeneousLuceneSerializerCreationProfile() {
-    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
-        new StandardAnalyzer(), null, new HeterogeneousLuceneSerializer(new String[] {"field1"}));
   }
 
   private LuceneIndexCreationProfile getOneFieldLuceneIndexCreationProfile() {
