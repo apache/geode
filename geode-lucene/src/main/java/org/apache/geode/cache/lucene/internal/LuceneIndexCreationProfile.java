@@ -18,6 +18,8 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CacheServiceProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.lucene.analysis.Analyzer;
@@ -28,7 +30,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
-public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSerializable {
+public class LuceneIndexCreationProfile implements CacheServiceProfile, VersionedDataSerializable {
 
   private String indexName;
 
@@ -179,7 +181,7 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
     this.serializerClass = DataSerializer.readString(in);
   }
 
-  private void fromDataPre_GEODE_1_3_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GEODE_1_3_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.indexName = DataSerializer.readString(in);
     this.regionPath = DataSerializer.readString(in);
     this.fieldNames = DataSerializer.readStringArray(in);
@@ -192,10 +194,15 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
         .append(this.indexName).append("; regionPath=").append(this.regionPath)
         .append("; fieldNames=").append(Arrays.toString(this.fieldNames)).append("; analyzerClass=")
         .append(this.analyzerClass).append("; fieldAnalyzers=").append(this.fieldAnalyzers)
-        .append("]").toString();
+        .append("; serializer=").append(this.serializerClass).append("]").toString();
   }
 
   public String getRegionPath() {
     return this.regionPath;
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_130};
   }
 }
