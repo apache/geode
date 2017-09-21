@@ -25,6 +25,7 @@ import java.util.List;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFListener;
+import gov.nasa.jpf.annotation.JPFConfig;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.search.SearchListenerAdapter;
 import gov.nasa.jpf.vm.Verify;
@@ -41,12 +42,15 @@ public class JpfRunner implements org.apache.geode.test.concurrency.Runner {
   @Override
   public List<Throwable> runTestMethod(Method child) {
     List<Throwable> failures = new ArrayList<>();
-    Config config = JPF.createConfig(new String[] {});
+    String[] userConfig = getUserConfiguration(child);
+    Config config = JPF.createConfig(userConfig);
     config.setTarget(TestMain.class.getName());
     config.setTargetArgs(new String[] {child.getDeclaringClass().getName(), child.getName()});
     config.setProperty("report.probe_interval", "5");
     config.setProperty("peer_packages+", "org.apache.geode.test.concurrency.jpf.peers");
     config.setProperty("classpath", getClasspath());
+    config.setProperty("vm.shared.skip_static_finals", "true");
+    config.setProperty("vm.shared.skip_constructed_finals", "true");
     JPF jpf = new JPF(config);
     try {
       jpf.run();
@@ -58,6 +62,15 @@ public class JpfRunner implements org.apache.geode.test.concurrency.Runner {
         .add(new AssertionError("JPF found test failures: " + error.getDescription())));
 
     return failures;
+  }
+
+  private String[] getUserConfiguration(Method child) {
+    JpfRunnerConfig annotation = child.getDeclaringClass().getAnnotation(JpfRunnerConfig.class);
+    if (annotation != null) {
+      return annotation.value();
+    }
+
+    return new String[] {};
   }
 
   private String getClasspath() {
@@ -75,8 +88,6 @@ public class JpfRunner implements org.apache.geode.test.concurrency.Runner {
     public static void main(String[] args) throws Exception {
       String clazzName = args[0];
       String methodName = args[1];
-      System.setProperty(LogManager.FACTORY_PROPERTY_NAME,
-          SimpleLoggerContextFactory.class.getName());
       Class clazz = Class.forName(clazzName);
       Object instance = clazz.newInstance();
       Method method = clazz.getMethod(methodName, ParallelExecutor.class);

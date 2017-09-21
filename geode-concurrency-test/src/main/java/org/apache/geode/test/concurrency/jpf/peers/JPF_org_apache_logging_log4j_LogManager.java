@@ -20,23 +20,10 @@ import gov.nasa.jpf.vm.NativePeer;
 
 import org.apache.geode.test.concurrency.jpf.logging.EmptyLogger;
 
-public class JPF_org_apache_geode_internal_logging_LogService extends NativePeer {
+public class JPF_org_apache_logging_log4j_LogManager extends NativePeer {
 
   @MJI
   public void $clinit____V(MJIEnv env, int clsObjRef) {
-    // Override LogService initialization, which tries to load some log4j classes
-    // which in turn will try to read from zip files, etc...
-  }
-
-  @MJI
-  public int getLogger__Ljava_lang_String_2__Lorg_apache_logging_log4j_Logger_2(MJIEnv env,
-      int clsObjRef, int rString0) {
-    return getLogger____Lorg_apache_logging_log4j_Logger_2(env, clsObjRef);
-  }
-
-  @MJI
-  public int getLogger____Lorg_apache_logging_log4j_Logger_2(MJIEnv env, int clsObjRef) {
-    int logger = env.newObject(EmptyLogger.class.getName());
-    return logger;
+    // Override LogManager initialization, which tries to load a bunch of stuff from jars
   }
 }

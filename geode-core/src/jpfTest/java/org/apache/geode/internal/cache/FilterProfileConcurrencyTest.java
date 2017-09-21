@@ -33,6 +33,9 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
+import org.apache.geode.test.concurrency.annotation.ConcurrentTestConfig;
+import org.apache.geode.test.concurrency.loop.LoopRunner;
+import org.apache.geode.test.concurrency.loop.LoopRunnerConfig;
 
 @RunWith(ConcurrentTestRunner.class)
 public class FilterProfileConcurrencyTest {
@@ -40,7 +43,7 @@ public class FilterProfileConcurrencyTest {
   @Test
   public void serializationOfFilterProfileWithConcurrentUpdateShouldSucceed(
       ParallelExecutor executor) throws Exception {
-    warmUp();
+    // warmUp();
 
     FilterProfile profile = createFilterProfile();
 

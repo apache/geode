@@ -34,16 +34,9 @@ public interface ParallelExecutor {
    * Add a task to run in parallel
    */
   default <T> Future<T> inParallel(RunnableWithException runnable) {
-    return inParallel(runnable, null);
-  }
-
-  /**
-   * Add a task to run in parallel
-   */
-  default <T> Future<T> inParallel(RunnableWithException runnable, T value) {
     return inParallel(() -> {
       runnable.run();
-      return value;
+      return null;
     });
   }
 

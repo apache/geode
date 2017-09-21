@@ -63,10 +63,6 @@ class ParallelExecutorImpl implements ParallelExecutor {
       super(callable);
     }
 
-    public ThreadFuture(Runnable runnable, T result) {
-      super(runnable, result);
-    }
-
     public void setThread(Thread thread) {
       this.thread = thread;
     }

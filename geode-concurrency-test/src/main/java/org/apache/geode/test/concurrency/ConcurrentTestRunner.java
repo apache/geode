@@ -33,6 +33,7 @@ import org.junit.runners.ParentRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
+import org.apache.geode.test.concurrency.annotation.ConcurrentTestConfig;
 import org.apache.geode.test.concurrency.jpf.JpfRunner;
 
 
@@ -77,10 +78,21 @@ public class ConcurrentTestRunner extends ParentRunner<FrameworkMethod> {
   /**
    * Delegate to actually run the test.
    */
-  private Runner runner = new JpfRunner();;
+  private final Runner runner;
 
   public ConcurrentTestRunner(Class testClass) throws InitializationError {
     super(testClass);
+    ConcurrentTestConfig configuration = getTestClass().getAnnotation(ConcurrentTestConfig.class);
+    if (configuration == null) {
+      runner = new JpfRunner();
+      return;
+    }
+
+    try {
+      runner = configuration.runner().newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new InitializationError(e);
+    }
   }
 
   @Override
