@@ -71,14 +71,14 @@ export cluster-configuration --zip-file-name=value [--dir=value]
 **Example Commands:**
 
 ``` pre
-gfsh>export cluster-configuration --zip-file-name=/home/username/gemfire80/myClusterConfig.zip
+gfsh>export cluster-configuration --zip-file-name=/home/username/gemfire/myClusterConfig.zip
 ```
 
 **Sample Output:**
 
 ``` pre
 gfsh>export cluster-configuration --zip-file-name=mySharedConfig.zip
-Downloading cluster configuration : /home/username/gemfire80/myClusterConfig.zip
+Downloading cluster configuration : /home/username/gemfire/myClusterConfig.zip
 ```
 
 ## <a id="topic_C7C69306F93743459E65D46537F4A1EE" class="no-quick-link"></a>export config
@@ -115,8 +115,8 @@ export config --members=member1
 
 ``` pre
 gfsh>export config --members=member1
-Downloading Cache XML file: c:\PivotalGemFire70\Latest\.\member1-cache.xml
-Downloading properties file: c:\PivotalGemFire70\Latest\.\member1-gf.properties
+Downloading Cache XML file: c:\PivotalGemFire\Latest\.\member1-cache.xml
+Downloading properties file: c:\PivotalGemFire\Latest\.\member1-gf.properties
 ```
 
 ## <a id="topic_263B70069BFC4A7185F86B3272011734" class="no-quick-link"></a>export data
@@ -167,7 +167,7 @@ export data --region=region2 --file=region2_20121001.gfd --member=server2
 
 ``` pre
  gfsh>export data --region=region2 --file=region2_20121001.gfd --member=server1
-Data succesfully exported from region : region2 to file : C:\PivotalGemFire70\
+Data succesfully exported from region : region2 to file : C:\PivotalGemFire\
 Latest\server1\region2_20121001.gfd on host : 192.0.2.0
 ```
 
@@ -280,6 +280,6 @@ export stack-traces --file=stack.txt
 
 ``` pre
 gfsh>export stack-traces --file=stack.txt
-stack-trace(s) exported to file: C:\PivotalGemFire70\Latest\locator1\stack.txt
+stack-trace(s) exported to file: C:\PivotalGemFire\Latest\locator1\stack.txt
 On host : GemFireStymon
 ```

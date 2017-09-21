@@ -63,7 +63,7 @@ Open a gfsh prompt. After connecting to a <%=vars.product_name%> distributed sys
 gfsh>export data --region=Region --file=FileName.gfd --member=MemberName
 ```
 
-where *Region* corresponds to the name of the region that you want to export, *FileName* (must end in .gfd) corresponds to the name of the export file and *MemberName* corresponds to a member where the region to export is hosted. For example:
+where *Region* corresponds to the name of the region that you want to export, *FileName* (must end in .gfd) corresponds to the name of the export file and *MemberName* corresponds to a member that hosts the region. For example:
 
 ``` pre
 gfsh>export data --region=region1 --file=region1_2012_10_10.gfd --member=server1
@@ -82,7 +82,8 @@ Note that the `parallel` option takes a directory rather than a file; see [expor
 File mySnapshotDir = ...
 Region<String, MyObject> region = ... 
 
-SnapshotOptions<Integer, MyObject> options = region.getSnapshotServive.createOptions().setParallelMode(true);
+SnapshotOptions<Integer, MyObject> options = 
+ region.getSnapshotServive.createOptions().setParallelMode(true);
 region.getSnapshotService().save(mySnapshotDir, SnapshotFormat.GEMFIRE, options);
 ```
 
