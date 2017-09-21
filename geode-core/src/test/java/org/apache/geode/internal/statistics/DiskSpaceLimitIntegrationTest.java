@@ -16,27 +16,12 @@ package org.apache.geode.internal.statistics;
 
 import static java.lang.String.valueOf;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.apache.commons.io.FileUtils.*;
+import static org.apache.commons.io.FileUtils.moveFileToDirectory;
+import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.apache.commons.lang.StringUtils.leftPad;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.internal.io.RollingFileHandler;
-import org.apache.geode.internal.util.ArrayUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +30,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-@Category(IntegrationTest.class)
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
+
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
+import org.apache.geode.internal.io.RollingFileHandler;
+import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+
+/**
+ * Flaky: GEODE-2790, GEODE-3205
+ */
+@Category({IntegrationTest.class, FlakyTest.class})
 @SuppressWarnings("unused")
 public class DiskSpaceLimitIntegrationTest {
 
