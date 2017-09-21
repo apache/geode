@@ -53,11 +53,11 @@ public class LuceneDescribeIndexFunctionJUnitTest {
     ResultSender resultSender = mock(ResultSender.class);
     LuceneIndexInfo indexInfo = getMockLuceneInfo("index1");
     LuceneIndexImpl index1 = getMockLuceneIndex("index1");
-    LuceneDescribeIndexFunction function = spy(LuceneDescribeIndexFunction.class);
+    LuceneDescribeIndexFunction function = new LuceneDescribeIndexFunction();
 
     doReturn(indexInfo).when(context).getArguments();
     doReturn(resultSender).when(context).getResultSender();
-    doReturn(cache).when(function).getCache();
+    doReturn(cache).when(context).getCache();
     when(service.getIndex(indexInfo.getIndexName(), indexInfo.getRegionPath())).thenReturn(index1);
 
     function.execute(context);

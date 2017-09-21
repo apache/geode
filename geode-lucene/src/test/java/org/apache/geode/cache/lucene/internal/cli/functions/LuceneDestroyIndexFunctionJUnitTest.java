@@ -49,6 +49,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     this.context = mock(FunctionContext.class);
     this.resultSender = mock(ResultSender.class);
     when(this.context.getResultSender()).thenReturn(this.resultSender);
+    when(this.context.getCache()).thenReturn(this.cache);
   }
 
   @Test
@@ -60,7 +61,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
     verify(this.service).destroyIndex(eq(indexName), eq(regionPath));
     verify(function).getXmlEntity(eq(indexName), eq(regionPath));
@@ -77,8 +77,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     doThrow(new IllegalStateException()).when(this.service).destroyIndex(eq(indexName),
         eq(regionPath));
     function.execute(this.context);
@@ -93,7 +91,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
     verify(this.service).destroyDefinedIndex(eq(indexName), eq(regionPath));
     verify(this.service, never()).destroyIndex(eq(indexName), eq(regionPath));
@@ -110,8 +107,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndex(eq(indexName),
         eq(regionPath));
     function.execute(this.context);
@@ -126,7 +121,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
     verify(this.service).destroyIndexes(eq(regionPath));
     verify(function).getXmlEntity(eq(null), eq(regionPath));
@@ -142,8 +136,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     doThrow(new IllegalStateException()).when(this.service).destroyIndexes(eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
@@ -157,7 +149,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
     verify(this.service).destroyDefinedIndexes(eq(regionPath));
     verify(this.service, never()).destroyIndexes(eq(regionPath));
@@ -173,8 +164,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    function = spy(function);
-    doReturn(this.cache).when(function).getCache();
     doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
