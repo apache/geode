@@ -336,6 +336,17 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
         CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER));
   }
 
+  @Test
+  @Parameters("PARTITION")
+  public void verifyDifferentSerializerShouldFail2(RegionTestableType regionType) {
+    SerializableRunnableIF createIndex1 = getHeterogeneousLuceneSerializerCreationProfile();
+    dataStore1.invoke(() -> initDataStore(createIndex1, regionType));
+
+    SerializableRunnableIF createIndex2 = getIndexWithDummySerializer();
+    dataStore2.invoke(() -> initDataStore(createIndex2, regionType,
+        CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER));
+  }
+
   protected String getXmlFileForTest(String testName) {
     return TestUtil.getResourcePath(getClass(),
         getClassSimpleName() + "." + testName + ".cache.xml");
