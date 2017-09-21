@@ -38,7 +38,7 @@ upgrading from an older version of <%=vars.product_name%> to a new one.
 
 - In a given cluster, only one locator needs to perform the import. 
 That locator shares the imported configuration with all other connected locators in the distributed system.
-- Locators share the imported configuration with data members (servers) when they start, or if they have been recently started and no other
+- Locators share the imported configuration with data members (servers) when the servers start, or if the servers have been recently started and no other
 configuration changes have been made (such as new region definitions, for example).
 - Data members that were already running before the import may need to be restarted to obtain the new cluster configuration.
 
@@ -97,7 +97,8 @@ See [export data](export.html#topic_263B70069BFC4A7185F86B3272011734) for an exp
 If the data was exported from a partitioned region in parallel format, use the `--parallel` option to import the data:
 
 ``` pre
-import data --parallel --region=value --member=value --dir=value [--invoke-callbacks=value]
+import data --parallel --region=value --member=value --dir=value
+  [--invoke-callbacks=value]
 ```
 
 In this scenario, partitioned region data is imported simultaneously on all hosting nodes from directories local to those respective nodes.
@@ -113,7 +114,7 @@ In this scenario, partitioned region data is imported simultaneously on all host
 |------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----|
 | <span class="keyword parmname">\\-\\-region</span> | *Required.* Region into which data will be imported. | |
 | <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/ID of a member that hosts the region. In a serial import, all data is imported from the specified file on the host where the member is running.  In a parallel import, data from a partitioned region partially hosted on this member is imported for each partition from files on the nodes that host those partitions. | |
-| <span class="keyword parmname">\\-\\-file </span>  | File from which the imported data will be read. The file must have an extension of ".gfd" and must be on the file system of the member (or accessible to that member via NFS) that is being targeted for the import. Cannot be specified at the same time as \\-\\-dir, cannot be used with &#8209;&#8209;parallel. | |
+| <span class="keyword parmname">\\-\\-file </span>  | File from which the imported data will be read. The file must have an extension of `.gfd` and must be on the file system of the member (or accessible to that member via NFS) that is being targeted for the import. Cannot be specified at the same time as \\-\\-dir, cannot be used with &#8209;&#8209;parallel. | |
 | <span class="keyword parmname">\\-\\-dir</span>   | Directory from which the data is to be imported. Required if \\-\\-parallel is true. Cannot be specified at the same time as \\-\\-file. If a given node has no data file in the specified directory, the import operation is silently skipped for that node. | |
 | <span class="keyword parmname">&#8209;&#8209;invoke&#8209;callbacks</span> | Boolean value that, when true, invokes callbacks during the data import. |  false |
 
