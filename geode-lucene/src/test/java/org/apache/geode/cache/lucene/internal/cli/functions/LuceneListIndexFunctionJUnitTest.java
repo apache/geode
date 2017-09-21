@@ -57,6 +57,7 @@ public class LuceneListIndexFunctionJUnitTest {
     FunctionContext context = mock(FunctionContext.class);
     ResultSender resultSender = mock(ResultSender.class);
     when(context.getResultSender()).thenReturn(resultSender);
+    when(context.getCache()).thenReturn(cache);
 
     LuceneIndexImpl index1 = getMockLuceneIndex("index1");
     LuceneIndexImpl index2 = getMockLuceneIndex("index2");
@@ -71,8 +72,6 @@ public class LuceneListIndexFunctionJUnitTest {
     when(service.getAllIndexes()).thenReturn(allIndexes);
 
     LuceneListIndexFunction function = new LuceneListIndexFunction();
-    function = spy(function);
-    Mockito.doReturn(cache).when(function).getCache();
     function.execute(context);
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);

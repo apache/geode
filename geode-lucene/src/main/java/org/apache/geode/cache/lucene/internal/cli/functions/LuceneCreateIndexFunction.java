@@ -53,10 +53,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 @SuppressWarnings("unused")
 public class LuceneCreateIndexFunction extends FunctionAdapter implements InternalEntity {
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   public String getId() {
     return LuceneCreateIndexFunction.class.getName();
   }
@@ -65,7 +61,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
     String memberId = null;
     try {
       final LuceneIndexInfo indexInfo = (LuceneIndexInfo) context.getArguments();
-      final Cache cache = getCache();
+      final Cache cache = context.getCache();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       LuceneService service = LuceneServiceProvider.get(cache);
 

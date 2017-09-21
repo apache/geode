@@ -58,11 +58,11 @@ public class LuceneSearchIndexFunctionJUnitTest {
     InternalLuceneService service = getMockLuceneService("A", "Value", "1.2");
     Region mockRegion = mock(Region.class);
 
-    LuceneSearchIndexFunction function = spy(LuceneSearchIndexFunction.class);
+    LuceneSearchIndexFunction function = new LuceneSearchIndexFunction();
 
     doReturn(queryInfo).when(context).getArguments();
     doReturn(resultSender).when(context).getResultSender();
-    doReturn(cache).when(function).getCache();
+    doReturn(cache).when(context).getCache();
 
     when(cache.getService(eq(InternalLuceneService.class))).thenReturn(service);
     when(cache.getRegion(queryInfo.getRegionPath())).thenReturn(mockRegion);
