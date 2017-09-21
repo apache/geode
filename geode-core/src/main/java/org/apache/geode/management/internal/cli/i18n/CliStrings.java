@@ -2120,7 +2120,9 @@ public class CliStrings {
   public static final String CREATE_GATEWAYRECEIVER__MANUALSTART = "manual-start";
   public static final String CREATE_GATEWAYRECEIVER__MANUALSTART__HELP =
       "Whether manual start is to be enabled or the receiver will start automatically after creation.";
-
+  public static final String CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS = "hostname-for-senders";
+  public static final String CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP =
+      "The host name that server locators will tell GatewaySenders this GatewayReceiver is listening on.";
 
   /* start gateway-receiver */
   public static final String START_GATEWAYRECEIVER = "start gateway-receiver";

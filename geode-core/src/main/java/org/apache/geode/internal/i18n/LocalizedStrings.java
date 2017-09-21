@@ -7213,7 +7213,7 @@ public class LocalizedStrings {
       new StringId(5305,
           "Exception occurred while handling call to {0}.afterAcknowledgement for event {1}:");
   public static final StringId GatewayReceiverImpl_USING_LOCAL_HOST =
-      new StringId(5399, "No bind-address or hostname-for-sender is specified, Using local host ");
+      new StringId(5399, "No bind-address or hostname-for-senders specified, Using local host ");
   public static final StringId GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME =
       new StringId(5400, "Could not get host name");
   public static final StringId CqService_ERROR_SENDING_CQ_CONNECTION_STATUS =

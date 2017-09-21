@@ -554,7 +554,7 @@ org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction
 org/apache/geode/management/internal/cli/functions/FetchSharedConfigurationStatusFunction,true,1
 org/apache/geode/management/internal/cli/functions/GarbageCollectionFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewayReceiverCreateFunction,true,8746830191680509335
-org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,true,-5158224572470173267,bindAddress:java/lang/String,endPort:java/lang/Integer,gatewayTransportFilters:java/lang/String[],manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
+org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,true,-5158224572470173267,bindAddress:java/lang/String,endPort:java/lang/Integer,gatewayTransportFilters:java/lang/String[],hostnameForSenders:java/lang/String,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
 org/apache/geode/management/internal/cli/functions/GatewaySenderCreateFunction,true,8746830191680509335
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunctionArgs,true,3848480256348119530,id:java/lang/String
@@ -612,10 +612,7 @@ org/apache/geode/management/internal/configuration/domain/SharedConfigurationSta
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
 org/apache/geode/management/internal/configuration/functions/UploadJarFunction,true,1
-org/apache/geode/management/internal/web/domain/Link,false,href:java/net/URI,method:org/apache/geode/management/internal/web/http/HttpMethod,relation:java/lang/String
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
-org/apache/geode/management/internal/web/http/HttpHeader,false,name:java/lang/String
-org/apache/geode/management/internal/web/http/HttpMethod,false
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/management/internal/web/shell/RestApiCallForCommandNotFoundException,true,6686566370779394304
 org/apache/geode/memcached/GemFireMemcachedServer$Protocol,false
