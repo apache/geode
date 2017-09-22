@@ -14,13 +14,10 @@
  */
 package org.apache.geode.security;
 
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.cache.Region;
-import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.shiro.authz.permission.WildcardPermission;
+
+import org.apache.geode.cache.Region;
 
 /**
  * ResourcePermission defines the resource, the operation, the region and the key involved in the

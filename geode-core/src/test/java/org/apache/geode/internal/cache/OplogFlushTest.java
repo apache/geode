@@ -16,16 +16,14 @@
 package org.apache.geode.internal.cache;
 
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +32,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;

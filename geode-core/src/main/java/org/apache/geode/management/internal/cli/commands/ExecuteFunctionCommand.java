@@ -16,25 +16,20 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.internal.security.IntegratedSecurityService.CREDENTIALS_SESSION_ATTRIBUTE;
-import static org.apache.geode.management.internal.cli.CliUtil.getAllNormalMembers;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -75,7 +70,7 @@ public class ExecuteFunctionCommand implements GfshCommand {
     String headerText = "Execution summary";
     resultTable.setHeader(headerText);
 
-    // when here, the options are already parsed and valided
+    // when here, the options are already parsed and validated
     // find out the members this function need to be executed on
     Set<DistributedMember> dsMembers;
     if (onRegion == null) {

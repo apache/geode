@@ -50,7 +50,6 @@ public class ResultBuilder {
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
    * 
    * @param message Message to be shown to the user
-   * @return Result for connection error
    */
   public static CommandResult createConnectionErrorResult(String message) {
     String errorMessage = message != null ? message : "Connection Error occurred.";
@@ -73,7 +72,6 @@ public class ResultBuilder {
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
    * 
    * @param message Message to be shown to the user
-   * @return Result for parsing error
    */
   public static CommandResult createParsingErrorResult(String message) {
     return createErrorResult(ERRORCODE_PARSING_ERROR, "Could not parse command string. " + message);
@@ -90,7 +88,6 @@ public class ResultBuilder {
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
    * 
    * @param message Message to be shown to the user
-   * @return Result for error in Geode while executing command.
    */
   public static CommandResult createGemFireErrorResult(String message) {
     return createErrorResult(ERRORCODE_GEODE_ERROR,
@@ -112,7 +109,6 @@ public class ResultBuilder {
    * {@link ErrorResultData} & then use {@link #buildResult(ResultData)}
    * 
    * @param message Message to be shown to the user
-   * @return Result for unreadable command response.
    */
   public static CommandResult createBadResponseErrorResult(String message) {
     return createErrorResult(ERRORCODE_BADRESPONSE_ERROR,
@@ -127,7 +123,6 @@ public class ResultBuilder {
    * 
    * @param errorCode error code should be one of ResultBuilder.ERRORCODE_**
    * @param message message for the error
-   * @return Result object with the given error code & message.
    */
   private static CommandResult createErrorResult(int errorCode, String message) {
     ErrorResultData errorResultData = new ErrorResultData();
@@ -140,7 +135,6 @@ public class ResultBuilder {
    * Convenience method to create a simple Info Result that takes a message.
    * 
    * @param message Message for the OK Result
-   * @return Result of InfoResultData type
    */
   public static Result createInfoResult(String message) {
     InfoResultData infoResultData = new InfoResultData();
@@ -189,7 +183,6 @@ public class ResultBuilder {
    * Build a Result object from the given ResultData
    * 
    * @param resultData data to use to build Result
-   * @return Result object built from the given ResultData
    */
   public static CommandResult buildResult(ResultData resultData) {
     return new CommandResult(resultData);
@@ -201,7 +194,6 @@ public class ResultBuilder {
    * {@link ResultData#TYPE_INFO}, {@link ResultData#TYPE_ERROR}, {@link ResultData#TYPE_OBJECT}.
    * 
    * @param gfJsonObject GemFire JSON Object to use to prepare Result
-   * @return Result from the given GemFire JSON Object
    */
   public static CommandResult fromJson(GfJsonObject gfJsonObject) {
     return fromJson(gfJsonObject.toString());
@@ -213,8 +205,6 @@ public class ResultBuilder {
    * & prepare a Result object from the JSON response
    * 
    * @param json JSON string for Result
-   * @return Result object prepare from the JSON string. If it fails, creates an error Result for
-   *         Bad Response.
    */
   public static CommandResult fromJson(String json) {
     CommandResult result;

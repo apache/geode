@@ -119,7 +119,7 @@ public interface Function<T> extends Identifiable<String> {
   }
 
   /**
-   * returns the list of ResourcePermission this function requires.
+   * Returns the list of ResourcePermission this function requires.
    *
    * By default, functions require DATA:WRITE permission. If your function requires other
    * permissions, you will need to override this method.
