@@ -34,6 +34,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -41,6 +42,7 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -324,5 +326,11 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   @Override
   public void initializeEventDispatcher() {
     // no op for AsyncEventProcessor
+  }
+
+  @Override
+  protected void enqueueEvent(GatewayQueueEvent event) {
+    int pId = ((GatewaySenderEventImpl) event).getBucketId() % this.nDispatcher;
+    this.processors[pId].enqueueEvent(event);
   }
 }

@@ -37,6 +37,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
@@ -386,4 +387,10 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   }
 
+  @Override
+  protected void enqueueEvent(GatewayQueueEvent event) {
+    for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
+      serialProcessor.enqueueEvent(event);
+    }
+  }
 }

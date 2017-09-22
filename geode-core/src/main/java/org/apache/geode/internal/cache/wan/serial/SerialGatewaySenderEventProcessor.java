@@ -37,6 +37,7 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
@@ -859,4 +860,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   }
 
+  @Override
+  protected void enqueueEvent(GatewayQueueEvent event) {
+    // @TODO This API hasn't been implemented yet
+    throw new UnsupportedOperationException();
+  }
 }

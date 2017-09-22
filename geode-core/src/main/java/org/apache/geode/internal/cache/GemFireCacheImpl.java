@@ -80,6 +80,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
+import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -589,6 +590,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final SecurityService securityService;
 
+  private final Set<RegionEntrySynchronizationListener> synchronizationListeners =
+      new ConcurrentHashSet<>();
+
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
     String propertyName = "sun.nio.ch.bugLevel";
@@ -943,6 +947,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       SystemFailure.signalCacheCreate();
 
       this.diskMonitor = new DiskStoreMonitor();
+
+      addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
     } // synchronized
   }
 
@@ -5231,5 +5237,28 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public CqService getCqService() {
     return this.cqService;
+  }
+
+  public void addRegionEntrySynchronizationListener(RegionEntrySynchronizationListener listener) {
+    this.synchronizationListeners.add(listener);
+  }
+
+  public void removeRegionEntrySynchronizationListener(
+      RegionEntrySynchronizationListener listener) {
+    this.synchronizationListeners.remove(listener);
+  }
+
+  public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
+      InternalDistributedMember sender, LocalRegion region,
+      List<InitialImageOperation.Entry> entriesToSynchronize) {
+    for (RegionEntrySynchronizationListener listener : this.synchronizationListeners) {
+      try {
+        listener.afterSynchronization(sender, region, entriesToSynchronize);
+      } catch (Throwable t) {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.GemFireCacheImpl_CAUGHT_EXCEPTION_SYNCHRONIZING_EVENTS,
+            new Object[] {sender, region.getFullPath(), entriesToSynchronize}), t);
+      }
+    }
   }
 }

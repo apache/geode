@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.xmlcache;
 import java.util.List;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -87,4 +88,12 @@ public class SerialGatewaySenderCreation extends AbstractGatewaySender implement
 
   @Override
   protected void setModifiedEventId(EntryEventImpl clonedEvent) {}
+
+  protected GatewayQueueEvent getSynchronizationEvent(Object key, long timestamp) {
+    throw new UnsupportedOperationException();
+  }
+
+  protected void putSynchronizationEvent(GatewayQueueEvent event) {
+    throw new UnsupportedOperationException();
+  }
 }

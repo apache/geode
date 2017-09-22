@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.junit.experimental.categories.Category;
@@ -119,7 +120,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   protected static AsyncEventListener eventListener1;
 
-  private static final long MAX_WAIT = 10000;
+  private static final long MAX_WAIT = 60000;
 
   protected static GatewayEventFilter eventFilter;
 
@@ -477,21 +478,21 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void checkAsyncEventQueueSize(String asyncQueueId, int numQueueEntries) {
-    AsyncEventQueue theAsyncEventQueue = null;
+    checkAsyncEventQueueSize(asyncQueueId, numQueueEntries, false);
+  }
 
-    Set<AsyncEventQueue> asyncEventChannels = cache.getAsyncEventQueues();
-    for (AsyncEventQueue asyncChannel : asyncEventChannels) {
-      if (asyncQueueId.equals(asyncChannel.getId())) {
-        theAsyncEventQueue = asyncChannel;
-      }
-    }
-
-    GatewaySender sender = ((AsyncEventQueueImpl) theAsyncEventQueue).getSender();
+  public static void checkAsyncEventQueueSize(String asyncQueueId, int numQueueEntries,
+      boolean localSize) {
+    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(asyncQueueId);
+    GatewaySender sender = aeq.getSender();
 
     if (sender.isParallel()) {
       Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
-      assertEquals(numQueueEntries,
-          queues.toArray(new RegionQueue[queues.size()])[0].getRegion().size());
+      Region queueRegion = queues.toArray(new RegionQueue[queues.size()])[0].getRegion();
+      if (localSize) {
+        queueRegion = PartitionRegionHelper.getLocalData(queueRegion);
+      }
+      assertEquals(numQueueEntries, queueRegion.size());
     } else {
       Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
       int size = 0;
@@ -513,19 +514,21 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
    */
   public static void waitForAsyncEventQueueSize(String asyncQueueId, final int numQueueEntries)
       throws Exception {
-    AsyncEventQueue theAsyncEventQueue = null;
+    waitForAsyncEventQueueSize(asyncQueueId, numQueueEntries, false);
+  }
 
-    Set<AsyncEventQueue> asyncEventChannels = cache.getAsyncEventQueues();
-    for (AsyncEventQueue asyncChannel : asyncEventChannels) {
-      if (asyncQueueId.equals(asyncChannel.getId())) {
-        theAsyncEventQueue = asyncChannel;
-      }
-    }
-
-    GatewaySender sender = ((AsyncEventQueueImpl) theAsyncEventQueue).getSender();
+  public static void waitForAsyncEventQueueSize(String asyncQueueId, final int numQueueEntries,
+      boolean localSize) throws Exception {
+    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(asyncQueueId);
+    GatewaySender sender = aeq.getSender();
 
     if (sender.isParallel()) {
       final Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
+      Region queueRegion = queues.toArray(new RegionQueue[queues.size()])[0].getRegion();
+      if (localSize) {
+        queueRegion = PartitionRegionHelper.getLocalData(queueRegion);
+      }
+      final Region fQueueRegion = queueRegion;
 
       Wait.waitForCriterion(new WaitCriterion() {
 
@@ -534,8 +537,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         }
 
         public boolean done() {
-          boolean done = numQueueEntries == queues.toArray(new RegionQueue[queues.size()])[0]
-              .getRegion().size();
+          boolean done = numQueueEntries == fQueueRegion.size();
           return done;
         }
 

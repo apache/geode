@@ -316,4 +316,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   boolean hasPersistentRegion();
 
   void shutDownAll();
+
+  void invokeRegionEntrySynchronizationListenersAfterSynchronization(
+      InternalDistributedMember sender, LocalRegion region,
+      List<InitialImageOperation.Entry> entriesToSynchronize);
 }

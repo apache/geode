@@ -89,6 +89,9 @@ public class GatewaySenderStats {
   protected static final String LOAD_BALANCES_IN_PROGRESS = "loadBalancesInProgress";
   protected static final String LOAD_BALANCE_TIME = "loadBalanceTime";
 
+  protected static final String SYNCHRONIZATION_EVENTS_ENQUEUED = "synchronizationEventsEnqueued";
+  protected static final String SYNCHRONIZATION_EVENTS_PROVIDED = "synchronizationEventsProvided";
+
   /** Id of the events queued statistic */
   protected static int eventsReceivedId;
   /** Id of the events queued statistic */
@@ -140,6 +143,10 @@ public class GatewaySenderStats {
   protected static int loadBalancesInProgressId;
   /** Id of load balance time */
   protected static int loadBalanceTimeId;
+  /** Id of synchronization events enqueued */
+  protected static int synchronizationEventsEnqueuedId;
+  /** Id of synchronization events provided */
+  protected static int synchronizationEventsProvidedId;
 
   /**
    * Static initializer to create and initialize the <code>StatisticsType</code>
@@ -213,7 +220,11 @@ public class GatewaySenderStats {
             f.createIntGauge(LOAD_BALANCES_IN_PROGRESS, "Number of load balances in progress",
                 "operations"),
             f.createLongCounter(LOAD_BALANCE_TIME, "Total time spent load balancing this sender",
-                "nanoseconds"),});
+                "nanoseconds"),
+            f.createIntCounter(SYNCHRONIZATION_EVENTS_ENQUEUED,
+                "Number of synchronization events added to the event queue.", "operations"),
+            f.createIntCounter(SYNCHRONIZATION_EVENTS_PROVIDED,
+                "Number of synchronization events provided to other members.", "operations"),});
 
     // Initialize id fields
     eventsReceivedId = type.nameToId(EVENTS_RECEIVED);
@@ -243,6 +254,8 @@ public class GatewaySenderStats {
     loadBalancesCompletedId = type.nameToId(LOAD_BALANCES_COMPLETED);
     loadBalancesInProgressId = type.nameToId(LOAD_BALANCES_IN_PROGRESS);
     loadBalanceTimeId = type.nameToId(LOAD_BALANCE_TIME);
+    synchronizationEventsEnqueuedId = type.nameToId(SYNCHRONIZATION_EVENTS_ENQUEUED);
+    synchronizationEventsProvidedId = type.nameToId(SYNCHRONIZATION_EVENTS_PROVIDED);
   }
 
   ////////////////////// Instance Fields //////////////////////
@@ -739,6 +752,20 @@ public class GatewaySenderStats {
     stats.incInt(loadBalancesInProgressId, -1);
     stats.incInt(loadBalancesCompletedId, 1);
     stats.incLong(loadBalanceTimeId, delta);
+  }
+
+  /**
+   * Increments the number of synchronization events enqueued.
+   */
+  public void incSynchronizationEventsEnqueued() {
+    this.stats.incInt(synchronizationEventsEnqueuedId, 1);
+  }
+
+  /**
+   * Increments the number of synchronization events provided.
+   */
+  public void incSynchronizationEventsProvided() {
+    this.stats.incInt(synchronizationEventsProvidedId, 1);
   }
 
   public Statistics getStats() {

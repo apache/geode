@@ -1350,4 +1350,42 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       this.event.release();
     }
   }
+
+  protected GatewayQueueEvent getSynchronizationEvent(Object key, long timestamp) {
+    GatewayQueueEvent event = null;
+    for (RegionQueue queue : getQueues()) {
+      Region region = queue.getRegion();
+      for (Iterator i = region.values().iterator(); i.hasNext();) {
+        GatewaySenderEventImpl gsei = (GatewaySenderEventImpl) i.next();
+        if (gsei.getKey().equals(key) && gsei.getVersionTimeStamp() == timestamp) {
+          event = gsei;
+          logger.info(LocalizedMessage.create(
+              LocalizedStrings.AbstractGatewaySender_PROVIDING_SYNCHRONIZATION_EVENT,
+              new Object[] {this, key, timestamp, event}));
+          this.statistics.incSynchronizationEventsProvided();
+          break;
+        }
+      }
+    }
+    return event;
+  }
+
+  protected void putSynchronizationEvent(GatewayQueueEvent event) {
+    if (this.eventProcessor != null) {
+      this.lifeCycleLock.readLock().lock();
+      try {
+        logger.info(LocalizedMessage.create(
+            LocalizedStrings.AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT,
+            new Object[] {this, event}));
+        this.eventProcessor.enqueueEvent(event);
+        this.statistics.incSynchronizationEventsEnqueued();
+      } catch (Throwable t) {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ENQUEUEING_SYNCHRONIZATION_EVENT,
+            new Object[] {this, event}), t);
+      } finally {
+        this.lifeCycleLock.readLock().unlock();
+      }
+    }
+  }
 }

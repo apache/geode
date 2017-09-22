@@ -7697,6 +7697,20 @@ public class LocalizedStrings {
   public static final StringId LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED = new StringId(6660,
       "Region {0} cannot be destroyed because it defines Lucene index(es) [{1}]. Destroy all Lucene indexes before destroying the region.");
 
+  public static final StringId AbstractGatewaySender_CAUGHT_EXCEPTION_ENQUEUEING_SYNCHRONIZATION_EVENT =
+      new StringId(6661,
+          "{0}: Caught the following exception attempting to enqueue synchronization event={1}:");
+  public static final StringId GemFireCacheImpl_CAUGHT_EXCEPTION_SYNCHRONIZING_EVENTS =
+      new StringId(6662,
+          "Caught the following exception attempting to synchronize events from member={0}; regionPath={1}; entriesToSynchronize={2}:");
+  public static final StringId GatewaySenderQueueEntrySynchronizationReplyProcessor_REPLY_IS_EMPTY =
+      new StringId(6663,
+          "Synchronization event reply from member={0}; regionPath={1}; key={2}; entryVersion={3} is empty");
+  public static final StringId AbstractGatewaySender_PROVIDING_SYNCHRONIZATION_EVENT =
+      new StringId(6664, "{0}: Providing synchronization event for key={1}; timestamp={2}: {3}");
+  public static final StringId AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT =
+      new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**
