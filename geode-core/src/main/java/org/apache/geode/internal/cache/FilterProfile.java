@@ -72,7 +72,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 
@@ -205,13 +204,22 @@ public class FilterProfile implements DataSerializableFixedID {
    * distribution advisor profiles.
    */
   public FilterProfile(LocalRegion r) {
+    this(r, r.getMyId(), r.getGemFireCache().getCacheServers().size() > 0);
+  }
+
+  /**
+   * used for instantiation of a profile associated with a region and not describing region filters
+   * in a different process. Do not use this method when instantiating profiles to store in
+   * distribution advisor profiles.
+   */
+  public FilterProfile(LocalRegion r, DistributedMember member, boolean hasCacheServer) {
     this.region = r;
     this.isLocalProfile = true;
-    this.memberID = region.getMyId();
+    this.memberID = member;
     this.cqCount = new AtomicInteger();
     this.clientMap = new IDMap();
     this.cqMap = new IDMap();
-    this.localProfile.hasCacheServer = (r.getGemFireCache().getCacheServers().size() > 0);
+    this.localProfile.hasCacheServer = hasCacheServer;
   }
 
   public static boolean isCqOp(operationType opType) {
@@ -1494,13 +1502,12 @@ public class FilterProfile implements DataSerializableFixedID {
 
   }
 
-
   public int getDSFID() {
     return FILTER_PROFILE;
   }
 
   public void toData(DataOutput out) throws IOException {
-    InternalDataSerializer.invokeToData(((InternalDistributedMember) memberID), out);
+    InternalDataSerializer.invokeToData(memberID, out);
     InternalDataSerializer.writeSetOfLongs(this.allKeyClients.getSnapshot(),
         this.clientMap.hasLongID, out);
     DataSerializer.writeHashMap(this.keysOfInterest.getSnapshot(), out);
