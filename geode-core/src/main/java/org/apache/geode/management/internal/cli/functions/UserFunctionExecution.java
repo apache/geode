@@ -20,8 +20,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
@@ -33,7 +31,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -42,7 +39,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  * @since GemFire 7.0
  */
 public class UserFunctionExecution implements Function, InternalEntity {
-  private static final Logger LOGGER = LogService.getLogger();
   public static final String ID = UserFunctionExecution.class.getName();
 
   private static final long serialVersionUID = 1L;
@@ -170,17 +166,6 @@ public class UserFunctionExecution implements Function, InternalEntity {
   @Override
   public String getId() {
     return UserFunctionExecution.ID;
-  }
-
-  @Override
-  public boolean hasResult() {
-    return true;
-  }
-
-  @Override
-  public boolean optimizeForWrite() {
-    // no need of optimization since read-only.
-    return false;
   }
 
   @Override
