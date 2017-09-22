@@ -46,7 +46,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     userDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(userRegion.getDataStore()).thenReturn(userDataStore);
     when(cache.getRegion("/testRegion")).thenReturn(userRegion);
-    serializer = new HeterogeneousLuceneSerializer(new String[] {"a", "b"});
+    serializer = new HeterogeneousLuceneSerializer();
     createIndexAndRepoManager();
   }
 

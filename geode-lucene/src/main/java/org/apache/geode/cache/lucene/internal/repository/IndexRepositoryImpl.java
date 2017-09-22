@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal.repository;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.distributed.DistributedLockService;
@@ -54,6 +55,7 @@ public class IndexRepositoryImpl implements IndexRepository {
   private DocumentCountSupplier documentCountSupplier;
   private final DistributedLockService lockService;
   private String lockName;
+  private LuceneIndex index;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -61,12 +63,12 @@ public class IndexRepositoryImpl implements IndexRepository {
   IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
       LuceneIndexStats stats, Region<?, ?> userRegion) throws IOException {
     this(region, writer, serializer, stats, userRegion,
-        ((DistributedRegion) region).getLockService(), "NoLockFile");
+        ((DistributedRegion) region).getLockService(), "NoLockFile", null);
   }
 
   public IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
       LuceneIndexStats stats, Region<?, ?> userRegion, DistributedLockService lockService,
-      String lockName) throws IOException {
+      String lockName, LuceneIndex index) throws IOException {
     this.region = region;
     this.userRegion = userRegion;
     this.writer = writer;
@@ -77,13 +79,14 @@ public class IndexRepositoryImpl implements IndexRepository {
     stats.addDocumentsSupplier(documentCountSupplier);
     this.lockService = lockService;
     this.lockName = lockName;
+    this.index = index;
   }
 
   @Override
   public void create(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
     try {
-      Collection<Document> docs = serializer.toDocuments(value);
+      Collection<Document> docs = serializer.toDocuments(index, value);
       docs.forEach(doc -> SerializerUtil.addKey(key, doc));
       writer.addDocuments(docs);
     } finally {
@@ -95,7 +98,7 @@ public class IndexRepositoryImpl implements IndexRepository {
   public void update(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
     try {
-      Collection<Document> docs = serializer.toDocuments(value);
+      Collection<Document> docs = serializer.toDocuments(index, value);
       docs.forEach(doc -> SerializerUtil.addKey(key, doc));
       Term keyTerm = SerializerUtil.toKeyTerm(key);
       writer.updateDocuments(keyTerm, docs);

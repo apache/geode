@@ -43,7 +43,7 @@ import static org.junit.Assert.assertTrue;
 @Category(IntegrationTest.class)
 public class LuceneIndexRecoveryHAIntegrationTest {
   String[] indexedFields = new String[] {"txt"};
-  HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
+  HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
   Analyzer analyzer = new StandardAnalyzer();
 
   Cache cache;
@@ -53,7 +53,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
   @Before
   public void setup() {
     indexedFields = new String[] {"txt"};
-    mapper = new HeterogeneousLuceneSerializer(indexedFields);
+    mapper = new HeterogeneousLuceneSerializer();
     analyzer = new StandardAnalyzer();
     LuceneServiceImpl.registerDataSerializables();
 

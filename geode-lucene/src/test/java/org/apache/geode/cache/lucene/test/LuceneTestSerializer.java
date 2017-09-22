@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.test;
 
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.lucene.document.Document;
@@ -59,7 +60,7 @@ public class LuceneTestSerializer implements LuceneSerializer {
   }
 
   @Override
-  public Collection<Document> toDocuments(Object value) {
+  public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     return Collections.emptyList();
   }
 }

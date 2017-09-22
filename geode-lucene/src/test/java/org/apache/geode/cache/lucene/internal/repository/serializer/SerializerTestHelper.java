@@ -19,12 +19,15 @@ import static org.junit.Assert.assertEquals;
 import java.util.Collection;
 
 import org.apache.lucene.document.Document;
-
+import org.mockito.Mockito;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 
 public class SerializerTestHelper {
   static Document invokeSerializer(LuceneSerializer mapper, Object object) {
-    Collection<Document> docs = mapper.toDocuments(object);
+    LuceneIndex index = Mockito.mock(LuceneIndex.class);
+    Mockito.when(index.getFieldNames()).thenReturn(new String[] {"s", "i", "l", "d", "f", "s2"});
+    Collection<Document> docs = mapper.toDocuments(index, object);
     assertEquals(1, docs.size());
     return docs.iterator().next();
   }

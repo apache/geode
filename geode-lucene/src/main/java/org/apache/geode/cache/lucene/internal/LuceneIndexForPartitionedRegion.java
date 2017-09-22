@@ -59,7 +59,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
     LuceneSerializer mapper = luceneSerializer;
     if (mapper == null) {
-      mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+      mapper = new HeterogeneousLuceneSerializer();
     }
     PartitionedRepositoryManager partitionedRepositoryManager =
         new PartitionedRepositoryManager(this, mapper);

@@ -37,7 +37,7 @@ public class HeterogeneousLuceneSerializerJUnitTest {
   @Test
   public void testHeterogeneousObjects() {
     String[] fields = new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
-    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(fields);
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
 
     Type1 t1 = new Type1("a", 1, 2L, 3.0, 4.0f);
 
@@ -78,8 +78,7 @@ public class HeterogeneousLuceneSerializerJUnitTest {
 
   @Test
   public void shouldIndexPrimitiveStringIfRequested() {
-    HeterogeneousLuceneSerializer mapper =
-        new HeterogeneousLuceneSerializer(new String[] {LuceneService.REGION_VALUE_FIELD});
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
     Document doc = SerializerTestHelper.invokeSerializer(mapper, "sample value");
     assertEquals(1, doc.getFields().size());
     assertEquals("sample value", doc.getField(LuceneService.REGION_VALUE_FIELD).stringValue());
@@ -87,8 +86,7 @@ public class HeterogeneousLuceneSerializerJUnitTest {
 
   @Test
   public void shouldIndexPrimitiveNumberIfRequested() {
-    HeterogeneousLuceneSerializer mapper =
-        new HeterogeneousLuceneSerializer(new String[] {LuceneService.REGION_VALUE_FIELD});
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
     Document doc = SerializerTestHelper.invokeSerializer(mapper, 53);
 
     assertEquals(1, doc.getFields().size());

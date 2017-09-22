@@ -119,7 +119,7 @@ public class IndexRepositoryImplPerformanceTest {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
         String[] indexedFields = new String[] {"text"};
-        HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
+        HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
         repo = new IndexRepositoryImpl(fileAndChunkRegion, writer, mapper, stats, null);
       }
 

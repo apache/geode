@@ -97,7 +97,7 @@ public class LuceneIndexCreationProfileJUnitTest {
 
   private LuceneIndexCreationProfile getHeterogeneousLuceneSerializerCreationProfile() {
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
-        new StandardAnalyzer(), null, new HeterogeneousLuceneSerializer(new String[] {"field1"}));
+        new StandardAnalyzer(), null, new HeterogeneousLuceneSerializer());
   }
 
   @Test

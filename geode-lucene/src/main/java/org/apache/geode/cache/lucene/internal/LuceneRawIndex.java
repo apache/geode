@@ -29,7 +29,7 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
     HeterogeneousLuceneSerializer mapper = (HeterogeneousLuceneSerializer) luceneSerializer;
     if (mapper == null) {
-      mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+      mapper = new HeterogeneousLuceneSerializer();
     }
     RawLuceneRepositoryManager rawLuceneRepositoryManager =
         new RawLuceneRepositoryManager(this, mapper);

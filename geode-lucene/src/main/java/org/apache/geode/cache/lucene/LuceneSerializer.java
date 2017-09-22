@@ -30,6 +30,8 @@ public interface LuceneSerializer extends Declarable {
 
   /**
    * Add the fields of the given value to a set of documents
+   * 
+   * @param index lucene index
    */
-  Collection<Document> toDocuments(Object value);
+  Collection<Document> toDocuments(LuceneIndex index, Object value);
 }

@@ -506,8 +506,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
-          .setLuceneSerializer(new HeterogeneousLuceneSerializer(new String[] {"field1", "field2"}))
-          .create(INDEX_NAME, REGION_NAME);
+          .setLuceneSerializer(new HeterogeneousLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
     };
   }
 }

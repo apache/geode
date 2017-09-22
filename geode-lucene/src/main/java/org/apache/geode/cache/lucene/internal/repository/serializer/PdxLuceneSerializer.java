@@ -21,6 +21,7 @@ import org.apache.lucene.document.Document;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.PdxInstance;
@@ -39,7 +40,7 @@ class PdxLuceneSerializer implements LuceneSerializer {
   }
 
   @Override
-  public Collection<Document> toDocuments(Object value) {
+  public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     Document doc = new Document();
     PdxInstance pdx = (PdxInstance) value;
     for (String field : indexedFields) {

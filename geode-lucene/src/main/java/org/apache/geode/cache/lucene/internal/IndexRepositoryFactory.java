@@ -83,7 +83,7 @@ public class IndexRepositoryFactory {
       IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
       IndexWriter writer = new IndexWriter(dir, config);
       repo = new IndexRepositoryImpl(fileAndChunkBucket, writer, serializer,
-          indexForPR.getIndexStats(), dataBucket, lockService, lockName);
+          indexForPR.getIndexStats(), dataBucket, lockService, lockName, indexForPR);
       success = true;
       return repo;
     } catch (IOException e) {
