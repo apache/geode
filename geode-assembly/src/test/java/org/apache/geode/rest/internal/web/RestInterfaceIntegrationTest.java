@@ -75,9 +75,9 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
-import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.rules.RequiresGeodeHome;
 
 /**
  * The GemFireRestInterfaceTest class is a test suite of test cases testing the contract and

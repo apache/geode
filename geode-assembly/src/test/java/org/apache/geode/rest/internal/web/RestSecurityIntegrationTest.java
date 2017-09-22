@@ -32,11 +32,11 @@ import org.springframework.http.MediaType;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.RequiresGeodeHome;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.rules.RequiresGeodeHome;
 
 @Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
 public class RestSecurityIntegrationTest {

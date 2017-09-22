@@ -19,8 +19,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
+import org.apache.geode.test.rules.gfsh.GfshRule;
 
 @Category(AcceptanceTest.class)
 public class GfshDisconnectWithinScript {
