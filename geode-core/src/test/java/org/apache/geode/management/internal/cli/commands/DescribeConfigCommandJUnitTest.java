@@ -28,8 +28,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class DescribeConfigCommandJUnitTest {
-
-
   private static final String[] EXPECTED_BASE_CONFIGURATION_DATA = {"Configuration of member :",
       "JVM command line arguments", "GemFire properties defined using the API"};
 
@@ -63,7 +61,6 @@ public class DescribeConfigCommandJUnitTest {
     for (String datum : EXPECTED_EXPANDED_CONFIGURATION_DATA) {
       assertThat(result).contains(datum);
     }
-
   }
 
   @Test
@@ -71,7 +68,6 @@ public class DescribeConfigCommandJUnitTest {
     String result = gfsh.execute("describe config --member=" + server.getName());
     assertThat(result).contains("was found but is not currently available");
   }
-
 
   @Test
   public void describeConfigOnInvalidMember() throws Exception {
@@ -81,7 +77,6 @@ public class DescribeConfigCommandJUnitTest {
     gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManger);
     String result = gfsh.execute("describe config --member=" + invalidMemberName);
     assertThat(result).contains(expectedErrorString);
-
   }
 
   @Test
@@ -91,6 +86,5 @@ public class DescribeConfigCommandJUnitTest {
     gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManger);
     String result = gfsh.execute("describe config");
     assertThat(result).contains(expectedErrorString);
-
   }
 }
