@@ -37,9 +37,9 @@ import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
-import org.apache.geode.test.dunit.rules.gfsh.GfshExecution;
-import org.apache.geode.test.dunit.rules.gfsh.GfshRule;
-import org.apache.geode.test.dunit.rules.gfsh.GfshScript;
+import org.apache.geode.test.rules.gfsh.GfshExecution;
+import org.apache.geode.test.rules.gfsh.GfshRule;
+import org.apache.geode.test.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 
 // Originally created in response to GEODE-2971

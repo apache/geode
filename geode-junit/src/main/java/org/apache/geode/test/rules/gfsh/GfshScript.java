@@ -12,15 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.rules.gfsh;
+package org.apache.geode.test.rules.gfsh;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 
 public class GfshScript {
   private final String[] commands;
@@ -155,9 +153,9 @@ public class GfshScript {
 
   private String defaultName(String... commands) {
     try {
-      return commands[0].substring(0, commands[0].indexOf("-"));
+      return commands[0].substring(0, commands[0].indexOf("-")).trim();
     } catch (Exception handled) {
-      return new ThreePhraseGenerator().generate('-');
+      return commands[0];
     }
   }
 }
