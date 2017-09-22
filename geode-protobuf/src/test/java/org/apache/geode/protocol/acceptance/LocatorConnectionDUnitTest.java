@@ -183,80 +183,54 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     ignoredInvalidExecutionContext.remove();
   }
 
+  private Statistics getStatistics() {
+    InternalDistributedSystem distributedSystem =
+        (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
+
+    Statistics[] protobufServerStats =
+        distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+    assertEquals(1, protobufServerStats.length);
+    return protobufServerStats[0];
+  }
+
   private Long getBytesReceived() {
     return Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
+      Statistics statistics = getStatistics();
       return statistics.get("bytesReceived").longValue();
     });
   }
 
   private Long getBytesSent() {
     return Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
+      Statistics statistics = getStatistics();
       return statistics.get("bytesSent").longValue();
     });
   }
 
   private Long getMessagesReceived() {
     return Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
+      Statistics statistics = getStatistics();
       return statistics.get("messagesReceived").longValue();
     });
   }
 
   private Long getMessagesSent() {
     return Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
+      Statistics statistics = getStatistics();
       return statistics.get("messagesSent").longValue();
     });
   }
 
   private Integer getClientConnectionStarts() {
     return Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
+      Statistics statistics = getStatistics();
       return statistics.get("clientConnectionStarts").intValue();
     });
   }
 
   private Integer getClientConnectionTerminations() {
     return Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
+      Statistics statistics = getStatistics();
       return statistics.get("clientConnectionTerminations").intValue();
     });
   }
@@ -276,38 +250,10 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     assertEquals(1, getAvailableServersResponse.getServersCount());
   }
 
-  private void validateStats(long messagesReceived, long messagesSent, int clientConnectionStarts,
-      int clientConnectionTerminations) {
-    Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
-      assertEquals(0, statistics.get("currentClientConnections"));
-      assertEquals(messagesReceived, statistics.get("messagesReceived"));
-      assertEquals(messagesSent, statistics.get("messagesSent"));
-      assertTrue(statistics.get("bytesReceived").longValue() > 0);
-      assertTrue(statistics.get("bytesSent").longValue() > 0);
-      assertEquals(clientConnectionStarts, statistics.get("clientConnectionStarts"));
-      assertEquals(clientConnectionTerminations, statistics.get("clientConnectionTerminations"));
-      assertEquals(0L, statistics.get("authorizationViolations"));
-      assertEquals(0L, statistics.get("authenticationFailures"));
-    });
-  }
-
   private void validateStats(long messagesReceived, long messagesSent, long bytesReceived,
       long bytesSent, int clientConnectionStarts, int clientConnectionTerminations) {
     Host.getLocator().invoke(() -> {
-      InternalDistributedSystem distributedSystem =
-          (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
-      Statistics[] protobufServerStats =
-          distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-      assertEquals(1, protobufServerStats.length);
-      Statistics statistics = protobufServerStats[0];
+      Statistics statistics = getStatistics();
       assertEquals(0, statistics.get("currentClientConnections"));
       assertEquals(messagesSent, statistics.get("messagesSent"));
       assertEquals(messagesReceived, statistics.get("messagesReceived"));
