@@ -31,19 +31,15 @@ import org.apache.geode.pdx.PdxInstance;
  */
 class PdxLuceneSerializer implements LuceneSerializer {
 
-  private String[] indexedFields;
-
   private static final Logger logger = LogService.getLogger();
 
-  public PdxLuceneSerializer(String[] indexedFields) {
-    this.indexedFields = indexedFields;
-  }
+  public PdxLuceneSerializer() {}
 
   @Override
   public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     Document doc = new Document();
     PdxInstance pdx = (PdxInstance) value;
-    for (String field : indexedFields) {
+    for (String field : index.getFieldNames()) {
       if (pdx.hasField(field)) {
         Object fieldValue = pdx.getField(field);
         if (fieldValue == null) {

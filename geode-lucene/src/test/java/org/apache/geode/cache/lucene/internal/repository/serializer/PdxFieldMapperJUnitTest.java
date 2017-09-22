@@ -34,7 +34,7 @@ public class PdxFieldMapperJUnitTest {
   @Test
   public void testWriteFields() {
     String[] fields = new String[] {"s", "i"};
-    PdxLuceneSerializer mapper = new PdxLuceneSerializer(fields);
+    PdxLuceneSerializer mapper = new PdxLuceneSerializer();
 
     PdxInstance pdxInstance = mock(PdxInstance.class);
 
@@ -43,7 +43,7 @@ public class PdxFieldMapperJUnitTest {
     when(pdxInstance.getField("s")).thenReturn("a");
     when(pdxInstance.getField("i")).thenReturn(5);
 
-    Document doc = invokeSerializer(mapper, pdxInstance);
+    Document doc = invokeSerializer(mapper, pdxInstance, fields);
 
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
@@ -53,7 +53,7 @@ public class PdxFieldMapperJUnitTest {
   @Test
   public void testIgnoreMissing() {
     String[] fields = new String[] {"s", "i", "s2", "o"};
-    PdxLuceneSerializer mapper = new PdxLuceneSerializer(fields);
+    PdxLuceneSerializer mapper = new PdxLuceneSerializer();
 
     PdxInstance pdxInstance = mock(PdxInstance.class);
 
@@ -66,7 +66,7 @@ public class PdxFieldMapperJUnitTest {
     when(pdxInstance.getField("o")).thenReturn(new Object());
     when(pdxInstance.getField("o2")).thenReturn(new Object());
 
-    Document doc = invokeSerializer(mapper, pdxInstance);
+    Document doc = invokeSerializer(mapper, pdxInstance, fields);
 
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
@@ -76,7 +76,7 @@ public class PdxFieldMapperJUnitTest {
   @Test
   public void testNullField() {
     String[] fields = new String[] {"s", "i"};
-    PdxLuceneSerializer mapper = new PdxLuceneSerializer(fields);
+    PdxLuceneSerializer mapper = new PdxLuceneSerializer();
 
     PdxInstance pdxInstance = mock(PdxInstance.class);
 
@@ -85,7 +85,7 @@ public class PdxFieldMapperJUnitTest {
     when(pdxInstance.getField("s")).thenReturn("a");
     when(pdxInstance.getField("i")).thenReturn(null);
 
-    Document doc = invokeSerializer(mapper, pdxInstance);
+    Document doc = invokeSerializer(mapper, pdxInstance, fields);
 
     assertEquals(1, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());

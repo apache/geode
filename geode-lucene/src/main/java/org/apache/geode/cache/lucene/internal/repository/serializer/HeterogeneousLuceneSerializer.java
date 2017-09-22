@@ -48,7 +48,13 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
 
   private static final Logger logger = LogService.getLogger();
 
-  public HeterogeneousLuceneSerializer() {}
+  public HeterogeneousLuceneSerializer() {
+    final PrimitiveSerializer primitiveSerializer = new PrimitiveSerializer();
+    SerializerUtil.supportedPrimitiveTypes().stream()
+        .forEach(type -> mappers.put(type, primitiveSerializer));
+
+    pdxMapper = new PdxLuceneSerializer();
+  }
 
   @Override
   public Collection<Document> toDocuments(LuceneIndex index, Object value) {
@@ -59,7 +65,7 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
 
     LuceneSerializer mapper = getFieldMapper(value, index.getFieldNames());
 
-    Collection<Document> docs = mapper.toDocuments(null, value);
+    Collection<Document> docs = mapper.toDocuments(index, value);
     if (logger.isDebugEnabled()) {
       logger.debug("HeterogeneousLuceneSerializer.toDocuments:" + docs);
     }
@@ -71,15 +77,7 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
    * Get the field mapper based on the type of the given object.
    */
   private LuceneSerializer getFieldMapper(Object value, String[] indexedFields) {
-    if (Arrays.asList(indexedFields).contains(LuceneService.REGION_VALUE_FIELD)) {
-      final PrimitiveSerializer primitiveSerializer = new PrimitiveSerializer();
-      SerializerUtil.supportedPrimitiveTypes().stream()
-          .forEach(type -> mappers.put(type, primitiveSerializer));
-    }
     if (value instanceof PdxInstance) {
-      if (pdxMapper == null) {
-        pdxMapper = new PdxLuceneSerializer(indexedFields);
-      }
       return pdxMapper;
     } else {
       Class<?> clazz = value.getClass();
