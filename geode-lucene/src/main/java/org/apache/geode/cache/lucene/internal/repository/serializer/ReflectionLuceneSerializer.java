@@ -25,7 +25,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
-
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.logging.LogService;
 
@@ -63,7 +63,7 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
   }
 
   @Override
-  public Collection<Document> toDocuments(Object value) {
+  public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     Document doc = new Document();
     for (Field field : fields) {
       try {

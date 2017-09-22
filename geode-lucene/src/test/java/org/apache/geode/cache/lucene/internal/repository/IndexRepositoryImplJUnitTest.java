@@ -42,6 +42,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
@@ -73,7 +74,7 @@ public class IndexRepositoryImplJUnitTest {
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     writer = new IndexWriter(dir, config);
     String[] indexedFields = new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
-    mapper = new HeterogeneousLuceneSerializer(indexedFields);
+    mapper = new HeterogeneousLuceneSerializer();
     region = Mockito.mock(Region.class);
     userRegion = Mockito.mock(BucketRegion.class);
     BucketAdvisor bucketAdvisor = Mockito.mock(BucketAdvisor.class);
@@ -83,8 +84,10 @@ public class IndexRepositoryImplJUnitTest {
     Mockito.when(((BucketRegion) userRegion).getBucketAdvisor().isPrimary()).thenReturn(true);
     stats = Mockito.mock(LuceneIndexStats.class);
     Mockito.when(userRegion.isDestroyed()).thenReturn(false);
+    LuceneIndex index = Mockito.mock(LuceneIndex.class);
+    Mockito.when(index.getFieldNames()).thenReturn(new String[] {"s"});
     repo = new IndexRepositoryImpl(region, writer, mapper, stats, userRegion,
-        mock(DistributedLockService.class), "lockName");
+        mock(DistributedLockService.class), "lockName", index);
   }
 
   @Test

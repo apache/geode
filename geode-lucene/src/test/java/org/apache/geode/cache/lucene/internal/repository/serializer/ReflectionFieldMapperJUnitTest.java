@@ -39,7 +39,7 @@ public class ReflectionFieldMapperJUnitTest {
     Type1 type1 = new Type1("a", 1, 2L, 3.0, 4.0f);
     Type2 type2 = new Type2("a", 1, 2L, 3.0, 4.0f, "b");
 
-    Document doc1 = invokeSerializer(mapper1, type1);
+    Document doc1 = invokeSerializer(mapper1, type1, allFields);
 
     assertEquals(5, doc1.getFields().size());
     assertEquals("a", doc1.getField("s").stringValue());
@@ -48,7 +48,7 @@ public class ReflectionFieldMapperJUnitTest {
     assertEquals(3.0, doc1.getField("d").numericValue());
     assertEquals(4.0f, doc1.getField("f").numericValue());
 
-    Document doc2 = invokeSerializer(mapper2, type2);
+    Document doc2 = invokeSerializer(mapper2, type2, allFields);
 
     assertEquals(6, doc2.getFields().size());
     assertEquals("a", doc2.getField("s").stringValue());
@@ -67,7 +67,7 @@ public class ReflectionFieldMapperJUnitTest {
 
     Type2 type2 = new Type2("a", 1, 2L, 3.0, 4.0f, "b");
 
-    Document doc = invokeSerializer(mapper, type2);
+    Document doc = invokeSerializer(mapper, type2, fields);
 
     assertEquals(2, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());
@@ -82,7 +82,7 @@ public class ReflectionFieldMapperJUnitTest {
 
     Type2 type2 = new Type2("a", 1, 2L, 3.0, 4.0f, null);
 
-    Document doc = invokeSerializer(mapper, type2);
+    Document doc = invokeSerializer(mapper, type2, fields);
 
     assertEquals(1, doc.getFields().size());
     assertEquals("a", doc.getField("s").stringValue());

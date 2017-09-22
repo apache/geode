@@ -37,11 +37,11 @@ public class HeterogeneousLuceneSerializerJUnitTest {
   @Test
   public void testHeterogeneousObjects() {
     String[] fields = new String[] {"s", "i", "l", "d", "f", "s2", "missing"};
-    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(fields);
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
 
     Type1 t1 = new Type1("a", 1, 2L, 3.0, 4.0f);
 
-    Document doc1 = SerializerTestHelper.invokeSerializer(mapper, t1);
+    Document doc1 = SerializerTestHelper.invokeSerializer(mapper, t1, fields);
 
     assertEquals(5, doc1.getFields().size());
     assertEquals("a", doc1.getField("s").stringValue());
@@ -52,7 +52,7 @@ public class HeterogeneousLuceneSerializerJUnitTest {
 
     Type2 t2 = new Type2("a", 1, 2L, 3.0, 4.0f, "b");
 
-    Document doc2 = SerializerTestHelper.invokeSerializer(mapper, t2);
+    Document doc2 = SerializerTestHelper.invokeSerializer(mapper, t2, fields);
 
     assertEquals(6, doc2.getFields().size());
     assertEquals("a", doc2.getField("s").stringValue());
@@ -69,7 +69,7 @@ public class HeterogeneousLuceneSerializerJUnitTest {
     when(pdxInstance.getField("s")).thenReturn("a");
     when(pdxInstance.getField("i")).thenReturn(5);
 
-    Document doc3 = SerializerTestHelper.invokeSerializer(mapper, pdxInstance);
+    Document doc3 = SerializerTestHelper.invokeSerializer(mapper, pdxInstance, fields);
 
     assertEquals(2, doc3.getFields().size());
     assertEquals("a", doc3.getField("s").stringValue());
@@ -78,18 +78,18 @@ public class HeterogeneousLuceneSerializerJUnitTest {
 
   @Test
   public void shouldIndexPrimitiveStringIfRequested() {
-    HeterogeneousLuceneSerializer mapper =
-        new HeterogeneousLuceneSerializer(new String[] {LuceneService.REGION_VALUE_FIELD});
-    Document doc = SerializerTestHelper.invokeSerializer(mapper, "sample value");
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
+    Document doc = SerializerTestHelper.invokeSerializer(mapper, "sample value",
+        new String[] {LuceneService.REGION_VALUE_FIELD});
     assertEquals(1, doc.getFields().size());
     assertEquals("sample value", doc.getField(LuceneService.REGION_VALUE_FIELD).stringValue());
   }
 
   @Test
   public void shouldIndexPrimitiveNumberIfRequested() {
-    HeterogeneousLuceneSerializer mapper =
-        new HeterogeneousLuceneSerializer(new String[] {LuceneService.REGION_VALUE_FIELD});
-    Document doc = SerializerTestHelper.invokeSerializer(mapper, 53);
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
+    Document doc = SerializerTestHelper.invokeSerializer(mapper, 53,
+        new String[] {LuceneService.REGION_VALUE_FIELD});
 
     assertEquals(1, doc.getFields().size());
 

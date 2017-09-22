@@ -22,7 +22,7 @@ import org.apache.lucene.document.Document;
 public class DummyLuceneSerializer implements LuceneSerializer {
 
   @Override
-  public Collection<Document> toDocuments(Object value) {
+  public Collection<Document> toDocuments(LuceneIndex index, Object value) {
     return Collections.emptyList();
   }
 

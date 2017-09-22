@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
-
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.internal.logging.LogService;
@@ -33,11 +33,6 @@ import org.apache.geode.pdx.PdxInstance;
  * from a PDX instance and writes them to a lucene document.
  */
 public class HeterogeneousLuceneSerializer implements LuceneSerializer {
-  /**
-   * The set of indexed fields for this mapper
-   */
-  private String[] indexedFields;
-
   /**
    * A mapper for converting a PDX object into a document
    */
@@ -53,36 +48,24 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
 
   private static final Logger logger = LogService.getLogger();
 
-  public HeterogeneousLuceneSerializer(String[] indexedFields) {
-    this.indexedFields = indexedFields;
-    pdxMapper = new PdxLuceneSerializer(indexedFields);
+  public HeterogeneousLuceneSerializer() {
+    final PrimitiveSerializer primitiveSerializer = new PrimitiveSerializer();
+    SerializerUtil.supportedPrimitiveTypes().stream()
+        .forEach(type -> mappers.put(type, primitiveSerializer));
 
-
-    addSerializersForPrimitiveValues();
-  }
-
-  /**
-   * Add serializers for the primitive value types (String, Number, etc.) if the user has requested
-   * that the whole value be serialized
-   */
-  private void addSerializersForPrimitiveValues() {
-    if (Arrays.asList(indexedFields).contains(LuceneService.REGION_VALUE_FIELD)) {
-      final PrimitiveSerializer primitiveSerializer = new PrimitiveSerializer();
-      SerializerUtil.supportedPrimitiveTypes().stream()
-          .forEach(type -> mappers.put(type, primitiveSerializer));
-    }
+    pdxMapper = new PdxLuceneSerializer();
   }
 
   @Override
-  public Collection<Document> toDocuments(Object value) {
+  public Collection<Document> toDocuments(LuceneIndex index, Object value) {
 
     if (value == null) {
       return Collections.emptyList();
     }
 
-    LuceneSerializer mapper = getFieldMapper(value);
+    LuceneSerializer mapper = getFieldMapper(value, index.getFieldNames());
 
-    Collection<Document> docs = mapper.toDocuments(value);
+    Collection<Document> docs = mapper.toDocuments(index, value);
     if (logger.isDebugEnabled()) {
       logger.debug("HeterogeneousLuceneSerializer.toDocuments:" + docs);
     }
@@ -93,7 +76,7 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
   /**
    * Get the field mapper based on the type of the given object.
    */
-  private LuceneSerializer getFieldMapper(Object value) {
+  private LuceneSerializer getFieldMapper(Object value, String[] indexedFields) {
     if (value instanceof PdxInstance) {
       return pdxMapper;
     } else {
