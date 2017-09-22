@@ -20,8 +20,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.security.server.Authorizer;
+import org.apache.geode.security.server.NoOpAuthorizer;
 
 @Experimental
 public class MessageExecutionContext {
@@ -85,12 +85,9 @@ public class MessageExecutionContext {
   /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not
    * be a protocol-specific statistics implementation.
-   * 
-   * @return
+   *
    */
   public ClientProtocolStatistics getStatistics() {
     return statistics;
   }
-
-
 }

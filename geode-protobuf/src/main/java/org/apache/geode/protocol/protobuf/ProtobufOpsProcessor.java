@@ -35,7 +35,7 @@ public class ProtobufOpsProcessor {
 
   private final OperationContextRegistry operationContextRegistry;
   private final SerializationService serializationService;
-  private static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
 
   public ProtobufOpsProcessor(SerializationService serializationService,
       OperationContextRegistry operationContextRegistry) {
