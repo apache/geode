@@ -59,13 +59,6 @@ public class IndexRepositoryImpl implements IndexRepository {
 
   private static final Logger logger = LogService.getLogger();
 
-  // For test purposes
-  IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
-      LuceneIndexStats stats, Region<?, ?> userRegion) throws IOException {
-    this(region, writer, serializer, stats, userRegion,
-        ((DistributedRegion) region).getLockService(), "NoLockFile", null);
-  }
-
   public IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
       LuceneIndexStats stats, Region<?, ?> userRegion, DistributedLockService lockService,
       String lockName, LuceneIndex index) throws IOException {

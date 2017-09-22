@@ -66,6 +66,7 @@ import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
 
@@ -120,7 +121,8 @@ public class IndexRepositoryImplPerformanceTest {
         writer = new IndexWriter(dir, config);
         String[] indexedFields = new String[] {"text"};
         HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
-        repo = new IndexRepositoryImpl(fileAndChunkRegion, writer, mapper, stats, null);
+        repo = new IndexRepositoryImpl(fileAndChunkRegion, writer, mapper, stats, null,
+            ((DistributedRegion) fileAndChunkRegion).getLockService(), "NoLockFile", null);
       }
 
       @Override
