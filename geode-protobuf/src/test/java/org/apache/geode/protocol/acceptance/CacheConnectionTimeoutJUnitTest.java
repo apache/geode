@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Properties;
@@ -130,26 +131,18 @@ public class CacheConnectionTimeoutJUnitTest {
         MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
             ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
 
-    long timeout = maximumTimeBetweenPings + monitorInterval + pollInterval;
+    InputStream inputStream = socket.getInputStream();
 
-    // wait for client to get disconnected
-    Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS)
-        .pollInterval(pollInterval, TimeUnit.MILLISECONDS)
-        .pollDelay(maximumTimeBetweenPings + monitorInterval, TimeUnit.MILLISECONDS).until(() -> {
-          try {
-            /*
-             * send a PUT message
-             *
-             * Note: The `await` will run this at an interval larger than the maximum timeout
-             * allowed between pings. This is so that we have better validation that we are actually
-             * timing out connections after `maximumTimeBetweenPings` and not some other larger time
-             * that's smaller than `timeout`
-             */
-            protobufProtocolSerializer.serialize(putMessage, outputStream);
-            assertEquals(-1, socket.getInputStream().read());
-          } catch (IOException expected) {
-          }
-        });
+    // Better to wait a bit later for jitter and pass the test, than to have intermittent failures.
+    long delay = maximumTimeBetweenPings + (maximumTimeBetweenPings / 2) + monitorInterval;
+
+    protobufProtocolSerializer.serialize(putMessage, outputStream);
+    protobufProtocolSerializer.deserialize(inputStream);
+
+    Thread.sleep(delay);
+
+    // should be disconnected, expecting EOF.
+    assertEquals(-1, inputStream.read());
   }
 
   @Test
