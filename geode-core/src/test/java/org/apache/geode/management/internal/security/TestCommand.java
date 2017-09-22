@@ -31,11 +31,6 @@ public class TestCommand {
 
   public static ResourcePermission none = null;
   public static ResourcePermission everyOneAllowed = new ResourcePermission();
-  public static ResourcePermission dataRead = new ResourcePermission(Resource.DATA, Operation.READ);
-  public static ResourcePermission dataWrite =
-      new ResourcePermission(Resource.DATA, Operation.WRITE);
-  public static ResourcePermission dataManage =
-      new ResourcePermission(Resource.DATA, Operation.MANAGE);
   public static ResourcePermission diskManage =
       new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.DISK);
 
@@ -46,16 +41,10 @@ public class TestCommand {
   public static ResourcePermission regionAManage =
       new ResourcePermission(Resource.DATA, Operation.MANAGE, "RegionA");
 
-  public static ResourcePermission clusterRead =
-      new ResourcePermission(Resource.CLUSTER, Operation.READ);
   public static ResourcePermission clusterReadQuery =
       new ResourcePermission(Resource.CLUSTER, Operation.READ, Target.QUERY);
-  public static ResourcePermission clusterWrite =
-      new ResourcePermission(Resource.CLUSTER, Operation.WRITE);
   public static ResourcePermission clusterWriteDisk =
       new ResourcePermission(Resource.CLUSTER, Operation.WRITE, Target.DISK);
-  public static ResourcePermission clusterManage =
-      new ResourcePermission(Resource.CLUSTER, Operation.MANAGE);
   public static ResourcePermission clusterManageDisk =
       new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.DISK);
   public static ResourcePermission clusterManageGateway =
@@ -120,26 +109,28 @@ public class TestCommand {
 
   private static void init() {
     // ListClientCommand, DescribeClientCommand
-    createTestCommand("list clients", clusterRead);
-    createTestCommand("describe client --clientID=172.16.196.144", clusterRead);
+    createTestCommand("list clients", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("describe client --clientID=172.16.196.144",
+        ResourcePermissions.CLUSTER_READ);
 
     // AlterRuntimeConfigCommand, DescribeConfigCommand, ExportConfigCommand (config commands)
-    createTestCommand("alter runtime", clusterManage);
-    createTestCommand("describe config --member=Member1", clusterRead);
-    createTestCommand("export config --member=member1", clusterRead);
+    createTestCommand("alter runtime", ResourcePermissions.CLUSTER_MANAGE);
+    createTestCommand("describe config --member=Member1", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("export config --member=member1", ResourcePermissions.CLUSTER_READ);
 
     // CreateRegionCommand, AlterRegionCommand, DestroyRegionCommand
     createTestCommand("alter region --name=RegionA --eviction-max=5000", regionAManage);
-    createTestCommand("create region --name=region12 --type=REPLICATE", dataManage);
-    createTestCommand("create region --name=region123 --type=PARTITION_PERSISTENT", dataManage,
-        clusterWriteDisk);
+    createTestCommand("create region --name=region12 --type=REPLICATE",
+        ResourcePermissions.DATA_MANAGE);
+    createTestCommand("create region --name=region123 --type=PARTITION_PERSISTENT",
+        ResourcePermissions.DATA_MANAGE, clusterWriteDisk);
     // This command requires an existing persistent region named "persistentRegion"
     createTestCommand("create region --name=region1234 --template-region=/persistentRegion",
-        dataManage, clusterWriteDisk);
-    createTestCommand("destroy region --name=value", dataManage);
+        ResourcePermissions.DATA_MANAGE, clusterWriteDisk);
+    createTestCommand("destroy region --name=value", ResourcePermissions.DATA_MANAGE);
 
     // Data Commands
-    createTestCommand("rebalance --include-region=RegionA", dataManage);
+    createTestCommand("rebalance --include-region=RegionA", ResourcePermissions.DATA_MANAGE);
     createTestCommand("export data --region=RegionA --file=export.txt --member=exportMember",
         regionARead);
     createTestCommand("import data --region=RegionA --file=import.txt --member=importMember",
@@ -151,20 +142,23 @@ public class TestCommand {
     createTestCommand("locate entry --key=k1 --region=RegionA", regionARead);
 
     // Deploy commands
-    // createTestCommand("deploy --jar=group1_functions.jar --group=Group1", dataManage); // TODO:
+    // createTestCommand("deploy --jar=group1_functions.jar --group=Group1",
+    // ResourcePermissions.DATA_MANAGE); // TODO:
     // this command will fail in GfshCommandsSecurityTest at interceptor for jar file checking
     createTestCommand("undeploy --group=Group1", clusterManageJar);
 
     // Diskstore Commands
-    createTestCommand("backup disk-store --dir=foo", dataRead, clusterWriteDisk);
-    createTestCommand("list disk-stores", clusterRead);
+    createTestCommand("backup disk-store --dir=foo", ResourcePermissions.DATA_READ,
+        clusterWriteDisk);
+    createTestCommand("list disk-stores", ResourcePermissions.CLUSTER_READ);
     createTestCommand("create disk-store --name=foo --dir=bar", clusterManageDisk);
     createTestCommand("compact disk-store --name=foo", clusterManageDisk);
     createTestCommand("compact offline-disk-store --name=foo --disk-dirs=bar");
     createTestCommand("upgrade offline-disk-store --name=foo --disk-dirs=bar");
-    createTestCommand("describe disk-store --name=foo --member=baz", clusterRead);
+    createTestCommand("describe disk-store --name=foo --member=baz",
+        ResourcePermissions.CLUSTER_READ);
     createTestCommand("revoke missing-disk-store --id=foo", clusterManageDisk);
-    createTestCommand("show missing-disk-stores", clusterRead);
+    createTestCommand("show missing-disk-stores", ResourcePermissions.CLUSTER_READ);
     createTestCommand("describe offline-disk-store --name=foo --disk-dirs=bar");
     createTestCommand("export offline-disk-store --name=foo --disk-dirs=bar --dir=baz");
     createTestCommand("validate offline-disk-store --name=foo --disk-dirs=bar");
@@ -176,18 +170,19 @@ public class TestCommand {
     createTestCommand("close durable-client --durable-client-id=client1", clusterManageQuery);
     createTestCommand("close durable-cq --durable-client-id=client1 --durable-cq-name=cq1",
         clusterManageQuery);
-    createTestCommand("show subscription-queue-size --durable-client-id=client1", clusterRead);
-    createTestCommand("list durable-cqs --durable-client-id=client1", clusterRead);
+    createTestCommand("show subscription-queue-size --durable-client-id=client1",
+        ResourcePermissions.CLUSTER_READ);
+    createTestCommand("list durable-cqs --durable-client-id=client1",
+        ResourcePermissions.CLUSTER_READ);
 
     // ExportImportSharedConfigurationCommands
     createTestCommand("export cluster-configuration --zip-file-name=mySharedConfig.zip",
-        clusterRead);
-    createTestCommand("import cluster-configuration --zip-file-name=value.zip", clusterManage);
+        ResourcePermissions.CLUSTER_READ);
+    createTestCommand("import cluster-configuration --zip-file-name=value.zip",
+        ResourcePermissions.CLUSTER_MANAGE);
 
-    // DestroyFunctionCommand, ExecuteFunctionCommand, ListFunctionCommand
-    // createTestCommand("destroy function --id=InterestCalculations", dataManage);
-    createTestCommand("execute function --id=InterestCalculations --groups=Group1", dataWrite);
-    createTestCommand("list functions", clusterRead);
+    createTestCommand("execute function --id=InterestCalculations --groups=Group1");
+    createTestCommand("list functions", ResourcePermissions.CLUSTER_READ);
 
     // GfshHelpCommand, GfshHintCommand
     createTestCommand("hint");
@@ -215,26 +210,25 @@ public class TestCommand {
     createTestCommand("start vsd");
     createTestCommand("status locator");
     createTestCommand("status server");
-    // createTestCommand("stop locator --name=locator1", clusterManage);
-    // createTestCommand("stop server --name=server1", clusterManage);
 
     // DescribeMemberCommand, ListMembersCommand
-    createTestCommand("describe member --name=server1", clusterRead);
-    createTestCommand("list members", clusterRead);
+    createTestCommand("describe member --name=server1", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("list members", ResourcePermissions.CLUSTER_READ);
 
     // Misc Commands
-    createTestCommand("change loglevel --loglevel=severe --members=server1", clusterWrite);
-    createTestCommand("export logs --dir=data/logs", clusterRead);
-    createTestCommand("export stack-traces --file=stack.txt", clusterRead);
-    createTestCommand("gc", clusterManage);
-    createTestCommand("netstat --member=server1", clusterRead);
-    createTestCommand("show dead-locks --file=deadlocks.txt", clusterRead);
-    createTestCommand("show log --member=locator1 --lines=5", clusterRead);
-    createTestCommand("show metrics", clusterRead);
+    createTestCommand("change loglevel --loglevel=severe --members=server1",
+        ResourcePermissions.CLUSTER_WRITE);
+    createTestCommand("export logs --dir=data/logs", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("export stack-traces --file=stack.txt", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("gc", ResourcePermissions.CLUSTER_MANAGE);
+    createTestCommand("netstat --member=server1", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("show dead-locks --file=deadlocks.txt", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("show log --member=locator1 --lines=5", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("show metrics", ResourcePermissions.CLUSTER_READ);
 
 
     // PDX Commands
-    createTestCommand("configure pdx --read-serialized=true", clusterManage);
+    createTestCommand("configure pdx --read-serialized=true", ResourcePermissions.CLUSTER_MANAGE);
     createTestCommand(
         "pdx rename --old=org.apache --new=com.pivotal --disk-store=ds1 --disk-dirs=/diskDir1");
 
@@ -245,14 +239,14 @@ public class TestCommand {
         "create async-event-queue --id=myAEQ --listener=myApp.myListener --persistent",
         clusterManageJar, clusterWriteDisk);
 
-    createTestCommand("list async-event-queues", clusterRead);
+    createTestCommand("list async-event-queues", ResourcePermissions.CLUSTER_READ);
 
     // DescribeRegionCommand, ListRegionCommand
-    createTestCommand("describe region --name=value", clusterRead);
-    createTestCommand("list regions", clusterRead);
+    createTestCommand("describe region --name=value", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("list regions", ResourcePermissions.CLUSTER_READ);
 
     // StatusClusterConfigServiceCommand
-    createTestCommand("status cluster-config-service", clusterRead);
+    createTestCommand("status cluster-config-service", ResourcePermissions.CLUSTER_READ);
 
     // Shell Commands
     createTestCommand("connect");
@@ -271,17 +265,14 @@ public class TestCommand {
     createTestCommand("resume gateway-sender --id=sender1", clusterManageGateway);
     createTestCommand("stop gateway-sender --id=sender1", clusterManageGateway);
     createTestCommand("load-balance gateway-sender --id=sender1", clusterManageGateway);
-    createTestCommand("list gateways", clusterRead);
+    createTestCommand("list gateways", ResourcePermissions.CLUSTER_READ);
     createTestCommand("create gateway-receiver", clusterManageGateway);
     createTestCommand("start gateway-receiver", clusterManageGateway);
     createTestCommand("stop gateway-receiver", clusterManageGateway);
-    createTestCommand("status gateway-receiver", clusterRead);
-    createTestCommand("status gateway-sender --id=sender1", clusterRead);
+    createTestCommand("status gateway-receiver", ResourcePermissions.CLUSTER_READ);
+    createTestCommand("status gateway-sender --id=sender1", ResourcePermissions.CLUSTER_READ);
 
     // ShellCommand
     createTestCommand("disconnect");
-
-    // Misc commands
-    // createTestCommand("shutdown", clusterManage);
   }
 }

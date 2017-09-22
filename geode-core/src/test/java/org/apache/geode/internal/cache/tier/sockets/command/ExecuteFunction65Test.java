@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -54,6 +55,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -128,6 +130,7 @@ public class ExecuteFunction65Test {
     when(this.callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
     when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
+    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
 
     when(this.functionPart.getStringOrObject()).thenReturn(FUNCTION);
 
@@ -171,7 +174,7 @@ public class ExecuteFunction65Test {
 
     this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE);
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
     // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
     // types get sent?
   }
@@ -185,7 +188,7 @@ public class ExecuteFunction65Test {
 
     this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE);
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
 
@@ -198,8 +201,9 @@ public class ExecuteFunction65Test {
 
     verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
-    // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
-    // types get sent?
+
+    // function will be called, but no op.
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
   }
 
   @Test
@@ -210,9 +214,7 @@ public class ExecuteFunction65Test {
         .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
     this.executeFunction65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
-
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE);
-    // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
   }
 
 }

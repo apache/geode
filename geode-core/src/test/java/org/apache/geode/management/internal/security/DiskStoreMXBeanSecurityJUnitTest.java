@@ -74,15 +74,15 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   @ConnectionConfiguration(user = "clusterManageDisk", password = "clusterManageDisk")
   public void testDiskManageAccess() throws Exception {
     assertThatThrownBy(() -> bean.getCompactionThreshold())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     assertThatThrownBy(() -> bean.getDiskDirectories())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     assertThatThrownBy(() -> bean.getDiskReadsRate())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     assertThatThrownBy(() -> bean.isAutoCompact())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     assertThatThrownBy(() -> bean.isForceCompactionAllowed())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
 
     bean.flush();
     bean.forceCompaction();
@@ -118,15 +118,15 @@ public class DiskStoreMXBeanSecurityJUnitTest {
     softly.assertThatThrownBy(() -> bean.forceRoll())
         .hasMessageContaining(TestCommand.clusterManageDisk.toString());
     softly.assertThatThrownBy(() -> bean.getCompactionThreshold())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getDiskDirectories())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getDiskReadsRate())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.isAutoCompact())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.isForceCompactionAllowed())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.setDiskUsageCriticalPercentage(0.5f))
         .hasMessageContaining(TestCommand.clusterManageDisk.toString());
     softly.assertThatThrownBy(() -> bean.setDiskUsageWarningPercentage(0.5f))

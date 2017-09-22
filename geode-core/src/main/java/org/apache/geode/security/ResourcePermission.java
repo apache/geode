@@ -15,9 +15,9 @@
 package org.apache.geode.security;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.cache.Region;
-import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.shiro.authz.permission.WildcardPermission;
+
+import org.apache.geode.cache.Region;
 
 /**
  * ResourcePermission defines the resource, the operation, the region and the key involved in the
@@ -113,7 +113,7 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   /**
-   * returns the regionName, could be "*", meaning all regions
+   * returns the regionName, or cluster target, could be "*", meaning all regions or all targets
    */
   public String getTarget() {
     return target;

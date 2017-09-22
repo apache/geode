@@ -14,68 +14,73 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.cache.execute.FunctionService.onRegion;
+import static org.apache.geode.cache.execute.FunctionService.registerFunction;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientExecuteRegionFunctionAuthDUnitTest extends JUnit4DistributedTestCase {
-
-  private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
   final VM client1 = host.getVM(1);
   final VM client2 = host.getVM(2);
 
-  private final static Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
+  private Function readFunction;
+
+  @Before
+  public void before() {
+    readFunction = new ReadFunction();
+    registerFunction(readFunction);
+  }
 
   @Rule
-  public ServerStarterRule server =
-      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-          .withProperty(TestSecurityManager.SECURITY_JSON,
-              "org/apache/geode/management/internal/security/clientServer.json")
-          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
+  public ServerStarterRule server = new ServerStarterRule()
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
+      .withRegion(RegionShortcut.REPLICATE, "RegionA");
 
   @Test
   public void testExecuteRegionFunction() {
 
-    FunctionService.registerFunction(function);
-
     client1.invoke("logging in with dataReader", () -> {
-      ClientCache cache = createClientCache("dataReader", "1234567", server.getPort());
+      ClientCache cache = createClientCache("dataRead", "dataRead", server.getPort());
 
-      Region region = createProxyRegion(cache, REGION_NAME);
-      FunctionService.registerFunction(function);
-      assertNotAuthorized(() -> FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute(function.getId()), "DATA:WRITE");
+      Region region = createProxyRegion(cache, "RegionA");
+      registerFunction(readFunction);
+      ResultCollector rc = onRegion(region).execute(readFunction.getId());
+      assertThat(((ArrayList) rc.getResult()).get(0)).isEqualTo(ReadFunction.SUCCESS_OUTPUT);
     });
 
-    client2.invoke("logging in with super-user", () -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+    client2.invoke("logging in with another region's reader", () -> {
+      ClientCache cache = createClientCache("dataReadRegionB", "dataReadRegionB", server.getPort());
 
-      Region region = createProxyRegion(cache, REGION_NAME);
-      FunctionService.registerFunction(function);
-      ResultCollector rc =
-          FunctionService.onRegion(region).setArguments(Boolean.TRUE).execute(function.getId());
-      rc.getResult();
+      Region region = createProxyRegion(cache, "RegionA");
+      registerFunction(readFunction);
+      assertNotAuthorized(() -> onRegion(region).execute(readFunction.getId()),
+          "DATA:READ:RegionA");
     });
   }
 }
