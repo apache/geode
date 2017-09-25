@@ -44,7 +44,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 
 @Category(DistributedTest.class)
-public class ShutdownCommandDUnitTest implements Serializable {
+public class ShutdownCommandDUnitTest {
   private static final boolean CONNECT_OVER_HTTP = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
