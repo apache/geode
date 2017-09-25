@@ -23,14 +23,20 @@ limitations under the License.
 
 ## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_8A927DFB29364DA7856E7FE122FC1654" class="no-quick-link"></a>Why Create a HashIndex
 
-By creating a hash index, you can vastly improve the memory usage of your index. If you are doing equality based queries, your indexing footprint is significantly reduced. As an example, previously when you created an index that contained string fields, copies of the strings were included in the index. By using hash indexes, we ensure that indexed expressions are canonicalized and stored in the index as pointers to the objects lying in the region. In internal test cases we have seen improvements in the 30% range depending on the keys and data being used.
+By creating a hash index, you can improve the memory usage of your index. If you are doing equality based queries, your indexing footprint is significantly reduced. As an example, previously when you created an index that contained string fields, copies of the strings were included in the index. By using hash indexes, we ensure that indexed expressions are canonicalized and stored in the index as pointers to the objects lying in the region. In internal test cases we have seen improvements in the 30% range depending on the keys and data being used.
 
 **Note:**
 Your performance results may vary depending on the keys and data being indexed.
 
 ## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_2EF23A54378E44FFBF1BEB32E41ABD61" class="no-quick-link"></a>Performance Considerations
 
-The performance of put operations when using a hash index should be comparable to other indexes or slightly slower. Queries themselves are expected to be slightly slower due to the implementation of hash index and the cost of recalculating the key on request, which is the trade-off for the space savings that using a hash index provides.
+The performance of put operations and recovery time when using a hash index 
+will be worse than a range index.
+Queries themselves are expected to be slower due to the implementation 
+of hash index and the cost of recalculating the key on request,
+which is the trade-off for the space savings that using a hash index provides.
+If memory usage is not a concern,
+a range index is recommended.
 
 ## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_800401C53E5841269F389329B8A4CDF3" class="no-quick-link"></a>Limitations
 
@@ -40,6 +46,9 @@ The following limitations must be considered when creating hash indexes:
 -   Hash index maintenance will be slower than the other indexes due to synchronized add methods.
 -   Hash indexes cannot be maintained asynchronously. If you attempt to create a hash index on a region with asynchronous set as the maintenance mode, an exception will be thrown.
 -   You cannot use hash indexes for queries with multiple iterators or nested collections.
+-   Using a hash index will degrade put operation performance
+and recovery time substantially.
+If memory is not a concern, use a range index instead of a hash index.
 
 ## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_CA2476E015D14DE7B522377C931A8492" class="no-quick-link"></a>Examples of Creating a Hash Index
 
