@@ -219,8 +219,6 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
 
   - ANSIBuffer (http://jline.sourceforge.net/apidocs/jline/ANSIBuffer.html),
     Copyright (c) 2002-2007 Marc Prud'hommeaux.
-  - highlight.js v7.3 (https://highlightjs.org), Copyright (c) 2006, Ivan
-    Sagalaev
   - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/), Copyright
     (c) 2012 Splunk Inc.
   - Protocol Buffers (https://github.com/google/protobuf), Copyright (c) 2014
@@ -254,40 +252,17 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---------------------------------------------------------------------------
-The ISC License (http://opensource.org/licenses/ISC)
----------------------------------------------------------------------------
-
-Apache Geode bundles the following file under the ISC license:
-
-  - Shred (https://github.com/pandastrike/shred), Copyright (c) 2012-2015
-    Panda Strike, LLC and Dan Yoder <dan@pandastrike.com>
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
-IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
----------------------------------------------------------------------------
 The MIT License (http://opensource.org/licenses/mit-license.html)
 ---------------------------------------------------------------------------
 
 Apache Geode bundles the following files under the MIT license:
 
-  - Backbone.js v0.9.2 (http://backbonejs.org), Copyright (c) 2010-2012
-    Jeremy Ashkenas, DocumentCloud Inc.
-  - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/), 
+  - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
+    (c) 2014 Alexander Farkas (aFarkas)
+  - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),
     Copyright (c) 2011 Sencha Inc.
   - jQuery JavaScript Library v1.7.2 (https://jquery.com), Copyright (c)
     jQuery Foundation and other contributors, http://jquery.org
-  - jQuery BBQ v1.2.1 (http://benalman.com/projects/jquery-bbq-plugin/),
-    Copyright (c) 2010, "Cowboy" Ben Alman
   - jQuery.i18n.properties v1.0.x
     (https://github.com/jquery-i18n-properties/jquery-i18n-properties),
     Copyright (c) 2011 Nuno Miguel Correia Serra Fernandes
@@ -298,8 +273,6 @@ Apache Geode bundles the following files under the MIT license:
     Brandon Aaron
   - jQuery Placeholder (http://webcloud.se), Copyright (c) 2010 Daniel
     Stocks
-  - jQuery-slideto (https://github.com/Sleavely/jQuery-slideto), Copyright
-    (c) 2015 Joakim Hedlund
   - jQuery UI MultiSelect Widget v1.14pre
     (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/),
     Copyright (c) 2011 Eric Hynds
@@ -311,8 +284,6 @@ Apache Geode bundles the following files under the MIT license:
     Copyright (c) 2012 Scott Jehl
   - MooTools (http://mootools.net), Copyright (c) 2006-2015 Valerio
     Proietti, <http://mad4milk.net/>
-  - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
-    Copyright (c) Nicolas Gallagher and Jonathan Neal
   - Sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
@@ -321,8 +292,6 @@ Apache Geode bundles the following files under the MIT license:
     contributors
   - Timeago v1.3.0 (http://timeago.yarp.com), Copyright (c) 2008-2015 Ryan
     McGeary
-  - Underscore (http://underscorejs.org), Copyright (c) 2009-2016 Jeremy
-    Ashkenas, DocumentCloud, and Investigative Reporters & Editors
   - zTree v3.5.02 (http://zTree.me/), Copyright (c) 2010 Hunter.z
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -408,5 +377,4 @@ domain:
 
   - CompactConcurrentHashSet2, derived from JSR-166 ConcurrentHashMap v1.43
     (http://gee.cs.oswego.edu/dl/concurrency-interest).
-  - Reset CSS (http://meyerweb.com/eric/tools/css/reset/)
   - tooltip.js v1.2.6 (https://github.com/jquerytools/jquerytools)
