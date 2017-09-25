@@ -22,7 +22,6 @@ import static org.apache.geode.test.dunit.rules.GfshShellConnectionRule.PortType
 import static org.apache.geode.test.dunit.rules.GfshShellConnectionRule.PortType.jmxManger;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
