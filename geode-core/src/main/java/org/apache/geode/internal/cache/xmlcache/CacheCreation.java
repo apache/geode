@@ -58,6 +58,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.internal.InternalQueryService;
+import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.server.CacheServer;
@@ -943,7 +945,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public QueryService getQueryService() {
+  public InternalQueryService getQueryService() {
     return this.queryService;
   }
 
@@ -1735,7 +1737,7 @@ public class CacheCreation implements InternalCache {
     return null;
   }
 
-  private final QueryService queryService = new QueryService() {
+  private final InternalQueryService queryService = new InternalQueryService() {
 
     private final Map<String, List<Index>> indexes = new HashMap<>();
 
@@ -1958,6 +1960,10 @@ public class CacheCreation implements InternalCache {
       throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
     }
 
+    @Override
+    public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
+      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    }
   };
 
   @Override

@@ -12,10 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query.internal;
+package org.apache.geode.security.query;
 
-import java.lang.reflect.Method;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public interface MethodInvocationAuthorizer {
-  void authorizeMethodInvocation(Method method, Object target);
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+
+@Category({DistributedTest.class, SecurityTest.class})
+@RunWith(Parameterized.class)
+public class PdxPartitionedQuerySecurityAllowedQueriesDUnitTest
+    extends PdxQuerySecurityAllowedQueriesDUnitTest {
+  public RegionShortcut getRegionType() {
+    return RegionShortcut.PARTITION;
+  }
+
 }

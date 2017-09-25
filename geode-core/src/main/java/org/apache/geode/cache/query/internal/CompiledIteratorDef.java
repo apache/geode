@@ -119,7 +119,6 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       } catch (RegionNotFoundException re) {
         throw re;
       } catch (Exception e) {
-        logger.info("JASON:", e);
         if (logger.isDebugEnabled()) {
           logger.debug("Exception while getting runtime iterator.", e);
         }

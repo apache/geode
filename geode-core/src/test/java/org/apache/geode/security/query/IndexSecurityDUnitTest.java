@@ -14,10 +14,9 @@
  */
 package org.apache.geode.security.query;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.security.SecurityTestUtil.createClientCache;
-import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.junit.Assert.assertEquals;
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,95 +24,82 @@ import java.util.List;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({DistributedTest.class, SecurityTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(Parameterized.class)
 public class IndexSecurityDUnitTest extends QuerySecurityBase {
+  public RegionShortcut getRegionType() {
+    return RegionShortcut.REPLICATE;
+  }
 
-  // Should be the same as the key specified for the region key specific users in the
-  // clientServer.json
-  public static final String REGION_PUT_KEY = "key";
+  @Parameterized.Parameters
+  public static Object[] usersAllowed() {
+    return new Object[] {"dataWriter"};
+  }
+
+  @Parameterized.Parameter
+  public String user;
 
 
-  public List<String> getAllUsersOnlyAllowedWrite() {
-    return Arrays.asList(
-        "dataWriter");
+  @Before
+  public void configureSpecificUserAndKeyAndValues() {
+    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
+    createProxyRegion(specificUserClient, regionName);
+
+    keys = new Object[] {"key-0", "key-1", "key-2"};
+    values = new Object[] {new QueryTestObject(1, "Mary"), new QueryTestObject(2, "Joe"),
+        new QueryTestObject(3, "Joe")};
   }
 
   @Test
-  @Parameters(method = "getAllUsers")
-  public void indexBehaviorTest(String user) throws Exception {
-    String query = UserPermissions.SELECT_ALL_FROM_REGION;
-    String region = UserPermissions.REGION_NAME;
-
-    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + 1, REGION_PUT_KEY + 2};
-    Object[] values = {new QuerySecurityDUnitTest.QueryTestObject(1, "Mary"), new QuerySecurityDUnitTest.QueryTestObject(2, "Joe"),
-        new QuerySecurityDUnitTest.QueryTestObject(3, "Joe")};
+  public void indexCreatedButPutWithNoReadCredentialsShouldNotThrowSecurityException()
+      throws Exception {
     QueryService queryService = server.getCache().getQueryService();
-    Index idIndex = queryService.createIndex("IdIndex", "id", "/" + UserPermissions.REGION_NAME);
-    Index errorIndex = queryService.createIndex("TEST", "methodThrowsException",
-        "/" + UserPermissions.REGION_NAME);
+    Index idIndex = queryService.createIndex("IdIndex", "id", "/" + regionName);
+    putIntoRegion(specificUserClient, keys, values, regionName);
+  }
+
+  @Test
+  public void indexCreatedWithRegionEntriesButPutWithNoReadCredentialsShouldNotThrowSecurityException()
+      throws Exception {
+    QueryService queryService = server.getCache().getQueryService();
+    Index idIndex = queryService.createIndex("IdIndex", "e.id", "/" + regionName + ".entries e");
+    putIntoRegion(specificUserClient, keys, values, regionName);
+  }
+
+  @Test
+  public void indexCreatedWithMethodInvocationOnPrepopulatedRegionShouldThrowSecurityException()
+      throws Exception {
+    QueryService queryService = server.getCache().getQueryService();
+    putIntoRegion(superUserClient, keys, values, regionName);
 
     try {
-      putIntoRegion(superUserClient, keys, values, region);
-    } catch (Exception e) {
-      e.printStackTrace();
+      queryService.createIndex("IdIndex", "e.getName()", "/" + regionName + " e");
+      fail("Index creation should have failed due to method invocation");
+    } catch (IndexInvalidException e) {
+      assertTrue(e.getMessage().contains("Unauthorized access to method: getName"));
     }
-
   }
 
   @Test
-  @Parameters(method = "getAllUsersOnlyAllowedWrite")
-  public void indexCreatedButPutWithNoReadCredentialsShouldNotThrowSecurityException(String user) throws Exception {
-    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
-    createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
-
-    String region = UserPermissions.REGION_NAME;
-
-    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + 1, REGION_PUT_KEY + 2};
-    Object[] values = {new QuerySecurityDUnitTest.QueryTestObject(1, "Mary"), new QuerySecurityDUnitTest.QueryTestObject(2, "Joe"),
-        new QuerySecurityDUnitTest.QueryTestObject(3, "Joe")};
+  public void indexCreatedWithMethodInvocationOnUnpopulatedRegionAndPutShouldMarkIndexInvalid()
+      throws Exception {
     QueryService queryService = server.getCache().getQueryService();
-    Index idIndex = queryService.createIndex("IdIndex", "id", "/" + UserPermissions.REGION_NAME);
-
-    putIntoRegion(specificUserClient, keys, values, region);
-
+    Index index = queryService.createIndex("IdIndex", "e.getName()", "/" + regionName + " e");
+    putIntoRegion(superUserClient, keys, values, regionName);
+    assertFalse(index.isValid());
   }
-
-  @Test
-  @Parameters(method = "getAllUsersOnlyAllowedWrite")
-  public void indexCreatedWithRegionEntriesButPutWithNoReadCredentialsShouldNotThrowSecurityException(String user) throws Exception {
-    createClientCache(specificUserClient, user, userPerms.getUserPassword(user));
-    createProxyRegion(specificUserClient, UserPermissions.REGION_NAME);
-
-    String region = UserPermissions.REGION_NAME;
-
-    Object[] keys = {REGION_PUT_KEY, REGION_PUT_KEY + 1, REGION_PUT_KEY + 2};
-    Object[] values = {new QuerySecurityDUnitTest.QueryTestObject(1, "Mary"), new QuerySecurityDUnitTest.QueryTestObject(2, "Joe"),
-        new QuerySecurityDUnitTest.QueryTestObject(3, "Joe")};
-    QueryService queryService = server.getCache().getQueryService();
-    Index idIndex = queryService.createIndex("IdIndex", "e.id", "/" + UserPermissions.REGION_NAME + ".entries e");
-
-    putIntoRegion(specificUserClient, keys, values, region);
-  }
-
-
 
 }

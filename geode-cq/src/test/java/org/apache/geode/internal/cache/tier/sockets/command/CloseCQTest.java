@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

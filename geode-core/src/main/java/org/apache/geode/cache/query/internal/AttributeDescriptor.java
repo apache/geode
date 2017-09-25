@@ -35,7 +35,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
@@ -51,16 +50,15 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class AttributeDescriptor {
   private final String _name;
-  private final SecurityService _securityService;
+  private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
   /** cache for remembering the correct Member for a class and attribute */
-  // DAVID/JASON should this be ConcurrentHashMap or ConcurrentMap? (is there a difference?)
   private static final ConcurrentMap _local_field_cache = new ConcurrentHashMap();
   private static final ConcurrentMap _local_method_cache = new ConcurrentHashMap();
 
 
 
-  public AttributeDescriptor(SecurityService securityService, String name) {
-    _securityService = securityService;
+  public AttributeDescriptor(MethodInvocationAuthorizer methodInvocationAuthorizer, String name) {
+    _methodInvocationAuthorizer = methodInvocationAuthorizer;
     _name = name;
   }
 
@@ -99,11 +97,10 @@ public class AttributeDescriptor {
 
     Class resolutionClass = target.getClass();
     Member m = getReadMember(resolutionClass);
-    System.out.println("JASON found m:" + m.getName());
     try {
       if (m instanceof Method) {
         try {
-          MethodInvocationAuthorizer.authorizeFunctionInvocation(_securityService, m, target);
+          _methodInvocationAuthorizer.authorizeMethodInvocation((Method) m, target);
           return ((Method) m).invoke(target, (Object[]) null);
         } catch (EntryDestroyedException e) {
           // eat the Exception
@@ -163,7 +160,6 @@ public class AttributeDescriptor {
       m = (Member) _local_method_cache.get(key);
 
       if (m != null) {
-        MethodInvocationAuthorizer.authorizeFunctionInvocation(m);
         return m;
       }
     }
@@ -186,7 +182,6 @@ public class AttributeDescriptor {
     ((AccessibleObject) m).setAccessible(true);
     return m;
   }
-
 
 
   private Field getReadField(Class targetType) {
@@ -215,9 +210,7 @@ public class AttributeDescriptor {
 
   private Method getReadMethod(Class targetType, String methodName) {
     try {
-      Method m = targetType.getMethod(methodName, (Class[]) null);
-      MethodInvocationAuthorizer.authorizeFunctionInvocation(m);
-      return m;
+      return targetType.getMethod(methodName, (Class[]) null);
     } catch (NoSuchMethodException e) {
       updateClassToMethodsMap(targetType.getCanonicalName(), _name);
       return null;

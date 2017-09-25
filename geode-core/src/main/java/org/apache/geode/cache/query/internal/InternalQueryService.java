@@ -14,8 +14,9 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.lang.reflect.Method;
+import org.apache.geode.cache.query.QueryService;
 
-public interface MethodInvocationAuthorizer {
-  void authorizeMethodInvocation(Method method, Object target);
+public interface InternalQueryService extends QueryService {
+
+  MethodInvocationAuthorizer getMethodInvocationAuthorizer();
 }

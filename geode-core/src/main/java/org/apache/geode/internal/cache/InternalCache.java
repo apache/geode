@@ -39,6 +39,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.server.CacheServer;
@@ -320,4 +321,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   void invokeRegionEntrySynchronizationListenersAfterSynchronization(
       InternalDistributedMember sender, LocalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize);
+
+  InternalQueryService getQueryService();
 }
