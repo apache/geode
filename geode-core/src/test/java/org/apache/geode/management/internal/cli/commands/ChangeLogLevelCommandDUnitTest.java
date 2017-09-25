@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY;
 import static org.apache.geode.test.dunit.rules.GfshShellConnectionRule.PortType.http;
@@ -29,20 +28,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 
 @Category(DistributedTest.class)
-@SuppressWarnings("serial")
 public class ChangeLogLevelCommandDUnitTest {
   private static final boolean CONNECT_OVER_HTTP = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
   private static final String MANAGER_NAME = "Manager";
