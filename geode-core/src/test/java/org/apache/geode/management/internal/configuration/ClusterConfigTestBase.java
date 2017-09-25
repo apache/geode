@@ -27,7 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 
-import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;

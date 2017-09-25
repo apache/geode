@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -35,17 +35,20 @@ import org.apache.geode.internal.cache.InternalCache;
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
  *
+ * <p>
  * This rules allows you to create/start a server using any @ConfigurationProperties, you can chain
  * the configuration of the rule like this: ServerStarterRule server = new ServerStarterRule()
  * .withProperty(key, value) .withName(name) .withProperties(properties) .withSecurityManager(class)
  * .withJmxManager() .withRestService() .withEmbeddedLocator() .withRegion(type, name) etc, etc. If
  * your rule calls withAutoStart(), the server will be started before your test code.
  *
+ * <p>
  * In your test code, you can use the rule to access the server's attributes, like the port
  * information, working dir, name, and the cache and cacheServer it creates.
  *
+ * <p>
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
- * use {@link LocatorServerStartupRule}.
+ * use {@code LocatorServerStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
 
@@ -56,10 +59,12 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
 
+  @Override
   public InternalCache getCache() {
     return cache;
   }
 
+  @Override
   public CacheServer getServer() {
     return server;
   }
@@ -105,7 +110,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
-
   public ServerStarterRule withEmbeddedLocator() {
     embeddedLocatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
     properties.setProperty("start-locator", "localhost[" + embeddedLocatorPort + "]");
@@ -125,7 +129,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     }
     return this;
   }
-
 
   public ServerStarterRule withRegion(RegionShortcut type, String name) {
     this.autoStart = true;
@@ -156,8 +159,8 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     httpPort = config.getHttpServicePort();
   }
 
+  @Override
   public int getEmbeddedLocatorPort() {
     return embeddedLocatorPort;
   }
-
 }

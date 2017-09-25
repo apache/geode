@@ -29,10 +29,10 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.test.dunit.rules.Locator;
+import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.junit.rules.Server;
 
 import java.io.File;
 import java.io.Serializable;

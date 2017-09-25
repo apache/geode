@@ -25,17 +25,15 @@ import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.test.dunit.rules.EmbeddedPulseRule;
-import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
+import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 

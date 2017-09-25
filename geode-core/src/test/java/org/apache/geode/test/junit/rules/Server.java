@@ -12,27 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.rules.gfsh;
+package org.apache.geode.test.junit.rules;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.function.Consumer;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.server.CacheServer;
 
-class StreamGobbler implements Runnable {
-  private InputStream inputStream;
-  private Consumer<String> consumeInputLine;
+public interface Server extends Member {
 
-  public StreamGobbler(InputStream inputStream, Consumer<String> consumeInputLine) {
-    this.inputStream = inputStream;
-    this.consumeInputLine = consumeInputLine;
-  }
+  Cache getCache();
 
-  public void run() {
-    new BufferedReader(new InputStreamReader(inputStream)).lines().forEach(consumeInputLine);
-  }
+  CacheServer getServer();
 
-  public void startInNewThread() {
-    new Thread(this).start();
-  }
+  int getEmbeddedLocatorPort();
 }

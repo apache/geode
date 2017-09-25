@@ -12,21 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.geode.internal.ClassBuilder;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 
-public class JarFileRule extends ExternalResource implements Serializable {
+import org.apache.commons.lang.RandomStringUtils;
+import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
+
+public class JarFileRule extends SerializableExternalResource {
 
   private transient TemporaryFolder temporaryFolder = new TemporaryFolder();
   private transient ClassBuilder classBuilder = new ClassBuilder();
@@ -46,6 +45,7 @@ public class JarFileRule extends ExternalResource implements Serializable {
     this.makeJarLarge = makeJarLarge;
   }
 
+  @Override
   protected void before() throws IOException {
     temporaryFolder.create();
     this.jarFile = temporaryFolder.newFile(jarName);
@@ -61,9 +61,9 @@ public class JarFileRule extends ExternalResource implements Serializable {
     } else {
       classBuilder.writeJarFromName(className, jarFile);
     }
-
   }
 
+  @Override
   protected void after() {
     temporaryFolder.delete();
   }

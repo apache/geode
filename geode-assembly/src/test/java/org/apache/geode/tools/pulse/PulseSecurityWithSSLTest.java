@@ -37,8 +37,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.SecurableCommunicationChannels;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 

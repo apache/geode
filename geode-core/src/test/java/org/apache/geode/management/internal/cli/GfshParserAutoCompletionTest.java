@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.ClassRule;
 import org.junit.Test;

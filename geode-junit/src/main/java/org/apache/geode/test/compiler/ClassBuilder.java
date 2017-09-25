@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.test.compiler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -43,8 +43,9 @@ import javax.tools.ToolProvider;
  * 
  * @since GemFire 7.0
  */
+@SuppressWarnings("serial")
 public class ClassBuilder implements Serializable {
-  private static final long serialVersionUID = 1L;
+
   private String classPath = System.getProperty("java.class.path");
 
   /**

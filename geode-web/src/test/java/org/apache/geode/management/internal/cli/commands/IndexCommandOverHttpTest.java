@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 

@@ -35,7 +35,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

@@ -12,10 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -29,24 +32,20 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.rules.ExternalResource;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-
 /**
  * this rules simplifies creating a httpClient for verification of pulse behaviors or any http
  * client behaviors. Usually after you start up a server/locator with http service, you would want
  * to connect to it through http client and verify some behavior, you would need to use this rule.
  *
- * See @PulseSecuriyTest for examples
- *
+ * <p>
+ * See {@code PulseSecurityTest} for examples
  */
 public class HttpClientRule extends ExternalResource {
+
   private String hostName;
   private Supplier<Integer> portSupplier;
   private HttpHost host;
   private HttpClient httpClient;
-
 
   public HttpClientRule(String hostName, Supplier<Integer> portSupplier) {
     this.hostName = hostName;
@@ -56,7 +55,6 @@ public class HttpClientRule extends ExternalResource {
   public HttpClientRule(Supplier<Integer> portSupplier) {
     this("localhost", portSupplier);
   }
-
 
   @Override
   protected void before() {
@@ -74,7 +72,6 @@ public class HttpClientRule extends ExternalResource {
     assertThat(response.getFirstHeader("Location").getValue())
         .contains("/pulse/clusterDetail.html");
   }
-
 
   public HttpResponse get(String uri, String... params) throws Exception {
     return httpClient.execute(host, buildHttpGet(uri, params));
@@ -102,6 +99,4 @@ public class HttpClientRule extends ExternalResource {
     }
     return new HttpGet(builder.build());
   }
-
-
 }

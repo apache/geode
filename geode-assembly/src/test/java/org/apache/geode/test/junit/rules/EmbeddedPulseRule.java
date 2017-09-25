@@ -12,30 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.test.junit.rules;
 
-package org.apache.geode.test.dunit.rules;
+import org.junit.rules.ExternalResource;
 
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.junit.rules.ExternalResource;
 
 /**
  * This is used to test embedded pulse. If your test needs to check pulse's repository object for
  * assertions, use this rules to properly initialize and cleanup the repository
- *
- *
- *
  */
 public class EmbeddedPulseRule extends ExternalResource {
+
   private Repository repository;
 
-  public Repository getRepository() {
-    return repository;
-  }
-
+  @Override
   protected void before() throws Throwable {
     repository = Repository.get();
     cleanup();
     repository.setHost("localhost");
+  }
+
+  @Override
+  protected void after() {
+    cleanup();
+  }
+
+  public Repository getRepository() {
+    return repository;
   }
 
   public void useJmxManager(String jmxHost, int jmxPort) {
@@ -60,13 +64,6 @@ public class EmbeddedPulseRule extends ExternalResource {
 
   public void setJmxSSL(boolean jmxSSL) {
     repository.setUseSSLManager(jmxSSL);
-  }
-
-  /**
-   * Override to tear down your specific external resource.
-   */
-  protected void after() {
-    cleanup();
   }
 
   private void cleanup() {

@@ -31,7 +31,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Random;
 import java.util.Vector;
 
 import org.apache.bcel.Constants;
@@ -54,7 +53,8 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
