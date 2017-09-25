@@ -1,1 +1,1 @@
-org.apache.geode.protocol.protobuf.ProtobufStreamProcessor
+org.apache.geode.internal.protocol.protobuf.ProtobufStreamProcessor
