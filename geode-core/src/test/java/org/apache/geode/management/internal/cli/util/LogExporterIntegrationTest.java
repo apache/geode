@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunctionIntegrationTest;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

@@ -12,13 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -29,33 +29,24 @@ import org.apache.geode.distributed.internal.InternalLocator;
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
  *
+ * <p>
  * This rules allows you to create/start a locator using any @ConfigurationProperties, you can chain
  * the configuration of the rule like this: LocatorStarterRule locator = new LocatorStarterRule()
  * .withProperty(key, value) .withName(name) .withProperties(properties) .withSecurityManager(class)
  * .withJmxManager() etc, etc. If your rule calls withAutoStart(), the locator will be started
  * before your test code.
  *
+ * <p>
  * In your test code, you can use the rule to access the locator's attributes, like the port
  * information, working dir, name, and the InternalLocator it creates.
  *
+ * <p>
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
- * use {@link LocatorServerStartupRule}.
+ * use {@code LocatorServerStartupRule}.
  */
-
 public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> implements Locator {
 
   private transient InternalLocator locator;
-
-  public InternalLocator getLocator() {
-    return locator;
-  }
-
-  @Override
-  protected void stopMember() {
-    if (locator != null) {
-      locator.stop();
-    }
-  }
 
   @Override
   public void before() {
@@ -69,12 +60,24 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     }
   }
 
+  @Override
+  public InternalLocator getLocator() {
+    return locator;
+  }
+
+  @Override
+  protected void stopMember() {
+    if (locator != null) {
+      locator.stop();
+    }
+  }
+
   public void startLocator() {
     try {
       // this will start a jmx manager and admin rest service by default
       locator = (InternalLocator) startLocatorAndDS(0, null, properties);
     } catch (IOException e) {
-      throw new RuntimeException("unable to start up locator.", e);
+      throw new UncheckedIOException(e);
     }
     memberPort = locator.getPort();
     DistributionConfig config = locator.getConfig();

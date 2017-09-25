@@ -23,6 +23,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.rules.Locator;
+import org.apache.geode.test.junit.rules.Member;
+import org.apache.geode.test.junit.rules.Server;
 
 public class MemberVM<T extends Member> implements Member {
   private T member;

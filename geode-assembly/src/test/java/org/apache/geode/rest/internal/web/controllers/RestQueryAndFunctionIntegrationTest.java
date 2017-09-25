@@ -74,7 +74,7 @@ import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 @Category({IntegrationTest.class, RestAPITest.class})
 public class RestQueryAndFunctionIntegrationTest {

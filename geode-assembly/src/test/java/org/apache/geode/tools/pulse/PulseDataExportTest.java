@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;

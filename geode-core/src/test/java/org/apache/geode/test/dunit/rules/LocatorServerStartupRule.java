@@ -32,6 +32,12 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.junit.rules.Locator;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.Member;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
+import org.apache.geode.test.junit.rules.Server;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 

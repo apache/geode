@@ -12,20 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.test.junit.rules;
 
-package org.apache.geode.test.dunit.rules;
+import org.apache.geode.distributed.internal.InternalLocator;
 
-import java.io.File;
-import java.io.Serializable;
+public interface Locator extends Member {
 
-public interface Member extends Serializable {
-  File getWorkingDir();
-
-  int getPort();
-
-  int getJmxPort();
-
-  int getHttpPort();
-
-  String getName();
+  InternalLocator getLocator();
 }

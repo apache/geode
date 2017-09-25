@@ -18,8 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.rules.gfsh.GfshRule;
-import org.apache.geode.test.rules.gfsh.GfshScript;
+import org.apache.geode.test.junit.rules.gfsh.GfshRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 
 @Category(AcceptanceTest.class)

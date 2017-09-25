@@ -11,13 +11,23 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.test.junit.rules;
 
-package org.apache.geode.test.dunit.rules;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.apache.geode.distributed.internal.InternalLocator;
+/**
+ * This annotation is intended to be used with {@link MBeanServerConnectionRule} in order to
+ * configure a per-test JMX connection with a specific user and password.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+public @interface ConnectionConfiguration {
 
-public interface Locator extends Member {
-  InternalLocator getLocator();
+  String user();
+
+  String password();
 }

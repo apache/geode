@@ -11,10 +11,8 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -31,19 +29,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
  * the abstract class that's used by LocatorStarterRule and ServerStarterRule to avoid code
  * duplication.
  */
-public abstract class MemberStarterRule<T> extends ExternalResource implements Member {
+public abstract class MemberStarterRule<T> extends SerializableExternalResource implements Member {
+
   protected String oldUserDir;
 
   protected transient TemporaryFolder temporaryFolder;
@@ -64,6 +63,24 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
     // initial values
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+  }
+
+  @Override
+  public void after() {
+    // invoke stopMember() first and then ds.disconnect
+    stopMember();
+
+    disconnectDSIfAny();
+
+    if (temporaryFolder != null) {
+      temporaryFolder.delete();
+    }
+
+    if (oldUserDir == null) {
+      System.clearProperty("user.dir");
+    } else {
+      System.setProperty("user.dir", oldUserDir);
+    }
   }
 
   public T withWorkingDir(File workingDir) {
@@ -96,24 +113,6 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
   public T withLogFile() {
     this.logFile = true;
     return (T) this;
-  }
-
-  @Override
-  public void after() {
-    // invoke stopMember() first and then ds.disconnect
-    stopMember();
-
-    disconnectDSIfAny();
-
-    if (temporaryFolder != null) {
-      temporaryFolder.delete();
-    }
-
-    if (oldUserDir == null) {
-      System.clearProperty("user.dir");
-    } else {
-      System.setProperty("user.dir", oldUserDir);
-    }
   }
 
   public static void disconnectDSIfAny() {

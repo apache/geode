@@ -35,7 +35,7 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 

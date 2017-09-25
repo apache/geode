@@ -40,9 +40,9 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 

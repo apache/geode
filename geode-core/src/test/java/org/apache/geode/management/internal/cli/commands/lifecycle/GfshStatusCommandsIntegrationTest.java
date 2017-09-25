@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -27,8 +26,8 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

@@ -58,7 +58,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 

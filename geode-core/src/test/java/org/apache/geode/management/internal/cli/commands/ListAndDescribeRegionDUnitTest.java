@@ -54,7 +54,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;

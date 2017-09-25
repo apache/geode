@@ -12,13 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.rules.gfsh;
+package org.apache.geode.test.junit.rules.gfsh;
 
 import static org.apache.commons.lang.SystemUtils.PATH_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +32,7 @@ import java.util.stream.Collectors;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.rules.RequiresGeodeHome;
-
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 /**
  * The {@code GfshRule} allows a test to execute Gfsh commands via the actual (fully-assembled) gfsh
@@ -40,34 +40,12 @@ import org.apache.geode.test.rules.RequiresGeodeHome;
  * a forked JVM. The {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
  */
 public class GfshRule extends ExternalResource {
-  private static final String DOUBLE_QUOTE = "\"";
 
-  public TemporaryFolder getTemporaryFolder() {
-    return temporaryFolder;
-  }
+  private static final String DOUBLE_QUOTE = "\"";
 
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
-
-  public GfshExecution execute(String... commands) {
-    return execute(GfshScript.of(commands));
-  }
-
-  public GfshExecution execute(GfshScript gfshScript) {
-    GfshExecution gfshExecution;
-    try {
-      File workingDir = temporaryFolder.newFolder(gfshScript.getName());
-      Process process = toProcessBuilder(gfshScript, gfsh, workingDir).start();
-      gfshExecution = new GfshExecution(process, workingDir);
-      gfshExecutions.add(gfshExecution);
-      gfshScript.awaitIfNecessary(process);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    return gfshExecution;
-  }
 
   @Override
   protected void before() throws IOException {
@@ -98,6 +76,29 @@ public class GfshRule extends ExternalResource {
         });
 
     temporaryFolder.delete();
+  }
+
+  public TemporaryFolder getTemporaryFolder() {
+    return temporaryFolder;
+  }
+
+  public GfshExecution execute(String... commands) {
+    return execute(GfshScript.of(commands));
+  }
+
+  public GfshExecution execute(GfshScript gfshScript) {
+    GfshExecution gfshExecution;
+    try {
+      File workingDir = temporaryFolder.newFolder(gfshScript.getName());
+      Process process = toProcessBuilder(gfshScript, gfsh, workingDir).start();
+      gfshExecution = new GfshExecution(process, workingDir);
+      gfshExecutions.add(gfshExecution);
+      gfshScript.awaitIfNecessary(process);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    return gfshExecution;
   }
 
   protected ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir) {
@@ -165,5 +166,4 @@ public class GfshRule extends ExternalResource {
 
     return argument;
   }
-
 }

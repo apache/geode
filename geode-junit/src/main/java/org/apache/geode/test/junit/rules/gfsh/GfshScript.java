@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.rules.gfsh;
+package org.apache.geode.test.junit.rules.gfsh;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

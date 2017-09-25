@@ -25,9 +25,9 @@ import org.junit.rules.RuleChain;
 
 import org.apache.geode.management.DiskStoreMXBean;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
