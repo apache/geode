@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 
 
@@ -30,6 +29,9 @@ import org.apache.geode.StatisticsFactory;
  * Currently, only one {@link ClientProtocolMessageHandler} at a time can be used in a Geode
  * instance. It gets wired into {@link ServerConnectionFactory} to create all instances of
  * {@link GenericProtocolServerConnection}.
+ *
+ * Implementors of this interface are expected to be able to be used for any number of connections
+ * at a time (stateless except for the statistics).
  */
 public interface ClientProtocolMessageHandler {
   void initializeStatistics(String statisticsName, StatisticsFactory factory);

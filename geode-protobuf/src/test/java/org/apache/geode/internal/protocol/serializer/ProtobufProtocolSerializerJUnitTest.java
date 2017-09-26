@@ -14,20 +14,23 @@
  */
 package org.apache.geode.internal.protocol.serializer;
 
-import org.apache.geode.internal.protocol.MessageUtil;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.apache.geode.internal.protocol.MessageUtil;
+import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
+import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ProtobufProtocolSerializerJUnitTest {
@@ -43,10 +46,8 @@ public class ProtobufProtocolSerializerJUnitTest {
       throws IOException, InvalidProtocolMessageException {
     ClientProtocol.Message expectedRequestMessage = MessageUtil.createGetRequestMessage();
 
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-    expectedRequestMessage.writeDelimitedTo(byteArrayOutputStream);
-    InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+    InputStream inputStream =
+        ProtobufTestUtilities.messageToByteArrayInputStream(expectedRequestMessage);
 
     ClientProtocol.Message actualMessage = protocolSerializer.deserialize(inputStream);
     Assert.assertEquals(expectedRequestMessage, actualMessage);

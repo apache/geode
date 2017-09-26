@@ -33,7 +33,7 @@ public class TcpServerFactory {
 
   public TcpServerFactory() {
     try {
-      protocolHandler = new MessageHandlerFactory().makeMessageHandler();
+      protocolHandler = new ClientProtocolServiceLoader().loadService().getMessageHandler();
     } catch (ServiceLoadingFailureException ex) {
       logger.warn(ex.getMessage());
     }

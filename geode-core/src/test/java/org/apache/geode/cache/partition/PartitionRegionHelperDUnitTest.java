@@ -98,6 +98,8 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
+
+
     AsyncInvocation future1 = vm0.invokeAsync(assignBuckets);
     AsyncInvocation future2 = vm1.invokeAsync(assignBuckets);
     AsyncInvocation future3 = vm2.invokeAsync(assignBuckets);

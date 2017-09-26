@@ -14,31 +14,45 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
+import org.apache.geode.internal.protocol.protobuf.Handshaker;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
+import org.apache.geode.security.server.Authenticator;
 import org.apache.geode.security.server.NoOpAuthenticator;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -48,7 +62,7 @@ public class GenericProtocolServerConnectionTest {
   private ClientHealthMonitor clientHealthMonitorMock;
 
   @Test
-  public void testProcessFlag() throws IOException {
+  public void testProcessFlag() throws Exception {
     ServerConnection serverConnection = IOExceptionThrowingServerConnection();
     Assert.assertTrue(serverConnection.processMessages);
     serverConnection.doOneMessage();
@@ -94,11 +108,15 @@ public class GenericProtocolServerConnectionTest {
   }
 
   @Test
-  public void testDoOneMessageNotifiesClientHealthMonitor() throws UnknownHostException {
+  public void testDoOneMessageNotifiesClientHealthMonitor() throws Exception {
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
     ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
+    ClientProtocolHandshaker handshakerMock = mock(ClientProtocolHandshaker.class);
+    when(handshakerMock.shaken()).thenReturn(false).thenReturn(true);
+    when(handshakerMock.handshake(any(), any())).thenReturn(mock(Authenticator.class));
 
-    ServerConnection serverConnection = getServerConnection(clientProtocolMock, acceptorStub);
+    ServerConnection serverConnection =
+        getServerConnection(mock(Socket.class), clientProtocolMock, acceptorStub, handshakerMock);
     serverConnection.doOneMessage();
 
     ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIDArgumentCaptor =
@@ -108,18 +126,55 @@ public class GenericProtocolServerConnectionTest {
         clientProxyMembershipIDArgumentCaptor.getValue().toString());
   }
 
-  private GenericProtocolServerConnection IOExceptionThrowingServerConnection() throws IOException {
-    ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
-    ClientProtocolStatistics statisticsMock = mock(ClientProtocolStatistics.class);
-    when(clientProtocolMock.getStatistics()).thenReturn(statisticsMock);
-    doThrow(new IOException()).when(clientProtocolMock).receiveMessage(any(), any(), any());
+  @Test
+  public void handshakeIsRequiredToMoveAlong() throws Exception {
+    ClientProtocolHandshaker handshaker = mock(ClientProtocolHandshaker.class);
+    when(handshaker.shaken()).thenReturn(false);
+    Authenticator authenticator = mock(Authenticator.class);
+    when(handshaker.handshake(any(), any())).thenReturn(authenticator);
 
-    return getServerConnection(clientProtocolMock, mock(AcceptorImpl.class));
+    ByteArrayInputStream byteArrayInputStream = ProtobufTestUtilities.messageToByteArrayInputStream(
+        AuthenticationAPI.SimpleAuthenticationRequest.getDefaultInstance());
+    Socket socket = mock(Socket.class);
+    when(socket.getInputStream()).thenReturn(byteArrayInputStream);
+
+    ClientProtocolMessageHandler messageHandler = mock(ClientProtocolMessageHandler.class);
+
+    GenericProtocolServerConnection serverConnection =
+        getServerConnection(socket, messageHandler, mock(AcceptorImpl.class), handshaker);
+
+    serverConnection.doOneMessage();
+    serverConnection.doOneMessage();
+
+    verify(handshaker, times(2)).handshake(any(), any());
+    verify(authenticator, times(0)).authenticate(any(), any(), any());
+    verify(authenticator, times(0)).getAuthorizer();
+    verify(messageHandler, times(0)).receiveMessage(any(), any(), any());
+  }
+
+  private GenericProtocolServerConnection IOExceptionThrowingServerConnection() throws Exception {
+    ClientProtocolHandshaker handshakerMock = mock(ClientProtocolHandshaker.class);
+    doThrow(new IOException()).when(handshakerMock).handshake(any(), any());
+
+    ClientProtocolMessageHandler clientProtocolMessageHandler =
+        mock(ClientProtocolMessageHandler.class);
+    ClientProtocolStatistics statisticsMock = mock(ClientProtocolStatistics.class);
+    when(clientProtocolMessageHandler.getStatistics()).thenReturn(statisticsMock);
+
+    return getServerConnection(mock(Socket.class), clientProtocolMessageHandler,
+        mock(AcceptorImpl.class), handshakerMock);
   }
 
   private GenericProtocolServerConnection getServerConnection(Socket socketMock,
-      ClientProtocolMessageHandler clientProtocolMock, AcceptorImpl acceptorStub)
+      ClientProtocolMessageHandler mockHandler, AcceptorImpl acceptorStub)
       throws UnknownHostException {
+    return getServerConnection(socketMock, mockHandler, acceptorStub,
+        mock(ClientProtocolHandshaker.class));
+  }
+
+  private GenericProtocolServerConnection getServerConnection(Socket socketMock,
+      ClientProtocolMessageHandler clientProtocolMock, AcceptorImpl acceptorStub,
+      ClientProtocolHandshaker clientProtocolHandshaker) throws UnknownHostException {
     clientHealthMonitorMock = mock(ClientHealthMonitor.class);
     when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
     InetSocketAddress inetSocketAddressStub = InetSocketAddress.createUnresolved("localhost", 9071);
@@ -133,13 +188,14 @@ public class GenericProtocolServerConnectionTest {
     return new GenericProtocolServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
-        clientProtocolMock, mock(SecurityService.class), new NoOpAuthenticator());
+        clientProtocolMock, mock(SecurityService.class), clientProtocolHandshaker);
   }
 
   private GenericProtocolServerConnection getServerConnection(
       ClientProtocolMessageHandler clientProtocolMock, AcceptorImpl acceptorStub)
       throws UnknownHostException {
     Socket socketMock = mock(Socket.class);
-    return getServerConnection(socketMock, clientProtocolMock, acceptorStub);
+    return getServerConnection(socketMock, clientProtocolMock, acceptorStub,
+        new Handshaker(new HashMap<>()));
   }
 }

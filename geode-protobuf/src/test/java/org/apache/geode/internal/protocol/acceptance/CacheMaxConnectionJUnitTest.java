@@ -54,7 +54,9 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.MessageUtil;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.protobuf.HandshakeAPI;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -106,7 +108,10 @@ public class CacheMaxConnectionJUnitTest {
     socket = new Socket("localhost", cacheServerPort);
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+
+    ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+        HandshakeAPI.AuthenticationMode.NONE);
 
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
@@ -192,6 +197,8 @@ public class CacheMaxConnectionJUnitTest {
           Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
           OutputStream outputStream = socket.getOutputStream();
           outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+          ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+              HandshakeAPI.AuthenticationMode.NONE);
 
           ClientProtocol.Message putMessage =
               MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE,

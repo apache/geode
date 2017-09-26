@@ -42,7 +42,9 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.HandshakeAPI;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
 import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
@@ -72,7 +74,7 @@ public class AuthorizationIntegrationTest {
   private ProtobufProtocolSerializer protobufProtocolSerializer;
   private Object securityPrincipal;
   private SecurityManager mockSecurityManager;
-  private String testRegion;
+
   public static final ResourcePermission READ_PERMISSION =
       new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ);
   public static final ResourcePermission WRITE_PERMISSION =
@@ -110,6 +112,9 @@ public class AuthorizationIntegrationTest {
     outputStream = socket.getOutputStream();
     inputStream = socket.getInputStream();
     outputStream.write(110);
+
+    ProtobufTestUtilities.verifyHandshake(inputStream, outputStream,
+        HandshakeAPI.AuthenticationMode.SIMPLE);
 
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();

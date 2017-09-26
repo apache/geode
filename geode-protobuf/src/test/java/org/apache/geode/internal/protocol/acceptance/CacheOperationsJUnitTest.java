@@ -62,7 +62,9 @@ import org.apache.geode.internal.protocol.MessageUtil;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.HandshakeAPI;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
@@ -142,6 +144,10 @@ public class CacheOperationsJUnitTest {
     outputStream = socket.getOutputStream();
     outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
+    ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+        HandshakeAPI.AuthenticationMode.NONE);
+
+
     serializationService = new ProtobufSerializationService();
   }
 
@@ -160,6 +166,8 @@ public class CacheOperationsJUnitTest {
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     OutputStream outputStream = socket.getOutputStream();
     outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+        HandshakeAPI.AuthenticationMode.NONE);
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     Set<BasicTypes.Entry> putEntries = new HashSet<>();
@@ -202,6 +210,8 @@ public class CacheOperationsJUnitTest {
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     OutputStream outputStream = socket.getOutputStream();
     outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+        HandshakeAPI.AuthenticationMode.NONE);
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     Set<BasicTypes.Entry> putEntries = new HashSet<>();
@@ -263,8 +273,8 @@ public class CacheOperationsJUnitTest {
         ProtobufRequestUtilities.createGetRegionNamesRequest();
 
     ClientProtocol.Message getRegionsMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createMessageHeader(correlationId),
-        ProtobufUtilities.createProtobufRequestWithGetRegionNamesRequest(getRegionNamesRequest));
+        ProtobufUtilities.createMessageHeader(correlationId), ProtobufTestUtilities
+            .createProtobufRequestWithGetRegionNamesRequest(getRegionNamesRequest));
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
     validateGetRegionNamesResponse(socket, correlationId, protobufProtocolSerializer);
   }
@@ -277,6 +287,8 @@ public class CacheOperationsJUnitTest {
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     OutputStream outputStream = socket.getOutputStream();
     outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+        HandshakeAPI.AuthenticationMode.NONE);
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message getRegionMessage = MessageUtil.makeGetRegionRequestMessage(TEST_REGION,
