@@ -50,42 +50,31 @@ public class ShowLogCommand implements GfshCommand {
     Result result;
     try {
       InternalCache cache = getCache();
-      SystemManagementService service =
-          (SystemManagementService) ManagementService.getExistingManagementService(cache);
-      MemberMXBean bean;
-      DistributedMember memberToBeInvoked = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-      if (memberToBeInvoked != null) {
-        String memberId = memberToBeInvoked.getId();
 
-        if (cache.getDistributedSystem().getDistributedMember().getId().equals(memberId)) {
-          bean = service.getMemberMXBean();
+      DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
+      if (targetMember == null) {
+        ErrorResultData errorResultData =
+            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+                .addLine(memberNameOrId + " " + CliStrings.SHOW_LOG_MSG_MEMBER_NOT_FOUND);
+        return (ResultBuilder.buildResult(errorResultData));
+      }
+
+      MemberMXBean targetMemberMXBean = getMemberMxBean(cache, targetMember);
+
+      if (numberOfLines > ManagementConstants.MAX_SHOW_LOG_LINES) {
+        numberOfLines = ManagementConstants.MAX_SHOW_LOG_LINES;
+      }
+      if (numberOfLines == 0 || numberOfLines < 0) {
+        numberOfLines = ManagementConstants.DEFAULT_SHOW_LOG_LINES;
+      }
+      InfoResultData resultData = ResultBuilder.createInfoResultData();
+      if (targetMemberMXBean != null) {
+        String log = targetMemberMXBean.showLog(numberOfLines);
+        if (log != null) {
+          resultData.addLine(log);
         } else {
-          ObjectName objectName = service.getMemberMBeanName(memberToBeInvoked);
-          bean = service.getMBeanProxy(objectName, MemberMXBean.class);
+          resultData.addLine(CliStrings.SHOW_LOG_NO_LOG);
         }
-
-        if (numberOfLines > ManagementConstants.MAX_SHOW_LOG_LINES) {
-          numberOfLines = ManagementConstants.MAX_SHOW_LOG_LINES;
-        }
-        if (numberOfLines == 0 || numberOfLines < 0) {
-          numberOfLines = ManagementConstants.DEFAULT_SHOW_LOG_LINES;
-        }
-        InfoResultData resultData = ResultBuilder.createInfoResultData();
-        if (bean != null) {
-          String log = bean.showLog(numberOfLines);
-          if (log != null) {
-            resultData.addLine(log);
-          } else {
-            resultData.addLine(CliStrings.SHOW_LOG_NO_LOG);
-          }
-        } else {
-          ErrorResultData errorResultData =
-              ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                  .addLine(memberNameOrId + CliStrings.SHOW_LOG_MSG_MEMBER_NOT_FOUND);
-          return (ResultBuilder.buildResult(errorResultData));
-        }
-
-        result = ResultBuilder.buildResult(resultData);
       } else {
         ErrorResultData errorResultData =
             ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
@@ -93,10 +82,24 @@ public class ShowLogCommand implements GfshCommand {
         return (ResultBuilder.buildResult(errorResultData));
       }
 
+      result = ResultBuilder.buildResult(resultData);
+
     } catch (Exception e) {
       result = ResultBuilder
           .createGemFireErrorResult(CliStrings.SHOW_LOG_ERROR + CliUtil.stackTraceAsString(e));
     }
     return result;
+  }
+
+  public MemberMXBean getMemberMxBean(InternalCache cache, DistributedMember targetMember) {
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+
+    if (cache.getDistributedSystem().getDistributedMember().equals(targetMember)) {
+      return service.getMemberMXBean();
+    } else {
+      ObjectName objectName = service.getMemberMBeanName(targetMember);
+      return service.getMBeanProxy(objectName, MemberMXBean.class);
+    }
   }
 }
