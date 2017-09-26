@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -27,7 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,6 +46,7 @@ import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -199,7 +203,18 @@ public class PartitionedRegionQueryEvaluatorTest {
     assertEquals(expectedResults.size(), results.size());
     results.removeAll(expectedResults);
     assertTrue(results.isEmpty());
+  }
 
+  @Test
+  public void testGetAllNodesShouldBeRandomized() {
+    List bucketList = createBucketList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    Set bucketSet = new HashSet(bucketList);
+    PartitionedRegionQueryEvaluator prqe = new PartitionedRegionQueryEvaluator(system, pr, query,
+        null, new LinkedResultSet(), bucketSet);
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
+    when(regionAdvisor.adviseDataStore()).thenReturn(bucketSet);
+    await().atMost(10, TimeUnit.SECONDS)
+        .until(() -> !(bucketList.equals(prqe.getAllNodes(regionAdvisor))));
   }
 
   private Map<InternalDistributedMember, List<Integer>> createFakeBucketMap() {
@@ -306,7 +321,7 @@ public class PartitionedRegionQueryEvaluatorTest {
     }
 
     @Override
-    protected ArrayList getAllNodes() {
+    protected ArrayList getAllNodes(RegionAdvisor advisor) {
       return currentScenario().allNodes;
     }
 
