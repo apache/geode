@@ -28,6 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -126,5 +128,17 @@ public class ChangeLogLevelCommandDUnitTest {
     assertThat(output).contains(SERVER1_NAME);
     assertThat(output).doesNotContain(SERVER2_NAME);
     assertThat(output).doesNotContain(MANAGER_NAME);
+  }
+
+  @Test
+  public void testChangeLogLevelForInvalidMember() {
+    String commandString = "change loglevel --loglevel=finer --members=NotAValidMember";
+
+    CommandResult result = gfsh.executeCommand(commandString);
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    String output = gfsh.getGfshOutput();
+
+    assertThat(output).contains("No members were found matching the given member IDs or groups.");
   }
 }

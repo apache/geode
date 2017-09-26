@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,8 @@ public class ChangeLogLevelCommand implements GfshCommand {
       }
 
       if (dsMembers.size() == 0) {
-        return ResultBuilder.createGemFireErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG_NO_MEMBERS);
+        return ResultBuilder.createGemFireErrorResult(
+            "No members were found matching the given member IDs or groups.");
       }
 
       Function logFunction = new ChangeLogLevelFunction();

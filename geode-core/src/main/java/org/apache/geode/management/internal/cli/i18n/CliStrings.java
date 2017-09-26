@@ -2079,8 +2079,6 @@ public class CliStrings {
       "Cannot execute change log-level.";
   public static final String CHANGE_LOGLEVEL__COLUMN_MEMBER = "Member";
   public static final String CHANGE_LOGLEVEL__COLUMN_STATUS = "Changed log-level";
-  public static final String CHANGE_LOGLEVEL__MSG_NO_MEMBERS =
-      "No members were observed for changing log-level.";
 
   /* 'sleep' command */
   public static final String SLEEP = "sleep";
