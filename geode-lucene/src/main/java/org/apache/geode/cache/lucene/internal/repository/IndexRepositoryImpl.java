@@ -84,7 +84,7 @@ public class IndexRepositoryImpl implements IndexRepository {
       writer.addDocuments(docs);
     } catch (Exception e) {
       stats.incFailedEntries();
-      logger.info("Failed to create index " + value + " due to " + e.getMessage());
+      logger.info("Failed to add index for " + value + " due to " + e.getMessage());
     } finally {
       stats.endUpdate(start);
     }
@@ -100,7 +100,7 @@ public class IndexRepositoryImpl implements IndexRepository {
       writer.updateDocuments(keyTerm, docs);
     } catch (Exception e) {
       stats.incFailedEntries();
-      logger.info("Failed to update index " + value + " due to " + e.getMessage());
+      logger.info("Failed to update index for " + value + " due to " + e.getMessage());
     } finally {
       stats.endUpdate(start);
     }
@@ -112,9 +112,6 @@ public class IndexRepositoryImpl implements IndexRepository {
     try {
       Term keyTerm = SerializerUtil.toKeyTerm(key);
       writer.deleteDocuments(keyTerm);
-    } catch (Exception e) {
-      stats.incFailedEntries();
-      logger.info("Failed to delete index " + key + " due to " + e.getMessage());
     } finally {
       stats.endUpdate(start);
     }

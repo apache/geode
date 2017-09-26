@@ -132,7 +132,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
   @Test
   public void serializerExceptionShouldNotImpactOtherEvents() throws Exception {
     luceneService.createIndexFactory().setFields("title", "description")
-        .setLuceneSerializer(new TestSerializer()).create(INDEX_NAME, REGION_NAME);
+        .setLuceneSerializer(new TestCatchingExceptionInSerializer("title 3")).create(INDEX_NAME, REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
     region.put("object-1", new TestObject("title 1", "hello world"));
@@ -334,12 +334,18 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     }
   }
 
-  private static class TestSerializer extends HeterogeneousLuceneSerializer {
+  private static class TestCatchingExceptionInSerializer extends HeterogeneousLuceneSerializer {
+    
+    String match;
+    
+    TestCatchingExceptionInSerializer(String match) {
+      this.match = match;
+    }
+    
     @Override
     public Collection<Document> toDocuments(LuceneIndex index, Object value) {
-
       TestObject testObject = (TestObject) value;
-      if (testObject.title.equals("title 3")) {
+      if (testObject.title.equals(match)) {
         throw new RuntimeException("Expected exception in Serializer:" + value);
       } else {
         return super.toDocuments(index, value);
