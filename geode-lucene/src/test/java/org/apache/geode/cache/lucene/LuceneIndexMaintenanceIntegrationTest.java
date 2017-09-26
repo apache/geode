@@ -18,6 +18,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -44,6 +45,7 @@ import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.lucene.document.Document;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest {
@@ -125,6 +127,30 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
         "description:\"hello world\"", DEFAULT_FIELD);
     PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
     assertEquals(3, results.size());
+  }
+
+  @Test
+  public void serializerExceptionShouldNotImpactOtherEvents() throws Exception {
+    luceneService.createIndexFactory().setFields("title", "description")
+        .setLuceneSerializer(new TestSerializer()).create(INDEX_NAME, REGION_NAME);
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    region.put("object-1", new TestObject("title 1", "hello world"));
+    region.put("object-2", new TestObject("title 2", "this will not match"));
+    region.put("object-3", new TestObject("title 3", "hello world"));
+    region.put("object-4", new TestObject("hello world", "hello world"));
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "description:\"hello world\"", DEFAULT_FIELD);
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(2, results.size());
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
+    LuceneIndexStats indexStats = indexForPR.getIndexStats();
+    assertEquals(1, indexStats.getFailedEntries());
+    assertEquals(4, indexStats.getUpdates());
   }
 
   @Test
@@ -305,6 +331,19 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     public TestObject(String title, String description) {
       this.title = title;
       this.description = description;
+    }
+  }
+
+  private static class TestSerializer extends HeterogeneousLuceneSerializer {
+    @Override
+    public Collection<Document> toDocuments(LuceneIndex index, Object value) {
+
+      TestObject testObject = (TestObject) value;
+      if (testObject.title.equals("title 3")) {
+        throw new RuntimeException("Expected exception in Serializer:" + value);
+      } else {
+        return super.toDocuments(index, value);
+      }
     }
   }
 }
