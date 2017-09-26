@@ -103,8 +103,8 @@ a Client-Server interaction.
 | Region.destroy(key)                | DATA:WRITE:RegionName:Key           |
 | Region.put(key)                    | DATA:WRITE:RegionName:Key           |
 | Region.replace                     | DATA:WRITE:RegionName:Key           |
-| CqQuery.execute                    | DATA:READ:RegionName and CLUSTER:MANAGE:QUERY  |
-| CqQuery.executeWithInitialResults  | DATA:READ:RegionName and CLUSTER:MANAGE:QUERY  |
+| queryService.newCq                 | DATA:READ:RegionName                |
+| CqQuery.stop                       | DATA:READ                           |
 
 
 This table classifies the permissions assigned for `gfsh` operations.
@@ -232,6 +232,8 @@ This table classifies the permissions assigned for JMX operations.
 | CacheServerMXBean.closeAllContinuousQuery      | CLUSTER:MANAGE:QUERY      |
 | CacheServerMXBean.closeContinuousQuery         | CLUSTER:MANAGE:QUERY      |
 | CacheServerMXBean.executeContinuousQuery       | DATA:READ                 |
+| CqQuery.execute                    | DATA:READ:RegionName and CLUSTER:MANAGE:QUERY  |
+| CqQuery.executeWithInitialResults  | DATA:READ:RegionName and CLUSTER:MANAGE:QUERY  |
 | DiskStoreMXBean.flush                          | CLUSTER:MANAGE:DISK       |
 | DiskStoreMXBean.forceCompaction                | CLUSTER:MANAGE:DISK       |
 | DiskStoreMXBean.forceRoll                      | CLUSTER:MANAGE:DISK       |
