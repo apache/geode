@@ -15,9 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PREFIX;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_PREFIX;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,20 +25,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -65,6 +65,8 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.web.http.support.SimpleHttpRequester;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 public class ConnectCommand implements GfshCommand {
   // millis that connect --locator will wait for a response from the locator.
@@ -152,7 +154,7 @@ public class ConnectCommand implements GfshCommand {
       if (skipSslValidation) {
         HttpsURLConnection.setDefaultHostnameVerifier((String s, SSLSession sslSession) -> true);
       }
-      result = httpConnect(gfProperties, url);
+      result = httpConnect(gfProperties, url, skipSslValidation);
     } else {
       result = jmxConnect(gfProperties, useSsl, jmxManagerEndPoint, locatorEndPoint, false);
     }
@@ -238,11 +240,12 @@ public class ConnectCommand implements GfshCommand {
   }
 
 
-  Result httpConnect(Properties gfProperties, String url) {
+  Result httpConnect(Properties gfProperties, String url, boolean skipSslVerification) {
     Gfsh gfsh = getGfsh();
     try {
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(gfProperties,
           SecurableCommunicationChannel.WEB);
+      sslConfig.setSkipSslVerification(skipSslVerification);
       if (sslConfig.isEnabled()) {
         configureHttpsURLConnection(sslConfig);
         if (url.startsWith("http:")) {
@@ -274,7 +277,7 @@ public class ConnectCommand implements GfshCommand {
           UserInputProperty.USERNAME.promptForAcceptableValue(gfsh));
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(),
           UserInputProperty.PASSWORD.promptForAcceptableValue(gfsh));
-      return httpConnect(gfProperties, url);
+      return httpConnect(gfProperties, url, skipSslVerification);
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       return handleException(e);
@@ -394,11 +397,11 @@ public class ConnectCommand implements GfshCommand {
         locatorResponse.isJmxManagerSslEnabled());
   }
 
-  private void configureHttpsURLConnection(SSLConfig sslConfig) throws Exception {
+  private KeyManager[] getKeyManagers(SSLConfig sslConfig) throws Exception {
     FileInputStream keyStoreStream = null;
-    FileInputStream trustStoreStream = null;
+    KeyManagerFactory keyManagerFactory = null;
+
     try {
-      KeyManagerFactory keyManagerFactory = null;
       if (StringUtils.isNotBlank(sslConfig.getKeystore())) {
         KeyStore clientKeys = KeyStore.getInstance(sslConfig.getKeystoreType());
         keyStoreStream = new FileInputStream(sslConfig.getKeystore());
@@ -408,9 +411,35 @@ public class ConnectCommand implements GfshCommand {
             KeyManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         keyManagerFactory.init(clientKeys, sslConfig.getKeystorePassword().toCharArray());
       }
+    } finally {
+      if (keyStoreStream != null) {
+        keyStoreStream.close();
+      }
+    }
 
+    return keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null;
+  }
+
+  private TrustManager[] getTrustManagers(SSLConfig sslConfig) throws Exception {
+    FileInputStream trustStoreStream = null;
+    TrustManagerFactory trustManagerFactory = null;
+
+    if (sslConfig.isSkipSslVerification()) {
+      TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+          return null;
+        }
+
+        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+
+        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+
+      }};
+      return trustAllCerts;
+    }
+
+    try {
       // load server public key
-      TrustManagerFactory trustManagerFactory = null;
       if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
         KeyStore serverPub = KeyStore.getInstance(sslConfig.getTruststoreType());
         trustStoreStream = new FileInputStream(sslConfig.getTruststore());
@@ -419,23 +448,24 @@ public class ConnectCommand implements GfshCommand {
             TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(serverPub);
       }
-
-      SSLContext ssl =
-          SSLContext.getInstance(SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols())));
-
-      ssl.init(keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null,
-          trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null,
-          new SecureRandom());
-
-      HttpsURLConnection.setDefaultSSLSocketFactory(ssl.getSocketFactory());
     } finally {
-      if (keyStoreStream != null) {
-        keyStoreStream.close();
-      }
       if (trustStoreStream != null) {
         trustStoreStream.close();
       }
     }
+    return trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null;
+  }
+
+  private void configureHttpsURLConnection(SSLConfig sslConfig) throws Exception {
+    KeyManager[] keyManagers = getKeyManagers(sslConfig);
+    TrustManager[] trustManagers = getTrustManagers(sslConfig);
+
+    SSLContext ssl =
+        SSLContext.getInstance(SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols())));
+
+    ssl.init(keyManagers, trustManagers, new SecureRandom());
+
+    HttpsURLConnection.setDefaultSSLSocketFactory(ssl.getSocketFactory());
   }
 
   private Result handleException(Exception e) {

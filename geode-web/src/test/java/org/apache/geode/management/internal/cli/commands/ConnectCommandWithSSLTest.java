@@ -141,6 +141,12 @@ public class ConnectCommandWithSSLTest {
     }
   };
 
+  private static Properties httpSslPropertiesSkipValidation = new Properties() {
+    {
+      setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    }
+  };
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -265,7 +271,26 @@ public class ConnectCommandWithSSLTest {
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 
-    // can conect to http
+    // can connect to http
+    gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
+        "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
+    assertThat(gfsh.isConnected()).isTrue();
+  }
+
+  @Test
+  public void connectWithHttpSSLAndSkipSSLValidation() throws Exception {
+    httpSslPropertiesSkipValidation.store(out, null);
+    // can connect to locator and jmx
+    gfsh.connect(locator.getPort(), GfshShellConnectionRule.PortType.locator,
+        "security-properties-file", sslConfigFile.getAbsolutePath());
+    assertThat(gfsh.isConnected()).isFalse();
+
+    // can connect to jmx
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+        "security-properties-file", sslConfigFile.getAbsolutePath());
+    assertThat(gfsh.isConnected()).isFalse();
+
+    // can connect to http
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
         "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
     assertThat(gfsh.isConnected()).isTrue();
