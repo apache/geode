@@ -12,12 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,29 +34,38 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.rules.DescribedExternalResource;
 
 /**
  * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
  * commands.
  *
+ * <p>
  * if used with {@link ConnectionConfiguration}, you will need to specify a port number when
  * constructing this rule. Then this rule will do auto connect for you before running your test.
  *
+ * <p>
  * otherwise, you can call connect with the specific port number yourself in your test. This rules
  * handles closing your connection and gfsh instance.
  *
- * you can use this as Rule
- * 
- * @Rule GfshShellConnectionRule rule = new GfshShellConnectionRule(); then after you connect to a
- *       locator, you don't have to call disconnect() or close() at all, since the rule's after
- *       takes care of it for you.
+ * <p>
+ * you can use this as Rule:
  *
- *       Or as a ClassRule
- * @ClassRule GfshShellConnectionRule rule = new GfshShellConnectionRule(); When using as a
- *            ClassRule, if you call connect in a test, you will need to call disconnect after the
- *            test as well. See NetstatDUnitTest for example.
+ * <pre>
+ * {@literal @}Rule GfshShellConnectionRule rule = new GfshShellConnectionRule();
+ * </pre>
  *
+ * then after you connect to a locator, you don't have to call disconnect() or close() at all, since
+ * the rule's after takes care of it for you.
+ *
+ * <p>
+ * Or as a ClassRule:
+ *
+ * <pre>
+ * {@literal @}ClassRule GfshShellConnectionRule rule = new GfshShellConnectionRule();
+ * </pre>
+ *
+ * When using as a ClassRule, if you call connect in a test, you will need to call disconnect after
+ * the test as well. See NetstatDUnitTest for example.
  */
 public class GfshShellConnectionRule extends DescribedExternalResource {
 
@@ -66,12 +77,11 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
   private File workingDir;
 
-
   public GfshShellConnectionRule() {
     try {
       temporaryFolder.create();
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -100,6 +110,15 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       // when config is not null, developer may deliberately pass in a wrong
       // password so that the test will verify the connection itself. So do not verify here.
       secureConnect(portSupplier.get(), portType, config.user(), config.password());
+    }
+  }
+
+  @Override
+  protected void after(Description description) throws Throwable {
+    close();
+
+    if (ignoredException != null) {
+      ignoredException.remove();
     }
   }
 
@@ -173,15 +192,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     connected = (result.getStatus() == Result.Status.OK);
   }
 
-  @Override
-  protected void after(Description description) throws Throwable {
-    close();
-
-    if (ignoredException != null) {
-      ignoredException.remove();
-    }
-  }
-
   public void disconnect() throws Exception {
     gfsh.clear();
     executeCommand("disconnect");
@@ -235,7 +245,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return gfsh.outputString;
   }
 
-
   public CommandResult executeAndVerifyCommand(String command) {
     CommandResult result = null;
     try {
@@ -243,7 +252,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(result.getStatus()).describedAs(getGfshOutput()).isEqualTo(Result.Status.OK);
     return result;
   }
 

@@ -35,7 +35,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.management.cli.Result;

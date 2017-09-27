@@ -33,8 +33,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

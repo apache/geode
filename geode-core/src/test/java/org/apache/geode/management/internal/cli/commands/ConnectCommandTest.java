@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

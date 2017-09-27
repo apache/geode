@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

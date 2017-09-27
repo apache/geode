@@ -12,15 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.test.dunit.rules;
+package org.apache.geode.test.junit.rules;
 
 import static org.junit.Assert.assertEquals;
-
-import org.apache.geode.management.internal.security.AccessControlMXBean;
-import org.apache.geode.test.junit.rules.DescribedExternalResource;
-import org.awaitility.Awaitility;
-import org.junit.runner.Description;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -39,11 +34,17 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.awaitility.Awaitility;
+import org.junit.runner.Description;
+
+import org.apache.geode.management.internal.security.AccessControlMXBean;
+
 /**
  * This rules handles connection to the MBean Server. If used with {@link ConnectionConfiguration},
  * you will need to construct the rule with a port number, then the rule will call connect for you
  * before running your test.
  *
+ * <p>
  * If constructed with no port number, you can connect to any port in your test at anytime, and the
  * rule will handle the closing of the connection for you.
  */
@@ -53,7 +54,9 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   private JMXConnector jmxConnector;
   private MBeanServerConnection con;
 
-  public MBeanServerConnectionRule() {}
+  public MBeanServerConnectionRule() {
+    // nothing
+  }
 
   /**
    * Rule constructor
@@ -62,6 +65,29 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
    */
   public MBeanServerConnectionRule(Supplier<Integer> portSupplier) {
     this.portSupplier = portSupplier;
+  }
+
+  @Override
+  protected void before(Description description) throws Exception {
+    // do not auto connect if port is not set
+    if (portSupplier == null)
+      return;
+
+    // do not auto connect if no ConnectionConfiguration is defined.
+    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
+    if (config == null)
+      return;
+
+    Map<String, String[]> env = new HashMap<>();
+    String user = config.user();
+    String password = config.password();
+    env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
+    connect(null, portSupplier.get(), env);
+  }
+
+  @Override
+  protected void after(Description description) throws Exception {
+    disconnect();
   }
 
   /**
@@ -113,24 +139,6 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     return con;
   }
 
-  @Override
-  protected void before(Description description) throws Throwable {
-    // do not auto connect if port is not set
-    if (portSupplier == null)
-      return;
-
-    // do not auto connect if no ConnectionConfiguration is defined.
-    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
-    if (config == null)
-      return;
-
-    Map<String, String[]> env = new HashMap<>();
-    String user = config.user();
-    String password = config.password();
-    env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
-    connect(null, portSupplier.get(), env);
-  }
-
   public void connect(int jmxPort) throws Exception {
     connect(null, jmxPort, null);
   }
@@ -176,14 +184,6 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     con = jmxConnector.getMBeanServerConnection();
   }
 
-  /**
-   * Override to tear down your specific external resource.
-   */
-  @Override
-  protected void after(Description description) throws Throwable {
-    disconnect();
-  }
-
   public void disconnect() throws Exception {
     if (jmxConnector != null) {
       jmxConnector.close();
@@ -191,5 +191,4 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
       jmxConnector = null;
     }
   }
-
 }

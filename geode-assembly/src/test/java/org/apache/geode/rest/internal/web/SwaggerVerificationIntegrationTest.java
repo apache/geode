@@ -20,11 +20,11 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;

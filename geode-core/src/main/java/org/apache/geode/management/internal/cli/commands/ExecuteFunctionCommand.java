@@ -119,56 +119,54 @@ public class ExecuteFunctionCommand implements GfshCommand {
       String[] arguments, DistributedMember member, TabularResultData resultTable,
       String onRegion) {
     StringBuilder resultMessage = new StringBuilder();
-    try {
-      Function function = new UserFunctionExecution();
-      Object[] args = new Object[6];
-      args[0] = functionId;
-      if (filterString != null) {
-        args[1] = filterString;
-      }
-      if (resultCollector != null) {
-        args[2] = resultCollector;
-      }
-      if (arguments != null && arguments.length > 0) {
-        args[3] = "";
-        for (String str : arguments) {
-          // send via CSV separated value format
-          if (str != null) {
-            args[3] = args[3] + str + ",";
-          }
+
+    Function function = new UserFunctionExecution();
+    Object[] args = new Object[6];
+    args[0] = functionId;
+    if (filterString != null) {
+      args[1] = filterString;
+    }
+    if (resultCollector != null) {
+      args[2] = resultCollector;
+    }
+    if (arguments != null && arguments.length > 0) {
+      args[3] = "";
+      for (String str : arguments) {
+        // send via CSV separated value format
+        if (str != null) {
+          args[3] = args[3] + str + ",";
         }
       }
-      args[4] = onRegion;
+    }
+    args[4] = onRegion;
 
-      Subject currentUser = getSecurityService().getSubject();
+    Subject currentUser = getSecurityService().getSubject();
+    if (currentUser != null) {
       args[5] = currentUser.getSession().getAttribute(CREDENTIALS_SESSION_ATTRIBUTE);
+    } else {
+      args[5] = null;
+    }
 
-      Execution execution = FunctionService.onMember(member).setArguments(args);
-      if (execution != null) {
-        List<Object> results = (List<Object>) execution.execute(function).getResult();
-        if (results != null) {
-          for (Object resultObj : results) {
-            if (resultObj != null) {
-              if (resultObj instanceof String) {
-                resultMessage.append(((String) resultObj));
-              } else if (resultObj instanceof Exception) {
-                resultMessage.append(((Exception) resultObj).getMessage());
-              } else {
-                resultMessage.append(resultObj);
-              }
+    Execution execution = FunctionService.onMember(member).setArguments(args);
+    if (execution != null) {
+      List<Object> results = (List<Object>) execution.execute(function).getResult();
+      if (results != null) {
+        for (Object resultObj : results) {
+          if (resultObj != null) {
+            if (resultObj instanceof String) {
+              resultMessage.append(((String) resultObj));
+            } else if (resultObj instanceof Exception) {
+              resultMessage.append(((Exception) resultObj).getMessage());
+            } else {
+              resultMessage.append(resultObj);
             }
           }
         }
-        toTabularResultData(resultTable, member.getId(), resultMessage.toString());
-      } else {
-        toTabularResultData(resultTable, member.getId(),
-            CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR);
       }
-    } catch (Exception e) {
-      resultMessage.append(CliStrings.format(
-          CliStrings.EXECUTE_FUNCTION__MSG__COULD_NOT_EXECUTE_FUNCTION_0_ON_MEMBER_1_ERROR_2,
-          functionId, member.getId(), e.getMessage()));
       toTabularResultData(resultTable, member.getId(), resultMessage.toString());
+    } else {
+      toTabularResultData(resultTable, member.getId(),
+          CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR);
     }
   }
 

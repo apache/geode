@@ -12,22 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.test.junit.rules;
 
-package org.apache.geode.test.dunit.rules;
+import java.io.File;
+import java.io.Serializable;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public interface Member extends Serializable {
 
-/**
- * This annotation is intended to be used with {@link MBeanServerConnectionRule} in order to
- * configure a per-test JMX connection with a specific user and password.
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-public @interface ConnectionConfiguration {
-  String user();
+  File getWorkingDir();
 
-  String password();
+  int getPort();
+
+  int getJmxPort();
+
+  int getHttpPort();
+
+  String getName();
 }

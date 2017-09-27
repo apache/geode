@@ -16,11 +16,11 @@
 package org.apache.geode.management.internal.cli;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
