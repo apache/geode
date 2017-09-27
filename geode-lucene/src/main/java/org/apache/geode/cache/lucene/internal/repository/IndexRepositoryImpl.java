@@ -87,8 +87,10 @@ public class IndexRepositoryImpl implements IndexRepository {
         stats.incFailedEntries();
         logger.info("Failed to add index for " + value + " due to " + e.getMessage());
       }
-      docs.forEach(doc -> SerializerUtil.addKey(key, doc));
-      writer.addDocuments(docs);
+      if (!docs.isEmpty()) {
+        docs.forEach(doc -> SerializerUtil.addKey(key, doc));
+        writer.addDocuments(docs);
+      }
     } finally {
       stats.endUpdate(start);
     }
@@ -105,9 +107,11 @@ public class IndexRepositoryImpl implements IndexRepository {
         stats.incFailedEntries();
         logger.info("Failed to update index for " + value + " due to " + e.getMessage());
       }
-      docs.forEach(doc -> SerializerUtil.addKey(key, doc));
-      Term keyTerm = SerializerUtil.toKeyTerm(key);
-      writer.updateDocuments(keyTerm, docs);
+      if (!docs.isEmpty()) {
+        docs.forEach(doc -> SerializerUtil.addKey(key, doc));
+        Term keyTerm = SerializerUtil.toKeyTerm(key);
+        writer.updateDocuments(keyTerm, docs);
+      }
     } finally {
       stats.endUpdate(start);
     }
