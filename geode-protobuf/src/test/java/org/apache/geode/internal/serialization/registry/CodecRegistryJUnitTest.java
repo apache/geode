@@ -39,7 +39,7 @@ public class CodecRegistryJUnitTest {
   private SerializationCodecRegistry codecRegistry;
 
   @Before
-  public void startup() throws CodecAlreadyRegisteredForTypeException {
+  public void startup() {
     codecRegistry = new SerializationCodecRegistry();
   }
 
@@ -49,32 +49,23 @@ public class CodecRegistryJUnitTest {
   }
 
   @Test
-  public void testRegisterCodec() throws CodecAlreadyRegisteredForTypeException {
+  public void testRegisterCodec() {
     Assert.assertEquals(1, codecRegistry.getRegisteredCodecCount());
     SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
     codecRegistry.register(mockSerializationType, new DummyTypeCodec());
     Assert.assertEquals(2, codecRegistry.getRegisteredCodecCount());
   }
 
-  @Test
-  public void testRegisteringCodecForRegisteredType_throwsException()
-      throws CodecAlreadyRegisteredForTypeException {
+  @Test(expected = CodecAlreadyRegisteredForTypeException.class)
+  public void testRegisteringCodecForRegisteredType_throwsException() {
     SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
     codecRegistry.register(mockSerializationType, new DummyTypeCodec());
 
-    boolean caughtException = false;
-    try {
-      codecRegistry.register(mockSerializationType, new DummyTypeCodec());
-    } catch (CodecAlreadyRegisteredForTypeException e) {
-      caughtException = true;
-    }
-    Assert.assertTrue("This was supposed to have thrown a CodecAlreadyRegisteredException",
-        caughtException);
+    codecRegistry.register(mockSerializationType, new DummyTypeCodec());
   }
 
   @Test
-  public void testGetRegisteredCodec()
-      throws CodecAlreadyRegisteredForTypeException, CodecNotRegisteredForTypeException {
+  public void testGetRegisteredCodec() throws Exception {
     TypeCodec expectedCodec = new DummyTypeCodec();
     SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
     codecRegistry.register(mockSerializationType, expectedCodec);

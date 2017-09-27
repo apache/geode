@@ -21,8 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.UnsupportedEncodingException;
-
 import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,21 +28,19 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Failure;
 import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.Success;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -71,9 +67,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void processValidKeyRemovesTheEntryAndReturnSuccess()
-      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+  public void processValidKeyRemovesTheEntryAndReturnSuccess() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, false).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
         removeRequest,
@@ -84,9 +78,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void processReturnsUnsucessfulResponseForInvalidRegion()
-      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+  public void processReturnsUnsucessfulResponseForInvalidRegion() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(true, false).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
         removeRequest,
@@ -98,9 +90,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void processReturnsSuccessWhenKeyIsNotFound()
-      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+  public void processReturnsSuccessWhenKeyIsNotFound() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, true).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
         removeRequest,
@@ -110,10 +100,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void processReturnsErrorWhenUnableToDecodeRequest()
-      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, UnsupportedEncodingException,
-      InvalidExecutionContextException {
+  public void processReturnsErrorWhenUnableToDecodeRequest() throws Exception {
     CodecNotRegisteredForTypeException exception =
         new CodecNotRegisteredForTypeException("error finding codec for type");
     when(serializationServiceStub.decode(any(), any())).thenThrow(exception);
