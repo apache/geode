@@ -83,7 +83,7 @@ public class AlterRegionCommandDUnitTest extends CliCommandTestBase {
     });
 
     this.alterVm1 = Host.getHost(0).getVM(1);
-    this.alterVm1Name = "VM" + this.alterVm1.getPid();
+    this.alterVm1Name = "VM" + this.alterVm1.getId();
     this.alterVm1.invoke(() -> {
       Properties localProps = new Properties();
       localProps.setProperty(NAME, alterVm1Name);
@@ -117,7 +117,7 @@ public class AlterRegionCommandDUnitTest extends CliCommandTestBase {
     });
 
     this.alterVm2 = Host.getHost(0).getVM(2);
-    this.alterVm2Name = "VM" + this.alterVm2.getPid();
+    this.alterVm2Name = "VM" + this.alterVm2.getId();
     this.alterVm2.invoke(() -> {
       Properties localProps = new Properties();
       localProps.setProperty(NAME, alterVm2Name);
@@ -154,7 +154,7 @@ public class AlterRegionCommandDUnitTest extends CliCommandTestBase {
     });
 
     this.alterVm1 = Host.getHost(0).getVM(1);
-    this.alterVm1Name = "VM" + this.alterVm1.getPid();
+    this.alterVm1Name = "VM" + this.alterVm1.getId();
     this.alterVm1.invoke(() -> {
       Properties localProps = new Properties();
       localProps.setProperty(NAME, alterVm1Name);
@@ -168,7 +168,7 @@ public class AlterRegionCommandDUnitTest extends CliCommandTestBase {
     });
 
     this.alterVm2 = Host.getHost(0).getVM(2);
-    this.alterVm2Name = "VM" + this.alterVm2.getPid();
+    this.alterVm2Name = "VM" + this.alterVm2.getId();
     this.alterVm2.invoke(() -> {
       Properties localProps = new Properties();
       localProps.setProperty(NAME, alterVm2Name);

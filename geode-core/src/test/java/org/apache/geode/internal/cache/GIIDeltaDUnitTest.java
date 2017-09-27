@@ -23,13 +23,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.*;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -49,7 +47,6 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -2262,8 +2259,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
       P = vm1;
       R = vm0;
     }
-    LogWriterUtils.getLogWriter().info("After assignVMsToPandR, P is " + P.getPid() + "; R is "
-        + R.getPid() + " for region " + REGION_NAME);
+    LogWriterUtils.getLogWriter().info("After assignVMsToPandR, P is " + P.getId() + "; R is "
+        + R.getId() + " for region " + REGION_NAME);
   }
 
   private DiskStoreID getMemberID(VM vm) {
@@ -2573,7 +2570,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   }
 
   private String generateValue(final VM vm) {
-    return "VALUE from vm" + vm.getPid();
+    return "VALUE from vm" + vm.getId();
   }
 
   private SerializableRunnable oneDestroyOp(final String key, final String value,

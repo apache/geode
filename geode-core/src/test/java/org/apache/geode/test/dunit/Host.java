@@ -17,9 +17,7 @@ package org.apache.geode.test.dunit;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -48,7 +46,7 @@ public abstract class Host implements Serializable {
   private String hostName;
 
   /** The VMs that run on this host */
-  private List vms;
+  private List<VM> vms;
 
   /** The GemFire systems that are available on this host */
   private List systems;
@@ -164,8 +162,8 @@ public abstract class Host implements Serializable {
   /**
    * return a collection of all VMs
    */
-  public Set<VM> getAllVMs() {
-    return new HashSet<>(vms);
+  public List<VM> getAllVMs() {
+    return new ArrayList<>(vms);
   }
 
   /**
@@ -179,8 +177,8 @@ public abstract class Host implements Serializable {
   /**
    * Adds a VM to this {@code Host} with the given process id and client record.
    */
-  protected void addVM(int pid, RemoteDUnitVMIF client) {
-    VM vm = new VM(this, pid, client);
+  protected void addVM(int vmid, RemoteDUnitVMIF client) {
+    VM vm = new VM(this, vmid, client);
     this.vms.add(vm);
   }
 
@@ -192,8 +190,8 @@ public abstract class Host implements Serializable {
     locator = l;
   }
 
-  protected void addLocator(int pid, RemoteDUnitVMIF client) {
-    setLocator(new VM(this, pid, client));
+  protected void addLocator(int vmid, RemoteDUnitVMIF client) {
+    setLocator(new VM(this, vmid, client));
   }
 
   /**
