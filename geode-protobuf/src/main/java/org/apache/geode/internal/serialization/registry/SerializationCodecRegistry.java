@@ -25,7 +25,7 @@ import org.apache.geode.internal.serialization.registry.exception.CodecNotRegist
 
 @Experimental
 public class SerializationCodecRegistry {
-  private HashMap<SerializationType, TypeCodec> codecRegistry = new HashMap<>();
+  private final HashMap<SerializationType, TypeCodec> codecRegistry = new HashMap<>();
 
   public SerializationCodecRegistry() {
     ServiceLoader<TypeCodec> typeCodecs = ServiceLoader.load(TypeCodec.class);
@@ -34,7 +34,7 @@ public class SerializationCodecRegistry {
     }
   }
 
-  public synchronized void register(SerializationType serializationType, TypeCodec<?> typeCodec) {
+  private void register(SerializationType serializationType, TypeCodec<?> typeCodec) {
     if (codecRegistry.containsKey(serializationType)) {
       throw new CodecAlreadyRegisteredForTypeException(
           "There is already a codec registered for type: " + serializationType);
