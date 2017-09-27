@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -442,10 +443,75 @@ public class CompiledInJUnitTest {
   @Test
   public void testCompiledInCanEvaluate() throws Exception {
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(new ArrayList());
-
     CompiledIn compiledIn = new CompiledIn(elm, colln);
     Object result = compiledIn.evaluate(context);
     assertNotNull(result);
+  }
+
+  @Test
+  public void whenPassingIntegerArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    int[] intCollection = new int[] {1, 2};
+    when(colln.evaluate(any())).thenReturn(intCollection);
+    callSingleCollectionFilterEvaluateBehavior(intCollection);
+  }
+
+  @Test
+  public void whenPassingLongArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    long[] longCollection = new long[] {1, 2};
+    callSingleCollectionFilterEvaluateBehavior(longCollection);
+  }
+
+  @Test
+  public void whenPassingDoubleArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    double[] doubleCollection = new double[] {1, 2};
+    callSingleCollectionFilterEvaluateBehavior(doubleCollection);
+  }
+
+  @Test
+  public void whenPassingCharArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    char[] charCollection = new char[] {1, 2};
+    callSingleCollectionFilterEvaluateBehavior(charCollection);
+  }
+
+  @Test
+  public void whenPassingFloatArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    float[] floatCollection = new float[] {1, 2};
+    callSingleCollectionFilterEvaluateBehavior(floatCollection);
+  }
+
+  @Test
+  public void whenPassingShortArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    short[] shortCollection = new short[] {1, 2};
+    callSingleCollectionFilterEvaluateBehavior(shortCollection);
+  }
+
+  @Test
+  public void whenPassingByteArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    byte[] byteCollection = new byte[] {1, 2};
+    callSingleCollectionFilterEvaluateBehavior(byteCollection);
+  }
+
+  @Test
+  public void whenPassingObjectArrayToSingleCollectionFilterEvaluateDoesNotThrowTypeMismatchException()
+      throws Exception {
+    Object[] objectCollection = new Object[] {1, 2};
+    callSingleCollectionFilterEvaluateBehavior(objectCollection);
+  }
+
+  public void callSingleCollectionFilterEvaluateBehavior(Object collection) throws Exception {
+    CompiledIn compiledIn = new CompiledIn(elm, colln);
+    when(colln.evaluate(any())).thenReturn(collection);
+    IndexInfo indexInfo =
+        new IndexInfo(null, null, mock(IndexProtocol.class), 1, new int[] {1}, 90);
+    compiledIn.singleBaseCollectionFilterEvaluate(context, new ResultsSet(), false, null, indexInfo,
+        null, false, false, false);
   }
 
   private PdxInstanceEnumInfo createPdxInstanceEnumInfo(Enum<?> e, int enumId) {
