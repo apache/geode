@@ -152,9 +152,6 @@ public class ConnectCommand implements GfshCommand {
     }
 
     if (useHttp) {
-      if (skipSslValidation) {
-        HttpsURLConnection.setDefaultHostnameVerifier((String s, SSLSession sslSession) -> true);
-      }
       result = httpConnect(gfProperties, url, skipSslValidation);
     } else {
       result = jmxConnect(gfProperties, useSsl, jmxManagerEndPoint, locatorEndPoint, false);
@@ -461,6 +458,10 @@ public class ConnectCommand implements GfshCommand {
       throws Exception {
     KeyManager[] keyManagers = getKeyManagers(sslConfig);
     TrustManager[] trustManagers = getTrustManagers(sslConfig, skipSslVerification);
+
+    if (skipSslVerification) {
+      HttpsURLConnection.setDefaultHostnameVerifier((String s, SSLSession sslSession) -> true);
+    }
 
     SSLContext ssl =
         SSLContext.getInstance(SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols())));
