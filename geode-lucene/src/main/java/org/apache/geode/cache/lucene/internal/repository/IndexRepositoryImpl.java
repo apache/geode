@@ -35,6 +35,7 @@ import org.apache.geode.distributed.LockNotHeldException;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.IntSupplier;
 
 /**
@@ -78,13 +79,16 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public void create(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
+    Collection<Document> docs = Collections.emptyList();
     try {
-      Collection<Document> docs = serializer.toDocuments(index, value);
+      try {
+        docs = serializer.toDocuments(index, value);
+      } catch (Exception e) {
+        stats.incFailedEntries();
+        logger.info("Failed to add index for " + value + " due to " + e.getMessage());
+      }
       docs.forEach(doc -> SerializerUtil.addKey(key, doc));
       writer.addDocuments(docs);
-    } catch (Exception e) {
-      stats.incFailedEntries();
-      logger.info("Failed to add index for " + value + " due to " + e.getMessage());
     } finally {
       stats.endUpdate(start);
     }
@@ -93,14 +97,17 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public void update(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
+    Collection<Document> docs = Collections.emptyList();
     try {
-      Collection<Document> docs = serializer.toDocuments(index, value);
+      try {
+        docs = serializer.toDocuments(index, value);
+      } catch (Exception e) {
+        stats.incFailedEntries();
+        logger.info("Failed to update index for " + value + " due to " + e.getMessage());
+      }
       docs.forEach(doc -> SerializerUtil.addKey(key, doc));
       Term keyTerm = SerializerUtil.toKeyTerm(key);
       writer.updateDocuments(keyTerm, docs);
-    } catch (Exception e) {
-      stats.incFailedEntries();
-      logger.info("Failed to update index for " + value + " due to " + e.getMessage());
     } finally {
       stats.endUpdate(start);
     }
