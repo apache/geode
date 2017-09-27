@@ -27,6 +27,7 @@ import org.codehaus.cargo.container.State;
 import org.codehaus.cargo.container.configuration.ConfigurationType;
 import org.codehaus.cargo.container.configuration.LocalConfiguration;
 import org.codehaus.cargo.container.deployable.WAR;
+import org.codehaus.cargo.container.jetty.JettyPropertySet;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.property.LoggingLevel;
 import org.codehaus.cargo.container.property.ServletPropertySet;
@@ -47,6 +48,7 @@ import org.apache.geode.internal.logging.LogService;
  * Subclasses provide setup and configuration of specific containers.
  */
 public abstract class ServerContainer {
+  private final File containerConfigHome;
   private InstalledLocalContainer container;
   private ContainerInstall install;
 
@@ -66,7 +68,7 @@ public abstract class ServerContainer {
 
   public final String DEFAULT_CONF_DIR;
 
-  public static final String DEFAULT_LOGGING_LEVEL = LoggingLevel.HIGH.getLevel();
+  public static final String DEFAULT_LOGGING_LEVEL = LoggingLevel.LOW.getLevel();
   public static final String DEFAULT_LOG_DIR = "cargo_logs/";
   public static final String DEFAULT_CONFIG_DIR = "/tmp/cargo_configs/";
 
@@ -99,8 +101,8 @@ public abstract class ServerContainer {
 
     DEFAULT_CONF_DIR = install.getHome() + "/conf/";
     // Use the default configuration home path if not passed a config home
-    if (containerConfigHome == null)
-      containerConfigHome = new File(DEFAULT_CONFIG_DIR + description);
+    this.containerConfigHome = containerConfigHome == null
+        ? new File(DEFAULT_CONFIG_DIR + description) : containerConfigHome;
 
     // Init the property lists
     cacheProperties = new HashMap<>();
@@ -111,7 +113,7 @@ public abstract class ServerContainer {
     // Create the Cargo Container instance wrapping our physical container
     LocalConfiguration configuration = (LocalConfiguration) new DefaultConfigurationFactory()
         .createConfiguration(install.getInstallId(), ContainerType.INSTALLED,
-            ConfigurationType.STANDALONE, containerConfigHome.getAbsolutePath());
+            ConfigurationType.STANDALONE, this.containerConfigHome.getAbsolutePath());
     // Set configuration/container logging level
     configuration.setProperty(GeneralPropertySet.LOGGING, loggingLevel);
     // Removes secureRandom generation so that container startup is much faster
@@ -208,6 +210,25 @@ public abstract class ServerContainer {
     }
 
     container.stop();
+  }
+
+  public void dumpLogs() throws IOException {
+    for (File file : logDir.listFiles()) {
+      dumpToStdOut(file);
+    }
+
+    for (File file : new File(containerConfigHome, "logs").listFiles()) {
+      dumpToStdOut(file);
+    }
+  }
+
+  private void dumpToStdOut(final File file) throws IOException {
+    System.out.println("-------------------------------------------");
+    System.out.println(file.getAbsolutePath());
+    System.out.println("-------------------------------------------");
+    FileUtils.copyFile(file, System.out);
+    System.out.println("-------------------------------------------");
+    System.out.println("");
   }
 
   /**
