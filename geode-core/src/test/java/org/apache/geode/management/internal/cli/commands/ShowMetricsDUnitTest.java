@@ -78,7 +78,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
     createLocalSetUp();
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
@@ -122,7 +122,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     setUpJmxManagerOnVm0ThenConnect(null);
     createLocalSetUp();
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
 
     vm1.invoke(new SerializableRunnable() {
       public void run() {
