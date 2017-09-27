@@ -14,9 +14,14 @@
  */
 package org.apache.geode.test.junit.runners;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 
 /**
  * Used by JUnit rule unit tests to execute inner test cases.
@@ -25,8 +30,23 @@ public class TestRunner {
 
   protected TestRunner() {}
 
-  public static Result runTest(Class<?> test) {
+  public static Result runTest(final Class<?> test) {
     JUnitCore junitCore = new JUnitCore();
     return junitCore.run(Request.aClass(test).getRunner());
+  }
+
+  public static Result runTestWithValidation(final Class<?> test) {
+    JUnitCore junitCore = new JUnitCore();
+    Result result = junitCore.run(Request.aClass(test).getRunner());
+
+    List<Failure> failures = result.getFailures();
+    if (!failures.isEmpty()) {
+      Failure firstFailure = failures.get(0);
+      throw new AssertionError(firstFailure.getException());
+    }
+
+    assertThat(result.wasSuccessful()).isTrue();
+
+    return result;
   }
 }
