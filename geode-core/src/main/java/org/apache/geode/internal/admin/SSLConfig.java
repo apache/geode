@@ -41,7 +41,6 @@ public class SSLConfig {
   private String truststoreType = KeyStore.getDefaultType();
   private String alias = null;
   private SecurableCommunicationChannel securableCommunicationChannel = null;
-  private boolean skipSslVerification;
 
   /**
    * SSL implementation-specific key-value pairs. Each key should be prefixed with
@@ -147,14 +146,6 @@ public class SSLConfig {
     this.truststoreType = truststoreType;
   }
 
-  public boolean isSkipSslVerification() {
-    return skipSslVerification;
-  }
-
-  public void setSkipSslVerification(boolean skipSslVerification) {
-    this.skipSslVerification = skipSslVerification;
-  }
-
   public Properties getProperties() {
     return this.properties;
   }
@@ -179,13 +170,13 @@ public class SSLConfig {
 
   @Override
   public String toString() {
-    return "SSLConfig{" + "enabled=" + enabled + ", skipSslVerifiaction=" + skipSslVerification
-        + ", protocols='" + protocols + '\'' + ", ciphers='" + ciphers + '\'' + ", requireAuth="
-        + requireAuth + ", keystore='" + keystore + '\'' + ", keystoreType='" + keystoreType + '\''
-        + ", keystorePassword='" + keystorePassword + '\'' + ", truststore='" + truststore + '\''
-        + ", truststorePassword='" + truststorePassword + '\'' + ", truststoreType='"
-        + truststoreType + '\'' + ", alias='" + alias + '\'' + ", securableCommunicationChannel="
-        + securableCommunicationChannel + ", properties=" + properties + '}';
+    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"
+        + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\''
+        + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword
+        + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='"
+        + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='"
+        + alias + '\'' + ", securableCommunicationChannel=" + securableCommunicationChannel
+        + ", properties=" + properties + '}';
   }
 
   /**

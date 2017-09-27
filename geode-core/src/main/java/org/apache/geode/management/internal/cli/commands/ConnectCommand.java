@@ -15,7 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PREFIX;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_PREFIX;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +32,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -245,9 +246,8 @@ public class ConnectCommand implements GfshCommand {
     try {
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(gfProperties,
           SecurableCommunicationChannel.WEB);
-      sslConfig.setSkipSslVerification(skipSslVerification);
       if (sslConfig.isEnabled()) {
-        configureHttpsURLConnection(sslConfig);
+        configureHttpsURLConnection(sslConfig, skipSslVerification);
         if (url.startsWith("http:")) {
           url = url.replace("http:", "https:");
         }
@@ -420,11 +420,12 @@ public class ConnectCommand implements GfshCommand {
     return keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null;
   }
 
-  private TrustManager[] getTrustManagers(SSLConfig sslConfig) throws Exception {
+  private TrustManager[] getTrustManagers(SSLConfig sslConfig, boolean skipSslVerification)
+      throws Exception {
     FileInputStream trustStoreStream = null;
     TrustManagerFactory trustManagerFactory = null;
 
-    if (sslConfig.isSkipSslVerification()) {
+    if (skipSslVerification) {
       TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
           return null;
@@ -456,9 +457,10 @@ public class ConnectCommand implements GfshCommand {
     return trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null;
   }
 
-  private void configureHttpsURLConnection(SSLConfig sslConfig) throws Exception {
+  private void configureHttpsURLConnection(SSLConfig sslConfig, boolean skipSslVerification)
+      throws Exception {
     KeyManager[] keyManagers = getKeyManagers(sslConfig);
-    TrustManager[] trustManagers = getTrustManagers(sslConfig);
+    TrustManager[] trustManagers = getTrustManagers(sslConfig, skipSslVerification);
 
     SSLContext ssl =
         SSLContext.getInstance(SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols())));
