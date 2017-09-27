@@ -17,6 +17,7 @@ package org.apache.geode.internal.serialization.registry;
 import java.util.HashMap;
 import java.util.ServiceLoader;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.serialization.SerializationType;
 import org.apache.geode.internal.serialization.TypeCodec;
@@ -29,8 +30,12 @@ public class SerializationCodecRegistry {
 
   public SerializationCodecRegistry() {
     ServiceLoader<TypeCodec> typeCodecs = ServiceLoader.load(TypeCodec.class);
-    for (TypeCodec typeCodec : typeCodecs) {
-      register(typeCodec.getSerializationType(), typeCodec);
+    try {
+      for (TypeCodec typeCodec : typeCodecs) {
+        register(typeCodec.getSerializationType(), typeCodec);
+      }
+    } catch (CodecAlreadyRegisteredForTypeException ex) {
+      throw new GemFireConfigException("Multiple implementations found for the same TypeCodec", ex);
     }
   }
 
