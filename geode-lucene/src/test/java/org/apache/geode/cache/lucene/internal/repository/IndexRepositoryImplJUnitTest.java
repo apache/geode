@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -35,6 +36,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.SearcherManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,7 +45,11 @@ import org.mockito.Mockito;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
@@ -138,6 +144,32 @@ public class IndexRepositoryImplJUnitTest {
     repo.update("key1", new Type2("bacon maple bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
     verify(stats, times(1)).startUpdate();
     verify(stats, times(1)).endUpdate(anyLong());
+  }
+
+  @Test
+  public void updateShouldHandleException() throws IOException {
+    LuceneIndex index = Mockito.mock(LuceneIndex.class);
+    LuceneSerializer serializer = Mockito.mock(LuceneSerializer.class);
+    IndexWriter writerSpy = spy(writer);
+    repo = new DummyIndexRepositoryImpl(region, writerSpy, serializer, stats, userRegion,
+        mock(DistributedLockService.class), "lockName", index);
+    Mockito.when(serializer.toDocuments(any(), any()))
+        .thenThrow(new RuntimeException("SerializerException"));
+    repo.update("key1", new Type2("bacon maple bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    verify(writerSpy, never()).updateDocuments(any(), any());
+  }
+
+  @Test
+  public void emptyDocsShouldUpdateDocuments() throws IOException {
+    LuceneIndex index = Mockito.mock(LuceneIndex.class);
+    LuceneSerializer serializer = Mockito.mock(LuceneSerializer.class);
+    IndexWriter writerSpy = spy(writer);
+    repo = new DummyIndexRepositoryImpl(region, writerSpy, serializer, stats, userRegion,
+        mock(DistributedLockService.class), "lockName", index);
+    Mockito.when(serializer.toDocuments(any(), any())).thenReturn(Collections.emptyList());
+    Mockito.doReturn(0L).when(writerSpy).updateDocuments(any(), any());
+    repo.update("key1", new Type2("bacon maple bar", 1, 2L, 3.0, 4.0f, "Grape Ape doughnut"));
+    verify(writerSpy).updateDocuments(any(), any());
   }
 
   @Test
@@ -281,6 +313,18 @@ public class IndexRepositoryImplJUnitTest {
       if (!Arrays.equals(bytes, other.bytes))
         return false;
       return true;
+    }
+  }
+
+  private class DummyIndexRepositoryImpl extends IndexRepositoryImpl {
+    public DummyIndexRepositoryImpl(Region<?, ?> region, IndexWriter writer,
+        LuceneSerializer serializer, LuceneIndexStats stats, Region<?, ?> userRegion,
+        DistributedLockService lockService, String lockName, LuceneIndex index) throws IOException {
+      super(region, writer, serializer, stats, userRegion, lockService, lockName, index);
+    }
+
+    protected SearcherManager createSearchManager() throws IOException {
+      return new SearcherManager(writer, true, true, null);
     }
   }
 
