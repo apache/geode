@@ -85,8 +85,8 @@ public class ShowMetricsCommand implements GfshCommand {
       if (regionName != null && !regionName.isEmpty()) {
 
         if (StringUtils.isNotBlank(cacheServerPortString)) {
-          return ResultBuilder
-              .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
+          return ResultBuilder.createUserErrorResult(
+              CliStrings.SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT);
         }
 
         // MBean names contain the forward slash

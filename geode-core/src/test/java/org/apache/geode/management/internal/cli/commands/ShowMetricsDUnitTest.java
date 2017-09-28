@@ -14,31 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import javax.management.ObjectName;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.awaitility.Awaitility.await;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.CacheServerMXBean;
-import org.apache.geode.management.DistributedRegionMXBean;
-import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
@@ -51,9 +40,15 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+import javax.management.ObjectName;
 
 @Category({DistributedTest.class, FlakyTest.class}) // GEODE-1764 GEODE-3530
 @SuppressWarnings("serial")
@@ -66,15 +61,11 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     Cache cache = getCache();
     RegionFactory<Integer, Integer> dataRegionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
-    Region region1 = dataRegionFactory.create("REGION1");
-    Region region2 = dataRegionFactory.create("REGION2");
+    dataRegionFactory.create("REGION1");
+    dataRegionFactory.create("REGION2");
   }
 
-  /**
-   * tests the default version of "show metrics"
-   */
-  @Test
-  public void testShowMetricsDefault() {
+  private void systemSetUp() {
     setUpJmxManagerOnVm0ThenConnect(null);
     createLocalSetUp();
     final VM vm1 = Host.getHost(0).getVM(1);
@@ -89,16 +80,54 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         Cache cache = getCache();
         RegionFactory<Integer, Integer> dataRegionFactory =
             cache.createRegionFactory(RegionShortcut.REPLICATE);
-        Region region = dataRegionFactory.create("REGION1");
+        dataRegionFactory.create("REGION1");
       }
     });
+  }
 
+  private boolean createMBean(int beanType, String regionName, DistributedMember distributedMember,
+      int cacheServerPort) {
+    Cache cache = getCache();
+    ManagementService mgmtService = ManagementService.getManagementService(cache);
+    Object bean = null;
+
+    switch (beanType) {
+      case 1:
+        bean = mgmtService.getDistributedSystemMXBean();
+        break;
+      case 2:
+        bean = mgmtService.getDistributedRegionMXBean("/" + regionName);
+        break;
+      case 3:
+        ObjectName memberMBeanName = mgmtService.getMemberMBeanName(distributedMember);
+        bean = mgmtService.getMBeanInstance(memberMBeanName, MemberMXBean.class);
+        break;
+      case 4:
+        ObjectName regionMBeanName =
+            mgmtService.getRegionMBeanName(distributedMember, "/" + regionName);
+        bean = mgmtService.getMBeanInstance(regionMBeanName, RegionMXBean.class);
+        break;
+      case 5:
+        ObjectName csMxBeanName =
+            mgmtService.getCacheServerMBeanName(cacheServerPort, distributedMember);
+        bean = mgmtService.getMBeanInstance(csMxBeanName, CacheServerMXBean.class);
+        break;
+    }
+
+    return bean != null;
+  }
+
+  /**
+   * tests the default version of "show metrics"
+   */
+  @Test
+  public void testShowMetricsDefault() {
+    systemSetUp();
     SerializableCallable showMetricCmd = new SerializableCallable() {
 
       @Override
       public Object call() throws Exception {
-        WaitCriterion wc = createMBeanWaitCriterion(1, "", null, 0);
-        waitForCriterion(wc, 5000, 500, true);
+        await().atMost(5, SECONDS).until(() -> createMBean(1, "", null, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand("show metrics");
         String resultStr = commandResultToString((CommandResult) result);
@@ -118,26 +147,6 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
     getLogWriter().info(managerResult);
   }
 
-  public void systemSetUp() {
-    setUpJmxManagerOnVm0ThenConnect(null);
-    createLocalSetUp();
-    final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
-
-    vm1.invoke(new SerializableRunnable() {
-      public void run() {
-        Properties localProps = new Properties();
-        localProps.setProperty(NAME, vm1Name);
-        getSystem(localProps);
-
-        Cache cache = getCache();
-        RegionFactory<Integer, Integer> dataRegionFactory =
-            cache.createRegionFactory(RegionShortcut.REPLICATE);
-        Region region = dataRegionFactory.create("REGION1");
-      }
-    });
-  }
-
   @Test
   public void testShowMetricsRegion() throws InterruptedException {
     systemSetUp();
@@ -146,8 +155,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
       @Override
       public Object call() throws Exception {
-        WaitCriterion wc = createMBeanWaitCriterion(2, regionName, null, 0);
-        waitForCriterion(wc, 5000, 500, true);
+        await().atMost(5, SECONDS).until(() -> createMBean(2, regionName, null, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand("show metrics --region=REGION1");
         String resultAsString = commandResultToString((CommandResult) result);
@@ -164,66 +172,6 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
     getLogWriter().info("#SB Manager");
     getLogWriter().info(managerResult);
-  }
-
-  /***
-   * Creates WaitCriterion based on creation of different types of MBeans
-   */
-  private WaitCriterion createMBeanWaitCriterion(final int beanType, final String regionName,
-      final DistributedMember distributedMember, final int cacheServerPort) {
-
-    WaitCriterion waitCriterion = new WaitCriterion() {
-
-      @Override
-      public boolean done() {
-        boolean done = false;
-        Cache cache = getCache();
-        ManagementService mgmtService = ManagementService.getManagementService(cache);
-        if (beanType == 1) {
-          DistributedSystemMXBean dsMxBean = mgmtService.getDistributedSystemMXBean();
-          if (dsMxBean != null)
-            done = true;
-        } else if (beanType == 2) {
-          DistributedRegionMXBean dsRegionMxBean =
-              mgmtService.getDistributedRegionMXBean("/" + regionName);
-          if (dsRegionMxBean != null)
-            done = true;
-        } else if (beanType == 3) {
-          ObjectName memberMBeanName = mgmtService.getMemberMBeanName(distributedMember);
-          MemberMXBean memberMxBean =
-              mgmtService.getMBeanInstance(memberMBeanName, MemberMXBean.class);
-
-          if (memberMxBean != null)
-            done = true;
-        } else if (beanType == 4) {
-          ObjectName regionMBeanName =
-              mgmtService.getRegionMBeanName(distributedMember, "/" + regionName);
-          RegionMXBean regionMxBean =
-              mgmtService.getMBeanInstance(regionMBeanName, RegionMXBean.class);
-
-          if (regionMxBean != null)
-            done = true;
-        } else if (beanType == 5) {
-          ObjectName csMxBeanName =
-              mgmtService.getCacheServerMBeanName(cacheServerPort, distributedMember);
-          CacheServerMXBean csMxBean =
-              mgmtService.getMBeanInstance(csMxBeanName, CacheServerMXBean.class);
-
-          if (csMxBean != null) {
-            done = true;
-          }
-        }
-
-        return done;
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for the mbean to be created";
-      }
-    };
-
-    return waitCriterion;
   }
 
   @Test // FlakyTest: GEODE-1764
@@ -244,10 +192,9 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
 
-        WaitCriterion wc = createMBeanWaitCriterion(3, "", distributedMember, 0);
-        waitForCriterion(wc, 5000, 500, true);
-        wc = createMBeanWaitCriterion(5, "", distributedMember, cacheServerPort);
-        waitForCriterion(wc, 10000, 500, true);
+        await().atMost(5, SECONDS).until(() -> createMBean(3, "", distributedMember, 0));
+        await().atMost(10, SECONDS)
+            .until(() -> createMBean(5, "", distributedMember, cacheServerPort));
 
         final String command = CliStrings.SHOW_METRICS + " --" + CliStrings.MEMBER + "="
             + distributedMember.getId() + " --" + CliStrings.SHOW_METRICS__CACHESERVER__PORT + "="
@@ -293,8 +240,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
 
-        WaitCriterion wc = createMBeanWaitCriterion(4, regionName, distributedMember, 0);
-        waitForCriterion(wc, 5000, 500, true);
+        await().atMost(5, SECONDS).until(() -> createMBean(4, regionName, distributedMember, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand("show metrics --region=" + regionName
             + " --member=" + distributedMember.getName() + " --file=" + exportFileName);
@@ -334,8 +280,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
 
-        WaitCriterion wc = createMBeanWaitCriterion(4, regionName, distributedMember, 0);
-        waitForCriterion(wc, 5000, 500, true);
+        await().atMost(5, SECONDS).until(() -> createMBean(4, regionName, distributedMember, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand(
             "show metrics --region=" + regionName + " --member=" + distributedMember.getName()
@@ -348,6 +293,34 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
         file.deleteOnExit();
         assertTrue(file.exists());
         file.delete();
+        return resultAsString;
+      }
+    };
+
+    // Invoke the command in the Manager VM
+    final VM managerVm = Host.getHost(0).getVM(0);
+    Object managerResultObj = managerVm.invoke(showMetricCmd);
+
+    String managerResult = (String) managerResultObj;
+
+    getLogWriter().info("#SB Manager");
+    getLogWriter().info(managerResult);
+  }
+
+  @Test
+  public void testShowMetricsWithInvalidOptions() throws InterruptedException {
+    systemSetUp();
+    Cache cache = getCache();
+    final DistributedMember distributedMember = cache.getDistributedSystem().getDistributedMember();
+
+    SerializableCallable showMetricCmd = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
+        Result result = OnlineCommandProcessor.executeCommand("show metrics --region=REGION1 "
+            + " --member=" + distributedMember.getName() + " --port=0");
+        String resultAsString = commandResultToString((CommandResult) result);
+        assertEquals(resultAsString, true, result.getStatus().equals(Status.ERROR));
         return resultAsString;
       }
     };
