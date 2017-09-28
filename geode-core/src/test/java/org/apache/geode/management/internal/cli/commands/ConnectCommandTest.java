@@ -69,7 +69,7 @@ public class ConnectCommandTest {
     when(connectCommand.getGfsh()).thenReturn(gfsh);
     doReturn(properties).when(connectCommand).loadProperties(any());
     CommandResult result = mock(CommandResult.class);
-    when(connectCommand.httpConnect(any(), any())).thenReturn(result);
+    when(connectCommand.httpConnect(any(), any(), anyBoolean())).thenReturn(result);
     when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
         .thenReturn(result);
     fileCaptor = ArgumentCaptor.forClass(File.class);
