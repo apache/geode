@@ -90,6 +90,7 @@ public class CacheMaxConnectionJUnitTest {
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.set(ConfigurationProperties.TCP_PORT, "0");
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
@@ -118,6 +119,7 @@ public class CacheMaxConnectionJUnitTest {
     SocketCreatorFactory.close();
   }
 
+  // 0 threads implies not selector.
   @Test
   public void testNewProtocolRespectsMaxConnectionLimit_notSelector() throws Exception {
     testNewProtocolRespectsMaxConnectionLimit(0, false);
@@ -128,6 +130,8 @@ public class CacheMaxConnectionJUnitTest {
     testNewProtocolRespectsMaxConnectionLimit(4, true);
   }
 
+  // Set the maximum connection limit, connect that many clients, check they all connected, check we
+  // can't create another, and repeat once to be sure we're cleaning up.
   private void testNewProtocolRespectsMaxConnectionLimit(int threads, boolean isSelector)
       throws Exception {
     final int connections = 16;
@@ -173,7 +177,7 @@ public class CacheMaxConnectionJUnitTest {
       throws Exception {
     final Socket[] sockets = new Socket[connections];
 
-    ExecutorService executor = Executors.newFixedThreadPool(20);
+    ExecutorService executor = Executors.newFixedThreadPool(connections);
 
     // Used to assert the exception is non-null.
     ArrayList<Callable<Exception>> callables = new ArrayList<>();
