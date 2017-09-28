@@ -14,15 +14,26 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
+import org.apache.geode.internal.offheap.OffHeapMemoryStats;
+import org.apache.geode.internal.offheap.OutOfOffHeapMemoryListener;
+import org.apache.geode.internal.offheap.SlabImpl;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -46,7 +57,33 @@ public class AbstractRegionEntryTest {
   }
 
 
-  public static class TestableRegionEntry extends AbstractRegionEntry {
+
+  @Test
+  public void whenPrepareValueForCacheCalledWithOffHeapEntryHasNewCachedSerializedValue()
+      throws RegionClearedException, IOException, ClassNotFoundException {
+    LocalRegion lr = mock(LocalRegion.class);
+    RegionEntryContext regionEntryContext = mock(RegionEntryContext.class);
+    OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
+    OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
+    SlabImpl slab = new SlabImpl(1024); // 1k
+    MemoryAllocatorImpl ma =
+        MemoryAllocatorImpl.createForUnitTest(ooohml, stats, new SlabImpl[] {slab});
+    when(regionEntryContext.getOffHeap()).thenReturn(true);
+    String value = "value";
+    AbstractRegionEntry re = new TestableRegionEntry(lr, value);
+    assertEquals(value, re.getValueField());
+    EntryEventImpl entryEvent = new EntryEventImpl();
+    re.prepareValueForCache(regionEntryContext, value, entryEvent, true);
+    final byte[] cachedSerializedNewValue = entryEvent.getCachedSerializedNewValue();
+    DataInputStream dataInputStream =
+        new DataInputStream(new ByteArrayInputStream(cachedSerializedNewValue));
+    Object o = DataSerializer.readObject(dataInputStream);
+    assertNotNull(entryEvent.getCachedSerializedNewValue());
+    assertEquals(o, value);
+  }
+
+  public static class TestableRegionEntry extends AbstractRegionEntry
+      implements OffHeapRegionEntry {
 
     private Object value;
 
@@ -104,5 +141,19 @@ public class AbstractRegionEntryTest {
     @Override
     protected void setEntryHash(int v) {}
 
+    @Override
+    public void release() {
+
+    }
+
+    @Override
+    public long getAddress() {
+      return 0;
+    }
+
+    @Override
+    public boolean setAddress(long expectedAddr, long newAddr) {
+      return false;
+    }
   }
 }

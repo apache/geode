@@ -1329,23 +1329,17 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
             data = event.getCachedSerializedNewValue();
           } else if (val instanceof CachedDeserializable) {
             data = ((CachedDeserializable) val).getSerializedValue();
-            if (event != null) {
-              event.setCachedSerializedNewValue(data);
-            }
           } else if (val instanceof PdxInstance) {
             try {
               data = ((ConvertableToBytes) val).toBytes();
-              if (event != null) {
-                event.setCachedSerializedNewValue(data);
-              }
             } catch (IOException e) {
               throw new PdxSerializationException("Could not convert " + val + " to bytes", e);
             }
           } else {
             data = EntryEventImpl.serialize(val);
-            if (event != null) {
-              event.setCachedSerializedNewValue(data);
-            }
+          }
+          if (event != null) {
+            event.setCachedSerializedNewValue(data);
           }
         } else {
           data = (byte[]) val;
