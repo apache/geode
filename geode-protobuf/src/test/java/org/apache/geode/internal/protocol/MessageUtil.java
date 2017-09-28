@@ -21,7 +21,6 @@ import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtil
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 public class MessageUtil {
@@ -49,8 +48,7 @@ public class MessageUtil {
   public static ClientProtocol.Message makePutRequestMessage(
       SerializationService serializationService, String requestKey, String requestValue,
       String requestRegion, ClientProtocol.MessageHeader header)
-      throws CodecNotRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecAlreadyRegisteredForTypeException {
+      throws CodecNotRegisteredForTypeException, UnsupportedEncodingTypeException {
     BasicTypes.Entry entry = ProtobufUtilities.createEntry(
         ProtobufUtilities.createEncodedValue(serializationService, requestKey),
         ProtobufUtilities.createEncodedValue(serializationService, requestValue));
@@ -62,8 +60,7 @@ public class MessageUtil {
 
   public static ClientProtocol.Message makeGetRequestMessage(
       SerializationService serializationService, Object requestKey, String requestRegion,
-      ClientProtocol.MessageHeader header) throws CodecAlreadyRegisteredForTypeException,
-      UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+      ClientProtocol.MessageHeader header) throws Exception {
     ClientProtocol.Request request = ProtobufRequestUtilities.createGetRequest(requestRegion,
         ProtobufUtilities.createEncodedValue(serializationService, requestKey));
     return ProtobufUtilities.createProtobufMessage(header, request);

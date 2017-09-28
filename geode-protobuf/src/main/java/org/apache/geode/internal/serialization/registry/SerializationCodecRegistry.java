@@ -17,6 +17,7 @@ package org.apache.geode.internal.serialization.registry;
 import java.util.HashMap;
 import java.util.ServiceLoader;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.serialization.SerializationType;
 import org.apache.geode.internal.serialization.TypeCodec;
@@ -25,17 +26,20 @@ import org.apache.geode.internal.serialization.registry.exception.CodecNotRegist
 
 @Experimental
 public class SerializationCodecRegistry {
-  private HashMap<SerializationType, TypeCodec> codecRegistry = new HashMap<>();
+  private final HashMap<SerializationType, TypeCodec> codecRegistry = new HashMap<>();
 
-  public SerializationCodecRegistry() throws CodecAlreadyRegisteredForTypeException {
+  public SerializationCodecRegistry() {
     ServiceLoader<TypeCodec> typeCodecs = ServiceLoader.load(TypeCodec.class);
-    for (TypeCodec typeCodec : typeCodecs) {
-      register(typeCodec.getSerializationType(), typeCodec);
+    try {
+      for (TypeCodec typeCodec : typeCodecs) {
+        register(typeCodec.getSerializationType(), typeCodec);
+      }
+    } catch (CodecAlreadyRegisteredForTypeException ex) {
+      throw new GemFireConfigException("Multiple implementations found for the same TypeCodec", ex);
     }
   }
 
-  public synchronized void register(SerializationType serializationType, TypeCodec<?> typeCodec)
-      throws CodecAlreadyRegisteredForTypeException {
+  private void register(SerializationType serializationType, TypeCodec<?> typeCodec) {
     if (codecRegistry.containsKey(serializationType)) {
       throw new CodecAlreadyRegisteredForTypeException(
           "There is already a codec registered for type: " + serializationType);
