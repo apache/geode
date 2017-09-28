@@ -14,7 +14,8 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import static org.apache.geode.management.internal.web.controllers.AbstractMultiPartCommandsController.RESOURCES_REQUEST_PARAMETER;
+import static org.apache.commons.io.IOUtils.toInputStream;
+import static org.apache.geode.management.internal.web.util.UriUtils.decode;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,8 +24,11 @@ import java.util.Set;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -65,113 +69,53 @@ import org.apache.geode.management.internal.web.util.ConvertUtils;
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class ShellCommandsController extends AbstractCommandsController {
-
-  protected static final String MBEAN_ATTRIBUTE_LINK_RELATION = "mbean-attribute";
-  protected static final String MBEAN_OPERATION_LINK_RELATION = "mbean-operation";
-  protected static final String MBEAN_QUERY_LINK_RELATION = "mbean-query";
-  protected static final String PING_LINK_RELATION = "ping";
-
   @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST}, value = "/management/commands")
   public ResponseEntity<InputStreamResource> command(@RequestParam(value = "cmd") String command,
-      @RequestParam(value = RESOURCES_REQUEST_PARAMETER,
-          required = false) MultipartFile[] fileResource)
+      @RequestParam(value = "resources", required = false) MultipartFile[] fileResource)
       throws IOException {
     String result =
         processCommand(decode(command), getEnvironment(), ConvertUtils.convert(fileResource));
     return getResponse(result);
   }
 
-  ResponseEntity<InputStreamResource> getResponse(String result) {
-    // the result is json string from CommandResult
-    CommandResult commandResult = ResultBuilder.fromJson(result);
-
-    if (commandResult.getStatus().equals(Result.Status.OK) && commandResult.hasFileToDownload()) {
-      return getFileDownloadResponse(commandResult);
-    } else {
-      return getJsonResponse(result);
-    }
-  }
-
-  private ResponseEntity<InputStreamResource> getJsonResponse(String result) {
-    // if the command is successful, the output is the filepath, else we need to send the
-    // original result back so that the receiver will know to turn it into a Result object
-
-    HttpHeaders respHeaders = new HttpHeaders();
-    try {
-      InputStreamResource isr =
-          new InputStreamResource(org.apache.commons.io.IOUtils.toInputStream(result, "UTF-8"));
-      respHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-      return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
-    } catch (Exception e) {
-      throw new RuntimeException("IO Error writing file to output stream", e);
-    }
-  }
-
-  private ResponseEntity<InputStreamResource> getFileDownloadResponse(CommandResult commandResult) {
-    HttpHeaders respHeaders = new HttpHeaders();
-    InputStreamResource isr;// if the command is successful, the output is the filepath,
-
-    Path filePath = commandResult.getFileToDownload();
-    try {
-      isr = new InputStreamResource(new FileInputStream(filePath.toFile()));
-      respHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-      return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
-    } catch (Exception e) {
-      throw new RuntimeException("IO Error writing file to output stream", e);
-    } finally {
-      FileUtils.deleteQuietly(filePath.toFile());
-    }
-  }
-
   @RequestMapping(method = RequestMethod.GET, value = "/mbean/attribute")
   public ResponseEntity<?> getAttribute(@RequestParam("resourceName") final String resourceName,
-      @RequestParam("attributeName") final String attributeName) {
-    try {
-      final Object attributeValue = getMBeanServer()
-          .getAttribute(ObjectName.getInstance(decode(resourceName)), decode(attributeName));
-
-      return new ResponseEntity<>(IOUtils.serializeObject(attributeValue), HttpStatus.OK);
-    } catch (AttributeNotFoundException | MalformedObjectNameException e) {
-      return new ResponseEntity<>(printStackTrace(e), HttpStatus.BAD_REQUEST);
-    } catch (InstanceNotFoundException e) {
-      return new ResponseEntity<>(printStackTrace(e), HttpStatus.NOT_FOUND);
-    } catch (Exception e) {
-      return new ResponseEntity<>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+      @RequestParam("attributeName") final String attributeName)
+      throws AttributeNotFoundException, MBeanException, ReflectionException,
+      InstanceNotFoundException, IOException, MalformedObjectNameException {
+    // Exceptions are caught by the @ExceptionHandler AbstractCommandsController.handleAppException
+    MBeanServer mBeanServer = getMBeanServer();
+    ObjectName objectName = ObjectName.getInstance(decode(resourceName));
+    final Object attributeValue = mBeanServer.getAttribute(objectName, decode(attributeName));
+    byte[] serializedResult = IOUtils.serializeObject(attributeValue);
+    return new ResponseEntity<>(serializedResult, HttpStatus.OK);
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/mbean/operation")
   public ResponseEntity<?> invoke(@RequestParam("resourceName") final String resourceName,
       @RequestParam("operationName") final String operationName,
       @RequestParam(value = "signature", required = false) String[] signature,
-      @RequestParam(value = "parameters", required = false) Object[] parameters) {
+      @RequestParam(value = "parameters", required = false) Object[] parameters)
+      throws MalformedObjectNameException, MBeanException, InstanceNotFoundException,
+      ReflectionException, IOException {
+    // Exceptions are caught by the @ExceptionHandler AbstractCommandsController.handleAppException
     signature = (signature != null ? signature : ArrayUtils.EMPTY_STRING_ARRAY);
     parameters = (parameters != null ? parameters : ObjectUtils.EMPTY_OBJECT_ARRAY);
-
-    try {
-      final Object result = getMBeanServer().invoke(ObjectName.getInstance(decode(resourceName)),
-          decode(operationName), parameters, signature);
-
-      return new ResponseEntity<>(IOUtils.serializeObject(result), HttpStatus.OK);
-    } catch (InstanceNotFoundException e) {
-      return new ResponseEntity<>(printStackTrace(e), HttpStatus.NOT_FOUND);
-    } catch (MalformedObjectNameException e) {
-      return new ResponseEntity<>(printStackTrace(e), HttpStatus.BAD_REQUEST);
-    } catch (Exception e) {
-      return new ResponseEntity<>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    MBeanServer mBeanServer = getMBeanServer();
+    ObjectName objectName = ObjectName.getInstance(decode(resourceName));
+    final Object result =
+        mBeanServer.invoke(objectName, decode(operationName), parameters, signature);
+    byte[] serializedResult = IOUtils.serializeObject(result);
+    return new ResponseEntity<>(serializedResult, HttpStatus.OK);
   }
 
   @RequestMapping(method = RequestMethod.POST, value = "/mbean/query")
-  public ResponseEntity<?> queryNames(@RequestBody final QueryParameterSource query) {
-    try {
-      final Set<ObjectName> objectNames =
-          getMBeanServer().queryNames(query.getObjectName(), query.getQueryExpression());
-
-      return new ResponseEntity<>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
-    } catch (IOException e) {
-      return new ResponseEntity<>(printStackTrace(e), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  public ResponseEntity<?> queryNames(@RequestBody final QueryParameterSource query)
+      throws IOException {
+    // Exceptions are caught by the @ExceptionHandler AbstractCommandsController.handleAppException
+    final Set<ObjectName> objectNames =
+        getMBeanServer().queryNames(query.getObjectName(), query.getQueryExpression());
+    return new ResponseEntity<>(IOUtils.serializeObject(objectNames), HttpStatus.OK);
   }
 
   @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD}, value = "/ping")
@@ -187,8 +131,42 @@ public class ShellCommandsController extends AbstractCommandsController {
 
   @RequestMapping(method = RequestMethod.GET, value = "/version/full")
   @ResponseBody
-  public String versionSimple() {
+  public String fullVersion() {
     return GemFireVersion.asString();
   }
 
+
+  private ResponseEntity<InputStreamResource> getResponse(String result) {
+    CommandResult commandResult = ResultBuilder.fromJson(result);
+    if (commandResult.getStatus().equals(Result.Status.OK) && commandResult.hasFileToDownload()) {
+      return getFileDownloadResponse(commandResult);
+    } else {
+      return getJsonResponse(result);
+    }
+  }
+
+  private ResponseEntity<InputStreamResource> getJsonResponse(String result) {
+    HttpHeaders respHeaders = new HttpHeaders();
+    try {
+      InputStreamResource isr = new InputStreamResource(toInputStream(result, "UTF-8"));
+      respHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+      return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+    } catch (Exception e) {
+      throw new RuntimeException("IO Error writing file to output stream", e);
+    }
+  }
+
+  private ResponseEntity<InputStreamResource> getFileDownloadResponse(CommandResult commandResult) {
+    HttpHeaders respHeaders = new HttpHeaders();
+    Path filePath = commandResult.getFileToDownload();
+    try {
+      InputStreamResource isr = new InputStreamResource(new FileInputStream(filePath.toFile()));
+      respHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+      return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+    } catch (Exception e) {
+      throw new RuntimeException("IO Error writing file to output stream", e);
+    } finally {
+      FileUtils.deleteQuietly(filePath.toFile());
+    }
+  }
 }

@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
@@ -90,12 +89,16 @@ public class ManagementAgent {
    */
   private boolean running = false;
   private Registry registry;
+
+  public JMXConnectorServer getJmxConnectorServer() {
+    return jmxConnectorServer;
+  }
+
   private JMXConnectorServer jmxConnectorServer;
   private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
   private final SecurityService securityService;
   private boolean isHttpServiceRunning = false;
-
   /**
    * This system property is set to true when the embedded HTTP server is started so that the
    * embedded pulse webapp can use a local MBeanServer instead of a remote JMX connection.
@@ -115,11 +118,11 @@ public class ManagementAgent {
     return this.running;
   }
 
-  public synchronized boolean isHttpServiceRunning() {
+  synchronized boolean isHttpServiceRunning() {
     return isHttpServiceRunning;
   }
 
-  public synchronized void setHttpServiceRunning(boolean isHttpServiceRunning) {
+  private synchronized void setHttpServiceRunning(boolean isHttpServiceRunning) {
     this.isHttpServiceRunning = isHttpServiceRunning;
   }
 
@@ -180,7 +183,7 @@ public class ManagementAgent {
 
   private Server httpServer;
   private final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
-  private AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
+  private final AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
   private void startHttpService(boolean isServer) {
     final SystemManagementService managementService = (SystemManagementService) ManagementService
@@ -461,8 +464,7 @@ public class ManagementAgent {
             try {
               registry.bind("jmxrmi", stub);
             } catch (AlreadyBoundException x) {
-              final IOException io = new IOException(x.getMessage(), x);
-              throw io;
+              throw new IOException(x.getMessage(), x);
             }
             super.start();
           }
@@ -513,29 +515,13 @@ public class ManagementAgent {
           logger.info("Registered AccessControlMBean on " + accessControlMBeanON);
         } catch (InstanceAlreadyExistsException | MBeanRegistrationException
             | NotCompliantMBeanException e) {
-          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",
-              e);
+          throw new GemFireConfigException(
+              "Error while configuring access control for jmx resource", e);
         }
       }
     } catch (MalformedObjectNameException e) {
-      throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource", e);
-    }
-  }
-
-  private static class GemFireRMIClientSocketFactory
-      implements RMIClientSocketFactory, Serializable {
-
-    private static final long serialVersionUID = -7604285019188827617L;
-
-    private transient SocketCreator sc;
-
-    public GemFireRMIClientSocketFactory(SocketCreator sc) {
-      this.sc = sc;
-    }
-
-    @Override
-    public Socket createSocket(String host, int port) throws IOException {
-      return this.sc.connectForClient(host, port, 0);
+      throw new GemFireConfigException("Error while configuring access control for jmx resource",
+          e);
     }
   }
 

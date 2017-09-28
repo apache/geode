@@ -55,7 +55,7 @@ public class HttpOperationInvokerSecurityTest {
   private static CommandRequest request;
 
   @Test
-  public void performBeanOperationsNoAuthorizationCheck() throws Exception {
+  public void performBeanOperationsHasAuthorizationCheck() throws Exception {
     gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
         "test", "test");
     invoker = (HttpOperationInvoker) gfsh.getGfsh().getOperationInvoker();
@@ -70,11 +70,11 @@ public class HttpOperationInvokerSecurityTest {
     DistributedSystemMXBean bean = invoker.getDistributedSystemMXBean();
     assertThat(bean).isInstanceOf(DistributedSystemMXBean.class);
 
-    String[] gatewayReceivers =
-        (String[]) invoker.invoke(ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN,
-            "listGatewayReceivers", new Object[0], new String[0]);
+    assertThatThrownBy(
+        () -> invoker.invoke(ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN,
+            "listGatewayReceivers", new Object[0], new String[0]))
+                .isInstanceOf(NotAuthorizedException.class);
 
-    assertThat(gatewayReceivers).isEmpty();
     ObjectName objectName = ObjectName.getInstance("GemFire:type=Member,*");
     QueryExp query = Query.eq(Query.attr("Name"), Query.value("mock"));
 
@@ -93,7 +93,6 @@ public class HttpOperationInvokerSecurityTest {
     request = mock(CommandRequest.class);
     when(request.getHttpRequestUrl(anyString())).thenCallRealMethod();
     when(request.getUserInput()).thenReturn("list members");
-
 
     assertThatThrownBy(() -> invoker.processCommand(request))
         .isInstanceOf(NotAuthorizedException.class);
