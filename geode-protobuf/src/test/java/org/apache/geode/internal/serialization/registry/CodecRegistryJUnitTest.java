@@ -14,27 +14,19 @@
  */
 package org.apache.geode.internal.serialization.registry;
 
+import static junit.framework.TestCase.assertNotNull;
+
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.internal.serialization.SerializationType;
-import org.apache.geode.internal.serialization.TypeCodec;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest({SerializationType.class})
 public class CodecRegistryJUnitTest {
   private SerializationCodecRegistry codecRegistry;
 
@@ -49,51 +41,9 @@ public class CodecRegistryJUnitTest {
   }
 
   @Test
-  public void testRegisterCodec() {
-    Assert.assertEquals(1, codecRegistry.getRegisteredCodecCount());
-    SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
-    codecRegistry.register(mockSerializationType, new DummyTypeCodec());
-    Assert.assertEquals(2, codecRegistry.getRegisteredCodecCount());
-  }
-
-  @Test(expected = CodecAlreadyRegisteredForTypeException.class)
-  public void testRegisteringCodecForRegisteredType_throwsException() {
-    SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
-    codecRegistry.register(mockSerializationType, new DummyTypeCodec());
-
-    codecRegistry.register(mockSerializationType, new DummyTypeCodec());
-  }
-
-  @Test
-  public void testGetRegisteredCodec() throws Exception {
-    TypeCodec expectedCodec = new DummyTypeCodec();
-    SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
-    codecRegistry.register(mockSerializationType, expectedCodec);
-    TypeCodec codec = codecRegistry.getCodecForType(mockSerializationType);
-    Assert.assertSame(expectedCodec, codec);
-  }
-
-  @Test(expected = CodecNotRegisteredForTypeException.class)
-  public void testGetCodecForUnregisteredType_throwsException()
-      throws CodecNotRegisteredForTypeException {
-    SerializationType mockSerializationType = PowerMockito.mock(SerializationType.class);
-    codecRegistry.getCodecForType(mockSerializationType);
-  }
-
-  class DummyTypeCodec implements TypeCodec {
-    @Override
-    public Object decode(byte[] incoming) {
-      return null;
-    }
-
-    @Override
-    public byte[] encode(Object incoming) {
-      return new byte[0];
-    }
-
-    @Override
-    public SerializationType getSerializationType() {
-      return PowerMockito.mock(SerializationType.class);
-    }
+  public void loadingWorks() throws CodecNotRegisteredForTypeException {
+    // This test relies on the serializer being present and registered in META-INF, which it is in
+    // this package.
+    assertNotNull(codecRegistry.getCodecForType(SerializationType.JSON));
   }
 }
