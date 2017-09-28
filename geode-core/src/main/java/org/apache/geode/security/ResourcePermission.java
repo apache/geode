@@ -40,7 +40,7 @@ public class ResourcePermission extends WildcardPermission {
 
   // when ALL is specified, we need it to convert to string "*" instead of "ALL".
   public enum Target {
-    ALL(ResourcePermission.ALL), DISK, GATEWAY, QUERY, JAR;
+    ALL(ResourcePermission.ALL), DISK, GATEWAY, QUERY, DEPLOY;
 
     private String name;
 
