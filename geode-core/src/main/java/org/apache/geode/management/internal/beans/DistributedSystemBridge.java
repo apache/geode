@@ -81,6 +81,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanServer;
@@ -497,26 +499,15 @@ public class DistributedSystemBridge {
         }
 
         DM dm = cache.getDistributionManager();
-        Set<PersistentID> missingMembers = MissingPersistentIDsRequest.send(dm);
         Set recipients = dm.getOtherDistributionManagerIds();
 
         BackupDataStoreResult result =
             BackupDataStoreHelper.backupAllMembers(dm, recipients, targetDir, baselineDir);
 
-        Iterator<DistributedMember> it = result.getSuccessfulMembers().keySet().iterator();
 
-        Map<String, String[]> backedUpDiskStores = new HashMap<>();
-        while (it.hasNext()) {
-          DistributedMember member = it.next();
-          Set<PersistentID> setOfDisk = result.getSuccessfulMembers().get(member);
-          String[] setOfDiskStr = new String[setOfDisk.size()];
-          int j = 0;
-          for (PersistentID id : setOfDisk) {
-            setOfDiskStr[j] = id.getDirectory();
-            j++;
-          }
-          backedUpDiskStores.put(member.getId(), setOfDiskStr);
-        }
+        DiskBackupStatus diskBackupStatus = new DiskBackupStatus();
+        Map<DistributedMember, Set<PersistentID>> successfulMembers = result.getSuccessfulMembers();
+        diskBackupStatus.generateBackedUpDiskStores(successfulMembers);
 
         // It's possible that when calling getMissingPersistentMembers, some
         // members
@@ -525,27 +516,13 @@ public class DistributedSystemBridge {
         // regions at the members are ready. Logically, since the members in
         // successfulMembers
         // should override the previous missingMembers
-        for (Set<PersistentID> onlineMembersIds : result.getSuccessfulMembers().values()) {
-          missingMembers.removeAll(onlineMembersIds);
-        }
+        Set<PersistentID> successfulIds = result.getSuccessfulMembers().values().stream()
+            .flatMap(Set::stream).collect(Collectors.toSet());
+        Set<PersistentID> missingIds =
+            result.getExistingDataStores().values().stream().flatMap(Set::stream)
+                .filter((v) -> !successfulIds.contains(v)).collect(Collectors.toSet());
 
-        result.getExistingDataStores().keySet().removeAll(result.getSuccessfulMembers().keySet());
-        String[] setOfMissingDiskStr = null;
-
-        if (result.getExistingDataStores().size() > 0) {
-          setOfMissingDiskStr = new String[result.getExistingDataStores().size()];
-          int j = 0;
-          for (Set<PersistentID> lostMembersIds : result.getExistingDataStores().values()) {
-            for (PersistentID id : lostMembersIds) {
-              setOfMissingDiskStr[j] = id.getDirectory();
-              j++;
-            }
-          }
-        }
-
-        DiskBackupStatus diskBackupStatus = new DiskBackupStatus();
-        diskBackupStatus.setBackedUpDiskStores(backedUpDiskStores);
-        diskBackupStatus.setOfflineDiskStores(setOfMissingDiskStr);
+        diskBackupStatus.generateOfflineDiskStores(missingIds);
         return diskBackupStatus;
       } finally {
         BackupDataStoreHelper.releaseLock(dm);

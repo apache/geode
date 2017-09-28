@@ -18,9 +18,9 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.admin.BackupStatus;
 
 /**
  * Holds the result of a backup operation.

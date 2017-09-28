@@ -14,9 +14,13 @@
  */
 package org.apache.geode.management;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Composite data type used to distribute the status of disk backup operations.
@@ -55,6 +59,7 @@ public class DiskBackupStatus {
    * Sets the map of member names/IDs and the {@link PersistentID} of the disk stores that were
    * backed up.
    */
+  @SuppressWarnings("unused")
   public void setBackedUpDiskStores(Map<String, String[]> backedUpDiskStores) {
     this.backedUpDiskStores = backedUpDiskStores;
   }
@@ -63,7 +68,37 @@ public class DiskBackupStatus {
    * Sets the list of directories for the disk stores that were off-line at the time the backup
    * occurred.
    */
-  public void setOfflineDiskStores(String[] offlineDiskStores) {
-    this.offlineDiskStores = offlineDiskStores;
+  @SuppressWarnings("unused")
+  public void setOfflineDiskStores(String[] offLineDiskStores) {
+    this.offlineDiskStores = offLineDiskStores;
+  }
+
+  /**
+   * Sets the map of member names/IDs and the {@link PersistentID} of the disk stores that were
+   * backed up.
+   */
+  public void generateBackedUpDiskStores(
+      Map<DistributedMember, Set<PersistentID>> backedUpDiskStores) {
+    Map<String, String[]> diskStores = new HashMap<>();
+    backedUpDiskStores.entrySet().forEach(entry -> {
+      DistributedMember member = entry.getKey();
+      Set<PersistentID> ids = entry.getValue();
+      String[] setOfDiskStr = new String[ids.size()];
+      entry.getValue().stream().map(id -> id.getDirectory()).collect(Collectors.toList())
+          .toArray(setOfDiskStr);
+      diskStores.put(member.getId(), setOfDiskStr);
+    });
+    setBackedUpDiskStores(diskStores);
+  }
+
+  /**
+   * Sets the list of directories for the disk stores that were off-line at the time the backup
+   * occurred.
+   */
+  public void generateOfflineDiskStores(Set<PersistentID> offLineDiskStores) {
+    String[] diskStores = new String[offLineDiskStores.size()];
+    offLineDiskStores.stream().map(id -> id.getDirectory()).collect(Collectors.toList())
+        .toArray(diskStores);
+    setOfflineDiskStores(diskStores);
   }
 }

@@ -65,7 +65,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.UncreatedSystemException;
 import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
@@ -76,6 +75,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
+import org.apache.geode.internal.cache.BackupUtil;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
@@ -87,6 +87,7 @@ import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
+import org.apache.geode.admin.BackupStatus;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -618,9 +619,9 @@ public class SystemAdmin {
     InternalDistributedSystem ads = getAdminCnx();
 
     // Baseline directory should be null if it was not provided on the command line
-    BackupStatus status = AdminDistributedSystemImpl.backupAllMembers(ads.getDistributionManager(),
-        new File(targetDir),
-        (SystemAdmin.baselineDir == null ? null : new File(SystemAdmin.baselineDir)));
+    BackupStatus status =
+        BackupUtil.backupAllMembers(ads.getDistributionManager(), new File(targetDir),
+            (SystemAdmin.baselineDir == null ? null : new File(SystemAdmin.baselineDir)));
 
     boolean incomplete = !status.getOfflineDiskStores().isEmpty();
 
