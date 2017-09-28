@@ -20,11 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -44,7 +40,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
-public class ConfigCommandDUnitTest {
+public class DescribeConfigCommandDUnitTest {
   @Rule
   public LocatorServerStartupRule startupRule =
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
@@ -91,65 +87,5 @@ public class ConfigCommandDUnitTest {
         "describe config --member=" + server0.getName() + " --hide-defaults=false");
     result = gfsh.getGfshOutput();
     assertThat(result).contains("copy-on-read");
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  public void testExportConfig(final boolean connectOverHttp) throws Exception {
-    Properties props = new Properties();
-    props.setProperty(GROUPS, "Group1");
-
-    MemberVM server0 = startupRule.startServerAsEmbededLocator(0, props);
-
-    if (connectOverHttp) {
-      gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
-    } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
-    }
-
-    // start server1 and server2 in group2
-    props.setProperty(GROUPS, "Group2");
-    startupRule.startServerVM(1, props, server0.getEmbeddedLocatorPort());
-    startupRule.startServerVM(2, props, server0.getEmbeddedLocatorPort());
-
-    // start server3 that has no group info
-    startupRule.startServerVM(3, server0.getEmbeddedLocatorPort());
-
-    // export all members' config into a folder
-    File tempDir = temporaryFolder.newFolder("all-members");
-    gfsh.executeAndVerifyCommand("export config --dir=" + tempDir.getAbsolutePath());
-
-    List<String> expectedFiles = Arrays.asList("server-0-cache.xml", "server-1-cache.xml",
-        "server-2-cache.xml", "server-3-cache.xml", "server-0-gf.properties",
-        "server-1-gf.properties", "server-2-gf.properties", "server-3-gf.properties");
-
-    List<String> actualFiles =
-        Arrays.stream(tempDir.listFiles()).map(File::getName).collect(Collectors.toList());
-    assertThat(actualFiles).hasSameElementsAs(expectedFiles);
-    tempDir.delete();
-
-    // export just one member's config
-    tempDir = temporaryFolder.newFolder("member0");
-    gfsh.executeAndVerifyCommand(
-        "export config --member=server-0 --dir=" + tempDir.getAbsolutePath());
-
-    expectedFiles = Arrays.asList("server-0-cache.xml", "server-0-gf.properties");
-
-    actualFiles =
-        Arrays.stream(tempDir.listFiles()).map(File::getName).collect(Collectors.toList());
-    assertThat(actualFiles).hasSameElementsAs(expectedFiles);
-    tempDir.delete();
-
-    // export group2 config into a folder
-    tempDir = temporaryFolder.newFolder("group2");
-    gfsh.executeAndVerifyCommand("export config --group=Group2 --dir=" + tempDir.getAbsolutePath());
-
-    expectedFiles = Arrays.asList("server-1-cache.xml", "server-2-cache.xml",
-        "server-1-gf.properties", "server-2-gf.properties");
-
-    actualFiles =
-        Arrays.stream(tempDir.listFiles()).map(File::getName).collect(Collectors.toList());
-    assertThat(actualFiles).hasSameElementsAs(expectedFiles);
-    tempDir.delete();
   }
 }
