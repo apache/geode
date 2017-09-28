@@ -90,10 +90,6 @@ public class ManagementAgent {
   private boolean running = false;
   private Registry registry;
 
-  public JMXConnectorServer getJmxConnectorServer() {
-    return jmxConnectorServer;
-  }
-
   private JMXConnectorServer jmxConnectorServer;
   private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
@@ -523,6 +519,10 @@ public class ManagementAgent {
       throw new GemFireConfigException("Error while configuring access control for jmx resource",
           e);
     }
+  }
+
+  public JMXConnectorServer getJmxConnectorServer() {
+    return jmxConnectorServer;
   }
 
   private static class GemFireRMIServerSocketFactory
