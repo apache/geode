@@ -66,7 +66,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     this.region = region;
     this.userRegion = userRegion;
     this.writer = writer;
-    searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
+    searcherManager = createSearchManager();
     this.serializer = serializer;
     this.stats = stats;
     documentCountSupplier = new DocumentCountSupplier();
@@ -76,18 +76,24 @@ public class IndexRepositoryImpl implements IndexRepository {
     this.index = index;
   }
 
+  protected SearcherManager createSearchManager() throws IOException {
+    return new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
+  }
+
   @Override
   public void create(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
     Collection<Document> docs = Collections.emptyList();
+    boolean exceptionHappened = false;
     try {
       try {
         docs = serializer.toDocuments(index, value);
       } catch (Exception e) {
+        exceptionHappened = true;
         stats.incFailedEntries();
         logger.info("Failed to add index for " + value + " due to " + e.getMessage());
       }
-      if (!docs.isEmpty()) {
+      if (!exceptionHappened) {
         docs.forEach(doc -> SerializerUtil.addKey(key, doc));
         writer.addDocuments(docs);
       }
@@ -100,14 +106,16 @@ public class IndexRepositoryImpl implements IndexRepository {
   public void update(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
     Collection<Document> docs = Collections.emptyList();
+    boolean exceptionHappened = false;
     try {
       try {
         docs = serializer.toDocuments(index, value);
       } catch (Exception e) {
+        exceptionHappened = true;
         stats.incFailedEntries();
         logger.info("Failed to update index for " + value + " due to " + e.getMessage());
       }
-      if (!docs.isEmpty()) {
+      if (!exceptionHappened) {
         docs.forEach(doc -> SerializerUtil.addKey(key, doc));
         Term keyTerm = SerializerUtil.toKeyTerm(key);
         writer.updateDocuments(keyTerm, docs);
