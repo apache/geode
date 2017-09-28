@@ -14,9 +14,7 @@
  */
 package org.apache.geode.management.internal.web.shell;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -33,12 +31,12 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
@@ -48,13 +46,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -68,8 +64,6 @@ import org.apache.geode.management.internal.web.http.converter.SerializableObjec
 import org.apache.geode.management.internal.web.http.support.SimpleHttpRequester;
 import org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFactory;
 import org.apache.geode.management.internal.web.util.ConvertUtils;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * The HttpOperationInvoker class is an abstract base class encapsulating common functionality for
@@ -85,23 +79,23 @@ import org.apache.geode.security.NotAuthorizedException;
 @SuppressWarnings("unused")
 public class HttpOperationInvoker implements OperationInvoker {
 
-  protected static final long DEFAULT_INITIAL_DELAY = TimeUnit.SECONDS.toMillis(1);
-  protected static final long DEFAULT_PERIOD = TimeUnit.MILLISECONDS.toMillis(2000);
+  private static final long DEFAULT_INITIAL_DELAY = TimeUnit.SECONDS.toMillis(1);
+  private static final long DEFAULT_PERIOD = TimeUnit.MILLISECONDS.toMillis(2000);
 
-  protected static final String REST_API_BASE_URL = "http://localhost:8080";
-  protected static final String REST_API_VERSION = "/v1";
-  protected static final String REST_API_WEB_APP_CONTEXT = "/geode-mgmt";
-  protected static final String REST_API_URL =
+  private static final String REST_API_BASE_URL = "http://localhost:8080";
+  private static final String REST_API_VERSION = "/v1";
+  private static final String REST_API_WEB_APP_CONTEXT = "/geode-mgmt";
+  private static final String REST_API_URL =
       REST_API_BASE_URL + REST_API_WEB_APP_CONTEXT + REST_API_VERSION;
-  protected static final String USER_AGENT_HTTP_REQUEST_HEADER_VALUE =
+  private static final String USER_AGENT_HTTP_REQUEST_HEADER_VALUE =
       "GemFire-Shell/v" + GemFireVersion.getGemFireVersion();
 
-  protected static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
+  private static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
 
   // the ID of the GemFire distributed system (cluster)
   private Integer clusterId = CLUSTER_ID_WHEN_NOT_CONNECTED;
 
-  protected static final String RESOURCES_REQUEST_PARAMETER = "resources";
+  private static final String RESOURCES_REQUEST_PARAMETER = "resources";
 
   // Executor for scheduling periodic Runnable task to assess the state of the Manager's HTTP
   // service or Web Service
@@ -144,7 +138,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * testing purposes.
    */
   @TestingOnly
-  HttpOperationInvoker(final String baseUrl) {
+  private HttpOperationInvoker(final String baseUrl) {
     this.baseUrl = baseUrl;
     this.executorService = null;
     this.gfsh = null;
@@ -154,7 +148,7 @@ public class HttpOperationInvoker implements OperationInvoker {
   /**
    * Constructs an instance of the HttpOperationInvoker class with a reference to the GemFire shell
    * (Gfsh) instance using this HTTP-based OperationInvoker to send commands to the GemFire Manager
-   * via HTTP for procsessing along with the base URL to the GemFire Manager's embedded HTTP service
+   * via HTTP for processing along with the base URL to the GemFire Manager's embedded HTTP service
    * hosting the HTTP (REST) interface.
    *
    * @param gfsh a reference to the instance of the GemFire shell (Gfsh) using this HTTP-based
@@ -178,9 +172,8 @@ public class HttpOperationInvoker implements OperationInvoker {
     // constructs an instance of the Spring RestTemplate for M&M REST API (interface) operations
     this.restTemplate = new RestTemplate(new SimpleClientHttpRequestFactory());
 
-    // add our custom HttpMessageConverter for serializing DTO Objects into the HTTP request message
-    // body
-    // and de-serializing HTTP response message body content back into DTO Objects
+    // add our custom HttpMessageConverter for serializing DTO Objects into the HTTP request
+    // message body and de-serializing HTTP response message body content back into DTO Objects
     List<HttpMessageConverter<?>> converters = this.restTemplate.getMessageConverters();
     // remove the MappingJacksonHttpConverter
     for (int i = converters.size() - 1; i >= 0; i--) {
@@ -192,77 +185,13 @@ public class HttpOperationInvoker implements OperationInvoker {
     converters.add(new SerializableObjectHttpMessageConverter());
 
     // set the ResponseErrorHandler handling any errors originating from our HTTP request
-    this.restTemplate.setErrorHandler(new ResponseErrorHandler() {
-      @Override
-      public boolean hasError(final ClientHttpResponse response) throws IOException {
-        final HttpStatus status = response.getStatusCode();
+    this.restTemplate.setErrorHandler(new RestOperationErrorHandler(gfsh));
 
-        switch (status) {
-          case BAD_REQUEST: // 400 *
-          case UNAUTHORIZED: // 401
-          case FORBIDDEN: // 403
-          case NOT_FOUND: // 404 *
-          case METHOD_NOT_ALLOWED: // 405 *
-          case NOT_ACCEPTABLE: // 406 *
-          case REQUEST_TIMEOUT: // 408
-          case CONFLICT: // 409
-          case REQUEST_ENTITY_TOO_LARGE: // 413
-          case REQUEST_URI_TOO_LONG: // 414
-          case UNSUPPORTED_MEDIA_TYPE: // 415 *
-          case TOO_MANY_REQUESTS: // 429
-          case INTERNAL_SERVER_ERROR: // 500 *
-          case NOT_IMPLEMENTED: // 501
-          case BAD_GATEWAY: // 502 ?
-          case SERVICE_UNAVAILABLE: // 503
-            return true;
-          default:
-            return false;
-        }
-      }
-
-      @Override
-      public void handleError(final ClientHttpResponse response) throws IOException {
-        String body = readBody(response);
-        final String message = String.format("The HTTP request failed with: %1$d - %2$s.",
-            response.getRawStatusCode(), body);
-
-        if (gfsh.getDebug()) {
-          gfsh.logSevere(body, null);
-        }
-
-        if (response.getRawStatusCode() == 401) {
-          throw new AuthenticationFailedException(message);
-        } else if (response.getRawStatusCode() == 403) {
-          throw new NotAuthorizedException(message);
-        } else {
-          throw new RuntimeException(message);
-        }
-      }
-
-      private String readBody(final ClientHttpResponse response) throws IOException {
-        BufferedReader responseBodyReader = null;
-
-        try {
-          responseBodyReader = new BufferedReader(new InputStreamReader(response.getBody()));
-
-          final StringBuilder buffer = new StringBuilder();
-          String line;
-
-          while ((line = responseBodyReader.readLine()) != null) {
-            buffer.append(line).append(StringUtils.LINE_SEPARATOR);
-          }
-
-          return buffer.toString().trim();
-        } finally {
-          IOUtils.close(responseBodyReader);
-        }
-      }
-    });
     setupBackgroundPingRequest();
     initClusterId();
   }
 
-  protected void setupBackgroundPingRequest() {
+  private void setupBackgroundPingRequest() {
     SimpleHttpRequester requester = new SimpleHttpRequester(gfsh, securityProperties);
     getExecutorService().scheduleAtFixedRate(() -> {
       try {
@@ -312,7 +241,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @return an instance of the ScheduledExecutorService for scheduling periodic or delayed tasks.
    * @see java.util.concurrent.ScheduledExecutorService
    */
-  protected ScheduledExecutorService getExecutorService() {
+  private ScheduledExecutorService getExecutorService() {
     return this.executorService;
   }
 
@@ -335,7 +264,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @return an instance of the Spring RestTemplate used to make REST API web service calls.
    * @see org.springframework.web.client.RestTemplate
    */
-  protected RestTemplate getRestTemplate() {
+  private RestTemplate getRestTemplate() {
     return this.restTemplate;
   }
 
@@ -365,7 +294,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @see #isDebugEnabled()
    * @see #printInfo(String, Object...)
    */
-  protected void printDebug(final String message, final Object... args) {
+  private void printDebug(final String message, final Object... args) {
     if (isDebugEnabled()) {
       printInfo(message, args);
     }
@@ -446,8 +375,7 @@ public class HttpOperationInvoker implements OperationInvoker {
     }
   }
 
-  void addHeaderValues(org.springframework.http.client.ClientHttpRequest request)
-      throws IOException {
+  private void addHeaderValues(org.springframework.http.client.ClientHttpRequest request) {
     // update the headers
     request.getHeaders().add(HttpHeaders.USER_AGENT, USER_AGENT_HTTP_REQUEST_HEADER_VALUE);
     request.getHeaders().setAccept(acceptableMediaTypes);
@@ -533,7 +461,7 @@ public class HttpOperationInvoker implements OperationInvoker {
     return clusterId;
   }
 
-  protected void initClusterId() {
+  private void initClusterId() {
     if (isReady()) {
       try {
         clusterId = (Integer) getAttribute(ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN,
@@ -593,7 +521,7 @@ public class HttpOperationInvoker implements OperationInvoker {
       final String[] signatures) {
     final URI link = createURI("/mbean/operation");
 
-    MultiValueMap<String, Object> content = new LinkedMultiValueMap<String, Object>();
+    MultiValueMap<String, Object> content = new LinkedMultiValueMap<>();
 
     content.add("resourceName", resourceName);
     content.add("operationName", operationName);
@@ -609,8 +537,8 @@ public class HttpOperationInvoker implements OperationInvoker {
     }
 
     try {
-      return IOUtils
-          .deserializeObject(post(link, MediaType.MULTIPART_FORM_DATA, content, byte[].class));
+      byte[] postResult = post(link, MediaType.MULTIPART_FORM_DATA, content, byte[].class);
+      return IOUtils.deserializeObject(postResult);
     } catch (IOException e) {
       throw new MBeanAccessException(String.format(
           "De-serializing the result from invoking operation (%1$s) on MBean (%2$s) failed!",
@@ -678,7 +606,7 @@ public class HttpOperationInvoker implements OperationInvoker {
   public Object processCommand(final CommandRequest command) {
     URI link = command.getHttpRequestUrl(baseUrl);
     if (command.hasFileData()) {
-      MultiValueMap<String, Object> content = new LinkedMultiValueMap<String, Object>();
+      MultiValueMap<String, Object> content = new LinkedMultiValueMap<>();
 
       Resource[] resources = ConvertUtils.convert(command.getFileData());
       for (Resource resource : resources) {
