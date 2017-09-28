@@ -52,7 +52,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
-public class ConfigCommandDUnitTest {
+public class ConfigCommandsDUnitTest {
   @Rule
   public LocatorServerStartupRule startupRule =
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
@@ -222,8 +222,8 @@ public class ConfigCommandDUnitTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
     MemberVM locator = startupRule.startLocatorVM(0, props);
-    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
@@ -267,8 +267,8 @@ public class ConfigCommandDUnitTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
     MemberVM locator = startupRule.startLocatorVM(0, props);
-    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
@@ -326,8 +326,8 @@ public class ConfigCommandDUnitTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
     MemberVM locator = startupRule.startLocatorVM(0, props);
-    MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
@@ -353,6 +353,143 @@ public class ConfigCommandDUnitTest {
       assertThat(config.getStatisticSamplingEnabled()).isTrue();
     });
     server2.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void alterRuntimeConfig_logDiskSpaceLimitOnGroup_OK(final boolean connectOverHttp)
+      throws Exception {
+
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "error");
+    MemberVM locator = startupRule.startLocatorVM(0, props);
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    props.setProperty(GROUPS, "G1");
+    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    }
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    csb.addOption(CliStrings.GROUPS, "G1");
+    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
+
+    gfsh.executeAndVerifyCommand(csb.toString());
+    String resultStr = gfsh.getGfshOutput();
+
+    server1.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getGroups()).isEqualTo("");
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
+    server2.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getGroups()).isEqualTo("G1");
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
+  }
+
+  /**
+   * Test to verify that when 'alter runtime' without relevant options does not change the server's
+   * configuration
+   */
+  @Test
+  @Parameters({"true", "false"})
+  public void alterRuntimeConfig_groupWithoutOptions_needsRelevantParameter(
+      final boolean connectOverHttp) throws Exception {
+
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "error");
+    MemberVM locator = startupRule.startLocatorVM(0, props);
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    props.setProperty(GROUPS, "G1");
+    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    }
+
+    server2.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getGroups()).isEqualTo("G1");
+    });
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    csb.addOption(CliStrings.GROUPS, "G1");
+
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(gfsh.getGfshOutput())
+        .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+
+    server1.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+      assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+      assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+      assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+      assertThat(config.getStatisticSamplingEnabled()).isTrue();
+    });
+  }
+
+  /**
+   * Test to verify that when 'alter runtime' without relevant options does not change the server's
+   * configuration
+   */
+  @Test
+  @Parameters({"true", "false"})
+  public void alterRuntimeConfig_memberWithoutOptions_needsRelevantParameter(
+      final boolean connectOverHttp) throws Exception {
+
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "error");
+    MemberVM locator = startupRule.startLocatorVM(0, props);
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    }
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    csb.addOption(CliStrings.MEMBERS, server1.getName());
+
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(gfsh.getGfshOutput())
+        .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+
+    server1.invoke(() -> {
       InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
