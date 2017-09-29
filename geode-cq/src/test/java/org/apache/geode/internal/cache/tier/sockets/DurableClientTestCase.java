@@ -1268,13 +1268,13 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
   public void durableFailoverAfterReconnect(int redundancyLevel) {
     // Start server 1
-    Integer[] ports = ((Integer[]) this.server1VM.invoke(
-        () -> CacheServerTestUtil.createCacheServerReturnPorts(regionName, true)));
+    Integer[] ports = ((Integer[]) this.server1VM
+        .invoke(() -> CacheServerTestUtil.createCacheServerReturnPorts(regionName, true)));
     final int server1Port = ports[0].intValue();
 
-     ports = this.server2VM.invoke(() ->
-     CacheServerTestUtil.createCacheServerReturnPorts(regionName, true));
-     int server2Port = ports[0];
+    ports = this.server2VM
+        .invoke(() -> CacheServerTestUtil.createCacheServerReturnPorts(regionName, true));
+    int server2Port = ports[0];
 
     // Start a durable client
     final String durableClientId = getName() + "_client";
