@@ -51,6 +51,8 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   private String bindAddress;
 
+  private String hostnameForSenders;
+
   private boolean manualStart;
 
   private CacheServer receiver;
@@ -61,34 +63,12 @@ public class GatewayReceiverCreation implements GatewayReceiver {
       boolean manualStart) {
     this.cache = cache;
 
-    /*
-     * If user has set hostNameForSenders then it should take precedence over bindAddress. If user
-     * hasn't set either hostNameForSenders or bindAddress then getLocalHost().getHostName() should
-     * be used.
-     */
-    if (hostnameForSenders == null || hostnameForSenders.isEmpty()) {
-      if (bindAdd == null || bindAdd.isEmpty()) {
-        try {
-          logger
-              .warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiverImpl_USING_LOCAL_HOST));
-          this.host = SocketCreator.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-          throw new IllegalStateException(
-              LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME.toLocalizedString(), e);
-        }
-      } else {
-        this.host = bindAdd;
-      }
-    } else {
-      this.host = hostnameForSenders;
-    }
-
-
     this.startPort = startPort;
     this.endPort = endPort;
     this.maxTimeBetweenPings = timeBetPings;
     this.socketBufferSize = buffSize;
     this.bindAddress = bindAdd;
+    this.hostnameForSenders = hostnameForSenders;
     this.transFilter = filters;
     this.manualStart = manualStart;
   }
@@ -129,8 +109,8 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     this.socketBufferSize = socketBufferSize;
   }
 
-  public String getHost() {
-    return this.host;
+  public String getHostnameForSenders() {
+    return this.hostnameForSenders;
   }
 
   public String getBindAddress() {

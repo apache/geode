@@ -14,11 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.fail;
@@ -60,6 +62,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
 import org.apache.geode.test.dunit.Host;
@@ -137,6 +140,38 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(GROUPS, groups);
+    InternalDistributedSystem ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+  }
+
+  public void createCacheWithBindAddress(Integer locPort, String bindAddress, String groups) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(BIND_ADDRESS, bindAddress);
+    props.setProperty(GROUPS, groups);
+    InternalDistributedSystem ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+  }
+
+  public void createCacheWithServerBindAddress(Integer locPort, String bindAddress, String groups) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(SERVER_BIND_ADDRESS, bindAddress);
+    props.setProperty(GROUPS, groups);
+    InternalDistributedSystem ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+  }
+
+  public void createCacheWithMultipleBindAddressProperties(Integer locPort, String bindAddress,
+      String serverBindAddress, String groups) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(BIND_ADDRESS, bindAddress);
+    props.setProperty(SERVER_BIND_ADDRESS, serverBindAddress);
     props.setProperty(GROUPS, groups);
     InternalDistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
@@ -416,7 +451,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
-  protected void verifyGatewayReceiverServerLocations(int locatorPort, String hostname) {
+  protected void verifyGatewayReceiverServerLocations(int locatorPort, String expected) {
     PoolFactory pf = PoolManager.createFactory();
     pf.setServerGroup(GatewayReceiver.RECEIVER_GROUP);
     pf.addLocator("localhost", locatorPort);
@@ -424,17 +459,17 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     ConnectionSource connectionSource = pool.getConnectionSource();
     List<ServerLocation> serverLocations = connectionSource.getAllServers();
     for (ServerLocation serverLocation : serverLocations) {
-      assertEquals(hostname, serverLocation.getHostName());
+      assertEquals(expected, serverLocation.getHostName());
     }
   }
 
-  protected void verifyGatewayReceiverProfile(String hostname) {
+  protected void verifyGatewayReceiverProfile(String expected) {
     Set<GatewayReceiver> receivers = ((Cache) this.cache).getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       CacheServerImpl server = (CacheServerImpl) receiver.getServer();
       CacheServerAdvisor.CacheServerProfile profile =
           (CacheServerAdvisor.CacheServerProfile) server.getProfile();
-      assertEquals(hostname, profile.getHost());
+      assertEquals(expected, profile.getHost());
     }
   }
 
@@ -452,7 +487,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       assertEquals("maximumTimeBetweenPings", maxTimeBetweenPings,
           receiver.getMaximumTimeBetweenPings());
       assertEquals("socketBufferSize", socketBufferSize, receiver.getSocketBufferSize());
-      assertEquals("hostnameForSenders", hostnameForSenders, receiver.getHost());
+      assertEquals("hostnameForSenders", hostnameForSenders, receiver.getHostnameForSenders());
 
       // verify GatewayTransportFilters
       if (expectedGatewayTransportFilters != null) {

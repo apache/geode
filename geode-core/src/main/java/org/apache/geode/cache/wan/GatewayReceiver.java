@@ -134,7 +134,7 @@ public interface GatewayReceiver {
    * 
    * @return the ip address or host name to give to clients so they can connect to this receiver
    */
-  public String getHost();
+  public String getHostnameForSenders();
 
   /**
    * Returns the configured buffer size of the socket connection for this
