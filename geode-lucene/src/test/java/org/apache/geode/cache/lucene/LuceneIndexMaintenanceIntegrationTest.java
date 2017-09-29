@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
 import org.awaitility.Awaitility;
 
 import org.junit.Test;
@@ -44,6 +46,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.lucene.document.Document;
 
@@ -152,6 +155,29 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     LuceneIndexStats indexStats = indexForPR.getIndexStats();
     assertEquals(1, indexStats.getFailedEntries());
     assertEquals(4, indexStats.getUpdates());
+  }
+
+  @Test
+  public void pdxInstanceShouldNotBeDeserialized() throws Exception {
+    luceneService.createIndexFactory().setFields("status", "description")
+        .setLuceneSerializer(new TestPdxInstanceSerializer()).create(INDEX_NAME, REGION_NAME);
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    for (int i = 0; i < 10; i++) {
+      PortfolioPdx p = new PortfolioPdx(i);
+      region.put(i, p);
+    }
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "status:active", "status");
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(5, results.size());
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
+    LuceneIndexStats indexStats = indexForPR.getIndexStats();
+    assertEquals(10, indexStats.getUpdates());
   }
 
   @Test
@@ -351,6 +377,15 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
       } else {
         return super.toDocuments(index, value);
       }
+    }
+  }
+
+  private static class TestPdxInstanceSerializer extends HeterogeneousLuceneSerializer {
+
+    @Override
+    public Collection<Document> toDocuments(LuceneIndex index, Object value) {
+      assertTrue(value instanceof PdxInstance);
+      return super.toDocuments(index, value);
     }
   }
 }
