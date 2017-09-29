@@ -80,6 +80,7 @@ public class AbstractRegionEntryTest {
     Object o = DataSerializer.readObject(dataInputStream);
     assertNotNull(entryEvent.getCachedSerializedNewValue());
     assertEquals(o, value);
+    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 
   public static class TestableRegionEntry extends AbstractRegionEntry

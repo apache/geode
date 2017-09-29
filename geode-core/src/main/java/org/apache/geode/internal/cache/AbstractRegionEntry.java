@@ -1338,7 +1338,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
           } else {
             data = EntryEventImpl.serialize(val);
           }
-          if (event != null) {
+          if (event != null && event.getCachedSerializedNewValue() == null) {
             event.setCachedSerializedNewValue(data);
           }
         } else {
