@@ -82,9 +82,9 @@ public class ServerConnectionTest {
     InternalCache cache = mock(InternalCache.class);
     SecurityService securityService = mock(SecurityService.class);
 
-    serverConnection = new ServerConnectionFactory().makeServerConnection(socket, cache, null, null,
-        0, 0, null, CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor,
-        securityService);
+    serverConnection =
+        new ServerConnectionFactory().makeServerConnection(socket, cache, null, null, 0, 0, null,
+            CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
     MockitoAnnotations.initMocks(this);
   }
 
