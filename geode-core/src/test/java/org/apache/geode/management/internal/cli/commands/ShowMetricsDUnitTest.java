@@ -127,7 +127,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
       @Override
       public Object call() throws Exception {
-        await().atMost(5, SECONDS).until(() -> createMBean(1, "", null, 0));
+        await().atMost(120, SECONDS).until(() -> createMBean(1, "", null, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand("show metrics");
         String resultStr = commandResultToString((CommandResult) result);
@@ -155,7 +155,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
 
       @Override
       public Object call() throws Exception {
-        await().atMost(5, SECONDS).until(() -> createMBean(2, regionName, null, 0));
+        await().atMost(120, SECONDS).until(() -> createMBean(2, regionName, null, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand("show metrics --region=REGION1");
         String resultAsString = commandResultToString((CommandResult) result);
@@ -192,8 +192,8 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
 
-        await().atMost(5, SECONDS).until(() -> createMBean(3, "", distributedMember, 0));
-        await().atMost(10, SECONDS)
+        await().atMost(120, SECONDS).until(() -> createMBean(3, "", distributedMember, 0));
+        await().atMost(120, SECONDS)
             .until(() -> createMBean(5, "", distributedMember, cacheServerPort));
 
         final String command = CliStrings.SHOW_METRICS + " --" + CliStrings.MEMBER + "="
@@ -240,7 +240,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
 
-        await().atMost(5, SECONDS).until(() -> createMBean(4, regionName, distributedMember, 0));
+        await().atMost(120, SECONDS).until(() -> createMBean(4, regionName, distributedMember, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand("show metrics --region=" + regionName
             + " --member=" + distributedMember.getName() + " --file=" + exportFileName);
@@ -280,7 +280,7 @@ public class ShowMetricsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
 
-        await().atMost(5, SECONDS).until(() -> createMBean(4, regionName, distributedMember, 0));
+        await().atMost(120, SECONDS).until(() -> createMBean(4, regionName, distributedMember, 0));
         OnlineCommandProcessor OnlineCommandProcessor = new OnlineCommandProcessor();
         Result result = OnlineCommandProcessor.executeCommand(
             "show metrics --region=" + regionName + " --member=" + distributedMember.getName()
