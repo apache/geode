@@ -29,11 +29,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
 
   protected final TXStateStub state;
-  protected final LocalRegion region;
 
-  public AbstractPeerTXRegionStub(TXStateStub txstate, LocalRegion r) {
+  public AbstractPeerTXRegionStub(TXStateStub txstate) {
     this.state = txstate;
-    this.region = r;
   }
 
   @Override
