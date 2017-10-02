@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.awaitility.Awaitility;
 
@@ -158,7 +159,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void pdxInstanceShouldNotBeDeserialized() throws Exception {
-    luceneService.createIndexFactory().setFields("title", "description")
+    luceneService.createIndexFactory().setFields("status", "description")
         .setLuceneSerializer(new TestPdxInstanceSerializer()).create(INDEX_NAME, REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
@@ -170,6 +171,13 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
     luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
         TimeUnit.MILLISECONDS);
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "status:active", "status");
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(5, results.size());
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
+    LuceneIndexStats indexStats = indexForPR.getIndexStats();
+    assertEquals(10, indexStats.getUpdates());
   }
 
   @Test
