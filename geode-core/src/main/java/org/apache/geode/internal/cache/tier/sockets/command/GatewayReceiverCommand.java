@@ -98,9 +98,6 @@ public class GatewayReceiverCommand extends BaseCommand {
       stats.incReadProcessBatchRequestTime(start - oldStart);
     }
     Part callbackArgExistsPart;
-    // Get early ack flag. This test should eventually be moved up above this switch
-    // statement so that all messages can take advantage of it.
-    boolean earlyAck = false;// msg.getEarlyAck();
 
     stats.incBatchSize(clientMessage.getPayloadLength());
 
@@ -143,33 +140,13 @@ public class GatewayReceiverCommand extends BaseCommand {
     if (logger.isDebugEnabled()) {
       logger.debug("Received process batch request {} that will be processed.", batchId);
     }
-    // If early ack mode, acknowledge right away
-    // Not sure if earlyAck makes sense with sliding window
-    if (earlyAck) {
-      serverConnection.incrementLatestBatchIdReplied(batchId);
-
-      // writeReply(msg, servConn);
-      // servConn.setAsTrue(RESPONDED);
-      {
-        long oldStart = start;
-        start = DistributionStats.getStatTime();
-        stats.incWriteProcessBatchResponseTime(start - oldStart);
-      }
-      stats.incEarlyAcks();
-    }
 
 
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Received process batch request {} containing {} events ({} bytes) with {} acknowledgement on {}",
           serverConnection.getName(), batchId, numberOfEvents, clientMessage.getPayloadLength(),
-          (earlyAck ? "early" : "normal"), serverConnection.getSocketString());
-      if (earlyAck) {
-        logger.debug(
-            "{}: Sent process batch early response for batch {} containing {} events ({} bytes) with {} acknowledgement on {}",
-            serverConnection.getName(), batchId, numberOfEvents, clientMessage.getPayloadLength(),
-            (earlyAck ? "early" : "normal"), serverConnection.getSocketString());
-      }
+          "normal", serverConnection.getSocketString());
     }
     // logger.warn("Received process batch request " + batchId + " containing
     // " + numberOfEvents + " events (" + msg.getPayloadLength() + " bytes) with
@@ -190,14 +167,12 @@ public class GatewayReceiverCommand extends BaseCommand {
     boolean removeOnException =
         clientMessage.getPart(partNumber++).getSerializedForm()[0] == 1 ? true : false;
 
-    // Keep track of whether a response has been written for
-    // exceptions
-    boolean wroteResponse = earlyAck;
     // event received in batch also have PDX events at the start of the batch,to
     // represent correct index on which the exception occurred, number of PDX
     // events need to be subtratced.
     int indexWithoutPDXEvent = -1; //
     for (int i = 0; i < numberOfEvents; i++) {
+      boolean retry = true;
       boolean isPdxEvent = false;
       indexWithoutPDXEvent++;
       // System.out.println("Processing event " + i + " in batch " + batchId + "
@@ -330,56 +305,59 @@ public class GatewayReceiverCommand extends BaseCommand {
               logger.warn(s);
               throw new Exception(s);
             }
-            region = (LocalRegion) crHelper.getRegion(regionName);
-            if (region == null) {
-              handleRegionNull(serverConnection, regionName, batchId);
-            } else {
-              clientEvent = new EventIDHolder(eventId);
-              if (versionTimeStamp > 0) {
-                VersionTag tag = VersionTag.create(region.getVersionMember());
-                tag.setIsGatewayTag(true);
-                tag.setVersionTimeStamp(versionTimeStamp);
-                tag.setDistributedSystemId(dsid);
-                clientEvent.setVersionTag(tag);
-              }
-              clientEvent.setPossibleDuplicate(possibleDuplicate);
-              handleMessageRetry(region, clientEvent);
+            do {
               try {
-                byte[] value = valuePart.getSerializedForm();
-                boolean isObject = valuePart.isObject();
-                // [sumedh] This should be done on client while sending
-                // since that is the WAN gateway
-                AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-                if (authzRequest != null) {
-                  PutOperationContext putContext =
-                      authzRequest.putAuthorize(regionName, key, value, isObject, callbackArg);
-                  value = putContext.getSerializedValue();
-                  isObject = putContext.isObject();
-                }
-                // Attempt to create the entry
-                boolean result = false;
-                if (isPdxEvent) {
-                  result = addPdxType(crHelper, key, value);
+                region = (LocalRegion) crHelper.getRegion(regionName);
+                if (region == null) {
+                  handleRegionNull(serverConnection, regionName, batchId);
                 } else {
-                  result = region.basicBridgeCreate(key, value, isObject, callbackArg,
-                      serverConnection.getProxyID(), false, clientEvent, false);
-                  // If the create fails (presumably because it already exists),
-                  // attempt to update the entry
-                  if (!result) {
-                    result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                        serverConnection.getProxyID(), false, clientEvent);
+                  clientEvent = new EventIDHolder(eventId);
+                  if (versionTimeStamp > 0) {
+                    VersionTag tag = VersionTag.create(region.getVersionMember());
+                    tag.setIsGatewayTag(true);
+                    tag.setVersionTimeStamp(versionTimeStamp);
+                    tag.setDistributedSystemId(dsid);
+                    clientEvent.setVersionTag(tag);
                   }
-                }
+                  clientEvent.setPossibleDuplicate(possibleDuplicate);
+                  handleMessageRetry(region, clientEvent);
+                  byte[] value = valuePart.getSerializedForm();
+                  boolean isObject = valuePart.isObject();
+                  // [sumedh] This should be done on client while sending
+                  // since that is the WAN gateway
+                  AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
+                  if (authzRequest != null) {
+                    PutOperationContext putContext =
+                        authzRequest.putAuthorize(regionName, key, value, isObject, callbackArg);
+                    value = putContext.getSerializedValue();
+                    isObject = putContext.isObject();
+                  }
+                  // Attempt to create the entry
+                  boolean result = false;
+                  if (isPdxEvent) {
+                    result = addPdxType(crHelper, key, value);
+                  } else {
+                    result = region.basicBridgeCreate(key, value, isObject, callbackArg,
+                        serverConnection.getProxyID(), false, clientEvent, false);
+                    // If the create fails (presumably because it already exists),
+                    // attempt to update the entry
+                    if (!result) {
+                      result = region.basicBridgePut(key, value, null, isObject, callbackArg,
+                          serverConnection.getProxyID(), false, clientEvent);
+                    }
+                  }
 
-                if (result || clientEvent.isConcurrencyConflict()) {
-                  serverConnection.setModificationInfo(true, regionName, key);
-                  stats.incCreateRequest();
-                } else {
-                  // This exception will be logged in the catch block below
-                  throw new Exception(
-                      LocalizedStrings.ProcessBatch_0_FAILED_TO_CREATE_OR_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_CALLBACKARG_4
-                          .toLocalizedString(new Object[] {serverConnection.getName(), regionName,
-                              key, valuePart, callbackArg}));
+                  if (result || clientEvent.isConcurrencyConflict()) {
+                    serverConnection.setModificationInfo(true, regionName, key);
+                    stats.incCreateRequest();
+                    retry = false;
+                  } else {
+                    // This exception will be logged in the catch block below
+                    throw new Exception(
+                        LocalizedStrings.ProcessBatch_0_FAILED_TO_CREATE_OR_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_CALLBACKARG_4
+                            .toLocalizedString(new Object[] {serverConnection.getName(), regionName,
+                                key, valuePart, callbackArg}));
+                  }
                 }
               } catch (Exception e) {
                 logger.warn(LocalizedMessage.create(
@@ -387,9 +365,9 @@ public class GatewayReceiverCommand extends BaseCommand {
                     new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
                         Integer.valueOf(numberOfEvents)}),
                     e);
-                throw e;
+                handleException(removeOnException, e);
               }
-            }
+            } while (retry);
             break;
           case 1: // Update
             /*
@@ -450,66 +428,52 @@ public class GatewayReceiverCommand extends BaseCommand {
               logger.warn(s);
               throw new Exception(s);
             }
-            region = (LocalRegion) crHelper.getRegion(regionName);
-            if (region == null) {
-              handleRegionNull(serverConnection, regionName, batchId);
-            } else {
-              clientEvent = new EventIDHolder(eventId);
-              if (versionTimeStamp > 0) {
-                VersionTag tag = VersionTag.create(region.getVersionMember());
-                tag.setIsGatewayTag(true);
-                tag.setVersionTimeStamp(versionTimeStamp);
-                tag.setDistributedSystemId(dsid);
-                clientEvent.setVersionTag(tag);
-              }
-              clientEvent.setPossibleDuplicate(possibleDuplicate);
-              handleMessageRetry(region, clientEvent);
+            do {
               try {
-                byte[] value = valuePart.getSerializedForm();
-                boolean isObject = valuePart.isObject();
-                AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-                if (authzRequest != null) {
-                  PutOperationContext putContext = authzRequest.putAuthorize(regionName, key, value,
-                      isObject, callbackArg, PutOperationContext.UPDATE);
-                  value = putContext.getSerializedValue();
-                  isObject = putContext.isObject();
-                }
-                boolean result = false;
-                if (isPdxEvent) {
-                  result = addPdxType(crHelper, key, value);
+                region = (LocalRegion) crHelper.getRegion(regionName);
+                if (region == null) {
+                  handleRegionNull(serverConnection, regionName, batchId);
                 } else {
-                  result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                      serverConnection.getProxyID(), false, clientEvent);
-                }
-                if (result || clientEvent.isConcurrencyConflict()) {
-                  serverConnection.setModificationInfo(true, regionName, key);
-                  stats.incUpdateRequest();
-                } else {
-                  final Object[] msgArgs = new Object[] {serverConnection.getName(), regionName,
-                      key, valuePart, callbackArg};
-                  final StringId message =
-                      LocalizedStrings.ProcessBatch_0_FAILED_TO_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_AND_CALLBACKARG_4;
-                  String s = message.toLocalizedString(msgArgs);
-                  logger.info(s);
-                  throw new Exception(s);
-                }
-              } catch (CancelException e) {
-                // FIXME better exception hierarchy would avoid this check
-                if (serverConnection.getCachedRegionHelper().getCache().getCancelCriterion()
-                    .isCancelInProgress()) {
-                  if (logger.isDebugEnabled()) {
-                    logger.debug(
-                        "{} ignoring message of type {} from client {} because shutdown occurred during message processing.",
-                        serverConnection.getName(),
-                        MessageType.getString(clientMessage.getMessageType()),
-                        serverConnection.getProxyID());
+                  clientEvent = new EventIDHolder(eventId);
+                  if (versionTimeStamp > 0) {
+                    VersionTag tag = VersionTag.create(region.getVersionMember());
+                    tag.setIsGatewayTag(true);
+                    tag.setVersionTimeStamp(versionTimeStamp);
+                    tag.setDistributedSystemId(dsid);
+                    clientEvent.setVersionTag(tag);
                   }
-                  serverConnection.setFlagProcessMessagesAsFalse();
-                  serverConnection.setClientDisconnectedException(e);
-                } else {
-                  throw e;
+                  clientEvent.setPossibleDuplicate(possibleDuplicate);
+                  handleMessageRetry(region, clientEvent);
+                  byte[] value = valuePart.getSerializedForm();
+                  boolean isObject = valuePart.isObject();
+                  AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
+                  if (authzRequest != null) {
+                    PutOperationContext putContext = authzRequest.putAuthorize(regionName, key,
+                        value, isObject, callbackArg, PutOperationContext.UPDATE);
+                    value = putContext.getSerializedValue();
+                    isObject = putContext.isObject();
+                  }
+                  boolean result = false;
+                  if (isPdxEvent) {
+                    result = addPdxType(crHelper, key, value);
+                  } else {
+                    result = region.basicBridgePut(key, value, null, isObject, callbackArg,
+                        serverConnection.getProxyID(), false, clientEvent);
+                  }
+                  if (result || clientEvent.isConcurrencyConflict()) {
+                    serverConnection.setModificationInfo(true, regionName, key);
+                    stats.incUpdateRequest();
+                    retry = false;
+                  } else {
+                    final Object[] msgArgs = new Object[] {serverConnection.getName(), regionName,
+                        key, valuePart, callbackArg};
+                    final StringId message =
+                        LocalizedStrings.ProcessBatch_0_FAILED_TO_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_AND_CALLBACKARG_4;
+                    String s = message.toLocalizedString(msgArgs);
+                    logger.info(s);
+                    throw new Exception(s);
+                  }
                 }
-                return;
               } catch (Exception e) {
                 // Preserve the connection under all circumstances
                 logger.warn(LocalizedMessage.create(
@@ -517,9 +481,9 @@ public class GatewayReceiverCommand extends BaseCommand {
                     new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
                         Integer.valueOf(numberOfEvents)}),
                     e);
-                throw e;
+                handleException(removeOnException, e);
               }
-            }
+            } while (retry);
             break;
           case 2: // Destroy
             // Retrieve the callbackArg from the message parts if necessary
@@ -566,38 +530,48 @@ public class GatewayReceiverCommand extends BaseCommand {
               logger.warn(s);
               throw new Exception(s);
             }
-            region = (LocalRegion) crHelper.getRegion(regionName);
-            if (region == null) {
-              handleRegionNull(serverConnection, regionName, batchId);
-            } else {
-              clientEvent = new EventIDHolder(eventId);
-              if (versionTimeStamp > 0) {
-                VersionTag tag = VersionTag.create(region.getVersionMember());
-                tag.setIsGatewayTag(true);
-                tag.setVersionTimeStamp(versionTimeStamp);
-                tag.setDistributedSystemId(dsid);
-                clientEvent.setVersionTag(tag);
-              }
-              handleMessageRetry(region, clientEvent);
-              // Destroy the entry
+            do {
               try {
-                AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-                if (authzRequest != null) {
-                  DestroyOperationContext destroyContext =
-                      authzRequest.destroyAuthorize(regionName, key, callbackArg);
-                  callbackArg = destroyContext.getCallbackArg();
+                region = (LocalRegion) crHelper.getRegion(regionName);
+                if (region == null) {
+                  handleRegionNull(serverConnection, regionName, batchId);
+                } else {
+                  clientEvent = new EventIDHolder(eventId);
+                  if (versionTimeStamp > 0) {
+                    VersionTag tag = VersionTag.create(region.getVersionMember());
+                    tag.setIsGatewayTag(true);
+                    tag.setVersionTimeStamp(versionTimeStamp);
+                    tag.setDistributedSystemId(dsid);
+                    clientEvent.setVersionTag(tag);
+                  }
+                  handleMessageRetry(region, clientEvent);
+                  // Destroy the entry
+                  AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
+                  if (authzRequest != null) {
+                    DestroyOperationContext destroyContext =
+                        authzRequest.destroyAuthorize(regionName, key, callbackArg);
+                    callbackArg = destroyContext.getCallbackArg();
+                  }
+                  region.basicBridgeDestroy(key, callbackArg, serverConnection.getProxyID(), false,
+                      clientEvent);
+                  serverConnection.setModificationInfo(true, regionName, key);
+                  stats.incDestroyRequest();
+                  retry = false;
                 }
-                region.basicBridgeDestroy(key, callbackArg, serverConnection.getProxyID(), false,
-                    clientEvent);
-                serverConnection.setModificationInfo(true, regionName, key);
-                stats.incDestroyRequest();
               } catch (EntryNotFoundException e) {
                 logger.info(LocalizedMessage.create(
                     LocalizedStrings.ProcessBatch_0_DURING_BATCH_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
                     new Object[] {serverConnection.getName(), key}));
                 // throw new Exception(e);
+              } catch (Exception e) {
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_DESTROY_REQUEST_1_CONTAINING_2_EVENTS,
+                    new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
+                        Integer.valueOf(numberOfEvents)}),
+                    e);
+                handleException(removeOnException, e);
               }
-            }
+            } while (retry);
             break;
           case 3: // Update Time-stamp for a RegionEntry
 
@@ -715,38 +689,16 @@ public class GatewayReceiverCommand extends BaseCommand {
           break;
         }
 
-        // logger.warn("Caught exception for batch " + batchId + " containing
-        // " + numberOfEvents + " events (" + msg.getPayloadLength() + " bytes)
-        // with " + (earlyAck ? "early" : "normal") + " acknowledgement on " +
-        // getSocketString());
-        // If the response has not already been written (it is not
-        // early ack mode), increment the latest batch id replied,
-        // write the batch exception to the caller and break
-        if (!wroteResponse) {
-          // Increment the batch id unless the received batch id is -1 (a
-          // failover batch)
-          DistributedSystem ds = crHelper.getCache().getDistributedSystem();
-          String exceptionMessage =
-              LocalizedStrings.GatewayReceiver_EXCEPTION_WHILE_PROCESSING_BATCH.toLocalizedString(
-                  new Object[] {((InternalDistributedSystem) ds).getDistributionManager()
-                      .getDistributedSystemId(), ds.getDistributedMember()});
-          BatchException70 be =
-              new BatchException70(exceptionMessage, e, indexWithoutPDXEvent, batchId);
-          exceptions.add(be);
-          if (!removeOnException) {
-            break;
-          }
-
-          // servConn.setAsTrue(RESPONDED);
-          // wroteResponse = true;
-          // break;
-        } else {
-          // If it is early ack mode, attempt to process the remaining messages
-          // in the batch.
-          // This could be problematic depending on where the exception
-          // occurred.
-          return;
-        }
+        // Increment the batch id unless the received batch id is -1 (a
+        // failover batch)
+        DistributedSystem ds = crHelper.getCache().getDistributedSystem();
+        String exceptionMessage = LocalizedStrings.GatewayReceiver_EXCEPTION_WHILE_PROCESSING_BATCH
+            .toLocalizedString(new Object[] {
+                ((InternalDistributedSystem) ds).getDistributionManager().getDistributedSystemId(),
+                ds.getDistributedMember()});
+        BatchException70 be =
+            new BatchException70(exceptionMessage, e, indexWithoutPDXEvent, batchId);
+        exceptions.add(be);
       } finally {
         // Increment the partNumber
         if (actionType == 0 /* create */ || actionType == 1 /* update */) {
@@ -784,7 +736,7 @@ public class GatewayReceiverCommand extends BaseCommand {
       serverConnection.incrementLatestBatchIdReplied(batchId);
       writeBatchException(clientMessage, exceptions, serverConnection, batchId);
       serverConnection.setAsTrue(RESPONDED);
-    } else if (!wroteResponse) {
+    } else {
       // Increment the batch id unless the received batch id is -1 (a failover
       // batch)
       serverConnection.incrementLatestBatchIdReplied(batchId);
@@ -796,12 +748,8 @@ public class GatewayReceiverCommand extends BaseCommand {
         logger.debug(
             "{}: Sent process batch normal response for batch {} containing {} events ({} bytes) with {} acknowledgement on {}",
             serverConnection.getName(), batchId, numberOfEvents, clientMessage.getPayloadLength(),
-            (earlyAck ? "early" : "normal"), serverConnection.getSocketString());
+            "normal", serverConnection.getSocketString());
       }
-      // logger.warn("Sent process batch normal response for batch " +
-      // batchId + " containing " + numberOfEvents + " events (" +
-      // msg.getPayloadLength() + " bytes) with " + (earlyAck ? "early" :
-      // "normal") + " acknowledgement on " + getSocketString());
     }
   }
 
@@ -816,6 +764,20 @@ public class GatewayReceiverCommand extends BaseCommand {
       crHelper.getCache().getPdxRegistry().addRemoteType((int) key, (PdxType) value);
     }
     return true;
+  }
+
+  private void handleException(boolean removeOnException, Exception e) throws Exception {
+    if (shouldThrowException(removeOnException, e)) {
+      throw e;
+    } else {
+      Thread.sleep(500);
+    }
+  }
+
+  private boolean shouldThrowException(boolean removeOnException, Exception e) {
+    // Split out in case specific exceptions would short-circuit retry logic.
+    // Currently it just considers the boolean.
+    return removeOnException;
   }
 
   private void handleMessageRetry(LocalRegion region, EntryEventImpl clientEvent) {
