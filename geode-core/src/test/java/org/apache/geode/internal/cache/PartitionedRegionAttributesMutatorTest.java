@@ -40,8 +40,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
 public class PartitionedRegionAttributesMutatorTest {
