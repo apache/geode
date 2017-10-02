@@ -40,10 +40,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import org.apache.geode.cache.Cache;
@@ -268,7 +266,7 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
       Cache cache = getCache();
       Region region = cache.getRegion("region");
       IntStream.range(1, 10)
-          .forEach(i -> region.put(i, new NotDeserializableAsset(vmToFailCreationOn.getPid())));
+          .forEach(i -> region.put(i, new NotDeserializableAsset(vmToFailCreationOn.getId())));
     });
 
     vm0.invoke(() -> {

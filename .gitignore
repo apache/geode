@@ -26,3 +26,4 @@ out/
 *.rej
 *.orig
 geode-pulse/screenshots/
+/jpf.properties

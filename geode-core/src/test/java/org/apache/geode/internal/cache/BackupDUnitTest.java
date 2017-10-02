@@ -544,7 +544,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     SerializableRunnable validateUserFileBackup = new SerializableRunnable("set user backups") {
       public void run() {
         try {
-          FileUtils.deleteDirectory(new File("userbackup_" + vm.getPid()));
+          FileUtils.deleteDirectory(new File("userbackup_" + vm.getId()));
         } catch (IOException e) {
           fail(e.getMessage());
         }

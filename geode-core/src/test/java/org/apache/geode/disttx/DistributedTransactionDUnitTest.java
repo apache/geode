@@ -1348,10 +1348,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     final VM primary = isPrimary.booleanValue() ? server1 : server2;
     final VM secondary = !isPrimary.booleanValue() ? server1 : server2;
 
-    System.out.println("TEST:SERVER-1:VM-" + server1.getPid());
-    System.out.println("TEST:SERVER-2:VM-" + server2.getPid());
-    System.out.println("TEST:PRIMARY=VM-" + primary.getPid());
-    System.out.println("TEST:SECONDARY=VM-" + secondary.getPid());
+    System.out.println("TEST:SERVER-1:VM-" + server1.getId());
+    System.out.println("TEST:SERVER-2:VM-" + server2.getId());
+    System.out.println("TEST:PRIMARY=VM-" + primary.getId());
+    System.out.println("TEST:SECONDARY=VM-" + secondary.getId());
 
     class WaitRelease implements Runnable {
       CountDownLatch cdl;

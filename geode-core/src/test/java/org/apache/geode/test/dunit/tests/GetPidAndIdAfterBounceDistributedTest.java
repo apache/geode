@@ -12,42 +12,51 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.examples;
+package org.apache.geode.test.dunit.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class InvokeCallableExampleTest {
+public class GetPidAndIdAfterBounceDistributedTest {
+
+  private int[] idsBefore;
+  private int[] pidsBefore;
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
-  private static final String[] names = {"Batman", "Superman", "Wonder Woman", "Aquaman"};
+  @Before
+  public void setUp() throws Exception {
+    idsBefore = new int[Host.getHost(0).getVMCount()];
+    pidsBefore = new int[Host.getHost(0).getVMCount()];
 
-  @Test
-  public void invokeIdentityInEachVM() throws Exception {
     for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
-      final int whichVM = i;
-      VM vm = Host.getHost(0).getVM(whichVM);
-      String name = vm.invoke(() -> names[whichVM]);
-      assertThat(name).isEqualTo(names[i]);
+      idsBefore[i] = Host.getHost(0).getVM(i).getId();
+      pidsBefore[i] = Host.getHost(0).getVM(i).getPid();
+      Host.getHost(0).getVM(i).bounce();
     }
   }
 
   @Test
-  public void getPidOfEachVM() throws Exception {
-    for (VM vm : Host.getHost(0).getAllVMs()) {
-      System.out.println("vm.getPid() is " + vm.getPid());
+  public void getIdShouldReturnSameValueAfterBounce() throws Exception {
+    for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
+      assertThat(Host.getHost(0).getVM(i).getId()).isEqualTo(idsBefore[i]);
+    }
+  }
+
+  @Test
+  public void getPidShouldReturnDifferentValueAfterBounce() throws Exception {
+    for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
+      assertThat(Host.getHost(0).getVM(i).getPid()).isNotEqualTo(pidsBefore[i]);
     }
   }
 }

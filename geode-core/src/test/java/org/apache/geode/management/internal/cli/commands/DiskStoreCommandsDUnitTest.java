@@ -130,7 +130,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final String diskStoreName = "DiskStoreCommandsDUnitTest";
 
     // Default setup creates a cache in the Manager, now create a cache in VM1
@@ -145,12 +145,12 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Create a disk store and region in the Manager (VM0) and VM1 VMs
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           Cache cache = getCache();
 
-          File diskStoreDirFile = new File(diskStoreName + vm.getPid());
+          File diskStoreDirFile = new File(diskStoreName + vm.getId());
           diskStoreDirFile.mkdirs();
 
           DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
@@ -248,7 +248,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     System.out.println("command result=" + stringResult);
     assertEquals(5, countLinesInString(stringResult, false));
     assertTrue(stringContainsLine(stringResult, "Disk Store ID.*Host.*Directory"));
-    assertTrue(stringContainsLine(stringResult, ".*" + diskStoreName + vm1.getPid()));
+    assertTrue(stringContainsLine(stringResult, ".*" + diskStoreName + vm1.getId()));
 
     // Extract the id from the returned missing disk store
     String line = getLineFromString(stringResult, 4);
@@ -266,11 +266,11 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Do our own cleanup so that the disk store directories can be removed
     super.destroyDefaultSetup();
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           try {
-            FileUtils.deleteDirectory((new File(diskStoreName + vm.getPid())));
+            FileUtils.deleteDirectory((new File(diskStoreName + vm.getId())));
           } catch (IOException iex) {
             // There's nothing else we can do
           }
@@ -288,7 +288,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final String diskStoreName = "DiskStoreCommandsDUnitTest";
 
     // Default setup creates a cache in the Manager, now create a cache in VM1
@@ -303,12 +303,12 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Create a disk store and region in the Manager (VM0) and VM1 VMs
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           Cache cache = getCache();
 
-          File diskStoreDirFile = new File(diskStoreName + vm.getPid());
+          File diskStoreDirFile = new File(diskStoreName + vm.getId());
           diskStoreDirFile.mkdirs();
 
           DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
@@ -507,11 +507,11 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Do our own cleanup so that the disk store directories can be removed
     super.destroyDefaultSetup();
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           try {
-            FileUtils.deleteDirectory((new File(diskStoreName + vm.getPid())));
+            FileUtils.deleteDirectory((new File(diskStoreName + vm.getId())));
           } catch (IOException iex) {
             // There's nothing else we can do
           }
@@ -1155,7 +1155,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultToString(cmdResult).contains("No Disk Stores Found"));
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final File diskStore1Dir1 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".1");
     this.filesToBeDeleted.add(diskStore1Dir1.getAbsolutePath());
     final File diskStore1Dir2 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".2");
@@ -1174,7 +1174,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     });
 
     final VM vm2 = Host.getHost(0).getVM(2);
-    final String vm2Name = "VM" + vm2.getPid();
+    final String vm2Name = "VM" + vm2.getId();
     final File diskStore2Dir = new File(new File(".").getAbsolutePath(), diskStore2Name);
     this.filesToBeDeleted.add(diskStore2Dir.getAbsolutePath());
     vm2.invoke(new SerializableRunnable() {
@@ -1276,7 +1276,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultToString(cmdResult).contains("No Disk Stores Found"));
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final File diskStore1Dir1 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".1");
     this.filesToBeDeleted.add(diskStore1Dir1.getAbsolutePath());
     final File diskStore2Dir1 = new File(new File(".").getAbsolutePath(), diskStore2Name + ".1");
@@ -1302,7 +1302,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     });
 
     final VM vm2 = Host.getHost(0).getVM(2);
-    final String vm2Name = "VM" + vm2.getPid();
+    final String vm2Name = "VM" + vm2.getId();
     final File diskStore1Dir2 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".2");
     this.filesToBeDeleted.add(diskStore1Dir2.getAbsolutePath());
     final File diskStore2Dir2 = new File(new File(".").getAbsolutePath(), diskStore2Name + ".2");

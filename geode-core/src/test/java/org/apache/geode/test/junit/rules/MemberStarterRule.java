@@ -34,6 +34,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -70,6 +71,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // invoke stopMember() first and then ds.disconnect
     stopMember();
 
+    // this will clean up the SocketCreators created in this VM so that it won't contaminate
+    // future tests
+    SocketCreatorFactory.close();
     disconnectDSIfAny();
 
     if (temporaryFolder != null) {
