@@ -44,16 +44,9 @@ public class LuceneCliStrings {
   public static final String LUCENE_CREATE_INDEX__ANALYZER = "analyzer";
   public static final String LUCENE_CREATE_INDEX__ANALYZER_HELP =
       "Type of the analyzer for each field.\nUse the case sensitive keyword DEFAULT or leave an analyzer blank to use the default standard analyzer.";
-  public static final String CREATE_INDEX__SUCCESS__MSG =
-      "Index successfully created with following details";
-  public static final String CREATE_INDEX__FAILURE__MSG =
-      "Failed to create index \"{0}\" due to following reasons";
-  public static final String CREATE_INDEX__NAME__MSG = "Name       : {0}";
-  public static final String CREATE_INDEX__REGIONPATH__MSG = "RegionPath : {0}";
-  public static final String CREATE_INDEX__MEMBER__MSG = "Members which contain the index";
-  public static final String CREATE_INDEX__NUMBER__AND__MEMBER = "{0}. {1}";
-  public static final String CREATE_INDEX__EXCEPTION__OCCURRED__ON =
-      "Occurred on following members";
+  public static final String LUCENE_CREATE_INDEX__SERIALIZER = "serializer";
+  public static final String LUCENE_CREATE_INDEX__SERIALIZER_HELP =
+      "Fully qualified class name of the LuceneSerializer to use with this index.\n";
 
   // Describe lucene index commands
   public static final String LUCENE_DESCRIBE_INDEX = "describe lucene index";
@@ -84,9 +77,6 @@ public class LuceneCliStrings {
   public static final String LUCENE_SEARCH_INDEX__DEFAULT_FIELD__HELP =
       "Default field to search in";
   public static final String LUCENE_SEARCH_INDEX__NO_RESULTS_MESSAGE = "No results";
-  public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE = "pageSize";
-  public static final String LUCENE_SEARCH_INDEX__PAGE_SIZE__HELP =
-      "Number of results to be returned in a page";
   public static final String LUCENE_SEARCH_INDEX__KEYSONLY = "keys-only";
   public static final String LUCENE_SEARCH_INDEX__KEYSONLY__HELP =
       "Return only keys of search results.";

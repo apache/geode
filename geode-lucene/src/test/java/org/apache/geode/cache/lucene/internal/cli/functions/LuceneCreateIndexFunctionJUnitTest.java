@@ -33,6 +33,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -80,7 +81,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     String[] analyzers = new String[3];
     analyzerNames.toArray(analyzers);
     LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1",
-        new String[] {"field1", "field2", "field3"}, analyzers);
+        new String[] {"field1", "field2", "field3"}, analyzers, null);
     when(context.getArguments()).thenReturn(indexInfo);
 
     LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
@@ -106,7 +107,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
   @SuppressWarnings("unchecked")
   public void testExecuteWithoutAnalyzer() throws Throwable {
     String fields[] = new String[] {"field1", "field2", "field3"};
-    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1", fields, null);
+    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1", fields, null, null);
     when(context.getArguments()).thenReturn(indexInfo);
 
     LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
@@ -117,6 +118,32 @@ public class LuceneCreateIndexFunctionJUnitTest {
     verify(factory).addField(eq("field1"));
     verify(factory).addField(eq("field2"));
     verify(factory).addField(eq("field3"));
+    verify(factory).create(eq("index1"), eq("/region1"));
+
+    ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = (CliFunctionResult) resultCaptor.getValue();
+
+    assertEquals(expectedResult, result);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testExecuteWithSerializer() throws Throwable {
+    String fields[] = new String[] {"field1", "field2", "field3"};
+    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1", fields, null,
+        PrimitiveSerializer.class.getCanonicalName());
+    when(context.getArguments()).thenReturn(indexInfo);
+
+    LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
+    function = spy(function);
+    doReturn(cache).when(function).getCache();
+    function.execute(context);
+
+    verify(factory).addField(eq("field1"));
+    verify(factory).addField(eq("field2"));
+    verify(factory).addField(eq("field3"));
+    verify(factory).setLuceneSerializer(isA(PrimitiveSerializer.class));
     verify(factory).create(eq("index1"), eq("/region1"));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);

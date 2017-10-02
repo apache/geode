@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal.configuration;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
+import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -104,7 +106,6 @@ public class LuceneClusterConfigurationDUnitTest {
     gfshConnector.connectAndVerify(locator);
 
     // Create lucene index.
-    // createLuceneIndexUsingGfsh();
     createLuceneIndexWithAnalyzerUsingGfsh(false);
 
     createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
@@ -125,6 +126,33 @@ public class LuceneClusterConfigurationDUnitTest {
               "org.apache.lucene.analysis.standard.StandardAnalyzer",
               "org.apache.lucene.analysis.standard.StandardAnalyzer"},
           index);
+    });
+  }
+
+  @Test
+  public void indexWithSerializerGetsCreatedUsingClusterConfiguration() throws Exception {
+    startNodeUsingClusterConfiguration(1);
+
+    // Connect Gfsh to locator.
+    gfshConnector.connectAndVerify(locator);
+
+    // Create lucene index.
+    createLuceneIndexWithSerializerUsingGfsh(false);
+
+    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
+
+    // Start vm2. This should have lucene index created using cluster
+    // configuration.
+    MemberVM vm2 = startNodeUsingClusterConfiguration(2);
+    vm2.invoke(() -> {
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
+      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+      assertNotNull(index);
+      String[] fields = new String[] {"field1", "field2", "field3"};
+      validateIndexFields(fields, index);
+      // Add this check back when we complete xml generation for analyzer.
+      assertThat(index.getLuceneSerializer()).isInstanceOf(PrimitiveSerializer.class);
     });
   }
 
@@ -274,6 +302,19 @@ public class LuceneClusterConfigurationDUnitTest {
         "org.apache.lucene.analysis.standard.StandardAnalyzer,"
             + "org.apache.lucene.analysis.standard.StandardAnalyzer,"
             + "org.apache.lucene.analysis.standard.StandardAnalyzer");
+
+    // Execute Gfsh command.
+    gfshConnector.executeAndVerifyCommand(csb.toString());
+  }
+
+  private void createLuceneIndexWithSerializerUsingGfsh(boolean addGroup) throws Exception {
+    // Gfsh command to create lucene index.
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
+        PrimitiveSerializer.class.getCanonicalName());
 
     // Execute Gfsh command.
     gfshConnector.executeAndVerifyCommand(csb.toString());
