@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.examples;
+package org.apache.geode.test.dunit.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,27 +27,25 @@ import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class InvokeCallableExampleTest {
+public class GetPidAndIdDistributedTest {
 
   @ClassRule
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
-  private static final String[] names = {"Batman", "Superman", "Wonder Woman", "Aquaman"};
-
   @Test
-  public void invokeIdentityInEachVM() throws Exception {
+  public void getId_returnsVMSequentialId() throws Exception {
     for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
-      final int whichVM = i;
-      VM vm = Host.getHost(0).getVM(whichVM);
-      String name = vm.invoke(() -> names[whichVM]);
-      assertThat(name).isEqualTo(names[i]);
+      VM vm = Host.getHost(0).getVM(i);
+      assertThat(vm.getId()).isEqualTo(i);
     }
   }
 
   @Test
-  public void getPidOfEachVM() throws Exception {
-    for (VM vm : Host.getHost(0).getAllVMs()) {
-      System.out.println("vm.getPid() is " + vm.getPid());
+  public void getPid_returnsVMProcessId() throws Exception {
+    for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
+      VM vm = Host.getHost(0).getVM(i);
+      int remotePid = vm.invoke(() -> ProcessUtils.identifyPid());
+      assertThat(vm.getPid()).isEqualTo(remotePid);
     }
   }
 }

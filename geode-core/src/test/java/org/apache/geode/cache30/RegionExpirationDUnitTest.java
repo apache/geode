@@ -20,7 +20,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -157,7 +156,7 @@ public class RegionExpirationDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    LogWriterUtils.getLogWriter().info("vm0 is " + vm0.getPid() + ", vm1 is " + vm1);
+    LogWriterUtils.getLogWriter().info("vm0 is " + vm0.getId() + ", vm1 is " + vm1);
 
     LogWriterUtils.getLogWriter().info("2: " + regionName + " action is " + action);
 

@@ -44,11 +44,14 @@ public class ServerConnectionFactory {
     if (authenticators != null) {
       return;
     }
-    authenticators = new HashMap<>();
+    HashMap tmp = new HashMap<>();
+
     ServiceLoader<Authenticator> loader = ServiceLoader.load(Authenticator.class);
     for (Authenticator streamAuthenticator : loader) {
-      authenticators.put(streamAuthenticator.implementationID(), streamAuthenticator.getClass());
+      tmp.put(streamAuthenticator.implementationID(), streamAuthenticator.getClass());
     }
+
+    authenticators = tmp;
   }
 
   private synchronized ClientProtocolMessageHandler initializeMessageHandler(
@@ -57,9 +60,10 @@ public class ServerConnectionFactory {
       return protocolHandler;
     }
 
-    protocolHandler = new MessageHandlerFactory().makeMessageHandler();
-    protocolHandler.initializeStatistics(statisticsName, statisticsFactory);
+    ClientProtocolMessageHandler tempHandler = new MessageHandlerFactory().makeMessageHandler();
+    tempHandler.initializeStatistics(statisticsName, statisticsFactory);
 
+    protocolHandler = tempHandler;
     return protocolHandler;
   }
 

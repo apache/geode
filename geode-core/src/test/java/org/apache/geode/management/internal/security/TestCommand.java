@@ -49,8 +49,8 @@ public class TestCommand {
       new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.DISK);
   public static ResourcePermission clusterManageGateway =
       new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.GATEWAY);
-  public static ResourcePermission clusterManageJar =
-      new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.JAR);
+  public static ResourcePermission clusterManageDeploy =
+      new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.DEPLOY);
   public static ResourcePermission clusterManageQuery =
       new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
 
@@ -145,7 +145,7 @@ public class TestCommand {
     // createTestCommand("deploy --jar=group1_functions.jar --group=Group1",
     // ResourcePermissions.DATA_MANAGE); // TODO:
     // this command will fail in GfshCommandsSecurityTest at interceptor for jar file checking
-    createTestCommand("undeploy --group=Group1", clusterManageJar);
+    createTestCommand("undeploy --group=Group1", clusterManageDeploy);
 
     // Diskstore Commands
     createTestCommand("backup disk-store --dir=foo", ResourcePermissions.DATA_READ,
@@ -234,10 +234,10 @@ public class TestCommand {
 
     // Queue Commands
     createTestCommand("create async-event-queue --id=myAEQ --listener=myApp.myListener",
-        clusterManageJar);
+        clusterManageDeploy);
     createTestCommand(
         "create async-event-queue --id=myAEQ --listener=myApp.myListener --persistent",
-        clusterManageJar, clusterWriteDisk);
+        clusterManageDeploy, clusterWriteDisk);
 
     createTestCommand("list async-event-queues", ResourcePermissions.CLUSTER_READ);
 

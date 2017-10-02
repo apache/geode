@@ -20,14 +20,13 @@ import org.apache.geode.internal.serialization.SerializationType;
 import org.apache.geode.internal.serialization.TypeCodec;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.SerializationCodecRegistry;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 @Experimental
 public class ProtobufSerializationService implements SerializationService<BasicTypes.EncodingType> {
   private SerializationCodecRegistry serializationCodecRegistry = new SerializationCodecRegistry();
 
-  public ProtobufSerializationService() throws CodecAlreadyRegisteredForTypeException {}
+  public ProtobufSerializationService() {}
 
   @Override
   public byte[] encode(BasicTypes.EncodingType encodingTypeValue, Object value)

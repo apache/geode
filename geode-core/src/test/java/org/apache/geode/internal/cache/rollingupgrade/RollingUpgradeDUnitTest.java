@@ -160,7 +160,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     } else if ((regionType.equals("persistentReplicate"))) {
       shortcutName = RegionShortcut.PARTITION_PERSISTENT.name();
       for (int i = 0; i < testingDirs.length; i++) {
-        testingDirs[i] = new File(diskDir, "diskStoreVM_" + String.valueOf(host.getVM(i).getPid()))
+        testingDirs[i] = new File(diskDir, "diskStoreVM_" + String.valueOf(host.getVM(i).getId()))
             .getAbsoluteFile();
         if (!testingDirs[i].exists()) {
           System.out.println(" Creating diskdir for server: " + i);
@@ -355,7 +355,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) throws Exception {
     // Roll the server
     oldServer.invoke(invokeCloseCache());
-    VM rollServer = Host.getHost(0).getVM(oldServer.getPid()); // gets a vm with the current version
+    VM rollServer = Host.getHost(0).getVM(oldServer.getId()); // gets a vm with the current version
     rollServer.invoke(invokeCreateCache(locatorPorts == null ? getSystemPropertiesPost71()
         : getSystemPropertiesPost71(locatorPorts)));
     rollServer.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
@@ -400,7 +400,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       final String testName, final String locatorString) throws Exception {
     // Roll the locator
     oldLocator.invoke(invokeStopLocator());
-    VM rollLocator = Host.getHost(0).getVM(oldLocator.getPid()); // gets a VM with current version
+    VM rollLocator = Host.getHost(0).getVM(oldLocator.getId()); // gets a VM with current version
     final Properties props = new Properties();
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     rollLocator.invoke(invokeStartLocator(serverHostName, port, testName, locatorString, props));

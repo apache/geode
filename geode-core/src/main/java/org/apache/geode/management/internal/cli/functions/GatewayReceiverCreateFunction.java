@@ -157,6 +157,11 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
                 CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER));
       }
     }
+
+    String hostnameForSenders = gatewayReceiverCreateArgs.getHostnameForSenders();
+    if (hostnameForSenders != null) {
+      gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
+    }
     return gatewayReceiverFactory.create();
   }
 

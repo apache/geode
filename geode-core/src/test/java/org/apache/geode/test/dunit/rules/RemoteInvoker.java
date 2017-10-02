@@ -25,7 +25,7 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
  * Provides remote invocation support to a {@code TestRule}. These methods will invoke a
  * SerializableRunnable in all remote DUnit JVMs including the Locator JVM.
  */
-class RemoteInvoker implements Serializable {
+public class RemoteInvoker implements Serializable {
 
   private static final long serialVersionUID = -1759722991299584649L;
 

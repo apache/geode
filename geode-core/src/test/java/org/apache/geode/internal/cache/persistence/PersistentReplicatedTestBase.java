@@ -209,7 +209,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   }
 
   protected File getDiskDirForVM(final VM vm) {
-    File dir = new File(diskDir, String.valueOf(vm.getPid()));
+    File dir = new File(diskDir, String.valueOf(vm.getId()));
     return dir;
   }
 

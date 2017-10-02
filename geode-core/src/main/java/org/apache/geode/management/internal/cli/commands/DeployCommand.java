@@ -63,7 +63,7 @@ public class DeployCommand implements GfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommand$Interceptor",
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
-      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.JAR)
+      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   public Result deploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,

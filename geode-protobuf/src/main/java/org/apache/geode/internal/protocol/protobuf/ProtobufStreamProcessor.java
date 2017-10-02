@@ -33,7 +33,6 @@ import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSe
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 
 /**
  * This object handles an incoming stream containing protobuf messages. It parses the protobuf
@@ -47,7 +46,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   private ProtobufClientStatistics statistics;
   private static final Logger logger = LogService.getLogger();
 
-  public ProtobufStreamProcessor() throws CodecAlreadyRegisteredForTypeException {
+  public ProtobufStreamProcessor() {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
     protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
         new OperationContextRegistry());

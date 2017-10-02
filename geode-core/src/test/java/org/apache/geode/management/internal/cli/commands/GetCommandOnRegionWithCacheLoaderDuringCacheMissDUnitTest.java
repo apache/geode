@@ -313,7 +313,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
 
       buffer.append(" {configuration = ").append(getConfiguration());
       buffer.append(", name = ").append(getName());
-      buffer.append(", pid = ").append(getVm().getPid());
+      buffer.append(", pid = ").append(getVm().getId());
       buffer.append("}");
 
       return buffer.toString();

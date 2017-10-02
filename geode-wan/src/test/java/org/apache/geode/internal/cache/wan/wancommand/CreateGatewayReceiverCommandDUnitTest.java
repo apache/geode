@@ -19,9 +19,14 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -48,7 +53,7 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
    * GatewayReceiver with all default attributes
    */
   @Test
-  public void testCreateGatewayReceiverWithDefault() {
+  public void testCreateGatewayReceiverWithDefault() throws Exception {
     VM puneLocator = Host.getLocator();
     int dsIdPort = puneLocator.invoke(this::getLocatorPort);
     propsSetUp(dsIdPort);
@@ -76,18 +81,21 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
 
+    String hostname;
+    hostname = SocketCreator.getLocalHost().getHostName();
+
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
         GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
         GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null));
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null, hostname));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
         GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
         GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null));
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null, hostname));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
         GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
         GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null));
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null, hostname));
   }
 
   /**
@@ -128,12 +136,68 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
   }
+
+  /**
+   * GatewayReceiver with hostnameForSenders
+   */
+  @Test
+  public void testCreateGatewayReceiverWithHostnameForSenders() throws UnknownHostException {
+    VM puneLocator = Host.getLocator();
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+
+    vm3.invoke(() -> createCache(dsIdPort));
+    vm4.invoke(() -> createCache(dsIdPort));
+    vm5.invoke(() -> createCache(dsIdPort));
+
+    String hostnameForSenders = InetAddress.getLocalHost().getHostName();
+    String command =
+        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
+            + "=false" + " --" + CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS + "="
+            + hostnameForSenders + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000"
+            + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
+    CommandResult cmdResult = executeCommand(command);
+    if (cmdResult != null) {
+      String strCmdResult = commandResultToString(cmdResult);
+      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
+      List<String> status = resultData.retrieveAllValues("Status");
+      assertEquals(4, status.size());// expected size 4 includes the manager node
+      // verify there is no error in the status
+      for (String stat : status) {
+        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
+      }
+    } else {
+      fail("testCreateGatewayReceiver failed as did not get CommandResult");
+    }
+
+    vm3.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+    vm4.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+    vm5.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+
+    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+
+    vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+    vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+    vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+  }
+
 
   /**
    * GatewayReceiver with given attributes and a single GatewayTransportFilter.
@@ -178,11 +242,11 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
 
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters));
+        512000, transportFilters, "localhost"));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters));
+        512000, transportFilters, "localhost"));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters));
+        512000, transportFilters, "localhost"));
   }
 
   /**
@@ -228,11 +292,11 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
 
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters));
+        10000, 11000, "localhost", 100000, 512000, transportFilters, "localhost"));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters));
+        10000, 11000, "localhost", 100000, 512000, transportFilters, "localhost"));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters));
+        10000, 11000, "localhost", 100000, 512000, transportFilters, "localhost"));
   }
 
   /**
@@ -315,7 +379,7 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
   }
 
   /**
@@ -361,9 +425,9 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
   }
 
   /**
@@ -406,11 +470,11 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     }
 
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
   }
 
   /**
@@ -453,9 +517,9 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
   }
 
   /**
@@ -497,10 +561,10 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null));
+        512000, null, "localhost"));
   }
 }
