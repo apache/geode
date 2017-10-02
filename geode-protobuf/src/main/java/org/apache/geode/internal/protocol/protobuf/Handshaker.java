@@ -52,6 +52,40 @@ public class Handshaker implements ClientProtocolHandshaker {
     }
 
     HandshakeAPI.Semver version = handshakeRequest.getVersion();
+
+    verifyClientVersion(outputStream, version);
+
+    try {
+      Authenticator newAuthenticator =
+          createNewAuthenticator(outputStream, handshakeRequest.getAuthenticationMode());
+
+      shaken = true;
+      return newAuthenticator;
+
+    } catch (IllegalAccessException | InstantiationException e) {
+      logger.error("Could not instantiate authenticator from handshake: ", e);
+      throw new ServiceLoadingFailureException(e);
+    }
+  }
+
+  private Authenticator createNewAuthenticator(OutputStream outputStream,
+      HandshakeAPI.AuthenticationMode authenticationMode) throws IllegalAccessException,
+      InstantiationException, IOException, IncompatibleVersionException {
+    Class<? extends Authenticator> authenticatorClass =
+        selectAuthenticator(authenticators, authenticationMode);
+
+    if (authenticatorClass == null) {
+      writeFailureTo(outputStream, ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
+          "Invalid authentication mode");
+      throw new IncompatibleVersionException("Invalid authentication mode");
+    }
+
+    HandshakeAPI.HandshakeResponse.newBuilder().setOk(true).build().writeDelimitedTo(outputStream);
+    return authenticatorClass.newInstance();
+  }
+
+  private void verifyClientVersion(OutputStream outputStream, HandshakeAPI.Semver version)
+      throws IOException, IncompatibleVersionException {
     if (version.getMajor() != MAJOR_VERSION) {
       writeFailureTo(outputStream, ProtocolErrorCode.UNSUPPORTED_VERSION.codeValue,
           "Version mismatch: incompatible major version");
@@ -63,26 +97,6 @@ public class Handshaker implements ClientProtocolHandshaker {
           "Version mismatch: client newer than server");
       throw new IncompatibleVersionException(
           "Client minor version is greater than server minor version");
-    }
-
-    try {
-      Class<? extends Authenticator> authenticatorClass =
-          selectAuthenticator(authenticators, handshakeRequest.getAuthenticationMode());
-
-      if (authenticatorClass == null) {
-        writeFailureTo(outputStream, ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
-            "Invalid authentication mode");
-        throw new IncompatibleVersionException("Invalid authentication mode");
-      }
-
-      HandshakeAPI.HandshakeResponse.newBuilder().setOk(true).build()
-          .writeDelimitedTo(outputStream);
-      shaken = true;
-      return authenticatorClass.newInstance();
-
-    } catch (IllegalAccessException | InstantiationException e) {
-      logger.error("Could not instantiate authenticator from handshake: ", e);
-      throw new ServiceLoadingFailureException(e);
     }
   }
 
@@ -110,7 +124,7 @@ public class Handshaker implements ClientProtocolHandshaker {
   }
 
   @Override
-  public boolean shaken() {
+  public boolean handshakeComplete() {
     return shaken;
   }
 }

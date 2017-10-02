@@ -33,14 +33,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -48,12 +46,9 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.Handshaker;
 import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
-import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.security.server.Authenticator;
-import org.apache.geode.security.server.NoOpAuthenticator;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -112,7 +107,7 @@ public class GenericProtocolServerConnectionTest {
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
     ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
     ClientProtocolHandshaker handshakerMock = mock(ClientProtocolHandshaker.class);
-    when(handshakerMock.shaken()).thenReturn(false).thenReturn(true);
+    when(handshakerMock.handshakeComplete()).thenReturn(false).thenReturn(true);
     when(handshakerMock.handshake(any(), any())).thenReturn(mock(Authenticator.class));
 
     ServerConnection serverConnection =
@@ -129,7 +124,7 @@ public class GenericProtocolServerConnectionTest {
   @Test
   public void handshakeIsRequiredToMoveAlong() throws Exception {
     ClientProtocolHandshaker handshaker = mock(ClientProtocolHandshaker.class);
-    when(handshaker.shaken()).thenReturn(false);
+    when(handshaker.handshakeComplete()).thenReturn(false);
     Authenticator authenticator = mock(Authenticator.class);
     when(handshaker.handshake(any(), any())).thenReturn(authenticator);
 

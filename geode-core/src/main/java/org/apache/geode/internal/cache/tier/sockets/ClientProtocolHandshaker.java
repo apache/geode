@@ -22,9 +22,23 @@ import java.io.OutputStream;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.security.server.Authenticator;
 
+/**
+ * ClientProtocolHandshaker provides the handshake for the protocol implemented by
+ * {@link ClientProtocolMessageHandler}. It is responsible for checking version compatibility
+ * information as well as authentication mode.
+ */
 public interface ClientProtocolHandshaker {
-  public Authenticator handshake(InputStream inputStream, OutputStream outputStream)
+  /**
+   * Read a handshake message from the input stream and write a response to output.
+   *
+   * @return an authenticator from those available. These are currently only set in one place, see
+   *         {@link ServerConnectionFactory}.
+   */
+  Authenticator handshake(InputStream inputStream, OutputStream outputStream)
       throws IOException, IncompatibleVersionException;
 
-  public boolean shaken();
+  /**
+   * @return false until handshake is complete, then true afterwards.
+   */
+  boolean handshakeComplete();
 }

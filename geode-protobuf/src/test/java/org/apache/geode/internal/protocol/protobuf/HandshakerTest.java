@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.IncompatibleVersionException;
-import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.server.Authenticator;
@@ -83,7 +82,7 @@ public class HandshakerTest {
     authenticatorMap.put("SIMPLE", SimpleMock.class);
 
     handshaker = new Handshaker(authenticatorMap);
-    assertFalse(handshaker.shaken());
+    assertFalse(handshaker.handshakeComplete());
   }
 
   @Test
@@ -101,7 +100,7 @@ public class HandshakerTest {
         handshaker.handshake(byteArrayInputStream, byteArrayOutputStream);
     assertTrue(actualAuthenticator instanceof NoopMock);
 
-    assertTrue(handshaker.shaken());
+    assertTrue(handshaker.handshakeComplete());
   }
 
   @Test(expected = IncompatibleVersionException.class)
@@ -119,7 +118,7 @@ public class HandshakerTest {
   }
 
   @Test(expected = IncompatibleVersionException.class)
-  public void bogusAuthenticationMode() throws Exception {
+  public void invalidAuthenticationMode() throws Exception {
     HandshakeAPI.HandshakeRequest handshakeRequest = HandshakeAPI.HandshakeRequest.newBuilder()
         .setVersion(HandshakeAPI.Semver.newBuilder().setMajor(1).setMinor(0))
         .setAuthenticationModeValue(-1).build();
@@ -133,7 +132,7 @@ public class HandshakerTest {
   }
 
   @Test
-  public void simpleIsSupported() throws Exception {
+  public void validAuthenticationMode() throws Exception {
     HandshakeAPI.HandshakeRequest handshakeRequest = HandshakeAPI.HandshakeRequest.newBuilder()
         .setVersion(HandshakeAPI.Semver.newBuilder().setMajor(1).setMinor(0))
         .setAuthenticationMode(HandshakeAPI.AuthenticationMode.SIMPLE).build();
@@ -147,7 +146,7 @@ public class HandshakerTest {
         handshaker.handshake(byteArrayInputStream, byteArrayOutputStream);
     assertTrue(actualAuthenticator instanceof SimpleMock);
 
-    assertTrue(handshaker.shaken());
+    assertTrue(handshaker.handshakeComplete());
   }
 
   @Test(expected = EOFException.class)

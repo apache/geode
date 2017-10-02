@@ -69,12 +69,12 @@ public class GenericProtocolServerConnection extends ServerConnection {
 
   @Override
   protected void doOneMessage() {
+    Socket socket = this.getSocket();
     try {
-      Socket socket = this.getSocket();
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
 
-      if (!handshaker.shaken()) { // not stirred
+      if (!handshaker.handshakeComplete()) {
         authenticator = handshaker.handshake(inputStream, outputStream);
       } else if (!authenticator.isAuthenticated()) {
         authenticator.authenticate(inputStream, outputStream, securityManager);
@@ -90,6 +90,11 @@ public class GenericProtocolServerConnection extends ServerConnection {
       logger.warn(e);
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
+      try {
+        socket.close();
+      } catch (IOException ignore) {
+        // just try to make sure it's closed for clients.
+      }
     } finally {
       acceptor.getClientHealthMonitor().receivedPing(this.clientProxyMembershipID);
     }
