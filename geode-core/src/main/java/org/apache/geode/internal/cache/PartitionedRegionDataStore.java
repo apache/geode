@@ -953,16 +953,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
   }
 
-  protected void lockBucketCreationAndVisit(BucketVisitor visitor) {
-    StoppableWriteLock lock = this.bucketCreationLock.writeLock();
-    lock.lock();
-    try {
-      visitBuckets(visitor);
-    } finally {
-      lock.unlock();
-    }
-  }
-
   /**
    * Gets the total amount of memory in bytes allocated for all values for this PR in this VM. This
    * is the current memory (MB) watermark for data in this PR.
@@ -2486,8 +2476,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * Interface for visiting buckets
    */
   // public visibility for tests
-  public interface BucketVisitor {
-    void visit(Integer bucketId, Region r);
+  public static abstract class BucketVisitor {
+    abstract public void visit(Integer bucketId, Region r);
   }
 
   // public visibility for tests
