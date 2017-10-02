@@ -51,11 +51,13 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -109,12 +111,13 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field1", new StandardAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
+    LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
     final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees",
-        searchableFields, fieldAnalyzers, true, serverName);
+        searchableFields, fieldAnalyzers, true, serverName, serializer);
     final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees",
-        searchableFields, fieldAnalyzers, false, serverName);
+        searchableFields, fieldAnalyzers, false, serverName, serializer);
     final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees",
-        searchableFields, fieldAnalyzers, true, serverName);
+        searchableFields, fieldAnalyzers, true, serverName, serializer);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -157,12 +160,13 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field1", new StandardAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
+    LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
     final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats1, true, serverName);
+        searchableFields, fieldAnalyzers, mockIndexStats1, true, serverName, serializer);
     final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats2, true, serverName);
+        searchableFields, fieldAnalyzers, mockIndexStats2, true, serverName, serializer);
     final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats3, true, serverName);
+        searchableFields, fieldAnalyzers, mockIndexStats3, true, serverName, serializer);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -191,6 +195,11 @@ public class LuceneIndexCommandsJUnitTest {
     assertEquals(Arrays.asList("10", "20", "30"), data.retrieveAllValues("Commits"));
     assertEquals(Arrays.asList("5", "10", "15"), data.retrieveAllValues("Updates"));
     assertEquals(Arrays.asList("1", "2", "3"), data.retrieveAllValues("Documents"));
+    assertEquals(
+        Arrays.asList(HeterogeneousLuceneSerializer.class.getSimpleName(),
+            HeterogeneousLuceneSerializer.class.getSimpleName(),
+            HeterogeneousLuceneSerializer.class.getSimpleName()),
+        data.retrieveAllValues("Serializer"));
   }
 
   @Test
@@ -237,8 +246,9 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field3", null);
     final LuceneIndexStats mockIndexStats = getMockIndexStats(1, 10, 5, 1);
     final List<LuceneIndexDetails> indexDetails = new ArrayList<>();
+    LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
     indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields,
-        fieldAnalyzers, mockIndexStats, true, serverName));
+        fieldAnalyzers, mockIndexStats, true, serverName, serializer));
 
     doReturn(mockResultCollector).when(commands).executeFunctionOnRegion(
         isA(LuceneDescribeIndexFunction.class), any(LuceneIndexInfo.class), eq(true));
@@ -619,16 +629,17 @@ public class LuceneIndexCommandsJUnitTest {
 
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers,
-      LuceneIndexStats indexStats, boolean status, final String serverName) {
+      LuceneIndexStats indexStats, boolean status, final String serverName,
+      LuceneSerializer serializer) {
     return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,
-        indexStats, status, serverName);
+        indexStats, status, serverName, serializer);
   }
 
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, boolean status,
-      final String serverName) {
+      final String serverName, LuceneSerializer serializer) {
     return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers, null,
-        status, serverName);
+        status, serverName, serializer);
   }
 
   private LuceneSearchResults createQueryResults(final String key, final String value,
