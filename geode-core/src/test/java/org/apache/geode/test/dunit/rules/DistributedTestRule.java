@@ -24,7 +24,11 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
  * to implement {@code Serializable}.
  *
  * <p>
- * DistributedTestRule can be used in DistributedTests:
+ * {@code DistributedTestRule} follows the standard convention of using a {@code Builder} for
+ * configuration as introduced in the JUnit {@code Timeout} rule.
+ *
+ * <p>
+ * {@code DistributedTestRule} can be used in DistributedTests as a {@code ClassRule}:
  *
  * <pre>
  * {@literal @}ClassRule

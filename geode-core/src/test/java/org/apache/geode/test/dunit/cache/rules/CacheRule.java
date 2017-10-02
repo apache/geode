@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,6 +28,32 @@ import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedExternalResource;
 
+/**
+ * JUnit Rule that creates Cache instances in DistributedTest VMs without {@code CacheTestCase}.
+ *
+ * <p>
+ * {@code CacheRule} follows the standard convention of using a {@code Builder} for configuration as
+ * introduced in the JUnit {@code Timeout} rule.
+ *
+ * <p>
+ * {@code CacheRule} can be used in DistributedTests as a {@code Rule}:
+ *
+ * <pre>
+ * {@literal @}ClassRule
+ * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+ *
+ * {@literal @}Rule
+ * public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
+ *
+ * {@literal @}Test
+ * public void everyVMShouldHaveACache() {
+ *   assertThat(cacheRule.getCache()).isNotNull();
+ *   for (VM vm : Host.getHost(0).getAllVMs()) {
+ *     vm.invoke(() -> assertThat(cacheRule.getCache()).isNotNull());
+ *   }
+ * }
+ * </pre>
+ */
 @SuppressWarnings({"serial", "unused"})
 public class CacheRule extends DistributedExternalResource {
 
@@ -82,10 +107,6 @@ public class CacheRule extends DistributedExternalResource {
 
   public InternalDistributedSystem getSystem() {
     return cache.getInternalDistributedSystem();
-  }
-
-  public static InternalCache getCacheForTesting() {
-    return cache;
   }
 
   private static void createCache(final Properties config) {

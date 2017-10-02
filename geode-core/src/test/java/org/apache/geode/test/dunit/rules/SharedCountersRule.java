@@ -25,6 +25,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.test.dunit.VM;
 
+/**
+ * JUnit Rule that provides SharedCounters in DistributedTest VMs.
+ *
+ * <p>
+ * {@code SharedCountersRule} follows the standard convention of using a {@code Builder} for
+ * configuration as introduced in the JUnit {@code Timeout} rule.
+ *
+ * <p>
+ * {@code SharedCountersRule} can be used in DistributedTests as a {@code Rule}:
+ *
+ * <pre>
+ * {@literal @}ClassRule
+ * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+ *
+ * {@literal @}Rule
+ * public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
+ *
+ * {@literal @}Rule
+ * public SharedCountersRule sharedCountersRule = SharedCountersRule.builder().withId(ID1).build();
+ *
+ * {@literal @}Test
+ * public void everyVMShouldHaveACache() {
+ *   sharedCountersRule.increment(ID1);
+ *   for (VM vm : Host.getHost(0).getAllVMs()) {
+ *     vm.invoke(() -> sharedCountersRule.increment(ID1));
+ *   }
+ *   assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(5);
+ * }
+ * </pre>
+ */
 @SuppressWarnings({"serial", "unused"})
 public class SharedCountersRule extends DistributedExternalResource {
 
@@ -59,36 +89,59 @@ public class SharedCountersRule extends DistributedExternalResource {
     invoker().invokeInEveryVM(() -> counters = null);
   }
 
+  /**
+   * Initialize an {@code AtomicInteger} with value of zero identified by {@code id} in every
+   * {@code VM}.
+   */
   public SharedCountersRule initialize(final Serializable id) {
     AtomicInteger value = new AtomicInteger();
     invoker().invokeInEveryVM(() -> counters.putIfAbsent(id, value));
     return this;
   }
 
+  /**
+   * Returns the {@code AtomicInteger} identified by the specified {@code id}.
+   */
   public AtomicInteger reference(final Serializable id) {
     return counters.get(id);
   }
 
+  /**
+   * Increments the {@code AtomicInteger} identified by the specified {@code id}.
+   */
   public SharedCountersRule increment(final Serializable id) {
     counters.get(id).incrementAndGet();
     return this;
   }
 
+  /**
+   * Increments the {@code AtomicInteger} by the specified {@code delta} which may be a positive or
+   * negative integer.
+   */
   public SharedCountersRule increment(final Serializable id, final int delta) {
     counters.get(id).addAndGet(delta);
     return this;
   }
 
+  /**
+   * Increments the {@code AtomicInteger} identified by the specified {@code id}.
+   */
   public SharedCountersRule decrement(final Serializable id) {
     counters.get(id).decrementAndGet();
     return this;
   }
 
+  /**
+   * Decrements the {@code AtomicInteger} by the specified {@code delta}.
+   */
   public SharedCountersRule decrement(final Serializable id, final int delta) {
     counters.get(id).addAndGet(-delta);
     return this;
   }
 
+  /**
+   * Returns the total value of the {@code AtomicInteger} combined across every VM.
+   */
   public int getTotal(final Serializable id) {
     int total = counters.get(id).get();
     for (VM vm : getHost(0).getAllVMs()) {
@@ -97,6 +150,9 @@ public class SharedCountersRule extends DistributedExternalResource {
     return total;
   }
 
+  /**
+   * Returns the local value of the {@code AtomicInteger} identified by the specified {@code id}.
+   */
   public int getLocal(final Serializable id) {
     return counters.get(id).get();
   }
@@ -112,6 +168,9 @@ public class SharedCountersRule extends DistributedExternalResource {
       // nothing
     }
 
+    /**
+     * Initialize specified id when {@code SharedCountersRule} is built.
+     */
     public Builder withId(final Serializable id) {
       ids.add(id);
       return this;
