@@ -417,6 +417,30 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  public void describeIndexShouldShowSerializer() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+
+    vm1.invoke(() -> {
+      getCache();
+    });
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
+        PrimitiveSerializer.class.getCanonicalName());
+
+    String resultAsString = executeCommandAndLogResult(csb);
+    vm1.invoke(() -> createRegion());
+
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    resultAsString = executeCommandAndLogResult(csb);
+    assertThat(resultAsString).contains(PrimitiveSerializer.class.getSimpleName());
+  }
+
+  @Test
   public void describeIndexShouldNotReturnResultWhenIndexNotFound() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
 

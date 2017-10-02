@@ -139,6 +139,7 @@ public class LuceneIndexCommands implements GfshCommand {
         indexData.accumulate("Server Name", indexDetails.getServerName());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
+        indexData.accumulate("Serializer", indexDetails.getSerializerString());
         indexData.accumulate("Status", indexDetails.getInitialized() ? "Initialized" : "Defined");
 
         if (stats) {
