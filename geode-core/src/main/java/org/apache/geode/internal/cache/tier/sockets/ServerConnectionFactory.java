@@ -46,13 +46,15 @@ public class ServerConnectionFactory {
       return clientProtocolService;
     }
 
-    clientProtocolService = new ClientProtocolServiceLoader().loadService();
-    protocolHandler = clientProtocolService.getMessageHandler();
-    protocolHandler.initializeStatistics(statisticsName, statisticsFactory);
+    ClientProtocolService service = new ClientProtocolServiceLoader().loadService();
+    ClientProtocolMessageHandler messageHandler = service.getMessageHandler();
+    messageHandler.initializeStatistics(statisticsName, statisticsFactory);
 
     ensureAuthenticatorsAreInitialized();
 
-    return clientProtocolService;
+    this.protocolHandler = messageHandler;
+    this.clientProtocolService = service;
+    return this.clientProtocolService;
   }
 
   private void ensureAuthenticatorsAreInitialized() {

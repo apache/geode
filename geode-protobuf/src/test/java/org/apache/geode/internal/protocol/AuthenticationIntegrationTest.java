@@ -64,7 +64,7 @@ public class AuthenticationIntegrationTest {
   protected Cache cache;
 
   @Rule
-  protected final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   protected OutputStream outputStream;
   protected InputStream inputStream;

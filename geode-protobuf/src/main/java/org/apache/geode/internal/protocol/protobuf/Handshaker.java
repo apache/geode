@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.protocol.protobuf;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,6 +46,10 @@ public class Handshaker implements ClientProtocolHandshaker {
       throws IOException, IncompatibleVersionException {
     HandshakeAPI.HandshakeRequest handshakeRequest =
         HandshakeAPI.HandshakeRequest.parseDelimitedFrom(inputStream);
+
+    if (handshakeRequest == null) {
+      throw new EOFException("No handshake received from client");
+    }
 
     HandshakeAPI.Semver version = handshakeRequest.getVersion();
     if (version.getMajor() != MAJOR_VERSION) {

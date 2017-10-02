@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -47,6 +48,7 @@ public class ProtobufTestUtilities {
     HandshakeAPI.HandshakeResponse handshakeResponse =
         HandshakeAPI.HandshakeResponse.parseDelimitedFrom(inputStream);
 
+    assertNotNull(handshakeResponse);
     assertTrue(handshakeResponse.getOk());
     assertFalse(handshakeResponse.hasError());
   }

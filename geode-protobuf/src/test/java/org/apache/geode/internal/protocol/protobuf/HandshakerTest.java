@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -147,5 +148,10 @@ public class HandshakerTest {
     assertTrue(actualAuthenticator instanceof SimpleMock);
 
     assertTrue(handshaker.shaken());
+  }
+
+  @Test(expected = EOFException.class)
+  public void eofAtHandshake() throws Exception {
+    handshaker.handshake(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
   }
 }
