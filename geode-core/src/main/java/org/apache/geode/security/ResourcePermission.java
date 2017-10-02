@@ -30,6 +30,15 @@ public class ResourcePermission extends WildcardPermission {
 
   public static String ALL = "*";
 
+  /**
+   * @deprecated use ALL
+   */
+  public static String ALL_REGIONS = "*";
+  /**
+   * @deprecated use All
+   */
+  public static String ALL_KEYS = "*";
+
   public enum Resource {
     NULL, CLUSTER, DATA
   }
@@ -66,6 +75,20 @@ public class ResourcePermission extends WildcardPermission {
 
   public ResourcePermission() {
     this(Resource.NULL, Operation.NULL, ALL, ALL);
+  }
+
+  public ResourcePermission(String resource, String operation) {
+    this(resource, operation, ALL, ALL);
+  }
+
+  public ResourcePermission(String resource, String operation, String target) {
+    this(resource, operation, target, ALL);
+  }
+
+  public ResourcePermission(String resource, String operation, String target, String key) {
+    this((resource == null) ? Resource.NULL : Resource.valueOf(resource.toUpperCase()),
+        (operation == null) ? Operation.NULL : Operation.valueOf(operation.toUpperCase()), target,
+        key);
   }
 
   public ResourcePermission(Resource resource, Operation operation) {
@@ -117,6 +140,13 @@ public class ResourcePermission extends WildcardPermission {
    */
   public String getTarget() {
     return target;
+  }
+
+  /**
+   * @deprecated use getTarget()
+   */
+  public String getRegionName() {
+    return getTarget();
   }
 
   /**
