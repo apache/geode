@@ -63,8 +63,11 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    */
   private Map<Integer, Boolean> buckets = new HashMap<Integer, Boolean>();
 
-  public PartitionedTXRegionStub(TXStateStub txstate, LocalRegion r) {
-    super(txstate, r);
+  private final PartitionedRegion region;
+
+  public PartitionedTXRegionStub(TXStateStub txstate, PartitionedRegion r) {
+    super(txstate);
+    this.region = r;
   }
 
   public Map<Integer, Boolean> getBuckets() {
@@ -136,7 +139,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   private boolean isKeyInNonColocatedBucket(KeyInfo keyInfo) {
     Map<Region<?, ?>, TXRegionStub> regionStubs = this.state.getRegionStubs();
     Collection<PartitionedRegion> colcatedRegions = (Collection<PartitionedRegion>) ColocationHelper
-        .getAllColocationRegions((PartitionedRegion) this.region).values();
+        .getAllColocationRegions(this.region).values();
     // get all colocated region buckets touched in the transaction
     for (PartitionedRegion colcatedRegion : colcatedRegions) {
       PartitionedTXRegionStub regionStub =
@@ -160,9 +163,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   public Entry getEntry(KeyInfo keyInfo, boolean allowTombstones) {
-    PartitionedRegion pr = (PartitionedRegion) region;
     try {
-      Entry e = pr.getEntryRemotely((InternalDistributedMember) state.getTarget(),
+      Entry e = region.getEntryRemotely((InternalDistributedMember) state.getTarget(),
           keyInfo.getBucketId(), keyInfo.getKey(), false, allowTombstones);
       trackBucketForTx(keyInfo);
       return e;
@@ -238,9 +240,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   public boolean containsKey(KeyInfo keyInfo) {
-    PartitionedRegion pr = (PartitionedRegion) region;
     try {
-      boolean retVal = pr.containsKeyRemotely((InternalDistributedMember) state.getTarget(),
+      boolean retVal = region.containsKeyRemotely((InternalDistributedMember) state.getTarget(),
           keyInfo.getBucketId(), keyInfo.getKey());
       trackBucketForTx(keyInfo);
       return retVal;
@@ -282,10 +283,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   public boolean containsValueForKey(KeyInfo keyInfo) {
-    PartitionedRegion pr = (PartitionedRegion) region;
     try {
-      boolean retVal = pr.containsValueForKeyRemotely((InternalDistributedMember) state.getTarget(),
-          keyInfo.getBucketId(), keyInfo.getKey());
+      boolean retVal = region.containsValueForKeyRemotely(
+          (InternalDistributedMember) state.getTarget(), keyInfo.getBucketId(), keyInfo.getKey());
       trackBucketForTx(keyInfo);
       return retVal;
     } catch (TransactionException e) {
@@ -318,10 +318,10 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     Object retVal = null;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();
-    PartitionedRegion pr = (PartitionedRegion) region;
     try {
-      retVal = pr.getRemotely((InternalDistributedMember) state.getTarget(), keyInfo.getBucketId(),
-          key, callbackArgument, peferCD, requestingClient, clientEvent, false);
+      retVal =
+          region.getRemotely((InternalDistributedMember) state.getTarget(), keyInfo.getBucketId(),
+              key, callbackArgument, peferCD, requestingClient, clientEvent, false);
     } catch (TransactionException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e.getCause());
@@ -347,12 +347,11 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   public Object getEntryForIterator(KeyInfo keyInfo, boolean allowTombstones) {
-    PartitionedRegion pr = (PartitionedRegion) region;
-    InternalDistributedMember primary = pr.getBucketPrimary(keyInfo.getBucketId());
+    InternalDistributedMember primary = region.getBucketPrimary(keyInfo.getBucketId());
     if (primary.equals(state.getTarget())) {
       return getEntry(keyInfo, allowTombstones);
     } else {
-      return pr.getSharedDataView().getEntry(keyInfo, pr, allowTombstones);
+      return region.getSharedDataView().getEntry(keyInfo, region, allowTombstones);
     }
   }
 
