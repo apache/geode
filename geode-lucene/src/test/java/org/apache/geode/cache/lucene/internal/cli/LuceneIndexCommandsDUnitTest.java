@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.Assert.assertArrayEquals;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
@@ -58,6 +60,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -195,6 +198,30 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
       assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
       assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
       assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
+    });
+  }
+
+  @Test
+  public void createIndexWithALuceneSerializerShouldCreateANewIndex() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+    vm1.invoke(() -> {
+      getCache();
+    });
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
+    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
+        PrimitiveSerializer.class.getCanonicalName());
+
+    String resultAsString = executeCommandAndLogResult(csb);
+
+    vm1.invoke(() -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      createRegion();
+      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+      assertThat(index.getLuceneSerializer()).isInstanceOf(PrimitiveSerializer.class);
     });
   }
 

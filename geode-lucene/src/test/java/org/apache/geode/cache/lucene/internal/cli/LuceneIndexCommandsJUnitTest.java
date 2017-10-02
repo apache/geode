@@ -56,6 +56,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFun
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
+import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -212,8 +213,10 @@ public class LuceneIndexCommandsJUnitTest {
     String[] fieldAnalyzers = {StandardAnalyzer.class.getCanonicalName(),
         KeywordAnalyzer.class.getCanonicalName(), StandardAnalyzer.class.getCanonicalName()};
 
+    String serializer = PrimitiveSerializer.class.getCanonicalName();
+
     CommandResult result = (CommandResult) commands.createIndex(indexName, regionPath,
-        searchableFields, fieldAnalyzers);
+        searchableFields, fieldAnalyzers, serializer);
     assertEquals(Status.OK, result.getStatus());
     TabularResultData data = (TabularResultData) result.getResultData();
     assertEquals(Arrays.asList("member1", "member2", "member3"), data.retrieveAllValues("Member"));

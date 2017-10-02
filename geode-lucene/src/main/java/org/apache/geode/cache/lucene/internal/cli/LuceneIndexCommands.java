@@ -181,7 +181,9 @@ public class LuceneIndexCommands implements GfshCommand {
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD_HELP) final String[] fields,
 
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
-          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers) {
+          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers,
+      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
+          help = LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER_HELP) final String serializer) {
 
     Result result;
     XmlEntity xmlEntity = null;
@@ -195,7 +197,7 @@ public class LuceneIndexCommands implements GfshCommand {
       // trim fields for any leading trailing spaces.
       String[] trimmedFields = Arrays.stream(fields).map(String::trim).toArray(String[]::new);
       LuceneIndexInfo indexInfo =
-          new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers);
+          new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers, serializer);
 
       final ResultCollector<?, ?> rc =
           this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
