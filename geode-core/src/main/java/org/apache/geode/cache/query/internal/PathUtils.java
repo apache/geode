@@ -114,7 +114,7 @@ public class PathUtils {
       ObjectType currentType = types[i - 1];
       Member member = new AttributeDescriptor(
           context.getCache().getQueryService().getMethodInvocationAuthorizer(), pathArray[i - 1])
-              .getReadMember(currentType);
+              .getReadMember(currentType.resolveClass());
 
       if (member instanceof Field)
         types[i] = TypeUtils.getObjectType(((Field) member).getType());

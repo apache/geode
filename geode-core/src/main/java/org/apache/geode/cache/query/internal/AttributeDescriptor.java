@@ -32,7 +32,6 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.JSONFormatter;
@@ -52,8 +51,7 @@ public class AttributeDescriptor {
   private final String _name;
   private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
   /** cache for remembering the correct Member for a class and attribute */
-  private static final ConcurrentMap _local_field_cache = new ConcurrentHashMap();
-  private static final ConcurrentMap _local_method_cache = new ConcurrentHashMap();
+  private static final ConcurrentMap<List, Member> _localCache = new ConcurrentHashMap();
 
 
 
@@ -140,11 +138,6 @@ public class AttributeDescriptor {
     }
   }
 
-
-  Member getReadMember(ObjectType targetType) throws NameNotFoundException {
-    return getReadMember(targetType.resolveClass());
-  }
-
   Member getReadMember(Class targetClass) throws NameNotFoundException {
 
     // mapping: public field (same name), method (getAttribute()),
@@ -153,31 +146,17 @@ public class AttributeDescriptor {
     key.add(targetClass);
     key.add(_name);
 
-    Member m = (Member) _local_field_cache.get(key);
-    if (m != null) {
-      return m;
-    } else {
-      m = (Member) _local_method_cache.get(key);
+    Member m = _localCache.computeIfAbsent(key, k -> {
+      Member member = getReadField(targetClass);
+      return member == null ? getReadMethod(targetClass) : member;
+    });
 
-      if (m != null) {
-        return m;
-      }
-    }
-
-    m = getReadField(targetClass);
     if (m == null) {
-      m = getReadMethod(targetClass);
-    } else {
-      _local_field_cache.putIfAbsent(key, m);
-    }
-
-    if (m != null) {
-      _local_method_cache.putIfAbsent(key, m);
-    } else {
       throw new NameNotFoundException(
           LocalizedStrings.AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1
               .toLocalizedString(new Object[] {_name, targetClass.getName()}));
     }
+
     // override security for nonpublic derived classes with public members
     ((AccessibleObject) m).setAccessible(true);
     return m;
