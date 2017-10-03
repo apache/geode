@@ -55,7 +55,8 @@ public class GfshParserRule extends ExternalResource {
     GfshParseResult parseResult = parse(command);
 
     CliAroundInterceptor interceptor = null;
-    String interceptorClass = parseResult.getMethod().getAnnotation(CliMetaData.class).interceptor();
+    String interceptorClass =
+        parseResult.getMethod().getAnnotation(CliMetaData.class).interceptor();
     if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
       try {
         interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
@@ -66,7 +67,7 @@ public class GfshParserRule extends ExternalResource {
 
       Result preExecResult = interceptor.preExecution(parseResult);
       if (Result.Status.ERROR.equals(preExecResult.getStatus())) {
-        return (CommandResult)preExecResult;
+        return (CommandResult) preExecResult;
       }
     }
 

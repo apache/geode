@@ -5,11 +5,14 @@ import static org.mockito.Mockito.spy;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-public class ShowMetricsCommandTest {
+@Category(UnitTest.class)
+public class ShowMetricsCommandJUnitTest {
 
   @Rule
   public GfshParserRule parser = new GfshParserRule();
@@ -17,9 +20,11 @@ public class ShowMetricsCommandTest {
   @Test
   public void testPortAndRegion() throws Exception {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
-    CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=0 --region=regionA");
+    CommandResult result =
+        parser.executeCommandWithInstance(command, "show metrics --port=0 --region=regionA");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("The --region and --port parameters are mutually exclusive");
+    assertThat(result.getContent().toString())
+        .contains("The --region and --port parameters are mutually exclusive");
   }
 
   @Test
@@ -27,7 +32,8 @@ public class ShowMetricsCommandTest {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
     CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=0");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("If the --port parameter is specified, then the --member parameter must also be specified.");
+    assertThat(result.getContent().toString()).contains(
+        "If the --port parameter is specified, then the --member parameter must also be specified.");
   }
 
   @Test

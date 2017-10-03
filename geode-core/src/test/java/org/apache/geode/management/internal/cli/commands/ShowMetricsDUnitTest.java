@@ -15,15 +15,18 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import javax.management.ObjectName;
 
+@Category(DistributedTest.class)
 public class ShowMetricsDUnitTest {
 
   private MemberVM locator, server;
@@ -65,7 +68,8 @@ public class ShowMetricsDUnitTest {
     gfsh.connect(locator);
   }
 
-  private static boolean isBeanReady(Cache cache, int beanType, String regionName, DistributedMember distributedMember, int cacheServerPort) {
+  private static boolean isBeanReady(Cache cache, int beanType, String regionName,
+      DistributedMember distributedMember, int cacheServerPort) {
     ManagementService mgmtService = ManagementService.getManagementService(cache);
     Object bean = null;
 
@@ -108,7 +112,8 @@ public class ShowMetricsDUnitTest {
 
   @Test
   public void testShowMetricsMember() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics --member="+ server.getName()+" --port="+ server.getPort());
+    gfsh.executeAndVerifyCommand(
+        "show metrics --member=" + server.getName() + " --port=" + server.getPort());
     assertThat(gfsh.getGfshOutput()).contains("Member Metrics");
     assertThat(gfsh.getGfshOutput()).contains("cache-server");
   }
@@ -118,16 +123,18 @@ public class ShowMetricsDUnitTest {
     File output = tempFolder.newFile("memberMetricReport.csv");
     output.delete();
 
-    gfsh.executeAndVerifyCommand("show metrics --member="+ server.getName()+" --port="+ server.getPort()+" --file="+output.getAbsolutePath());
+    gfsh.executeAndVerifyCommand("show metrics --member=" + server.getName() + " --port="
+        + server.getPort() + " --file=" + output.getAbsolutePath());
     assertThat(gfsh.getGfshOutput()).contains("Member Metrics");
     assertThat(gfsh.getGfshOutput()).contains("cache-server");
-    assertThat(gfsh.getGfshOutput()).contains("Member metrics exported to "+output.getAbsolutePath());
+    assertThat(gfsh.getGfshOutput())
+        .contains("Member metrics exported to " + output.getAbsolutePath());
     assertThat(output).exists();
   }
 
   @Test
   public void testShowMetricsRegionFromMember() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics --member="+ server.getName()+" --region=REGION1");
+    gfsh.executeAndVerifyCommand("show metrics --member=" + server.getName() + " --region=REGION1");
     assertThat(gfsh.getGfshOutput()).contains("Metrics for region:/REGION1 On Member server-1");
   }
 }

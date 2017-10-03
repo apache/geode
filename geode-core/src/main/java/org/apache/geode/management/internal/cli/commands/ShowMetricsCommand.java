@@ -92,16 +92,16 @@ public class ShowMetricsCommand implements GfshCommand {
         result = ResultBuilder.buildResult(
             getRegionMetricsFromMember(regionName, member, export_to_report_to, categories));
       } else {
-        result = ResultBuilder.buildResult(
-            getDistributedRegionMetrics(regionName, export_to_report_to, categories));
+        result = ResultBuilder
+            .buildResult(getDistributedRegionMetrics(regionName, export_to_report_to, categories));
       }
     } else if (memberNameOrId != null) {
       int cacheServerPort = -1;
       if (cacheServerPortString != null) {
         cacheServerPort = Integer.parseInt(cacheServerPortString);
       }
-      result = ResultBuilder.buildResult(
-          getMemberMetrics(member, export_to_report_to, categories, cacheServerPort));
+      result = ResultBuilder
+          .buildResult(getMemberMetrics(member, export_to_report_to, categories, cacheServerPort));
     } else {
       result = ResultBuilder.buildResult(getSystemWideMetrics(export_to_report_to, categories));
     }
