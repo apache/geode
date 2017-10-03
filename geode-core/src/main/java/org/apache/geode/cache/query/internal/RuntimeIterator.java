@@ -14,13 +14,21 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import java.util.*;
 import java.lang.reflect.Method;
-import org.apache.geode.cache.query.*;
+import java.util.Collections;
+import java.util.Set;
+
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexCreationHelper;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Value representing a current iteration element. This is the representation used during
@@ -151,7 +159,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
     return this.current;
   }
 
-  boolean containsProperty(String name, int numArgs, boolean mustBeMethod)
+  boolean containsProperty(ExecutionContext context, String name, int numArgs, boolean mustBeMethod)
       throws AmbiguousNameException {
     // first handle structs
     if ((this.elementType instanceof StructType) && !mustBeMethod) {
@@ -190,7 +198,9 @@ public class RuntimeIterator extends AbstractCompiledValue {
     // if there are zero arguments and it's an attribute, then defer to
     // AttributeDescriptor
     // to see if there's a match
-    return new AttributeDescriptor(name).validateReadType(clazz);
+    return new AttributeDescriptor(
+        context.getCache().getQueryService().getMethodInvocationAuthorizer(), name)
+            .validateReadType(clazz);
   }
 
   // private SelectResults prepareIteratorDef(Object obj)

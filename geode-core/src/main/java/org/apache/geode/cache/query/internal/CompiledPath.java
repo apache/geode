@@ -136,7 +136,7 @@ public class CompiledPath extends AbstractCompiledValue {
     // getTailID());
     // }
 
-    Object obj = PathUtils.evaluateAttribute(evalRcvr, getTailID());
+    Object obj = PathUtils.evaluateAttribute(context, evalRcvr, getTailID());
     // check for BucketRegion substitution
     PartitionedRegion pr = context.getPartitionedRegion();
     if (pr != null && (obj instanceof Region)) {

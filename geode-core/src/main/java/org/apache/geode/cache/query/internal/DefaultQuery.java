@@ -138,7 +138,6 @@ public class DefaultQuery implements Query {
   private boolean keepSerialized = false;
 
   public static final Set<String> reservedKeywords = new HashSet<>();
-
   static {
     reservedKeywords.add("hint");
     reservedKeywords.add("all");

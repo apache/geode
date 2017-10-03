@@ -104,6 +104,24 @@
       "operationsAllowed": [
         "DATA:WRITE:AuthRegion"
       ]
+    },
+    {
+      "name": "data-read-region",
+      "operationsAllowed": [
+        "DATA:READ:region"
+      ]
+    },
+    {
+      "name": "data-read-region-key",
+      "operationsAllowed": [
+        "DATA:READ:region:key"
+      ]
+    },
+    {
+      "name": "cluster-manage-query",
+      "operationsAllowed": [
+        "CLUSTER:MANAGE:QUERY"
+      ]
     }
   ],
   "users": [
@@ -144,38 +162,114 @@
       ]
     },
     {
-      "name":"authRegionUser",
+      "name": "authRegionUser",
       "password": "1234567",
       "roles": [
         "region-use"
       ]
     },
     {
-      "name":"authRegionManager",
+      "name": "authRegionManager",
       "password": "1234567",
       "roles": [
         "region-manage"
       ]
     },
     {
-      "name":"authRegionReader",
+      "name": "authRegionReader",
       "password": "1234567",
       "roles": [
         "region-read"
       ]
     },
     {
-      "name":"authRegionWriter",
+      "name": "authRegionWriter",
       "password": "1234567",
       "roles": [
         "region-write"
       ]
     },
     {
-      "name":"key1User",
+      "name": "key1User",
       "password": "1234567",
       "roles": [
         "region-use-key1"
+      ]
+    },
+    {
+      "name": "dataReaderRegion",
+      "password": "1234567",
+      "roles": [
+        "data-read-region"
+      ]
+    },
+    {
+      "name": "dataReaderRegionKey",
+      "password": "1234567",
+      "roles": [
+        "data-read-region-key"
+      ]
+    },
+    {
+      "name": "clusterManager",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage"
+      ]
+    },
+    {
+      "name": "clusterManagerQuery",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage-query"
+      ]
+    },
+    {
+      "name": "clusterManagerDataReader",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage",
+        "data-read"
+      ]
+    },
+    {
+      "name": "clusterManagerQueryDataReader",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage-query",
+        "data-read"
+      ]
+    },
+    {
+      "name": "clusterManagerDataReaderRegion",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage",
+        "data-read-region"
+      ]
+    },
+    {
+      "name": "clusterManagerQueryDataReaderRegion",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage-query",
+        "data-read-region"
+      ]
+    },
+    {
+      "name": "clusterManagerDataReaderRegionKey",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage",
+        "data-read-region-key"
+      ]
+    },
+    {
+      "name": "clusterManagerQueryDataReaderRegionKey",
+      "password": "1234567",
+      "roles": [
+        "cluster-manage-query",
+        "data-read-region-key"
       ]
     }
   ]
