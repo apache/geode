@@ -179,9 +179,9 @@ public class LuceneQueryFunction implements Function<LuceneFunctionContext>, Int
   }
 
   @Override
-  public Collection<ResourcePermission> getRequiredPermissions(Optional<String> regionName) {
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     ResourcePermission read = new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.READ, regionName.get());
+        ResourcePermission.Operation.READ, regionName);
     return Collections.singleton(read);
   }
 }

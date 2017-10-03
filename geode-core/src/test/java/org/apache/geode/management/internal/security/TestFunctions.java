@@ -48,11 +48,8 @@ public final class TestFunctions implements Serializable {
     }
 
     @Override
-    public Collection<ResourcePermission> getRequiredPermissions(Optional<String> onRegion) {
-      if (!onRegion.isPresent())
-        return Collections.singletonList(ResourcePermissions.DATA_READ);
-
-      return Collections.singletonList(new ResourcePermission(DATA, READ, onRegion.get()));
+    public Collection<ResourcePermission> getRequiredPermissions(String onRegion) {
+      return Collections.singletonList(new ResourcePermission(DATA, READ, onRegion));
     }
 
     public String getId() {

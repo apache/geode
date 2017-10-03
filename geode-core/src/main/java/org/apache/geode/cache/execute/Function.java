@@ -135,7 +135,7 @@ public interface Function<T> extends Identifiable<String> {
    * @param regionName the region this function will be executed on. the regionName optional will be
    *        present only when the function is executed by onRegion() executor.
    */
-  default Collection<ResourcePermission> getRequiredPermissions(Optional<String> regionName) {
+  default Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     return Collections.singletonList(ResourcePermissions.DATA_WRITE);
   }
 }
