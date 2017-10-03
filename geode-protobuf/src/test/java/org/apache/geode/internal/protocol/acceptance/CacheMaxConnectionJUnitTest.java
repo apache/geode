@@ -69,8 +69,6 @@ public class CacheMaxConnectionJUnitTest {
   private final String TEST_REGION = "testRegion";
 
   private Cache cache;
-  private int cacheServerPort;
-  private OutputStream outputStream;
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -91,8 +89,7 @@ public class CacheMaxConnectionJUnitTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    cacheServer.setPort(cacheServerPort);
+    cacheServer.setPort(0);
     cacheServer.start();
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -125,7 +122,7 @@ public class CacheMaxConnectionJUnitTest {
   // can't create another, and repeat once to be sure we're cleaning up.
   private void testNewProtocolRespectsMaxConnectionLimit(int threads, boolean isSelector)
       throws Exception {
-    final int connections = 16;
+    final int connections = 17;
 
     List<CacheServer> cacheServers = cache.getCacheServers();
     assertEquals(1, cacheServers.size());

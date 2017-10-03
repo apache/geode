@@ -338,7 +338,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
     this.gatewayTransportFilters = transportFilter;
     this.serverConnectionFactory = serverConnectionFactory;
 
-    this.maxConnections = Math.min(maxConnections, MINIMUM_MAX_CONNECTIONS);
+    this.maxConnections = Math.max(maxConnections, MINIMUM_MAX_CONNECTIONS);
     this.maxThreads = calculateMaxThreads(maxThreads);
 
     if (isSelector()) {
