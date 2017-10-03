@@ -15,19 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.management.ObjectName;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
@@ -43,7 +30,9 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
@@ -53,12 +42,23 @@ import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import javax.management.ObjectName;
 
 public class ShowMetricsCommand implements GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.SHOW_METRICS, help = CliStrings.SHOW_METRICS__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_STATISTICS})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_STATISTICS},
+      interceptor = "org.apache.geode.management.internal.cli.commands.ShowMetricsCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result showMetrics(
@@ -74,74 +74,74 @@ public class ShowMetricsCommand implements GfshCommand {
           help = CliStrings.SHOW_METRICS__CATEGORY__HELP) String[] categories) {
 
     Result result;
-    try {
-
-      if (export_to_report_to != null && !export_to_report_to.isEmpty()) {
-        if (!export_to_report_to.endsWith(".csv")) {
-          return ResultBuilder
-              .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".csv"));
-        }
+    DistributedMember member = null;
+    if (memberNameOrId != null) {
+      member = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
+      if (member == null) {
+        return ResultBuilder.createGemFireErrorResult(
+            CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberNameOrId));
       }
-      if (regionName != null && !regionName.isEmpty()) {
-
-        if (StringUtils.isNotBlank(cacheServerPortString)) {
-          return ResultBuilder.createUserErrorResult(
-              CliStrings.SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT);
-        }
-
-        // MBean names contain the forward slash
-        if (!regionName.startsWith("/")) {
-          regionName = "/" + regionName;
-        }
-
-        if (memberNameOrId == null || memberNameOrId.isEmpty()) {
-          result = ResultBuilder.buildResult(
-              getDistributedRegionMetrics(regionName, export_to_report_to, categories));
-        } else {
-          DistributedMember member = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-
-          if (member != null) {
-            result = ResultBuilder.buildResult(
-                getRegionMetricsFromMember(regionName, member, export_to_report_to, categories));
-          } else {
-            ErrorResultData erd = ResultBuilder.createErrorResultData();
-            erd.addLine(
-                CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberNameOrId));
-            result = ResultBuilder.buildResult(erd);
-          }
-        }
-      } else if (memberNameOrId != null && !memberNameOrId.isEmpty()) {
-
-        DistributedMember member = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-
-        if (member != null) {
-          int cacheServerPort = -1;
-          if (cacheServerPortString != null && !cacheServerPortString.isEmpty()) {
-            try {
-              cacheServerPort = Integer.parseInt(cacheServerPortString);
-            } catch (NumberFormatException nfe) {
-              return ResultBuilder.createUserErrorResult("Invalid port");
-            }
-          }
-          result = ResultBuilder.buildResult(
-              getMemberMetrics(member, export_to_report_to, categories, cacheServerPort));
-        } else {
-          ErrorResultData erd = ResultBuilder.createErrorResultData();
-          erd.addLine(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberNameOrId));
-          result = ResultBuilder.buildResult(erd);
-        }
-      } else {
-        if (StringUtils.isNotBlank(cacheServerPortString)) {
-          return ResultBuilder
-              .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
-        }
-        result = ResultBuilder.buildResult(getSystemWideMetrics(export_to_report_to, categories));
-      }
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-      return ResultBuilder.createGemFireErrorResult(CliUtil.stackTraceAsString(e));
     }
+
+    if (regionName != null) {
+      // MBean names contain the forward slash
+      if (!regionName.startsWith("/")) {
+        regionName = "/" + regionName;
+      }
+      if (memberNameOrId != null) {
+        result = ResultBuilder.buildResult(
+            getRegionMetricsFromMember(regionName, member, export_to_report_to, categories));
+      } else {
+        result = ResultBuilder.buildResult(
+            getDistributedRegionMetrics(regionName, export_to_report_to, categories));
+      }
+    } else if (memberNameOrId != null) {
+      int cacheServerPort = -1;
+      if (cacheServerPortString != null) {
+        cacheServerPort = Integer.parseInt(cacheServerPortString);
+      }
+      result = ResultBuilder.buildResult(
+          getMemberMetrics(member, export_to_report_to, categories, cacheServerPort));
+    } else {
+      result = ResultBuilder.buildResult(getSystemWideMetrics(export_to_report_to, categories));
+    }
+
     return result;
+  }
+
+  public static class Interceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+      String export_to_report_to = parseResult.getParamValue(CliStrings.SHOW_METRICS__FILE);
+      if (export_to_report_to != null && !export_to_report_to.endsWith(".csv")) {
+        return ResultBuilder
+            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".csv"));
+      }
+
+      String regionName = parseResult.getParamValue(CliStrings.SHOW_METRICS__REGION);
+      String port = parseResult.getParamValue(CliStrings.SHOW_METRICS__CACHESERVER__PORT);
+
+      if (port != null) {
+        try {
+          Integer.parseInt(port);
+        } catch (NumberFormatException nfe) {
+          return ResultBuilder.createUserErrorResult("Invalid port");
+        }
+      }
+
+      if (regionName != null && port != null) {
+        return ResultBuilder.createUserErrorResult(
+            CliStrings.SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT);
+      }
+
+      String member = parseResult.getParamValue(CliStrings.MEMBER);
+      if (port != null && member == null) {
+        return ResultBuilder
+            .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
+      }
+
+      return ResultBuilder.createInfoResult("OK");
+    }
   }
 
   /**
