@@ -39,7 +39,7 @@ public class GatewayReceiverImplJUnitTest {
     InternalCache cache = mock(InternalCache.class);
     GatewayReceiverImpl gateway =
         new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
-    assertEquals(SocketCreator.getLocalHost().getHostAddress(), gateway.getHost());
+    assertEquals(SocketCreator.getLocalHost().getHostName(), gateway.getHost());
   }
 
   @Test
