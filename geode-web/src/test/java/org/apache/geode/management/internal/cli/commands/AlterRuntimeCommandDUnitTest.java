@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,6 +55,22 @@ public class AlterRuntimeCommandDUnitTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  private void verifyDefaultConfig(MemberVM[] servers) {
+    for (MemberVM server : servers) {
+      server.invoke(() -> {
+        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+        assertThat(config.getLogLevel()).isEqualTo(LogWriterImpl.ERROR_LEVEL);
+        assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
+        assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
+        assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
+        assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
+        assertThat(config.getStatisticSamplingEnabled()).isTrue();
+        assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
+      });
+    }
+  }
 
   @Test
   @Parameters({"true", "false"})
@@ -349,18 +364,7 @@ public class AlterRuntimeCommandDUnitTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(gfsh.getGfshOutput()).contains("Could not set \"log-file-size-limit\" to \"-1\"");
 
-    for (MemberVM server : new MemberVM[] {server1, server2}) {
-      server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
-        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
-        assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
-        assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
-        assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
-        assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
-        assertThat(config.getStatisticSamplingEnabled()).isTrue();
-        assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
-      });
-    }
+    verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
 
   @Test
@@ -404,18 +408,7 @@ public class AlterRuntimeCommandDUnitTest {
     assertThat(gfsh.getGfshOutput())
         .contains("Could not set \"log-file-size-limit\" to \"1,000,001\"");
 
-    for (MemberVM server : new MemberVM[] {server1, server2}) {
-      server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
-        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
-        assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
-        assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
-        assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
-        assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
-        assertThat(config.getStatisticSamplingEnabled()).isTrue();
-        assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
-      });
-    }
+    verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
 
   @Test
@@ -705,18 +698,7 @@ public class AlterRuntimeCommandDUnitTest {
     assertThat(gfsh.getGfshOutput())
         .contains("Could not set \"statistic-sample-rate\" to \"60,001\"");
 
-    for (MemberVM server : new MemberVM[] {server1, server2}) {
-      server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
-        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
-        assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
-        assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
-        assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
-        assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
-        assertThat(config.getStatisticSamplingEnabled()).isTrue();
-        assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
-      });
-    }
+    verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
 
   @Test
@@ -1068,19 +1050,7 @@ public class AlterRuntimeCommandDUnitTest {
     assertThat(gfsh.getGfshOutput())
         .contains("Could not set \"archive-file-size-limit\" to \"1,000,001\"");
 
-    for (MemberVM server : new MemberVM[] {server1, server2}) {
-      server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
-        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
-        assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
-        assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
-        assertThat(config.getArchiveFileSizeLimit()).isEqualTo(0);
-        assertThat(config.getStatisticSampleRate()).isEqualTo(1000);
-        assertThat(config.getStatisticArchiveFile().getName()).isEqualTo("");
-        assertThat(config.getStatisticSamplingEnabled()).isTrue();
-        assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
-      });
-    }
+    verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
 
   @Test
