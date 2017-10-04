@@ -1463,7 +1463,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
     ServerConnection serverConn =
         serverConnectionFactory.makeServerConnection(socket, this.cache, this.crHelper, this.stats,
             AcceptorImpl.handShakeTimeout, this.socketBufferSize, communicationMode.toString(),
-            communicationMode.getModeNumber(), this, this.securityService, this.getBindAddress());
+            communicationMode.getModeNumber(), this, this.securityService);
 
     synchronized (this.allSCsLock) {
       this.allSCs.add(serverConn);
