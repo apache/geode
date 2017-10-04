@@ -108,28 +108,26 @@ public class CompactRangeIndexQueryIntegrationTest {
   }
 
   @Test
-  public void getSizeEstimateShouldNotThrowClassCastException()
-      throws Exception {
+  // getSizeEstimate will be called only when having a choice between two indexes
+  public void getSizeEstimateShouldNotThrowClassCastException() throws Exception {
     String regionName = "portfolio";
 
     Cache cache = serverStarterRule.getCache();
     assertNotNull(cache);
-    Region region = cache.createRegionFactory().setDataPolicy(DataPolicy.REPLICATE).create(regionName);
+    Region region =
+        cache.createRegionFactory().setDataPolicy(DataPolicy.REPLICATE).create(regionName);
 
-    Portfolio p = new Portfolio(1, 2);
+    Portfolio p = new Portfolio(1);
     region.put(1, p);
-
-    Portfolio p2 = new Portfolio(3, 4);
+    Portfolio p2 = new Portfolio(3);
     region.put(2, p2);
 
     QueryService queryService = cache.getQueryService();
-    CompactRangeIndex statusIndex = (CompactRangeIndex)queryService.createIndex("statusIndex", "status", "/portfolio");
-    CompactRangeIndex idIndex = (CompactRangeIndex)queryService.createIndex("idIndex", "ID", "/portfolio");
+    queryService.createIndex("statusIndex", "status", "/portfolio");
+    queryService.createIndex("idIndex", "ID", "/portfolio");
 
     SelectResults results = (SelectResults) queryService
-        .newQuery(
-            "select * from /portfolio where status = 4 AND ID = 'StringID'")
-        .execute();
+        .newQuery("select * from /portfolio where status = 4 AND ID = 'StringID'").execute();
 
     assertNotNull(results);
   }
