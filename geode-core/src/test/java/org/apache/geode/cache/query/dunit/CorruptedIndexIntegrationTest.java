@@ -63,14 +63,11 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
 
     IntStream.rangeClosed(1, 3).forEach(i -> region.put(i, new Portfolio(i)));
 
-
     assertEquals("Uncorrupted index must have all the entries", 3,
         idIndex.getStatistics().getNumberOfValues());
     assertEquals("Corrupted index should not have indexed any entries", 0,
         exceptionIndex.getStatistics().getNumberOfValues());
-
     SelectResults results = (SelectResults) queryService.newQuery(queryString).execute();
-
     assertEquals("Query execution must be successful ", 1, results.size());
   }
 
@@ -100,9 +97,7 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
 
     assertEquals("Uncorrupted index must have all the entries ", 3,
         idIndex.getStatistics().getNumberOfValues());
-
     SelectResults results = (SelectResults) queryService.newQuery(queryString).execute();
-
     assertEquals("Query execution must be successful ", 1, results.size());
   }
 
@@ -155,12 +150,9 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
     map2.put("APPL", 3);
     map2.put("AOL", "hello");
     p2.positions = map2;
-
     region.put(2, p2);
 
     assertEquals("Put must be successful", 2, region.size());
-
-
     assertEquals("Index must be invalid at this point ", false, keyIndex1.isValid());
 
     QueryObserverImpl observer = new QueryObserverImpl();
@@ -170,12 +162,9 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
         .newQuery(
             "select * from /portfolio p where p.positions['AOL'] = 'hello' OR p.positions['IBM'] = 2")
         .execute();
-
     assertEquals("Correct results expected from the query execution ", 2, results.size());
-
     assertEquals("No index must be used while executing the query ", 0,
         observer.indexesUsed.size());
-
   }
 
   @Test
@@ -203,7 +192,6 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
     map2.put("APPL", 3);
     map2.put("AOL", "hello");
     p2.positions = map2;
-
     region.put(2, p2);
 
     assertEquals("Put must be successful", 2, region.size());
@@ -226,12 +214,9 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
         .newQuery(
             "select * from /portfolio p where p.positions['AOL'] = 'hello' OR p.positions['IBM'] = 2")
         .execute();
-
     assertEquals("Current results expected from the query execution ", 2, results.size());
-
     assertEquals("No index must be used while executing the query ", 0,
         observer.indexesUsed.size());
-
   }
 
   @Test
@@ -239,7 +224,6 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
       throws Exception {
     String regionName = "portfolio";
     String INDEX_NAME = "key_index1";
-
 
     Cache cache = getCache();
     Region region =
@@ -258,19 +242,13 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
     map2.put("APPL", 3);
     map2.put("AOL", "hello");
     p2.positions = map2;
-
     region.put(2, p2);
 
     assertEquals("Put must be successful", 2, region.size());
 
     QueryService queryService = cache.getQueryService();
-
-    try {
-      Index keyIndex1 = queryService.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
-      assertEquals("Index must be valid", true, keyIndex1.isValid());
-    } catch (Exception exception) {
-      fail();
-    }
+    Index keyIndex1 = queryService.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+    assertEquals("Index must be valid", true, keyIndex1.isValid());
 
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -279,11 +257,8 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
         .newQuery(
             "select * from /portfolio p where p.positions['AOL'] = 'hello' OR p.positions['IBM'] = 2")
         .execute();
-
     assertEquals("Current results expected from the query execution ", 2, results.size());
-
     assertEquals("Index must be used while executing the query ", 2, observer.indexesUsed.size());
-
   }
 
 
