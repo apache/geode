@@ -2040,13 +2040,26 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #getServerPort()
      */
     public Builder setServerPort(final Integer serverPort) {
-      if (serverPort != null && (serverPort < 0 || serverPort > 65535)) {
+      if (serverPort == null) {
+        this.serverPort = null;
+        this.serverPortSetByUser = false;
+        return this;
+      }
+
+      if ((serverPort < 0 || serverPort > 65535)) {
         throw new IllegalArgumentException(
             LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE
                 .toLocalizedString("Server"));
       }
-      this.serverPort = serverPort;
-      this.serverPortSetByUser = true;
+
+      if (serverPort == 0) {
+        this.serverPort = 0;
+        this.serverPortSetByUser = false;
+      } else {
+        this.serverPort = serverPort;
+        this.serverPortSetByUser = true;
+      }
+
       return this;
     }
 
