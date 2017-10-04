@@ -16,25 +16,23 @@ package org.apache.geode.test.junit.rules;
 
 import static org.mockito.Mockito.spy;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.junit.rules.ExternalResource;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.event.ParseResult;
-import org.springframework.util.ReflectionUtils;
-
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.junit.rules.ExternalResource;
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.util.ReflectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class GfshParserRule extends ExternalResource {
 
@@ -54,20 +52,27 @@ public class GfshParserRule extends ExternalResource {
   public <T> CommandResult executeCommandWithInstance(T instance, String command) {
     GfshParseResult parseResult = parse(command);
 
-    CliAroundInterceptor interceptor = null;
-    String interceptorClass =
-        parseResult.getMethod().getAnnotation(CliMetaData.class).interceptor();
-    if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
-      try {
-        interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
-            .newInstance();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+    if (parseResult == null) {
+      return ResultBuilder.createUserErrorResult("Invalid command: " + command);
+    }
 
-      Result preExecResult = interceptor.preExecution(parseResult);
-      if (Result.Status.ERROR.equals(preExecResult.getStatus())) {
-        return (CommandResult) preExecResult;
+    CliAroundInterceptor interceptor = null;
+    CliMetaData cliMetaData = parseResult.getMethod().getAnnotation(CliMetaData.class);
+
+    if (cliMetaData != null) {
+      String interceptorClass = cliMetaData.interceptor();
+      if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
+        try {
+          interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
+              .newInstance();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+
+        Result preExecResult = interceptor.preExecution(parseResult);
+        if (Result.Status.ERROR.equals(preExecResult.getStatus())) {
+          return (CommandResult) preExecResult;
+        }
       }
     }
 
