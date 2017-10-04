@@ -71,7 +71,7 @@ Specify the target with a string value of:
 - `GATEWAY` to target operations that manage gateway senders and receivers
 - `QUERY` to target operations that manage both indexes and continuous
  queries
-- `JAR` to target operations that deploy code to servers
+- `DEPLOY` to target operations that deploy code to servers
 - `LUCENE` to target Lucene index operations
 
 This table classifies the permissions assigned for operations common to
@@ -121,7 +121,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | close durable-cq                       | CLUSTER:MANAGE:QUERY             |
 | compact disk-store                     | CLUSTER:MANAGE:DISK              |
 | configure pdx                          | CLUSTER:MANAGE                   |
-| create async-event-queue               | CLUSTER:MANAGE:JAR, plus CLUSTER:WRITE:DISK if the associated region is persistent |
+| create async-event-queue               | CLUSTER:MANAGE:DEPLOY, plus CLUSTER:WRITE:DISK if the associated region is persistent |
 | create defined indexes                 | CLUSTER:MANAGE:QUERY            |
 | create disk-store                      | CLUSTER:MANAGE:DISK             |
 | create gateway-receiver                | CLUSTER:MANAGE:GATEWAY          |
@@ -130,7 +130,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | create lucene index                    | CLUSTER:MANAGE:LUCENE            |
 | create region                          | DATA:MANAGE, plus CLUSTER:WRITE:DISK if the associated region is persistent |
 | define index                           | CLUSTER:MANAGE:QUERY             |
-| deploy                                 | CLUSTER:MANAGE:JAR               |
+| deploy                                 | CLUSTER:MANAGE:DEPLOY            |
 | describe client                        | CLUSTER:READ                     |
 | describe config                        | CLUSTER:READ                     |
 | describe disk-store                    | CLUSTER:READ                     |
@@ -139,7 +139,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | describe offline-disk-store            | CLUSTER:READ                     |
 | describe region                        | CLUSTER:READ                     |
 | destroy disk-store                     | CLUSTER:MANAGE:DISK              |
-| destroy function                       | CLUSTER:MANAGE:JAR               |
+| destroy function                       | CLUSTER:MANAGE:DEPLOY            |
 | destroy index                          | CLUSTER:MANAGE:QUERY             |
 | destroy lucene index                   | CLUSTER:MANAGE:LUCENE            |
 | destroy region                         | DATA:MANAGE                      |
@@ -194,7 +194,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | stop gateway-receiver                  | CLUSTER:MANAGE:GATEWAY           |
 | stop locator                           | CLUSTER:MANAGE                   |
 | stop server                            | CLUSTER:MANAGE                   |
-| undeploy                               | CLUSTER:MANAGE:JAR               |
+| undeploy                               | CLUSTER:MANAGE:DEPLOY            |
 
 The `gfsh connect` does not have a permission,
 as it is the operation that invokes authentication. 
