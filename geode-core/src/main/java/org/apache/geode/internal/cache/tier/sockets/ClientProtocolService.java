@@ -19,23 +19,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.server.Authenticator;
 
 /**
- * This is an interface that other modules can implement to hook into
- * {@link GenericProtocolServerConnection} to handle messages sent to Geode.
- *
- * Currently, only one {@link ClientProtocolMessageHandler} at a time can be used in a Geode
- * instance. It gets wired into {@link ServerConnectionFactory} to create all instances of
- * {@link GenericProtocolServerConnection}.
+ * Provides a convenient location for a client protocol service to be loaded into the system.
  */
-public interface ClientProtocolMessageHandler {
+public interface ClientProtocolService {
   void initializeStatistics(String statisticsName, StatisticsFactory factory);
 
   ClientProtocolStatistics getStatistics();
 
-  void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      MessageExecutionContext executionContext) throws IOException;
+  /**
+   *
+   * The pipeline MUST use an available authenticator for authentication of all operations once the
+   * handshake has happened.
+   *
+   * @param availableAuthenticators A list of valid authenticators for the current system.
+   */
+  ClientProtocolPipeline createCachePipeline(Cache cache, Authenticator availableAuthenticators,
+      SecurityService securityService);
+
+  /**
+   * In this case, the locator calls this to serve a single message at a time. The locator closes
+   * the socket after this is done.
+   *
+   * Statistics saved on the service are used if initialized.
+   */
+  void serveLocatorMessage(InputStream inputStream, OutputStream outputStream,
+      InternalLocator locator) throws IOException;
 }

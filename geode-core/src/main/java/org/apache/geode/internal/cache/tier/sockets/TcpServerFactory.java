@@ -28,12 +28,12 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.logging.LogService;
 
 public class TcpServerFactory {
-  private ClientProtocolMessageHandler protocolHandler;
+  private ClientProtocolService protocolHandler;
   static final Logger logger = LogService.getLogger();
 
   public TcpServerFactory() {
     try {
-      protocolHandler = new MessageHandlerFactory().makeMessageHandler();
+      protocolHandler = new ClientProtocolServiceLoader().loadService();
     } catch (ServiceLoadingFailureException ex) {
       logger.warn(ex.getMessage());
     }

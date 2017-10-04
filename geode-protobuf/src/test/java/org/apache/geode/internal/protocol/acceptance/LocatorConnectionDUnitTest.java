@@ -89,52 +89,35 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
             protobufRequestBuilder.setGetAvailableServersRequest(
                 ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
 
-    try {
-      ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
-      try (Socket socket = createSocket()) {
-        long messagesReceived = getMessagesReceived();
-        long messagesSent = getMessagesSent();
-        long bytesReceived = getBytesReceived();
-        long bytesSent = getBytesSent();
-        int clientConnectionStarts = getClientConnectionStarts();
-        int clientConnectionTerminations = getClientConnectionTerminations();
+    testSocketWithStats(getAvailableServersRequestMessage, protobufProtocolSerializer);
 
-        protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-            socket.getOutputStream());
+    testSocketWithStats(getAvailableServersRequestMessage, protobufProtocolSerializer);
+  }
 
-        ClientProtocol.Message getAvailableServersResponseMessage =
-            protobufProtocolSerializer.deserialize(socket.getInputStream());
-        validateGetAvailableServersResponse(getAvailableServersResponseMessage);
+  private void testSocketWithStats(ClientProtocol.Message getAvailableServersRequestMessage,
+      ProtobufProtocolSerializer protobufProtocolSerializer)
+      throws IOException, InvalidProtocolMessageException {
+    try (Socket socket = createSocket()) {
+      long messagesReceived = getMessagesReceived();
+      long messagesSent = getMessagesSent();
+      long bytesReceived = getBytesReceived();
+      long bytesSent = getBytesSent();
+      int clientConnectionStarts = getClientConnectionStarts();
+      int clientConnectionTerminations = getClientConnectionTerminations();
 
-        validateStats(messagesReceived + 1, messagesSent + 1,
-            bytesReceived + getAvailableServersRequestMessage.getSerializedSize(),
-            bytesSent + getAvailableServersResponseMessage.getSerializedSize(),
-            clientConnectionStarts, clientConnectionTerminations + 1);
-      }
+      protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
+          socket.getOutputStream());
 
-      try (Socket socket = createSocket()) {
-        long messagesReceived = getMessagesReceived();
-        long messagesSent = getMessagesSent();
-        long bytesReceived = getBytesReceived();
-        long bytesSent = getBytesSent();
-        int clientConnectionStarts = getClientConnectionStarts();
-        int clientConnectionTerminations = getClientConnectionTerminations();
+      ClientProtocol.Message getAvailableServersResponseMessage =
+          protobufProtocolSerializer.deserialize(socket.getInputStream());
+      validateGetAvailableServersResponse(getAvailableServersResponseMessage);
 
-        protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-            socket.getOutputStream());
-
-        ClientProtocol.Message getAvailableServersResponseMessage =
-            protobufProtocolSerializer.deserialize(socket.getInputStream());
-        validateGetAvailableServersResponse(getAvailableServersResponseMessage);
-
-        validateStats(messagesReceived + 1, messagesSent + 1,
-            bytesReceived + getAvailableServersRequestMessage.getSerializedSize(),
-            bytesSent + getAvailableServersResponseMessage.getSerializedSize(),
-            clientConnectionStarts, clientConnectionTerminations + 1);
-      }
-    } catch (RMIException e) {
-      throw e.getCause(); // so that assertions propagate properly.
+      validateStats(messagesReceived + 1, messagesSent + 1,
+          bytesReceived + getAvailableServersRequestMessage.getSerializedSize(),
+          bytesSent + getAvailableServersResponseMessage.getSerializedSize(),
+          clientConnectionStarts, clientConnectionTerminations + 1);
     }
   }
 

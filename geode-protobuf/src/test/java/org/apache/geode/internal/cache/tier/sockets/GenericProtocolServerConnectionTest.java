@@ -33,6 +33,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -48,7 +49,7 @@ public class GenericProtocolServerConnectionTest {
   private ClientHealthMonitor clientHealthMonitorMock;
 
   @Test
-  public void testProcessFlag() throws IOException {
+  public void testProcessFlag() throws Exception {
     ServerConnection serverConnection = IOExceptionThrowingServerConnection();
     Assert.assertTrue(serverConnection.processMessages);
     serverConnection.doOneMessage();
@@ -61,9 +62,9 @@ public class GenericProtocolServerConnectionTest {
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
 
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
-    ClientProtocolMessageHandler mockHandler = mock(ClientProtocolMessageHandler.class);
+    ClientProtocolPipeline pipeline = mock(ClientProtocolPipeline.class);
     GenericProtocolServerConnection genericProtocolServerConnection =
-        getServerConnection(socketMock, mockHandler, acceptorStub);
+        getServerConnection(socketMock, pipeline, acceptorStub);
 
     genericProtocolServerConnection.emergencyClose();
 
@@ -74,9 +75,9 @@ public class GenericProtocolServerConnectionTest {
   public void testClientHealthMonitorRegistration() throws UnknownHostException {
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
 
-    ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
+    ClientProtocolPipeline clientProtocolPipeline = mock(ClientProtocolPipeline.class);
 
-    ServerConnection serverConnection = getServerConnection(clientProtocolMock, acceptorStub);
+    ServerConnection serverConnection = getServerConnection(clientProtocolPipeline, acceptorStub);
 
     ArgumentCaptor<ClientProxyMembershipID> registerCpmidArgumentCaptor =
         ArgumentCaptor.forClass(ClientProxyMembershipID.class);
@@ -96,9 +97,9 @@ public class GenericProtocolServerConnectionTest {
   @Test
   public void testDoOneMessageNotifiesClientHealthMonitor() throws UnknownHostException {
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
-    ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
+    ClientProtocolPipeline clientProtocolPipeline = mock(ClientProtocolPipeline.class);
 
-    ServerConnection serverConnection = getServerConnection(clientProtocolMock, acceptorStub);
+    ServerConnection serverConnection = getServerConnection(clientProtocolPipeline, acceptorStub);
     serverConnection.doOneMessage();
 
     ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIDArgumentCaptor =
@@ -108,17 +109,17 @@ public class GenericProtocolServerConnectionTest {
         clientProxyMembershipIDArgumentCaptor.getValue().toString());
   }
 
-  private GenericProtocolServerConnection IOExceptionThrowingServerConnection() throws IOException {
-    ClientProtocolMessageHandler clientProtocolMock = mock(ClientProtocolMessageHandler.class);
+  private GenericProtocolServerConnection IOExceptionThrowingServerConnection()
+      throws IOException, IncompatibleVersionException {
+    ClientProtocolPipeline clientProtocolPipeline = mock(ClientProtocolPipeline.class);
     ClientProtocolStatistics statisticsMock = mock(ClientProtocolStatistics.class);
-    when(clientProtocolMock.getStatistics()).thenReturn(statisticsMock);
-    doThrow(new IOException()).when(clientProtocolMock).receiveMessage(any(), any(), any());
-
-    return getServerConnection(clientProtocolMock, mock(AcceptorImpl.class));
+    when(clientProtocolPipeline.getStatistics()).thenReturn(statisticsMock);
+    doThrow(new IOException()).when(clientProtocolPipeline).processMessage(any(), any());
+    return getServerConnection(clientProtocolPipeline, mock(AcceptorImpl.class));
   }
 
   private GenericProtocolServerConnection getServerConnection(Socket socketMock,
-      ClientProtocolMessageHandler clientProtocolMock, AcceptorImpl acceptorStub)
+      ClientProtocolPipeline clientPipelineMock, AcceptorImpl acceptorStub)
       throws UnknownHostException {
     clientHealthMonitorMock = mock(ClientHealthMonitor.class);
     when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
@@ -128,18 +129,18 @@ public class GenericProtocolServerConnectionTest {
     when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
     when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
 
-    when(clientProtocolMock.getStatistics()).thenReturn(new NoOpProtobufStatistics());
+    when(clientPipelineMock.getStatistics()).thenReturn(new NoOpProtobufStatistics());
 
     return new GenericProtocolServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
-        clientProtocolMock, mock(SecurityService.class), new NoOpAuthenticator());
+        clientPipelineMock, mock(SecurityService.class));
   }
 
   private GenericProtocolServerConnection getServerConnection(
-      ClientProtocolMessageHandler clientProtocolMock, AcceptorImpl acceptorStub)
+      ClientProtocolPipeline clientProtocolPipelineMock, AcceptorImpl acceptorStub)
       throws UnknownHostException {
     Socket socketMock = mock(Socket.class);
-    return getServerConnection(socketMock, clientProtocolMock, acceptorStub);
+    return getServerConnection(socketMock, clientProtocolPipelineMock, acceptorStub);
   }
 }

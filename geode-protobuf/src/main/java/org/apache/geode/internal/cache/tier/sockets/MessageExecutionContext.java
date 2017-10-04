@@ -20,6 +20,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.security.server.Authorizer;
 import org.apache.geode.security.server.NoOpAuthorizer;
 
@@ -28,22 +30,22 @@ public class MessageExecutionContext {
   private Cache cache;
   private Locator locator;
   private Authorizer authorizer;
-  private ClientProtocolStatistics statistics;
+  private ProtobufClientStatistics statistics;
 
 
   public MessageExecutionContext(Cache cache, Authorizer streamAuthorizer,
-      ClientProtocolStatistics statistics) {
+      ProtobufClientStatistics statistics) {
     this.cache = cache;
     this.authorizer = streamAuthorizer;
     this.statistics = statistics;
   }
 
-  public MessageExecutionContext(InternalLocator locator) {
+  public MessageExecutionContext(InternalLocator locator, ProtobufClientStatistics statistics) {
     this.locator = locator;
     // set a no-op authorizer until such time as locators implement authentication
     // and authorization checks
     this.authorizer = new NoOpAuthorizer();
-    this.statistics = new NoOpStatistics();
+    this.statistics = statistics;
   }
 
   /**
@@ -86,7 +88,7 @@ public class MessageExecutionContext {
    * Returns the statistics for recording operation stats. In a unit test environment this may not
    * be a protocol-specific statistics implementation.
    */
-  public ClientProtocolStatistics getStatistics() {
+  public ProtobufClientStatistics getStatistics() {
     return statistics;
   }
 }

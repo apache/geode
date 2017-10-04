@@ -58,9 +58,8 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -133,7 +132,7 @@ public class TcpServer {
   private final PoolStatHelper poolHelper;
   private final InternalLocator internalLocator;
   private final TcpHandler handler;
-  private ClientProtocolMessageHandler clientProtocolMessageHandler;
+  private final ClientProtocolService clientProtocolService;
 
 
   private PooledExecutorWithDMStats executor;
@@ -158,20 +157,20 @@ public class TcpServer {
   /**
    * returns the message handler used for client/locator communications processing
    */
-  public ClientProtocolMessageHandler getClientProtocolMessageHandler() {
-    return clientProtocolMessageHandler;
+  public ClientProtocolService getClientProtocolService() {
+    return clientProtocolService;
   }
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
       ThreadGroup threadGroup, String threadName, InternalLocator internalLocator,
-      ClientProtocolMessageHandler clientProtocolMessageHandler) {
+      ClientProtocolService clientProtocolService) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
     this.poolHelper = poolHelper;
     this.internalLocator = internalLocator;
-    this.clientProtocolMessageHandler = clientProtocolMessageHandler;
+    this.clientProtocolService = clientProtocolService;
     // register DSFID types first; invoked explicitly so that all message type
     // initializations do not happen in first deserialization on a possibly
     // "precious" thread
@@ -381,10 +380,8 @@ public class TcpServer {
         if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
           if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-            clientProtocolMessageHandler.getStatistics().clientConnected();
-            clientProtocolMessageHandler.receiveMessage(input, socket.getOutputStream(),
-                new MessageExecutionContext(internalLocator));
-            clientProtocolMessageHandler.getStatistics().clientDisconnected();
+            clientProtocolService.serveLocatorMessage(input, socket.getOutputStream(),
+                internalLocator);
           } else {
             rejectUnknownProtocolConnection(socket, gossipVersion);
           }
