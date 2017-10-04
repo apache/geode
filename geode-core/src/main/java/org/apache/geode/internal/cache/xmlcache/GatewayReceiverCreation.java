@@ -113,6 +113,10 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     return this.hostnameForSenders;
   }
 
+  public String getHost() {
+    throw new IllegalStateException("getHost should not be invoked on GatewayReiverCreation");
+  }
+
   public String getBindAddress() {
     return this.bindAddress;
   }

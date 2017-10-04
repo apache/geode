@@ -134,6 +134,11 @@ public interface GatewayReceiver {
    * 
    * @return the ip address or host name to give to clients so they can connect to this receiver
    */
+  public String getHost();
+
+  /**
+   * Returns the hostname configured by {@link GatewayReceiverFactory#setHostnameForSenders(String)}
+   */
   public String getHostnameForSenders();
 
   /**

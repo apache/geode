@@ -44,8 +44,6 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   private static final Logger logger = LogService.getLogger();
 
-  private String host;
-
   private String hostnameForSenders;
 
   private int startPort;
@@ -85,6 +83,27 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   public String getHostnameForSenders() {
     return hostnameForSenders;
+  }
+
+  public String getHost() {
+    if (receiver != null) {
+      return ((CacheServerImpl) receiver).getExternalAddress();
+    }
+
+    if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
+      return hostnameForSenders;
+    }
+
+    if (bindAdd != null && !bindAdd.isEmpty()) {
+      return bindAdd;
+    }
+
+    try {
+      return SocketCreator.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException(
+          LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME.toLocalizedString(), e);
+    }
   }
 
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
