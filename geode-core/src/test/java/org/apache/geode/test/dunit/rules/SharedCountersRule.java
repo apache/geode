@@ -77,16 +77,16 @@ public class SharedCountersRule extends DistributedExternalResource {
 
   @Override
   protected void before() throws Exception {
-    invoker().invokeInEveryVM(() -> counters = new ConcurrentHashMap<>());
+    invoker().invokeInEveryVMAndController(() -> counters = new ConcurrentHashMap<>());
     for (Serializable id : idsToInitInBefore) {
-      invoker().invokeInEveryVM(() -> initialize(id));
+      invoker().invokeInEveryVMAndController(() -> initialize(id));
     }
     idsToInitInBefore.clear();
   }
 
   @Override
   protected void after() {
-    invoker().invokeInEveryVM(() -> counters = null);
+    invoker().invokeInEveryVMAndController(() -> counters = null);
   }
 
   /**
@@ -95,7 +95,7 @@ public class SharedCountersRule extends DistributedExternalResource {
    */
   public SharedCountersRule initialize(final Serializable id) {
     AtomicInteger value = new AtomicInteger();
-    invoker().invokeInEveryVM(() -> counters.putIfAbsent(id, value));
+    invoker().invokeInEveryVMAndController(() -> counters.putIfAbsent(id, value));
     return this;
   }
 
