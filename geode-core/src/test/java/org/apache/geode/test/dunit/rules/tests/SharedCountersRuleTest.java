@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class SharedCountersDistributedTest implements Serializable {
+public class SharedCountersRuleTest implements Serializable {
 
   private static final int TWO_MINUTES_MILLIS = 2 * 60 * 1000;
   private static final String ID1 = "ID1";

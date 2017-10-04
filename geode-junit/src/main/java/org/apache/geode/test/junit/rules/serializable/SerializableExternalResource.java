@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import java.io.Serializable;
-
 import org.junit.rules.ExternalResource;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
