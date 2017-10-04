@@ -19,7 +19,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.internal.server.Authenticator;
 
 /**
  * Provides a convenient location for a client protocol service to be loaded into the system.
@@ -32,10 +31,8 @@ public interface ClientProtocolService {
    * The pipeline MUST use an available authenticator for authentication of all operations once the
    * handshake has happened.
    *
-   * @param availableAuthenticators A list of valid authenticators for the current system.
    */
-  ClientProtocolProcessor createProcessorForCache(Cache cache,
-      Authenticator availableAuthenticators, SecurityService securityService);
+  ClientProtocolProcessor createProcessorForCache(Cache cache, SecurityService securityService);
 
   /**
    * Create a locator pipeline. The locator does not currently provide any authentication.

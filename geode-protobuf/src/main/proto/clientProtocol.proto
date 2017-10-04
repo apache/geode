@@ -21,10 +21,10 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf;
 
-import "google/protobuf/any.proto";
 import "region_API.proto";
 import "server_API.proto";
 import "basicTypes.proto";
+import "authentication_API.proto";
 
 message Message {
     MessageHeader messageHeader = 1;
@@ -36,7 +36,6 @@ message Message {
 
 message MessageHeader {
     int32 correlationId = 1;
-    MetaData metadata = 2;
 }
 
 message Request {
@@ -52,6 +51,8 @@ message Request {
         GetAvailableServersRequest getAvailableServersRequest = 42;
         GetRegionNamesRequest getRegionNamesRequest = 43;
         GetRegionRequest getRegionRequest = 44;
+
+        SimpleAuthenticationRequest simpleAuthenticationRequest = 100;
     }
 }
 
@@ -69,12 +70,10 @@ message Response {
         GetAvailableServersResponse getAvailableServersResponse = 42;
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;
-    }
-}
 
-message MetaData {
-    int32 numberOfMetadata = 1;
-    map<int32, google.protobuf.Any> metaDataEntries = 2;
+        SimpleAuthenticationResponse simpleAuthenticationResponse = 100;
+
+    }
 }
 
 message ErrorResponse {

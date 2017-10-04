@@ -33,6 +33,7 @@ import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire

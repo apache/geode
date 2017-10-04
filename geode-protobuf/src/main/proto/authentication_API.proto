@@ -17,8 +17,7 @@ syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf;
 
 message SimpleAuthenticationRequest {
-    string username = 1;
-    string password = 2;
+    map<string,string> credentials = 1;
 }
 
 message SimpleAuthenticationResponse {

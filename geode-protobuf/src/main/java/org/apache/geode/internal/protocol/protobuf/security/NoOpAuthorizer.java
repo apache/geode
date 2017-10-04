@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.internal.server;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import org.apache.geode.security.ResourcePermission;
 
@@ -21,7 +21,7 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class NoOpAuthorizer implements Authorizer {
   @Override
-  public boolean authorize(ResourcePermission permissionRequested) {
+  public boolean authorize(Object subject, ResourcePermission permissionRequested) {
     return true;
   }
 }

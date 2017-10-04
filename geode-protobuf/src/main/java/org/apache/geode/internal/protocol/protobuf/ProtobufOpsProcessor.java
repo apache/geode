@@ -52,7 +52,7 @@ public class ProtobufOpsProcessor {
     ClientProtocol.Response.Builder builder;
     Result result;
     try {
-      if (context.getAuthorizer().authorize(operationContext.getAccessPermissionRequired())) {
+      if (context.authorize(operationContext.getAccessPermissionRequired())) {
         result = operationContext.getOperationHandler().process(serializationService,
             operationContext.getFromRequest().apply(request), context);
       } else {
@@ -73,7 +73,7 @@ public class ProtobufOpsProcessor {
   }
 
   private void recordAuthorizationViolation(MessageExecutionContext context) {
-    ProtobufClientStatistics statistics = (ProtobufClientStatistics) context.getStatistics();
+    ProtobufClientStatistics statistics = context.getStatistics();
     statistics.incAuthorizationViolations();
   }
 }

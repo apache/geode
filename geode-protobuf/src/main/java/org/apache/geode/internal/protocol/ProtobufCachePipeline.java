@@ -25,25 +25,32 @@ import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtobufStreamProcessor;
+import org.apache.geode.internal.protocol.protobuf.security.Authenticator;
+import org.apache.geode.internal.protocol.protobuf.security.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.internal.server.Authenticator;
+
+
 
 @Experimental
 public final class ProtobufCachePipeline implements ClientProtocolProcessor {
   private final ProtobufClientStatistics statistics;
   private final Cache cache;
+  private final Authorizer authorizer;
   private final SecurityService securityService;
   private final ProtobufStreamProcessor streamProcessor;
   private final Authenticator authenticator;
 
+  private Object authenticatorToken;
+
   ProtobufCachePipeline(ProtobufStreamProcessor protobufStreamProcessor,
       ProtobufClientStatistics statistics, Cache cache, Authenticator authenticator,
-      SecurityService securityService) {
+      Authorizer authorizer, SecurityService securityService) {
     this.streamProcessor = protobufStreamProcessor;
     this.statistics = statistics;
     this.cache = cache;
     this.authenticator = authenticator;
+    this.authorizer = authorizer;
     this.securityService = securityService;
     this.statistics.clientConnected();
   }
@@ -51,11 +58,11 @@ public final class ProtobufCachePipeline implements ClientProtocolProcessor {
   @Override
   public void processMessage(InputStream inputStream, OutputStream outputStream)
       throws IOException, IncompatibleVersionException {
-    if (!authenticator.isAuthenticated()) {
-      authenticator.authenticate(inputStream, outputStream, securityService.getSecurityManager());
+    if (authenticatorToken == null) {
+      authenticatorToken = authenticator.authenticate(inputStream, outputStream, securityService);
     } else {
       streamProcessor.receiveMessage(inputStream, outputStream,
-          new MessageExecutionContext(cache, authenticator.getAuthorizer(), statistics));
+          new MessageExecutionContext(cache, authorizer, authenticatorToken, statistics));
     }
   }
 

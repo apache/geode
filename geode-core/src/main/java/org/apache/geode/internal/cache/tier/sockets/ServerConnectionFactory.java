@@ -19,39 +19,20 @@ import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufCli
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.internal.server.Authenticator;
 
 /**
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
   private volatile ClientProtocolService clientProtocolService;
-  private Map<String, Class<? extends Authenticator>> authenticators = null;
 
   public ServerConnectionFactory() {}
-
-  private synchronized void initializeAuthenticatorsMap() {
-    if (authenticators != null) {
-      return;
-    }
-    HashMap<String, Class<? extends Authenticator>> tmp = new HashMap<>();
-
-    ServiceLoader<Authenticator> loader = ServiceLoader.load(Authenticator.class);
-    for (Authenticator streamAuthenticator : loader) {
-      tmp.put(streamAuthenticator.implementationID(), streamAuthenticator.getClass());
-    }
-
-    authenticators = tmp;
-  }
 
   private synchronized ClientProtocolService initializeClientProtocolService(
       StatisticsFactory statisticsFactory, String statisticsName) {
@@ -67,24 +48,6 @@ public class ServerConnectionFactory {
     return clientProtocolService;
   }
 
-  private Authenticator findStreamAuthenticator(String implementationID) {
-    if (authenticators == null) {
-      initializeAuthenticatorsMap();
-    }
-    Class<? extends Authenticator> streamAuthenticatorClass = authenticators.get(implementationID);
-    if (streamAuthenticatorClass == null) {
-      throw new ServiceLoadingFailureException(
-          "Could not find implementation for Authenticator with implementation ID "
-              + implementationID);
-    } else {
-      try {
-        return streamAuthenticatorClass.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
-        throw new ServiceLoadingFailureException(
-            "Unable to instantiate authenticator for ID " + implementationID, e);
-      }
-    }
-  }
 
   private ClientProtocolService getOrCreateClientProtocolService(
       StatisticsFactory statisticsFactory, String serverName) {
@@ -103,12 +66,8 @@ public class ServerConnectionFactory {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
       } else {
         try {
-          String authenticationMode =
-              System.getProperty("geode.protocol-authentication-mode", "NOOP");
-
           return createGenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
-              socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService,
-              authenticationMode);
+              socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService);
         } catch (ServiceLoadingFailureException ex) {
           throw new IOException("Could not load protobuf client protocol", ex);
         }
@@ -122,12 +81,11 @@ public class ServerConnectionFactory {
   private ServerConnection createGenericProtocolServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService, String authenticationMode) {
+      SecurityService securityService) {
     ClientProtocolService service =
         getOrCreateClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
 
-    ClientProtocolProcessor processor = service.createProcessorForCache(cache,
-        findStreamAuthenticator(authenticationMode), securityService);
+    ClientProtocolProcessor processor = service.createProcessorForCache(cache, securityService);
 
     return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
         socketBufferSize, communicationModeStr, communicationMode, acceptor, processor,

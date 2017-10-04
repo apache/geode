@@ -28,6 +28,7 @@ import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.distributed.internal.SecurityConfig;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -72,7 +73,6 @@ public class AuthorizationIntegrationTest {
   private ProtobufProtocolSerializer protobufProtocolSerializer;
   private Object securityPrincipal;
   private SecurityManager mockSecurityManager;
-  private String testRegion;
   public static final ResourcePermission READ_PERMISSION =
       new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ);
   public static final ResourcePermission WRITE_PERMISSION =
@@ -84,7 +84,7 @@ public class AuthorizationIntegrationTest {
     expectedAuthProperties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
     expectedAuthProperties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
 
-    securityPrincipal = new Object();
+    securityPrincipal = "mockSecurityPrincipal";
     mockSecurityManager = mock(SecurityManager.class);
     when(mockSecurityManager.authenticate(expectedAuthProperties)).thenReturn(securityPrincipal);
 
@@ -115,13 +115,21 @@ public class AuthorizationIntegrationTest {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
     when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(false);
-    AuthenticationAPI.SimpleAuthenticationRequest authenticationRequest =
-        AuthenticationAPI.SimpleAuthenticationRequest.newBuilder().setUsername(TEST_USERNAME)
-            .setPassword(TEST_PASSWORD).build();
+    ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setSimpleAuthenticationRequest(AuthenticationAPI.SimpleAuthenticationRequest
+                .newBuilder().putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+                .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
+        .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
+    ClientProtocol.Message responseMessage = ClientProtocol.Message.parseDelimitedFrom(inputStream);
+    assertEquals(ClientProtocol.Message.RESPONSE_FIELD_NUMBER,
+        responseMessage.getMessageTypeCase().getNumber());
+    assertEquals(ClientProtocol.Response.SIMPLEAUTHENTICATIONRESPONSE_FIELD_NUMBER,
+        responseMessage.getResponse().getResponseAPICase().getNumber());
     AuthenticationAPI.SimpleAuthenticationResponse authenticationResponse =
-        AuthenticationAPI.SimpleAuthenticationResponse.parseDelimitedFrom(inputStream);
+        responseMessage.getResponse().getSimpleAuthenticationResponse();
     assertTrue(authenticationResponse.getAuthenticated());
   }
 

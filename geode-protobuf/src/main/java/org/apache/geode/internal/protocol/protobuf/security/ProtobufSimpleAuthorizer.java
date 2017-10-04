@@ -12,23 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf;
+package org.apache.geode.internal.protocol.protobuf.security;
 
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadState;
+
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.internal.server.Authorizer;
+import org.apache.geode.internal.protocol.protobuf.security.Authorizer;
 
 public class ProtobufSimpleAuthorizer implements Authorizer {
-  private final Object authenticatedPrincipal;
-  private final SecurityManager securityManager;
+  private final SecurityService securityService;
 
-  public ProtobufSimpleAuthorizer(Object authenticatedPrincipal, SecurityManager securityManager) {
-    this.authenticatedPrincipal = authenticatedPrincipal;
-    this.securityManager = securityManager;
+  public ProtobufSimpleAuthorizer(SecurityService securityService) {
+    this.securityService = securityService;
   }
 
   @Override
-  public boolean authorize(ResourcePermission permissionRequested) {
-    return securityManager.authorize(authenticatedPrincipal, permissionRequested);
+  public boolean authorize(Object authenticatedSubject, ResourcePermission permissionRequested) {
+    ThreadState threadState = securityService.bindSubject((Subject) authenticatedSubject);
+
+    try {
+      securityService.authorize(permissionRequested);
+      return true;
+    } catch (NotAuthorizedException ex) {
+      return false;
+    } finally {
+      threadState.restore();
+    }
   }
 }

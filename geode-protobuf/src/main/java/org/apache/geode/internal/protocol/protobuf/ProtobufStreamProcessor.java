@@ -21,17 +21,14 @@ import java.io.OutputStream;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 
 /**
@@ -74,6 +71,10 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
     statistics.messageReceived(message.getSerializedSize());
 
     ClientProtocol.Request request = message.getRequest();
+    if (message.getMessageTypeCase()
+        .getNumber() == ClientProtocol.Request.SIMPLEAUTHENTICATIONREQUEST_FIELD_NUMBER) {
+      // auith
+    }
     ClientProtocol.Response response = protobufOpsProcessor.process(request, executionContext);
     ClientProtocol.MessageHeader responseHeader =
         ProtobufUtilities.createMessageHeaderForRequest(message);

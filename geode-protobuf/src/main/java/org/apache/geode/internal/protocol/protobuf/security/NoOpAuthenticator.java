@@ -12,13 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
+package org.apache.geode.internal.protocol.protobuf.security;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.apache.geode.internal.security.SecurityService;
 
 /**
- * Implementations of this interface record statistics for the corresponding client/server protocol
+ * An implementation of {@link Authenticator} that doesn't use its parameters and always returns
+ * true.
  */
-public interface ClientProtocolStatistics {
-  public void clientConnected();
-
-  public void clientDisconnected();
+public class NoOpAuthenticator implements Authenticator {
+  @Override
+  public Object authenticate(InputStream inputStream, OutputStream outputStream,
+      SecurityService securityService) throws IOException {
+    // this method needs to do nothing as it is a pass-through implementation
+    return new Object();
+  }
 }

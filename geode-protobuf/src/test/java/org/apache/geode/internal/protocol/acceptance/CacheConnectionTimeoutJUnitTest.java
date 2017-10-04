@@ -26,6 +26,7 @@ import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.distributed.internal.SecurityConfig;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -81,11 +82,11 @@ public class CacheConnectionTimeoutJUnitTest {
     Properties properties = new Properties();
     System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY, "25");
 
-
     CacheFactory cacheFactory = new CacheFactory(properties);
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.setSecurityManager(null);
 
     cache = cacheFactory.create();
 
@@ -161,7 +162,7 @@ public class CacheConnectionTimeoutJUnitTest {
     for (int i = 0; i < timeout; i += interval) {
       // send a PUT message
       protobufProtocolSerializer.serialize(putMessage, outputStream);
-      assertNotEquals(-1, socket.getInputStream().read());
+      protobufProtocolSerializer.deserialize(socket.getInputStream());
       Thread.sleep(interval);
     }
   }

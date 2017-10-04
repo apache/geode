@@ -21,21 +21,24 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.security.internal.server.Authorizer;
-import org.apache.geode.security.internal.server.NoOpAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.security.Authorizer;
+import org.apache.geode.internal.protocol.protobuf.security.NoOpAuthorizer;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class MessageExecutionContext {
   private Cache cache;
   private Locator locator;
   private final Authorizer authorizer;
+  private final Object authenticatedSubject;
   private final ProtobufClientStatistics statistics;
 
 
   public MessageExecutionContext(Cache cache, Authorizer streamAuthorizer,
-      ProtobufClientStatistics statistics) {
+      Object authenticatedSubject, ProtobufClientStatistics statistics) {
     this.cache = cache;
     this.authorizer = streamAuthorizer;
+    this.authenticatedSubject = authenticatedSubject;
     this.statistics = statistics;
   }
 
@@ -45,6 +48,7 @@ public class MessageExecutionContext {
     // and authorization checks
     this.authorizer = new NoOpAuthorizer();
     this.statistics = statistics;
+    this.authenticatedSubject = new Object();
   }
 
   /**
@@ -75,13 +79,10 @@ public class MessageExecutionContext {
         "Operations on the server should not to try to operate on a locator");
   }
 
-  /**
-   * Returns the Authorizer associated with this execution. This can be used to perform
-   * authorization checks for the user associated with this thread.
-   */
-  public Authorizer getAuthorizer() {
-    return authorizer;
+  public boolean authorize(ResourcePermission permissionRequested) {
+    return authorizer.authorize(authenticatedSubject, permissionRequested);
   }
+
 
   /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not

@@ -23,10 +23,6 @@ limitations under the License.
 <p>This package provides authentication and authorization for a client.  There is a default
 "no-op" implementation that is overridden by the Protobuf form of client/server
    communication.</p>
-<p>This can also be overridden by _you_ in order to use a different mechanism
-on the server by setting the property geode.protocol-authentication-mode to the name
-   of your implementation.  This is the string returned by your class's
-   implementationID method.</p>
 
 <p>The Authenticator.authenticate() method
    is first given the i/o streams connected to the client so that it
@@ -39,7 +35,7 @@ is authorized for permissions associated with the request sent by the client.</p
 
 <p><i>Note: the legacy "GemFire" client/server authorization mechanism is hardcoded
 to get credentials using a non-documented interchange and is not affected by this package.
-It interacts directly with the SecurityManager, as does the default mechanism used in
+It interacts directly with the SecurityService, as does the default mechanism used in
 Protobuf communications.</i></p>
 </body>
 </html>
