@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.cache.rules.tests;
+package org.apache.geode.test.dunit.rules.tests;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.test.junit.runners.TestRunner.runTestWithValidation;
@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
