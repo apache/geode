@@ -80,7 +80,7 @@ public class CacheRule extends DistributedExternalResource {
   @Override
   protected void before() {
     if (createCacheInAll) {
-      invoker().invokeInEveryVM(() -> createCache(config));
+      invoker().invokeInEveryVMAndController(() -> createCache(config));
     } else {
       if (createCache) {
         createCache(config);
@@ -94,7 +94,7 @@ public class CacheRule extends DistributedExternalResource {
   @Override
   protected void after() {
     closeAndNullCache();
-    invoker().invokeInEveryVM(() -> closeAndNullCache());
+    invoker().invokeInEveryVMAndController(() -> closeAndNullCache());
 
     if (disconnectAfter) {
       Disconnect.disconnectAllFromDS();
