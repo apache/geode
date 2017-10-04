@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
+import static org.apache.geode.management.internal.cli.result.ResultBuilder.createUserErrorResult;
 
 import java.util.Set;
 
@@ -53,16 +54,13 @@ public class RemoveCommand implements GfshCommand {
       @CliOption(key = {CliStrings.REMOVE__KEYCLASS},
           help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
     InternalCache cache = getCache();
-    DataCommandResult dataResult;
 
     if (StringUtils.isEmpty(regionPath)) {
-      return makePresentationResult(DataCommandResult.createRemoveResult(key, null, null,
-          CliStrings.REMOVE__MSG__REGIONNAME_EMPTY, false));
+      return createUserErrorResult(CliStrings.REMOVE__MSG__REGIONNAME_EMPTY);
     }
 
     if (!removeAllKeys && (key == null)) {
-      return makePresentationResult(DataCommandResult.createRemoveResult(null, null, null,
-          CliStrings.REMOVE__MSG__KEY_EMPTY, false));
+      return createUserErrorResult(CliStrings.REMOVE__MSG__KEY_EMPTY);
     }
 
     if (removeAllKeys) {
@@ -71,30 +69,28 @@ public class RemoveCommand implements GfshCommand {
       cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath, key);
     }
 
-    @SuppressWarnings("rawtypes")
     Region region = cache.getRegion(regionPath);
     DataCommandFunction removefn = new DataCommandFunction();
+    DataCommandResult dataResult;
     if (region == null) {
       Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
-      if (CollectionUtils.isNotEmpty(memberList)) {
-        DataCommandRequest request = new DataCommandRequest();
-        request.setCommand(CliStrings.REMOVE);
-        request.setKey(key);
-        request.setKeyClass(keyClass);
-        request.setRemoveAllKeys(removeAllKeys ? "ALL" : null);
-        request.setRegionName(regionPath);
-        dataResult = callFunctionForRegion(request, removefn, memberList);
-      } else {
-        dataResult = DataCommandResult.createRemoveInfoResult(key, null, null,
-            CliStrings.format(CliStrings.REMOVE__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS, regionPath),
-            false);
+
+      if (CollectionUtils.isEmpty(memberList)) {
+        return createUserErrorResult("Region <" + regionPath + "> not found in any of the members");
       }
 
+      DataCommandRequest request = new DataCommandRequest();
+      request.setCommand(CliStrings.REMOVE);
+      request.setKey(key);
+      request.setKeyClass(keyClass);
+      request.setRemoveAllKeys(removeAllKeys ? "ALL" : null);
+      request.setRegionName(regionPath);
+      dataResult = callFunctionForRegion(request, removefn, memberList);
     } else {
       dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null);
     }
-    dataResult.setKeyClass(keyClass);
 
+    dataResult.setKeyClass(keyClass);
     return makePresentationResult(dataResult);
   }
 }
