@@ -362,7 +362,7 @@ See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite
 create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*] 
   [--manual-start=value] [--start-port=value] [--end-port=value] [--bind-address=value] 
   [--maximum-time-between-pings=value] [--socket-buffer-size=value]
-  [--gateway-transport-filter=value(,value)*]
+  [--gateway-transport-filter=value(,value)*] [--hostname-for-senders=value]
 ```
 
 **Parameters, create gateway-receiver:**
@@ -427,6 +427,11 @@ create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 <td><span class="keyword parmname">\-\-maximum-time-between-pings</span></td>
 <td>Integer value that specifies the time interval (in milliseconds) to use between pings to connected WAN sites. This value determines the maximum amount of time that can elapse before a remote WAN site is considered offline.</td>
 <td>60000</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-hostname-for-senders</span></td>
+<td>The host name or IP address where this gateway receiver is listening. The locator will inform gateway senders of this value.</td>
+<td> </td>
 </tr>
 </tbody>
 </table>
