@@ -15,9 +15,8 @@
 package org.apache.geode.security;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.authz.permission.WildcardPermission;
-
 import org.apache.geode.cache.Region;
+import org.apache.shiro.authz.permission.WildcardPermission;
 
 /**
  * ResourcePermission defines the resource, the operation, the region and the key involved in the
@@ -86,14 +85,18 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   public ResourcePermission(Resource resource, Operation operation, String target, String key) {
-    if (resource != null)
+    if (resource != null) {
       this.resource = resource;
-    if (operation != null)
+    }
+    if (operation != null) {
       this.operation = operation;
-    if (target != null)
+    }
+    if (target != null) {
       this.target = StringUtils.stripStart(target, Region.SEPARATOR);
-    if (key != null)
+    }
+    if (key != null) {
       this.key = key;
+    }
 
     setParts(this.resource + ":" + this.operation + ":" + this.target + ":" + this.key, true);
   }
