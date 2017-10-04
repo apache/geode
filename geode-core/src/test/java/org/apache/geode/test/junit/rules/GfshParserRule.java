@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CliAroundInterceptor;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.junit.rules.ExternalResource;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
@@ -47,7 +52,25 @@ public class GfshParserRule extends ExternalResource {
   }
 
   public <T> CommandResult executeCommandWithInstance(T instance, String command) {
-    ParseResult parseResult = parse(command);
+    GfshParseResult parseResult = parse(command);
+
+    CliAroundInterceptor interceptor = null;
+    String interceptorClass =
+        parseResult.getMethod().getAnnotation(CliMetaData.class).interceptor();
+    if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
+      try {
+        interceptor = (CliAroundInterceptor) ClassPathLoader.getLatest().forName(interceptorClass)
+            .newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+
+      Result preExecResult = interceptor.preExecution(parseResult);
+      if (Result.Status.ERROR.equals(preExecResult.getStatus())) {
+        return (CommandResult) preExecResult;
+      }
+    }
+
     return (CommandResult) ReflectionUtils.invokeMethod(parseResult.getMethod(), instance,
         parseResult.getArguments());
   }
