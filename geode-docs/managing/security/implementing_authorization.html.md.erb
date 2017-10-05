@@ -93,7 +93,7 @@ a Client-Server interaction.
 | Region.registerInterest(regex)     | DATA:READ:RegionName                |
 | Region.unregisterInterest(key)     | DATA:READ:RegionName:Key            |
 | Region.unregisterInterest(regex)   | DATA:READ:RegionName                |
-| execute function                   | determined by the function API      |
+| execute function                   | Defaults to DATA:WRITE. Override `Function.getRequiredPermissions` to change the permission. |
 | clear region                       | DATA:WRITE:RegionName               |
 | Region.putAll                      | DATA:WRITE:RegionName               |
 | Region.clear                       | DATA:WRITE:RegionName               |
@@ -143,7 +143,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | destroy index                          | CLUSTER:MANAGE:QUERY             |
 | destroy lucene index                   | CLUSTER:MANAGE:LUCENE            |
 | destroy region                         | DATA:MANAGE                      |
-| execute function                       | determined by the function API   |
+| execute function                       | Defaults to DATA:WRITE. Override `Function.getRequiredPermissions` to change the permission.   |
 | export cluster-configuration           | CLUSTER:READ                     |
 | export config                          | CLUSTER:READ                     |
 | export data                            | CLUSTER:READ                     |
@@ -276,3 +276,16 @@ for details about this property.
 - Define any extra resources that the implemented authorization algorithm
 needs in order to make a decision.
 
+### <a id="AuthorizeFcnExecution" class="no-quick-link"></a>Authorization of Function Execution
+
+By default, a function executed on servers requires that the
+entity invoking the function have `DATA:WRITE` permission on the
+region(s) involved.
+Since the default permission may not be appropriate for all functions,
+the permissions required may be altered.
+
+To implement a different set of permissions,
+override the `Function.getRequiredPermissions()` method
+in the function's class.
+The method should return a `Collection` of the permissions
+required of the entity that invokes an execution of the function.
