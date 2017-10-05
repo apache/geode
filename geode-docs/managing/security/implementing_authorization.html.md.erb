@@ -285,7 +285,7 @@ Since the default permission may not be appropriate for all functions,
 the permissions required may be altered.
 
 To implement a different set of permissions,
-implement an overloaded `Function.getRequiredPermissions()` method
+override the `Function.getRequiredPermissions()` method
 in the function's class.
-The method returns a `Collection` of the permissions
+The method should return a `Collection` of the permissions
 required of the entity that invokes an execution of the function.

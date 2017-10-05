@@ -29,18 +29,18 @@ Main tasks:
 
 ## <a id="function_execution__section_7D43B0C628D54F579D5C434D3DF69B3C" class="no-quick-link"></a>Write the Function Code
 
-To write the function code, you implement the `Function` interface or extend the `FunctionAdapter` class. Both are in the `org.apache.geode.cache.execute` package. The adapter class provides some default implementations for methods, which you can override.
+To write the function code, you implement the `Function` interface in the `org.apache.geode.cache.execute` package.
 
 Code the methods you need for the function. These steps do not have to be done in this order.
 
-- Code `getId` to return a unique name for your function. You can use this name to access the function through the `FunctionService` API.
+- Implement `getId` to return a unique name for your function. You can use this name to access the function through the `FunctionService` API.
 - For high availability:
     1.  Code `isHa` to return true to indicate to <%=vars.product_name%> that it can re-execute your function after one or more members fails
     2.  Code your function to return a result
     3.  Code `hasResult` to return true
 
-- Code `hasResult` to return true if your function returns results to be processed and false if your function does not return any data - the fire and forget function. `FunctionAdapter` `hasResult` returns true by default.
-- If the function will be executed on a region, code `optimizeForWrite` to return false if your function only reads from the cache, and true if your function updates the cache. The method only works if, when you are running the function, the `Execution` object is obtained through a `FunctionService` `onRegion` call. `FunctionAdapter` `optimizeForWrite` returns false by default.
+- Code `hasResult` to return true if your function returns results to be processed and false if your function does not return any data - the fire and forget function.
+- If the function will be executed on a region, implement `optimizeForWrite` to return false if your function only reads from the cache, and true if your function updates the cache. The method only works if, when you are running the function, the `Execution` object is obtained through a `FunctionService` `onRegion` call. `optimizeForWrite` returns false by default.
 - If the function should be run with an authorization level other than
 the default of `DATA:WRITE`,
 implement an override of the `Function.getRequiredPermissions()` method.
@@ -62,28 +62,27 @@ See [Authorization of Function Execution](../../managing/security/implementing_a
 Example function code:
 
 ``` pre
-package quickstart;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 
-public class MultiGetFunction extends FunctionAdapter {
+public class MultiGetFunction implements Function {
 
-  public void execute(FunctionContext fc) { 
+  public void execute(FunctionContext fc) {
     if(! (fc instanceof RegionFunctionContext)){
-       throw new FunctionException("This is a data aware function, and has 
-to be called using FunctionService.onRegion.");
+      throw new FunctionException("This is a data aware function, and has
+ to be called using FunctionService.onRegion.");
     }
     RegionFunctionContext context = (RegionFunctionContext)fc;
     Set keys = context.getFilter();
-    Set keysTillSecondLast = new HashSet(); 
+    Set keysTillSecondLast = new HashSet();
     int setSize = keys.size();
     Iterator keysIterator = keys.iterator();
     for(int i = 0; i < (setSize -1); i++)
