@@ -31,14 +31,14 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.server.Authenticator;
 
 @Experimental
-public final class ProtobufPipeline implements ClientProtocolPipeline {
+public final class ProtobufCachePipeline implements ClientProtocolPipeline {
   private final ProtobufClientStatistics statistics;
   private final Cache cache;
   private final SecurityService securityService;
   private final ProtobufStreamProcessor streamProcessor;
   private final Authenticator authenticator;
 
-  ProtobufPipeline(ProtobufStreamProcessor protobufStreamProcessor,
+  ProtobufCachePipeline(ProtobufStreamProcessor protobufStreamProcessor,
       ProtobufClientStatistics statistics, Cache cache, Authenticator authenticator,
       SecurityService securityService) {
     this.streamProcessor = protobufStreamProcessor;
@@ -46,6 +46,7 @@ public final class ProtobufPipeline implements ClientProtocolPipeline {
     this.cache = cache;
     this.authenticator = authenticator;
     this.securityService = securityService;
+    this.statistics.clientConnected();
   }
 
   @Override
@@ -60,7 +61,7 @@ public final class ProtobufPipeline implements ClientProtocolPipeline {
   }
 
   @Override
-  public ClientProtocolStatistics getStatistics() {
-    return statistics;
+  public void close() {
+    this.statistics.clientDisconnected();
   }
 }

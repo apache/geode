@@ -21,9 +21,20 @@ import java.io.OutputStream;
 
 import org.apache.geode.cache.IncompatibleVersionException;
 
-public interface ClientProtocolPipeline {
+/**
+ * An interface representing the message handling part of a protocol. This may contain multiple
+ * parts, and is expected to take care of handshaking, auth, whatever is required. It does not
+ * manage the socket, and apart from the statistics, is expected to be effectively stateless.
+ */
+public interface ClientProtocolPipeline extends AutoCloseable {
   void processMessage(InputStream inputStream, OutputStream outputStream)
       throws IOException, IncompatibleVersionException;
 
-  ClientProtocolStatistics getStatistics();
+  /**
+   * Close the pipeline, incrementing stats and releasing any resources.
+   *
+   * This declaration narrows the exception type to be IOException.
+   */
+  @Override
+  void close();
 }

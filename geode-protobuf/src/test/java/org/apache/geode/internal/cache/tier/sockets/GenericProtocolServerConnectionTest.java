@@ -113,7 +113,6 @@ public class GenericProtocolServerConnectionTest {
       throws IOException, IncompatibleVersionException {
     ClientProtocolPipeline clientProtocolPipeline = mock(ClientProtocolPipeline.class);
     ClientProtocolStatistics statisticsMock = mock(ClientProtocolStatistics.class);
-    when(clientProtocolPipeline.getStatistics()).thenReturn(statisticsMock);
     doThrow(new IOException()).when(clientProtocolPipeline).processMessage(any(), any());
     return getServerConnection(clientProtocolPipeline, mock(AcceptorImpl.class));
   }
@@ -128,8 +127,6 @@ public class GenericProtocolServerConnectionTest {
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
     when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
     when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
-
-    when(clientPipelineMock.getStatistics()).thenReturn(new NoOpProtobufStatistics());
 
     return new GenericProtocolServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",

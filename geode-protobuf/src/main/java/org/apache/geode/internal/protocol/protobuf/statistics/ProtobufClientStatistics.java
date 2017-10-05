@@ -17,15 +17,17 @@ package org.apache.geode.internal.protocol.protobuf.statistics;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
 
 public interface ProtobufClientStatistics extends ClientProtocolStatistics {
-  public void clientConnected();
+  String PROTOBUF_STATS_NAME = "ProtobufStats";
 
-  public void clientDisconnected();
+  void clientConnected();
 
-  public void messageReceived(int bytes);
+  void clientDisconnected();
 
-  public void messageSent(int bytes);
+  void messageReceived(int bytes);
 
-  public void incAuthorizationViolations();
+  void messageSent(int bytes);
 
-  public void incAuthenticationFailures();
+  void incAuthorizationViolations();
+
+  void incAuthenticationFailures();
 }

@@ -43,6 +43,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -58,6 +59,7 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolPipeline;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.logging.LogService;
@@ -380,8 +382,13 @@ public class TcpServer {
         if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
           if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-            clientProtocolService.serveLocatorMessage(input, socket.getOutputStream(),
-                internalLocator);
+            try (ClientProtocolPipeline pipeline =
+                clientProtocolService.createLocatorPipeline(internalLocator)) {
+              pipeline.processMessage(input, socket.getOutputStream());
+            } catch (IncompatibleVersionException e) {
+              // should not happen on the locator as there is no handshake.
+              log.error("Unexpected exception in client message processing", e);
+            }
           } else {
             rejectUnknownProtocolConnection(socket, gossipVersion);
           }

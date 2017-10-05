@@ -28,6 +28,13 @@ public class ClientProtocolServiceLoader {
           "There is no ClientProtocolService implementation found in JVM");
     }
 
-    return iterator.next();
+    ClientProtocolService service = iterator.next();
+
+    if (iterator.hasNext()) {
+      throw new ServiceLoadingFailureException(
+          "There is more than one ClientProtocolService implementation found in JVM; aborting");
+    }
+
+    return service;
   }
 }

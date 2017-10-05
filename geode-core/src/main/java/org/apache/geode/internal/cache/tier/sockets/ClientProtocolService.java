@@ -15,10 +15,6 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -31,8 +27,6 @@ import org.apache.geode.security.server.Authenticator;
 public interface ClientProtocolService {
   void initializeStatistics(String statisticsName, StatisticsFactory factory);
 
-  ClientProtocolStatistics getStatistics();
-
   /**
    *
    * The pipeline MUST use an available authenticator for authentication of all operations once the
@@ -44,11 +38,7 @@ public interface ClientProtocolService {
       SecurityService securityService);
 
   /**
-   * In this case, the locator calls this to serve a single message at a time. The locator closes
-   * the socket after this is done.
-   *
-   * Statistics saved on the service are used if initialized.
+   * Create a locator pipeline. The locator does not currently provide any authentication.
    */
-  void serveLocatorMessage(InputStream inputStream, OutputStream outputStream,
-      InternalLocator locator) throws IOException;
+  ClientProtocolPipeline createLocatorPipeline(InternalLocator locator);
 }

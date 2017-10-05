@@ -14,17 +14,11 @@
  */
 package org.apache.geode.internal.protocol;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolPipeline;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtobufStreamProcessor;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
@@ -33,39 +27,35 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.server.Authenticator;
 
 public class ProtobufProtocolService implements ClientProtocolService {
-  private ProtobufClientStatistics statistics;
+  private volatile ProtobufClientStatistics statistics;
   private final ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
 
   @Override
-  public void initializeStatistics(String statisticsName, StatisticsFactory factory) {
-    statistics = new ProtobufClientStatisticsImpl(factory, statisticsName, "ProtobufServerStats");
+  public synchronized void initializeStatistics(String statisticsName, StatisticsFactory factory) {
+    statistics = new ProtobufClientStatisticsImpl(factory, statisticsName,
+        ProtobufClientStatistics.PROTOBUF_STATS_NAME);
   }
 
-  @Override
-  public ClientProtocolStatistics getStatistics() {
+  /**
+   * For internal use. This is necessary because the statistics may get initialized in another
+   * thread.
+   */
+  private ProtobufClientStatistics getStatistics() {
+    if (statistics == null) {
+      return new NoOpStatistics();
+    }
     return statistics;
   }
 
   @Override
   public ClientProtocolPipeline createCachePipeline(Cache cache, Authenticator authenticator,
       SecurityService securityService) {
-    assert (statistics != null);
-    return new ProtobufPipeline(protobufStreamProcessor, statistics, cache, authenticator,
+    return new ProtobufCachePipeline(protobufStreamProcessor, getStatistics(), cache, authenticator,
         securityService);
   }
 
   @Override
-  public void serveLocatorMessage(InputStream inputStream, OutputStream outputStream,
-      InternalLocator locator) throws IOException {
-    ProtobufClientStatistics statistics =
-        this.statistics == null ? new NoOpStatistics() : this.statistics;
-
-    statistics.clientConnected();
-
-    protobufStreamProcessor.receiveMessage(inputStream, outputStream,
-        new MessageExecutionContext(locator, statistics));
-
-    statistics.clientDisconnected();
+  public ClientProtocolPipeline createLocatorPipeline(InternalLocator locator) {
+    return new ProtobufLocatorPipeline(protobufStreamProcessor, getStatistics(), locator);
   }
-
 }

@@ -55,7 +55,6 @@ public class GenericProtocolServerConnection extends ServerConnection {
     super(socket, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
         communicationMode, acceptor, securityService);
     this.protocolPipeline = newClientProtocol;
-    this.protocolPipeline.getStatistics().clientConnected();
 
     setClientProxyMembershipId();
 
@@ -97,7 +96,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
     synchronized (this) {
       if (!cleanedUp) {
         cleanedUp = true;
-        protocolPipeline.getStatistics().clientDisconnected();
+        protocolPipeline.close();
       }
     }
     return super.cleanup();

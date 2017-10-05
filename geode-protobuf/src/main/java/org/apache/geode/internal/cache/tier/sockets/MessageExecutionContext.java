@@ -29,8 +29,8 @@ import org.apache.geode.security.server.NoOpAuthorizer;
 public class MessageExecutionContext {
   private Cache cache;
   private Locator locator;
-  private Authorizer authorizer;
-  private ProtobufClientStatistics statistics;
+  private final Authorizer authorizer;
+  private final ProtobufClientStatistics statistics;
 
 
   public MessageExecutionContext(Cache cache, Authorizer streamAuthorizer,
