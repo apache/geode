@@ -261,8 +261,6 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @param attributeName name of the attribute who's value will be fetched.
    * @return the value of the named attribute for the named resource (typically an MBean).
    * @throws MBeanAccessException if an MBean access error occurs.
-   * @throws RestApiCallForCommandNotFoundException if the REST API web service endpoint for
-   *         accessing an attribute on an MBean does not exists!
    */
   @Override
   public Object getAttribute(final String resourceName, final String attributeName) {
@@ -327,8 +325,6 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @param signatures an array containing the signature of the operation.
    * @return result of the operation invocation.
    * @throws MBeanAccessException if an MBean access error occurs.
-   * @throws RestApiCallForCommandNotFoundException if the REST API web service endpoint for
-   *         invoking an operation on an MBean does not exists!
    */
   @Override
   public Object invoke(final String resourceName, final String operationName, final Object[] params,

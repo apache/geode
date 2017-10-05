@@ -15,10 +15,9 @@
 
 package org.apache.geode.management.internal.web.http.support;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,8 +41,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
@@ -102,7 +100,7 @@ public class HttpRequester {
     this.restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
       @Override
       public void handleError(final ClientHttpResponse response) throws IOException {
-        String body = readBody(response);
+        String body = IOUtils.toString(response.getBody(), StandardCharsets.UTF_8);
         final String message = String.format("The HTTP request failed with: %1$d - %2$s.",
             response.getRawStatusCode(), body);
 
@@ -112,24 +110,6 @@ public class HttpRequester {
           throw new NotAuthorizedException(message);
         } else {
           throw new RuntimeException(message);
-        }
-      }
-
-      private String readBody(final ClientHttpResponse response) throws IOException {
-        BufferedReader responseBodyReader = null;
-        try {
-          responseBodyReader = new BufferedReader(new InputStreamReader(response.getBody()));
-
-          final StringBuilder buffer = new StringBuilder();
-          String line;
-
-          while ((line = responseBodyReader.readLine()) != null) {
-            buffer.append(line).append(Gfsh.LINE_SEPARATOR);
-          }
-
-          return buffer.toString().trim();
-        } finally {
-          IOUtils.close(responseBodyReader);
         }
       }
     });
