@@ -167,11 +167,16 @@ public class PeerTXStateStub extends TXStateStub {
   @Override
   protected TXRegionStub generateRegionStub(LocalRegion region) {
     TXRegionStub stub = null;
-    if (region.getPartitionAttributes() == null) {
+    if (region.getPartitionAttributes() != null) {
+      // a partitioned region
+      stub = new PartitionedTXRegionStub(this, region);
+    } else if (region.getScope().isLocal()) {
+      // GEODE-3744 Local region should not be involved in a transaction on a PeerTXStateStub
+      throw new TransactionException(
+          "Local region " + region + " should not participate in a transaction not hosted locally");
+    } else {
       // This is a dist region
       stub = new DistributedTXRegionStub(this, region);
-    } else {
-      stub = new PartitionedTXRegionStub(this, region);
     }
     return stub;
   }
