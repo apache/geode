@@ -23,15 +23,6 @@ package org.apache.geode.internal.protocol.protobuf;
 
 import "basicTypes.proto";
 
-// PingResponse sends the same number back.
-message PingRequest {
-    int32 sequenceNumber = 1;
-}
-
-message PingResponse {
-    int32 sequenceNumber = 1;
-}
-
 message GetAvailableServersRequest {
 
 }
