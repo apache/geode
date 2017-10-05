@@ -30,7 +30,6 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
@@ -91,7 +90,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(4);
+    assertThat(failures).hasSize(Host.getHost(0).getVMCount());
     int i = 0;
     for (Failure failure : failures) {
       assertThat(failure.getException()).isInstanceOf(AssertionError.class)
@@ -105,7 +104,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(5);
+    assertThat(failures).hasSize(Host.getHost(0).getVMCount() + 1);
     boolean first = true;
     int i = 0;
     for (Failure failure : failures) {
@@ -148,7 +147,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(4);
+    assertThat(failures).hasSize(Host.getHost(0).getVMCount());
     int i = 0;
     for (Failure failure : failures) {
       assertThat(failure.getException()).isInstanceOf(NullPointerException.class)
@@ -162,7 +161,7 @@ public class SharedErrorCollectorTest {
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(5);
+    assertThat(failures).hasSize(Host.getHost(0).getVMCount() + 1);
     boolean first = true;
     int i = 0;
     for (Failure failure : failures) {
