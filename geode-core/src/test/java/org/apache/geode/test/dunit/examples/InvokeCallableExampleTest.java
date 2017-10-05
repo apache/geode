@@ -47,8 +47,6 @@ public class InvokeCallableExampleTest {
   @Test
   public void getPidOfEachVM() throws Exception {
     for (VM vm : Host.getHost(0).getAllVMs()) {
-      System.out.println(vm + " pid is " + vm.invoke(() -> ProcessUtils.identifyPid()));
-      // NOTE: VM.getPid() currently returns the VM number instead of pid
       System.out.println("vm.getPid() is " + vm.getPid());
     }
   }

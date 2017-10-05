@@ -49,7 +49,7 @@ public class UndeployCommand implements GfshCommand {
   @CliCommand(value = {CliStrings.UNDEPLOY}, help = CliStrings.UNDEPLOY__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
-      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.JAR)
+      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   public Result undeploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.UNDEPLOY__GROUP__HELP,

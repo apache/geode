@@ -50,6 +50,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
+import org.apache.geode.security.NotAuthorizedException;
 
 public class CompiledSelect extends AbstractCompiledValue {
 
@@ -1115,7 +1116,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       List pathOnItr = cv.getPathOnIterator(rit, context);
       if (pathOnItr != null) {
         String path[] = (String[]) pathOnItr.toArray(new String[pathOnItr.size()]);
-        ObjectType ot[] = PathUtils.calculateTypesAlongPath(rit.getElementType(), path);
+        ObjectType ot[] = PathUtils.calculateTypesAlongPath(context, rit.getElementType(), path);
         retType = ot[ot.length - 1];
       }
     } catch (NameNotFoundException ignore) {

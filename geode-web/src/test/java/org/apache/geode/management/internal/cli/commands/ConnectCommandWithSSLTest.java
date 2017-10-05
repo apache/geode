@@ -141,6 +141,12 @@ public class ConnectCommandWithSSLTest {
     }
   };
 
+  private static Properties httpSslPropertiesSkipValidation = new Properties() {
+    {
+      setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    }
+  };
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -219,7 +225,7 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
 
-    // cannot conect to http
+    // cannot connect to http
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
@@ -260,12 +266,31 @@ public class ConnectCommandWithSSLTest {
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 
-    // can connect to jmx
+    // cannot connect to jmx
     gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 
-    // can conect to http
+    // can connect to http
+    gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
+        "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
+    assertThat(gfsh.isConnected()).isTrue();
+  }
+
+  @Test
+  public void connectWithHttpSSLAndSkipSSLValidation() throws Exception {
+    httpSslPropertiesSkipValidation.store(out, null);
+    // cannot connect to locator and jmx
+    gfsh.connect(locator.getPort(), GfshShellConnectionRule.PortType.locator,
+        "security-properties-file", sslConfigFile.getAbsolutePath());
+    assertThat(gfsh.isConnected()).isFalse();
+
+    // cannot connect to jmx
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+        "security-properties-file", sslConfigFile.getAbsolutePath());
+    assertThat(gfsh.isConnected()).isFalse();
+
+    // can connect to http
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
         "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
     assertThat(gfsh.isConnected()).isTrue();

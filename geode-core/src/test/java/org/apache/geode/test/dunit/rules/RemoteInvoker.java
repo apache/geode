@@ -20,23 +20,27 @@ import java.io.Serializable;
 
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.VM;
 
 /**
  * Provides remote invocation support to a {@code TestRule}. These methods will invoke a
  * SerializableRunnable in all remote DUnit JVMs including the Locator JVM.
  */
-class RemoteInvoker implements Serializable {
+public class RemoteInvoker implements Serializable {
 
   private static final long serialVersionUID = -1759722991299584649L;
-
-  // controller VM
-  // dunit VMs
-  // locator VM
 
   /**
    * Invokes in these VMs: controller VM and dunit VMs but not the dunit locator VM
    */
   public void invokeInEveryVM(final SerializableRunnableIF runnable) {
+    Invoke.invokeInEveryVM(runnable);
+  }
+
+  /**
+   * Invokes in these VMs: controller VM and dunit VMs but not the dunit locator VM
+   */
+  public void invokeInEveryVMAndController(final SerializableRunnableIF runnable) {
     try {
       runnable.run();
     } catch (Exception e) {
@@ -51,5 +55,23 @@ class RemoteInvoker implements Serializable {
   public void invokeInEveryVMAndLocator(final SerializableRunnableIF runnable) {
     Invoke.invokeInEveryVM(runnable);
     invokeInLocator(runnable);
+  }
+
+  /**
+   * Invokes in specified VM
+   */
+  public void invoke(final SerializableRunnableIF runnable, final VM vm) {
+    vm.invoke(runnable);
+  }
+
+  /**
+   * Invokes in local VM (controller VM)
+   */
+  public void invoke(final SerializableRunnableIF runnable) {
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

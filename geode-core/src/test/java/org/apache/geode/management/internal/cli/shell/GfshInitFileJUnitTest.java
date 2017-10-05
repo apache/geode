@@ -110,6 +110,8 @@ public class GfshInitFileJUnitTest {
       System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY, saveLog4j2Config);
       ((LoggerContext) LogManager.getContext(false)).reconfigure();
     }
+
+    Gfsh.getCurrentInstance().stop();
   }
 
   @Before

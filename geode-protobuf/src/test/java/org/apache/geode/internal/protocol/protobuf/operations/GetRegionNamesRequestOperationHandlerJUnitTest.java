@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,11 +35,9 @@ import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.Success;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
-import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.security.server.NoOpAuthorizer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -64,8 +63,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   }
 
   @Test
-  public void processReturnsCacheRegions()
-      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
+  public void processReturnsCacheRegions() throws UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
         serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
@@ -87,9 +85,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   }
 
   @Test
-  public void processReturnsNoCacheRegions()
-      throws CodecAlreadyRegisteredForTypeException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+  public void processReturnsNoCacheRegions() throws Exception {
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));

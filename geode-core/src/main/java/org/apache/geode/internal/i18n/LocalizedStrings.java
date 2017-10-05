@@ -2086,6 +2086,8 @@ public class LocalizedStrings {
           "Method '' {0} '' in class '' {1} '' is not accessible to the query processor");
   public static final StringId AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1 =
       new StringId(2253, "No public attribute named '' {0} '' was found in class  {1}");
+  public static final StringId AttributeDescriptor_NO_ACCESS_BECAUSE_METHOD_WAS_BLACKLISTED =
+      new StringId(2254, "No access to attribute named '' {0} '' because it has been blacklisted");
 
   public static final StringId AvailablePort_UNKNOWN_PROTOCOL_0 =
       new StringId(2258, "Unknown protocol:  {0}");
@@ -7213,7 +7215,7 @@ public class LocalizedStrings {
       new StringId(5305,
           "Exception occurred while handling call to {0}.afterAcknowledgement for event {1}:");
   public static final StringId GatewayReceiverImpl_USING_LOCAL_HOST =
-      new StringId(5399, "No bind-address or hostname-for-sender is specified, Using local host ");
+      new StringId(5399, "No bind-address or hostname-for-senders specified, Using local host ");
   public static final StringId GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME =
       new StringId(5400, "Could not get host name");
   public static final StringId CqService_ERROR_SENDING_CQ_CONNECTION_STATUS =

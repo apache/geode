@@ -1081,14 +1081,12 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
     });
   }
 
-  @Ignore("TODO: This test is failing inconsistently, see bug 51258")
   @Test
   public void testDurableNonHAFailover() throws InterruptedException {
     durableFailover(0);
     durableFailoverAfterReconnect(0);
   }
 
-  @Ignore("TODO: This test is failing inconsistently, see bug 51258")
   @Test
   public void testDurableHAFailover() throws InterruptedException {
     // Clients see this when the servers disconnect
@@ -1269,21 +1267,14 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
 
   public void durableFailoverAfterReconnect(int redundancyLevel) {
-
-
     // Start server 1
-    Integer[] ports = ((Integer[]) this.server1VM.invoke(
-        () -> CacheServerTestUtil.createCacheServerReturnPorts(regionName, new Boolean(true))));
+    Integer[] ports = ((Integer[]) this.server1VM
+        .invoke(() -> CacheServerTestUtil.createCacheServerReturnPorts(regionName, true)));
     final int server1Port = ports[0].intValue();
-    final int mcastPort = ports[1].intValue();
 
-    // Start server 2 using the same mcast port as server 1
-    fail("Trying to get a result from a void method");
-    final int server2Port = 0;
-    // final int server2Port = ((Integer) this.server2VM.invoke(() ->
-    // CacheServerTestUtil.createCacheServer(regionName, new Boolean(true), new
-    // Integer(mcastPort))))
-    // .intValue();
+    ports = this.server2VM
+        .invoke(() -> CacheServerTestUtil.createCacheServerReturnPorts(regionName, true));
+    int server2Port = ports[0];
 
     // Start a durable client
     final String durableClientId = getName() + "_client";

@@ -285,7 +285,10 @@ public class LuceneIndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__REGION_HELP) final String regionPath,
 
-      @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, mandatory = true,
+      @CliOption(
+          key = {LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING,
+              LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRINGS},
+          mandatory = true,
           help = LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING__HELP) final String queryString,
 
       @CliOption(key = LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, mandatory = true,

@@ -42,15 +42,14 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -80,7 +79,7 @@ public class AuthorizationIntegrationTest {
       new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.WRITE);
 
   @Before
-  public void setUp() throws IOException, CodecAlreadyRegisteredForTypeException {
+  public void setUp() throws IOException {
     Properties expectedAuthProperties = new Properties();
     expectedAuthProperties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
     expectedAuthProperties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);

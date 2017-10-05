@@ -158,23 +158,24 @@ public class TestSecurityManager implements SecurityManager {
       readUsers(this.userNameToUser, jsonNode, roleMap);
       return true;
     } catch (IOException ex) {
+      ex.printStackTrace();
       return false;
     }
   }
 
-  boolean initializeFromJsonResource(final String jsonResource) {
+  public boolean initializeFromJsonResource(final String jsonResource) {
     try {
       InputStream input = ClassLoader.getSystemResourceAsStream(jsonResource);
       if (input != null) {
-        initializeFromJson(readJsonFromInputStream(input));
-        return true;
+        return initializeFromJson(readJsonFromInputStream(input));
       }
     } catch (IOException ex) {
+      ex.printStackTrace();
     }
     return false;
   }
 
-  User getUser(final String user) {
+  public User getUser(final String user) {
     return this.userNameToUser.get(user);
   }
 
@@ -258,12 +259,28 @@ public class TestSecurityManager implements SecurityManager {
     List<ResourcePermission> permissions = new ArrayList<>();
     String name;
     String serverGroup;
+
+    public String getName() {
+      return name;
+    }
+
+    public List<ResourcePermission> getPermissions() {
+      return permissions;
+    }
   }
 
   public static class User {
     String name;
     Set<Role> roles = new HashSet<>();
     String password;
+
+    public Set<Role> getRoles() {
+      return roles;
+    }
+
+    public String getPassword() {
+      return password;
+    }
   }
 
 }

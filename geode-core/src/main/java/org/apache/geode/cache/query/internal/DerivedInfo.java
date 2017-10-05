@@ -64,18 +64,21 @@ public class DerivedInfo {
     return remainingOps;
   }
 
-  public void addDerivedResults(IndexInfo indexInfo, SelectResults sr) {
+  public void addDerivedResults(IndexInfo indexInfo, SelectResults selectResults) {
     IndexProtocol index = indexInfo._index;
     String key = QueryUtils.getCompiledIdFromPath(indexInfo._path).getId() + ":"
         + index.getCanonicalizedIteratorDefinitions()[0];
-    // String key = index.getCanonicalizedIteratorDefinitions()[0];
     if (derivedResults.containsKey(key)) {
-      derivedResults.get(key).addAll(sr);
+      for (Object result : selectResults) {
+        if (!derivedResults.get(key).contains(result)) {
+          derivedResults.get(key).add(result);
+        }
+      }
     } else {
-      derivedResults.put(key, sr);
+      derivedResults.put(key, selectResults);
     }
-    newDerivatives
-        .add(new Object[] {QueryUtils.getCompiledIdFromPath(indexInfo._path).getId(), sr});
+    newDerivatives.add(
+        new Object[] {QueryUtils.getCompiledIdFromPath(indexInfo._path).getId(), selectResults});
     successfulOps.add(currentOp);
   }
 

@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -210,35 +209,25 @@ public class ClientHealthMonitorJUnitTest {
     int maximumTimeBetweenPings = ClientHealthMonitor.getInstance().getMaximumTimeBetweenPings();
 
     long monitorInterval = ClientHealthMonitor.getInstance().getMonitorInterval();
-    long connectTimeout = maximumTimeBetweenPings + monitorInterval + pollInterval;
-    Runnable verifyConnectedClients = () -> {
-      assertNotEquals(0, statistics.getInt("currentClients"));
-    };
 
-    waitAndVerify(0, pollInterval, connectTimeout, verifyConnectedClients);
+    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(1, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 1);
 
     assertEquals(1, statistics.getInt("currentClients"));
     assertEquals(1, statistics.getInt("currentClientConnections"));
-    // String connection1String = connection1.toString();
     ServerRegionProxy srp = new ServerRegionProxy("region1", proxy);
+
     srp.putOnForTestsOnly(connection1, "key-1", "value-1", new EventID(new byte[] {1}, 1, 1), null);
     this.system.getLogWriter().info("did put 1");
-    // proxy.testfinalizeServerConnectionMonitor();
 
-    long disconnectTimeout = maximumTimeBetweenPings + monitorInterval + pollInterval;
+    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(1, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 0);
 
-    Runnable verifyNoConnectedClients = () -> {
-      assertEquals(0, statistics.getInt("currentClients"));
-    };
-    long disconnectDelay = monitorInterval + 1;
-    waitAndVerify(disconnectDelay, pollInterval, disconnectTimeout, verifyNoConnectedClients);
+    this.system.getLogWriter().info("currentClients=" + statistics.getInt("currentClients")
+        + " currentClientConnections=" + statistics.getInt("currentClientConnections"));
+    assertEquals(0, statistics.getInt("currentClients"));
+    assertEquals(0, statistics.getInt("currentClientConnections"));
 
-    {
-      this.system.getLogWriter().info("currentClients=" + statistics.getInt("currentClients")
-          + " currentClientConnections=" + statistics.getInt("currentClientConnections"));
-      assertEquals(0, statistics.getInt("currentClients"));
-      assertEquals(0, statistics.getInt("currentClientConnections"));
-    }
     addExceptions();
     // the connection should now fail since the server timed it out
     try {
@@ -248,14 +237,7 @@ public class ClientHealthMonitorJUnitTest {
     }
   }
 
-  private void waitAndVerify(long pollDelay, int pollInterval, long timeout,
-      Runnable verifyNoConnectedClients) {
-    Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS)
-        .pollDelay(pollDelay, TimeUnit.MILLISECONDS)
-        .pollInterval(pollInterval, TimeUnit.MILLISECONDS).until(verifyNoConnectedClients);
-  }
-
-  public void addExceptions() throws Exception {
+  public void addExceptions() {
     if (this.system != null) {
       this.system.getLogWriter()
           .info("<ExpectedException action=add>" + "java.io.EOFException" + "</ExpectedException>");

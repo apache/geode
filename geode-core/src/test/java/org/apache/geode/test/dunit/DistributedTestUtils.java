@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.junit.Assert.assertEquals;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
@@ -143,10 +144,27 @@ public class DistributedTestUtils {
   }
 
   /**
-   * Get the port that the standard dunit locator is listening on.
+   * Returns the port that the standard dunit locator is listening on.
+   *
+   * @deprecated Please use {@link #getLocatorPort()} instead.
    */
+  @Deprecated
   public static int getDUnitLocatorPort() {
+    return getLocatorPort();
+  }
+
+  /**
+   * Returns the port that the standard dunit locator is listening on.
+   */
+  public static int getLocatorPort() {
     return DUnitEnv.get().getLocatorPort();
+  }
+
+  /**
+   * Returns a {@link ConfigurationProperties#LOCATORS} string for the standard dunit locator.
+   */
+  public static String getLocators() {
+    return Host.getHost(0).getHostName() + "[" + getLocatorPort() + "]";
   }
 
   public static void unregisterAllDataSerializersFromAllVms() {

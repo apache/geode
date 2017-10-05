@@ -57,15 +57,19 @@ subprojects {
     // will have trouble unless we tell it to use UTF-8 encoding.
     // This setting needs to go into the core.resources.prefs file,
     // which the JDT script isn't set up to configure
-    eclipseJdt << {
-      File f = file('.settings/org.eclipse.core.resources.prefs')
-      f.write('eclipse.preferences.version=1\n')
-      f.append('encoding/<project>=utf-8')
+    eclipseJdt {
+      doLast {
+        File f = file('.settings/org.eclipse.core.resources.prefs')
+        f.write('eclipse.preferences.version=1\n')
+        f.append('encoding/<project>=utf-8')
+      }
     }
   }
 
-  cleanEclipse << {
-    delete '.settings/org.eclipse.core.resources.prefs'
+  cleanEclipse {
+    doLast {
+      delete '.settings/org.eclipse.core.resources.prefs'
+    }
   }
   
   tasks.eclipse.dependsOn(cleanEclipse)

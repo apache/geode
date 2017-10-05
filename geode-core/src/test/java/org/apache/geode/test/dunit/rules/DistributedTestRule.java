@@ -14,6 +14,9 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 
 /**
@@ -21,7 +24,11 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
  * to implement {@code Serializable}.
  *
  * <p>
- * DistributedTestRule can be used in DistributedTests:
+ * {@code DistributedTestRule} follows the standard convention of using a {@code Builder} for
+ * configuration as introduced in the JUnit {@code Timeout} rule.
+ *
+ * <p>
+ * {@code DistributedTestRule} can be used in DistributedTests as a {@code ClassRule}:
  *
  * <pre>
  * {@literal @}ClassRule
@@ -35,8 +42,44 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
  */
 public class DistributedTestRule extends DistributedExternalResource {
 
+  private final int vmCount;
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public DistributedTestRule() {
+    // use 4 DUnit VMs by default
+    this.vmCount = 4;
+  }
+
+  DistributedTestRule(final Builder builder) {
+    // use 4 DUnit VMs by default
+    this.vmCount = builder.vmCount;
+  }
+
   @Override
   protected void before() throws Throwable {
     DUnitLauncher.launchIfNeeded();
+    for (int i = 0; i < vmCount; i++) {
+      assertThat(Host.getHost(0).getVM(i)).isNotNull();
+    }
+  }
+
+  public static class Builder {
+
+    private int vmCount = 4;
+
+    public Builder withVMCount(final int vmCount) {
+      if (vmCount < 0) {
+        throw new IllegalArgumentException("VM count must be positive integer");
+      }
+      this.vmCount = vmCount;
+      return this;
+    }
+
+    public DistributedTestRule build() {
+      return new DistributedTestRule(this);
+    }
   }
 }

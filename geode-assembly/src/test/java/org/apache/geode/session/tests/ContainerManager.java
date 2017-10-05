@@ -122,6 +122,12 @@ public class ContainerManager {
     stopContainers(getActiveContainerIndexes());
   }
 
+  public void dumpLogs() throws IOException {
+    for (ServerContainer container : getActiveContainers()) {
+      container.dumpLogs();
+    }
+  }
+
   /**
    * Set the name of the current test
    *

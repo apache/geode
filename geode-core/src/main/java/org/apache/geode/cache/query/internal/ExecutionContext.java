@@ -332,7 +332,7 @@ public class ExecutionContext {
         // If Element type is ObjectType then we don't need to apply reflection to find out field or
         // method. This save lot of CPU time.
         if (!TypeUtils.OBJECT_TYPE.equals(itr.getElementType())
-            && itr.containsProperty(name, numArgs, mustBeMethod)) {
+            && itr.containsProperty(this, name, numArgs, mustBeMethod)) {
           hits.add(itr);
         } else if (TypeUtils.OBJECT_TYPE.equals(itr.getElementType())) {
           if (foundOneUnknown) {

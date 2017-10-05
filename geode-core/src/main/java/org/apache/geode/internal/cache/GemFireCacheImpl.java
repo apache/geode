@@ -79,6 +79,9 @@ import com.sun.jna.Platform;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.query.internal.InternalQueryService;
+import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
+import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.security.SecurityServiceFactory;
@@ -177,7 +180,6 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
-import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.cache.execute.util.FindRestEnabledServersFunction;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
@@ -215,7 +217,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -4192,7 +4193,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public QueryService getQueryService() {
+  public InternalQueryService getQueryService() {
     if (!isClient()) {
       return new DefaultQueryService(this);
     }
@@ -4201,7 +4202,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       throw new IllegalStateException(
           "Client cache does not have a default pool. Use getQueryService(String poolName) instead.");
     }
-    return defaultPool.getQueryService();
+    return (InternalQueryService) defaultPool.getQueryService();
   }
 
   @Override

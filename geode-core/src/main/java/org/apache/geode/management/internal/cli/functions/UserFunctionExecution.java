@@ -89,8 +89,7 @@ public class UserFunctionExecution implements Function, InternalEntity {
         }
 
         // security check
-        function.getRequiredPermissions(Optional.ofNullable(onRegion))
-            .forEach(securityService::authorize);
+        function.getRequiredPermissions(onRegion).forEach(securityService::authorize);
 
         Execution execution = null;
         if (onRegion != null && onRegion.length() > 0) {

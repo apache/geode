@@ -2021,6 +2021,8 @@ public class CliStrings {
       "Port number of the Cache Server whose metrics are to be displayed/exported. This can only be used along with the --member parameter.";
   public static final String SHOW_METRICS__CANNOT__USE__CACHESERVERPORT =
       "If the --port parameter is specified, then the --member parameter must also be specified.";
+  public static final String SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT =
+      "The --region and --port parameters are mutually exclusive. Please only use one or the other.";
   public static final String SHOW_METRICS__CACHE__SERVER__NOT__FOUND =
       "Metrics for the Cache Server with port : {0} and member : {1} not found.\n Please check the port number and the member name/id";
 
@@ -2120,7 +2122,9 @@ public class CliStrings {
   public static final String CREATE_GATEWAYRECEIVER__MANUALSTART = "manual-start";
   public static final String CREATE_GATEWAYRECEIVER__MANUALSTART__HELP =
       "Whether manual start is to be enabled or the receiver will start automatically after creation.";
-
+  public static final String CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS = "hostname-for-senders";
+  public static final String CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP =
+      "The host name that server locators will tell GatewaySenders this GatewayReceiver is listening on.";
 
   /* start gateway-receiver */
   public static final String START_GATEWAYRECEIVER = "start gateway-receiver";

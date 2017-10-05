@@ -173,7 +173,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
 
   public void createMember(final VM memberVM) {
     Properties properties = new Properties();
-    properties.setProperty(NAME, "memberVM-" + memberVM.getPid());
+    properties.setProperty(NAME, "memberVM-" + memberVM.getId());
     memberVM.invoke("createMember", () -> createMember(properties));
   }
 

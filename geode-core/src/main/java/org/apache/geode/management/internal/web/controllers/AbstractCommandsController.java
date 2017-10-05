@@ -17,19 +17,14 @@ package org.apache.geode.management.internal.web.controllers;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.JMX;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
@@ -39,25 +34,25 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -67,14 +62,15 @@ import org.apache.geode.security.NotAuthorizedException;
  * 
  * @see org.apache.geode.management.MemberMXBean
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
+ * @see org.springframework.http.ResponseEntity
  * @see org.springframework.stereotype.Controller
  * @see org.springframework.web.bind.annotation.ExceptionHandler
  * @see org.springframework.web.bind.annotation.InitBinder
+ * @see org.springframework.web.bind.annotation.ResponseBody
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
 public abstract class AbstractCommandsController {
-
   private static final Logger logger = LogService.getLogger();
 
   protected static final String DEFAULT_ENCODING = UriUtils.DEFAULT_ENCODING;
@@ -84,242 +80,53 @@ public abstract class AbstractCommandsController {
 
   private Class accessControlKlass;
 
-  private InternalCache getCache() {
-    return GemFireCacheImpl.getInstance();
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<String> internalError(final Exception e) {
+    final String stackTrace = getPrintableStackTrace(e);
+    logger.fatal(stackTrace);
+    return new ResponseEntity<>(stackTrace, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  // Convert a predefined exception to an HTTP Status code
-  @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Not authenticated") // 401
-  @ExceptionHandler(org.apache.geode.security.AuthenticationFailedException.class)
-  public void authenticate() {
-    // nothing
+  @ExceptionHandler(AuthenticationFailedException.class)
+  public ResponseEntity<String> unauthorized(AuthenticationFailedException e) {
+    return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
   }
 
-  // Convert a predefined exception to an HTTP Status code
-  @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Access Denied") // 403
-  @ExceptionHandler(java.lang.SecurityException.class)
-  public void authorize() {
-    // nothing
+  @ExceptionHandler({NotAuthorizedException.class, java.lang.SecurityException.class})
+  public ResponseEntity<String> forbidden(Exception e) {
+    return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
   }
 
-  /**
-   * Asserts the argument is valid, as determined by the caller passing the result of an evaluated
-   * expression to this assertion.
-   * 
-   * @param validArg a boolean value indicating the evaluation of the expression validating the
-   *        argument.
-   * @param message a String value used as the message when constructing an
-   *        IllegalArgumentException.
-   * @param args Object arguments used to populate placeholder's in the message.
-   * @throws IllegalArgumentException if the argument is not valid.
-   * @see java.lang.String#format(String, Object...)
-   */
-  protected static void assertArgument(final boolean validArg, final String message,
-      final Object... args) {
-    if (!validArg) {
-      throw new IllegalArgumentException(String.format(message, args));
-    }
+  @ExceptionHandler(MalformedObjectNameException.class)
+  public ResponseEntity<String> badRequest(final MalformedObjectNameException e) {
+    logger.info(e);
+    return new ResponseEntity<>(getPrintableStackTrace(e), HttpStatus.BAD_REQUEST);
   }
 
-  /**
-   * Asserts the Object reference is not null!
-   * 
-   * @param obj the reference to the Object.
-   * @param message the String value used as the message when constructing and throwing a
-   *        NullPointerException.
-   * @param args Object arguments used to populate placeholder's in the message.
-   * @throws NullPointerException if the Object reference is null.
-   * @see java.lang.String#format(String, Object...)
-   */
-  protected static void assertNotNull(final Object obj, final String message,
-      final Object... args) {
-    if (obj == null) {
-      throw new NullPointerException(String.format(message, args));
-    }
+  @ExceptionHandler(InstanceNotFoundException.class)
+  public ResponseEntity<String> notFound(final InstanceNotFoundException e) {
+    logger.info(e);
+    return new ResponseEntity<>(getPrintableStackTrace(e), HttpStatus.NOT_FOUND);
   }
 
-  /**
-   * Asserts whether state, based on the evaluation of a conditional expression, passed to this
-   * assertion is valid.
-   * 
-   * @param validState a boolean value indicating the evaluation of the expression from which the
-   *        conditional state is based. For example, a caller might use an expression of the form
-   *        (initableObj.isInitialized()).
-   * @param message a String values used as the message when constructing an IllegalStateException.
-   * @param args Object arguments used to populate placeholder's in the message.
-   * @throws IllegalStateException if the conditional state is not valid.
-   * @see java.lang.String#format(String, Object...)
-   */
-  protected static void assertState(final boolean validState, final String message,
-      final Object... args) {
-    if (!validState) {
-      throw new IllegalStateException(String.format(message, args));
-    }
-  }
-
-  /**
-   * Decodes the encoded String value using the default encoding UTF-8. It is assumed the String
-   * value was encoded with the URLEncoder using the UTF-8 encoding. This method handles
-   * UnsupportedEncodingException by just returning the encodedValue.
-   * 
-   * @param encodedValue the encoded String value to decode.
-   * @return the decoded value of the String or encodedValue if the UTF-8 encoding is unsupported.
-   * @see org.apache.geode.management.internal.web.util.UriUtils#decode(String)
-   */
-  protected static String decode(final String encodedValue) {
-    return UriUtils.decode(encodedValue);
-  }
-
-  /**
-   * Decodes the encoded String value using the specified encoding (such as UTF-8). It is assumed
-   * the String value was encoded with the URLEncoder using the specified encoding. This method
-   * handles UnsupportedEncodingException by just returning the encodedValue.
-   * 
-   * @param encodedValue a String value encoded in the encoding.
-   * @param encoding a String value specifying the encoding.
-   * @return the decoded value of the String or encodedValue if the specified encoding is
-   *         unsupported.
-   * @see org.apache.geode.management.internal.web.util.UriUtils#decode(String, String)
-   */
-  protected static String decode(final String encodedValue, final String encoding) {
-    return UriUtils.decode(encodedValue, encoding);
-  }
-
-  /**
-   * Gets the specified value if not null or empty, otherwise returns the default value.
-   * 
-   * @param value the String value being evaluated for having value (not null and not empty).
-   * @param defaultValue the default String value returned if 'value' has no value.
-   * @return 'value' if not null or empty, otherwise returns the default value.
-   * @see #hasValue(String)
-   */
-  protected static String defaultIfNoValue(final String value, final String defaultValue) {
-    return (hasValue(value) ? value : defaultValue);
-  }
-
-  /**
-   * Encodes the String value using the default encoding UTF-8.
-   * 
-   * @param value the String value to encode.
-   * @return an encoded value of the String using the default encoding UTF-8 or value if the UTF-8
-   *         encoding is unsupported.
-   * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String)
-   */
-  protected static String encode(final String value) {
-    return UriUtils.encode(value);
-  }
-
-  /**
-   * Encodes the String value using the specified encoding (such as UTF-8).
-   * 
-   * @param value the String value to encode.
-   * @param encoding a String value indicating the encoding.
-   * @return an encoded value of the String using the specified encoding or value if the specified
-   *         encoding is unsupported.
-   * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String, String)
-   */
-  protected static String encode(final String value, final String encoding) {
-    return UriUtils.encode(value, encoding);
-  }
-
-  /**
-   * Determines whether the specified Object has value, which is determined by a non-null Object
-   * reference.
-   * 
-   * @param value the Object value being evaluated for value.
-   * @return a boolean value indicating whether the specified Object has value.
-   * @see java.lang.Object
-   */
-  protected static boolean hasValue(final Object value) {
-    return (value instanceof String[] ? hasValue((String[]) value)
-        : (value instanceof String ? hasValue((String) value) : value != null));
-  }
-
-  /**
-   * Determines whether the specified String has value, determined by whether the String is
-   * non-null, not empty and not blank.
-   * 
-   * @param value the String being evaluated for value.
-   * @return a boolean indicating whether the specified String has value or not.
-   * @see java.lang.String
-   */
-  protected static boolean hasValue(final String value) {
-    return StringUtils.isNotBlank(value);
-  }
-
-  /**
-   * Determines whether the specified String array has any value, which is determined by a non-null
-   * String array reference along with containing at least 1 non-null, not empty and not blank
-   * element.
-   * 
-   * @param array an String array being evaluated for value.
-   * @return a boolean indicating whether the specified String array has any value.
-   * @see #hasValue(String)
-   * @see java.lang.String
-   */
-  protected static boolean hasValue(final String[] array) {
-    if (array != null && array.length > 0) {
-      for (final String element : array) {
-        if (hasValue(element)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
 
   /**
    * Writes the stack trace of the Throwable to a String.
-   * 
+   *
    * @param t a Throwable object who's stack trace will be written to a String.
    * @return a String containing the stack trace of the Throwable.
    * @see java.io.StringWriter
    * @see java.lang.Throwable#printStackTrace(java.io.PrintWriter)
    */
-  protected static String printStackTrace(final Throwable t) {
+  private static String getPrintableStackTrace(final Throwable t) {
     final StringWriter stackTraceWriter = new StringWriter();
     t.printStackTrace(new PrintWriter(stackTraceWriter));
     return stackTraceWriter.toString();
   }
 
   /**
-   * Converts the URI relative path to an absolute path based on the Servlet context information.
-   * 
-   * @param path the URI relative path to append to the Servlet context path.
-   * @param scheme the scheme to use for the URI
-   * @return a URI constructed with all component path information.
-   * @see java.net.URI
-   * @see org.springframework.web.servlet.support.ServletUriComponentsBuilder
-   */
-  public static URI toUri(final String path, final String scheme) {
-    return ServletUriComponentsBuilder.fromCurrentContextPath().path(REST_API_VERSION).path(path)
-        .scheme(scheme).build().toUri();
-  }
-
-  /**
-   * Handles any Exception thrown by a REST API web service endpoint, HTTP request handler method
-   * during the invocation and processing of a command.
-   * 
-   * @param cause the Exception causing the error.
-   * @return a ResponseEntity with an appropriate HTTP status code (500 - Internal Server Error) and
-   *         HTTP response body containing the stack trace of the Exception.
-   * @see java.lang.Exception
-   * @see org.springframework.http.ResponseEntity
-   * @see org.springframework.web.bind.annotation.ExceptionHandler
-   * @see org.springframework.web.bind.annotation.ResponseBody
-   */
-  @ExceptionHandler(Exception.class)
-  @ResponseBody
-  public ResponseEntity<String> handleException(final Exception cause) {
-    final String stackTrace = printStackTrace(cause);
-    logger.fatal(stackTrace);
-    return new ResponseEntity<String>(stackTrace, HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-
-  /**
    * Initializes data bindings for various HTTP request handler method parameter Java class types.
-   * 
+   *
    * @param dataBinder the DataBinder implementation used for Web transactions.
    * @see org.springframework.web.bind.WebDataBinder
    * @see org.springframework.web.bind.annotation.InitBinder
@@ -330,110 +137,27 @@ public abstract class AbstractCommandsController {
         new StringArrayPropertyEditor(StringArrayPropertyEditor.DEFAULT_SEPARATOR, false));
   }
 
-  /**
-   * Logs the client's HTTP (web) request including details of the HTTP headers and request
-   * parameters along with the web request context and description.
-   * 
-   * @param request the object encapsulating the details of the client's HTTP (web) request.
-   * @see org.springframework.web.context.request.WebRequest
-   */
-  protected void logRequest(final WebRequest request) {
-    if (request != null) {
-      final Map<String, String> headers = new HashMap<java.lang.String, java.lang.String>();
-
-      for (Iterator<String> it = request.getHeaderNames(); it.hasNext();) {
-        final String headerName = it.next();
-        headers.put(headerName,
-            ArrayUtils.toString((Object[]) request.getHeaderValues(headerName)));
-      }
-
-      final Map<String, String> parameters =
-          new HashMap<String, String>(request.getParameterMap().size());
-
-      for (Iterator<String> it = request.getParameterNames(); it.hasNext();) {
-        final String parameterName = it.next();
-        parameters.put(parameterName,
-            ArrayUtils.toString((Object[]) request.getParameterValues(parameterName)));
-      }
-
-      logger.info("HTTP-request: description ({}), context ({}), headers ({}), parameters ({})",
-          request.getDescription(false), request.getContextPath(), headers, parameters);
-    }
-  }
 
   /**
    * Gets a reference to the platform MBeanServer running in this JVM process. The MBeanServer
-   * instance constitutes a connection to the MBeanServer.
+   * instance constitutes a connection to the MBeanServer. This method returns a security-wrapped
+   * MBean if integrated security is active.
    * 
    * @return a reference to the platform MBeanServer for this JVM process.
    * @see java.lang.management.ManagementFactory#getPlatformMBeanServer()
    * @see javax.management.MBeanServer
    */
   protected MBeanServer getMBeanServer() {
-    return ManagementFactory.getPlatformMBeanServer();
-  }
-
-  /**
-   * Gets the MemberMXBean from the JVM Platform MBeanServer for the specified member, identified by
-   * name or ID in the GemFire cluster.
-   * 
-   * @param memberNameId a String indicating the name or ID of the GemFire member.
-   * @return a proxy to the GemFire member's MemberMXBean.
-   * @throws IllegalStateException if no MemberMXBean could be found for GemFire member with ID or
-   *         name.
-   * @throws RuntimeException wrapping the MalformedObjectNameException if the ObjectName pattern is
-   *         malformed.
-   * @see #getMBeanServer()
-   * @see #isMemberMXBeanFound(java.util.Collection)
-   * @see javax.management.ObjectName
-   * @see javax.management.QueryExp
-   * @see javax.management.MBeanServer#queryNames(javax.management.ObjectName,
-   *      javax.management.QueryExp)
-   * @see javax.management.JMX#newMXBeanProxy(javax.management.MBeanServerConnection,
-   *      javax.management.ObjectName, Class)
-   * @see org.apache.geode.management.MemberMXBean
-   */
-  protected MemberMXBean getMemberMXBean(final String memberNameId) {
-    try {
-      final MBeanServer connection = getMBeanServer();
-
-      final String objectNamePattern =
-          ManagementConstants.OBJECTNAME__PREFIX.concat("type=Member,*");
-
-      // NOTE throws a MalformedObjectNameException, but this should not happen since we constructed
-      // the ObjectName above
-      final ObjectName objectName = ObjectName.getInstance(objectNamePattern);
-
-      final QueryExp query = Query.or(Query.eq(Query.attr("Name"), Query.value(memberNameId)),
-          Query.eq(Query.attr("Id"), Query.value(memberNameId)));
-
-      final Set<ObjectName> objectNames = connection.queryNames(objectName, query);
-
-      assertState(isMemberMXBeanFound(objectNames),
-          "No MemberMXBean with ObjectName (%1$s) based on Query (%2$s) was found in the Platform MBeanServer for member (%3$s)!",
-          objectName, query, memberNameId);
-
-      return JMX.newMXBeanProxy(connection, objectNames.iterator().next(), MemberMXBean.class);
-    } catch (MalformedObjectNameException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Determines whether the desired MemberMXBean, identified by name or ID, was found in the
-   * platform MBeanServer of this JVM process.
-   * 
-   * @param objectNames a Collection of ObjectNames possibly referring to the desired MemberMXBean.
-   * @return a boolean value indicating whether the desired MemberMXBean was found.
-   * @see javax.management.ObjectName
-   */
-  private boolean isMemberMXBeanFound(final Collection<ObjectName> objectNames) {
-    return !(objectNames == null || objectNames.isEmpty());
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    ManagementAgent managementAgent = service.getManagementAgent();
+    return managementAgent.getJmxConnectorServer().getMBeanServer();
   }
 
   /**
    * Lookup operation for the MemberMXBean representing the Manager in the GemFire cluster. This
-   * method gets an instance fo the Platform MBeanServer for this JVM process and uses it to lookup
+   * method gets an instance of the Platform MBeanServer for this JVM process and uses it to lookup
    * the MemberMXBean for the GemFire Manager based on the ObjectName declared in the
    * DistributedSystemMXBean.getManagerObjectName() operation.
    * 
@@ -444,15 +168,11 @@ public abstract class AbstractCommandsController {
    * @see org.apache.geode.management.DistributedSystemMXBean
    * @see org.apache.geode.management.MemberMXBean
    */
-  protected synchronized MemberMXBean getManagingMemberMXBean() {
+  private synchronized MemberMXBean getManagingMemberMXBean() {
     if (managingMemberMXBeanProxy == null) {
-      SystemManagementService service =
-          (SystemManagementService) ManagementService.getExistingManagementService(getCache());
       MBeanServer mbs = getMBeanServer();
-
-      final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(mbs,
+      DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(mbs,
           MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
-
       managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(mbs,
           distributedSystemMXBean.getMemberObjectName());
     }
@@ -461,11 +181,9 @@ public abstract class AbstractCommandsController {
   }
 
   protected synchronized ObjectName getMemberObjectName() {
-    final MBeanServer platformMBeanServer = getMBeanServer();
-
-    final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(platformMBeanServer,
+    MBeanServer platformMBeanServer = getMBeanServer();
+    DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(platformMBeanServer,
         MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
-
     return distributedSystemMXBean.getMemberObjectName();
   }
 
@@ -494,7 +212,7 @@ public abstract class AbstractCommandsController {
    * @see LoginHandlerInterceptor#getEnvironment()
    */
   protected Map<String, String> getEnvironment() {
-    final Map<String, String> environment = new HashMap<String, String>();
+    final Map<String, String> environment = new HashMap<>();
 
     environment.putAll(LoginHandlerInterceptor.getEnvironment());
     environment.put(Gfsh.ENV_APP_NAME, Gfsh.GFSH_APP_NAME);
@@ -525,13 +243,7 @@ public abstract class AbstractCommandsController {
     logger.debug(LogMarker.CONFIG,
         "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
         environment, (fileData != null && fileData.length > 0));
-    return getManagingMemberMXBean().processCommand(command, environment,
-        ArrayUtils.toByteArray(fileData));
+    MemberMXBean manager = getManagingMemberMXBean();
+    return manager.processCommand(command, environment, ArrayUtils.toByteArray(fileData));
   }
-
-  @ExceptionHandler(NotAuthorizedException.class)
-  public ResponseEntity<String> handleAppException(NotAuthorizedException ex) {
-    return new ResponseEntity<String>(ex.getMessage(), HttpStatus.FORBIDDEN);
-  }
-
 }

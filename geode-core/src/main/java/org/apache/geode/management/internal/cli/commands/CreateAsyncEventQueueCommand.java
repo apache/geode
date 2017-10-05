@@ -43,7 +43,7 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE,
       help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
-      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.JAR)
+      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   public Result createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, mandatory = true,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP) String id,

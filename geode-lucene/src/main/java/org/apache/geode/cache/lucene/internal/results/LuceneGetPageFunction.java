@@ -27,16 +27,21 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.ResourcePermission;
+
 import org.apache.logging.log4j.Logger;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
  * {@link LuceneGetPageFunction} Returns the values of entries back to the user This behaves
  * basically like a getAll, but it does not invoke a cache loader
  */
-public class LuceneGetPageFunction implements Function, InternalEntity {
+public class LuceneGetPageFunction implements Function<Object>, InternalEntity {
   private static final long serialVersionUID = 1L;
   public static final String ID = LuceneGetPageFunction.class.getName();
 
@@ -85,5 +90,12 @@ public class LuceneGetPageFunction implements Function, InternalEntity {
   @Override
   public boolean optimizeForWrite() {
     return false;
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    ResourcePermission read = new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, regionName);
+    return Collections.singleton(read);
   }
 }

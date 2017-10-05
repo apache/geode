@@ -562,24 +562,34 @@ public class ServerLauncherBuilderTest {
     assertThat(builder.getServerPort()).isEqualTo(Integer.valueOf(CacheServer.DEFAULT_PORT));
   }
 
+
   @Test
   public void setServerPortToZeroOrGreaterUsesValue() throws Exception {
     Builder builder = new Builder();
 
     builder.setServerPort(0);
     assertThat(builder.getServerPort().intValue()).isEqualTo(0);
+    assertThat(builder.isServerPortSetByUser()).isFalse();
 
     builder.setServerPort(1);
     assertThat(builder.getServerPort().intValue()).isEqualTo(1);
+    assertThat(builder.isServerPortSetByUser()).isTrue();
 
     builder.setServerPort(80);
     assertThat(builder.getServerPort().intValue()).isEqualTo(80);
+    assertThat(builder.isServerPortSetByUser()).isTrue();
 
     builder.setServerPort(1024);
     assertThat(builder.getServerPort().intValue()).isEqualTo(1024);
+    assertThat(builder.isServerPortSetByUser()).isTrue();
 
     builder.setServerPort(65535);
     assertThat(builder.getServerPort().intValue()).isEqualTo(65535);
+    assertThat(builder.isServerPortSetByUser()).isTrue();
+
+    builder.setServerPort(0);
+    assertThat(builder.getServerPort().intValue()).isEqualTo(0);
+    assertThat(builder.isServerPortSetByUser()).isFalse();
   }
 
   @Test

@@ -21,7 +21,7 @@ import org.apache.geode.annotations.Experimental;
  * handler for.
  */
 @Experimental
-public class CodecAlreadyRegisteredForTypeException extends Exception {
+public class CodecAlreadyRegisteredForTypeException extends RuntimeException {
   public CodecAlreadyRegisteredForTypeException(String message) {
     super(message);
   }
