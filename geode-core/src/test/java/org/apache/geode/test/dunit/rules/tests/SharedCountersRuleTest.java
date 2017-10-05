@@ -143,7 +143,11 @@ public class SharedCountersRuleTest implements Serializable {
       vm.invoke(() -> combined.get(timeoutMillis, MILLISECONDS));
     }
 
-    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(50);
+    int dunitVMCount = Host.getHost(0).getVMCount();
+    int controllerPlusDUnitVMCount = dunitVMCount + 1;
+    int expectedIncrements = controllerPlusDUnitVMCount * numThreads;
+
+    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(expectedIncrements);
   }
 
   private void givenSharedCounterFor(final Serializable id) {

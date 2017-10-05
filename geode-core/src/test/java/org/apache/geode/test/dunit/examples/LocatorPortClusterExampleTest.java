@@ -65,9 +65,10 @@ public class LocatorPortClusterExampleTest implements Serializable {
   }
 
   @Test
-  public void clusterHasSixVMsByDefault() throws Exception {
-    assertThat(cache.getDistributionManager().getViewMembers()).hasSize(6);
-    assertThat(Host.getHost(0).getVMCount()).isEqualTo(4);
-    assertThat(Host.getHost(0).getAllVMs()).hasSize(4);
+  public void clusterHasDUnitVMCountPlusTwoByDefault() throws Exception {
+    int dunitVMCount = Host.getHost(0).getVMCount();
+    assertThat(cache.getDistributionManager().getViewMembers()).hasSize(dunitVMCount + 2);
+    assertThat(Host.getHost(0).getVMCount()).isEqualTo(dunitVMCount);
+    assertThat(Host.getHost(0).getAllVMs()).hasSize(dunitVMCount);
   }
 }
