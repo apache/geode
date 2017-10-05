@@ -85,7 +85,6 @@ public class MessageExecutionContext {
   /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not
    * be a protocol-specific statistics implementation.
-   *
    */
   public ClientProtocolStatistics getStatistics() {
     return statistics;

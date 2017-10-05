@@ -78,22 +78,6 @@ message RemoveAllResponse {
     bool success = 1;
 }
 
-message CreateRegionRequest {
-    string regionName = 1;
-}
-
-message CreateRegionResponse {
-    bool success = 1;
-}
-
-message DestroyRegionRequest {
-    string regionName = 1;
-}
-
-message DestroyRegionResponse {
-    bool success = 1;
-}
-
 message GetRegionNamesRequest {
 
 }
