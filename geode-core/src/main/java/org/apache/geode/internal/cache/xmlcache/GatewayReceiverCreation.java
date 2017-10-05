@@ -114,7 +114,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   }
 
   public String getHost() {
-    throw new IllegalStateException("getHost should not be invoked on GatewayReiverCreation");
+    throw new IllegalStateException("getHost should not be invoked on GatewayReceiverCreation");
   }
 
   public String getBindAddress() {
