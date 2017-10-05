@@ -538,7 +538,7 @@ public class CacheCreation implements InternalCache {
       for (GatewayTransportFilter filter : receiverCreation.getGatewayTransportFilters()) {
         factory.addGatewayTransportFilter(filter);
       }
-      factory.setHostnameForSenders(receiverCreation.getHost());
+      factory.setHostnameForSenders(receiverCreation.getHostnameForSenders());
       GatewayReceiver receiver = factory.create();
       if (receiver.isManualStart()) {
         cache.getLoggerI18n().info(

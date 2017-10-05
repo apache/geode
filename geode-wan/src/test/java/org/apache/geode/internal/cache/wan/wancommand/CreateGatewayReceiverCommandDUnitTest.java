@@ -20,12 +20,9 @@ import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -64,6 +61,47 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     vm5.invoke(() -> createCache(dsIdPort));
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER;
+    executeCommandAndVerifyStatus(command, 4);
+
+    // if neither bind-address or hostname-for-senders is set, profile
+    // uses AcceptorImpl.getExternalAddress() to derive canonical hostname
+    // when the Profile (and ServerLocation) are created
+    String hostname = getHostName();
+
+    vm3.invoke(() -> verifyGatewayReceiverProfile(hostname));
+    vm4.invoke(() -> verifyGatewayReceiverProfile(hostname));
+    vm5.invoke(() -> verifyGatewayReceiverProfile(hostname));
+
+    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostname));
+    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostname));
+    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostname));
+
+    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+  }
+
+  private String getHostName() throws Exception {
+    return SocketCreator.getLocalHost().getCanonicalHostName();
+  }
+
+  private String getBindAddress() throws Exception {
+    return InetAddress.getLocalHost().getHostAddress();
+  }
+
+  private void executeCommandAndVerifyStatus(String command, int numGatewayReceivers) {
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
@@ -72,7 +110,9 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
 
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(4, status.size());// expected size 4 includes the manager node
+      // expected size of 4 includes the manager node when we don't set the receiver groups to
+      // ignore it)
+      assertEquals(numGatewayReceivers, status.size());
       // verify there is no error in the status
       for (String stat : status) {
         assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
@@ -80,22 +120,6 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
-
-    String hostname;
-    hostname = SocketCreator.getLocalHost().getHostName();
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null, hostname));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null, hostname));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null, hostname));
   }
 
   /**
@@ -119,35 +143,23 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+    executeCommandAndVerifyStatus(command, 4);
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(4, status.size());// expected size 4 includes the manager node
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+    // cannot verify Profile/ServerLocation when manualStart is true
+
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 
   /**
    * GatewayReceiver with hostnameForSenders
    */
   @Test
-  public void testCreateGatewayReceiverWithHostnameForSenders() throws UnknownHostException {
+  public void testCreateGatewayReceiverWithHostnameForSenders() throws Exception {
     VM puneLocator = Host.getLocator();
     int dsIdPort = puneLocator.invoke(this::getLocatorPort);
     propsSetUp(dsIdPort);
@@ -157,7 +169,7 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     vm4.invoke(() -> createCache(dsIdPort));
     vm5.invoke(() -> createCache(dsIdPort));
 
-    String hostnameForSenders = InetAddress.getLocalHost().getHostName();
+    String hostnameForSenders = getHostName();
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
             + "=false" + " --" + CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS + "="
@@ -165,23 +177,9 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+    executeCommandAndVerifyStatus(command, 4);
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(4, status.size());// expected size 4 includes the manager node
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
-
+    // verify hostname-for-senders is used when configured
     vm3.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
     vm4.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
     vm5.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
@@ -198,6 +196,246 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
         null, hostnameForSenders));
   }
 
+  /**
+   * GatewayReceiver with all default attributes and bind-address in gemfire-properties
+   */
+  @Test
+  public void testCreateGatewayReceiverWithDefaultAndBindProperty() throws Exception {
+    VM puneLocator = Host.getLocator();
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+
+    String expectedBindAddress = getBindAddress();
+
+    String receiverGroup = "receiverGroup";
+    vm3.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    vm4.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    vm5.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+
+    String command =
+        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=" + receiverGroup;
+    executeCommandAndVerifyStatus(command, 3);
+
+    // verify bind-address used when provided as a gemfire property
+    vm3.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    vm4.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    vm5.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+
+    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+
+    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+  }
+
+  /**
+   * GatewayReceiver with all default attributes and server-bind-address in the gemfire properties
+   */
+  @Test
+  public void testCreateGatewayReceiverWithDefaultsAndServerBindAddressProperty() throws Exception {
+    VM puneLocator = Host.getLocator();
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+
+    String expectedBindAddress = getBindAddress();
+
+    String receiverGroup = "receiverGroup";
+    vm3.invoke(
+        () -> createCacheWithServerBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    vm4.invoke(
+        () -> createCacheWithServerBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    vm5.invoke(
+        () -> createCacheWithServerBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+
+    String command =
+        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=" + receiverGroup;
+    executeCommandAndVerifyStatus(command, 3);
+
+    // verify server-bind-address used if provided as a gemfire property
+    vm3.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    vm4.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    vm5.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+
+    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+
+    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+  }
+
+  /**
+   * GatewayReceiver with all default attributes and server-bind-address in the gemfire properties
+   */
+  @Test
+  public void testCreateGatewayReceiverWithDefaultsAndMultipleBindAddressProperties()
+      throws Exception {
+    VM puneLocator = Host.getLocator();
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+
+    String extraBindAddress = "localhost";
+    String expectedBindAddress = getBindAddress();
+    String receiverGroup = "receiverGroup";
+
+    vm3.invoke(() -> createCacheWithMultipleBindAddressProperties(dsIdPort, extraBindAddress,
+        expectedBindAddress, receiverGroup));
+    vm4.invoke(() -> createCacheWithMultipleBindAddressProperties(dsIdPort, extraBindAddress,
+        expectedBindAddress, receiverGroup));
+    vm5.invoke(() -> createCacheWithMultipleBindAddressProperties(dsIdPort, extraBindAddress,
+        expectedBindAddress, receiverGroup));
+
+    String command =
+        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=" + receiverGroup;
+    executeCommandAndVerifyStatus(command, 3);
+
+    // verify server-bind-address used if provided as a gemfire property
+    vm3.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    vm4.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    vm5.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+
+    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
+
+    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+  }
+
+
+  /**
+   * GatewayReceiver with hostnameForSenders
+   */
+  @Test
+  public void testCreateGatewayReceiverWithHostnameForSendersAndServerBindAddressProperty()
+      throws Exception {
+    VM puneLocator = Host.getLocator();
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+
+    String hostnameForSenders = getHostName();
+    String serverBindAddress = getBindAddress();
+
+    String receiverGroup = "receiverGroup";
+    vm3.invoke(() -> createCacheWithServerBindAddress(dsIdPort, serverBindAddress, receiverGroup));
+    vm4.invoke(() -> createCacheWithServerBindAddress(dsIdPort, serverBindAddress, receiverGroup));
+    vm5.invoke(() -> createCacheWithServerBindAddress(dsIdPort, serverBindAddress, receiverGroup));
+
+    String command =
+        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
+            + "=false" + " --" + CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS + "="
+            + hostnameForSenders + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000"
+            + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
+            + CliStrings.GROUP + "=" + receiverGroup;
+    executeCommandAndVerifyStatus(command, 3);
+
+    // verify server-bind-address takes precedence over hostname-for-senders
+    vm3.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+    vm4.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+    vm5.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+
+    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+
+    vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+    vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+    vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+  }
+
+  /**
+   * GatewayReceiver with hostnameForSenders
+   */
+  @Test
+  public void testCreateGatewayReceiverWithHostnameForSendersAndBindAddressProperty()
+      throws Exception {
+    VM puneLocator = Host.getLocator();
+    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
+    propsSetUp(dsIdPort);
+    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+
+    String hostnameForSenders = getHostName();
+    String expectedBindAddress = getBindAddress();
+
+    String receiverGroup = "receiverGroup";
+    vm3.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    vm4.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    vm5.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+
+    String command =
+        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
+            + "=false" + " --" + CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS + "="
+            + hostnameForSenders + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000"
+            + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
+            + CliStrings.GROUP + "=" + receiverGroup;
+    executeCommandAndVerifyStatus(command, 3);
+
+    vm3.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+    vm4.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+    vm5.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
+
+    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
+
+    vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+    vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+    vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
+        null, hostnameForSenders));
+  }
 
   /**
    * GatewayReceiver with given attributes and a single GatewayTransportFilter.
@@ -222,31 +460,16 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER
             + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(4, status.size());// expected size 4 includes the manager node
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+    executeCommandAndVerifyStatus(command, 4);
     List<String> transportFilters = new ArrayList<String>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
 
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters, "localhost"));
+        512000, transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters, "localhost"));
+        512000, transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters, "localhost"));
+        512000, transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 
   /**
@@ -271,32 +494,20 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
         + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
         + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1,org.apache.geode.cache30.MyGatewayTransportFilter2";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(4, status.size());// expected size 4 includes the manager node
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+    executeCommandAndVerifyStatus(command, 4);
     List<String> transportFilters = new ArrayList<String>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
 
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters, "localhost"));
+        10000, 11000, "localhost", 100000, 512000, transportFilters,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters, "localhost"));
+        10000, 11000, "localhost", 100000, 512000, transportFilters,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters, "localhost"));
+        10000, 11000, "localhost", 100000, 512000, transportFilters,
+        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 
   /**
@@ -378,8 +589,11 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
+
+    // cannot verify Profile/ServerLocation when manualStart is true
+
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 
   /**
@@ -424,10 +638,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
+
+    // cannot verify Profile/ServerLocation when manualStart is true
+
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 
   /**
@@ -469,12 +686,14 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
 
+    // cannot verify Profile/ServerLocation when manualStart is true
+
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 
   /**
@@ -516,10 +735,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
+
+    // cannot verify Profile/ServerLocation when manualStart is true
+
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 
   /**
@@ -560,11 +782,14 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testCreateGatewayReceiver failed as did not get CommandResult");
     }
+
+    // cannot verify Profile/ServerLocation when manualStart is true
+
     vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
     vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, "localhost"));
+        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
   }
 }

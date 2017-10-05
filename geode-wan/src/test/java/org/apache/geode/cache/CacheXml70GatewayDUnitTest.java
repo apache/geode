@@ -219,7 +219,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
   }
 
   static void validateGatewayReceiver(GatewayReceiver receiver1, GatewayReceiver gatewayReceiver) {
-    assertEquals(receiver1.getHost(), gatewayReceiver.getHost());
+    assertEquals(receiver1.getHostnameForSenders(), gatewayReceiver.getHostnameForSenders());
     assertEquals(receiver1.getStartPort(), gatewayReceiver.getStartPort());
     assertEquals(receiver1.getEndPort(), gatewayReceiver.getEndPort());
     assertEquals(receiver1.getMaximumTimeBetweenPings(),

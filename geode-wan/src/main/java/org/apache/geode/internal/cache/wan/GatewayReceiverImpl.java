@@ -44,7 +44,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   private static final Logger logger = LogService.getLogger();
 
-  private String host;
+  private String hostnameForSenders;
 
   private int startPort;
 
@@ -71,28 +71,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       boolean manualStart) {
     this.cache = cache;
 
-    /*
-     * If user has set hostNameForSenders then it should take precedence over bindAddress. If user
-     * hasn't set either hostNameForSenders or bindAddress then getLocalHost().getHostName() should
-     * be used.
-     */
-    if (hostnameForSenders == null || hostnameForSenders.isEmpty()) {
-      if (bindAdd == null || bindAdd.isEmpty()) {
-        try {
-          logger
-              .warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiverImpl_USING_LOCAL_HOST));
-          this.host = SocketCreator.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-          throw new IllegalStateException(
-              LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME.toLocalizedString(), e);
-        }
-      } else {
-        this.host = bindAdd;
-      }
-    } else {
-      this.host = hostnameForSenders;
-    }
-
+    this.hostnameForSenders = hostnameForSenders;
     this.startPort = startPort;
     this.endPort = endPort;
     this.timeBetPings = timeBetPings;
@@ -100,6 +79,31 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     this.bindAdd = bindAdd;
     this.filters = filters;
     this.manualStart = manualStart;
+  }
+
+  public String getHostnameForSenders() {
+    return hostnameForSenders;
+  }
+
+  public String getHost() {
+    if (receiver != null) {
+      return ((CacheServerImpl) receiver).getExternalAddress();
+    }
+
+    if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
+      return hostnameForSenders;
+    }
+
+    if (bindAdd != null && !bindAdd.isEmpty()) {
+      return bindAdd;
+    }
+
+    try {
+      return SocketCreator.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException(
+          LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME.toLocalizedString(), e);
+    }
   }
 
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
@@ -148,7 +152,9 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       receiver.setPort(this.port);
       receiver.setSocketBufferSize(socketBufferSize);
       receiver.setMaximumTimeBetweenPings(timeBetPings);
-      receiver.setHostnameForClients(host);
+      if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
+        receiver.setHostnameForClients(hostnameForSenders);
+      }
       receiver.setBindAddress(bindAdd);
       receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
       ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
@@ -209,10 +215,6 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     receiver.stop();
   }
 
-  public String getHost() {
-    return this.host;
-  }
-
   public String getBindAddress() {
     return this.bindAdd;
   }
@@ -226,13 +228,13 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   public String toString() {
     return new StringBuffer().append("Gateway Receiver").append("@")
-        .append(Integer.toHexString(hashCode())).append(" [").append("host='").append(getHost())
-        .append("'; port=").append(getPort()).append("; bindAddress=").append(getBindAddress())
-        .append("; maximumTimeBetweenPings=").append(getMaximumTimeBetweenPings())
-        .append("; socketBufferSize=").append(getSocketBufferSize()).append("; isManualStart=")
-        .append(isManualStart()).append("; group=")
-        .append(Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP})).append("]")
-        .toString();
+        .append(Integer.toHexString(hashCode())).append("'; port=").append(getPort())
+        .append("; bindAddress=").append(getBindAddress()).append("'; hostnameForSenders=")
+        .append(getHostnameForSenders()).append("; maximumTimeBetweenPings=")
+        .append(getMaximumTimeBetweenPings()).append("; socketBufferSize=")
+        .append(getSocketBufferSize()).append("; isManualStart=").append(isManualStart())
+        .append("; group=").append(Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP}))
+        .append("]").toString();
   }
 
 }
