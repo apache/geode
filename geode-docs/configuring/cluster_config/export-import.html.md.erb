@@ -51,6 +51,8 @@ import cluster-configuration --zip-file-name=/home/username/configs/myClusterCon
 See [import cluster-configuration](../../tools_modules/gfsh/command-pages/import.html#topic_vnv_grz_ck).
 
 **Note:**
-You cannot import a cluster configuration to a cluster where cache servers are already running.
-
-
+Data members (servers) obtain the new cluster configuration when they start.
+You can import a cluster configuration to a cluster where cache servers are already running,
+but locators share the imported configuration with already-running servers only if the servers have been recently started and no other
+configuration changes have been made (such as new region definitions, for example).
+Data members that were already running before the import may need to be restarted to obtain the new cluster configuration.
