@@ -68,19 +68,22 @@ public class AbstractRegionEntryTest {
     SlabImpl slab = new SlabImpl(1024); // 1k
     MemoryAllocatorImpl ma =
         MemoryAllocatorImpl.createForUnitTest(ooohml, stats, new SlabImpl[] {slab});
-    when(regionEntryContext.getOffHeap()).thenReturn(true);
-    String value = "value";
-    AbstractRegionEntry re = new TestableRegionEntry(lr, value);
-    assertEquals(value, re.getValueField());
-    EntryEventImpl entryEvent = new EntryEventImpl();
-    re.prepareValueForCache(regionEntryContext, value, entryEvent, true);
-    final byte[] cachedSerializedNewValue = entryEvent.getCachedSerializedNewValue();
-    DataInputStream dataInputStream =
-        new DataInputStream(new ByteArrayInputStream(cachedSerializedNewValue));
-    Object o = DataSerializer.readObject(dataInputStream);
-    assertNotNull(entryEvent.getCachedSerializedNewValue());
-    assertEquals(o, value);
-    MemoryAllocatorImpl.freeOffHeapMemory();
+    try {
+      when(regionEntryContext.getOffHeap()).thenReturn(true);
+      String value = "value";
+      AbstractRegionEntry re = new TestableRegionEntry(lr, value);
+      assertEquals(value, re.getValueField());
+      EntryEventImpl entryEvent = new EntryEventImpl();
+      re.prepareValueForCache(regionEntryContext, value, entryEvent, true);
+      final byte[] cachedSerializedNewValue = entryEvent.getCachedSerializedNewValue();
+      DataInputStream dataInputStream =
+          new DataInputStream(new ByteArrayInputStream(cachedSerializedNewValue));
+      Object o = DataSerializer.readObject(dataInputStream);
+      assertNotNull(entryEvent.getCachedSerializedNewValue());
+      assertEquals(o, value);
+    } finally {
+      MemoryAllocatorImpl.freeOffHeapMemory();
+    }
   }
 
   public static class TestableRegionEntry extends AbstractRegionEntry
