@@ -49,7 +49,6 @@ message Request {
         RemoveRequest removeRequest = 6;
         RemoveAllRequest removeAllRequest = 7;
 
-//        PingRequest pingRequest = 41;
         GetAvailableServersRequest getAvailableServersRequest = 42;
         GetRegionNamesRequest getRegionNamesRequest = 43;
         GetRegionRequest getRegionRequest = 44;
@@ -67,7 +66,6 @@ message Response {
 
         ErrorResponse errorResponse = 13;
 
-//        PingResponse pingResponse = 41;
         GetAvailableServersResponse getAvailableServersResponse = 42;
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;

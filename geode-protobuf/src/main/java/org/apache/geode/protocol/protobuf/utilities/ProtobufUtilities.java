@@ -84,7 +84,7 @@ public abstract class ProtobufUtilities {
 
   /**
    * Creates a protobuf (key, value) pair from unencoded data. if the value is null, it will be
-   * unset in the {@link BasicTypes.Entry}.
+   * unset in the BasicTypes.Entry.
    *
    * The key MUST NOT be null.
    *
