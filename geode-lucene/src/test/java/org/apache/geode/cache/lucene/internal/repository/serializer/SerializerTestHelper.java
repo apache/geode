@@ -24,7 +24,7 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 
 public class SerializerTestHelper {
-  static Document invokeSerializer(LuceneSerializer mapper, Object object, String[] fields) {
+  public static Document invokeSerializer(LuceneSerializer mapper, Object object, String[] fields) {
     LuceneIndex index = Mockito.mock(LuceneIndex.class);
     Mockito.when(index.getFieldNames()).thenReturn(fields);
     Collection<Document> docs = mapper.toDocuments(index, object);
