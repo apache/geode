@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
+import static org.apache.geode.management.internal.cli.commands.RemoveCommand.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -45,7 +46,6 @@ public class RemoveCommandDUnitTest implements Serializable {
   private static final String REPLICATE_REGION_NAME = "replicateRegion";
   private static final String PARTITIONED_REGION_NAME = "partitionedRegion";
   private static final String EMPTY_STRING = "";
-
 
   @Rule
   public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
@@ -95,8 +95,7 @@ public class RemoveCommandDUnitTest implements Serializable {
     String command = "remove --all --region=NotAValidRegion";
 
     gfsh.executeAndVerifyCommandError(command);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Region <NotAValidRegion> not found in any of the members");
+    assertThat(gfsh.getGfshOutput()).contains(String.format(REGION_NOT_FOUND, "NotAValidRegion"));
   }
 
   @Test
