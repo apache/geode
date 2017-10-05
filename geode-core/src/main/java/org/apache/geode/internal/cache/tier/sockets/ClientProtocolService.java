@@ -12,31 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf;
 
-public enum ProtocolErrorCode {
-  GENERIC_FAILURE(1000),
-  VALUE_ENCODING_ERROR(1100),
-  UNSUPPORTED_VERSION(1101),
-  UNSUPPORTED_OPERATION(1102),
-  UNSUPPORTED_AUTHENTICATION_MODE(1103),
-  AUTHENTICATION_FAILED(1200),
-  AUTHORIZATION_FAILED(1201),
-  UNAUTHORIZED_REQUEST(1202),
-  LOW_MEMORY(1300),
-  DATA_UNREACHABLE(1301),
-  OPERATION_TIMEOUT(1302),
-  CONSTRAINT_VIOLATION(2000),
-  BAD_QUERY(2001),
-  REGION_NOT_FOUND(2100),
-  QUERY_PARAMETER_MISMATCH(2200),
-  QUERY_BIND_FAILURE(2201),
-  QUERY_NOT_PERMITTED(2202),
-  QUERY_TIMEOUT(2203);
+package org.apache.geode.internal.cache.tier.sockets;
 
-  ProtocolErrorCode(int value) {
-    codeValue = value;
-  }
+import java.util.Map;
 
-  public int codeValue;
+import org.apache.geode.security.server.Authenticator;
+
+/**
+ * Provides a convenient location for a client protocol service to be loaded into the system.
+ */
+public interface ClientProtocolService {
+  /**
+   * The handshaker chooses an authenticator from those available based on the protocol.
+   *
+   * @param availableAuthenticators A list of valid authenticators for the current system.
+   */
+  ClientProtocolHandshaker getHandshaker(
+      Map<String, Class<? extends Authenticator>> availableAuthenticators);
+
+  ClientProtocolMessageHandler getMessageHandler();
+
 }

@@ -19,25 +19,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.geode.StatisticsFactory;
-
+import org.apache.geode.cache.IncompatibleVersionException;
+import org.apache.geode.security.server.Authenticator;
 
 /**
- * This is an interface that other modules can implement to hook into
- * {@link GenericProtocolServerConnection} to handle messages sent to Geode.
- *
- * Currently, only one {@link ClientProtocolMessageHandler} at a time can be used in a Geode
- * instance. It gets wired into {@link ServerConnectionFactory} to create all instances of
- * {@link GenericProtocolServerConnection}.
- *
- * Implementors of this interface are expected to be able to be used for any number of connections
- * at a time (stateless except for the statistics).
+ * ClientProtocolHandshaker provides the handshake for the protocol implemented by
+ * {@link ClientProtocolMessageHandler}. It is responsible for checking version compatibility
+ * information as well as authentication mode.
  */
-public interface ClientProtocolMessageHandler {
-  void initializeStatistics(String statisticsName, StatisticsFactory factory);
+public interface ClientProtocolHandshaker {
+  /**
+   * Read a handshake message from the input stream and write a response to output.
+   *
+   * @return an authenticator from those available. These are currently only set in one place, see
+   *         {@link ServerConnectionFactory}.
+   */
+  Authenticator handshake(InputStream inputStream, OutputStream outputStream)
+      throws IOException, IncompatibleVersionException;
 
-  ClientProtocolStatistics getStatistics();
-
-  void receiveMessage(InputStream inputStream, OutputStream outputStream,
-      MessageExecutionContext executionContext) throws IOException;
+  /**
+   * @return false until handshake is complete, then true afterwards.
+   */
+  boolean handshakeComplete();
 }

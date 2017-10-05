@@ -41,11 +41,14 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.MessageUtil;
+import org.apache.geode.internal.protocol.protobuf.HandshakeAPI;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
@@ -74,7 +77,6 @@ public class CacheConnectionTimeoutJUnitTest {
   public TestName testName = new TestName();
   private long monitorInterval;
   private int maximumTimeBetweenPings;
-  private static final int pollInterval = 20;
 
   @Before
   public void setup() throws Exception {
@@ -104,7 +106,10 @@ public class CacheConnectionTimeoutJUnitTest {
 
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+
+    ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+        HandshakeAPI.AuthenticationMode.NONE);
 
     serializationService = new ProtobufSerializationService();
 

@@ -28,6 +28,7 @@ import org.junit.experimental.categories.Category;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ServiceLoader;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -55,7 +56,6 @@ public class ServerConnectionFactoryTest {
   public void newClientProtocolFailsWithoutSystemPropertySet() throws IOException {
     ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-
   }
 
   /**
@@ -70,7 +70,7 @@ public class ServerConnectionFactoryTest {
   }
 
   @Test
-  public void makeServerConnection() throws Exception {
+  public void makeLegacyServerConnection() throws Exception {
     CommunicationMode[] communicationModes = new CommunicationMode[] {
         CommunicationMode.ClientToServer, CommunicationMode.PrimaryServerToClient,
         CommunicationMode.SecondaryServerToClient, CommunicationMode.GatewayToGateway,
@@ -107,7 +107,6 @@ public class ServerConnectionFactoryTest {
 
     return new ServerConnectionFactory().makeServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "", communicationMode,
-        mock(AcceptorImpl.class), mock(SecurityService.class), InetAddress.getLocalHost());
+        mock(AcceptorImpl.class), mock(SecurityService.class));
   }
-
 }

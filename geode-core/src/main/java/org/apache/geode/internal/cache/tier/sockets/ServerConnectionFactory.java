@@ -18,9 +18,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceLoader;
 
@@ -37,79 +36,86 @@ import org.apache.geode.security.server.Authenticator;
 public class ServerConnectionFactory {
   private ClientProtocolMessageHandler protocolHandler;
   private Map<String, Class<? extends Authenticator>> authenticators = null;
+  private ClientProtocolService clientProtocolService;
 
   public ServerConnectionFactory() {}
+
+  private synchronized ClientProtocolService initializeClientProtocolService(
+      StatisticsFactory statisticsFactory, String statisticsName) {
+    if (clientProtocolService != null) {
+      return clientProtocolService;
+    }
+
+    ClientProtocolService service = new ClientProtocolServiceLoader().loadService();
+    ClientProtocolMessageHandler messageHandler = service.getMessageHandler();
+    messageHandler.initializeStatistics(statisticsName, statisticsFactory);
+
+    ensureAuthenticatorsAreInitialized();
+
+    this.protocolHandler = messageHandler;
+    this.clientProtocolService = service;
+    return this.clientProtocolService;
+  }
+
+  private void ensureAuthenticatorsAreInitialized() {
+    if (authenticators == null) {
+      initializeAuthenticatorsMap();
+    }
+  }
 
   private synchronized void initializeAuthenticatorsMap() {
     if (authenticators != null) {
       return;
     }
-    HashMap tmp = new HashMap<>();
+
+    String authenticationMode = System.getProperty("geode.protocol-authentication-mode", "NOOP");
 
     ServiceLoader<Authenticator> loader = ServiceLoader.load(Authenticator.class);
+
+    Authenticator found = null;
+
     for (Authenticator streamAuthenticator : loader) {
-      tmp.put(streamAuthenticator.implementationID(), streamAuthenticator.getClass());
-    }
-
-    authenticators = tmp;
-  }
-
-  private synchronized ClientProtocolMessageHandler initializeMessageHandler(
-      StatisticsFactory statisticsFactory, String statisticsName) {
-    if (protocolHandler != null) {
-      return protocolHandler;
-    }
-
-    ClientProtocolMessageHandler tempHandler = new MessageHandlerFactory().makeMessageHandler();
-    tempHandler.initializeStatistics(statisticsName, statisticsFactory);
-
-    protocolHandler = tempHandler;
-    return protocolHandler;
-  }
-
-  private Authenticator findStreamAuthenticator(String implementationID) {
-    if (authenticators == null) {
-      initializeAuthenticatorsMap();
-    }
-    Class<? extends Authenticator> streamAuthenticatorClass = authenticators.get(implementationID);
-    if (streamAuthenticatorClass == null) {
-      throw new ServiceLoadingFailureException(
-          "Could not find implementation for Authenticator with implementation ID "
-              + implementationID);
-    } else {
-      try {
-        return streamAuthenticatorClass.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
-        throw new ServiceLoadingFailureException(
-            "Unable to instantiate authenticator for ID " + implementationID, e);
+      if (authenticationMode.equals(streamAuthenticator.implementationID())) {
+        if (found != null) {
+          throw new ServiceLoadingFailureException(
+              "Multiple Authenticators present for mode " + authenticationMode);
+        }
+        found = streamAuthenticator;
       }
     }
+
+    if (found == null) {
+      throw new ServiceLoadingFailureException(
+          "Could not find implementation for Authenticator with implementation ID "
+              + authenticationMode);
+    }
+
+    authenticators = Collections.singletonMap(authenticationMode, found.getClass());
   }
 
-  private ClientProtocolMessageHandler getOrCreateClientProtocolMessageHandler(
+  private ClientProtocolService getOrCreateClientProtocolService(
       StatisticsFactory statisticsFactory, String serverName) {
-    if (protocolHandler == null) {
-      return initializeMessageHandler(statisticsFactory, serverName);
+    if (clientProtocolService == null) {
+      return initializeClientProtocolService(statisticsFactory, serverName);
     }
-    return protocolHandler;
+    return clientProtocolService;
   }
 
   public ServerConnection makeServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService, InetAddress bindAddress) throws IOException {
+      SecurityService securityService) throws IOException {
     if (communicationMode == ProtobufClientServerProtocol.getModeNumber()) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
       } else {
-        String authenticationMode =
-            System.getProperty("geode.protocol-authentication-mode", "NOOP");
+
+
+        getOrCreateClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
 
         return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
-            socketBufferSize, communicationModeStr, communicationMode, acceptor,
-            getOrCreateClientProtocolMessageHandler(cache.getDistributedSystem(),
-                acceptor.getServerName()),
-            securityService, findStreamAuthenticator(authenticationMode));
+            socketBufferSize, communicationModeStr, communicationMode, acceptor, protocolHandler,
+            securityService, clientProtocolService.getHandshaker(authenticators));
       }
     } else {
       return new LegacyServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,

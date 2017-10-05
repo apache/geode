@@ -54,14 +54,13 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.MessageUtil;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.protobuf.HandshakeAPI;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-/**
- * Test that using the magic byte to indicate intend ot use ProtoBuf messages works
- */
 @Category(IntegrationTest.class)
 public class CacheMaxConnectionJUnitTest {
   private static final String TEST_KEY = "testKey";
@@ -69,11 +68,7 @@ public class CacheMaxConnectionJUnitTest {
   private static final int TEST_PUT_CORRELATION_ID = 12355;
   private final String TEST_REGION = "testRegion";
 
-
   private Cache cache;
-  private int cacheServerPort;
-  private Socket socket;
-  private OutputStream outputStream;
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -94,19 +89,13 @@ public class CacheMaxConnectionJUnitTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    cacheServer.setPort(cacheServerPort);
+    cacheServer.setPort(0);
     cacheServer.start();
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     regionFactory.create(TEST_REGION);
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
-
-    socket = new Socket("localhost", cacheServerPort);
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-    outputStream = socket.getOutputStream();
-    outputStream.write(110);
 
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
@@ -115,7 +104,6 @@ public class CacheMaxConnectionJUnitTest {
   @After
   public void cleanup() throws IOException {
     cache.close();
-    socket.close();
     SocketCreatorFactory.close();
   }
 
@@ -134,7 +122,7 @@ public class CacheMaxConnectionJUnitTest {
   // can't create another, and repeat once to be sure we're cleaning up.
   private void testNewProtocolRespectsMaxConnectionLimit(int threads, boolean isSelector)
       throws Exception {
-    final int connections = 16;
+    final int connections = 17;
 
     List<CacheServer> cacheServers = cache.getCacheServers();
     assertEquals(1, cacheServers.size());
@@ -180,8 +168,8 @@ public class CacheMaxConnectionJUnitTest {
     ExecutorService executor = Executors.newFixedThreadPool(connections);
 
     // Used to assert the exception is non-null.
-    ArrayList<Callable<Exception>> callables = new ArrayList<>();
-
+    // The boolean is just because invokeAll doesn't take runnable and we need *some* return type.
+    ArrayList<Callable<Boolean>> callables = new ArrayList<>();
     for (int i = 0; i < connections; i++) {
       final int j = i;
       callables.add(() -> {
@@ -192,6 +180,8 @@ public class CacheMaxConnectionJUnitTest {
           Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
           OutputStream outputStream = socket.getOutputStream();
           outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+          ProtobufTestUtilities.verifyHandshake(socket.getInputStream(), outputStream,
+              HandshakeAPI.AuthenticationMode.NONE);
 
           ClientProtocol.Message putMessage =
               MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE,
@@ -199,15 +189,15 @@ public class CacheMaxConnectionJUnitTest {
           protobufProtocolSerializer.serialize(putMessage, outputStream);
           validatePutResponse(socket, protobufProtocolSerializer);
         } catch (Exception e) {
-          return e;
+          throw new RuntimeException(e);
         }
-        return null;
+        return true;
       });
     }
-    List<Future<Exception>> futures = executor.invokeAll(callables);
 
-    for (Future<Exception> f : futures) {
-      assertNull(f.get());
+    List<Future<Boolean>> futures = executor.invokeAll(callables);
+    for (Future<?> f : futures) {
+      f.get(1, TimeUnit.MINUTES); // throws if failure.
     }
 
     // try to start a new socket, expecting it to be disconnected.
