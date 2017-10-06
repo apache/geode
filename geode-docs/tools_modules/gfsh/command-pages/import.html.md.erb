@@ -21,7 +21,7 @@ limitations under the License.
 <a id="topic_u55_wkd_2l"></a>
 
 
-You can import data into a region or import an existing cluster configuration into the cluster.
+You can import an exported cluster configuration to create a new cluster or import data into a region.
 
 -   **[import cluster-configuration](#topic_vnv_grz_ck)**
 
@@ -33,21 +33,14 @@ You can import data into a region or import an existing cluster configuration in
 
 ## <a id="topic_vnv_grz_ck" class="no-quick-link"></a>import cluster-configuration
 
-Imports a previously exported cluster configuration from a zip file. This command is useful when spinning up a new cluster and when
-upgrading from an older version of <%=vars.product_name%> to a new one.
+Imports a previously exported cluster configuration from a zip file. This command is useful when spinning up a new cluster.
 
 - In a given cluster, only one locator needs to perform the import. 
 That locator shares the imported configuration with all other connected locators in the distributed system.
-- Locators share the imported configuration with data members (servers) when the servers start, or if the servers have been recently started and no other
-configuration changes have been made (such as new region definitions, for example).
-- Data members that were already running before the import may need to be restarted to obtain the new cluster configuration.
+- Locators share the imported configuration with data members (servers) when the servers start, or if the servers have been recently started,
+have no regions defined in them, and have been given no other configuration changes since they started.
 
-So, to ensure a consistent cluster configuration throughout your distributed system, perform these steps in the following order:
-
-1. Spin up the new cluster
-2. If upgrading an already-running cluster, shut down most (or all) data members (servers) before importing a shared configuration.
-3. Import the cluster configuration.
-4. Start or restart all data members (servers).
+To import a cluster configuration, start one or more locators and then run the `gfsh` `import cluster-configuration` command.
 
 **Availability:** Online. You must be connected in `gfsh` to a locator to use this command.
 
