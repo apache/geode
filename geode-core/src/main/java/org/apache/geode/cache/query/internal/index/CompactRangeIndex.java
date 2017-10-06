@@ -181,14 +181,16 @@ public class CompactRangeIndex extends AbstractIndex {
     long start = updateIndexUseStats();
     ((AbstractIndex) indx).updateIndexUseStats();
     List data = new ArrayList();
-    CloseableIterator<IndexStoreEntry> outer = null;
+    Iterator<IndexStoreEntry> outer = null;
     Iterator inner = null;
     try {
       // We will iterate over each of the index Map to obtain the keys
-      outer = indexStore.iterator(null);
+      outer = ((MemoryIndexStore) indexStore).getKeysIterator();
 
       if (indx instanceof CompactRangeIndex) {
-        inner = ((CompactRangeIndex) indx).getIndexStorage().iterator(null);
+        IndexStore indexStore = ((CompactRangeIndex) indx).getIndexStorage();
+        inner = ((MemoryIndexStore) indexStore).getKeysIterator();
+
       } else {
         inner = ((RangeIndex) indx).getValueToEntriesMap().entrySet().iterator();
       }
@@ -252,10 +254,8 @@ public class CompactRangeIndex extends AbstractIndex {
     } finally {
       ((AbstractIndex) indx).updateIndexUseEndStats(start);
       updateIndexUseEndStats(start);
-      if (outer != null) {
-        outer.close();
-      }
-      if (inner != null && indx instanceof CompactRangeIndex) {
+      if (inner != null && indx instanceof CompactRangeIndex
+          && inner instanceof CloseableIterator) {
         ((CloseableIterator<IndexStoreEntry>) inner).close();
       }
     }
