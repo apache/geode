@@ -109,7 +109,7 @@ public class FunctionCommandsDUnitTest {
       await().atMost(120, TimeUnit.SECONDS).until(() -> dsMXBean.getMemberCount() == 3);
     });
 
-    gfsh.connect(locator);
+    connectGfsh(locator);
   }
 
   private void registerFunction(Function function, MemberVM... vms) {
@@ -118,8 +118,12 @@ public class FunctionCommandsDUnitTest {
     }
   }
 
+  public void connectGfsh(MemberVM vm) throws Exception {
+    gfsh.connectAndVerify(vm.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+  }
+
   @Test
-  public void testExecuteFunctionOnRegion() {
+  public void testExecuteFunctionOnRegion() throws Exception {
     CommandResult result = gfsh.executeAndVerifyCommand(
         "execute function --id=" + TestFunction.TEST_FUNCTION1 + " --region=/" + REGION_ONE);
     assertThat(((JSONArray) result.getContent().get("Member ID/Name")).length()).isEqualTo(2);
