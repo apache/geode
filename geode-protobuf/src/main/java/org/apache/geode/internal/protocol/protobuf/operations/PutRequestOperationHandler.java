@@ -24,7 +24,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.Failure;
-import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.Success;
@@ -33,6 +32,8 @@ import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+
+import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
 
 @Experimental
 public class PutRequestOperationHandler
@@ -47,9 +48,8 @@ public class PutRequestOperationHandler
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.warn("Received Put request for non-existing region: {}", regionName);
-      return Failure.of(
-          ProtobufResponseUtilities.makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
-              "Region passed by client did not exist: " + regionName));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND,
+          "Region passed by client did not exist: " + regionName));
     }
 
     try {
@@ -62,14 +62,13 @@ public class PutRequestOperationHandler
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
         logger.error("Received Put request with invalid key type: {}", ex);
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-            ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue,
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(CONSTRAINT_VIOLATION,
             "invalid key or value type for region " + regionName));
       }
     } catch (UnsupportedEncodingTypeException | CodecNotRegisteredForTypeException ex) {
       logger.error("Got codec error when decoding Put request: {}", ex);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue, ex.getMessage()));
+      return Failure
+          .of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR, ex.getMessage()));
     }
   }
 }

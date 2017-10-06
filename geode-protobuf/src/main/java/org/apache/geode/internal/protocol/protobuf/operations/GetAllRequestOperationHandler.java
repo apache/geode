@@ -41,6 +41,8 @@ import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
+import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
+
 @Experimental
 public class GetAllRequestOperationHandler
     implements OperationHandler<RegionAPI.GetAllRequest, RegionAPI.GetAllResponse> {
@@ -54,8 +56,8 @@ public class GetAllRequestOperationHandler
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received GetAll request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
+      return Failure
+          .of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND, "Region not found"));
     }
 
     Map<Boolean, List<Object>> resultsCollection = request.getKeyList().stream()
@@ -82,32 +84,23 @@ public class GetAllRequestOperationHandler
       return ProtobufUtilities.createEntry(serializationService, decodedKey, value);
     } catch (CodecNotRegisteredForTypeException | UnsupportedEncodingTypeException ex) {
       logger.error("Encoding not supported: {}", ex);
-      return BasicTypes.KeyedError.newBuilder().setKey(key)
-          .setError(BasicTypes.Error.newBuilder()
-              .setErrorCode(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue)
-              .setMessage("Encoding not supported."))
-          .build();
+      return createKeyedError(key, "Encoding not supported.", VALUE_ENCODING_ERROR);
     } catch (org.apache.geode.distributed.LeaseExpiredException | TimeoutException e) {
       logger.error("Operation timed out: {}", e);
-      return BasicTypes.KeyedError.newBuilder().setKey(key)
-          .setError(BasicTypes.Error.newBuilder()
-              .setErrorCode(ProtocolErrorCode.OPERATION_TIMEOUT.codeValue)
-              .setMessage("Operation timed out: " + e.getMessage()))
-          .build();
+      return createKeyedError(key, "Operation timed out: " + e.getMessage(), OPERATION_TIMEOUT);
     } catch (CacheLoaderException | PartitionedRegionStorageException e) {
       logger.error("Data unreachable: {}", e);
-      return BasicTypes.KeyedError.newBuilder().setKey(key)
-          .setError(BasicTypes.Error.newBuilder()
-              .setErrorCode(ProtocolErrorCode.DATA_UNREACHABLE.codeValue)
-              .setMessage("Data unreachable: " + e.getMessage()))
-          .build();
+      return createKeyedError(key, "Data unreachable: " + e.getMessage(), DATA_UNREACHABLE);
     } catch (NullPointerException | IllegalArgumentException e) {
       logger.error("Invalid input: {}", e);
-      return BasicTypes.KeyedError.newBuilder().setKey(key)
-          .setError(BasicTypes.Error.newBuilder()
-              .setErrorCode(ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue)
-              .setMessage("Invalid input: " + e.getMessage()))
-          .build();
+      return createKeyedError(key, "Invalid input: " + e.getMessage(), CONSTRAINT_VIOLATION);
     }
+  }
+
+  private Object createKeyedError(BasicTypes.EncodedValue key, String errorMessage,
+      ProtocolErrorCode errorCode) {
+    return BasicTypes.KeyedError.newBuilder().setKey(key).setError(
+        BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(errorMessage))
+        .build();
   }
 }

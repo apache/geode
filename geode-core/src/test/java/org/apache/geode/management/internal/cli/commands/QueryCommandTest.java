@@ -86,7 +86,7 @@ public class QueryCommandTest {
     if (useHttp) {
       gfsh.connectAndVerify(server.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
   }
 

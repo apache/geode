@@ -180,7 +180,7 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.getGfshOutput())
         .contains("trying to connect a non-SSL-enabled client to an SSL-enabled locator");
 
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     assertThat(gfsh.isConnected()).isFalse();
     assertThat(gfsh.getGfshOutput()).contains("non-JRMP server at remote endpoint");
 
@@ -198,7 +198,7 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
 
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
@@ -220,7 +220,7 @@ public class ConnectCommandWithSSLTest {
         .contains("trying to connect a non-SSL-enabled client to an SSL-enabled locator");
 
     // can connect to jmx
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
@@ -247,7 +247,7 @@ public class ConnectCommandWithSSLTest {
     gfsh.disconnect();
 
     // can connect to jmx
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
@@ -267,7 +267,7 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.isConnected()).isFalse();
 
     // cannot connect to jmx
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 
@@ -286,7 +286,7 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.isConnected()).isFalse();
 
     // cannot connect to jmx
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 

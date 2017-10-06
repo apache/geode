@@ -34,6 +34,8 @@ import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
+import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
+
 @Experimental
 public class GetRequestOperationHandler
     implements OperationHandler<RegionAPI.GetRequest, RegionAPI.GetResponse> {
@@ -47,8 +49,8 @@ public class GetRequestOperationHandler
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received Get request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
+      return Failure
+          .of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND, "Region not found"));
     }
 
     try {
@@ -64,12 +66,11 @@ public class GetRequestOperationHandler
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } catch (UnsupportedEncodingTypeException ex) {
       logger.error("Received Get request with unsupported encoding: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue, "Encoding not supported."));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
+          "Encoding not supported."));
     } catch (CodecNotRegisteredForTypeException ex) {
       logger.error("Got codec error when decoding Get request: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
           "Codec error in protobuf deserialization."));
     }
   }

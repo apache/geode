@@ -51,7 +51,7 @@ public class AbstractPeerTXRegionStubTest {
   private class TestingAbstractPeerTXRegionStub extends AbstractPeerTXRegionStub {
 
     private TestingAbstractPeerTXRegionStub(TXStateStub txState, LocalRegion r) {
-      super(txState, r);
+      super(txState);
     }
 
     @Override

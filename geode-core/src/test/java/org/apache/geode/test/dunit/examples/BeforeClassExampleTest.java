@@ -33,7 +33,7 @@ public class BeforeClassExampleTest {
   }
 
   @Test
-  public void shouldHaveFourDUnitVMsByDefault() throws Exception {
-    assertThat(Host.getHost(0).getVMCount()).isEqualTo(4);
+  public void shouldHaveFourOrMoreDUnitVMsByDefault() throws Exception {
+    assertThat(Host.getHost(0).getVMCount()).isGreaterThanOrEqualTo(4);
   }
 }

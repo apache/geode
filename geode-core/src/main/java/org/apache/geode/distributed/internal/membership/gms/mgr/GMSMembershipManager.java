@@ -919,8 +919,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
             logger.warn(LocalizedMessage.create(
                 LocalizedStrings.GroupMembershipService_Invalid_Surprise_Member,
                 new Object[] {member, latestView}));
-            requestMemberRemoval(member,
-                "this member is no longer in the view but is initiating connections");
+            try {
+              requestMemberRemoval(member,
+                  "this member is no longer in the view but is initiating connections");
+            } catch (CancelException e) {
+              // okay to ignore
+            }
           }
         }.start();
         addShunnedMember(member);

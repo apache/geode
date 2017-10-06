@@ -547,6 +547,7 @@ public class CacheClientNotifier {
       unsuccessfulMsg =
           LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_A_PREVIOUS_CONNECTION_ATTEMPT_FROM_THIS_CLIENT_IS_STILL_BEING_PROCESSED__0
               .toLocalizedString(new Object[] {proxyId});
+      logger.warn(unsuccessfulMsg);
     }
 
     // Tell the client that the proxy has been registered using the response
@@ -594,7 +595,7 @@ public class CacheClientNotifier {
     } else {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_UNSUCCESSFULLY_REGISTERED_CLIENT_WITH_IDENTIFIER__0,
-          proxyId));
+          new Object[] {proxyId, responseByte}));
     }
     return l_proxy;
   }

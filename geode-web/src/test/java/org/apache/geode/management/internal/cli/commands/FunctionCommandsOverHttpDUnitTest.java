@@ -12,31 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.web.shell;
 
-/**
- * The NoRestApiCallForCommandException class...
- * <p/>
- * 
- * @see java.lang.RuntimeException
- * @since GemFire 8.0
- */
-@SuppressWarnings("unused")
-public class RestApiCallForCommandNotFoundException extends RuntimeException {
-  private static final long serialVersionUID = 6686566370779394304L;
+package org.apache.geode.management.internal.cli.commands;
 
-  public RestApiCallForCommandNotFoundException() {}
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.junit.experimental.categories.Category;
 
-  public RestApiCallForCommandNotFoundException(final String message) {
-    super(message);
+@Category(DistributedTest.class)
+public class FunctionCommandsOverHttpDUnitTest extends FunctionCommandsDUnitTest {
+  @Override
+  public void connectGfsh(MemberVM vm) throws Exception {
+    gfsh.connectAndVerify(vm.getHttpPort(), GfshShellConnectionRule.PortType.http);
   }
-
-  public RestApiCallForCommandNotFoundException(final Throwable cause) {
-    super(cause);
-  }
-
-  public RestApiCallForCommandNotFoundException(final String message, final Throwable cause) {
-    super(message, cause);
-  }
-
 }

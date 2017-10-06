@@ -286,7 +286,7 @@ public class LocalizedStrings {
           "CacheClientNotifier: The requested durable client has the same identifier ( {0} ) as an existing durable client ( {1} ). Duplicate durable clients are not allowed.");
   public static final StringId CacheClientNotifier_CACHECLIENTNOTIFIER_UNSUCCESSFULLY_REGISTERED_CLIENT_WITH_IDENTIFIER__0 =
       new StringId(1143,
-          "CacheClientNotifier: Unsuccessfully registered client with identifier  {0}");
+          "CacheClientNotifier: Unsuccessfully registered client with identifier  {0} and response code {1}");
   public static final StringId CacheClientNotifier_CANNOT_NOTIFY_CLIENTS_TO_PERFORM_OPERATION_0_ON_EVENT_1 =
       new StringId(1144,
           "CacheClientNotifier: Cannot notify clients to perform operation {0} on event {1}");

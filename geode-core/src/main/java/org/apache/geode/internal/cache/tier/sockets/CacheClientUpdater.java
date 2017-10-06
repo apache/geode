@@ -385,6 +385,13 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientUpdater_CLASS_NOT_FOUND,
             e.getMessage()));
       }
+    } catch (ServerRefusedConnectionException e) {
+      if (!quitting()) {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.CacheClientUpdater_0_CAUGHT_FOLLOWING_EXECPTION_WHILE_ATTEMPTING_TO_CREATE_A_SERVER_TO_CLIENT_COMMUNICATION_SOCKET_AND_WILL_EXIT_1,
+            new Object[] {this, e}), logger.isDebugEnabled() ? e : null);
+      }
+      throw e;
     } finally {
       this.connected = success;
       if (mySock != null) {

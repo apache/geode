@@ -569,6 +569,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     // services.getMessenger().send(joinResponseMessage);
     // return;
     // }
+    logger.info("Received a join request from " + incomingRequest.getSender());
+
     recordViewRequest(incomingRequest);
   }
 
