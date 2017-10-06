@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -39,10 +38,6 @@ public class DestroyDiskStoreFunction extends FunctionAdapter implements Interna
 
   private static final long serialVersionUID = 1L;
 
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
   @Override
   public void execute(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
@@ -52,7 +47,7 @@ public class DestroyDiskStoreFunction extends FunctionAdapter implements Interna
       final Object[] args = (Object[]) context.getArguments();
       final String diskStoreName = (String) args[0];
 
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) context.getCache();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
