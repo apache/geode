@@ -119,7 +119,7 @@ public class FunctionCommandsDUnitTest {
   }
 
   public void connectGfsh(MemberVM vm) throws Exception {
-    gfsh.connectAndVerify(vm.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(vm.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
   }
 
   @Test
