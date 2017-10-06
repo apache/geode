@@ -40,7 +40,7 @@ public class IndexDetailsIntegrationTest {
 
   @Rule
   public ServerStarterRule serverRule =
-      new ServerStarterRule().withRegion(RegionShortcut.REPLICATE, REGION_1).withAutoStart();
+      new ServerStarterRule().withRegion(RegionShortcut.REPLICATE, REGION_1);
 
   @Before
   public void before() throws Exception {
