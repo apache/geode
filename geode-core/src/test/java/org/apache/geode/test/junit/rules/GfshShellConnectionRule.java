@@ -70,7 +70,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 public class GfshShellConnectionRule extends DescribedExternalResource {
 
   private Supplier<Integer> portSupplier;
-  private PortType portType = PortType.jmxManger;
+  private PortType portType = PortType.jmxManager;
   private HeadlessGfsh gfsh = null;
   private boolean connected = false;
   private IgnoredException ignoredException;
@@ -270,6 +270,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   }
 
   public enum PortType {
-    locator, jmxManger, http
+    locator, jmxManager, http
   }
 }

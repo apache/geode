@@ -74,7 +74,7 @@ public class MultiUserDUnitTest {
     VM vm1 = lsRule.getVM(1);
     AsyncInvocation vm1Invoke = vm1.invokeAsync("run as data-reader", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "dataRead", "dataRead");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "dataRead", "dataRead");
 
       Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
       gfsh.close();
@@ -85,7 +85,7 @@ public class MultiUserDUnitTest {
     // assert errors comes back are NotAuthorized
     AsyncInvocation vm2Invoke = vm2.invokeAsync("run as guest", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "guest", "guest");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "guest", "guest");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
@@ -120,7 +120,7 @@ public class MultiUserDUnitTest {
     // commands and assert we don't get a NotAuthorized Exception
     AsyncInvocation vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManger, "data,cluster", "data,cluster");
+      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "data,cluster", "data,cluster");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
