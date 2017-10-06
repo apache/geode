@@ -37,8 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
@@ -68,6 +66,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The internal implementation of the {@link CacheTransactionManager} interface returned by
@@ -670,6 +669,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
+  private final ConcurrentMap<Thread, Boolean> transactionInternalSuspendedByThreads =
+      new ConcurrentHashMap<Thread, Boolean>();
+
   /**
    * If the current thread is in a transaction then suspend will cause it to no longer be in a
    * transaction.
@@ -682,6 +684,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (result != null) {
       result.suspend();
       setTXState(null);
+      transactionInternalSuspendedByThreads.put(Thread.currentThread(), true);
     }
     return result;
   }
@@ -701,8 +704,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
                 .toLocalizedString(tid));
       }
       setTXState(tx);
+      transactionInternalSuspendedByThreads.remove(Thread.currentThread());
       tx.resume();
     }
+  }
+
+  public boolean isTransactionInternalSuspendedByThread(Thread thread) {
+    return transactionInternalSuspendedByThreads.get(thread) != null;
   }
 
   /**

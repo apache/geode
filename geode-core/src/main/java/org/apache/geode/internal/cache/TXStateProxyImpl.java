@@ -36,6 +36,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
@@ -132,6 +133,7 @@ public class TXStateProxyImpl implements TXStateProxy {
           // wait for the region to be initialized fixes bug 44652
           r.waitOnInitialization(r.initializationLatchBeforeGetInitialImage);
           target = r.getOwnerForKey(key);
+
           if (target == null || target.equals(this.txMgr.getDM().getId())) {
             this.realDeal = new TXState(this, false);
           } else {
@@ -506,9 +508,26 @@ public class TXStateProxyImpl implements TXStateProxy {
     return getRealDeal(null, currRgn).getAdditionalKeysForIterator(currRgn);
   }
 
+  /**
+   * A set operation now can bootstrap a transaction now. User need to specifically disable this by
+   * setting this system property to true to get the old behavior.
+   *
+   * @Since Geode 1.3.0
+   */
+  public static final String PREVENT_SET_OP_BOOTSTRAP_TRANSACTION =
+      "preventSetOpBootstrapTransaction";
+
+  protected static boolean isSetOpBootstrapTransactionDisabled() {
+    return Boolean
+        .getBoolean(DistributionConfig.GEMFIRE_PREFIX + PREVENT_SET_OP_BOOTSTRAP_TRANSACTION)
+        || Boolean.getBoolean("geode." + PREVENT_SET_OP_BOOTSTRAP_TRANSACTION);
+  }
+
+  protected final boolean preventSetOpBootstrapTransaction = isSetOpBootstrapTransactionDisabled();
+
   public Object getEntryForIterator(KeyInfo key, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
-    boolean resetTxState = this.realDeal == null;
+    boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
       txp = getTxMgr().internalSuspend();
@@ -526,9 +545,15 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  private boolean isTransactionInternalSuspendNeeded(LocalRegion region) {
+    boolean resetTxState = this.realDeal == null
+        && (!region.canStoreDataLocally() || preventSetOpBootstrapTransaction);
+    return resetTxState;
+  }
+
   public Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
-    boolean resetTxState = this.realDeal == null;
+    boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
       txp = getTxMgr().internalSuspend();
@@ -635,8 +660,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
-    // if this the first operation in a transaction, reset txState
-    boolean resetTxState = this.realDeal == null;
+    boolean resetTxState = isTransactionInternalSuspendNeeded(localRegion);
     TXStateProxy txp = null;
     if (resetTxState) {
       txp = getTxMgr().internalSuspend();
@@ -678,7 +702,21 @@ public class TXStateProxyImpl implements TXStateProxy {
     if (currRegion.isUsedForPartitionedRegionBucket()) {
       return currRegion.getRegionKeysForIteration();
     } else {
-      return getRealDeal(null, currRegion).getRegionKeysForIteration(currRegion);
+      boolean resetTxState = isTransactionInternalSuspendNeeded(currRegion);
+      TXStateProxy txp = null;
+      if (resetTxState) {
+        txp = getTxMgr().internalSuspend();
+      }
+      try {
+        if (resetTxState) {
+          return currRegion.getSharedDataView().getRegionKeysForIteration(currRegion);
+        }
+        return getRealDeal(null, currRegion).getRegionKeysForIteration(currRegion);
+      } finally {
+        if (resetTxState) {
+          getTxMgr().internalResume(txp);
+        }
+      }
     }
   }
 
@@ -707,6 +745,10 @@ public class TXStateProxyImpl implements TXStateProxy {
       }
     }
     return null;
+  }
+
+  public boolean hasRealDeal() {
+    return this.realDeal != null;
   }
 
   @Override

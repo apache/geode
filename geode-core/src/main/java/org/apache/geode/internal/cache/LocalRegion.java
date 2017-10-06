@@ -1843,6 +1843,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Set entrySet(boolean recursive) {
     checkReadiness();
     checkForNoAccess();
+    if (!preventSetOpBootstrapTransaction) {
+      discoverJTA();
+    }
     return basicEntries(recursive);
   }
 
@@ -1865,6 +1868,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Set keys() {
     checkReadiness();
     checkForNoAccess();
+    if (!preventSetOpBootstrapTransaction) {
+      discoverJTA();
+    }
     return new EntriesSet(this, false, IteratorType.KEYS, false);
   }
 
@@ -1884,6 +1890,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Collection values() {
     checkReadiness();
     checkForNoAccess();
+    if (!preventSetOpBootstrapTransaction) {
+      discoverJTA();
+    }
     return new EntriesSet(this, false, IteratorType.VALUES, false);
   }
 
@@ -6392,6 +6401,23 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
+   * A set operation now can bootstrap a transaction now. User need to specifically disable this by
+   * setting this system property to true to get the old behavior.
+   *
+   * @Since Geode 1.3.0
+   */
+  public static final String PREVENT_SET_OP_BOOTSTRAP_TRANSACTION =
+      "preventSetOpBootstrapTransaction";
+
+  protected static boolean isSetOpBootstrapTransactionDisabled() {
+    return Boolean
+        .getBoolean(DistributionConfig.GEMFIRE_PREFIX + PREVENT_SET_OP_BOOTSTRAP_TRANSACTION)
+        || Boolean.getBoolean("geode." + PREVENT_SET_OP_BOOTSTRAP_TRANSACTION);
+  }
+
+  protected final boolean preventSetOpBootstrapTransaction = isSetOpBootstrapTransactionDisabled();
+
+  /**
    * Do the expensive work of discovering an existing JTA transaction Only needs to be called at
    * Region.Entry entry points e.g. Region.put, Region.invalidate, etc.
    * 
@@ -6402,6 +6428,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // prevent internal regions from participating in a TX
       getJTAEnlistedTX();
     }
+  }
+
+  private boolean isTransactionInternalSuspended() {
+    TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+    return txMgr.isTransactionInternalSuspendedByThread(Thread.currentThread());
   }
 
   /**
@@ -8280,6 +8311,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           Transaction jtaTransaction = this.cache.getJTATransactionManager().getTransaction();
           if (jtaTransaction == null
               || jtaTransaction.getStatus() == Status.STATUS_NO_TRANSACTION) {
+            return null;
+          }
+          if (isTransactionInternalSuspended()) {
+            // Do not bootstrap JTA again, if the thread has been internal suspended.
             return null;
           }
           txState = this.cache.getTXMgr().beginJTA();
@@ -11409,6 +11444,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // operations
       throw new UnsupportedOperationException();
     }
+  }
+
+  public boolean canStoreDataLocally() {
+    return this.dataPolicy.withStorage();
   }
 
   /**
