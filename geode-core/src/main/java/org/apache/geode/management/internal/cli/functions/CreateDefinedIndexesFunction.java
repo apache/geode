@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.Index;
@@ -39,7 +38,7 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
     List<Index> indexes = null;
     Cache cache;
     try {
-      cache = CacheFactory.getAnyInstance();
+      cache = context.getCache();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       QueryService queryService = cache.getQueryService();
       Set<IndexInfo> indexDefinitions = (Set<IndexInfo>) context.getArguments();
@@ -70,11 +69,6 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, exceptionMessage));
     }
-  }
-
-  public void createCommandObject(IndexInfo info) {
-    Cache cache = CacheFactory.getAnyInstance();
-    QueryService queryService = cache.getQueryService();
   }
 
   @Override

@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -49,7 +48,7 @@ public class ChangeLogLevelFunction implements Function, InternalEntity {
 
   @Override
   public void execute(FunctionContext context) {
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
     Map<String, String> result = new HashMap<String, String>();
     try {
       LogWriterLogger logwriterLogger = (LogWriterLogger) cache.getLogger();
