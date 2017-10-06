@@ -27,9 +27,6 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.CacheUtils;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -63,9 +60,13 @@ public class JoinQueriesIntegrationTest {
 
 
   private static Object[] getQueryStrings() {
-    return new Object[] {new Object[] {
-        "<trace>select STA.id as STACID, STA.pkid as STAacctNum, STC.id as STCCID, STC.pkid as STCacctNum from /region1 STA, /region2 STC where STA.pkid = 1 AND STA.joinId = STC.joinId AND STA.id = STC.id",
-        20},};
+    return new Object[] {
+        new Object[] {
+            "<trace>select STA.id as STACID, STA.pkid as STAacctNum, STC.id as STCCID, STC.pkid as STCacctNum from /region1 STA, /region2 STC where STA.pkid = 1 AND STA.joinId = STC.joinId AND STA.id = STC.id",
+            20},
+        new Object[] {
+            "<trace>select STA.id as STACID, STA.pkid as STAacctNum, STC.id as STCCID, STC.pkid as STCacctNum from /region1 STA, /region2 STC where STA.pkid = 1 AND STA.joinId = STC.joinId OR STA.id = STC.id",
+            22}};
   }
 
   @Test
