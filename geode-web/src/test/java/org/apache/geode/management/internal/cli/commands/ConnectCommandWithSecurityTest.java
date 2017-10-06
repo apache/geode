@@ -44,7 +44,7 @@ public class ConnectCommandWithSecurityTest {
 
   @Test
   public void connectOverJmx() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.secureConnectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "clusterRead", "clusterRead");
     gfsh.executeAndVerifyCommand("list members");
   }

@@ -85,7 +85,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -139,7 +139,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -175,7 +175,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csbSetFileSizeLimit =
@@ -223,7 +223,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -266,7 +266,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -316,7 +316,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -354,7 +354,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -384,7 +384,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -425,7 +425,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final String TEST_NAME = "statisticsArchive";
@@ -462,7 +462,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final String TEST_NAME = "statisticsArchive";
@@ -507,7 +507,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final String TEST_NAME = "statisticsArchive";
@@ -551,7 +551,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -587,7 +587,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_RATE = 2000;
@@ -633,7 +633,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_RATE = 2500;
@@ -680,7 +680,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -715,7 +715,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -754,7 +754,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -801,7 +801,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 25;
@@ -849,7 +849,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -897,7 +897,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -936,7 +936,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -983,7 +983,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 25;
@@ -1031,7 +1031,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -1066,7 +1066,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -1107,7 +1107,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     server2.invoke(() -> {
@@ -1153,7 +1153,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -1184,7 +1184,7 @@ public class AlterRuntimeCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     Properties props = new Properties();

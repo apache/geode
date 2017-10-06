@@ -74,7 +74,7 @@ public class IndexCommandsDUnitTest {
   }
 
   public void connect(MemberVM serverVM) throws Exception {
-    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
   }
 
   @Test

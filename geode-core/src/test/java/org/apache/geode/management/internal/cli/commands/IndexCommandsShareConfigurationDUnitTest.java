@@ -86,7 +86,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
 
     locator = startupRule.startLocatorVM(0, locatorProps);
 
-    gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
 
     Properties props = new Properties();
     props.setProperty(GROUPS, groupName);

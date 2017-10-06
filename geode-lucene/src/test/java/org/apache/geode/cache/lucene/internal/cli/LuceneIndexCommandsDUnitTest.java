@@ -41,7 +41,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
@@ -90,7 +89,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   public void connect(MemberVM serverVM) throws Exception {
-    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
   }
 
   @Test

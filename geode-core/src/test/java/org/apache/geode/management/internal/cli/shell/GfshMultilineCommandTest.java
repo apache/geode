@@ -40,7 +40,7 @@ public class GfshMultilineCommandTest {
 
   @Test
   public void testMultiLineCommand() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     // Execute a command
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MEMBER);
     csb.addOption(GROUP, "nogroup");

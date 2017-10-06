@@ -81,13 +81,13 @@ public class NetstatDUnitTest {
 
   @Test
   public void testConnectToJmxManagerOne() throws Exception {
-    gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManger);
+    gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManager);
     gfshConnector.executeAndVerifyCommand(netStatCommand);
   }
 
   @Test
   public void testConnectToJmxManagerTwo() throws Exception {
-    gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManger);
+    gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManager);
     gfshConnector.executeAndVerifyCommand(netStatCommand);
   }
 
@@ -101,14 +101,14 @@ public class NetstatDUnitTest {
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerOneWithLargeCommandResponse() throws Exception {
-    gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManger);
+    gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManager);
     gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
   }
 
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerTwoWithLargeCommandResponse() throws Exception {
-    gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManger);
+    gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManager);
     gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
   }
 

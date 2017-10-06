@@ -214,7 +214,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
     this.client1.invoke(() -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
       gfsh.secureConnectAndVerify(this.server.getJmxPort(),
-          GfshShellConnectionRule.PortType.jmxManger, "dataUser", "1234567");
+          GfshShellConnectionRule.PortType.jmxManager, "dataUser", "1234567");
 
       // get command
       CommandResult result = gfsh.executeAndVerifyCommand("get --key=key1 --region=AuthRegion");
