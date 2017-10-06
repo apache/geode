@@ -17,6 +17,7 @@ package org.apache.geode.test.junit.rules.gfsh;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.util.function.Consumer;
 
 class StreamGobbler implements Runnable {
@@ -29,7 +30,12 @@ class StreamGobbler implements Runnable {
   }
 
   public void run() {
-    new BufferedReader(new InputStreamReader(inputStream)).lines().forEach(consumeInputLine);
+    try {
+      new BufferedReader(new InputStreamReader(inputStream)).lines().forEach(consumeInputLine);
+    } catch (UncheckedIOException ignored) {
+      // If this gobbler is reading the System.out stream from a process that gets killed,
+      // we will occasionally see an exception here than can be ignored.
+    }
   }
 
   public void startInNewThread() {
