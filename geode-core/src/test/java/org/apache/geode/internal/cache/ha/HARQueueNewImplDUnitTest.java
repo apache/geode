@@ -1071,13 +1071,15 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
       Iterator iter = msgsRegion.entrySet().iterator();
       while (iter.hasNext()) {
-        Region.Entry entry = (Region.Entry) iter.next();
-        HAEventWrapper wrapper = (HAEventWrapper) entry.getKey();
-        ClientUpdateMessage cum = (ClientUpdateMessage) entry.getValue();
-        Object key = cum.getKeyOfInterest();
-        logger.fine("key<feedCount, regionCount>: " + key + "<" + ((Long) map.get(key)).longValue()
-            + ", " + wrapper.getReferenceCount() + ">");
-        assertEquals(((Long) map.get(key)).longValue(), wrapper.getReferenceCount());
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+          Region.Entry entry = (Region.Entry) iter.next();
+          HAEventWrapper wrapper = (HAEventWrapper) entry.getKey();
+          ClientUpdateMessage cum = (ClientUpdateMessage) entry.getValue();
+          Object key = cum.getKeyOfInterest();
+          logger.fine("key<feedCount, regionCount>: " + key + "<"
+              + ((Long) map.get(key)).longValue() + ", " + wrapper.getReferenceCount() + ">");
+          assertEquals(((Long) map.get(key)).longValue(), wrapper.getReferenceCount());
+        });
       }
     } catch (Exception e) {
       fail("failed in verifyQueueData()" + e);
