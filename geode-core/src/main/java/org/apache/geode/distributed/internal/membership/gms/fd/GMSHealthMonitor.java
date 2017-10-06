@@ -861,7 +861,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * It becomes null when we suspect current neighbour, during that time it watches member next to
    * suspect member.
    */
-  private synchronized void setNextNeighbor(NetView newView, InternalDistributedMember nextTo) {
+  protected synchronized void setNextNeighbor(NetView newView, InternalDistributedMember nextTo) {
     if (newView == null) {
       return;
     }
@@ -1277,6 +1277,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     boolean failed = false;
 
     membersInFinalCheck.add(mbr);
+    suspectedMemberInView.putIfAbsent(mbr, this.currentView);
+    setNextNeighbor(GMSHealthMonitor.this.currentView, mbr);
+
     try {
       services.memberSuspected(initiator, mbr, reason);
       long startTime = System.currentTimeMillis();
@@ -1324,10 +1327,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       if (!failed) {
         logger.info("Final check passed for suspect member " + mbr);
       }
+    } finally {
       // whether it's alive or not, at this point we allow it to
       // be watched again
       suspectedMemberInView.remove(mbr);
-    } finally {
+      setNextNeighbor(GMSHealthMonitor.this.currentView, null);
       membersInFinalCheck.remove(mbr);
     }
     return !failed;
