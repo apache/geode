@@ -23,7 +23,6 @@ import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.Failure;
-import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.Success;
@@ -32,6 +31,8 @@ import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+
+import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
 
 @Experimental
 public class RemoveRequestOperationHandler
@@ -47,8 +48,8 @@ public class RemoveRequestOperationHandler
     Region region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received Remove request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND.codeValue, "Region not found"));
+      return Failure
+          .of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND, "Region not found"));
     }
 
     try {
@@ -59,13 +60,12 @@ public class RemoveRequestOperationHandler
     } catch (UnsupportedEncodingTypeException ex) {
       // can be thrown by encoding or decoding.
       logger.error("Received Remove request with unsupported encoding: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.createAndLogErrorResponse(
-          ProtocolErrorCode.VALUE_ENCODING_ERROR, "Encoding not supported.", logger, ex));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
+          "Encoding not supported: " + ex.getMessage()));
     } catch (CodecNotRegisteredForTypeException ex) {
       logger.error("Got codec error when decoding Remove request: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.createAndLogErrorResponse(
-          ProtocolErrorCode.VALUE_ENCODING_ERROR, "Codec error in protobuf deserialization.",
-          logger, ex));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
+          "Codec error in protobuf deserialization: " + ex.getMessage()));
     }
   }
 }
