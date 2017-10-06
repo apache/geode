@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache version="8.1" xmlns="http://schema.pivotal.io/gemfire/cache">
+    <region name="one">
+        <region-attributes scope="distributed-ack" data-policy="replicate"/>
+    </region>
+</cache>

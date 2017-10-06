@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.configuration.utils;
 
-import static javax.xml.XMLConstants.NULL_NS_URI;
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
 import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_PREFIX;
@@ -23,12 +22,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -279,25 +276,9 @@ public class XmlUtils {
    * @return {@link Map} of schema namespace URIs to location URLs.
    * @since GemFire 8.1
    */
-  public static Map<String, List<String>> buildSchemaLocationMap(final String schemaLocation) {
-    return buildSchemaLocationMap(new HashMap<>(), schemaLocation);
-  }
-
-  /**
-   * Build schema location map of schemas used in given <code>schemaLocationAttribute</code> and
-   * adds them to the given <code>schemaLocationMap</code>.
-   * 
-   * @see <a href="http://www.w3.org/TR/xmlschema-0/#schemaLocation">XML Schema Part 0: Primer
-   *      Second Edition | 5.6 schemaLocation</a>
-   * 
-   * @param schemaLocationMap {@link Map} to add schema locations to.
-   * @param schemaLocation attribute value to build schema location map from.
-   * @return {@link Map} of schema namespace URIs to location URLs.
-   * @since GemFire 8.1
-   */
-  static Map<String, List<String>> buildSchemaLocationMap(
-      Map<String, List<String>> schemaLocationMap, final String schemaLocation) {
-    if (null == schemaLocation || schemaLocation.isEmpty()) {
+  public static Map<String, String> buildSchemaLocationMap(final String schemaLocation) {
+    Map<String, String> schemaLocationMap = new HashMap<>();
+    if (StringUtils.isBlank(schemaLocation)) {
       return schemaLocationMap;
     }
 
@@ -305,14 +286,7 @@ public class XmlUtils {
     while (st.hasMoreElements()) {
       final String ns = st.nextToken();
       final String loc = st.nextToken();
-      List<String> locs = schemaLocationMap.get(ns);
-      if (null == locs) {
-        locs = new ArrayList<>();
-        schemaLocationMap.put(ns, locs);
-      }
-      if (!locs.contains(loc)) {
-        locs.add(loc);
-      }
+      schemaLocationMap.put(ns, loc);
     }
 
     return schemaLocationMap;
@@ -490,7 +464,6 @@ public class XmlUtils {
    * @throws ParserConfigurationException
    * @since GemFire 8.1
    */
-  // UnitTest SharedConfigurationTest.testCreateAndUpgradeDocumentFromXml()
   public static Document upgradeSchema(Document document, final String namespaceUri,
       final String schemaLocation, String schemaVersion)
       throws XPathExpressionException, ParserConfigurationException {
@@ -516,24 +489,20 @@ public class XmlUtils {
 
     final Element root = document.getDocumentElement();
 
-    final Map<String, String> namespacePrefixMap = buildNamespacePrefixMap(root);
+    final Map<String, String> namespaceUriToPrefix = buildNamespacePrefixMap(root);
 
     // Add CacheXml namespace if missing.
-    String cachePrefix = namespacePrefixMap.get(namespaceUri);
+    String cachePrefix = namespaceUriToPrefix.get(namespaceUri);
     if (null == cachePrefix) {
-      // Default to null prefix.
-      cachePrefix = NULL_NS_URI;
       // Move all into new namespace
-      changeNamespace(root, NULL_NS_URI, namespaceUri);
-      namespacePrefixMap.put(namespaceUri, cachePrefix);
+      changeNamespace(root, root.getNamespaceURI(), namespaceUri);
     }
 
     // Add schema instance namespace if missing.
-    String xsiPrefix = namespacePrefixMap.get(W3C_XML_SCHEMA_INSTANCE_NS_URI);
+    String xsiPrefix = namespaceUriToPrefix.get(W3C_XML_SCHEMA_INSTANCE_NS_URI);
     if (null == xsiPrefix) {
       xsiPrefix = W3C_XML_SCHEMA_INSTANCE_PREFIX;
       root.setAttribute("xmlns:" + xsiPrefix, W3C_XML_SCHEMA_INSTANCE_NS_URI);
-      namespacePrefixMap.put(W3C_XML_SCHEMA_INSTANCE_NS_URI, xsiPrefix);
     }
 
     // Create schemaLocation attribute if missing.
@@ -541,15 +510,10 @@ public class XmlUtils {
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
 
     // Update schemaLocation for namespace.
-    final Map<String, List<String>> schemaLocationMap =
-        buildSchemaLocationMap(schemaLocationAttribute);
-    List<String> schemaLocations = schemaLocationMap.get(namespaceUri);
-    if (null == schemaLocations) {
-      schemaLocations = new ArrayList<>();
-      schemaLocationMap.put(namespaceUri, schemaLocations);
-    }
-    schemaLocations.clear();
-    schemaLocations.add(schemaLocation);
+    final Map<String, String> schemaLocationMap = buildSchemaLocationMap(schemaLocationAttribute);
+    schemaLocationMap.put(namespaceUri, schemaLocation);
+    schemaLocationMap.remove(CacheXml.GEMFIRE_NAMESPACE);
+
     String schemaLocationValue = getSchemaLocationValue(schemaLocationMap);
     root.setAttributeNS(W3C_XML_SCHEMA_INSTANCE_NS_URI,
         xsiPrefix + ":" + W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, schemaLocationValue);
@@ -575,15 +539,13 @@ public class XmlUtils {
    * @param schemaLocationMap {@link Map} to get schema locations from.
    * @since GemFire 8.1
    */
-  private static String getSchemaLocationValue(final Map<String, List<String>> schemaLocationMap) {
+  private static String getSchemaLocationValue(final Map<String, String> schemaLocationMap) {
     final StringBuilder sb = new StringBuilder();
-    for (final Map.Entry<String, List<String>> entry : schemaLocationMap.entrySet()) {
-      for (final String schemaLocation : entry.getValue()) {
-        if (sb.length() > 0) {
-          sb.append(' ');
-        }
-        sb.append(entry.getKey()).append(' ').append(schemaLocation);
+    for (final Map.Entry<String, String> entry : schemaLocationMap.entrySet()) {
+      if (sb.length() > 0) {
+        sb.append(' ');
       }
+      sb.append(entry.getKey()).append(' ').append(entry.getValue());
     }
     return sb.toString();
   }

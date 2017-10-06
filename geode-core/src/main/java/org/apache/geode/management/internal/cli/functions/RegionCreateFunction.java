@@ -33,7 +33,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.compression.Compressor;
@@ -53,7 +53,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @since GemFire 7.0
  */
-public class RegionCreateFunction extends FunctionAdapter implements InternalEntity {
+public class RegionCreateFunction implements Function, InternalEntity {
 
   private static final Logger logger = LogService.getLogger();
 
