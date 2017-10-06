@@ -137,6 +137,11 @@ public interface GatewayReceiver {
   public String getHost();
 
   /**
+   * Returns the hostname configured by {@link GatewayReceiverFactory#setHostnameForSenders(String)}
+   */
+  public String getHostnameForSenders();
+
+  /**
    * Returns the configured buffer size of the socket connection for this
    * <code>GatewayReceiver</code>. The default is 524288 bytes.
    * 

@@ -63,7 +63,6 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.management.internal.web.http.support.SimpleHttpRequester;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -250,11 +249,9 @@ public class ConnectCommand implements GfshCommand {
         }
       }
 
-      // this triggers the authentication check
-      new SimpleHttpRequester(gfsh, CONNECT_LOCATOR_TIMEOUT_MS, gfProperties)
-          .exchange(url.concat("/ping"), String.class);
-
+      // authentication check will be triggered inside the constructor
       HttpOperationInvoker operationInvoker = new HttpOperationInvoker(gfsh, url, gfProperties);
+
       gfsh.setOperationInvoker(operationInvoker);
 
       LogWrapper.getInstance()

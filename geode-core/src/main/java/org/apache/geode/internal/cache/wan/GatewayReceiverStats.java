@@ -56,6 +56,9 @@ public class GatewayReceiverStats extends CacheServerStats {
   /** Name of the unprocessed events added by primary statistic */
   private static final String EXCEPTIONS_OCCURRED = "exceptionsOccurred";
 
+  /** Name of the events retried */
+  private static final String EVENTS_RETRIED = "eventsRetried";
+
   // /** Id of the events queued statistic */
   // private int failoverBatchesReceivedId;
 
@@ -86,6 +89,9 @@ public class GatewayReceiverStats extends CacheServerStats {
   /** Id of the unprocessed events added by primary statistic */
   private int exceptionsOccurredId;
 
+  /** Id of the events retried statistic */
+  private int eventsRetriedId;
+
   // ///////////////////// Constructors ///////////////////////
 
   public static GatewayReceiverStats createGatewayReceiverStats(String ownerName) {
@@ -110,7 +116,9 @@ public class GatewayReceiverStats extends CacheServerStats {
         f.createIntCounter(UNKNOWN_OPERATIONS_RECEIVED,
             "total number of unknown operations received by this GatewayReceiver", "operations"),
         f.createIntCounter(EXCEPTIONS_OCCURRED,
-            "number of exceptions occurred while porcessing the batches", "operations")};
+            "number of exceptions occurred while porcessing the batches", "operations"),
+        f.createIntCounter(EVENTS_RETRIED,
+            "total number events retried by this GatewayReceiver due to exceptions", "operations")};
     return new GatewayReceiverStats(f, ownerName, typeName, descriptors);
 
   }
@@ -129,6 +137,7 @@ public class GatewayReceiverStats extends CacheServerStats {
     destroyRequestId = statType.nameToId(DESTROY_REQUESTS);
     unknowsOperationsReceivedId = statType.nameToId(UNKNOWN_OPERATIONS_RECEIVED);
     exceptionsOccurredId = statType.nameToId(EXCEPTIONS_OCCURRED);
+    eventsRetriedId = statType.nameToId(EVENTS_RETRIED);
   }
 
   // /////////////////// Instance Methods /////////////////////
@@ -241,6 +250,17 @@ public class GatewayReceiverStats extends CacheServerStats {
 
   public int getExceptionsOccurred() {
     return this.stats.getInt(exceptionsOccurredId);
+  }
+
+  /**
+   * Increments the number of events received by 1.
+   */
+  public void incEventsRetried() {
+    this.stats.incInt(eventsRetriedId, 1);
+  }
+
+  public int getEventsRetried() {
+    return this.stats.getInt(eventsRetriedId);
   }
 
   /**

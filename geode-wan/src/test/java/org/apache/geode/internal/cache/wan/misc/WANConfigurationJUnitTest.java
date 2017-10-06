@@ -223,7 +223,7 @@ public class WANConfigurationJUnitTest {
     Region region = cache.createRegionFactory().create("test_ValidateGatewayReceiverAttributes");
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     GatewayReceiver rec = receivers.iterator().next();
-    assertEquals(receiver1.getHost(), rec.getHost());
+    assertEquals(receiver1.getHostnameForSenders(), rec.getHostnameForSenders());
     assertEquals(receiver1.getStartPort(), rec.getStartPort());
     assertEquals(receiver1.getEndPort(), rec.getEndPort());
     assertEquals(receiver1.getBindAddress(), rec.getBindAddress());

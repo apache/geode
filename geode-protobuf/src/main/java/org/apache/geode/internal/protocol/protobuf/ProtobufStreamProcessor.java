@@ -78,7 +78,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
     if (message == null) {
       String errorMessage = "Tried to deserialize protobuf message at EOF";
-      logger.warn(errorMessage);
+      logger.debug(errorMessage);
       throw new EOFException(errorMessage);
     }
     statistics.messageReceived(message.getSerializedSize());

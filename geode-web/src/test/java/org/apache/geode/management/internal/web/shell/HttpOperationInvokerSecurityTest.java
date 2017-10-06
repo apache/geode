@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.web.shell;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -91,7 +90,6 @@ public class HttpOperationInvokerSecurityTest {
     invoker = (HttpOperationInvoker) gfsh.getGfsh().getOperationInvoker();
 
     request = mock(CommandRequest.class);
-    when(request.getHttpRequestUrl(anyString())).thenCallRealMethod();
     when(request.getUserInput()).thenReturn("list members");
 
     assertThatThrownBy(() -> invoker.processCommand(request))

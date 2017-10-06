@@ -57,23 +57,21 @@ import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageExcept
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test that using the magic byte to indicate intend ot use ProtoBuf messages works
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, FlakyTest.class})
 public class CacheMaxConnectionJUnitTest {
   private static final String TEST_KEY = "testKey";
   private static final String TEST_VALUE = "testValue";
   private static final int TEST_PUT_CORRELATION_ID = 12355;
-  private final String TEST_REGION = "testRegion";
-
+  private static final String TEST_REGION = "testRegion";
 
   private Cache cache;
-  private int cacheServerPort;
   private Socket socket;
-  private OutputStream outputStream;
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -94,7 +92,7 @@ public class CacheMaxConnectionJUnitTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 
@@ -105,7 +103,7 @@ public class CacheMaxConnectionJUnitTest {
 
     socket = new Socket("localhost", cacheServerPort);
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-    outputStream = socket.getOutputStream();
+    OutputStream outputStream = socket.getOutputStream();
     outputStream.write(110);
 
     serializationService = new ProtobufSerializationService();
