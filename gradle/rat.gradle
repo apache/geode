@@ -114,7 +114,6 @@ rat {
     'geode-assembly/cargo_logs/**',
 
     // these are test files that don't expect the first element to be a comment
-    'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/domain/CacheElementJUnitTest.xml',
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
 
     '**/META-INF/**',

@@ -229,10 +229,22 @@ public class XmlUtilsJUnitTest {
         XmlUtils.getAttribute(doc.getDocumentElement(), "version"));
   }
 
+  private static String CLUSTER8_XML =
+      "<cache xsi:schemaLocation=\"http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd\"\n"
+          + "       version=\"8.1\"\n" + "       xmlns=\"http://schema.pivotal.io/gemfire/cache\"\n"
+          + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
+          + "    <region name=\"one\">\n"
+          + "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
+          + "    </region>\n" + "</cache>";
+
+  private static String CLUSTER9_XML = "<cache xmlns=\"http://geode.apache.org/schema/cache\"\n"
+      + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+      + "       xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\"\n"
+      + "       version=\"1.0\"></cache>";
+
   @Test
   public void testUpgradeSchemaFromGemfireNamespace() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(
-        IOUtils.toString(this.getClass().getResourceAsStream("../cluster8.xml"), "UTF-8"));
+    Document doc = XmlUtils.createDocumentFromXml(CLUSTER8_XML);
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("8.1");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(CacheXml.GEMFIRE_NAMESPACE);
@@ -249,12 +261,26 @@ public class XmlUtilsJUnitTest {
 
     Node regionNode = root.getElementsByTagName("region").item(0);
     assertThat(regionNode.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
+  }
+
+  @Test
+  public void testUpgradeSchemaFromOtherInvaidNS() throws Exception {
+    String xml = "<cache version=\"8.1\" xmlns=\"http://test.org/cache\"></cache>";
+    Document doc = XmlUtils.createDocumentFromXml(xml);
+
+    String version = "1.0";
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
+
+    Element root = doc.getDocumentElement();
+    assertThat(root.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
+    assertThat(root.getAttribute(CacheXml.VERSION)).isEqualTo(version);
+    assertThat(root.getAttribute("xsi:schemaLocation")).isEqualTo(GEODE_SCHEMA_LOCATION);
   }
 
   @Test
   public void testUpgradeSchemaFromGemfireNamespaceWithNoLocation() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(IOUtils.toString(
-        this.getClass().getResourceAsStream("../cluster8WithNoSchemaLocation.xml"), "UTF-8"));
+    String xml = "<cache version=\"8.1\" xmlns=\"http://schema.pivotal.io/gemfire/cache\"></cache>";
+    Document doc = XmlUtils.createDocumentFromXml(xml);
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("8.1");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(CacheXml.GEMFIRE_NAMESPACE);
@@ -263,23 +289,20 @@ public class XmlUtilsJUnitTest {
     doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
 
     Element root = doc.getDocumentElement();
-
     assertThat(root.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
     assertThat(root.getAttribute(CacheXml.VERSION)).isEqualTo(version);
     assertThat(root.getAttribute("xsi:schemaLocation")).isEqualTo(GEODE_SCHEMA_LOCATION);
-
-    Node regionNode = root.getElementsByTagName("region").item(0);
-    assertThat(regionNode.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
   }
 
   @Test
   public void testUpgradeSchemaFromGemfireWithCustomPrefix() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(IOUtils
-        .toString(this.getClass().getResourceAsStream("../cluster8customPrefix.xml"), "UTF-8"));
+    String xml = "<a:cache xmlns:a=\"http://schema.pivotal.io/gemfire/cache\">\n"
+        + "    <a:region name=\"one\">\n"
+        + "        <a:region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
+        + "    </a:region>\n" + "</a:cache>";
+    Document doc = XmlUtils.createDocumentFromXml(xml);
     Element oldRoot = doc.getDocumentElement();
-    assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("8.1");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(CacheXml.GEMFIRE_NAMESPACE);
-    assertThat(oldRoot.getAttribute("xsi:schemaLocation")).isEqualTo(GEMFIRE_SCHEMA_LOCATION);
 
     String version = "1.0";
     doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, LATEST_SCHEMA_LOCATION, version);
@@ -295,9 +318,30 @@ public class XmlUtilsJUnitTest {
   }
 
   @Test
+  public void testUpgradeVersionFromGeodeWithCustomPrefix() throws Exception {
+    String xml = "<a:cache xmlns:a=\"http://geode.apache.org/schema/cache\">\n"
+        + "    <a:region name=\"one\">\n"
+        + "        <a:region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
+        + "    </a:region>\n" + "</a:cache>";
+    Document doc = XmlUtils.createDocumentFromXml(xml);
+    String schemaLocation2 = "http://geode.apache.org/schema/cache/cache-2.0.xsd";
+    String version = "2.0";
+    doc = XmlUtils.upgradeSchema(doc, GEODE_NAMESPACE, schemaLocation2, version);
+
+    Element root = doc.getDocumentElement();
+
+    assertThat(root.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
+    assertThat(root.getAttribute(CacheXml.VERSION)).isEqualTo(version);
+    assertThat(root.getAttribute("xsi:schemaLocation"))
+        .isEqualTo(GEODE_NAMESPACE + " " + schemaLocation2);
+
+    Node regionNode = root.getElementsByTagNameNS(GEODE_NAMESPACE, "region").item(0);
+    assertThat(regionNode.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
+  }
+
+  @Test
   public void testUpgradeSchemaFromGeodeNamespace() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(
-        IOUtils.toString(this.getClass().getResourceAsStream("../cluster9.xml"), "UTF-8"));
+    Document doc = XmlUtils.createDocumentFromXml(CLUSTER9_XML);
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("1.0");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
@@ -314,8 +358,7 @@ public class XmlUtilsJUnitTest {
 
   @Test
   public void testUpgradeSchemaFromGeodeNamespaceToAnotherVersion() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(
-        IOUtils.toString(this.getClass().getResourceAsStream("../cluster9.xml"), "UTF-8"));
+    Document doc = XmlUtils.createDocumentFromXml(CLUSTER9_XML);
     Element oldRoot = doc.getDocumentElement();
     assertThat(oldRoot.getAttribute(CacheXml.VERSION)).isEqualTo("1.0");
     assertThat(oldRoot.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
@@ -329,15 +372,16 @@ public class XmlUtilsJUnitTest {
     assertThat(root.getAttribute(CacheXml.VERSION)).isEqualTo("2.0");
     assertThat(root.getAttribute("xsi:schemaLocation"))
         .isEqualTo(GEODE_NAMESPACE + " " + schemaLocation2);
-
-    Node regionNode = root.getElementsByTagName("region").item(0);
-    assertThat(regionNode.getNamespaceURI()).isEqualTo(GEODE_NAMESPACE);
   }
 
   @Test
   public void testUpgradeSchemaWithMultipNS() throws Exception {
-    Document doc = XmlUtils.createDocumentFromXml(
-        IOUtils.toString(this.getClass().getResourceAsStream("test.xml"), "UTF-8"));
+    String xml = "<cache xmlns=\"http://cache\"\n"
+        + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+        + "       xmlns:aop=\"http://aop\"\n" + "       version=\"8.1\"\n"
+        + "       xsi:schemaLocation=\"http://cache http://test.org/cache.xsd "
+        + "        http://aop http://test.org/aop.xsd\">\n" + "</cache>";
+    Document doc = XmlUtils.createDocumentFromXml(xml);
 
     String version = "1.0";
     String namespace = "http://geode.apache.org/schema/cache";
@@ -345,9 +389,7 @@ public class XmlUtilsJUnitTest {
 
     Element root = doc.getDocumentElement();
 
-    String expectedSchemaLocation =
-        GEODE_SCHEMA_LOCATION + " " + "http://www.springframework.org/schema/aop "
-            + "http://www.springframework.org/schema/aop/spring-aop-2.0.xsd";
+    String expectedSchemaLocation = "http://aop http://test.org/aop.xsd " + GEODE_SCHEMA_LOCATION;
     assertThat(root.getNamespaceURI()).isEqualTo(namespace);
     assertThat(root.getAttribute(CacheXml.VERSION)).isEqualTo(version);
     assertThat(root.getAttribute("xsi:schemaLocation")).isEqualTo(expectedSchemaLocation);

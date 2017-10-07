@@ -107,8 +107,12 @@ public class CacheElement {
    */
   public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc)
       throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
+    Node cacheNode = doc.getFirstChild();
+    if ("#comment".equals(cacheNode.getNodeName())) {
+      cacheNode = cacheNode.getNextSibling();
+    }
     final Map<String, String> schemaLocationMap =
-        XmlUtils.buildSchemaLocationMap(getAttribute(doc.getFirstChild(),
+        XmlUtils.buildSchemaLocationMap(getAttribute(cacheNode,
             W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI));
 
     final LinkedHashMap<String, CacheElement> elementMap = new LinkedHashMap<>();

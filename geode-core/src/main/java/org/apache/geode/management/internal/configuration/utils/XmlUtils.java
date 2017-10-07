@@ -479,51 +479,43 @@ public class XmlUtils {
 
     if (null != document.getDoctype()) {
       Node root = document.getDocumentElement();
-
       Document copiedDocument = getDocumentBuilder().newDocument();
       Node copiedRoot = copiedDocument.importNode(root, true);
       copiedDocument.appendChild(copiedRoot);
-
       document = copiedDocument;
     }
 
     final Element root = document.getDocumentElement();
+    // since root is the cache element, then this oldNamespace will be the cache's namespaceURI
+    String oldNamespaceUri = root.getNamespaceURI();
 
-    final Map<String, String> namespaceUriToPrefix = buildNamespacePrefixMap(root);
-
-    // Add CacheXml namespace if missing.
-    String cachePrefix = namespaceUriToPrefix.get(namespaceUri);
-    if (null == cachePrefix) {
-      // Move all into new namespace
-      changeNamespace(root, root.getNamespaceURI(), namespaceUri);
+    // update the namespace
+    if (!namespaceUri.equals(oldNamespaceUri)) {
+      changeNamespace(root, oldNamespaceUri, namespaceUri);
     }
 
-    // Add schema instance namespace if missing.
-    String xsiPrefix = namespaceUriToPrefix.get(W3C_XML_SCHEMA_INSTANCE_NS_URI);
-    if (null == xsiPrefix) {
+    // update the version
+    root.setAttribute("version", schemaVersion);
+
+    // update the schemaLocation attribute
+    Node schemaLocationAttr = root.getAttributeNodeNS(W3C_XML_SCHEMA_INSTANCE_NS_URI,
+        W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION);
+    String xsiPrefix = findPrefix(root, W3C_XML_SCHEMA_INSTANCE_NS_URI);;
+    Map<String, String> uriToLocation = new HashMap<>();
+    if (schemaLocationAttr != null) {
+      uriToLocation = buildSchemaLocationMap(schemaLocationAttr.getNodeValue());
+    } else if (xsiPrefix == null) {
+      // this namespace is not defined yet, define it
       xsiPrefix = W3C_XML_SCHEMA_INSTANCE_PREFIX;
       root.setAttribute("xmlns:" + xsiPrefix, W3C_XML_SCHEMA_INSTANCE_NS_URI);
     }
 
-    // Create schemaLocation attribute if missing.
-    final String schemaLocationAttribute = getAttribute(root,
-        W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
+    uriToLocation.remove(oldNamespaceUri);
+    uriToLocation.put(namespaceUri, schemaLocation);
 
-    // Update schemaLocation for namespace.
-    final Map<String, String> schemaLocationMap = buildSchemaLocationMap(schemaLocationAttribute);
-    schemaLocationMap.put(namespaceUri, schemaLocation);
-    schemaLocationMap.remove(CacheXml.GEMFIRE_NAMESPACE);
-
-    String schemaLocationValue = getSchemaLocationValue(schemaLocationMap);
     root.setAttributeNS(W3C_XML_SCHEMA_INSTANCE_NS_URI,
-        xsiPrefix + ":" + W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, schemaLocationValue);
-
-    // Set schema version
-    if (cachePrefix == null || cachePrefix.isEmpty()) {
-      root.setAttribute("version", schemaVersion);
-    } else {
-      root.setAttributeNS(namespaceUri, cachePrefix + ":version", schemaVersion);
-    }
+        xsiPrefix + ":" + W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION,
+        getSchemaLocationValue(uriToLocation));
 
     return document;
   }
@@ -550,38 +542,23 @@ public class XmlUtils {
     return sb.toString();
   }
 
-  /**
-   * Build {@link Map} of namespace URIs to prefixes.
-   * 
-   * @param root {@link Element} to get namespaces and prefixes from.
-   * @return {@link Map} of namespace URIs to prefixes.
-   * @since GemFire 8.1
-   */
-  private static Map<String, String> buildNamespacePrefixMap(final Element root) {
-    final HashMap<String, String> namespacePrefixMap = new HashMap<>();
-
-    // Look for all of the attributes of cache that start with
-    // xmlns
+  static String findPrefix(final Element root, final String namespaceUri) {
+    // Look for all of the attributes of cache that start with xmlns
     NamedNodeMap attributes = root.getAttributes();
     for (int i = 0; i < attributes.getLength(); i++) {
       Node item = attributes.item(i);
       if (item.getNodeName().startsWith("xmlns")) {
-        // Anything after the colon is the prefix
-        // eg xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        // has a prefix of xsi
-        String[] splitName = item.getNodeName().split(":");
-        String prefix;
-        if (splitName.length > 1) {
-          prefix = splitName[1];
-        } else {
-          prefix = "";
+        if (item.getNodeValue().equals(namespaceUri)) {
+          String[] splitName = item.getNodeName().split(":");
+          if (splitName.length > 1) {
+            return splitName[1];
+          } else {
+            return "";
+          }
         }
-        String uri = item.getTextContent();
-        namespacePrefixMap.put(uri, prefix);
       }
     }
-
-    return namespacePrefixMap;
+    return null;
   }
 
   /**
