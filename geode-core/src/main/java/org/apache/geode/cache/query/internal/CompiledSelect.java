@@ -640,7 +640,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   /**
    * Returns the size of region iterator for count(*) on a region without whereclause.
-   * 
+   *
    * @since GemFire 6.6.2
    */
   private int getRegionIteratorSize(ExecutionContext context, CompiledValue collExpr)

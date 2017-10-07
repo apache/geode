@@ -119,7 +119,9 @@ public class QuerySecurityBase extends JUnit4DistributedTestCase {
   protected void assertExceptionOccurred(QueryService qs, String query, String authErrorRegexp) {
     try {
       qs.newQuery(query).execute();
+      fail();
     } catch (Exception e) {
+      e.printStackTrace();
       if (!e.getMessage().matches(authErrorRegexp)) {
         Throwable cause = e.getCause();
         while (cause != null) {
@@ -141,6 +143,7 @@ public class QuerySecurityBase extends JUnit4DistributedTestCase {
       qs.newQuery(query).execute(bindParams);
       fail();
     } catch (Exception e) {
+
       if (!e.getMessage().matches(authErrorRegexp)) {
         Throwable cause = e.getCause();
         while (cause != null) {
