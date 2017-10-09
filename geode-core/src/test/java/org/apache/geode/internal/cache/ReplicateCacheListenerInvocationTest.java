@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -54,7 +55,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * Converted from JUnit 3.
  *
- * @since 2.0
+ * @since GemFire 2.0
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
@@ -62,15 +63,15 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
 
+  protected static final int ENTRY_VALUE = 0;
+  protected static final int UPDATED_ENTRY_VALUE = 1;
+
   private static final String CREATES = "CREATES";
   private static final String UPDATES = "UPDATES";
   private static final String INVALIDATES = "INVALIDATES";
   private static final String DESTROYS = "DESTROYS";
 
-  private static final int ENTRY_VALUE = 0;
-  private static final int UPDATED_ENTRY_VALUE = 1;
-
-  private String regionName;
+  protected String regionName;
   private String key;
 
   @ClassRule
@@ -90,7 +91,7 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    regionName = testName.getMethodName();
+    regionName = getClass().getSimpleName();
     key = "key-1";
 
     sharedCountersRule.initialize(CREATES);
@@ -166,10 +167,9 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
   protected Region<String, Integer> createRegion(final String name,
       final CacheListener<String, Integer> listener) {
     RegionFactory<String, Integer> regionFactory = cacheRule.getCache().createRegionFactory();
-    regionFactory.setStatisticsEnabled(true);
-    regionFactory.setScope(Scope.DISTRIBUTED_ACK);
-    regionFactory.setDataPolicy(DataPolicy.REPLICATE);
     regionFactory.addCacheListener(listener);
+    regionFactory.setDataPolicy(DataPolicy.REPLICATE);
+    regionFactory.setScope(Scope.DISTRIBUTED_ACK);
 
     return regionFactory.create(name);
   }
@@ -231,8 +231,8 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
 
       errorCollector.checkThat(event.getDistributedMember(), equalTo(event.getCallbackArgument()));
       errorCollector.checkThat(event.getOperation(), equalTo(Operation.CREATE));
-      errorCollector.checkThat(event.getNewValue(), equalTo(ENTRY_VALUE));
       errorCollector.checkThat(event.getOldValue(), nullValue());
+      errorCollector.checkThat(event.getNewValue(), equalTo(ENTRY_VALUE));
 
       if (event.getSerializedOldValue() != null) {
         errorCollector.checkThat(event.getSerializedOldValue().getDeserializedValue(),
@@ -261,7 +261,7 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
 
       errorCollector.checkThat(event.getDistributedMember(), equalTo(event.getCallbackArgument()));
       errorCollector.checkThat(event.getOperation(), equalTo(Operation.UPDATE));
-      errorCollector.checkThat(event.getOldValue(), equalTo(ENTRY_VALUE));
+      errorCollector.checkThat(event.getOldValue(), anyOf(equalTo(ENTRY_VALUE), nullValue()));
       errorCollector.checkThat(event.getNewValue(), equalTo(UPDATED_ENTRY_VALUE));
 
       if (event.getSerializedOldValue() != null) {
@@ -295,7 +295,7 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
             equalTo(cacheRule.getSystem().getDistributedMember()));
       }
       errorCollector.checkThat(event.getOperation(), equalTo(Operation.INVALIDATE));
-      errorCollector.checkThat(event.getOldValue(), equalTo(ENTRY_VALUE));
+      errorCollector.checkThat(event.getOldValue(), anyOf(equalTo(ENTRY_VALUE), nullValue()));
       errorCollector.checkThat(event.getNewValue(), nullValue());
     }
   }
@@ -320,7 +320,7 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
             equalTo(cacheRule.getSystem().getDistributedMember()));
       }
       errorCollector.checkThat(event.getOperation(), equalTo(Operation.DESTROY));
-      errorCollector.checkThat(event.getOldValue(), equalTo(ENTRY_VALUE));
+      errorCollector.checkThat(event.getOldValue(), anyOf(equalTo(ENTRY_VALUE), nullValue()));
       errorCollector.checkThat(event.getNewValue(), nullValue());
     }
   }
