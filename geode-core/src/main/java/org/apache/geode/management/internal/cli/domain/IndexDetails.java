@@ -47,7 +47,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   private String projectionAttributes;
   private String memberName;
   private String regionName;
-  private String isValid;
+  private boolean isValid;
 
   private final String indexName;
   private final String memberId;
@@ -98,7 +98,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   }
 
   public void setIsValid(boolean valid) {
-    this.isValid = String.valueOf(valid);
+    this.isValid = valid;
   }
 
   public IndexDetails(final String memberId, final String regionPath, final String indexName) {
@@ -186,7 +186,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     return regionPath;
   }
 
-  public String getIsValid() {
+  public boolean getIsValid() {
     return this.isValid;
   }
 
