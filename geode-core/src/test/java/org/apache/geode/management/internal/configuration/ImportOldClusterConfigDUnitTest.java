@@ -34,7 +34,6 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 @Category(DistributedTest.class)
 public class ImportOldClusterConfigDUnitTest {
@@ -43,9 +42,6 @@ public class ImportOldClusterConfigDUnitTest {
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-
-  @Rule
-  public GfshRule gfshRule = new GfshRule();
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
