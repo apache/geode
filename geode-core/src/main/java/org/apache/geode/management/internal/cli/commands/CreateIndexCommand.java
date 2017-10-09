@@ -27,6 +27,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
@@ -78,15 +79,15 @@ public class CreateIndexCommand implements GfshCommand {
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     try {
-      int idxType;
+      IndexType idxType;
 
       // Index type check
       if ("range".equalsIgnoreCase(indexType)) {
-        idxType = IndexInfo.RANGE_INDEX;
+        idxType = IndexType.FUNCTIONAL;
       } else if ("hash".equalsIgnoreCase(indexType)) {
-        idxType = IndexInfo.HASH_INDEX;
+        idxType = IndexType.HASH;
       } else if ("key".equalsIgnoreCase(indexType)) {
-        idxType = IndexInfo.KEY_INDEX;
+        idxType = IndexType.PRIMARY_KEY;
       } else {
         return ResultBuilder
             .createUserErrorResult(CliStrings.CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE);

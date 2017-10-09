@@ -54,13 +54,13 @@ public class CreateIndexFunction extends FunctionAdapter implements InternalEnti
       String regionPath = regionPathTokens[0];
 
       switch (indexInfo.getIndexType()) {
-        case IndexInfo.RANGE_INDEX:
+        case FUNCTIONAL:
           queryService.createIndex(indexName, indexedExpression, fromClause);
           break;
-        case IndexInfo.KEY_INDEX:
+        case PRIMARY_KEY:
           queryService.createKeyIndex(indexName, indexedExpression, fromClause);
           break;
-        case IndexInfo.HASH_INDEX:
+        case HASH:
           queryService.createHashIndex(indexName, indexedExpression, fromClause);
           break;
         default:

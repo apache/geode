@@ -14,7 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -179,7 +182,7 @@ public class ListIndexFunctionJUnitTest {
         exactly(2).of(mockIndex).getRegion();
         will(returnValue(mockRegion));
         oneOf(mockIndex).getType();
-        will(returnValue(getIndexType(indexDetails.getIndexType())));
+        will(returnValue(indexDetails.getIndexType()));
         oneOf(mockRegion).getName();
         will(returnValue(indexDetails.getRegionName()));
         oneOf(mockRegion).getFullPath();
@@ -218,17 +221,6 @@ public class ListIndexFunctionJUnitTest {
     }
 
     return mockIndex;
-  }
-
-  private IndexType getIndexType(final IndexDetails.IndexType type) {
-    switch (type) {
-      case FUNCTIONAL:
-        return IndexType.FUNCTIONAL;
-      case PRIMARY_KEY:
-        return IndexType.PRIMARY_KEY;
-      default:
-        return null;
-    }
   }
 
   @Test
