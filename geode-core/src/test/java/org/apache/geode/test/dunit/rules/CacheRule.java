@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.cache.rules;
+package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
@@ -26,7 +26,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedExternalResource;
 
 /**
  * JUnit Rule that creates Cache instances in DistributedTest VMs without {@code CacheTestCase}.

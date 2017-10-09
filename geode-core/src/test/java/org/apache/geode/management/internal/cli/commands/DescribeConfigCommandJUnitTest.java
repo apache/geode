@@ -43,7 +43,7 @@ public class DescribeConfigCommandJUnitTest {
 
   @Test
   public void describeConfig() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManger);
+    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
     String result = gfsh.execute("describe config --member=" + server.getName());
     for (String datum : EXPECTED_BASE_CONFIGURATION_DATA) {
       assertThat(result).contains(datum);
@@ -52,7 +52,7 @@ public class DescribeConfigCommandJUnitTest {
 
   @Test
   public void describeConfigAndShowDefaults() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManger);
+    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
     String result =
         gfsh.execute("describe config --hide-defaults=false --member=" + server.getName());
     for (String datum : EXPECTED_BASE_CONFIGURATION_DATA) {
@@ -74,7 +74,7 @@ public class DescribeConfigCommandJUnitTest {
     String invalidMemberName = "invalid-member-name";
     String expectedErrorString = String.format("Member \"%s\" not found", invalidMemberName);
 
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManger);
+    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
     String result = gfsh.execute("describe config --member=" + invalidMemberName);
     assertThat(result).contains(expectedErrorString);
   }
@@ -83,7 +83,7 @@ public class DescribeConfigCommandJUnitTest {
   public void describeConfigWithoutMemberName() throws Exception {
     String expectedErrorString = String.format("You should specify option ");
 
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManger);
+    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
     String result = gfsh.execute("describe config");
     assertThat(result).contains(expectedErrorString);
   }

@@ -36,25 +36,6 @@ import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 public abstract class ProtobufResponseUtilities {
 
   /**
-   * This creates response object containing a ClientProtocol.ErrorResponse, and also logs the
-   * passed error message and exception (if present) to the provided logger.
-   *
-   * @param errorMessage - description of the error
-   * @param logger - logger to write the error message to
-   * @param ex - exception which should be logged
-   * @return An error response containing the first three parameters.
-   */
-  public static ClientProtocol.ErrorResponse createAndLogErrorResponse(ProtocolErrorCode errorCode,
-      String errorMessage, Logger logger, Exception ex) {
-    if (ex != null) {
-      logger.error(errorMessage, ex);
-    } else {
-      logger.error(errorMessage);
-    }
-    return makeErrorResponse(errorCode.codeValue, errorMessage);
-  }
-
-  /**
    * This creates a response object containing a RegionAPI.GetRegionNamesResponse
    *
    * @param regionSet - A set of regions
@@ -70,9 +51,11 @@ public abstract class ProtobufResponseUtilities {
     return builder.build();
   }
 
-  public static ClientProtocol.ErrorResponse makeErrorResponse(int errorCode, String message) {
+  public static ClientProtocol.ErrorResponse makeErrorResponse(ProtocolErrorCode errorCode,
+      String message) {
     return ClientProtocol.ErrorResponse.newBuilder()
-        .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(message))
+        .setError(
+            BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message))
         .build();
   }
 }

@@ -40,7 +40,7 @@ public class ConnectCommandIntegrationTest {
 
   @Test
   public void connectOverJmx() throws Exception {
-    gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
   }
 
   @Test

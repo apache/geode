@@ -25,6 +25,8 @@ import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStat
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
 
+import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
+
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
  * it to the appropriate handler.
@@ -56,14 +58,12 @@ public class ProtobufOpsProcessor {
       } else {
         logger.warn("Received unauthorized request");
         recordAuthorizationViolation(context);
-        result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-            ProtocolErrorCode.AUTHORIZATION_FAILED.codeValue,
+        result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(AUTHORIZATION_FAILED,
             "User isn't authorized for this operation."));
       }
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
+      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(UNSUPPORTED_OPERATION,
           "Invalid execution context found for operation."));
     }
 

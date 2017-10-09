@@ -63,7 +63,7 @@ public class DescribeConfigCommandDUnitTest {
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     }
 
     server0.invoke(() -> {

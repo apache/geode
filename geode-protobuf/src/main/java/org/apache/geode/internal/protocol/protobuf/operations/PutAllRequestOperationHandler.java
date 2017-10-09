@@ -37,6 +37,8 @@ import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
+import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
+
 @Experimental
 public class PutAllRequestOperationHandler
     implements OperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse> {
@@ -51,9 +53,8 @@ public class PutAllRequestOperationHandler
 
     if (region == null) {
       logger.error("Received PutAll request for non-existing region {}", regionName);
-      return Failure.of(
-          ProtobufResponseUtilities.createAndLogErrorResponse(ProtocolErrorCode.REGION_NOT_FOUND,
-              "Region passed does not exist: " + regionName, logger, null));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND,
+          "Region passed does not exist: " + regionName));
     }
 
     RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder()
@@ -71,13 +72,12 @@ public class PutAllRequestOperationHandler
 
       region.put(decodedKey, decodedValue);
     } catch (UnsupportedEncodingTypeException ex) {
-      return buildAndLogKeyedError(entry, ProtocolErrorCode.VALUE_ENCODING_ERROR,
-          "Encoding not supported", ex);
+      return buildAndLogKeyedError(entry, VALUE_ENCODING_ERROR, "Encoding not supported", ex);
     } catch (CodecNotRegisteredForTypeException ex) {
-      return buildAndLogKeyedError(entry, ProtocolErrorCode.VALUE_ENCODING_ERROR,
+      return buildAndLogKeyedError(entry, VALUE_ENCODING_ERROR,
           "Codec error in protobuf deserialization", ex);
     } catch (ClassCastException ex) {
-      return buildAndLogKeyedError(entry, ProtocolErrorCode.CONSTRAINT_VIOLATION,
+      return buildAndLogKeyedError(entry, CONSTRAINT_VIOLATION,
           "Invalid key or value type for region", ex);
     }
     return null;

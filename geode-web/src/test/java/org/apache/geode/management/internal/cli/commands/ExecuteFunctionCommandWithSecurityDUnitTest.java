@@ -18,7 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManger;
+import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -108,6 +108,6 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
   }
 
   private void givenReadOnlyConnectionOverJmx() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getJmxPort(), jmxManger, "dataRead", "dataRead");
+    gfsh.secureConnectAndVerify(locator.getJmxPort(), jmxManager, "dataRead", "dataRead");
   }
 }

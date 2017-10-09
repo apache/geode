@@ -19,7 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManger;
+import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -85,7 +85,7 @@ public class ShutdownCommandDUnitTest {
     if (CONNECT_OVER_HTTP) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);
     } else {
-      gfsh.connectAndVerify(manager.getJmxPort(), jmxManger);
+      gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
     }
   }
 

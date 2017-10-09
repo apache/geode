@@ -212,7 +212,7 @@ public class FileProcessControllerIntegrationTest {
     new StringFileWriter(statusFile).writeToFile(STATUS_JSON);
 
     // assert
-    assertThat(statusRequestFile).exists();
+    await().until(() -> assertThat(statusRequestFile).exists());
   }
 
   @Test
