@@ -32,7 +32,11 @@ public class TcpServerFactory {
   static final Logger logger = LogService.getLogger();
 
   public TcpServerFactory() {
-    clientProtocolService = new ClientProtocolServiceLoader().loadService();
+    if (Boolean.getBoolean("geode.feature-protobuf-protocol")) {
+      clientProtocolService = new ClientProtocolServiceLoader().loadService();
+    } else {
+      clientProtocolService = null;
+    }
   }
 
   public TcpServer makeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
