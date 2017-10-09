@@ -34,6 +34,7 @@ import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.OffHeapMemoryStats;
 import org.apache.geode.internal.offheap.OutOfOffHeapMemoryListener;
 import org.apache.geode.internal.offheap.SlabImpl;
+import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -74,12 +75,14 @@ public class AbstractRegionEntryTest {
       AbstractRegionEntry re = new TestableRegionEntry(lr, value);
       assertEquals(value, re.getValueField());
       EntryEventImpl entryEvent = new EntryEventImpl();
-      re.prepareValueForCache(regionEntryContext, value, entryEvent, true);
+      StoredObject valueForCache =
+          (StoredObject) re.prepareValueForCache(regionEntryContext, value, entryEvent, true);
       final byte[] cachedSerializedNewValue = entryEvent.getCachedSerializedNewValue();
+      assertNotNull(cachedSerializedNewValue);
+      valueForCache.checkDataEquals(cachedSerializedNewValue);
       DataInputStream dataInputStream =
           new DataInputStream(new ByteArrayInputStream(cachedSerializedNewValue));
       Object o = DataSerializer.readObject(dataInputStream);
-      assertNotNull(entryEvent.getCachedSerializedNewValue());
       assertEquals(o, value);
     } finally {
       MemoryAllocatorImpl.freeOffHeapMemory();
