@@ -28,7 +28,7 @@ import org.apache.geode.cache.IncompatibleVersionException;
 public interface ClientProtocolPipeline extends AutoCloseable {
   /**
    * @throws IncompatibleVersionException if a client tries to connect with version that is
-   * incompatible with the current version of the server.
+   *         incompatible with the current version of the server.
    */
   void processMessage(InputStream inputStream, OutputStream outputStream)
       throws IOException, IncompatibleVersionException;
