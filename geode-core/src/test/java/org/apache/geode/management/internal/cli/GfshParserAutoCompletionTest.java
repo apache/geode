@@ -275,10 +275,12 @@ public class GfshParserAutoCompletionTest {
     assertThat(parser.getCommandManager().obtainHelp(command)).isEqualTo(helpString);
   }
 
-  private String getCompleted(String buffer, int cursor, Completion completed) {
-    return buffer.substring(0, cursor) + completed.getValue();
+  @Test
+  public void testIndexType() throws Exception {
+    buffer = "create index --type=";
+    candidate = parser.complete(buffer);
+    assertThat(candidate.size()).isEqualTo(3);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "hash");
   }
-
-
 
 }

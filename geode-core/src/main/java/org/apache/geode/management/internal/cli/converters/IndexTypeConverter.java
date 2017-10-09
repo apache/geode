@@ -20,33 +20,41 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
+import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.ConverterHint;
 
 /***
  * Added converter to enable auto-completion for index-type
  *
  */
-public class IndexTypeConverter implements Converter<String> {
+public class IndexTypeConverter implements Converter<IndexType> {
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && ConverterHint.INDEX_TYPE.equals(optionContext);
+    return IndexType.class.isAssignableFrom(type)
+        && optionContext.contains(ConverterHint.INDEX_TYPE);
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
+  public IndexType convertFromText(String value, Class<?> targetType, String optionContext) {
+    switch (value.toLowerCase()) {
+      case "range":
+        return IndexType.FUNCTIONAL;
+      case "key":
+        return IndexType.PRIMARY_KEY;
+      case "hash":
+        return IndexType.HASH;
+    }
+
+    throw new IllegalArgumentException("invalid index type: " + value);
   }
 
   @Override
   public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
       String existingData, String optionContext, MethodTarget target) {
-
-    if (String.class.equals(targetType) && ConverterHint.INDEX_TYPE.equals(optionContext)) {
-      completions.add(new Completion("range"));
-      completions.add(new Completion("key"));
-      completions.add(new Completion("hash"));
-    }
-    return !completions.isEmpty();
+    completions.add(new Completion("range"));
+    completions.add(new Completion("key"));
+    completions.add(new Completion("hash"));
+    return true;
   }
 }
