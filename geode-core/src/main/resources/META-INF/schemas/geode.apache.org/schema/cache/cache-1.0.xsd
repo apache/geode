@@ -184,7 +184,12 @@ declarative caching XML file elements unless indicated otherwise.
             <xsd:attribute name="id" type="xsd:string" use="required" />
             <xsd:attribute name="remote-distributed-system-id" type="xsd:string" use="required" />
             <xsd:attribute name="parallel" type="xsd:boolean" use="optional" />
-            <xsd:attribute name="manual-start" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="manual-start" type="xsd:boolean" use="optional" >
+              <xsd:annotation>
+                <xsd:appinfo>deprecated</xsd:appinfo>
+                <xsd:documentation>Manual start of senders is deprecated and will be removed in a later release.</xsd:documentation>
+              </xsd:annotation>
+            </xsd:attribute>
             <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
             <xsd:attribute name="socket-read-timeout" type="xsd:string" use="optional" />
             <xsd:attribute name="enable-batch-conflation" type="xsd:boolean" use="optional" />
