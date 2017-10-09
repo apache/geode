@@ -22,11 +22,14 @@ import java.io.OutputStream;
 import org.apache.geode.cache.IncompatibleVersionException;
 
 /**
- * An interface representing the message handling part of a protocol. This may contain multiple
- * parts, and is expected to take care of handshaking, auth, whatever is required. It does not
- * manage the socket, and apart from the statistics, is expected to be effectively stateless.
+ * An interface that does the message handling part of a protocol for a particular connection. It
+ * does not manage the socket.
  */
 public interface ClientProtocolPipeline extends AutoCloseable {
+  /**
+   * @throws IncompatibleVersionException if a client tries to connect with version that is
+   * incompatible with the current version of the server.
+   */
   void processMessage(InputStream inputStream, OutputStream outputStream)
       throws IOException, IncompatibleVersionException;
 
