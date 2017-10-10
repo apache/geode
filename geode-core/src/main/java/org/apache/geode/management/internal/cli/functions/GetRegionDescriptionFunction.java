@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -33,7 +32,7 @@ public class GetRegionDescriptionFunction extends FunctionAdapter implements Int
   public void execute(FunctionContext context) {
     String regionPath = (String) context.getArguments();
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       Region<?, ?> region = cache.getRegion(regionPath);
 
       if (region != null) {

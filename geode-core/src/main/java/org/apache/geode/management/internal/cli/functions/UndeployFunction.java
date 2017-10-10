@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.geode.internal.ClassPathLoader;
@@ -24,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
@@ -41,10 +39,6 @@ public class UndeployFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
   @Override
   public void execute(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
@@ -53,7 +47,7 @@ public class UndeployFunction implements Function, InternalEntity {
     try {
       final Object[] args = (Object[]) context.getArguments();
       final String[] jarFilenameList = (String[]) args[0]; // Comma separated
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) context.getCache();
 
       final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
 
