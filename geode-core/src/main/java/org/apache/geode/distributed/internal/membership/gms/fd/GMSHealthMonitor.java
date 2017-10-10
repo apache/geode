@@ -1277,8 +1277,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     boolean failed = false;
 
     membersInFinalCheck.add(mbr);
-    suspectedMemberInView.putIfAbsent(mbr, this.currentView);
-    setNextNeighbor(GMSHealthMonitor.this.currentView, mbr);
+    suspectedMemberInView.putIfAbsent(mbr, currentView);
+    setNextNeighbor(currentView, mbr);
 
     try {
       services.memberSuspected(initiator, mbr, reason);
@@ -1331,7 +1331,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       // whether it's alive or not, at this point we allow it to
       // be watched again
       suspectedMemberInView.remove(mbr);
-      setNextNeighbor(GMSHealthMonitor.this.currentView, null);
+      setNextNeighbor(currentView, null);
       membersInFinalCheck.remove(mbr);
     }
     return !failed;
