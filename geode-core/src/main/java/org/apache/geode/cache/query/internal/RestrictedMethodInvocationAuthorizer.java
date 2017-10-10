@@ -97,8 +97,37 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
 
     Set<Class> stringCallers = new HashSet<>();
     stringCallers.add(String.class);
+    whiteListMap.put("charAt", stringCallers);
+    whiteListMap.put("codePointAt", stringCallers);
+    whiteListMap.put("codePointBefore", stringCallers);
+    whiteListMap.put("codePointCount", stringCallers);
+    whiteListMap.put("compareToIgnoreCase", stringCallers);
+    whiteListMap.put("concat", stringCallers);
+    whiteListMap.put("contains", stringCallers);
+    whiteListMap.put("contentEquals", stringCallers);
+    whiteListMap.put("endsWith", stringCallers);
+    whiteListMap.put("equalsIgnoreCase", stringCallers);
+    whiteListMap.put("getBytes", stringCallers);
+    whiteListMap.put("hashCode", stringCallers);
+    whiteListMap.put("indexOf", stringCallers);
+    whiteListMap.put("intern", stringCallers);
+    whiteListMap.put("isEmpty", stringCallers);
+    whiteListMap.put("lastIndexOf", stringCallers);
+    whiteListMap.put("length", stringCallers);
+    whiteListMap.put("matches", stringCallers);
+    whiteListMap.put("offsetByCodePoints", stringCallers);
+    whiteListMap.put("regionMatches", stringCallers);
+    whiteListMap.put("replace", stringCallers);
+    whiteListMap.put("replaceAll", stringCallers);
+    whiteListMap.put("replaceFirst", stringCallers);
+    whiteListMap.put("split", stringCallers);
+    whiteListMap.put("startsWith", stringCallers);
+    whiteListMap.put("substring", stringCallers);
+    whiteListMap.put("toCharArray", stringCallers);
     whiteListMap.put("toLowerCase", stringCallers);
     whiteListMap.put("toUpperCase", stringCallers);
+    whiteListMap.put("trim", stringCallers);
+
     return whiteListMap;
   }
 
