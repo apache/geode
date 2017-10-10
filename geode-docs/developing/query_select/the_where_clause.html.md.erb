@@ -241,27 +241,22 @@ When the `SecurityManager` is enabled,
 <%=vars.product_name%> throws a `NotAuthorizedException` when any
 method not on this list of whitelisted methods is invoked:
 
-- `keySet`, `entrySet`, `values`, `containsKey` or `get` on a `Map`, `Collection`, or `Region` object
-- `getKey` or `getValue`  on a `Region.Entry` object
-- `after`, `before`, `getNanos`, or `getTime` on a `Date` or `Timestamp` object
-- `charAt`, `codePointAt`, `codePointBefore`, `codePointCount`, 
-`compareToIgnoreCase`, `concat`, `contains`, `contentEquals`, 
-`endsWith`, `equalsIgnoreCase`, `getBytes`, `hashCode`, `indexOf`, 
-`intern`, `isEmpty`, `lastIndexOf`, `length`, `matches`, 
-`offsetByCodePoints`, `regionMatches`, `replace`, `replaceAll`, 
-`replaceFirst`, `split`, `startsWith`, `substring`, `toCharArray`, 
-`toLowerCase`, `toUpperCase`, or `trim` on a `String` object
-- `intValue`, `longValue`, `shortValue`, etc. on any `Number` object
-- `booleanValue` on any `Boolean` object
-- `equals`, `compareTo`, or `toString` on any object
+- On a `Map`, `Collection`, or `Region` object: `keySet`, `entrySet`, `values`, `containsKey` or `get`
+- On a `Region.Entry` object: `getKey` or `getValue`
+- On a `Date` or `Timestamp` object: `after`, `before`, `getNanos`, or `getTime`
+- Any method on a `String` object
+- On any `Number` object: `intValue`, `longValue`, `shortValue`, etc.
+- On any `Boolean` object: `booleanValue`
+- On any object: `equals`, `compareTo`, or `toString`
 
 To disable the authorization check,
 start all servers with the added system property
-`QueryService.allowUntrustedMethodInvocation`.
-For example,
+`gemfire.QueryService.allowUntrustedMethodInvocation`.
+For example:
 
 ```
-gfsh>start server --name=Server1 --J=QueryService.allowUntrustedMethodInvocation
+gfsh>start server --name=Server1 \
+     --J=-Dgemfire.QueryService.allowUntrustedMethodInvocation=true
 ```
 
 ## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
