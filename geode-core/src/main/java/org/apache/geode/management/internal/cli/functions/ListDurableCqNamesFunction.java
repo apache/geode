@@ -16,11 +16,9 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.internal.cq.CqService;
@@ -49,16 +47,12 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 public class ListDurableCqNamesFunction extends FunctionAdapter implements InternalEntity {
   private static final long serialVersionUID = 1L;
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   public String getId() {
     return ListDurableCqNamesFunction.class.getName();
   }
 
   public void execute(final FunctionContext context) {
-    final Cache cache = getCache();
+    final Cache cache = context.getCache();
     final DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     String memberNameOrId = CliUtil.getMemberNameOrId(member);
     DurableCqNamesResult result = new DurableCqNamesResult(memberNameOrId);

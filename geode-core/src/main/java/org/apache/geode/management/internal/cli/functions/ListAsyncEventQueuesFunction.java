@@ -19,11 +19,9 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -51,17 +49,13 @@ public class ListAsyncEventQueuesFunction extends FunctionAdapter implements Int
     return getClass().getName();
   }
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   @Override
   public void execute(final FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
