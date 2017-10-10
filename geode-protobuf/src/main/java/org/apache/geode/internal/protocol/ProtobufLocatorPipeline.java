@@ -22,13 +22,13 @@ import java.io.OutputStream;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolPipeline;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtobufStreamProcessor;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 
 @Experimental
-public final class ProtobufLocatorPipeline implements ClientProtocolPipeline {
+public final class ProtobufLocatorPipeline implements ClientProtocolProcessor {
   private final ProtobufClientStatistics statistics;
   private final InternalLocator locator;
   private final ProtobufStreamProcessor streamProcessor;

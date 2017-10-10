@@ -25,7 +25,7 @@ import org.apache.geode.cache.IncompatibleVersionException;
  * An interface that does the message handling part of a protocol for a particular connection. It
  * does not manage the socket.
  */
-public interface ClientProtocolPipeline extends AutoCloseable {
+public interface ClientProtocolProcessor extends AutoCloseable {
   /**
    * @throws IncompatibleVersionException if a client tries to connect with version that is
    *         incompatible with the current version of the server.

@@ -32,15 +32,13 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.server.Authenticator;
 
 /**
  * Holds the socket and protocol handler for the new client protocol.
  */
 public class GenericProtocolServerConnection extends ServerConnection {
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
-  private final ClientProtocolPipeline protocolPipeline;
+  private final ClientProtocolProcessor protocolPipeline;
   private boolean cleanedUp;
   private ClientProxyMembershipID clientProxyMembershipID;
 
@@ -50,7 +48,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
    */
   public GenericProtocolServerConnection(Socket socket, InternalCache c, CachedRegionHelper helper,
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-      byte communicationMode, Acceptor acceptor, ClientProtocolPipeline newClientProtocol,
+      byte communicationMode, Acceptor acceptor, ClientProtocolProcessor newClientProtocol,
       SecurityService securityService) {
     super(socket, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
         communicationMode, acceptor, securityService);

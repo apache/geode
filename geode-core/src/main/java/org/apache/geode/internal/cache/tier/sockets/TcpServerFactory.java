@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -32,11 +33,13 @@ public class TcpServerFactory {
   static final Logger logger = LogService.getLogger();
 
   public TcpServerFactory() {
-    if (Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-      clientProtocolService = new ClientProtocolServiceLoader().loadService();
-    } else {
-      clientProtocolService = null;
+    ClientProtocolService service = null;
+    try {
+      service = new ClientProtocolServiceLoader().loadService();
+    } catch (ServiceLoadingFailureException ex) {
+      logger.warn("Could not load client protocol", ex);
     }
+    clientProtocolService = service;
   }
 
   public TcpServer makeTcpServer(int port, InetAddress bind_address, Properties sslConfig,

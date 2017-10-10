@@ -59,7 +59,7 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolPipeline;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.logging.LogService;
@@ -382,12 +382,20 @@ public class TcpServer {
         if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
           if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-            try (ClientProtocolPipeline pipeline =
-                clientProtocolService.createLocatorPipeline(internalLocator)) {
-              pipeline.processMessage(input, socket.getOutputStream());
-            } catch (IncompatibleVersionException e) {
-              // should not happen on the locator as there is no handshake.
-              log.error("Unexpected exception in client message processing", e);
+            if (clientProtocolService == null) {
+              // this shouldn't happen.
+              log.error("Client protocol service not initialized but a request was received");
+              socket.close();
+              throw new IOException(
+                  "Client protocol service not initialized but a request was received");
+            } else {
+              try (ClientProtocolProcessor pipeline =
+                  clientProtocolService.createProcessorForLocator(internalLocator)) {
+                pipeline.processMessage(input, socket.getOutputStream());
+              } catch (IncompatibleVersionException e) {
+                // should not happen on the locator as there is no handshake.
+                log.error("Unexpected exception in client message processing", e);
+              }
             }
           } else {
             rejectUnknownProtocolConnection(socket, gossipVersion);

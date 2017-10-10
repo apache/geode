@@ -34,11 +34,11 @@ public interface ClientProtocolService {
    *
    * @param availableAuthenticators A list of valid authenticators for the current system.
    */
-  ClientProtocolPipeline createCachePipeline(Cache cache, Authenticator availableAuthenticators,
-      SecurityService securityService);
+  ClientProtocolProcessor createProcessorForCache(Cache cache,
+      Authenticator availableAuthenticators, SecurityService securityService);
 
   /**
    * Create a locator pipeline. The locator does not currently provide any authentication.
    */
-  ClientProtocolPipeline createLocatorPipeline(InternalLocator locator);
+  ClientProtocolProcessor createProcessorForLocator(InternalLocator locator);
 }

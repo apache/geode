@@ -62,9 +62,9 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
   @Before
   public void setup() throws IOException {
-    startCacheWithCacheServer();
-
     Host.getLocator().invoke(() -> System.setProperty("geode.feature-protobuf-protocol", "true"));
+
+    startCacheWithCacheServer();
   }
 
   private Socket createSocket() throws IOException {

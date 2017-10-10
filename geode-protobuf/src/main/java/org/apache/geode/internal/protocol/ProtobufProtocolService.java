@@ -17,7 +17,7 @@ package org.apache.geode.internal.protocol;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolPipeline;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
 import org.apache.geode.internal.protocol.protobuf.ProtobufStreamProcessor;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
@@ -48,14 +48,14 @@ public class ProtobufProtocolService implements ClientProtocolService {
   }
 
   @Override
-  public ClientProtocolPipeline createCachePipeline(Cache cache, Authenticator authenticator,
+  public ClientProtocolProcessor createProcessorForCache(Cache cache, Authenticator authenticator,
       SecurityService securityService) {
     return new ProtobufCachePipeline(protobufStreamProcessor, getStatistics(), cache, authenticator,
         securityService);
   }
 
   @Override
-  public ClientProtocolPipeline createLocatorPipeline(InternalLocator locator) {
+  public ClientProtocolProcessor createProcessorForLocator(InternalLocator locator) {
     return new ProtobufLocatorPipeline(protobufStreamProcessor, getStatistics(), locator);
   }
 }

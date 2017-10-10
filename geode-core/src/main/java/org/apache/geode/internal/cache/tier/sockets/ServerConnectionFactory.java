@@ -108,7 +108,7 @@ public class ServerConnectionFactory {
         ClientProtocolService service = getOrCreateClientProtocolService(
             cache.getDistributedSystem(), acceptor.getServerName());
 
-        ClientProtocolPipeline cachePipeline = service.createCachePipeline(cache,
+        ClientProtocolProcessor cachePipeline = service.createProcessorForCache(cache,
             findStreamAuthenticator(authenticationMode), securityService);
 
         return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
