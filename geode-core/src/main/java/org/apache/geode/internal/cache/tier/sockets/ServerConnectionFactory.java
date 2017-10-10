@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.server.Authenticator;
+import org.apache.geode.security.internal.server.Authenticator;
 
 /**
  * Creates instances of ServerConnection based on the connection mode provided.

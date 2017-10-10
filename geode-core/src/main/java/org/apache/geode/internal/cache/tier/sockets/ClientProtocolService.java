@@ -19,7 +19,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.server.Authenticator;
+import org.apache.geode.security.internal.server.Authenticator;
 
 /**
  * Provides a convenient location for a client protocol service to be loaded into the system.

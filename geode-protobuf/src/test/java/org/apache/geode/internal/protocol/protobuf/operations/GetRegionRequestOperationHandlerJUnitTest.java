@@ -39,7 +39,7 @@ import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
-import org.apache.geode.security.server.NoOpAuthorizer;
+import org.apache.geode.security.internal.server.NoOpAuthorizer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

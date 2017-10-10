@@ -20,10 +20,9 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.security.server.Authorizer;
-import org.apache.geode.security.server.NoOpAuthorizer;
+import org.apache.geode.security.internal.server.Authorizer;
+import org.apache.geode.security.internal.server.NoOpAuthorizer;
 
 @Experimental
 public class MessageExecutionContext {

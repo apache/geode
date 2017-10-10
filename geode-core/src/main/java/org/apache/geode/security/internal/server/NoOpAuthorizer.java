@@ -12,37 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.server;
+package org.apache.geode.security.internal.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.apache.geode.security.SecurityManager;
+import org.apache.geode.security.ResourcePermission;
 
 /**
- * An implementation of {@link Authenticator} that doesn't use its parameters and always returns
- * true.
+ * An implementation of {@link Authorizer} that doesn't use its parameters and always returns true.
  */
-public class NoOpAuthenticator implements Authenticator {
+public class NoOpAuthorizer implements Authorizer {
   @Override
-  public void authenticate(InputStream inputStream, OutputStream outputStream,
-      SecurityManager securityManager) throws IOException {
-    // this method needs to do nothing as it is a pass-through implementation
-  }
-
-  @Override
-  public boolean isAuthenticated() {
+  public boolean authorize(ResourcePermission permissionRequested) {
     return true;
-  }
-
-  @Override
-  public Authorizer getAuthorizer() {
-    return new NoOpAuthorizer();
-  }
-
-  @Override
-  public String implementationID() {
-    return "NOOP";
   }
 }

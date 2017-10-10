@@ -37,7 +37,7 @@ import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatis
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.security.server.NoOpAuthorizer;
+import org.apache.geode.security.internal.server.NoOpAuthorizer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
