@@ -15,29 +15,40 @@
 package org.apache.geode.internal.cache.versions;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
+import org.junit.rules.ExpectedException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class RegionVersionVectorJUnitTest {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void testExceptionsWithContains() {
@@ -525,6 +536,61 @@ public class RegionVersionVectorJUnitTest {
     long version = 0x8080000000L;
     tag.setRegionVersion(version);
     assertEquals("failed test for bug #48576", version, tag.getRegionVersion());
+  }
+
+  @Test
+  public void testRecordVersionDuringRegionInit() {
+    LocalRegion mockRegion = mock(LocalRegion.class);
+    when(mockRegion.isInitialized()).thenReturn(false);
+    final String local = NetworkUtils.getIPLiteral();
+    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
+    VMVersionTag tag = new VMVersionTag();
+    tag.setRegionVersion(1L);
+
+    RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);
+    rvv.recordVersion(ownerId, tag);
+    assertEquals(1, rvv.getVersionForMember(ownerId));
+  }
+
+  @Test
+  public void testRecordVersionAfterRegionInitThrowsException() {
+    expectedException.expect(InternalGemFireError.class);
+    LocalRegion mockRegion = mock(LocalRegion.class);
+    when(mockRegion.isInitialized()).thenReturn(true);
+    final String local = NetworkUtils.getIPLiteral();
+    InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
+    VMVersionTag tag = new VMVersionTag();
+    tag.setRegionVersion(1L);
+
+    RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);
+    rvv.recordVersion(ownerId, tag);
+  }
+
+  public RegionVersionVector createRegionVersionVector(InternalDistributedMember ownerId,
+      LocalRegion owner) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    RegionVersionVector rvv = new RegionVersionVector(ownerId, owner) {
+      @Override
+      public int getDSFID() {
+        return 0;
+      }
+
+      @Override
+      protected RegionVersionVector createCopy(VersionSource ownerId, ConcurrentHashMap vector,
+          long version, ConcurrentHashMap gcVersions, long gcVersion, boolean singleMember,
+          RegionVersionHolder clonedLocalHolder) {
+        return null;
+      }
+
+      @Override
+      protected void writeMember(VersionSource member, DataOutput out) throws IOException {}
+
+      @Override
+      protected VersionSource readMember(DataInput in) throws IOException, ClassNotFoundException {
+        return null;
+      }
+    };
+    return rvv;
   }
 
   private void doExceptionsWithContains(DiskStoreID id, DiskRegionVersionVector rvv) {
