@@ -18,7 +18,6 @@ package org.apache.geode.internal.protocol.acceptance;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,17 +35,17 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -63,9 +62,9 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
   @Before
   public void setup() throws IOException {
-    startCacheWithCacheServer();
-
     Host.getLocator().invoke(() -> System.setProperty("geode.feature-protobuf-protocol", "true"));
+
+    startCacheWithCacheServer();
   }
 
   private Socket createSocket() throws IOException {
@@ -89,52 +88,35 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
             protobufRequestBuilder.setGetAvailableServersRequest(
                 ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
 
-    try {
-      ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
-      try (Socket socket = createSocket()) {
-        long messagesReceived = getMessagesReceived();
-        long messagesSent = getMessagesSent();
-        long bytesReceived = getBytesReceived();
-        long bytesSent = getBytesSent();
-        int clientConnectionStarts = getClientConnectionStarts();
-        int clientConnectionTerminations = getClientConnectionTerminations();
+    testSocketWithStats(getAvailableServersRequestMessage, protobufProtocolSerializer);
 
-        protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-            socket.getOutputStream());
+    testSocketWithStats(getAvailableServersRequestMessage, protobufProtocolSerializer);
+  }
 
-        ClientProtocol.Message getAvailableServersResponseMessage =
-            protobufProtocolSerializer.deserialize(socket.getInputStream());
-        validateGetAvailableServersResponse(getAvailableServersResponseMessage);
+  private void testSocketWithStats(ClientProtocol.Message getAvailableServersRequestMessage,
+      ProtobufProtocolSerializer protobufProtocolSerializer)
+      throws IOException, InvalidProtocolMessageException {
+    try (Socket socket = createSocket()) {
+      long messagesReceived = getMessagesReceived();
+      long messagesSent = getMessagesSent();
+      long bytesReceived = getBytesReceived();
+      long bytesSent = getBytesSent();
+      int clientConnectionStarts = getClientConnectionStarts();
+      int clientConnectionTerminations = getClientConnectionTerminations();
 
-        validateStats(messagesReceived + 1, messagesSent + 1,
-            bytesReceived + getAvailableServersRequestMessage.getSerializedSize(),
-            bytesSent + getAvailableServersResponseMessage.getSerializedSize(),
-            clientConnectionStarts, clientConnectionTerminations + 1);
-      }
+      protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
+          socket.getOutputStream());
 
-      try (Socket socket = createSocket()) {
-        long messagesReceived = getMessagesReceived();
-        long messagesSent = getMessagesSent();
-        long bytesReceived = getBytesReceived();
-        long bytesSent = getBytesSent();
-        int clientConnectionStarts = getClientConnectionStarts();
-        int clientConnectionTerminations = getClientConnectionTerminations();
+      ClientProtocol.Message getAvailableServersResponseMessage =
+          protobufProtocolSerializer.deserialize(socket.getInputStream());
+      validateGetAvailableServersResponse(getAvailableServersResponseMessage);
 
-        protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-            socket.getOutputStream());
-
-        ClientProtocol.Message getAvailableServersResponseMessage =
-            protobufProtocolSerializer.deserialize(socket.getInputStream());
-        validateGetAvailableServersResponse(getAvailableServersResponseMessage);
-
-        validateStats(messagesReceived + 1, messagesSent + 1,
-            bytesReceived + getAvailableServersRequestMessage.getSerializedSize(),
-            bytesSent + getAvailableServersResponseMessage.getSerializedSize(),
-            clientConnectionStarts, clientConnectionTerminations + 1);
-      }
-    } catch (RMIException e) {
-      throw e.getCause(); // so that assertions propagate properly.
+      validateStats(messagesReceived + 1, messagesSent + 1,
+          bytesReceived + getAvailableServersRequestMessage.getSerializedSize(),
+          bytesSent + getAvailableServersResponseMessage.getSerializedSize(),
+          clientConnectionStarts, clientConnectionTerminations + 1);
     }
   }
 
@@ -187,8 +169,8 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
 
-    Statistics[] protobufServerStats =
-        distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
+    Statistics[] protobufServerStats = distributedSystem.findStatisticsByType(
+        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_STATS_NAME));
     assertEquals(1, protobufServerStats.length);
     return protobufServerStats[0];
   }

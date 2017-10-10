@@ -43,6 +43,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -58,9 +59,9 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolProcessor;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -133,7 +134,7 @@ public class TcpServer {
   private final PoolStatHelper poolHelper;
   private final InternalLocator internalLocator;
   private final TcpHandler handler;
-  private ClientProtocolMessageHandler clientProtocolMessageHandler;
+  private final ClientProtocolService clientProtocolService;
 
 
   private PooledExecutorWithDMStats executor;
@@ -158,20 +159,20 @@ public class TcpServer {
   /**
    * returns the message handler used for client/locator communications processing
    */
-  public ClientProtocolMessageHandler getClientProtocolMessageHandler() {
-    return clientProtocolMessageHandler;
+  public ClientProtocolService getClientProtocolService() {
+    return clientProtocolService;
   }
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
       ThreadGroup threadGroup, String threadName, InternalLocator internalLocator,
-      ClientProtocolMessageHandler clientProtocolMessageHandler) {
+      ClientProtocolService clientProtocolService) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
     this.poolHelper = poolHelper;
     this.internalLocator = internalLocator;
-    this.clientProtocolMessageHandler = clientProtocolMessageHandler;
+    this.clientProtocolService = clientProtocolService;
     // register DSFID types first; invoked explicitly so that all message type
     // initializations do not happen in first deserialization on a possibly
     // "precious" thread
@@ -381,10 +382,21 @@ public class TcpServer {
         if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
           if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-            clientProtocolMessageHandler.getStatistics().clientConnected();
-            clientProtocolMessageHandler.receiveMessage(input, socket.getOutputStream(),
-                new MessageExecutionContext(internalLocator));
-            clientProtocolMessageHandler.getStatistics().clientDisconnected();
+            if (clientProtocolService == null) {
+              // this shouldn't happen.
+              log.error("Client protocol service not initialized but a request was received");
+              socket.close();
+              throw new IOException(
+                  "Client protocol service not initialized but a request was received");
+            } else {
+              try (ClientProtocolProcessor pipeline =
+                  clientProtocolService.createProcessorForLocator(internalLocator)) {
+                pipeline.processMessage(input, socket.getOutputStream());
+              } catch (IncompatibleVersionException e) {
+                // should not happen on the locator as there is no handshake.
+                log.error("Unexpected exception in client message processing", e);
+              }
+            }
           } else {
             rejectUnknownProtocolConnection(socket, gossipVersion);
           }

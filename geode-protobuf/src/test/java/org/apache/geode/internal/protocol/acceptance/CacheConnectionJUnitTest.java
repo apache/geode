@@ -66,6 +66,7 @@ import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
@@ -172,10 +173,10 @@ public class CacheConnectionJUnitTest {
 
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) cache.getDistributedSystem();
-    Statistics[] protobufServerStats =
-        distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-    assertEquals(1, protobufServerStats.length);
-    Statistics statistics = protobufServerStats[0];
+    Statistics[] protobufStats = distributedSystem.findStatisticsByType(
+        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_STATS_NAME));
+    assertEquals(1, protobufStats.length);
+    Statistics statistics = protobufStats[0];
     assertEquals(1, statistics.get("currentClientConnections"));
     assertEquals(2L, statistics.get("messagesReceived"));
     assertEquals(2L, statistics.get("messagesSent"));

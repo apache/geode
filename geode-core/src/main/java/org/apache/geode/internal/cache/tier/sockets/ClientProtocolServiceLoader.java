@@ -12,16 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.cache.tier.sockets;
 
-public class NoOpStatistics implements ClientProtocolStatistics {
-  @Override
-  public void clientConnected() {
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
-  }
+public class ClientProtocolServiceLoader {
+  public ClientProtocolService loadService() {
+    ServiceLoader<ClientProtocolService> loader = ServiceLoader.load(ClientProtocolService.class);
+    Iterator<ClientProtocolService> iterator = loader.iterator();
 
-  @Override
-  public void clientDisconnected() {
+    if (!iterator.hasNext()) {
+      throw new ServiceLoadingFailureException(
+          "There is no ClientProtocolService implementation found in JVM");
+    }
 
+    ClientProtocolService service = iterator.next();
+
+    if (iterator.hasNext()) {
+      throw new ServiceLoadingFailureException(
+          "There is more than one ClientProtocolService implementation found in JVM; aborting");
+    }
+
+    return service;
   }
 }

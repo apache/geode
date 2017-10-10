@@ -14,20 +14,34 @@
  */
 package org.apache.geode.internal.protocol.protobuf.statistics;
 
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
+public class NoOpStatistics implements ProtobufClientStatistics {
+  @Override
+  public void clientConnected() {
 
-public interface ProtobufClientStatistics extends ClientProtocolStatistics {
-  String PROTOBUF_STATS_NAME = "ProtobufStats";
+  }
 
-  void clientConnected();
+  @Override
+  public void clientDisconnected() {
 
-  void clientDisconnected();
+  }
 
-  void messageReceived(int bytes);
+  @Override
+  public void messageReceived(int bytes) {
 
-  void messageSent(int bytes);
+  }
 
-  void incAuthorizationViolations();
+  @Override
+  public void messageSent(int bytes) {
 
-  void incAuthenticationFailures();
+  }
+
+  @Override
+  public void incAuthorizationViolations() {
+
+  }
+
+  @Override
+  public void incAuthenticationFailures() {
+
+  }
 }

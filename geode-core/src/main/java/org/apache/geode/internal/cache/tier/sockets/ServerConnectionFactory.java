@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +34,7 @@ import org.apache.geode.security.server.Authenticator;
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
-  private ClientProtocolMessageHandler protocolHandler;
+  private volatile ClientProtocolService clientProtocolService;
   private Map<String, Class<? extends Authenticator>> authenticators = null;
 
   public ServerConnectionFactory() {}
@@ -44,7 +43,7 @@ public class ServerConnectionFactory {
     if (authenticators != null) {
       return;
     }
-    HashMap tmp = new HashMap<>();
+    HashMap<String, Class<? extends Authenticator>> tmp = new HashMap<>();
 
     ServiceLoader<Authenticator> loader = ServiceLoader.load(Authenticator.class);
     for (Authenticator streamAuthenticator : loader) {
@@ -54,17 +53,18 @@ public class ServerConnectionFactory {
     authenticators = tmp;
   }
 
-  private synchronized ClientProtocolMessageHandler initializeMessageHandler(
+  private synchronized ClientProtocolService initializeClientProtocolService(
       StatisticsFactory statisticsFactory, String statisticsName) {
-    if (protocolHandler != null) {
-      return protocolHandler;
+    if (clientProtocolService != null) {
+      return clientProtocolService;
     }
 
-    ClientProtocolMessageHandler tempHandler = new MessageHandlerFactory().makeMessageHandler();
-    tempHandler.initializeStatistics(statisticsName, statisticsFactory);
+    // use temp to make sure we publish properly.
+    ClientProtocolService tmp = new ClientProtocolServiceLoader().loadService();
+    tmp.initializeStatistics(statisticsName, statisticsFactory);
 
-    protocolHandler = tempHandler;
-    return protocolHandler;
+    clientProtocolService = tmp;
+    return clientProtocolService;
   }
 
   private Authenticator findStreamAuthenticator(String implementationID) {
@@ -86,18 +86,18 @@ public class ServerConnectionFactory {
     }
   }
 
-  private ClientProtocolMessageHandler getOrCreateClientProtocolMessageHandler(
+  private ClientProtocolService getOrCreateClientProtocolService(
       StatisticsFactory statisticsFactory, String serverName) {
-    if (protocolHandler == null) {
-      return initializeMessageHandler(statisticsFactory, serverName);
+    if (clientProtocolService == null) {
+      return initializeClientProtocolService(statisticsFactory, serverName);
     }
-    return protocolHandler;
+    return clientProtocolService;
   }
 
   public ServerConnection makeServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService, InetAddress bindAddress) throws IOException {
+      SecurityService securityService) throws IOException {
     if (communicationMode == ProtobufClientServerProtocol.getModeNumber()) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
@@ -105,11 +105,15 @@ public class ServerConnectionFactory {
         String authenticationMode =
             System.getProperty("geode.protocol-authentication-mode", "NOOP");
 
+        ClientProtocolService service = getOrCreateClientProtocolService(
+            cache.getDistributedSystem(), acceptor.getServerName());
+
+        ClientProtocolProcessor cachePipeline = service.createProcessorForCache(cache,
+            findStreamAuthenticator(authenticationMode), securityService);
+
         return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
-            socketBufferSize, communicationModeStr, communicationMode, acceptor,
-            getOrCreateClientProtocolMessageHandler(cache.getDistributedSystem(),
-                acceptor.getServerName()),
-            securityService, findStreamAuthenticator(authenticationMode));
+            socketBufferSize, communicationModeStr, communicationMode, acceptor, cachePipeline,
+            securityService);
       }
     } else {
       return new LegacyServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,

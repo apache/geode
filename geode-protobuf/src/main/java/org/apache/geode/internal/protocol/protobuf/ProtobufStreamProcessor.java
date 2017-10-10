@@ -43,23 +43,12 @@ import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   private final ProtobufProtocolSerializer protobufProtocolSerializer;
   private final ProtobufOpsProcessor protobufOpsProcessor;
-  private ProtobufClientStatistics statistics;
   private static final Logger logger = LogService.getLogger();
 
   public ProtobufStreamProcessor() {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
     protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
         new OperationContextRegistry());
-  }
-
-  @Override
-  public void initializeStatistics(String statisticsName, StatisticsFactory factory) {
-    statistics = new ProtobufClientStatisticsImpl(factory, statisticsName, "ProtobufServerStats");
-  }
-
-  @Override
-  public ClientProtocolStatistics getStatistics() {
-    return statistics;
   }
 
   @Override
@@ -81,6 +70,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
       logger.debug(errorMessage);
       throw new EOFException(errorMessage);
     }
+    ProtobufClientStatistics statistics = executionContext.getStatistics();
     statistics.messageReceived(message.getSerializedSize());
 
     ClientProtocol.Request request = message.getRequest();
