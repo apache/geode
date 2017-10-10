@@ -153,27 +153,7 @@ See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD
         See [Configuring Dispatcher Threads and Order Policy for Event Distribution](../../developing/events/configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85).
     -   For serial gateway senders (parallel=false) that use multiple `dispatcher-threads`, also configure the ordering policy to use for dispatching the events. See [Configuring Dispatcher Threads and Order Policy for Event Distribution](../../developing/events/configuring_gateway_concurrency_levels.html#concept_6C52A037E39E4FD6AE4C6A982A4A1A85).
     -   Determine whether you should conflate events in the queue. See [Conflating Events in a Queue](../../developing/events/conflate_multisite_gateway_queue.html#conflate_multisite_gateway_queue).
-    -   Decide whether the gateway sender should start automatically or requires a manual start. This is controlled by the `manual-start` attribute. For example, in gfsh:
 
-        ``` pre
-        gfsh>create gateway-sender --id=sender2 --parallel=true --remote-distributed-system-id=2 --manual-start=true
-        ```
-
-        In cache.xml:
-
-        ``` pre
-        <gateway-sender id="sender2" parallel="false"
-         remote-distributed-system-id="2" 
-         dispatcher-threads="2" order-policy="partition" manual-start="true" />
-        ```
-
-        By default, `manual-start` is set to false on gateway senders and the senders are started automatically.
-
-4.  If you have configured the gateway sender with `manual-start` equal to true, then start the gateway sender when appropriate. For persistent gateway senders, the appropriate time to start them is when all other members hosting persistent regions are started. In gfsh:
-
-    ``` pre
-    gfsh> start gateway-sender --id=sender2
-    ```
 
 **Note:**
 The gateway sender configuration for a specific sender `id` must be identical on each <%=vars.product_name%> member that hosts the gateway sender.
