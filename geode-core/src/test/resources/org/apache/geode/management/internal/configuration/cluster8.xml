@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -15,9 +15,11 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<cache
-    xmlns="http://geode.apache.org/schema/cache"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
-    version="1.0">
+<cache xsi:schemaLocation="http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd"
+       version="8.1"
+       xmlns="http://schema.pivotal.io/gemfire/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <region name="one">
+        <region-attributes scope="distributed-ack" data-policy="replicate"/>
+    </region>
 </cache>

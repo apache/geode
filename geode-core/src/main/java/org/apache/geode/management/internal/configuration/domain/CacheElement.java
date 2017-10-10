@@ -107,8 +107,12 @@ public class CacheElement {
    */
   public static LinkedHashMap<String, CacheElement> buildElementMap(final Document doc)
       throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
-    final Map<String, List<String>> schemaLocationMap =
-        XmlUtils.buildSchemaLocationMap(getAttribute(doc.getFirstChild(),
+    Node cacheNode = doc.getFirstChild();
+    if ("#comment".equals(cacheNode.getNodeName())) {
+      cacheNode = cacheNode.getNextSibling();
+    }
+    final Map<String, String> schemaLocationMap =
+        XmlUtils.buildSchemaLocationMap(getAttribute(cacheNode,
             W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI));
 
     final LinkedHashMap<String, CacheElement> elementMap = new LinkedHashMap<>();
@@ -131,23 +135,19 @@ public class CacheElement {
    * @throws IOException if unable to open {@link InputSource}.
    * @since GemFire 8.1
    */
-  private static InputSource resolveSchema(final Map<String, List<String>> schemaLocationMap,
+  private static InputSource resolveSchema(final Map<String, String> schemaLocationMap,
       String namespaceUri) throws IOException {
     final EntityResolver2 entityResolver = new CacheXmlParser();
 
     InputSource inputSource = null;
 
     // Try loading schema from locations until we find one.
-    final List<String> locations = schemaLocationMap.get(namespaceUri);
-    for (final String location : locations) {
-      try {
-        inputSource = entityResolver.resolveEntity(null, location);
-        if (null != inputSource) {
-          break;
-        }
-      } catch (final SAXException e) {
-        // ignore
-      }
+    final String location = schemaLocationMap.get(namespaceUri);
+
+    try {
+      inputSource = entityResolver.resolveEntity(null, location);
+    } catch (final SAXException e) {
+      // ignore
     }
 
     if (null == inputSource) {
