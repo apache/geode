@@ -1134,6 +1134,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
+  protected void invokeCleanupFailedInitializationInServices() {
+    for (CacheService service : this.cache.getServices()) {
+      if (service instanceof RegionService) {
+        ((RegionService) service).cleanupFailedInitialization(this);
+      }
+    }
+  }
+
   public InternalDataView getDataView() {
     final TXStateInterface tx = getTXState();
     if (tx == null) {
@@ -7020,6 +7028,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
       }
 
+      // Clean up region in CacheServices
+      invokeCleanupFailedInitializationInServices();
     } finally {
       // make sure any waiters on initializing Latch are released
       this.releaseLatches();

@@ -3950,7 +3950,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public Set<AsyncEventQueue> getAsyncEventQueues() {
-    return this.allVisibleAsyncEventQueues;
+    return getAsyncEventQueues(true);
+  }
+
+  @Override
+  public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
+    return visibleOnly ? this.allVisibleAsyncEventQueues : this.allAsyncEventQueues;
   }
 
   @Override

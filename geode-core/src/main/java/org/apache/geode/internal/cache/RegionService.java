@@ -27,4 +27,11 @@ public interface RegionService extends CacheService {
    * @param region The region being destroyed
    */
   public void beforeRegionDestroyed(Region region);
+
+  /**
+   * Called when a region has failed initialization.
+   *
+   * @param region The region that has failed initialization
+   */
+  public void cleanupFailedInitialization(Region region);
 }

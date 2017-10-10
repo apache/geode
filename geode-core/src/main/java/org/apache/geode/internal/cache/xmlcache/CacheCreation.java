@@ -1248,6 +1248,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
+    return this.asyncEventQueues;
+  }
+
+  @Override
   public AsyncEventQueue getAsyncEventQueue(String id) {
     for (AsyncEventQueue asyncEventQueue : this.asyncEventQueues) {
       if (asyncEventQueue.getId().equals(id)) {

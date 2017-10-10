@@ -35,6 +35,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -130,6 +132,22 @@ public class LuceneServiceImpl implements InternalLuceneService {
       throw new IllegalStateException(
           LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
               .toLocalizedString(region.getFullPath(), indexNames));
+    }
+  }
+
+  @Override
+  public void cleanupFailedInitialization(Region region) {
+    List<LuceneIndexCreationProfile> definedIndexes = getDefinedIndexes(region.getFullPath());
+    for (LuceneIndexCreationProfile definedIndex : definedIndexes) {
+      // Get the AsyncEventQueue
+      String aeqId = LuceneServiceImpl.getUniqueIndexName(definedIndex.getIndexName(),
+          definedIndex.getRegionPath());
+      AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+      // Stop and remove the AsyncEventQueue if it exists
+      if (aeq != null) {
+        aeq.stop();
+        this.cache.removeAsyncEventQueue(aeq);
+      }
     }
   }
 
@@ -279,6 +297,16 @@ public class LuceneServiceImpl implements InternalLuceneService {
       }
     }
     return Collections.unmodifiableList(indexes);
+  }
+
+  public List<LuceneIndexCreationProfile> getDefinedIndexes(String regionPath) {
+    List<LuceneIndexCreationProfile> profiles = new ArrayList();
+    for (LuceneIndexCreationProfile profile : getAllDefinedIndexes()) {
+      if (profile.getRegionPath().equals(regionPath)) {
+        profiles.add(profile);
+      }
+    }
+    return Collections.unmodifiableList(profiles);
   }
 
   @Override
