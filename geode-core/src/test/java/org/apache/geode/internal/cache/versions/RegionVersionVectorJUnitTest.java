@@ -554,7 +554,6 @@ public class RegionVersionVectorJUnitTest {
 
   @Test
   public void testRecordVersionAfterRegionInitThrowsException() {
-    expectedException.expect(InternalGemFireError.class);
     LocalRegion mockRegion = mock(LocalRegion.class);
     when(mockRegion.isInitialized()).thenReturn(true);
     final String local = NetworkUtils.getIPLiteral();
@@ -563,6 +562,7 @@ public class RegionVersionVectorJUnitTest {
     tag.setRegionVersion(1L);
 
     RegionVersionVector rvv = createRegionVersionVector(ownerId, mockRegion);
+    expectedException.expect(InternalGemFireError.class);
     rvv.recordVersion(ownerId, tag);
   }
 
