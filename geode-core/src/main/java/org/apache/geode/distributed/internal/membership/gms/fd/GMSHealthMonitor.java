@@ -263,6 +263,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           // now do check request for this member;
           checkMember(neighbour);
         }
+        setNextNeighbor(currentView, null);
       }
     }
   }
