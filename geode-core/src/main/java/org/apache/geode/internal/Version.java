@@ -207,6 +207,7 @@ public class Version implements Comparable<Version> {
 
   public static final Version GEODE_140 =
       new Version("GEODE", "1.4.0", (byte) 1, (byte) 4, (byte) 0, (byte) 0, GEODE_140_ORDINAL);
+
   /**
    * This constant must be set to the most current version of the product. !!! NOTE: update
    * HIGHEST_VERSION when changing CURRENT !!!

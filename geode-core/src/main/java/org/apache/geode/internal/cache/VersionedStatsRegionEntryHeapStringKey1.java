@@ -156,7 +156,8 @@ public class VersionedStatsRegionEntryHeapStringKey1 extends VersionedStatsRegio
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  @Override
+  public void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 

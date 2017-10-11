@@ -76,6 +76,13 @@ public interface RegionEntry {
 
   public long getLastAccessed() throws InternalStatisticsDisabledException;
 
+  /**
+   * Sets the entry's last accessed time if it has one.
+   */
+  public default void setLastAccessed(long lastAccessed) {
+    // do nothing by default
+  }
+
   public long getHitCount() throws InternalStatisticsDisabledException;
 
   public long getMissCount() throws InternalStatisticsDisabledException;

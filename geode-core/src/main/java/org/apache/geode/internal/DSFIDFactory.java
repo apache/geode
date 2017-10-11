@@ -239,6 +239,7 @@ import org.apache.geode.internal.cache.InvalidatePartitionedRegionMessage;
 import org.apache.geode.internal.cache.InvalidateRegionOperation.InvalidateRegionMessage;
 import org.apache.geode.internal.cache.JtaAfterCompletionMessage;
 import org.apache.geode.internal.cache.JtaBeforeCompletionMessage;
+import org.apache.geode.internal.cache.LatestLastAccessTimeMessage;
 import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 import org.apache.geode.internal.cache.Node;
 import org.apache.geode.internal.cache.PRQueryProcessor;
@@ -831,6 +832,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(DURABLE_CLIENT_INFO_REQUEST, DurableClientInfoRequest.class);
     registerDSFID(DURABLE_CLIENT_INFO_RESPONSE, DurableClientInfoResponse.class);
     registerDSFID(CLIENT_INTEREST_MESSAGE, ClientInterestMessageImpl.class);
+    registerDSFID(LATEST_LAST_ACCESS_TIME_MESSAGE, LatestLastAccessTimeMessage.class);
     registerDSFID(STAT_ALERT_DEFN_NUM_THRESHOLD, NumberThresholdDecoratorImpl.class);
     registerDSFID(STAT_ALERT_DEFN_GAUGE_THRESHOLD, GaugeThresholdDecoratorImpl.class);
     registerDSFID(CLIENT_HEALTH_STATS, ClientHealthStats.class);

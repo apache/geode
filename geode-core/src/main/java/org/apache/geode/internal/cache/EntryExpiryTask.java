@@ -22,6 +22,7 @@ package org.apache.geode.internal.cache;
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.logging.log4j.Logger;
@@ -251,6 +252,37 @@ public class EntryExpiryTask extends ExpiryTask {
       action = getTTLAttributes().getAction();
     }
     return action;
+  }
+
+  @Override
+  protected boolean isIdleExpiredOnOthers() throws EntryNotFoundException {
+    if (getIdleAttributes().getTimeout() <= 0L) {
+      // idle expiration is not being used
+      return true;
+    }
+    if (getIdleAttributes().getAction().isLocal()) {
+      // no need to consult with others if using a local action
+      return true;
+    }
+    if (SystemPropertyHelper.restoreIdleExpirationBehavior()) {
+      return true;
+    }
+
+    long latestLastAccessTime = getLatestLastAccessTimeOnOtherMembers();
+    if (latestLastAccessTime > getLastAccessedTime()) {
+      setLastAccessedTime(latestLastAccessTime);
+      return false;
+    }
+    return true;
+  }
+
+  private long getLatestLastAccessTimeOnOtherMembers() {
+    return getLocalRegion().getLatestLastAccessTimeFromOthers(getKey());
+  }
+
+  private void setLastAccessedTime(long lastAccessedTime) throws EntryNotFoundException {
+    RegionEntry re = getCheckedRegionEntry();
+    re.setLastAccessed(lastAccessedTime);
   }
 
   /**
