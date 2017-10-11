@@ -23,7 +23,6 @@ package org.apache.geode.cache.query;
  * @since GemFire 4.0
  */
 public enum IndexType {
-
   /**
    * The index type of a functional index. A functional index is used for the comparison of some
    * function of a region value with a constant, using a relational operator. The indexedExpression
@@ -37,7 +36,7 @@ public enum IndexType {
    *
    * @see QueryService#createIndex(String, IndexType, String, String)
    */
-  FUNCTIONAL("FUNCTIONAL", "RANGE"),
+  FUNCTIONAL("RANGE"),
 
   /**
    * The index type of a hash index. A hash index is used for the comparison of some function of a
@@ -52,7 +51,7 @@ public enum IndexType {
    *
    * @see QueryService#createIndex(String, IndexType, String, String)
    */
-  HASH("HASH", "HASH"),
+  HASH("HASH"),
 
 
   /**
@@ -69,31 +68,16 @@ public enum IndexType {
    *
    * @see QueryService#createIndex(String, IndexType, String, String)
    */
-  PRIMARY_KEY("PRIMARY_KEY", "KEY");
-
-  // public static final IndexType MAP_INDEX = new IndexType("MAP_INDEX");
+  PRIMARY_KEY("KEY");
 
   private String name;
-  private String description;
 
-  /** Creates a new instance of IndexType */
-  IndexType(String name, String description) {
+  IndexType(String name) {
     this.name = name;
-    this.description = description;
   }
 
-  /**
-   * Return the index type as a String
-   * 
-   * @return the String representation of this IndexType
-   */
-  @Override
-  public String toString() {
-    return this.name;
-  }
-
-  public String getDescription() {
-    return description;
+  public String getName() {
+    return name;
   }
 
 }

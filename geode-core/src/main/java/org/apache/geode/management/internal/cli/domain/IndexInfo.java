@@ -101,7 +101,7 @@ public class IndexInfo implements Serializable {
     sb.append("\nRegion Path : ");
     sb.append(this.regionPath);
     sb.append("\nIndex Type : ");
-    sb.append(this.indexType.getDescription());
+    sb.append(this.indexType.getName());
     return sb.toString();
   }
 

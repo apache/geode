@@ -78,7 +78,7 @@ public class ListIndexCommand implements GfshCommand {
         if (indexDetails.getIndexType() == null) {
           indexData.accumulate("Type", "");
         } else {
-          indexData.accumulate("Type", indexDetails.getIndexType().getDescription());
+          indexData.accumulate("Type", indexDetails.getIndexType().getName());
         }
         indexData.accumulate("Indexed Expression", indexDetails.getIndexedExpression());
         indexData.accumulate("From Clause", indexDetails.getFromClause());

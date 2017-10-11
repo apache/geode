@@ -232,7 +232,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     buffer.append(" {fromClause = ").append(getFromClause());
     buffer.append(", indexExpression = ").append(getIndexedExpression());
     buffer.append(", indexName = ").append(getIndexName());
-    buffer.append(", indexType = ").append(getIndexType().getDescription());
+    buffer.append(", indexType = ").append(getIndexType().getName());
     buffer.append(", memberId = ").append(getMemberId());
     buffer.append(", memberName = ").append(getMemberName());
     buffer.append(", regionName = ").append(getRegionName());
