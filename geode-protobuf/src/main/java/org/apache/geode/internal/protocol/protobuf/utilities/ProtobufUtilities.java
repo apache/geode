@@ -112,27 +112,21 @@ public abstract class ProtobufUtilities {
   /**
    * This creates a protobuf message containing a ClientProtocol.Response
    *
-   * @param messageHeader - The header for the message
    * @param response - The response for the message
    * @return a protobuf Message containing the above parameters
    */
-  public static ClientProtocol.Message createProtobufResponse(
-      ClientProtocol.MessageHeader messageHeader, ClientProtocol.Response response) {
-    return ClientProtocol.Message.newBuilder().setMessageHeader(messageHeader).setResponse(response)
-        .build();
+  public static ClientProtocol.Message createProtobufResponse(ClientProtocol.Response response) {
+    return ClientProtocol.Message.newBuilder().setResponse(response).build();
   }
 
   /**
    * This creates a protobuf message containing a ClientProtocol.Request
    *
-   * @param messageHeader - The header for the message
    * @param request - The request for the message
    * @return a protobuf Message containing the above parameters
    */
-  public static ClientProtocol.Message createProtobufMessage(
-      ClientProtocol.MessageHeader messageHeader, ClientProtocol.Request request) {
-    return ClientProtocol.Message.newBuilder().setMessageHeader(messageHeader).setRequest(request)
-        .build();
+  public static ClientProtocol.Message createProtobufMessage(ClientProtocol.Request request) {
+    return ClientProtocol.Message.newBuilder().setRequest(request).build();
   }
 
   /**
@@ -144,27 +138,6 @@ public abstract class ProtobufUtilities {
   public static ClientProtocol.Request createProtobufRequestWithGetAllRequest(
       RegionAPI.GetAllRequest getAllRequest) {
     return ClientProtocol.Request.newBuilder().setGetAllRequest(getAllRequest).build();
-  }
-
-  /**
-   * This builds the MessageHeader for a response which matches an incoming request
-   *
-   * @param request - The request message that we're responding to.
-   * @return the MessageHeader the response to the passed request
-   */
-  public static ClientProtocol.MessageHeader createMessageHeaderForRequest(
-      ClientProtocol.Message request) {
-    return createMessageHeader(request.getMessageHeader().getCorrelationId());
-  }
-
-  /**
-   * This creates a MessageHeader
-   *
-   * @param correlationId - An identifier used to correlate requests and responses
-   * @return a MessageHeader containing the above parameters
-   */
-  public static ClientProtocol.MessageHeader createMessageHeader(int correlationId) {
-    return ClientProtocol.MessageHeader.newBuilder().setCorrelationId(correlationId).build();
   }
 
   /**

@@ -27,16 +27,10 @@ import "server_API.proto";
 import "basicTypes.proto";
 
 message Message {
-    MessageHeader messageHeader = 1;
     oneof messageType {
-        Request request = 2;
-        Response response = 3;
+        Request request = 1;
+        Response response = 2;
     }
-}
-
-message MessageHeader {
-    int32 correlationId = 1;
-    MetaData metadata = 2;
 }
 
 message Request {
@@ -70,11 +64,6 @@ message Response {
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;
     }
-}
-
-message MetaData {
-    int32 numberOfMetadata = 1;
-    map<int32, google.protobuf.Any> metaDataEntries = 2;
 }
 
 message ErrorResponse {

@@ -83,10 +83,9 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   public void testGetAvailableServersWithStats() throws Throwable {
     ClientProtocol.Request.Builder protobufRequestBuilder =
         ProtobufUtilities.createProtobufRequestBuilder();
-    ClientProtocol.Message getAvailableServersRequestMessage =
-        ProtobufUtilities.createProtobufMessage(ProtobufUtilities.createMessageHeader(1233445),
-            protobufRequestBuilder.setGetAvailableServersRequest(
-                ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
+    ClientProtocol.Message getAvailableServersRequestMessage = ProtobufUtilities
+        .createProtobufMessage(protobufRequestBuilder.setGetAvailableServersRequest(
+            ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
@@ -130,10 +129,9 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
       ClientProtocol.Request.Builder protobufRequestBuilder =
           ProtobufUtilities.createProtobufRequestBuilder();
       ClientProtocol.Message getRegionNamesRequestMessage =
-          ProtobufUtilities.createProtobufMessage(ProtobufUtilities.createMessageHeader(1233445),
-              protobufRequestBuilder
-                  .setGetRegionNamesRequest(ProtobufRequestUtilities.createGetRegionNamesRequest())
-                  .build());
+          ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
+              .setGetRegionNamesRequest(ProtobufRequestUtilities.createGetRegionNamesRequest())
+              .build());
 
       long messagesReceived = getMessagesReceived();
       long messagesSent = getMessagesSent();
@@ -147,8 +145,6 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
       ClientProtocol.Message getAvailableServersResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertEquals(1233445,
-          getAvailableServersResponseMessage.getMessageHeader().getCorrelationId());
       assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
           getAvailableServersResponseMessage.getMessageTypeCase());
       ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
@@ -218,10 +214,8 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void validateGetAvailableServersResponse(
-      ClientProtocol.Message getAvailableServersResponseMessage)
-      throws InvalidProtocolMessageException, IOException {
+      ClientProtocol.Message getAvailableServersResponseMessage) {
     assertNotNull(getAvailableServersResponseMessage);
-    assertEquals(1233445, getAvailableServersResponseMessage.getMessageHeader().getCorrelationId());
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
         getAvailableServersResponseMessage.getMessageTypeCase());
     ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
