@@ -14,22 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Properties;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
@@ -47,20 +37,16 @@ public class StopServerAcceptanceTest {
 
   @Test
   public void canStopServerByNameWhenConnectedOverJmx() throws Exception {
-
     gfshRule.execute("connect", "stop server --name=server");
   }
 
   @Test
   public void canStopServerByNameWhenConnectedOverHttp() throws Exception {
-
     gfshRule.execute("connect --use-http", "stop server --name=server");
   }
 
   @Test
   public void cannotStopServerByNameWhenNotConnected() throws Exception {
-    startCluster();
-
     gfshRule.execute(GfshScript.of("stop server --name=server").expectFailure());
   }
 }
