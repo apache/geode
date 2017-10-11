@@ -246,6 +246,7 @@ public class CommandManager {
   static {
     // skip springs SimpleFileConverter to use our own FilePathConverter
     SHL_CONVERTERS_TOSKIP.add(SimpleFileConverter.class);
+    // skip spring's EnumConverter to use our own EnumConverter
     SHL_CONVERTERS_TOSKIP.add(EnumConverter.class);
   }
 
