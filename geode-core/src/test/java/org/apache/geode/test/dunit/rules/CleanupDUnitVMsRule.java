@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Host.getHostCount;
 
 import org.apache.geode.test.dunit.VM;
 import org.junit.After;
@@ -23,6 +24,13 @@ import org.junit.rules.ExternalResource;
 import java.io.Serializable;
 
 public class CleanupDUnitVMsRule extends ExternalResource implements Serializable {
+
+  @Override
+  public void before() {
+    if (getHostCount() > 0) {
+      getHost(0).getAllVMs().forEach(VM::bounce);
+    }
+  }
 
   @Override
   public void after() {
