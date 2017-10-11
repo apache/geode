@@ -14,5 +14,57 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
-public class FinalCheckPassedMessage {
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Version;
+
+public class FinalCheckPassedMessage extends HighPriorityDistributionMessage {
+
+  private InternalDistributedMember suspect;
+
+  public FinalCheckPassedMessage(InternalDistributedMember recipient, InternalDistributedMember suspect) {
+    super();
+    setRecipient(recipient);
+    this.suspect = suspect;
+  }
+
+  @Override
+  public int getDSFID() {
+    return FINAL_CHECK_PASSED_MESSAGE;
+  }
+
+  @Override
+  public void process(DistributionManager dm) {
+    throw new IllegalStateException("this message is not intended to execute in a thread pool");
+  }
+
+  @Override
+  public String toString() {
+    return "FinalCheckPassedMessage [suspect=" + suspect + "]";
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeObject(suspect, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    suspect = (InternalDistributedMember)DataSerializer.readObject(in);
+  }
+
+  public InternalDistributedMember getSuspect() {
+    return suspect;
+  }
 }

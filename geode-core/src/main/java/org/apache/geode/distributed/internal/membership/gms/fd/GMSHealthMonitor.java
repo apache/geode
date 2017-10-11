@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.fd;
 
+import static org.apache.geode.internal.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
 import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_REQUEST;
 import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_RESPONSE;
 import static org.apache.geode.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
@@ -31,6 +32,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
@@ -934,6 +936,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     services.getMessenger().addHandler(HeartbeatRequestMessage.class, this);
     services.getMessenger().addHandler(HeartbeatMessage.class, this);
     services.getMessenger().addHandler(SuspectMembersMessage.class, this);
+    services.getMessenger().addHandler(FinalCheckPassedMessage.class, this);
   }
 
   @Override
@@ -1074,6 +1077,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         } else {
           processSuspectMembersRequest((SuspectMembersMessage) m);
         }
+        break;
+      case FINAL_CHECK_PASSED_MESSAGE:
+        contactedBy(
+            ((FinalCheckPassedMessage)m).getSuspect());
         break;
       default:
         throw new IllegalArgumentException("unknown message type: " + m);
@@ -1310,6 +1317,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         // checking below in case of tcp check failure..
         doCheckMember(mbr, false);
         pinged = doTCPCheckMember(mbr, port);
+      }
+
+      if (pinged && !initiator.equals(localAddress) && initiator.getVersionObject().compareTo(Version.GEODE_130) >= 0) {
+        // let the sender know that it's okay to monitor this member again
+        FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
+        services.getMessenger().send(message);
       }
 
       if (!pinged && !isStopping) {
