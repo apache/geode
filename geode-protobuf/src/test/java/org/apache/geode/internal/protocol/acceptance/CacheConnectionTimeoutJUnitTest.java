@@ -43,11 +43,10 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.MessageUtil;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -59,10 +58,8 @@ public class CacheConnectionTimeoutJUnitTest {
   private final String TEST_KEY = "testKey";
   private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
-  private final int TEST_PUT_CORRELATION_ID = 574;
 
   private Cache cache;
-  private int cacheServerPort;
   private SerializationService serializationService;
   private Socket socket;
   private OutputStream outputStream;
@@ -74,13 +71,11 @@ public class CacheConnectionTimeoutJUnitTest {
   public TestName testName = new TestName();
   private long monitorInterval;
   private int maximumTimeBetweenPings;
-  private static final int pollInterval = 20;
 
   @Before
   public void setup() throws Exception {
     Properties properties = new Properties();
     System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY, "25");
-
 
     CacheFactory cacheFactory = new CacheFactory(properties);
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
@@ -90,7 +85,7 @@ public class CacheConnectionTimeoutJUnitTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.setMaximumTimeBetweenPings(100);
     cacheServer.start();
@@ -128,8 +123,7 @@ public class CacheConnectionTimeoutJUnitTest {
   public void testUnresponsiveClientsGetDisconnected() throws Exception {
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message putMessage =
-        MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
-            ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
+        MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
 
     InputStream inputStream = socket.getInputStream();
 
@@ -153,8 +147,7 @@ public class CacheConnectionTimeoutJUnitTest {
   public void testResponsiveClientsStaysConnected() throws Exception {
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message putMessage =
-        MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
-            ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
+        MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
 
     int timeout = maximumTimeBetweenPings * 4;
     int interval = maximumTimeBetweenPings / 4;

@@ -29,16 +29,14 @@ public class MessageUtil {
     return RegionAPI.GetRegionRequest.newBuilder().setRegionName(requestRegion).build();
   }
 
-  public static ClientProtocol.Message makeGetRegionRequestMessage(String requestRegion,
-      ClientProtocol.MessageHeader header) {
+  public static ClientProtocol.Message makeGetRegionRequestMessage(String requestRegion) {
     ClientProtocol.Request request = ClientProtocol.Request.newBuilder()
         .setGetRegionRequest(makeGetRegionRequest(requestRegion)).build();
-    return ClientProtocol.Message.newBuilder().setMessageHeader(header).setRequest(request).build();
+    return ClientProtocol.Message.newBuilder().setRequest(request).build();
   }
 
   public static ClientProtocol.Message createGetRequestMessage() {
     ClientProtocol.Message.Builder messageBuilder = ClientProtocol.Message.newBuilder();
-    messageBuilder.setMessageHeader(getMessageHeaderBuilder());
     ClientProtocol.Request.Builder requestBuilder = getRequestBuilder();
     requestBuilder.setGetRequest(getGetRequestBuilder());
     messageBuilder.setRequest(requestBuilder);
@@ -47,7 +45,7 @@ public class MessageUtil {
 
   public static ClientProtocol.Message makePutRequestMessage(
       SerializationService serializationService, String requestKey, String requestValue,
-      String requestRegion, ClientProtocol.MessageHeader header)
+      String requestRegion)
       throws CodecNotRegisteredForTypeException, UnsupportedEncodingTypeException {
     BasicTypes.Entry entry = ProtobufUtilities.createEntry(
         ProtobufUtilities.createEncodedValue(serializationService, requestKey),
@@ -55,15 +53,15 @@ public class MessageUtil {
 
     ClientProtocol.Request request =
         ProtobufRequestUtilities.createPutRequest(requestRegion, entry);
-    return ProtobufUtilities.createProtobufMessage(header, request);
+    return ProtobufUtilities.createProtobufMessage(request);
   }
 
   public static ClientProtocol.Message makeGetRequestMessage(
-      SerializationService serializationService, Object requestKey, String requestRegion,
-      ClientProtocol.MessageHeader header) throws Exception {
+      SerializationService serializationService, Object requestKey, String requestRegion)
+      throws Exception {
     ClientProtocol.Request request = ProtobufRequestUtilities.createGetRequest(requestRegion,
         ProtobufUtilities.createEncodedValue(serializationService, requestKey));
-    return ProtobufUtilities.createProtobufMessage(header, request);
+    return ProtobufUtilities.createProtobufMessage(request);
   }
 
   private static ClientProtocol.Request.Builder getRequestBuilder() {
@@ -72,9 +70,5 @@ public class MessageUtil {
 
   private static RegionAPI.GetRequest.Builder getGetRequestBuilder() {
     return RegionAPI.GetRequest.newBuilder();
-  }
-
-  private static ClientProtocol.MessageHeader.Builder getMessageHeaderBuilder() {
-    return ClientProtocol.MessageHeader.newBuilder();
   }
 }
