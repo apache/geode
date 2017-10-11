@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -35,7 +34,7 @@ public class TcpServerFactory {
   public TcpServerFactory() {
     ClientProtocolService service = null;
     try {
-      service = new ClientProtocolServiceLoader().loadService();
+      service = new ClientProtocolServiceLoader().lookupService();
     } catch (ServiceLoadingFailureException ex) {
       logger.warn("Could not load client protocol", ex);
     }
