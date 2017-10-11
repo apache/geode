@@ -22,6 +22,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.InternalEntity;
@@ -46,9 +47,9 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
         String indexName = indexDefinition.getIndexName();
         String indexedExpression = indexDefinition.getIndexedExpression();
         String regionPath = indexDefinition.getRegionPath();
-        if (indexDefinition.getIndexType() == IndexInfo.KEY_INDEX) {
+        if (indexDefinition.getIndexType() == IndexType.PRIMARY_KEY) {
           queryService.defineKeyIndex(indexName, indexedExpression, regionPath);
-        } else if (indexDefinition.getIndexType() == IndexInfo.HASH_INDEX) {
+        } else if (indexDefinition.getIndexType() == IndexType.HASH) {
           queryService.defineHashIndex(indexName, indexedExpression, regionPath);
         } else {
           queryService.defineIndex(indexName, indexedExpression, regionPath);
