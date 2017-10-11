@@ -28,7 +28,8 @@ public class FinalCheckPassedMessage extends HighPriorityDistributionMessage {
 
   private InternalDistributedMember suspect;
 
-  public FinalCheckPassedMessage(InternalDistributedMember recipient, InternalDistributedMember suspect) {
+  public FinalCheckPassedMessage(InternalDistributedMember recipient,
+      InternalDistributedMember suspect) {
     super();
     setRecipient(recipient);
     this.suspect = suspect;
@@ -61,7 +62,7 @@ public class FinalCheckPassedMessage extends HighPriorityDistributionMessage {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    suspect = (InternalDistributedMember)DataSerializer.readObject(in);
+    suspect = (InternalDistributedMember) DataSerializer.readObject(in);
   }
 
   public InternalDistributedMember getSuspect() {

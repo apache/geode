@@ -1079,8 +1079,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         }
         break;
       case FINAL_CHECK_PASSED_MESSAGE:
-        contactedBy(
-            ((FinalCheckPassedMessage)m).getSuspect());
+        contactedBy(((FinalCheckPassedMessage) m).getSuspect());
         break;
       default:
         throw new IllegalArgumentException("unknown message type: " + m);
@@ -1319,7 +1318,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         pinged = doTCPCheckMember(mbr, port);
       }
 
-      if (pinged && !initiator.equals(localAddress) && initiator.getVersionObject().compareTo(Version.GEODE_130) >= 0) {
+      if (pinged && !initiator.equals(localAddress)
+          && initiator.getVersionObject().compareTo(Version.GEODE_130) >= 0) {
         // let the sender know that it's okay to monitor this member again
         FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
         services.getMessenger().send(message);
