@@ -1128,16 +1128,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   protected void invokeBeforeRegionDestroyInServices() {
     for (CacheService service : this.cache.getServices()) {
-      if (service instanceof RegionService) {
-        ((RegionService) service).beforeRegionDestroyed(this);
+      if (service instanceof RegionCacheService) {
+        ((RegionCacheService) service).beforeRegionDestroyed(this);
       }
     }
   }
 
   protected void invokeCleanupFailedInitializationInServices() {
     for (CacheService service : this.cache.getServices()) {
-      if (service instanceof RegionService) {
-        ((RegionService) service).cleanupFailedInitialization(this);
+      if (service instanceof RegionCacheService) {
+        ((RegionCacheService) service).cleanupFailedInitialization(this);
       }
     }
   }

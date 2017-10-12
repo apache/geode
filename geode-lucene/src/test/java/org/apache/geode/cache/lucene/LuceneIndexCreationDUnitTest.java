@@ -345,7 +345,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     // Verify dataStore2 has no AsyncEventQueues
     dataStore2.invoke(() -> verifyAsyncEventQueues(0));
 
-    // Create a Cache in dataStore2 with a PR defining 10 buckets
+    // Create a Cache in dataStore2 with a PR defining 10 buckets. This will succeed.
     dataStore2.invoke(() -> initDataStore(RegionTestableType.PARTITION));
 
     // Verify dataStore2 has two AsyncEventQueues

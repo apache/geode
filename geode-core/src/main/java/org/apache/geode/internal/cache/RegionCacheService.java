@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache;
 import org.apache.geode.cache.Region;
 
 /**
- * Interface for a service that is linked to a region.
+ * Interface for a CacheService that is linked to a region.
  */
-public interface RegionService extends CacheService {
+public interface RegionCacheService extends CacheService {
 
   /**
    * Called before a region is destroyed.
