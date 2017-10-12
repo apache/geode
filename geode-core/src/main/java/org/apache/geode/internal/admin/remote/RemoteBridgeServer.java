@@ -36,6 +36,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.tier.sockets.InternalAcceptor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -222,6 +223,11 @@ public class RemoteBridgeServer extends AbstractCacheServer
     } else {
       this.getClientSubscriptionConfig().setOverflowDirectory(DataSerializer.readString(in));
     }
+  }
+
+  @Override
+  public InternalAcceptor getAcceptor() {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
   }
 
   private static class RemoteLoadProbe extends ServerLoadProbeAdapter {

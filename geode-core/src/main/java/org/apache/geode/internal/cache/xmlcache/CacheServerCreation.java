@@ -21,6 +21,7 @@ import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.InternalAcceptor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.IOException;
@@ -241,4 +242,8 @@ public class CacheServerCreation extends AbstractCacheServer {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
+  @Override
+  public InternalAcceptor getAcceptor() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
 }

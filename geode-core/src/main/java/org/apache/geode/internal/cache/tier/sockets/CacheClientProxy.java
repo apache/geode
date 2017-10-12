@@ -2994,7 +2994,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @since GemFire 6.1
    */
-  public Map getRegionsWithEmptyDataPolicy() {
+  public Map<String, Integer> getRegionsWithEmptyDataPolicy() {
     return regionsWithEmptyDataPolicy;
   }
 

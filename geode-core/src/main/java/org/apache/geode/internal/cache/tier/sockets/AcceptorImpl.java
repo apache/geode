@@ -99,7 +99,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since GemFire 2.0.2
  */
 @SuppressWarnings("deprecation")
-public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
+public class AcceptorImpl extends Acceptor implements InternalAcceptor, Runnable, CommBufferPool {
   private static final Logger logger = LogService.getLogger();
 
   private static final boolean isJRockit = System.getProperty("java.vm.name").contains("JRockit");
@@ -1736,6 +1736,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
    *
    * @return the instance that provides client notification
    */
+  @Override
   public CacheClientNotifier getCacheClientNotifier() {
     return this.clientNotifier;
   }
