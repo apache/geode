@@ -28,17 +28,11 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.logging.LogService;
 
 public class TcpServerFactory {
-  private final ClientProtocolService clientProtocolService;
+  private final ClientProtocolServiceLoader clientProtocolServiceLoader;
   static final Logger logger = LogService.getLogger();
 
   public TcpServerFactory() {
-    ClientProtocolService service = null;
-    try {
-      service = new ClientProtocolServiceLoader().lookupService();
-    } catch (ServiceLoadingFailureException ex) {
-      logger.warn("Could not load client protocol", ex);
-    }
-    clientProtocolService = service;
+    clientProtocolServiceLoader = new ClientProtocolServiceLoader();
   }
 
   public TcpServer makeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
@@ -46,6 +40,6 @@ public class TcpServerFactory {
       ThreadGroup threadGroup, String threadName, InternalLocator internalLocator) {
 
     return new TcpServer(port, bind_address, sslConfig, cfg, handler, poolHelper, threadGroup,
-        threadName, internalLocator, clientProtocolService);
+        threadName, internalLocator, clientProtocolServiceLoader);
   }
 }

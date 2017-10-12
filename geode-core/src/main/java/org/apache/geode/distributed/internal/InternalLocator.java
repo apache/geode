@@ -1336,7 +1336,8 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.stats.hookupStats(sys,
           SocketCreator.getLocalHost().getCanonicalHostName() + '-' + this.server.getBindAddress());
 
-      ClientProtocolService clientProtocolService = this.server.getClientProtocolService();
+      ClientProtocolService clientProtocolService =
+          this.server.getClientProtocolServiceLoader().lookupService();
       if (clientProtocolService != null) {
         clientProtocolService.initializeStatistics("LocatorStats", sys);
       }

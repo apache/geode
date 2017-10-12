@@ -33,7 +33,6 @@ public class ClientProtocolServiceLoader {
       resultList.add(clientProtocolService);
     }
 
-
     return resultList;
   }
 
