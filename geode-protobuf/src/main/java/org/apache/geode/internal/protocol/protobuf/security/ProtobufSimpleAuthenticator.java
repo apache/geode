@@ -39,7 +39,7 @@ public class ProtobufSimpleAuthenticator implements Authenticator {
 
   @Override
   public Subject authenticate(InputStream inputStream, OutputStream outputStream,
-      SecurityService securityService) throws IOException {
+      SecurityService securityService) throws IOException, AuthenticationFailedException {
     ClientProtocol.Message message = ClientProtocol.Message.parseDelimitedFrom(inputStream);
 
     if (message.getRequest().getRequestAPICase()
@@ -63,8 +63,9 @@ public class ProtobufSimpleAuthenticator implements Authenticator {
       sendAuthenticationResponse(outputStream, true);
       return authToken;
     } catch (AuthenticationFailedException ex) {
+      // If authentication failed, send back a response to that effect and rethrow
       sendAuthenticationResponse(outputStream, false);
-      throw new IOException(ex);
+      throw ex;
     }
   }
 

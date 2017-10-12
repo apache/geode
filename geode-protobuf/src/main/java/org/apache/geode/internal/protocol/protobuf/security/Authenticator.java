@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 /**
@@ -38,5 +39,5 @@ public interface Authenticator {
    * @throws IOException if EOF or if invalid input is received.
    */
   Object authenticate(InputStream inputStream, OutputStream outputStream,
-      SecurityService securityService) throws IOException;
+      SecurityService securityService) throws IOException, AuthenticationFailedException;
 }

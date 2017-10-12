@@ -84,7 +84,7 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
     assertTrue(simpleAuthenticationResponse.getAuthenticated());
   }
 
-  @Test(expected = IOException.class)
+  @Test(expected = AuthenticationFailedException.class)
   public void failedAuthentication() throws IOException {
     when(mockSecurityService.login(expectedAuthProperties))
         .thenThrow(new AuthenticationFailedException("BOOM!"));
