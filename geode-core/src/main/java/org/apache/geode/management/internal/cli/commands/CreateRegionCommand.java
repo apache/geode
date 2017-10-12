@@ -29,7 +29,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -574,7 +573,7 @@ public class CreateRegionCommand implements GfshCommand {
     // First check whether the region exists on a this manager, if yes then no
     // need to use FetchRegionAttributesFunction to fetch RegionAttributes
     try {
-      attributes = FetchRegionAttributesFunction.getRegionAttributes(regionPath);
+      attributes = FetchRegionAttributesFunction.getRegionAttributes(cache, regionPath);
     } catch (IllegalArgumentException e) {
       /* region doesn't exist on the manager */
     }

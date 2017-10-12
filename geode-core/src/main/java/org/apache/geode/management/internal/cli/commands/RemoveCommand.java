@@ -84,7 +84,7 @@ public class RemoveCommand implements GfshCommand {
       request.setRegionName(regionPath);
       dataResult = callFunctionForRegion(request, removefn, memberList);
     } else {
-      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null);
+      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null, cache);
     }
 
     dataResult.setKeyClass(keyClass);
