@@ -24,6 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
  */
 public interface ConverterHint {
   public static final String DISABLE_STRING_CONVERTER = ":disable-string-converter";
+  public static final String DISABLE_ENUM_CONVERTER = ":disable-enum-converter";
   public static final String DISKSTORE =
       "geode.converter.cluster.diskstore" + DISABLE_STRING_CONVERTER;
   public static final String FILE = "geode.converter.file";
@@ -40,7 +41,7 @@ public interface ConverterHint {
   /** Hint to be used for configured locators for discovery */
   public static final String LOCATOR_DISCOVERY_CONFIG = "geode.converter.locators.discovery.config";
   public static final String REGION_PATH = "geode.converter.region.path" + DISABLE_STRING_CONVERTER;
-  public static final String INDEX_TYPE = "geode.converter.index.type";
+  public static final String INDEX_TYPE = "geode.converter.index.type" + DISABLE_ENUM_CONVERTER;
   public static final String GATEWAY_SENDER_ID = "geode.converter.gateway.senderid";
   public static final String GATEWAY_RECEIVER_ID = "geode.converter.gateway.receiverid";
   public static final String LOG_LEVEL = "geode.converter.log.levels" + DISABLE_STRING_CONVERTER;

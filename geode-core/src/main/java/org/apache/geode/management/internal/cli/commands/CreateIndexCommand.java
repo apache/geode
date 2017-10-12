@@ -29,7 +29,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -69,7 +68,7 @@ public class CreateIndexCommand implements GfshCommand {
 
       @CliOption(key = CliStrings.CREATE_INDEX__TYPE, unspecifiedDefaultValue = "range",
           optionContext = ConverterHint.INDEX_TYPE,
-          help = CliStrings.CREATE_INDEX__TYPE__HELP) final String indexType,
+          help = CliStrings.CREATE_INDEX__TYPE__HELP) final IndexType indexType,
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
@@ -78,118 +77,94 @@ public class CreateIndexCommand implements GfshCommand {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    try {
-      IndexType idxType;
+    if (!regionPath.startsWith(Region.SEPARATOR)) {
+      regionPath = Region.SEPARATOR + regionPath;
+    }
 
-      // Index type check
-      if ("range".equalsIgnoreCase(indexType)) {
-        idxType = IndexType.FUNCTIONAL;
-      } else if ("hash".equalsIgnoreCase(indexType)) {
-        idxType = IndexType.HASH;
-      } else if ("key".equalsIgnoreCase(indexType)) {
-        idxType = IndexType.PRIMARY_KEY;
-      } else {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE);
-      }
+    final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 
-      if (indexName == null || indexName.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.CREATE_INDEX__INVALID__INDEX__NAME);
-      }
+    if (targetMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    }
 
-      if (indexedExpression == null || indexedExpression.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.CREATE_INDEX__INVALID__EXPRESSION);
-      }
+    final ResultCollector<?, ?> rc =
+        createIndexOnMember(indexName, indexedExpression, regionPath, indexType, targetMembers);
 
-      if (StringUtils.isBlank(regionPath) || regionPath.equals(Region.SEPARATOR)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.CREATE_INDEX__INVALID__REGIONPATH);
-      }
+    final List<Object> funcResults = (List<Object>) rc.getResult();
+    final Set<String> successfulMembers = new TreeSet<>();
+    final Map<String, Set<String>> indexOpFailMap = new HashMap<>();
 
-      if (!regionPath.startsWith(Region.SEPARATOR)) {
-        regionPath = Region.SEPARATOR + regionPath;
-      }
+    for (final Object funcResult : funcResults) {
+      if (funcResult instanceof CliFunctionResult) {
+        final CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
 
-      IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, idxType);
-      final Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
+        if (cliFunctionResult.isSuccessful()) {
+          successfulMembers.add(cliFunctionResult.getMemberIdOrName());
 
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      final ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
-
-      final List<Object> funcResults = (List<Object>) rc.getResult();
-      final Set<String> successfulMembers = new TreeSet<>();
-      final Map<String, Set<String>> indexOpFailMap = new HashMap<>();
-
-      for (final Object funcResult : funcResults) {
-        if (funcResult instanceof CliFunctionResult) {
-          final CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
-
-          if (cliFunctionResult.isSuccessful()) {
-            successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-
-            if (xmlEntity.get() == null) {
-              xmlEntity.set(cliFunctionResult.getXmlEntity());
-            }
-          } else {
-            final String exceptionMessage = cliFunctionResult.getMessage();
-            Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-            if (failedMembers == null) {
-              failedMembers = new TreeSet<>();
-            }
-            failedMembers.add(cliFunctionResult.getMemberIdOrName());
-            indexOpFailMap.put(exceptionMessage, failedMembers);
+          if (xmlEntity.get() == null) {
+            xmlEntity.set(cliFunctionResult.getXmlEntity());
           }
+        } else {
+          final String exceptionMessage = cliFunctionResult.getMessage();
+          Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
+
+          if (failedMembers == null) {
+            failedMembers = new TreeSet<>();
+          }
+          failedMembers.add(cliFunctionResult.getMemberIdOrName());
+          indexOpFailMap.put(exceptionMessage, failedMembers);
         }
       }
+    }
 
-      if (!successfulMembers.isEmpty()) {
-        final InfoResultData infoResult = ResultBuilder.createInfoResultData();
-        infoResult.addLine(CliStrings.CREATE_INDEX__SUCCESS__MSG);
-        infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__NAME__MSG, indexName));
+    if (!successfulMembers.isEmpty()) {
+      final InfoResultData infoResult = ResultBuilder.createInfoResultData();
+      infoResult.addLine(CliStrings.CREATE_INDEX__SUCCESS__MSG);
+      infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__NAME__MSG, indexName));
+      infoResult
+          .addLine(CliStrings.format(CliStrings.CREATE_INDEX__EXPRESSION__MSG, indexedExpression));
+      infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__REGIONPATH__MSG, regionPath));
+      infoResult.addLine(CliStrings.CREATE_INDEX__MEMBER__MSG);
+
+      int num = 0;
+
+      for (final String memberId : successfulMembers) {
+        ++num;
         infoResult.addLine(
-            CliStrings.format(CliStrings.CREATE_INDEX__EXPRESSION__MSG, indexedExpression));
-        infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__REGIONPATH__MSG, regionPath));
-        infoResult.addLine(CliStrings.CREATE_INDEX__MEMBER__MSG);
+            CliStrings.format(CliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, num, memberId));
+      }
+      result = ResultBuilder.buildResult(infoResult);
 
+    } else {
+      // Group members by the exception thrown.
+      final ErrorResultData erd = ResultBuilder.createErrorResultData();
+      erd.addLine(CliStrings.format(CliStrings.CREATE_INDEX__FAILURE__MSG, indexName));
+      final Set<String> exceptionMessages = indexOpFailMap.keySet();
+
+      for (final String exceptionMessage : exceptionMessages) {
+        erd.addLine(exceptionMessage);
+        erd.addLine(CliStrings.CREATE_INDEX__EXCEPTION__OCCURRED__ON);
+        final Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
         int num = 0;
-
-        for (final String memberId : successfulMembers) {
+        for (final String memberId : memberIds) {
           ++num;
-          infoResult.addLine(
+          erd.addLine(
               CliStrings.format(CliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, num, memberId));
         }
-        result = ResultBuilder.buildResult(infoResult);
-
-      } else {
-        // Group members by the exception thrown.
-        final ErrorResultData erd = ResultBuilder.createErrorResultData();
-        erd.addLine(CliStrings.format(CliStrings.CREATE_INDEX__FAILURE__MSG, indexName));
-        final Set<String> exceptionMessages = indexOpFailMap.keySet();
-
-        for (final String exceptionMessage : exceptionMessages) {
-          erd.addLine(exceptionMessage);
-          erd.addLine(CliStrings.CREATE_INDEX__EXCEPTION__OCCURRED__ON);
-          final Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
-          int num = 0;
-          for (final String memberId : memberIds) {
-            ++num;
-            erd.addLine(
-                CliStrings.format(CliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, num, memberId));
-          }
-        }
-        result = ResultBuilder.buildResult(erd);
       }
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+      result = ResultBuilder.buildResult(erd);
     }
+
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), group));
     }
     return result;
+  }
+
+  ResultCollector<?, ?> createIndexOnMember(String indexName, String indexedExpression,
+      String regionPath, IndexType indexType, Set<DistributedMember> targetMembers) {
+    IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, indexType);
+    return CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
   }
 }

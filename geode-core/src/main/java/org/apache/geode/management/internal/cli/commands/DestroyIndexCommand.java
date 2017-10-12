@@ -76,7 +76,6 @@ public class DestroyIndexCommand implements GfshCommand {
           CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
     }
 
-    final Cache cache = CacheFactory.getAnyInstance();
     String regionName = null;
     if (regionPath != null) {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;

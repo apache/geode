@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
@@ -143,6 +144,10 @@ public interface GfshCommand extends CommandMarker {
 
   default Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
     return FunctionService.onMembers(members);
+  }
+
+  default Set<DistributedMember> findMembers(String[] groups, String[] members) {
+    return CliUtil.findMembers(groups, members);
   }
 
 }

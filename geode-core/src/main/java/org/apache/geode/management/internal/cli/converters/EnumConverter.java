@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.converters;
 
 import java.util.List;
@@ -20,41 +21,38 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.ConverterHint;
 
-/***
- * Added converter to enable auto-completion for index-type
+/**
+ * we can not directly use Spring's EnumConverter because we have some Enum types that does not
+ * directly translate from name to the enum type, e.g IndexType. IndexType will use a special
+ * converter to convert to enum type, so we need a way to disable this converter
  *
+ * This needs to implement the interface, instead of extend the EnumConverter directly because the
+ * FastPathScanner can only find classes directly implement an interface
  */
-public class IndexTypeConverter implements Converter<IndexType> {
+public class EnumConverter implements Converter<Enum<?>> {
+  private org.springframework.shell.converters.EnumConverter delegate;
 
-  @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return IndexType.class.isAssignableFrom(type)
-        && optionContext.contains(ConverterHint.INDEX_TYPE);
+  public EnumConverter() {
+    delegate = new org.springframework.shell.converters.EnumConverter();
   }
 
   @Override
-  public IndexType convertFromText(String value, Class<?> targetType, String optionContext) {
-    switch (value.toLowerCase()) {
-      case "range":
-        return IndexType.FUNCTIONAL;
-      case "key":
-        return IndexType.PRIMARY_KEY;
-      case "hash":
-        return IndexType.HASH;
-    }
+  public boolean supports(final Class<?> requiredType, final String optionContext) {
+    return Enum.class.isAssignableFrom(requiredType)
+        && !optionContext.contains(ConverterHint.DISABLE_ENUM_CONVERTER);
+  }
 
-    throw new IllegalArgumentException("invalid index type: " + value);
+  @Override
+  public Enum<?> convertFromText(String value, Class<?> targetType, String optionContext) {
+    return delegate.convertFromText(value, targetType, optionContext);
   }
 
   @Override
   public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
       String existingData, String optionContext, MethodTarget target) {
-    completions.add(new Completion("range"));
-    completions.add(new Completion("key"));
-    completions.add(new Completion("hash"));
-    return true;
+    return delegate.getAllPossibleValues(completions, targetType, existingData, optionContext,
+        target);
   }
 }
