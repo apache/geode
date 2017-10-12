@@ -24,7 +24,7 @@ import java.io.IOException;
 class UnixBackupInspector extends BackupInspector {
 
   /**
-   * Restore file for windows platform.
+   * Restore file for Unix platforms.
    */
   private static final String RESTORE_FILE = "restore.sh";
 
@@ -34,7 +34,7 @@ class UnixBackupInspector extends BackupInspector {
 
   @Override
   public String getCopyFromForOplogFile(final String oplogFileName) {
-    String line = this.oplogLineMap.get(oplogFileName);
+    String line = getOplogLineFromFilename(oplogFileName);
     if (line == null) {
       return null;
     }
@@ -45,7 +45,7 @@ class UnixBackupInspector extends BackupInspector {
 
   @Override
   public String getCopyToForOplogFile(final String oplogFileName) {
-    String line = this.oplogLineMap.get(oplogFileName);
+    String line = getOplogLineFromFilename(oplogFileName);
     if (line == null) {
       return null;
     }
@@ -62,8 +62,7 @@ class UnixBackupInspector extends BackupInspector {
       int beginIndex = line.lastIndexOf(File.separator) + 1;
       int endIndex = line.length() - 1;
       String oplogName = line.substring(beginIndex, endIndex);
-      this.oplogFileNames.add(oplogName);
-      this.oplogLineMap.put(oplogName, line);
+      addOplogLine(oplogName, line);
     }
   }
 
