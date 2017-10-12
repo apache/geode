@@ -15,9 +15,9 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.cache.tier.sockets.InternalAcceptor;
+import org.apache.geode.internal.cache.tier.Acceptor;
 
 public interface InternalCacheServer extends CacheServer {
 
-  InternalAcceptor getAcceptor();
+  Acceptor getAcceptor();
 }

@@ -24,19 +24,17 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ClientSession;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.cache.InterestRegistrationListener;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.server.ServerLoadProbeAdapter;
 import org.apache.geode.cache.server.ServerMetrics;
-import org.apache.geode.cache.server.ClientSubscriptionConfig;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.InternalAcceptor;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -226,7 +224,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
   }
 
   @Override
-  public InternalAcceptor getAcceptor() {
+  public Acceptor getAcceptor() {
     throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
   }
 

@@ -12,12 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier;
 
 import java.io.IOException;
 
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 
 /**
  * Defines the message listener/acceptor interface which is the GemFire Bridge Server. Multiple
@@ -25,44 +25,48 @@ import org.apache.geode.internal.Version;
  *
  * @since GemFire 2.0.2
  */
-public abstract class Acceptor {
+public interface Acceptor {
 
   /**
    * The GFE version of the server.
    * 
    * @since GemFire 5.7
    */
-  public static final Version VERSION = Version.CURRENT.getGemFireVersion();
+  Version VERSION = Version.CURRENT.getGemFireVersion();
 
   /**
    * Listens for a client to connect and establishes a connection to that client.
    */
-  public abstract void accept() throws Exception;
+  void accept() throws Exception;
 
   /**
    * Starts this acceptor thread
    */
-  public abstract void start() throws IOException;
+  void start() throws IOException;
 
   /**
    * Returns the port on which this acceptor listens for connections from clients.
    */
-  public abstract int getPort();
+  int getPort();
 
   /**
    * returns the server's name string, including the inet address and port that the server is
    * listening on
    */
-  public abstract String getServerName();
+  String getServerName();
 
   /**
    * Closes this acceptor thread
    */
-  public abstract void close();
+  void close();
 
   /**
    * Is this acceptor running (handling connections)?
    */
-  public abstract boolean isRunning();
+  boolean isRunning();
 
+  /**
+   * Returns the CacheClientNotifier used by this Acceptor.
+   */
+  CacheClientNotifier getCacheClientNotifier();
 }
