@@ -56,7 +56,6 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -975,6 +974,14 @@ public class Gfsh extends JLineShell {
     return env.get(propertyName);
   }
 
+  public String getEnvAppContextPath() {
+    String path = getEnvProperty(Gfsh.ENV_APP_CONTEXT_PATH);
+    if (path == null) {
+      return "";
+    }
+    return path;
+  }
+
   public Map<String, String> getEnv() {
     Map<String, String> map = new TreeMap<>();
     map.putAll(env);
@@ -1096,7 +1103,7 @@ public class Gfsh extends JLineShell {
     if (gfshFileLogger.severeEnabled()) {
       gfshFileLogger.severe(message);
     }
-    setPromptPath(RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+    setPromptPath(getEnvAppContextPath());
   }
 
   public boolean getDebug() {

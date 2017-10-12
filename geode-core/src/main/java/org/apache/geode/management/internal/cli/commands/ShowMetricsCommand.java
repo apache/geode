@@ -15,6 +15,18 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.ObjectName;
+
+import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
@@ -42,16 +54,6 @@ import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import javax.management.ObjectName;
 
 public class ShowMetricsCommand implements GfshCommand {
   private static final Logger logger = LogService.getLogger();
@@ -84,10 +86,6 @@ public class ShowMetricsCommand implements GfshCommand {
     }
 
     if (regionName != null) {
-      // MBean names contain the forward slash
-      if (!regionName.startsWith("/")) {
-        regionName = "/" + regionName;
-      }
       if (memberNameOrId != null) {
         result = ResultBuilder.buildResult(
             getRegionMetricsFromMember(regionName, member, export_to_report_to, categories));

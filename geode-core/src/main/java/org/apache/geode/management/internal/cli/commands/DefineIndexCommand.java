@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.commands;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -49,9 +48,6 @@ public class DefineIndexCommand implements GfshCommand {
           help = CliStrings.DEFINE_INDEX__TYPE__HELP) final IndexType indexType) {
 
     Result result;
-    if (!regionPath.startsWith(Region.SEPARATOR)) {
-      regionPath = Region.SEPARATOR + regionPath;
-    }
 
     IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, indexType);
     IndexDefinition.indexDefinitions.add(indexInfo);

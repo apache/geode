@@ -79,9 +79,11 @@ public class CliStrings {
   public static final String GROUPS = "groups";
   public static final String MEMBER = "member";
   public static final String MEMBERS = "members";
+  public static final String IFEXISTS = "if-exists";
   public static final String JAR = "jar";
   public static final String JARS = "jars";
 
+  public static final String IFEXISTS_HELP = "Some sensible help for --if-exists.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 

@@ -17,19 +17,21 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.UnitTest;
+
 @Category(UnitTest.class)
 public class GfshJunitTest {
   private String testString;
+  private Gfsh gfsh;
 
   @Before
   public void before() {
     testString = "This is a test string.";
+    gfsh = new Gfsh();
   }
 
   @Test
@@ -44,4 +46,10 @@ public class GfshJunitTest {
         .isEqualTo(Gfsh.LINE_INDENT + Gfsh.LINE_INDENT + testString);
   }
 
+  @Test
+  public void getAppContextPath() throws Exception {
+    assertThat(gfsh.getEnvAppContextPath()).isEqualTo("");
+    gfsh.setEnvProperty(Gfsh.ENV_APP_CONTEXT_PATH, "test");
+    assertThat(gfsh.getEnvAppContextPath()).isEqualTo("test");
+  }
 }

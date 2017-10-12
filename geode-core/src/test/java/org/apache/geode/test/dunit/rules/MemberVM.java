@@ -113,4 +113,8 @@ public class MemberVM<T extends Member> implements Member {
         return !name.startsWith("locator0view");
       })).forEach(FileUtils::deleteQuietly);
   }
+
+  public static void invokeInEveryMember(SerializableRunnableIF runnableIF, MemberVM... members) {
+    Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
+  }
 }

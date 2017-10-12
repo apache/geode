@@ -150,4 +150,8 @@ public interface GfshCommand extends CommandMarker {
     return CliUtil.findMembers(groups, members);
   }
 
+  default Set<DistributedMember> findMembersForRegion(InternalCache cache, String regionPath) {
+    return CliUtil.getRegionAssociatedMembers(regionPath, cache);
+  }
+
 }
