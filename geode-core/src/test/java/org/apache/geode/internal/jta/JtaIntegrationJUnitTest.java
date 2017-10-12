@@ -26,6 +26,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -47,6 +51,7 @@ import java.util.Iterator;
  * 
  */
 @Category(IntegrationTest.class)
+@RunWith(JUnitParamsRunner.class)
 public class JtaIntegrationJUnitTest {
 
   private static final Logger logger = LogService.getLogger();
@@ -141,41 +146,17 @@ public class JtaIntegrationJUnitTest {
     }
   }
 
-
   @Test
-  public void testValuesCallStartsJTA()
+  @Parameters
+  public void testRegionSetOpWithJTA(SetOp op, boolean preventSetOpToStartJTA)
       throws NotSupportedException, SystemException, NamingException {
-    verifyJTASetOp(SetOp.VALUES, false);
+    verifyJTASetOp(op, preventSetOpToStartJTA);
   }
 
-  @Test
-  public void testKeySetCallStartsJTA()
-      throws NotSupportedException, SystemException, NamingException {
-    verifyJTASetOp(SetOp.KEYSET, false);
-  }
-
-  @Test
-  public void testEntrySetCallStartsJTA()
-      throws NotSupportedException, SystemException, NamingException {
-    verifyJTASetOp(SetOp.ENTRYSET, false);
-  }
-
-  @Test
-  public void testValuesCallNotStartJTAIfDisabled()
-      throws NotSupportedException, SystemException, NamingException {
-    verifyJTASetOp(SetOp.VALUES, true);
-  }
-
-  @Test
-  public void testKeySetCallNotStartJTAIfDisabled()
-      throws NotSupportedException, SystemException, NamingException {
-    verifyJTASetOp(SetOp.KEYSET, true);
-  }
-
-  @Test
-  public void testEntrySetCallNotStartJTAIfDisabled()
-      throws NotSupportedException, SystemException, NamingException {
-    verifyJTASetOp(SetOp.ENTRYSET, true);
+  private Object[] parametersForTestRegionSetOpWithJTA() {
+    return new Object[] {new Object[] {SetOp.VALUES, false}, new Object[] {SetOp.VALUES, true},
+        new Object[] {SetOp.KEYSET, false}, new Object[] {SetOp.KEYSET, true},
+        new Object[] {SetOp.ENTRYSET, false}, new Object[] {SetOp.ENTRYSET, true},};
   }
 
   long k1 = 1;

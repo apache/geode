@@ -43,11 +43,16 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * Test for JTA with PR.
  */
 @Category(DistributedTest.class)
+@RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class PRJTADUnitTest extends JUnit4CacheTestCase {
 
@@ -95,45 +100,27 @@ public class PRJTADUnitTest extends JUnit4CacheTestCase {
     dataStore2.invoke(() -> createCache(preventSetOpToStartJTA));
     dataStore3.invoke(() -> createCache(preventSetOpToStartJTA));
 
-    accessor.invoke(() -> createPR());
-    dataStore1.invoke(() -> createPR());
-    dataStore2.invoke(() -> createPR());
-    dataStore3.invoke(() -> createPR());
+    accessor.invoke(() -> createPR(true));
+    dataStore1.invoke(() -> createPR(false));
+    dataStore2.invoke(() -> createPR(false));
+    dataStore3.invoke(() -> createPR(false));
   }
 
   @Test
-  public void testValuesCallStartsJTA() {
-    verifyJTASetOp(SetOp.VALUES, false);
+  @Parameters
+  public void testJTAWithRegionSetOperation(final SetOp op, final boolean preventSetOpToStartJTA) {
+    verifyJTASetOp(op, preventSetOpToStartJTA);
   }
 
-  @Test
-  public void testKeySetCallStartsJTA() {
-    verifyJTASetOp(SetOp.KEYSET, false);
-  }
-
-  @Test
-  public void testEntrySetCallStartsJTA() {
-    verifyJTASetOp(SetOp.ENTRYSET, false);
-  }
-
-  @Test
-  public void testValuesCallNotStartJTAIfDisabled() {
-    verifyJTASetOp(SetOp.VALUES, true);
-  }
-
-  @Test
-  public void testKeySetCallNotStartJTAIfDisabled() {
-    verifyJTASetOp(SetOp.KEYSET, true);
-  }
-
-  @Test
-  public void testEntrySetCallNotStartJTAIfDisabled() {
-    verifyJTASetOp(SetOp.ENTRYSET, true);
+  private Object[] parametersForTestJTAWithRegionSetOperation() {
+    return new Object[] {new Object[] {SetOp.VALUES, false}, new Object[] {SetOp.VALUES, true},
+        new Object[] {SetOp.KEYSET, false}, new Object[] {SetOp.KEYSET, true},
+        new Object[] {SetOp.ENTRYSET, false}, new Object[] {SetOp.ENTRYSET, true},};
   }
 
   String regionName = "region1";
 
-  private void basicVerifySetOp(SetOp op, boolean preventSetOpToStartJTA)
+  private void basicVerifySetOp(SetOp op, boolean preventSetOpToStartJTA, boolean isAccessor)
       throws NotSupportedException, SystemException, NamingException {
     Cache cache = basicGetCache();
     Region<Long, String> region = cache.getRegion(Region.SEPARATOR + regionName);
@@ -164,7 +151,9 @@ public class PRJTADUnitTest extends JUnit4CacheTestCase {
         assertNull(TXManagerImpl.getCurrentTXState());
       } else {
         assertNotNull(TXManagerImpl.getCurrentTXState());
-        ta.rollback();
+        if (!isAccessor) {
+          ta.rollback();
+        }
       }
     }
   }
@@ -173,10 +162,10 @@ public class PRJTADUnitTest extends JUnit4CacheTestCase {
     createRegion(preventSetOpToStartJTA);
     dataStore1.invoke(() -> initRegion());
 
-    accessor.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA));
-    dataStore1.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA));
-    dataStore2.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA));
-    dataStore3.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA));
+    accessor.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA, true));
+    dataStore1.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA, false));
+    dataStore2.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA, false));
+    dataStore3.invoke(() -> basicVerifySetOp(op, preventSetOpToStartJTA, false));
   }
 
   @SuppressWarnings("rawtypes")
@@ -257,10 +246,10 @@ public class PRJTADUnitTest extends JUnit4CacheTestCase {
     getCache();
   }
 
-  private void createPR() {
+  private void createPR(boolean isAccessor) {
     basicGetCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(
-            new PartitionAttributesFactory<Long, String>().setTotalNumBuckets(3).create())
+        .setPartitionAttributes(new PartitionAttributesFactory<Long, String>().setTotalNumBuckets(3)
+            .setLocalMaxMemory(isAccessor ? 0 : 1).create())
         .create(regionName);
   }
 }

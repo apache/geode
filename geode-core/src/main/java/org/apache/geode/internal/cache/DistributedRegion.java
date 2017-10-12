@@ -3833,7 +3833,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   protected VersionTag fetchRemoteVersionTag(Object key) {
     VersionTag tag = null;
     assert this.dataPolicy != DataPolicy.REPLICATE;
-    final TXStateProxy tx = cache.getTXMgr().internalSuspend();
+    final TXStateProxy tx = cache.getTXMgr().pauseTransaction();
     try {
       boolean retry = true;
       InternalDistributedMember member = getRandomReplicate();
@@ -3856,7 +3856,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       }
     } finally {
       if (tx != null) {
-        cache.getTXMgr().internalResume(tx);
+        cache.getTXMgr().unpauseTransaction(tx);
       }
     }
     return tag;

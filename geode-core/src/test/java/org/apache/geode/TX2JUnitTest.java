@@ -39,8 +39,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category(IntegrationTest.class)
+@RunWith(JUnitParamsRunner.class)
 public class TX2JUnitTest {
 
   private static final Logger logger = LogService.getLogger();
@@ -68,33 +73,15 @@ public class TX2JUnitTest {
   }
 
   @Test
-  public void testValuesCallStartsTx() {
+  @Parameters
+  public void testRegionSetOpWithTx(SetOp op, boolean preventSetOpToStartTx) {
     verifySetOp(SetOp.VALUES, false);
   }
 
-  @Test
-  public void testKeySetCallStartsTx() {
-    verifySetOp(SetOp.KEYSET, false);
-  }
-
-  @Test
-  public void testEntrySetCallStartsTx() {
-    verifySetOp(SetOp.ENTRYSET, false);
-  }
-
-  @Test
-  public void testValuesCallNotStartTxIfDisabled() {
-    verifySetOp(SetOp.VALUES, true);
-  }
-
-  @Test
-  public void testKeySetCallNotStartTxIfDisabled() {
-    verifySetOp(SetOp.KEYSET, true);
-  }
-
-  @Test
-  public void testEntrySetCallNotStartTxIfDisabled() {
-    verifySetOp(SetOp.ENTRYSET, true);
+  private Object[] parametersForTestRegionSetOpWithTx() {
+    return new Object[] {new Object[] {SetOp.VALUES, false}, new Object[] {SetOp.VALUES, true},
+        new Object[] {SetOp.KEYSET, false}, new Object[] {SetOp.KEYSET, true},
+        new Object[] {SetOp.ENTRYSET, false}, new Object[] {SetOp.ENTRYSET, true},};
   }
 
   private void verifySetOp(SetOp op, boolean preventSetOpToStartTx) {

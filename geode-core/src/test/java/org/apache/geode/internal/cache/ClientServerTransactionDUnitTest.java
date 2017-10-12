@@ -725,7 +725,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         }
         org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("suspending transaction");
         if (!useJTA) {
-          TXStateProxy tx = mgr.internalSuspend();
+          TXStateProxy tx = mgr.pauseTransaction();
           if (prePopulateData) {
             for (int i = 0; i < 5; i++) {
               CustId custId = new CustId(i);
@@ -739,7 +739,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             assertNull(pr.get(new CustId(i)));
           }
           org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("resuming transaction");
-          mgr.internalResume(tx);
+          mgr.unpauseTransaction(tx);
         }
         assertEquals("r sized should be " + MAX_ENTRIES + " but it is:" + r.size(), MAX_ENTRIES,
             r.size());
@@ -838,9 +838,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
-        TXStateProxy tx = mgr.internalSuspend();
+        TXStateProxy tx = mgr.pauseTransaction();
         assertNotNull(tx);
-        mgr.internalResume(tx);
+        mgr.unpauseTransaction(tx);
         if (commit) {
           mgr.commit();
         } else {
@@ -1620,10 +1620,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         mgr.begin();
         pr.put(custId, new Customer("name10", "address10"));
         r.put(10, "value10");
-        TXStateProxy txState = mgr.internalSuspend();
+        TXStateProxy txState = mgr.pauseTransaction();
         assertNull(pr.get(custId));
         assertNull(r.get(10));
-        mgr.internalResume(txState);
+        mgr.unpauseTransaction(txState);
         mgr.commit();
         return null;
       }
@@ -2369,12 +2369,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertEquals(new Customer("name0", "address0"), pr.get(new CustId(0)));
         assertEquals(new Customer("name10", "address10"), pr.get(new CustId(10)));
         assertEquals(new Customer("name10", "address10"), r.get(new CustId(10)));
-        TXStateProxy tx = mgr.internalSuspend();
+        TXStateProxy tx = mgr.pauseTransaction();
         assertEquals(new Customer("oldname0", "oldaddress0"), pr.get(new CustId(0)));
         assertEquals(new Customer("oldname1", "oldaddress1"), pr.get(new CustId(1)));
         assertNull(pr.get(new CustId(10)));
         assertNull(r.get(new CustId(10)));
-        mgr.internalResume(tx);
+        mgr.unpauseTransaction(tx);
         mgr.commit();
         assertEquals(new Customer("name0", "address0"), pr.get(new CustId(0)));
         assertEquals(new Customer("name1", "address1"), pr.get(new CustId(1)));
@@ -2435,13 +2435,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         mgr.begin();
         pr.put(custId, new Customer("name10", "address10"));
         r.put(10, "value10");
-        final TXStateProxy txState = mgr.internalSuspend();
+        final TXStateProxy txState = mgr.pauseTransaction();
         assertNull(pr.get(custId));
         assertNull(r.get(10));
         final CountDownLatch latch = new CountDownLatch(1);
         Thread t = new Thread(new Runnable() {
           public void run() {
-            mgr.internalResume(txState);
+            mgr.unpauseTransaction(txState);
             mgr.commit();
             latch.countDown();
           }
@@ -2916,7 +2916,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             Map<CustId, Customer> m = new HashMap<CustId, Customer>();
             m.put(new CustId(2), new Customer("name2", "address2"));
             r.putAll(m);
-            TXStateProxyImpl tx = (TXStateProxyImpl) mgr.internalSuspend();
+            TXStateProxyImpl tx = (TXStateProxyImpl) mgr.pauseTransaction();
             ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
             txStub.setAfterLocalLocks(new Runnable() {
               public void run() {
@@ -2928,7 +2928,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
                 }
               }
             });
-            mgr.internalResume(tx);
+            mgr.unpauseTransaction(tx);
             mgr.commit();
           }
         });

@@ -47,8 +47,13 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category(DistributedTest.class)
+@RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
 
@@ -113,11 +118,16 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  @SuppressWarnings("rawtypes")
   private void createPartitionedRegion(String regionName, int copies, int totalBuckets) {
+    createPartitionedRegion(regionName, copies, totalBuckets, false);
+  }
+
+  @SuppressWarnings("rawtypes")
+  private void createPartitionedRegion(String regionName, int copies, int totalBuckets,
+      boolean isAccessor) {
     RegionFactory<Integer, String> factory = getCache().createRegionFactory();
     PartitionAttributes pa = new PartitionAttributesFactory().setTotalNumBuckets(totalBuckets)
-        .setRedundantCopies(copies).create();
+        .setRedundantCopies(copies).setLocalMaxMemory(isAccessor ? 0 : 1).create();
     factory.setPartitionAttributes(pa).create(regionName);
   }
 
@@ -195,44 +205,26 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
     dataStore3.invoke(() -> createCache(preventSetOpToStartTx));
 
     int totalBuckets = 3;
-    accessor.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets));
+    accessor.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets, true));
     dataStore1.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets));
     dataStore2.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets));
     dataStore3.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets));
   }
 
   @Test
-  public void testValuesCallStartsTx() {
-    verifySetOp(SetOp.VALUES, false);
+  @Parameters
+  public void testRegionSetOpWithTx(SetOp op, boolean preventSetOpToStartTx) {
+    verifySetOp(op, preventSetOpToStartTx);
   }
 
-  @Test
-  public void testKeySetCallStartsTx() {
-    verifySetOp(SetOp.KEYSET, false);
-  }
-
-  @Test
-  public void testEntrySetCallStartsTx() {
-    verifySetOp(SetOp.ENTRYSET, false);
-  }
-
-  @Test
-  public void testValuesCallNotStartTxIfDisabled() {
-    verifySetOp(SetOp.VALUES, true);
-  }
-
-  @Test
-  public void testKeySetCallNotStartTxIfDisabled() {
-    verifySetOp(SetOp.KEYSET, true);
-  }
-
-  @Test
-  public void testEntrySetCallNotStartTxIfDisabled() {
-    verifySetOp(SetOp.ENTRYSET, true);
+  private Object[] parametersForTestRegionSetOpWithTx() {
+    return new Object[] {new Object[] {SetOp.VALUES, false}, new Object[] {SetOp.VALUES, true},
+        new Object[] {SetOp.KEYSET, false}, new Object[] {SetOp.KEYSET, true},
+        new Object[] {SetOp.ENTRYSET, false}, new Object[] {SetOp.ENTRYSET, true},};
   }
 
   @SuppressWarnings("rawtypes")
-  private void basicVerifySetOp(SetOp op, boolean preventSetOpToStartTx) {
+  private void basicVerifySetOp(SetOp op, boolean preventSetOpToStartTx, boolean isAccessor) {
     Cache cache = basicGetCache();
     Region<Long, String> region = cache.getRegion(Region.SEPARATOR + regionName);
 
@@ -255,7 +247,7 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
       verifySetOp(op, region, keys, values, set);
     } finally {
       assertNotNull(TXManagerImpl.getCurrentTXState());
-      if (preventSetOpToStartTx) {
+      if (preventSetOpToStartTx || isAccessor) {
         assertFalse(((TXStateProxyImpl) TXManagerImpl.getCurrentTXState()).hasRealDeal());
       } else {
         assertTrue(((TXStateProxyImpl) TXManagerImpl.getCurrentTXState()).hasRealDeal());
@@ -268,10 +260,10 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
     createRegion(preventSetOpToStartTx);
     dataStore1.invoke(() -> initRegion());
 
-    accessor.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx));
-    dataStore1.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx));
-    dataStore2.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx));
-    dataStore3.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx));
+    accessor.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, true));
+    dataStore1.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, false));
+    dataStore2.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, false));
+    dataStore3.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, false));
   }
 
   @SuppressWarnings("rawtypes")
@@ -336,5 +328,4 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
     }
     getCache();
   }
-
 }

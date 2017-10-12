@@ -2155,7 +2155,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       try {
 
         if (this.transactionManager != null) {
-          tx = this.transactionManager.internalSuspend();
+          tx = this.transactionManager.pauseTransaction();
         }
 
         // do this before closing regions
@@ -2394,7 +2394,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
         ((DynamicRegionFactoryImpl) DynamicRegionFactory.get()).close();
         if (this.transactionManager != null) {
-          this.transactionManager.internalResume(tx);
+          this.transactionManager.unpauseTransaction(tx);
         }
         TXCommitMessage.getTracker().clearForCacheClose();
       }

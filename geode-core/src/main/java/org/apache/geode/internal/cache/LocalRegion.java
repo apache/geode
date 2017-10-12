@@ -202,6 +202,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -6149,7 +6150,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       boolean callbackEvents) throws CacheWriterException, TimeoutException {
     preDestroyChecks();
 
-    final TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
+    final TXStateProxy tx = this.cache.getTXMgr().pauseTransaction();
     try {
       boolean acquiredLock = false;
       if (lock) {
@@ -6264,7 +6265,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
     } finally {
-      this.cache.getTXMgr().internalResume(tx);
+      this.cache.getTXMgr().unpauseTransaction(tx);
     }
   }
 
@@ -6400,22 +6401,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     getDataView().destroyExistingEntry(event, cacheWrite, expectedOldValue);
   }
 
-  /**
-   * A set operation now can bootstrap a transaction now. User need to specifically disable this by
-   * setting this system property to true to get the old behavior.
-   *
-   * @Since Geode 1.3.0
-   */
-  public static final String PREVENT_SET_OP_BOOTSTRAP_TRANSACTION =
-      "preventSetOpBootstrapTransaction";
-
-  protected static boolean isSetOpBootstrapTransactionDisabled() {
-    return Boolean
-        .getBoolean(DistributionConfig.GEMFIRE_PREFIX + PREVENT_SET_OP_BOOTSTRAP_TRANSACTION)
-        || Boolean.getBoolean("geode." + PREVENT_SET_OP_BOOTSTRAP_TRANSACTION);
-  }
-
-  protected final boolean preventSetOpBootstrapTransaction = isSetOpBootstrapTransactionDisabled();
+  protected final boolean preventSetOpBootstrapTransaction =
+      SystemPropertyHelper.preventSetOpBootstrapTransaction();
 
   /**
    * Do the expensive work of discovering an existing JTA transaction Only needs to be called at
@@ -6430,9 +6417,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  private boolean isTransactionInternalSuspended() {
+  private boolean isTransactionPaused() {
     TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
-    return txMgr.isTransactionInternalSuspendedByThread(Thread.currentThread());
+    return txMgr.isTransactionPaused();
   }
 
   /**
@@ -6834,7 +6821,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   void basicInvalidateRegion(RegionEventImpl event) {
-    final TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
+    final TXStateProxy tx = this.cache.getTXMgr().pauseTransaction();
     try {
       this.regionInvalid = true;
       getImageState().setRegionInvalidated(true);
@@ -6878,7 +6865,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
     } finally {
-      this.cache.getTXMgr().internalResume(tx);
+      this.cache.getTXMgr().unpauseTransaction(tx);
     }
   }
 
@@ -8313,8 +8300,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               || jtaTransaction.getStatus() == Status.STATUS_NO_TRANSACTION) {
             return null;
           }
-          if (isTransactionInternalSuspended()) {
-            // Do not bootstrap JTA again, if the thread has been internal suspended.
+          if (isTransactionPaused()) {
+            // Do not bootstrap JTA again, if the transaction has been paused.
             return null;
           }
           txState = this.cache.getTXMgr().beginJTA();
@@ -9222,7 +9209,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
             if (!alreadyInvalid(key, event)) {
               // bug #47716 - don't update if it's already here & invalid
-              TXStateProxy txState = this.cache.getTXMgr().internalSuspend();
+              TXStateProxy txState = this.cache.getTXMgr().pauseTransaction();
               try {
                 basicPutEntry(event, 0L);
               } catch (ConcurrentCacheModificationException e) {
@@ -9232,7 +9219,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
                       key, e);
                 }
               } finally {
-                this.cache.getTXMgr().internalResume(txState);
+                this.cache.getTXMgr().unpauseTransaction(txState);
               }
               getCachePerfStats().endPut(startPut, event.isOriginRemote());
             }
