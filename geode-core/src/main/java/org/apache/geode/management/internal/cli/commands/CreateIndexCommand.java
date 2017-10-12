@@ -52,7 +52,7 @@ public class CreateIndexCommand implements GfshCommand {
   // TODO : Add optionContext for indexName
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  public Result executeCommand(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
+  public Result createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
 
       @CliOption(key = CliStrings.CREATE_INDEX__EXPRESSION, mandatory = true,

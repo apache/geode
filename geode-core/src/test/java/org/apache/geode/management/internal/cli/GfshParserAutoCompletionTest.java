@@ -17,13 +17,15 @@ package org.apache.geode.management.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.rules.GfshParserRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.Completion;
+
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(IntegrationTest.class)
 public class GfshParserAutoCompletionTest {
@@ -279,7 +281,7 @@ public class GfshParserAutoCompletionTest {
   public void testIndexType() throws Exception {
     buffer = "create index --type=";
     candidate = parser.complete(buffer);
-    assertThat(candidate.size()).isEqualTo(3);
+    assertThat(candidate.size()).isEqualTo(IndexType.values().length);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "hash");
   }
 
