@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.*;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
@@ -101,8 +102,9 @@ public class DataCommandFunctionJUnitTest {
   public void testLocateKeyIsObject() throws Exception {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
-    DataCommandResult result = dataCmdFn.locateEntry("{'cheese': 'key_1'}",
-        StringCheese.class.getName(), String.class.getName(), PARTITIONED_REGION, false);
+    DataCommandResult result =
+        dataCmdFn.locateEntry("{'cheese': 'key_1'}", StringCheese.class.getName(),
+            String.class.getName(), PARTITIONED_REGION, false, (InternalCache) cache);
 
     assertNotNull(result);
     result.aggregate(null);
@@ -115,7 +117,7 @@ public class DataCommandFunctionJUnitTest {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
     DataCommandResult result = dataCmdFn.locateEntry("key_2", String.class.getName(),
-        String.class.getName(), PARTITIONED_REGION, false);
+        String.class.getName(), PARTITIONED_REGION, false, (InternalCache) cache);
 
     assertNotNull(result);
     result.aggregate(null);

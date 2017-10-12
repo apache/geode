@@ -38,7 +38,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -63,6 +62,10 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class ListDiskStoresFunctionJUnitTest {
 
   private Mockery mockContext;
+  private InternalCache mockCache;
+  private FunctionContext mockFunctionContext;
+
+
 
   @Before
   public void setup() {
@@ -72,6 +75,9 @@ public class ListDiskStoresFunctionJUnitTest {
         setThreadingPolicy(new Synchroniser());
       }
     };
+
+    mockCache = mockContext.mock(InternalCache.class, "Cache");
+    mockFunctionContext = mockContext.mock(FunctionContext.class, "FunctionContext");
   }
 
   @After
@@ -85,10 +91,6 @@ public class ListDiskStoresFunctionJUnitTest {
     return new DiskStoreDetails(id, name, memberId, memberName);
   }
 
-  private ListDiskStoresFunction createListDiskStoresFunction(final Cache cache) {
-    return new TestListDiskStoresFunction(cache);
-  }
-
   @Test
   @SuppressWarnings("unchecked")
   public void testExecute() throws Throwable {
@@ -98,8 +100,6 @@ public class ListDiskStoresFunctionJUnitTest {
 
     final String memberId = "mockMemberId";
     final String memberName = "mockMemberName";
-
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
 
     final InternalDistributedMember mockMember =
         mockContext.mock(InternalDistributedMember.class, "DistributedMember");
@@ -114,9 +114,6 @@ public class ListDiskStoresFunctionJUnitTest {
     mockDiskStores.add(mockDiskStoreOne);
     mockDiskStores.add(mockDiskStoreTwo);
     mockDiskStores.add(mockDiskStoreThree);
-
-    final FunctionContext mockFunctionContext =
-        mockContext.mock(FunctionContext.class, "FunctionContext");
 
     final TestResultSender testResultSender = new TestResultSender();
 
@@ -142,12 +139,14 @@ public class ListDiskStoresFunctionJUnitTest {
         will(returnValue(mockDiskStoreThreeId));
         oneOf(mockDiskStoreThree).getName();
         will(returnValue("ds-persistence"));
+        oneOf(mockFunctionContext).getCache();
+        will(returnValue(mockCache));
         oneOf(mockFunctionContext).getResultSender();
         will(returnValue(testResultSender));
       }
     });
 
-    final ListDiskStoresFunction function = createListDiskStoresFunction(mockCache);
+    final ListDiskStoresFunction function = new ListDiskStoresFunction();
 
     function.execute(mockFunctionContext);
 
@@ -171,18 +170,14 @@ public class ListDiskStoresFunctionJUnitTest {
     final FunctionContext mockFunctionContext =
         mockContext.mock(FunctionContext.class, "MockFunctionContext");
 
-    final ListDiskStoresFunction testListDiskStoresFunction =
-        new TestListDiskStoresFunction(mockContext.mock(Cache.class, "MockCache")) {
-          @Override
-          protected Cache getCache() {
-            throw new CacheClosedException("Expected");
-          }
-        };
+    final ListDiskStoresFunction testListDiskStoresFunction = new ListDiskStoresFunction();
 
     final TestResultSender testResultSender = new TestResultSender();
 
     mockContext.checking(new Expectations() {
       {
+        oneOf(mockFunctionContext).getCache();
+        will(throwException(new CacheClosedException("Expected")));
         oneOf(mockFunctionContext).getResultSender();
         will(returnValue(testResultSender));
       }
@@ -201,13 +196,8 @@ public class ListDiskStoresFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testExecuteOnMemberHavingNoDiskStores() throws Throwable {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
-
     final InternalDistributedMember mockMember =
         mockContext.mock(InternalDistributedMember.class, "DistributedMember");
-
-    final FunctionContext mockFunctionContext =
-        mockContext.mock(FunctionContext.class, "FunctionContext");
 
     final TestResultSender testResultSender = new TestResultSender();
 
@@ -217,12 +207,14 @@ public class ListDiskStoresFunctionJUnitTest {
         will(returnValue(mockMember));
         oneOf(mockCache).listDiskStoresIncludingRegionOwned();
         will(returnValue(Collections.emptyList()));
+        oneOf(mockFunctionContext).getCache();
+        will(returnValue(mockCache));
         oneOf(mockFunctionContext).getResultSender();
         will(returnValue(testResultSender));
       }
     });
 
-    final ListDiskStoresFunction function = createListDiskStoresFunction(mockCache);
+    final ListDiskStoresFunction function = new ListDiskStoresFunction();
 
     function.execute(mockFunctionContext);
 
@@ -240,21 +232,20 @@ public class ListDiskStoresFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testExecuteOnMemberWithANonGemFireCache() throws Throwable {
-    final Cache mockCache = mockContext.mock(Cache.class, "Cache");
-
-    final FunctionContext mockFunctionContext =
-        mockContext.mock(FunctionContext.class, "FunctionContext");
-
     final TestResultSender testResultSender = new TestResultSender();
+
+    final Cache mockNonGemCache = mockContext.mock(Cache.class, "NonGemCache");
 
     mockContext.checking(new Expectations() {
       {
+        oneOf(mockFunctionContext).getCache();
+        will(returnValue(mockNonGemCache));
         oneOf(mockFunctionContext).getResultSender();
         will(returnValue(testResultSender));
       }
     });
 
-    final ListDiskStoresFunction function = createListDiskStoresFunction(mockCache);
+    final ListDiskStoresFunction function = new ListDiskStoresFunction();
 
     function.execute(mockFunctionContext);
 
@@ -271,13 +262,8 @@ public class ListDiskStoresFunctionJUnitTest {
 
   @Test(expected = RuntimeException.class)
   public void testExecuteThrowsRuntimeException() throws Throwable {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "Cache");
-
     final InternalDistributedMember mockMember =
         mockContext.mock(InternalDistributedMember.class, "DistributedMember");
-
-    final FunctionContext mockFunctionContext =
-        mockContext.mock(FunctionContext.class, "FunctionContext");
 
     final TestResultSender testResultSender = new TestResultSender();
 
@@ -287,12 +273,14 @@ public class ListDiskStoresFunctionJUnitTest {
         will(returnValue(mockMember));
         oneOf(mockCache).listDiskStoresIncludingRegionOwned();
         will(throwException(new RuntimeException("expected")));
+        oneOf(mockFunctionContext).getCache();
+        will(returnValue(mockCache));
         oneOf(mockFunctionContext).getResultSender();
         will(returnValue(testResultSender));
       }
     });
 
-    final ListDiskStoresFunction function = createListDiskStoresFunction(mockCache);
+    final ListDiskStoresFunction function = new ListDiskStoresFunction();
 
     function.execute(mockFunctionContext);
 
@@ -302,21 +290,6 @@ public class ListDiskStoresFunctionJUnitTest {
       assertTrue(throwable instanceof RuntimeException);
       assertEquals("expected", throwable.getMessage());
       throw throwable;
-    }
-  }
-
-  private static class TestListDiskStoresFunction extends ListDiskStoresFunction {
-
-    private final Cache cache;
-
-    public TestListDiskStoresFunction(final Cache cache) {
-      assert cache != null : "The Cache cannot be null!";
-      this.cache = cache;
-    }
-
-    @Override
-    protected Cache getCache() {
-      return cache;
     }
   }
 

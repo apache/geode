@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -106,7 +105,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   @Override
   public void execute(FunctionContext functionContext) {
     try {
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) functionContext.getCache();
       DataCommandRequest request = (DataCommandRequest) functionContext.getArguments();
       if (logger.isDebugEnabled()) {
         logger.debug("Executing function : \n{}\n on member {}", request,
@@ -114,15 +113,15 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       }
       DataCommandResult result = null;
       if (request.isGet()) {
-        result = get(request, cache.getSecurityService());
+        result = get(request, cache);
       } else if (request.isLocateEntry()) {
-        result = locateEntry(request);
+        result = locateEntry(request, cache);
       } else if (request.isPut()) {
-        result = put(request);
+        result = put(request, cache);
       } else if (request.isRemove()) {
-        result = remove(request);
+        result = remove(request, cache);
       } else if (request.isSelect()) {
-        result = select(request);
+        result = select(request, cache);
       }
       if (logger.isDebugEnabled()) {
         logger.debug("Result is {}", result);
@@ -135,50 +134,46 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   }
 
 
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
-  public DataCommandResult remove(DataCommandRequest request) {
+  public DataCommandResult remove(DataCommandRequest request, InternalCache cache) {
     String key = request.getKey();
     String keyClass = request.getKeyClass();
     String regionName = request.getRegionName();
     String removeAllKeys = request.getRemoveAllKeys();
-    return remove(key, keyClass, regionName, removeAllKeys);
+    return remove(key, keyClass, regionName, removeAllKeys, cache);
   }
 
-  public DataCommandResult get(DataCommandRequest request, SecurityService securityService) {
+  public DataCommandResult get(DataCommandRequest request, InternalCache cache) {
     String key = request.getKey();
     String keyClass = request.getKeyClass();
     String valueClass = request.getValueClass();
     String regionName = request.getRegionName();
     Boolean loadOnCacheMiss = request.isLoadOnCacheMiss();
     return get(request.getPrincipal(), key, keyClass, valueClass, regionName, loadOnCacheMiss,
-        securityService);
+        cache);
   }
 
-  public DataCommandResult locateEntry(DataCommandRequest request) {
+  public DataCommandResult locateEntry(DataCommandRequest request, InternalCache cache) {
     String key = request.getKey();
     String keyClass = request.getKeyClass();
     String valueClass = request.getValueClass();
     String regionName = request.getRegionName();
     boolean recursive = request.isRecursive();
-    return locateEntry(key, keyClass, valueClass, regionName, recursive);
+    return locateEntry(key, keyClass, valueClass, regionName, recursive, cache);
   }
 
-  public DataCommandResult put(DataCommandRequest request) {
+  public DataCommandResult put(DataCommandRequest request, InternalCache cache) {
     String key = request.getKey();
     String value = request.getValue();
     boolean putIfAbsent = request.isPutIfAbsent();
     String keyClass = request.getKeyClass();
     String valueClass = request.getValueClass();
     String regionName = request.getRegionName();
-    return put(key, value, putIfAbsent, keyClass, valueClass, regionName);
+    return put(key, value, putIfAbsent, keyClass, valueClass, regionName, cache);
   }
 
-  public DataCommandResult select(DataCommandRequest request) {
+  public DataCommandResult select(DataCommandRequest request, InternalCache cache) {
     String query = request.getQuery();
-    return select(request.getPrincipal(), query);
+    return select(cache, request.getPrincipal(), query);
   }
 
   /**
@@ -197,9 +192,8 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   }
 
   @SuppressWarnings("rawtypes")
-  private DataCommandResult select(Object principal, String queryString) {
+  private DataCommandResult select(InternalCache cache, Object principal, String queryString) {
 
-    InternalCache cache = getCache();
     AtomicInteger nestedObjectCount = new AtomicInteger(0);
     if (StringUtils.isEmpty(queryString)) {
       return DataCommandResult.createSelectInfoResult(null, null, -1, null,
@@ -227,7 +221,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         queryObserver.reset2();
       }
       if (results instanceof SelectResults) {
-        select_SelectResults((SelectResults) results, principal, list, nestedObjectCount);
+        select_SelectResults((SelectResults) results, principal, list, nestedObjectCount, cache);
       } else {
         select_NonSelectResults(results, list);
       }
@@ -270,10 +264,11 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
   }
 
   private void select_SelectResults(SelectResults selectResults, Object principal,
-      List<SelectResultRow> list, AtomicInteger nestedObjectCount) throws GfJsonException {
+      List<SelectResultRow> list, AtomicInteger nestedObjectCount, InternalCache cache)
+      throws GfJsonException {
     for (Object object : selectResults) {
       // Post processing
-      object = getCache().getSecurityService().postProcess(principal, null, null, object, false);
+      object = cache.getSecurityService().postProcess(principal, null, null, object, false);
 
       if (object instanceof Struct) {
         StructImpl impl = (StructImpl) object;
@@ -344,9 +339,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings({"rawtypes"})
   public DataCommandResult remove(String key, String keyClass, String regionName,
-      String removeAllKeys) {
-
-    InternalCache cache = getCache();
+      String removeAllKeys, InternalCache cache) {
 
     if (StringUtils.isEmpty(regionName)) {
       return DataCommandResult.createRemoveResult(key, null, null,
@@ -410,9 +403,9 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings({"rawtypes"})
   public DataCommandResult get(Object principal, String key, String keyClass, String valueClass,
-      String regionName, Boolean loadOnCacheMiss, SecurityService securityService) {
+      String regionName, Boolean loadOnCacheMiss, InternalCache cache) {
 
-    InternalCache cache = getCache();
+    SecurityService securityService = cache.getSecurityService();
 
     if (StringUtils.isEmpty(regionName)) {
       return DataCommandResult.createGetResult(key, null, null,
@@ -480,9 +473,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public DataCommandResult locateEntry(String key, String keyClass, String valueClass,
-      String regionPath, boolean recursive) {
-
-    InternalCache cache = getCache();
+      String regionPath, boolean recursive, InternalCache cache) {
 
     if (StringUtils.isEmpty(regionPath)) {
       return DataCommandResult.createLocateEntryResult(key, null, null,
@@ -596,7 +587,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings({"rawtypes"})
   public DataCommandResult put(String key, String value, boolean putIfAbsent, String keyClass,
-      String valueClass, String regionName) {
+      String valueClass, String regionName, InternalCache cache) {
 
     if (StringUtils.isEmpty(regionName)) {
       return DataCommandResult.createPutResult(key, null, null,
@@ -613,7 +604,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           false);
     }
 
-    InternalCache cache = getCache();
     Region region = cache.getRegion(regionName);
     if (region == null) {
       return DataCommandResult.createPutResult(key, null, null,

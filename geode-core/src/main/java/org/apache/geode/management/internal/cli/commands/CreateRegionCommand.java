@@ -568,7 +568,7 @@ public class CreateRegionCommand implements GfshCommand {
     // First check whether the region exists on a this manager, if yes then no
     // need to use FetchRegionAttributesFunction to fetch RegionAttributes
     try {
-      attributes = FetchRegionAttributesFunction.getRegionAttributes(regionPath);
+      attributes = FetchRegionAttributesFunction.getRegionAttributes(cache, regionPath);
     } catch (IllegalArgumentException e) {
       /* region doesn't exist on the manager */
     }

@@ -84,8 +84,7 @@ public class GetCommand implements GfshCommand {
             false);
       }
     } else {
-      dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss,
-          cache.getSecurityService());
+      dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss, cache);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null) {

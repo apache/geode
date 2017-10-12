@@ -19,21 +19,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-
-@Category(UnitTest.class)
+@Category({UnitTest.class})
 public class CommandResultTest {
+  public CommandResultTest() {}
 
   @Test
   public void emptyResultHasOneEmptyLine() {
     CommandResult commandResult = new CommandResult(new InfoResultData());
-
-    assertThat(commandResult.nextLine()).isEqualTo("");
-    assertThat(commandResult.hasNextLine()).isFalse();
+    Assertions.assertThat(commandResult.nextLine()).isEqualTo("");
+    Assertions.assertThat(commandResult.hasNextLine()).isFalse();
   }
 
   @Test
@@ -59,8 +58,7 @@ public class CommandResultTest {
   @Test
   public void emptyResultDoesNotHaveFileToDownload() {
     CommandResult commandResult = new CommandResult(new InfoResultData());
-
-    assertThat(commandResult.hasFileToDownload()).isFalse();
+    Assertions.assertThat(commandResult.hasFileToDownload()).isFalse();
   }
 
   @Test
@@ -72,6 +70,4 @@ public class CommandResultTest {
     assertThat(commandResult.nextLine()).isEqualTo(fileToDownload.toString() + LINE_SEPARATOR);
     assertThat(commandResult.getFileToDownload()).isEqualTo(fileToDownload);
   }
-
-
 }

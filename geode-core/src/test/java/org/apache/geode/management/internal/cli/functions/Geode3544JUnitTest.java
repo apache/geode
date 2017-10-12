@@ -27,6 +27,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.AfterClass;
@@ -155,7 +156,7 @@ public class Geode3544JUnitTest {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
     DataCommandResult result = dataCmdFn.locateEntry(emp_key, EmpData.class.getName(),
-        String.class.getName(), PARTITIONED_REGION, false);
+        String.class.getName(), PARTITIONED_REGION, false, (InternalCache) cache);
 
     assertNotNull(result);
     result.aggregate(null);
