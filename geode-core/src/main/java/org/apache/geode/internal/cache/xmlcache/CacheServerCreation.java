@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
+
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.server.CacheServer;
@@ -21,12 +25,8 @@ import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.InternalAcceptor;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -243,7 +243,7 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   @Override
-  public InternalAcceptor getAcceptor() {
+  public Acceptor getAcceptor() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 }
