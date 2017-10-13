@@ -15,14 +15,23 @@
 
 package org.apache.geode.internal.statistics;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.Statistics;
-import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
-import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.tools.ant.filters.StringInputStream;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -33,15 +42,11 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
+import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
+import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Technically a linux only test - the file handling is all mocked up so the test can run on any
@@ -51,8 +56,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.IntegrationTest")
 @PrepareForTest(LinuxProcFsStatistics.class)
-@Ignore
 public class LinuxSystemStatsTest extends StatSamplerTestCase {
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private int[] ints;
@@ -83,7 +89,6 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     StatisticsTypeFactoryImpl.clear();
     if (this.statisticsFactory != null) {
       this.statisticsFactory.close();
-      this.statisticsFactory = null;
     }
   }
 
@@ -130,7 +135,6 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     Answer<FileInputStream> answer = new MyStealTimeAnswer(results);
     PowerMockito.whenNew(FileInputStream.class).withArguments(anyString()).thenAnswer(answer);
 
-
     LinuxProcFsStatistics.refreshSystem(ints, longs, doubles);
     LinuxProcFsStatistics.refreshSystem(ints, longs, doubles);
 
@@ -150,14 +154,19 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     });
   }
 
-  private File writeStringToFile(String string) throws IOException {
-    File file = File.createTempFile("LinuxSystemStatsTest", ".test");
-    file.deleteOnExit();
-    StringInputStream sis = new StringInputStream(string);
-    FileOutputStream fos = new FileOutputStream(file);
-    IOUtils.copy(sis, fos);
-    IOUtils.closeQuietly(fos);
-    return file;
+  /**
+   * This method will allow junit to mock up how Linux reports the CPU information though a file
+   * called "/proc/stat". We need to create a new file for each call since each file could represent
+   * another phase in the mock test.
+   */
+  private File writeStringToFile(String mockProcStatFileContents) throws IOException {
+
+    File mockFile = temporaryFolder.newFile();
+    StringInputStream sis = new StringInputStream(mockProcStatFileContents);
+    FileOutputStream mockFileOutputStream = new FileOutputStream(mockFile);
+    IOUtils.copy(sis, mockFileOutputStream);
+    IOUtils.closeQuietly(mockFileOutputStream);
+    return mockFile;
   }
 
   @Override
@@ -180,6 +189,7 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
     @Override
     public FileInputStream answer(InvocationOnMock invocation) throws Throwable {
+      // Since we are mocking the test we can run this test on any OS.
       if ("/proc/stat".equals(invocation.getArgument(0))) {
         return results.remove(0);
       }

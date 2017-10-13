@@ -145,7 +145,7 @@ public class LinuxSystemStats {
                 "The percentage of total available time that has been used to execute non-user code.(includes system, iowait, irq, softirq etc.)",
                 "%"),
             f.createIntGauge("cpuSteal",
-                "Stolen time, which is the time spent in their operating systems when running in a virtualized environment.",
+                "Steal time is the amount of time the operating system wanted to execute, but was not allowed to by the hypervisor.",
                 "%"),
 
             f.createLongCounter("loopbackPackets",
