@@ -145,13 +145,6 @@ public class ClassBuilder implements Serializable {
       formattedName = formattedName.concat(".class");
     }
 
-    // If the class is in a package create a directory entry in the JAR file for the package.
-    if (className.contains("/")) {
-      JarEntry entry = new JarEntry(className.substring(0, className.lastIndexOf('/')));
-      entry.setTime(System.currentTimeMillis());
-      jarOutputStream.putNextEntry(entry);
-    }
-
     JarEntry entry = new JarEntry(formattedName);
     entry.setTime(System.currentTimeMillis());
     jarOutputStream.putNextEntry(entry);
