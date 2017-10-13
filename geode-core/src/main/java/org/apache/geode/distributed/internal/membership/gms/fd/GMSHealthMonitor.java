@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.fd;
 
+import static org.apache.geode.internal.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
 import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_REQUEST;
 import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_RESPONSE;
 import static org.apache.geode.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
@@ -31,6 +32,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
@@ -263,6 +265,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           // now do check request for this member;
           checkMember(neighbour);
         }
+        setNextNeighbor(currentView, null);
       }
     }
   }
@@ -861,7 +864,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * It becomes null when we suspect current neighbour, during that time it watches member next to
    * suspect member.
    */
-  private synchronized void setNextNeighbor(NetView newView, InternalDistributedMember nextTo) {
+  protected synchronized void setNextNeighbor(NetView newView, InternalDistributedMember nextTo) {
     if (newView == null) {
       return;
     }
@@ -933,6 +936,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     services.getMessenger().addHandler(HeartbeatRequestMessage.class, this);
     services.getMessenger().addHandler(HeartbeatMessage.class, this);
     services.getMessenger().addHandler(SuspectMembersMessage.class, this);
+    services.getMessenger().addHandler(FinalCheckPassedMessage.class, this);
   }
 
   @Override
@@ -1017,7 +1021,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   @Override
   public void memberSuspected(InternalDistributedMember initiator,
-      InternalDistributedMember suspect, String reason) {}
+      InternalDistributedMember suspect, String reason) {
+    suspectedMemberInView.putIfAbsent(suspect, currentView);
+  }
 
   @Override
   public void beSick() {
@@ -1073,6 +1079,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         } else {
           processSuspectMembersRequest((SuspectMembersMessage) m);
         }
+        break;
+      case FINAL_CHECK_PASSED_MESSAGE:
+        contactedBy(((FinalCheckPassedMessage) m).getSuspect());
         break;
       default:
         throw new IllegalArgumentException("unknown message type: " + m);
@@ -1266,7 +1275,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
   }
 
-  private boolean inlineCheckIfAvailable(final InternalDistributedMember initiator,
+  protected boolean inlineCheckIfAvailable(final InternalDistributedMember initiator,
       final NetView cv, boolean initiateRemoval, final InternalDistributedMember mbr,
       final String reason) {
 
@@ -1277,6 +1286,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     boolean failed = false;
 
     membersInFinalCheck.add(mbr);
+    setNextNeighbor(currentView, mbr);
+
     try {
       services.memberSuspected(initiator, mbr, reason);
       long startTime = System.currentTimeMillis();
@@ -1321,13 +1332,22 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               "Final check failed but detected recent message traffic for suspect member " + mbr);
         }
       }
+
       if (!failed) {
+        if (!isStopping && !initiator.equals(localAddress)
+            && initiator.getVersionObject().compareTo(Version.GEODE_130) >= 0) {
+          // let the sender know that it's okay to monitor this member again
+          FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
+          services.getMessenger().send(message);
+        }
+
         logger.info("Final check passed for suspect member " + mbr);
       }
+    } finally {
       // whether it's alive or not, at this point we allow it to
       // be watched again
       suspectedMemberInView.remove(mbr);
-    } finally {
+      setNextNeighbor(currentView, null);
       membersInFinalCheck.remove(mbr);
     }
     return !failed;
