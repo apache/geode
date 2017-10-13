@@ -1844,7 +1844,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Set entrySet(boolean recursive) {
     checkReadiness();
     checkForNoAccess();
-    if (!preventSetOpBootstrapTransaction) {
+    if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
     return basicEntries(recursive);
@@ -1869,7 +1869,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Set keys() {
     checkReadiness();
     checkForNoAccess();
-    if (!preventSetOpBootstrapTransaction) {
+    if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
     return new EntriesSet(this, false, IteratorType.KEYS, false);
@@ -1891,7 +1891,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Collection values() {
     checkReadiness();
     checkForNoAccess();
-    if (!preventSetOpBootstrapTransaction) {
+    if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
     return new EntriesSet(this, false, IteratorType.VALUES, false);
@@ -6401,8 +6401,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     getDataView().destroyExistingEntry(event, cacheWrite, expectedOldValue);
   }
 
-  protected final boolean preventSetOpBootstrapTransaction =
-      SystemPropertyHelper.preventSetOpBootstrapTransaction();
+  protected final boolean restoreSetOperationTransactionBehavior =
+      SystemPropertyHelper.restoreSetOperationTransactionBehavior();
 
   /**
    * Do the expensive work of discovering an existing JTA transaction Only needs to be called at

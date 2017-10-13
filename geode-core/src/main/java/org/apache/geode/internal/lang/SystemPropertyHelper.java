@@ -18,7 +18,7 @@ package org.apache.geode.internal.lang;
  * The SystemPropertyHelper class is an helper class for accessing system properties used in geode.
  * The method name to get the system property should be the same as the system property name.
  * 
- * @since Geode 1.3.0
+ * @since Geode 1.4.0
  */
 
 public class SystemPropertyHelper {
@@ -41,12 +41,17 @@ public class SystemPropertyHelper {
   }
 
   /**
-   * A set operation can bootstrap a transaction now. User need to specifically disable this by
-   * setting this system property to true to get the old behavior.
+   * As of Geode 1.4.0, a region set operation will be in a transaction even if it is the first
+   * operation in the transaction.
    *
-   * @since Geode 1.3.0
+   * In previous releases, a region operation is not in a transaction if it is the first operation
+   * of the transaction.
+   *
+   * Setting this system property to true will restore the previous behavior.
+   *
+   * @since Geode 1.4.0
    */
-  public static boolean preventSetOpBootstrapTransaction() {
-    return getProductBooleanProperty("preventSetOpBootstrapTransaction");
+  public static boolean restoreSetOperationTransactionBehavior() {
+    return getProductBooleanProperty("restoreSetOperationTransactionBehavior");
   }
 }

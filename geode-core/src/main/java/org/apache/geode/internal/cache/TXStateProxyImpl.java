@@ -509,8 +509,8 @@ public class TXStateProxyImpl implements TXStateProxy {
     return getRealDeal(null, currRgn).getAdditionalKeysForIterator(currRgn);
   }
 
-  protected final boolean preventSetOpBootstrapTransaction =
-      SystemPropertyHelper.preventSetOpBootstrapTransaction();
+  protected final boolean restoreSetOperationTransactionBehavior =
+      SystemPropertyHelper.restoreSetOperationTransactionBehavior();
 
   public Object getEntryForIterator(KeyInfo key, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
@@ -534,7 +534,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   private boolean isTransactionInternalSuspendNeeded(LocalRegion region) {
     boolean resetTxState = this.realDeal == null
-        && (!region.canStoreDataLocally() || preventSetOpBootstrapTransaction);
+        && (!region.canStoreDataLocally() || restoreSetOperationTransactionBehavior);
     return resetTxState;
   }
 

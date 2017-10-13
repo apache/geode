@@ -590,7 +590,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public TXStateProxy getTXState() {
     TXStateProxy tsp = txContext.get();
-    if (tsp == pausedTXState) {
+    if (tsp == PAUSED) {
       // treats paused transaction as no transaction.
       return null;
     }
@@ -612,7 +612,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   public boolean setInProgress(boolean progress) {
     boolean retVal = false;
     TXStateProxy tsp = txContext.get();
-    assert tsp != pausedTXState;
+    assert tsp != PAUSED;
     if (tsp != null) {
       retVal = tsp.isInProgress();
       tsp.setInProgress(progress);
@@ -674,14 +674,15 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  private static final TXStateProxy pausedTXState = new PausedTXStateProxyImpl();
+  private static final TXStateProxy PAUSED = new PausedTXStateProxyImpl();
 
   /**
    * If the current thread is in a transaction then pause will cause it to no longer be in a
    * transaction. The same thread is expected to unpause/resume the transaction later.
    *
-   * @return the state of the transaction or null. Pass this value to {@link TXManagerImpl#resume}
-   *         to reactivate the suspended transaction.
+   * @return the state of the transaction or null. Pass this value to
+   *         {@link TXManagerImpl#unpauseTransaction} to reactivate the puased/suspended
+   *         transaction.
    */
   public TXStateProxy pauseTransaction() {
     return internalSuspend(true);
@@ -689,11 +690,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * If the current thread is in a transaction then suspend will cause it to no longer be in a
-   * transaction.
+   * transaction. Currently only used in testing.
    * 
-   * @return the state of the transaction or null. Pass this value to {@link TXManagerImpl#resume}
-   *         to reactivate the suspended transaction.
+   * @return the state of the transaction or null. to reactivate the suspended transaction.
+   * @deprecated use {@link TXManagerImpl#pauseTransaction} or
+   *             {@link CacheTransactionManager#suspend} instead
    */
+  @Deprecated
   public TXStateProxy internalSuspend() {
     return internalSuspend(false);
   }
@@ -704,15 +707,16 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    *
    * @param needToResumeBySameThread whether a suspended transaction needs to be resumed by the same
    *        thread.
-   * @return the state of the transaction or null. Pass this value to {@link TXManagerImpl#resume}
-   *         to reactivate the suspended transaction.
+   * @return the state of the transaction or null. Pass this value to
+   *         {@link TXManagerImpl#internalResume(TXStateProxy, boolean)} to reactivate the suspended
+   *         transaction.
    */
-  public TXStateProxy internalSuspend(boolean needToResumeBySameThread) {
+  private TXStateProxy internalSuspend(boolean needToResumeBySameThread) {
     TXStateProxy result = getTXState();
     if (result != null) {
       result.suspend();
       if (needToResumeBySameThread) {
-        setTXState(pausedTXState);
+        setTXState(PAUSED);
       } else {
         setTXState(null);
       }
@@ -734,11 +738,15 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Activates the specified transaction on the calling thread. Does not require the same thread to
-   * resume it.
+   * resume it. Currently only used in testing.
    *
    * @param tx the transaction to activate.
    * @throws IllegalStateException if this thread already has an active transaction
+   * 
+   * @deprecated use {@link TXManagerImpl#unpauseTransaction} or
+   *             {@link CacheTransactionManager#resume} instead
    */
+  @Deprecated
   public void internalResume(TXStateProxy tx) {
     internalResume(tx, false);
   }
@@ -751,7 +759,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    *        thread.
    * @throws IllegalStateException if this thread already has an active transaction
    */
-  public void internalResume(TXStateProxy tx, boolean needToResumeBySameThread) {
+  private void internalResume(TXStateProxy tx, boolean needToResumeBySameThread) {
     if (tx != null) {
       TransactionId tid = getTransactionId();
       if (tid != null) {
@@ -761,7 +769,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       }
       if (needToResumeBySameThread) {
         TXStateProxy result = txContext.get();
-        if (result != pausedTXState) {
+        if (result != PAUSED) {
           throw new java.lang.IllegalStateException(
               "try to unpause a transaction not paused by the same thread");
         }
@@ -773,7 +781,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   public boolean isTransactionPaused() {
-    return txContext.get() == pausedTXState;
+    return txContext.get() == PAUSED;
   }
 
   /**
@@ -821,7 +829,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   public int getMyTXUniqueId() {
     TXStateProxy t = txContext.get();
-    if (t != null && t != pausedTXState) {
+    if (t != null && t != PAUSED) {
       return t.getTxId().getUniqId();
     } else {
       return NOTX;

@@ -5891,7 +5891,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public Set entrySet(boolean recursive) {
     checkReadiness();
-    if (!preventSetOpBootstrapTransaction) {
+    if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
     return Collections.unmodifiableSet(new PREntriesSet());
@@ -5957,7 +5957,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public Set keys() {
     checkReadiness();
-    if (!preventSetOpBootstrapTransaction) {
+    if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
     return Collections.unmodifiableSet(new KeysSet());
@@ -6146,7 +6146,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public Collection values() {
     checkReadiness();
-    if (!preventSetOpBootstrapTransaction) {
+    if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
     return Collections.unmodifiableSet(new ValuesSet());

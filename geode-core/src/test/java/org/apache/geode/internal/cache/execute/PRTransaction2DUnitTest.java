@@ -15,73 +15,32 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.internal.cache.TXStateProxyImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.logging.log4j.Logger;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 @Category(DistributedTest.class)
-@RunWith(JUnitParamsRunner.class)
-@SuppressWarnings("serial")
 public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
-
-  private static final Logger logger = LogService.getLogger();
-
-  @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
-
-  VM accessor = null;
-  VM dataStore1 = null;
-  VM dataStore2 = null;
-  VM dataStore3 = null;
-  String regionName = "region";
-  String region2Name = "region2";
-
-  @Override
-  public final void postSetUp() throws Exception {
-    disconnectAllFromDS();
-    Host host = Host.getHost(0);
-    dataStore1 = host.getVM(0);
-    dataStore2 = host.getVM(1);
-    dataStore3 = host.getVM(2);
-    accessor = host.getVM(3);
-  }
+  Host host = Host.getHost(0);
+  VM dataStore1 = host.getVM(0);
+  VM dataStore2 = host.getVM(1);
 
   @Test
   public void testSizeOpOnLocalRegionInTransaction() {
+    String regionName = "region";
+    String region2Name = "region2";
     int totalBuckets = 2;
     boolean isSecondRegionLocal = true;
     setupRegions(totalBuckets, regionName, isSecondRegionLocal, region2Name);
@@ -92,6 +51,8 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testSizeOpOnReplicateRegionInTransaction() {
+    String regionName = "region";
+    String region2Name = "region2";
     int totalBuckets = 2;
     boolean isSecondRegionLocal = false;
     setupRegions(totalBuckets, regionName, isSecondRegionLocal, region2Name);
@@ -118,16 +79,11 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private void createPartitionedRegion(String regionName, int copies, int totalBuckets) {
-    createPartitionedRegion(regionName, copies, totalBuckets, false);
-  }
-
   @SuppressWarnings("rawtypes")
-  private void createPartitionedRegion(String regionName, int copies, int totalBuckets,
-      boolean isAccessor) {
+  private void createPartitionedRegion(String regionName, int copies, int totalBuckets) {
     RegionFactory<Integer, String> factory = getCache().createRegionFactory();
     PartitionAttributes pa = new PartitionAttributesFactory().setTotalNumBuckets(totalBuckets)
-        .setRedundantCopies(copies).setLocalMaxMemory(isAccessor ? 0 : 1).create();
+        .setRedundantCopies(copies).create();
     factory.setPartitionAttributes(pa).create(regionName);
   }
 
@@ -186,146 +142,4 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  long k1 = 1;
-  long k2 = 2;
-  long k3 = 3;
-  long k4 = 4;
-  String v1 = "value1";
-  String v2 = "value2";
-  String v3 = "value3";
-
-  enum SetOp {
-    KEYSET, VALUES, ENTRYSET;
-  }
-
-  protected void createRegion(boolean preventSetOpToStartTx) {
-    accessor.invoke(() -> createCache(preventSetOpToStartTx));
-    dataStore1.invoke(() -> createCache(preventSetOpToStartTx));
-    dataStore2.invoke(() -> createCache(preventSetOpToStartTx));
-    dataStore3.invoke(() -> createCache(preventSetOpToStartTx));
-
-    int totalBuckets = 3;
-    accessor.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets, true));
-    dataStore1.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets));
-    dataStore2.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets));
-    dataStore3.invoke(() -> createPartitionedRegion(regionName, 0, totalBuckets));
-  }
-
-  @Test
-  @Parameters
-  public void testRegionSetOpWithTx(SetOp op, boolean preventSetOpToStartTx) {
-    verifySetOp(op, preventSetOpToStartTx);
-  }
-
-  private Object[] parametersForTestRegionSetOpWithTx() {
-    return new Object[] {new Object[] {SetOp.VALUES, false}, new Object[] {SetOp.VALUES, true},
-        new Object[] {SetOp.KEYSET, false}, new Object[] {SetOp.KEYSET, true},
-        new Object[] {SetOp.ENTRYSET, false}, new Object[] {SetOp.ENTRYSET, true},};
-  }
-
-  @SuppressWarnings("rawtypes")
-  private void basicVerifySetOp(SetOp op, boolean preventSetOpToStartTx, boolean isAccessor) {
-    Cache cache = basicGetCache();
-    Region<Long, String> region = cache.getRegion(Region.SEPARATOR + regionName);
-
-    Collection<Long> keys = new ArrayList<Long>();
-    keys.add(k1);
-    keys.add(k2);
-    keys.add(k3);
-    keys.add(k4);
-    Collection<String> values = new ArrayList<String>();
-    values.add(v1);
-    values.add(v2);
-    values.add(v3);
-    CacheTransactionManager txMgr = basicGetCache().getCacheTransactionManager();
-
-    try {
-      txMgr.begin();
-
-      Collection set = getSetOp(region, op);
-
-      verifySetOp(op, region, keys, values, set);
-    } finally {
-      assertNotNull(TXManagerImpl.getCurrentTXState());
-      if (preventSetOpToStartTx || isAccessor) {
-        assertFalse(((TXStateProxyImpl) TXManagerImpl.getCurrentTXState()).hasRealDeal());
-      } else {
-        assertTrue(((TXStateProxyImpl) TXManagerImpl.getCurrentTXState()).hasRealDeal());
-      }
-      txMgr.rollback();
-    }
-  }
-
-  private void verifySetOp(SetOp op, boolean preventSetOpToStartTx) {
-    createRegion(preventSetOpToStartTx);
-    dataStore1.invoke(() -> initRegion());
-
-    accessor.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, true));
-    dataStore1.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, false));
-    dataStore2.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, false));
-    dataStore3.invoke(() -> basicVerifySetOp(op, preventSetOpToStartTx, false));
-  }
-
-  @SuppressWarnings("rawtypes")
-  private void verifySetOp(SetOp op, Region<Long, String> region, Collection<Long> keys,
-      Collection<String> values, Collection set) {
-    Iterator it = set.iterator();
-    while (it.hasNext()) {
-      Object o = it.next();
-      switch (op) {
-        case VALUES:
-          assertTrue(values.contains(o));
-          break;
-        case KEYSET:
-          assertTrue(keys.contains(o));
-          break;
-        case ENTRYSET:
-          assertTrue(keys.contains(((Region.Entry) o).getKey()));
-          assertTrue(values.contains(((Region.Entry) o).getValue()));
-          break;
-        default:
-          fail("Unexpected op: " + op);
-      }
-    }
-  }
-
-  @SuppressWarnings("rawtypes")
-  private Collection getSetOp(Region<Long, String> region, SetOp op) {
-    Collection set = null;
-    switch (op) {
-      case VALUES:
-        set = region.values();
-        break;
-      case KEYSET:
-        set = region.keySet();
-        break;
-      case ENTRYSET:
-        set = region.entrySet();
-        break;
-      default:
-        fail("Unexpected op: " + op);
-    }
-    return set;
-  }
-
-  private void initRegion() {
-    Region<Long, String> currRegion;
-    currRegion = basicGetCache().getRegion(Region.SEPARATOR + regionName);
-    currRegion.put(k1, v1);
-    currRegion.put(k2, v2);
-    currRegion.put(k3, v3);
-  }
-
-  final String preventSetOpBootstrapTransaction = "preventSetOpBootstrapTransaction";
-  final String PREVENT_SET_OP_BOOTSTRAP_TRANSACTION =
-      (System.currentTimeMillis() % 2 == 0 ? DistributionConfig.GEMFIRE_PREFIX : "geode.")
-          + preventSetOpBootstrapTransaction;
-
-  private void createCache(boolean preventSetOpToStartTx) {
-    if (preventSetOpToStartTx) {
-      logger.info("setting system property {} to true ", PREVENT_SET_OP_BOOTSTRAP_TRANSACTION);
-      System.setProperty(PREVENT_SET_OP_BOOTSTRAP_TRANSACTION, "true");
-    }
-    getCache();
-  }
 }

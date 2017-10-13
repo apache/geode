@@ -22,33 +22,33 @@ import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class SystemPropertyHelperJUnitTest {
-  String preventSetOpBootstrapTransaction = "preventSetOpBootstrapTransaction";
+  String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
 
   @Test
-  public void testPreventSetOpBootstrapTransactionDefaultToFalse() {
-    assertFalse(SystemPropertyHelper.preventSetOpBootstrapTransaction());
+  public void testRestoreSetOperationTransactionBehaviorDefaultToFalse() {
+    assertFalse(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
   }
 
   @Test
-  public void testPreventSetOpBootstrapTransactionSystemProperty() {
-    String gemfirePrefixProperty = "gemfire." + preventSetOpBootstrapTransaction;
+  public void testRestoreSetOperationTransactionBehaviorSystemProperty() {
+    String gemfirePrefixProperty = "gemfire." + restoreSetOperationTransactionBehavior;
     System.setProperty(gemfirePrefixProperty, "true");
-    assertTrue(SystemPropertyHelper.preventSetOpBootstrapTransaction());
+    assertTrue(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
     System.clearProperty(gemfirePrefixProperty);
 
-    String geodePrefixProperty = "geode." + preventSetOpBootstrapTransaction;
+    String geodePrefixProperty = "geode." + restoreSetOperationTransactionBehavior;
     System.setProperty(geodePrefixProperty, "true");
-    assertTrue(SystemPropertyHelper.preventSetOpBootstrapTransaction());
+    assertTrue(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
     System.clearProperty(geodePrefixProperty);
   }
 
   @Test
-  public void testPreventSetOpBootstrapTransactionGeodePreference() {
-    String gemfirePrefixProperty = "gemfire." + preventSetOpBootstrapTransaction;
-    String geodePrefixProperty = "geode." + preventSetOpBootstrapTransaction;
+  public void testRestoreSetOperationTransactionBehaviorGeodePreference() {
+    String gemfirePrefixProperty = "gemfire." + restoreSetOperationTransactionBehavior;
+    String geodePrefixProperty = "geode." + restoreSetOperationTransactionBehavior;
     System.setProperty(geodePrefixProperty, "false");
     System.setProperty(gemfirePrefixProperty, "true");
-    assertFalse(SystemPropertyHelper.preventSetOpBootstrapTransaction());
+    assertFalse(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
     System.clearProperty(geodePrefixProperty);
     System.clearProperty(gemfirePrefixProperty);
   }

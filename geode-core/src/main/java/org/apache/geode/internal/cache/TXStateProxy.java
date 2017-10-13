@@ -64,14 +64,12 @@ public interface TXStateProxy extends TXStateInterface {
   public TXSynchronizationRunnable getSynchronizationRunnable();
 
   /**
-   * Called by {@link TXManagerImpl#internalSuspend(boolean)} to perform additional tasks required
-   * to suspend a transaction
+   * Perform additional tasks required by the proxy to suspend a transaction
    */
   public void suspend();
 
   /**
-   * Called by {@link TXManagerImpl#internalResume(TXStateProxy, boolean)} to perform additional
-   * tasks required to resume a transaction
+   * Perform additional tasks required by the proxy to resume a transaction
    */
   public void resume();
 
