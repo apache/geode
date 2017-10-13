@@ -52,6 +52,7 @@ import org.apache.geode.management.NetworkMetrics;
 import org.apache.geode.management.OSMetrics;
 import org.apache.geode.management.PersistentMemberDetails;
 import org.apache.geode.management.RegionMXBean;
+import org.apache.geode.management.internal.DiskBackupStatusImpl;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -505,7 +506,7 @@ public class DistributedSystemBridge {
             BackupDataStoreHelper.backupAllMembers(dm, recipients, targetDir, baselineDir);
 
 
-        DiskBackupStatus diskBackupStatus = new DiskBackupStatus();
+        DiskBackupStatusImpl diskBackupStatus = new DiskBackupStatusImpl();
         Map<DistributedMember, Set<PersistentID>> successfulMembers = result.getSuccessfulMembers();
         diskBackupStatus.generateBackedUpDiskStores(successfulMembers);
 

@@ -27,7 +27,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.BackupUtil;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;

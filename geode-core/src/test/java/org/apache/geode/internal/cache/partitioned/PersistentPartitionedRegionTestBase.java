@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceO
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;

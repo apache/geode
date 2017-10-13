@@ -12,17 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.admin.internal;
+package org.apache.geode.management;
 
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.cache.BackupUtil;
 
-public class BackupStatusImpl extends org.apache.geode.management.internal.BackupStatusImpl {
-  public BackupStatusImpl(Map<DistributedMember, Set<PersistentID>> backedUpDiskStores,
-      Set<PersistentID> offlineDiskStores) {
-    super(backedUpDiskStores, offlineDiskStores);
-  }
+/**
+ * The status of a backup operation, returned by
+ * {@link BackupUtil#backupAllMembers(DM, java.io.File,java.io.File)}.
+ * 
+ * @since GemFire 6.5
+ */
+public interface BackupStatus {
+
+  /**
+   * Returns a map of disk stores that were successfully backed up. The key is an online distributed
+   * member. The value is the set of disk stores on that distributed member.
+   */
+  Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores();
+
+  /**
+   * Returns the set of disk stores that were known to be offline at the time of the backup. These
+   * members were not backed up. If this set is not empty the backup may not contain a complete
+   * snapshot of any partitioned regions in the distributed system.
+   */
+  Set<PersistentID> getOfflineDiskStores();
 }

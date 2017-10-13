@@ -53,7 +53,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.TransformUtils;
-import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.Host;

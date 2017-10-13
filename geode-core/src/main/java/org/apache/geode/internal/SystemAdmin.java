@@ -87,7 +87,7 @@ import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
-import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.management.BackupStatus;
 
 /**
  * Provides static methods for various system administation tasks.

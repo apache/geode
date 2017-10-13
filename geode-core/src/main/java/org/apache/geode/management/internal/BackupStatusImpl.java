@@ -12,17 +12,48 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.admin.internal;
+package org.apache.geode.management.internal;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.BackupStatus;
 
-public class BackupStatusImpl extends org.apache.geode.management.internal.BackupStatusImpl {
+/**
+ * Holds the result of a backup operation.
+ * 
+ *
+ */
+public class BackupStatusImpl implements BackupStatus, Serializable {
+  private static final long serialVersionUID = 3704162840296921840L;
+
+  private Map<DistributedMember, Set<PersistentID>> backedUpDiskStores;
+  private Set<PersistentID> offlineDiskStores;
+
   public BackupStatusImpl(Map<DistributedMember, Set<PersistentID>> backedUpDiskStores,
       Set<PersistentID> offlineDiskStores) {
-    super(backedUpDiskStores, offlineDiskStores);
+    super();
+    this.backedUpDiskStores = backedUpDiskStores;
+    this.offlineDiskStores = offlineDiskStores;
   }
+
+  public Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores() {
+    return backedUpDiskStores;
+  }
+
+  public Set<PersistentID> getOfflineDiskStores() {
+    return offlineDiskStores;
+  }
+
+  @Override
+  public String toString() {
+    return "BackupStatus[backedUpDiskStores=" + backedUpDiskStores + ", offlineDiskStores="
+        + offlineDiskStores + "]";
+  }
+
+
+
 }

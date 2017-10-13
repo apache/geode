@@ -39,7 +39,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.util.concurrent.FutureResult;
-import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.management.BackupStatus;
 
 import org.apache.logging.log4j.Logger;
 

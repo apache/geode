@@ -28,6 +28,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.internal.DiskBackupStatusImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -35,14 +36,14 @@ public class DiskBackupStatusTest {
 
   @Test
   public void valuesNotSetTest() {
-    DiskBackupStatus status = new DiskBackupStatus();
+    DiskBackupStatusImpl status = new DiskBackupStatusImpl();
     assertThat(status.getBackedUpDiskStores()).isNull();
     assertThat(status.getOfflineDiskStores()).isNull();
   }
 
   @Test
   public void returnsSetValues() {
-    DiskBackupStatus status = new DiskBackupStatus();
+    DiskBackupStatusImpl status = new DiskBackupStatusImpl();
     String[] testOfflineDiskStores = new String[] {"test", "array"};
     status.setOfflineDiskStores(testOfflineDiskStores);
     assertThat(status.getOfflineDiskStores()).isEqualTo(testOfflineDiskStores);
@@ -65,7 +66,7 @@ public class DiskBackupStatusTest {
     Set<PersistentID> idSet2 = generateTestIDs(2);
     backedUpDiskStores.put(member2, idSet2);
 
-    DiskBackupStatus status = new DiskBackupStatus();
+    DiskBackupStatusImpl status = new DiskBackupStatusImpl();
     status.generateBackedUpDiskStores(backedUpDiskStores);
 
     Map<String, String[]> storedDiskStores = status.getBackedUpDiskStores();
@@ -78,7 +79,7 @@ public class DiskBackupStatusTest {
   @Test
   public void generatesCorrectOfflineDiskStores() {
     Set<PersistentID> ids = generateTestIDs(2);
-    DiskBackupStatus status = new DiskBackupStatus();
+    DiskBackupStatusImpl status = new DiskBackupStatusImpl();
     status.generateOfflineDiskStores(ids);
 
     String[] storedIds = status.getOfflineDiskStores();

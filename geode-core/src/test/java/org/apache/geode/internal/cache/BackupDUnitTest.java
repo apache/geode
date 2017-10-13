@@ -39,7 +39,7 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.partitioned.PersistentPartitionedRegionTestBase;
-import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.management.BackupStatus;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitEnv;
