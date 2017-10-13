@@ -14,25 +14,25 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
@@ -43,30 +43,25 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper;
-import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
-import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test creates a local region. Creates and removes index in a parallel running thread. Then
- * destroys and puts back entries in separated thread in the same region and runs query parallely
+ * destroys and puts back entries in separated thread in the same region and runs query in parallel
  * and checks for UNDEFINED values in result set of the query.
  */
 @Category(DistributedTest.class)
+@RunWith(JUnitParamsRunner.class)
 public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCase {
+  private static final Logger logger = LogService.getLogger();
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
-
-  String name;
-
-  final int redundancy = 0;
 
   final Portfolio portfolio = new Portfolio(1, 1);
 
@@ -74,11 +69,6 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
 
   private int cntDest = 100;
 
-  volatile static boolean hooked = false;
-
-  /**
-   * @param name
-   */
   public InitializeIndexEntryDestroyQueryDUnitTest() {
     super();
   }
@@ -89,270 +79,31 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
     }
   }
 
-  @Test
-  public void testAsyncIndexInitDuringEntryDestroyAndQuery() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    setCacheInVMs(vm0);
-    name = "PartionedPortfolios";
-    // Create Local Region
-    vm0.invoke(
-        new CacheSerializableRunnable("Create local region with asynchronous index maintenance") {
-          @Override
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            Region localRegion = null;
-            try {
-              AttributesFactory attr = new AttributesFactory();
-              attr.setValueConstraint(PortfolioData.class);
-              attr.setScope(Scope.LOCAL);
-              attr.setIndexMaintenanceSynchronous(false);
-              RegionFactory regionFactory = cache.createRegionFactory(attr.create());
-              localRegion = regionFactory.create(name);
-            } catch (IllegalStateException ex) {
-              LogWriterUtils.getLogWriter().warning("Creation caught IllegalStateException", ex);
-            }
-            assertNotNull("Region " + name + " not in cache", cache.getRegion(name));
-            assertNotNull("Region ref null", localRegion);
-            assertTrue("Region ref claims to be destroyed", !localRegion.isDestroyed());
-          }
-        });
-
-
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
-    // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-
-    AsyncInvocation asyInvk0 =
-        vm0.invokeAsync(new CacheSerializableRunnable("Create Index with Hook") {
-
-          @Override
-          public void run2() throws CacheException {
-
-            for (int i = 0; i < cntDest; i++) {
-              // Create Index first to go in hook.
-              Cache cache = getCache();
-              Index index = null;
-              try {
-                index = cache.getQueryService().createIndex("statusIndex", "p.status",
-                    "/" + name + " p");
-              } catch (Exception e1) {
-                e1.printStackTrace();
-                fail("Index creation failed");
-              }
-              assertNotNull(index);
-
-              Wait.pause(100);
-
-              getCache().getQueryService().removeIndex(index);
-
-              Wait.pause(100);
-            }
-          }
-        });
-
-    // Change the value in Region
-    AsyncInvocation asyInvk1 =
-        vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
-
-          @Override
-          public void run2() throws CacheException {
-            // Do a put in region.
-            Region r = getCache().getRegion(name);
-
-            for (int i = 0, j = 0; i < 1000; i++, j++) {
-
-              PortfolioData p = (PortfolioData) r.get(j);
-
-              getCache().getLogger().fine("Going to destroy the value" + p);
-              r.destroy(j);
-
-              Wait.pause(100);
-
-              // Put the value back again.
-              getCache().getLogger().fine("Putting the value back" + p);
-              r.put(j, p);
-
-              // Reset j
-              if (j == cntDest - 1) {
-                j = 0;
-              }
-            }
-          }
-        });
-
-    vm0.invoke(new CacheSerializableRunnable("Run query on region") {
-
-      @Override
-      public void run2() throws CacheException {
-        // Do a put in region.
-        Region r = getCache().getRegion(name);
-
-        Query query = getCache().getQueryService()
-            .newQuery("select * from /" + name + " p where p.status = 'active'");
-
-        // Now run the query
-        SelectResults results = null;
-
-
-        for (int i = 0; i < 500; i++) {
-
-          try {
-            getCache().getLogger().fine("Querying the region");
-            results = (SelectResults) query.execute();
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-
-          for (Object obj : results) {
-            if (obj instanceof Undefined) {
-              fail("Found an undefined element" + Arrays.toString(results.toArray()));
-            }
-          }
-        }
-      }
-    });
-
-    ThreadUtils.join(asyInvk0, 1000 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
-
-    ThreadUtils.join(asyInvk1, 1000 * 1000);
-    if (asyInvk1.exceptionOccurred()) {
-      Assert.fail("asyInvk1 failed", asyInvk1.getException());
-    }
+  private static Scope[] getScope() {
+    return new Scope[] {Scope.LOCAL, null};
   }
 
-  @Category(FlakyTest.class) // GEODE-1036: uses PRQueryDUnitHelper, time sensitive, async actions,
-                             // overly long joins (16+ minutes), eats exceptions (fixed 1), thread
-                             // sleeps
   @Test
-  public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPR() {
+  @Parameters(method = "getScope")
+  public void testAsyncIndexInitDuringEntryDestroyAndQueryOnPR(Scope scope) {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     setCacheInVMs(vm0);
-    name = "PartionedPortfoliosPR";
-    // Create Local Region
-    vm0.invoke(
-        new CacheSerializableRunnable("Create local region with asynchronous index maintenance") {
-          @Override
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            Region partitionRegion = null;
-            try {
-              AttributesFactory attr = new AttributesFactory();
-              attr.setValueConstraint(PortfolioData.class);
-              attr.setIndexMaintenanceSynchronous(false);
-              attr.setPartitionAttributes(new PartitionAttributesFactory().create());
-              RegionFactory regionFactory = cache.createRegionFactory(attr.create());
-              partitionRegion = regionFactory.create(name);
-            } catch (IllegalStateException ex) {
-              LogWriterUtils.getLogWriter().warning("Creation caught IllegalStateException", ex);
-            }
-            assertNotNull("Region " + name + " not in cache", cache.getRegion(name));
-            assertNotNull("Region ref null", partitionRegion);
-            assertTrue("Region ref claims to be destroyed", !partitionRegion.isDestroyed());
-          }
-        });
-
-
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
-    // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-
-    AsyncInvocation asyInvk0 =
-        vm0.invokeAsync(new CacheSerializableRunnable("Create Index with Hook") {
-
-          @Override
-          public void run2() throws CacheException {
-            for (int i = 0; i < cntDest; i++) {
-              // Create Index first to go in hook.
-              Cache cache = getCache();
-              Index index = null;
-              try {
-                index = cache.getQueryService().createIndex("statusIndex", "p.status",
-                    "/" + name + " p");
-              } catch (Exception e1) {
-                e1.printStackTrace();
-                Assert.fail("Index creation failed", e1);
-              }
-              assertNotNull(index);
-
-              getCache().getQueryService().removeIndex(index);
-
-            }
-          }
-        });
-
-    // Change the value in Region
-    AsyncInvocation asyInvk1 =
-        vm0.invokeAsync(new CacheSerializableRunnable("Change value in region") {
-
-          @Override
-          public void run2() throws CacheException {
-            // Do a put in region.
-            Region r = getCache().getRegion(name);
-
-            for (int i = 0, j = 0; i < 1000; i++, j++) {
-
-              PortfolioData p = (PortfolioData) r.get(j);
-
-              getCache().getLogger().fine("Going to destroy the value" + p);
-              r.destroy(j);
-
-              Wait.pause(20);
-
-              // Put the value back again.
-              getCache().getLogger().fine("Putting the value back" + p);
-              r.put(j, p);
-
-              // Reset j
-              if (j == cntDest - 1) {
-                j = 0;
-              }
-            }
-          }
-        });
-
-    vm0.invoke(new CacheSerializableRunnable("Run query on region") {
-
-      @Override
-      public void run2() throws CacheException {
-        // Do a put in region.
-        Query query = getCache().getQueryService()
-            .newQuery("select * from /" + name + " p where p.status = 'active'");
-
-        // Now run the query
-        SelectResults results = null;
-
-
-        for (int i = 0; i < 500; i++) {
-
-          try {
-            getCache().getLogger().fine("Querying the region");
-            results = (SelectResults) query.execute();
-          } catch (Exception e) {
-            e.printStackTrace(); // TODO: eats exceptions
-          }
-
-          for (Object obj : results) {
-            if (obj instanceof Undefined) {
-              fail("Found an undefined element" + Arrays.toString(results.toArray()));
-            }
-          }
-        }
-      }
-    });
-
-    ThreadUtils.join(asyInvk0, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
-
-    ThreadUtils.join(asyInvk1, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
-    if (asyInvk1.exceptionOccurred()) {
-      Assert.fail("asyInvk1 failed", asyInvk1.getException());
+    String regionName = "PartionedPortfoliosPR";
+    String query = "select * from /" + regionName + " p where p.status = 'active'";
+    try {
+      vm0.invoke(() -> createRegionInVM(regionName, scope));
+      final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+      vm0.invoke(
+          PRQHelp.getCacheSerializableRunnableForPRPuts(regionName, portfolio, cnt, cntDest));
+      AsyncInvocation asyInvk0 =
+          vm0.invokeAsync(() -> consecutivelyCreateAndDestroyIndex(regionName));
+      AsyncInvocation asyInvk1 =
+          vm0.invokeAsync(() -> consecutivelyPutAndDestroyEntries(regionName));
+      vm0.invoke(() -> executeAndValidateQueryResults(query));
+      waitForAsyncThreadsToComplete(asyInvk0, asyInvk1);
+    } finally {
+      vm0.invoke(() -> clearIndexesAndDestroyRegion(regionName));
     }
   }
 
@@ -361,101 +112,143 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     setCacheInVMs(vm0);
-    name = "PartionedPortfoliosPR";
-    // Create Local Region
-    vm0.invoke(
-        new CacheSerializableRunnable("Create local region with asynchronous index maintenance") {
-          @Override
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            Region partitionRegion = null;
-            try {
-              AttributesFactory attr = new AttributesFactory();
-              attr.setValueConstraint(PortfolioData.class);
-              attr.setIndexMaintenanceSynchronous(false);
-              attr.setPartitionAttributes(new PartitionAttributesFactory().create());
-              RegionFactory regionFactory = cache.createRegionFactory(attr.create());
-              partitionRegion = regionFactory.create(name);
-            } catch (IllegalStateException ex) {
-              LogWriterUtils.getLogWriter().warning("Creation caught IllegalStateException", ex);
-            }
-            assertNotNull("Region " + name + " not in cache", cache.getRegion(name));
-            assertNotNull("Region ref null", partitionRegion);
-            assertTrue("Region ref claims to be destroyed", !partitionRegion.isDestroyed());
-          }
-        });
+    String name = "PartionedPortfoliosPR";
+    String query =
+        "select * from /" + name + " p where p.status = 'active' and p.ID > 0 and p.pk != ' ' ";
+    try {
+      vm0.invoke(() -> createRegionInVM(name, null));
+      final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+      vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
+      vm0.invoke(() -> createIndex(name, "statusIndex", "p.status", "/" + name + " p"));
+      vm0.invoke(() -> createIndex(name, "idIndex", "p.ID", "/" + name + " p"));
+      vm0.invoke(() -> createIndex(name, "pkidIndex", "p.pk", "/" + name + " p"));
+      vm0.invoke(() -> executeAndValidateQueryResults(query));
+    } finally {
+      vm0.invoke(() -> clearIndexesAndDestroyRegion(name));
+    }
 
+  }
 
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
-    // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
+  private void waitForAsyncThreadsToComplete(AsyncInvocation asyInvk0, AsyncInvocation asyInvk1) {
+    ThreadUtils.join(asyInvk0, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
+    if (asyInvk0.exceptionOccurred()) {
+      logger.error("Asynchronous thread to create and destroy index failed",
+          asyInvk0.getException());
+      fail();
+    }
 
-    vm0.invoke(new CacheSerializableRunnable("Create Index") {
+    ThreadUtils.join(asyInvk1, 1000 * 1000); // TODO: this is way too long: 16.67 minutes!
+    if (asyInvk1.exceptionOccurred()) {
+      logger.error("Asychronous thread to create and destroy region entry failed with exception",
+          asyInvk1.getException());
+      fail();
+    }
+  }
 
-      @Override
-      public void run2() throws CacheException {
+  private void createRegionInVM(String regionName, Scope scope) {
+    Cache cache = getCache();
+    Region partitionRegion = null;
+    try {
+      RegionFactory regionFactory = cache.createRegionFactory();
+      if (scope != null) {
+        partitionRegion = regionFactory.setValueConstraint(PortfolioData.class)
+            .setIndexMaintenanceSynchronous(false).setScope(scope).create(regionName);
+      } else {
+        partitionRegion = regionFactory.setValueConstraint(PortfolioData.class)
+            .setIndexMaintenanceSynchronous(false).setDataPolicy(DataPolicy.PARTITION)
+            .create(regionName);
+      }
+    } catch (IllegalStateException ex) {
+      logger.warn("Creation caught IllegalStateException", ex);
+    }
+    assertNotNull("Region " + regionName + " not in cache", cache.getRegion(regionName));
+    assertNotNull("Region ref null", partitionRegion);
+    assertTrue("Region ref claims to be destroyed", !partitionRegion.isDestroyed());
+  }
 
-        // Create Index first to go in hook.
-        Cache cache = getCache();
-        Index sindex = null;
-        Index iindex = null;
-        Index pkindex = null;
-        try {
-          sindex =
-              cache.getQueryService().createIndex("statusIndex", "p.status", "/" + name + " p");
-          iindex = cache.getQueryService().createIndex("idIndex", "p.ID", "/" + name + " p");
-          pkindex = cache.getQueryService().createIndex("pkidIndex", "p.pk", "/" + name + " p");
-        } catch (Exception e1) {
-          e1.printStackTrace();
-          fail("Index creation failed");
+  private void consecutivelyCreateAndDestroyIndex(String regionName) {
+    for (int i = 0; i < cntDest; i++) {
+      // Create Index first to go in hook.
+      Cache cache = getCache();
+      Index index = null;
+      try {
+        index =
+            cache.getQueryService().createIndex("statusIndex", "p.status", "/" + regionName + " p");
+      } catch (Exception e1) {
+        logger.error("Index creation failed", e1);
+        fail();
+      }
+      Region region = cache.getRegion(regionName);
+      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+          .until(() -> assertNotNull(cache.getQueryService().getIndex(region, "statusIndex")));
+      getCache().getQueryService().removeIndex(index);
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+          () -> assertEquals(null, getCache().getQueryService().getIndex(region, "statusIndex")));
+    }
+  }
+
+  private void consecutivelyPutAndDestroyEntries(String regionName) {
+    Region r = getCache().getRegion(regionName);
+
+    for (int i = 0, j = 0; i < 500; i++, j++) {
+
+      PortfolioData p = (PortfolioData) r.get(j);
+      logger.debug("Going to destroy the value" + p);
+      r.destroy(j);
+      final int key = j;
+      Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> assertEquals(null, r.get(key)));
+
+      // Put the value back again.
+      getCache().getLogger().fine("Putting the value back" + p);
+      r.put(j, p);
+
+      // Reset j
+      if (j == cntDest - 1) {
+        j = 0;
+      }
+    }
+  }
+
+  private void executeAndValidateQueryResults(String queryString) {
+    Query query = getCache().getQueryService().newQuery(queryString);
+    // Now run the query
+    SelectResults results = null;
+    for (int i = 0; i < 50; i++) {
+      try {
+        logger.debug("Querying the region");
+        results = (SelectResults) query.execute();
+      } catch (Exception e) {
+        e.printStackTrace();
+        logger.error("Query Execution failed", e);
+        fail();
+      }
+      for (Object obj : results) {
+        if (obj instanceof Undefined) {
+          fail("Found an undefined element" + Arrays.toString(results.toArray()));
         }
-        assertNotNull(sindex);
-        assertNotNull(iindex);
-        assertNotNull(pkindex);
       }
-    });
+    }
+  }
 
-    vm0.invoke(new CacheSerializableRunnable("Run query on region") {
+  private void clearIndexesAndDestroyRegion(String regionName) {
+    Region region = getCache().getRegion(regionName);
+    if (region != null) {
+      getCache().getQueryService().removeIndexes(region);
+      region.destroyRegion();
+    }
+  }
 
-      @Override
-      public void run2() throws CacheException {
-        // Do a put in region.
-        Query query = getCache().getQueryService().newQuery("select * from /" + name
-            + " p where p.status = 'active' and p.ID > 0 and p.pk != ' ' ");
-        // Now run the query
-        SelectResults results = null;
-
-        for (int i = 0; i < 10; i++) {
-
-          try {
-            getCache().getLogger().fine("Querying the region with " + query);
-            results = (SelectResults) query.execute();
-          } catch (Exception e) {
-            Assert.fail("Query: " + query + " execution failed with exception", e);
-          }
-
-          for (Object obj : results) {
-            if (obj instanceof Undefined) {
-              fail("Found an undefined element" + Arrays.toString(results.toArray()));
-            }
-          }
-        }
-      }
-    });
-
-    vm0.invoke(new CacheSerializableRunnable("Create Index") {
-
-      @Override
-      public void run2() throws CacheException {
-
-        Region r = getCache().getRegion(name);
-
-        // Create Index first to go in hook.
-        getCache().getQueryService().removeIndexes(r);
-
-
-      }
-    });
-
+  private void createIndex(String regionName, String indexName, String expression,
+      String regionPath) {
+    try {
+      getCache().getQueryService().createIndex(indexName, expression, regionPath);
+    } catch (Exception e) {
+      e.printStackTrace();
+      logger.error("Exception while creating index : " + indexName, e);
+      fail();
+    }
+    Region region = getCache().getRegion(regionName);
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> assertNotNull(getCache().getQueryService().getIndex(region, indexName)));
   }
 }
