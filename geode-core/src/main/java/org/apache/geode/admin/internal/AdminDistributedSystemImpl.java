@@ -39,7 +39,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.util.concurrent.FutureResult;
-import org.apache.geode.management.BackupStatus;
 
 import org.apache.logging.log4j.Logger;
 
@@ -2313,7 +2312,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public static BackupStatus backupAllMembers(DM dm, File targetDir, File baselineDir)
       throws AdminException {
-    return BackupUtil.backupAllMembers(dm, targetDir, baselineDir);
+    return (org.apache.geode.admin.BackupStatus) BackupUtil.backupAllMembers(dm, targetDir,
+        baselineDir);
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {

@@ -21,6 +21,8 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 
 public class BackupStatusImpl extends org.apache.geode.management.internal.BackupStatusImpl {
+  private static final long serialVersionUID = 3704162840296921841L;
+
   public BackupStatusImpl(Map<DistributedMember, Set<PersistentID>> backedUpDiskStores,
       Set<PersistentID> offlineDiskStores) {
     super(backedUpDiskStores, offlineDiskStores);
