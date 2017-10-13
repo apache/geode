@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
-import static org.apache.geode.management.internal.cli.commands.RemoveCommand.*;
+import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -94,8 +94,7 @@ public class RemoveCommandDUnitTest implements Serializable {
   public void removeFromInvalidRegion() throws Exception {
     String command = "remove --all --region=NotAValidRegion";
 
-    gfsh.executeAndVerifyCommandError(command);
-    assertThat(gfsh.getGfshOutput()).contains(String.format(REGION_NOT_FOUND, "NotAValidRegion"));
+    gfsh.executeAndVerifyCommandError(command, String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
   }
 
   @Test

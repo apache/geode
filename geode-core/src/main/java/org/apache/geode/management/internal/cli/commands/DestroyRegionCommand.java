@@ -54,13 +54,12 @@ public class DestroyRegionCommand implements GfshCommand {
     Set<DistributedMember> regionMembersList = findMembersForRegion(getCache(), regionPath);
 
     if (regionMembersList.size() == 0) {
-      String message =
-          CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE,
-              regionPath, "jmx-manager-update-rate milliseconds");
       if (ifExists) {
-        return ResultBuilder.createInfoResult(message);
+        return ResultBuilder.createInfoResult("");
       } else {
-        return ResultBuilder.createUserErrorResult(message);
+        return ResultBuilder.createUserErrorResult(
+            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE,
+                regionPath, "jmx-manager-update-rate milliseconds"));
       }
     }
 
