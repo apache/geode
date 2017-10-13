@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.statistics;
 
 import static org.junit.Assert.assertTrue;
@@ -57,10 +56,13 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @PowerMockIgnore("*.IntegrationTest")
 @PrepareForTest(LinuxProcFsStatistics.class)
 public class LinuxSystemStatsTest extends StatSamplerTestCase {
+
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
   private int[] ints;
   private long[] longs;
   private double[] doubles;
@@ -103,7 +105,6 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
   @Test
   public void test25PercentStealTime() throws Exception {
-
     String[] results = {"cpu  0 0 0 0 0 0 0 0 0 0",
         // add on 4 clicks 3 idle 1 steal
         "cpu  0 0 0 3 0 0 0 1 0 0"};
@@ -113,7 +114,6 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
   @Test
   public void test66PercentStealTime() throws Exception {
-
     String[] results = {"cpu  0 0 0 0 0 0 0 0 0 0",
         // add on 3 clicks 1 idle 2 steal
         "cpu  0 0 0 1 0 0 0 2 0 0"};
@@ -123,15 +123,14 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
   @Test
   public void test100PercentStealTime() throws Exception {
-
     String[] results = {"cpu  0 0 0 0 0 0 0 0 0 0",
         // add on 1 clicks 0 idle 1 steal
         "cpu  0 0 0 0 0 0 0 1 0 0"};
+
     doTest(results, 100);
   }
 
-  protected void doTest(String[] results, int expectedStatValue) throws Exception {
-
+  private void doTest(String[] results, int expectedStatValue) throws Exception {
     Answer<FileInputStream> answer = new MyStealTimeAnswer(results);
     PowerMockito.whenNew(FileInputStream.class).withArguments(anyString()).thenAnswer(answer);
 
@@ -142,12 +141,14 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     waitForExpectedStatValue(statistics[0], "cpuSteal", expectedStatValue, 20000, 10);
   }
 
-  protected void initStats() {
+  private void initStats() {
     statisticsFactory = new LocalStatisticsFactory(new CancelCriterion() {
+      @Override
       public String cancelInProgress() {
         return null;
       }
 
+      @Override
       public RuntimeException generateCancelledException(Throwable e) {
         return null;
       }
@@ -160,7 +161,6 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
    * another phase in the mock test.
    */
   private File writeStringToFile(String mockProcStatFileContents) throws IOException {
-
     File mockFile = temporaryFolder.newFile();
     StringInputStream sis = new StringInputStream(mockProcStatFileContents);
     FileOutputStream mockFileOutputStream = new FileOutputStream(mockFile);
@@ -174,13 +174,12 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     return this.statisticsFactory;
   }
 
-
   private class MyStealTimeAnswer implements Answer<FileInputStream> {
 
-    private List<FileInputStream> results = new ArrayList<>();
-    private FileInputStream bogus;
+    private final List<FileInputStream> results = new ArrayList<>();
+    private final FileInputStream bogus;
 
-    public MyStealTimeAnswer(String[] samples) throws IOException {
+    MyStealTimeAnswer(String[] samples) throws IOException {
       for (String item : samples) {
         results.add(new FileInputStream(writeStringToFile(item)));
       }
