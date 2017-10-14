@@ -2087,6 +2087,16 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public void invokeBeforeDestroyed(final LocalRegion region) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void invokeCleanupFailedInitialization(final LocalRegion region) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
   public TXManagerImpl getTXMgr() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }

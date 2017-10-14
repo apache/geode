@@ -421,14 +421,14 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   protected void verifyIndexList(final int expectedSize) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     Collection<LuceneIndex> indexList = luceneService.getAllIndexes();
-    assertEquals(indexList.size(), expectedSize);
+    assertEquals(expectedSize, indexList.size());
   }
 
   protected void verifyIndexes(final int numberOfIndexes) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     for (int count = 1; count <= numberOfIndexes; count++) {
-      assertEquals(luceneService.getIndex(INDEX_NAME + "_" + count, REGION_NAME).getName(),
-          INDEX_NAME + "_" + count);
+      assertEquals(INDEX_NAME + "_" + count,
+          luceneService.getIndex(INDEX_NAME + "_" + count, REGION_NAME).getName());
     }
   }
 
@@ -496,6 +496,6 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   }
 
   protected void verifyAsyncEventQueues(final int expectedSize) {
-    assertEquals(getCache().getAsyncEventQueues(false).size(), expectedSize);
+    assertEquals(expectedSize, getCache().getAsyncEventQueues(false).size());
   }
 }

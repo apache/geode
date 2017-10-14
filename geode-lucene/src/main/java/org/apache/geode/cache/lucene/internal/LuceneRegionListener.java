@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.analysis.Analyzer;
 
@@ -46,6 +47,10 @@ public class LuceneRegionListener implements RegionListener {
 
   private LuceneIndexImpl luceneIndex;
 
+  private AtomicBoolean beforeCreateInvoked = new AtomicBoolean();
+
+  private AtomicBoolean afterCreateInvoked = new AtomicBoolean();
+
   public LuceneRegionListener(LuceneServiceImpl service, InternalCache cache, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers) {
     this.service = service;
@@ -71,7 +76,7 @@ public class LuceneRegionListener implements RegionListener {
     RegionAttributes updatedRA = attrs;
     String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
 
-    if (path.equals(this.regionPath)) {
+    if (path.equals(this.regionPath) && this.beforeCreateInvoked.compareAndSet(false, true)) {
 
       if (!attrs.getDataPolicy().withPartitioning()) {
         // replicated region
@@ -111,14 +116,33 @@ public class LuceneRegionListener implements RegionListener {
 
   @Override
   public void afterCreate(Region region) {
-    if (region.getFullPath().equals(this.regionPath)) {
+    if (region.getFullPath().equals(this.regionPath)
+        && this.afterCreateInvoked.compareAndSet(false, true)) {
       this.service.afterDataRegionCreated(this.luceneIndex);
       String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
       AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
       AbstractPartitionedRepositoryManager repositoryManager =
           (AbstractPartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       repositoryManager.allowRepositoryComputation();
-      this.cache.removeRegionListener(this);
+    }
+  }
+
+  @Override
+  public void beforeDestroyed(Region region) {
+    if (region.getFullPath().equals(this.regionPath)) {
+      this.service.beforeRegionDestroyed(region);
+    }
+  }
+
+  @Override
+  public void cleanupFailedInitialization(Region region) {
+    // Reset the booleans
+    this.beforeCreateInvoked.set(false);
+    this.afterCreateInvoked.set(false);
+
+    // Clean up the region in the LuceneService
+    if (region.getFullPath().equals(this.regionPath)) {
+      this.service.cleanupFailedInitialization(region);
     }
   }
 }

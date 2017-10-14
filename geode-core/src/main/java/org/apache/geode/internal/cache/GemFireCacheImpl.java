@@ -3175,6 +3175,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  public void invokeBeforeDestroyed(LocalRegion region) {
+    for (RegionListener listener : this.regionListeners) {
+      listener.beforeDestroyed(region);
+    }
+  }
+
+  @Override
+  public void invokeCleanupFailedInitialization(LocalRegion region) {
+    for (RegionListener listener : this.regionListeners) {
+      listener.cleanupFailedInitialization(region);
+    }
+  }
+
+  @Override
   public Region getRegion(String path) {
     return getRegion(path, false);
   }

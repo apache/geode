@@ -34,6 +34,7 @@ import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -230,6 +231,26 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
     // Close the repository manager
     repositoryManager.close();
+
+    RegionListener listenerToRemove = getRegionListener();
+    if (listenerToRemove != null) {
+      cache.removeRegionListener(listenerToRemove);
+    }
+
+  }
+
+  private RegionListener getRegionListener() {
+    RegionListener rl = null;
+    for (RegionListener listener : cache.getRegionListeners()) {
+      if (listener instanceof LuceneRegionListener) {
+        LuceneRegionListener lrl = (LuceneRegionListener) listener;
+        if (lrl.getRegionPath().equals(regionPath) && lrl.getIndexName().equals(indexName)) {
+          rl = lrl;
+          break;
+        }
+      }
+    }
+    return rl;
   }
 
   protected <K, V> Region<K, V> createRegion(final String regionName,

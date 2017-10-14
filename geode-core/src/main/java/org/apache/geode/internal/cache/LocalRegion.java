@@ -1118,28 +1118,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void destroyRegion(Object aCallbackArgument)
       throws CacheWriterException, TimeoutException {
+    this.cache.invokeBeforeDestroyed(this);
     getDataView().checkSupportsRegionDestroy();
     checkForLimitedOrNoAccess();
 
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_DESTROY, aCallbackArgument,
         false, getMyId(), generateEventID());
     basicDestroyRegion(event, true);
-  }
-
-  protected void invokeBeforeRegionDestroyInServices() {
-    for (CacheService service : this.cache.getServices()) {
-      if (service instanceof RegionCacheService) {
-        ((RegionCacheService) service).beforeRegionDestroyed(this);
-      }
-    }
-  }
-
-  protected void invokeCleanupFailedInitializationInServices() {
-    for (CacheService service : this.cache.getServices()) {
-      if (service instanceof RegionCacheService) {
-        ((RegionCacheService) service).cleanupFailedInitialization(this);
-      }
-    }
   }
 
   public InternalDataView getDataView() {
@@ -7028,8 +7013,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
       }
 
-      // Clean up region in CacheServices
-      invokeCleanupFailedInitializationInServices();
+      // Clean up region in RegionListeners
+      this.cache.invokeCleanupFailedInitialization(this);
     } finally {
       // make sure any waiters on initializing Latch are released
       this.releaseLatches();

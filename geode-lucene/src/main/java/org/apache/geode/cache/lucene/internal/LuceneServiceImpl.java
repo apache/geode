@@ -35,7 +35,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
@@ -124,7 +123,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return InternalLuceneService.class;
   }
 
-  @Override
   public void beforeRegionDestroyed(Region region) {
     List<LuceneIndex> indexes = getIndexes(region.getFullPath());
     if (!indexes.isEmpty()) {
@@ -135,7 +133,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
   }
 
-  @Override
   public void cleanupFailedInitialization(Region region) {
     List<LuceneIndexCreationProfile> definedIndexes = getDefinedIndexes(region.getFullPath());
     for (LuceneIndexCreationProfile definedIndex : definedIndexes) {
@@ -336,16 +333,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     String uniqueIndexName = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     if (definedIndexMap.containsKey(uniqueIndexName)) {
       definedIndexMap.remove(uniqueIndexName);
-      RegionListener listenerToRemove = null;
-      for (RegionListener listener : cache.getRegionListeners()) {
-        if (listener instanceof LuceneRegionListener) {
-          LuceneRegionListener lrl = (LuceneRegionListener) listener;
-          if (lrl.getRegionPath().equals(regionPath) && lrl.getIndexName().equals(indexName)) {
-            listenerToRemove = lrl;
-            break;
-          }
-        }
-      }
+      RegionListener listenerToRemove = getRegionListener(indexName, regionPath);
       if (listenerToRemove != null) {
         cache.removeRegionListener(listenerToRemove);
       }
@@ -356,6 +344,23 @@ public class LuceneServiceImpl implements InternalLuceneService {
           LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1.toLocalizedString(indexName,
               regionPath));
     }
+  }
+
+  protected RegionListener getRegionListener(String indexName, String regionPath) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/" + regionPath;
+    }
+    RegionListener rl = null;
+    for (RegionListener listener : cache.getRegionListeners()) {
+      if (listener instanceof LuceneRegionListener) {
+        LuceneRegionListener lrl = (LuceneRegionListener) listener;
+        if (lrl.getRegionPath().equals(regionPath) && lrl.getIndexName().equals(indexName)) {
+          rl = lrl;
+          break;
+        }
+      }
+    }
+    return rl;
   }
 
   @Override
