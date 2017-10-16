@@ -30,7 +30,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
@@ -48,7 +47,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -181,7 +179,8 @@ public class LuceneIndexCommands implements GfshCommand {
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD_HELP) final String[] fields,
 
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
-          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers) {
+          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers)
+      throws CommandResultException {
 
     Result result;
     XmlEntity xmlEntity = null;
@@ -189,45 +188,31 @@ public class LuceneIndexCommands implements GfshCommand {
     // Every lucene index potentially writes to disk.
     getSecurityService().authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
 
-    try {
-      final InternalCache cache = getCache();
+    final InternalCache cache = getCache();
 
-      // trim fields for any leading trailing spaces.
-      String[] trimmedFields = Arrays.stream(fields).map(String::trim).toArray(String[]::new);
-      LuceneIndexInfo indexInfo =
-          new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers);
+    // trim fields for any leading trailing spaces.
+    String[] trimmedFields = Arrays.stream(fields).map(String::trim).toArray(String[]::new);
+    LuceneIndexInfo indexInfo =
+        new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers);
 
-      final ResultCollector<?, ?> rc =
-          this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
-      final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
+    final ResultCollector<?, ?> rc = executeFunctionOnAllMembers(createIndexFunction, indexInfo);
+    final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
-      final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
-      for (final CliFunctionResult cliFunctionResult : funcResults) {
-        tabularResult.accumulate("Member", cliFunctionResult.getMemberIdOrName());
+    final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
+    for (final CliFunctionResult cliFunctionResult : funcResults) {
+      tabularResult.accumulate("Member", cliFunctionResult.getMemberIdOrName());
 
-        if (cliFunctionResult.isSuccessful()) {
-          tabularResult.accumulate("Status", "Successfully created lucene index");
-          // if (xmlEntity == null) {
-          // xmlEntity = cliFunctionResult.getXmlEntity();
-          // }
-        } else {
-          tabularResult.accumulate("Status", "Failed: " + cliFunctionResult.getMessage());
-        }
+      if (cliFunctionResult.isSuccessful()) {
+        tabularResult.accumulate("Status", "Successfully created lucene index");
+        // if (xmlEntity == null) {
+        // xmlEntity = cliFunctionResult.getXmlEntity();
+        // }
+      } else {
+        tabularResult.accumulate("Status", "Failed: " + cliFunctionResult.getMessage());
       }
-      result = ResultBuilder.buildResult(tabularResult);
-    } catch (IllegalArgumentException iae) {
-      LogWrapper.getInstance().info(iae.getMessage());
-      result = ResultBuilder.createUserErrorResult(iae.getMessage());
-    } catch (CommandResultException crex) {
-      result = crex.getResult();
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
-    // TODO - store in cluster config
-    // if (xmlEntity != null) {
-    // result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity,
-    // groups));
-    // }
+    result = ResultBuilder.buildResult(tabularResult);
+
 
     return result;
   }
@@ -337,44 +322,24 @@ public class LuceneIndexCommands implements GfshCommand {
           optionContext = ConverterHint.REGION_PATH,
           help = LuceneCliStrings.LUCENE_DESTROY_INDEX__REGION_HELP) final String regionPath) {
 
-    if (StringUtils.isBlank(regionPath) || regionPath.equals(Region.SEPARATOR)) {
-      return ResultBuilder.createInfoResult(
-          CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__REGION_CANNOT_BE_EMPTY));
-    }
-
     if (indexName != null && StringUtils.isEmpty(indexName)) {
       return ResultBuilder.createInfoResult(
           CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
     }
 
     getSecurityService().authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
-
     Result result;
-    try {
-      List<CliFunctionResult> accumulatedResults = new ArrayList<>();
-      final XmlEntity xmlEntity =
-          executeDestroyIndexFunction(accumulatedResults, indexName, regionPath);
-      result = getDestroyIndexResult(accumulatedResults, indexName, regionPath);
-      if (xmlEntity != null) {
-        persistClusterConfiguration(result, () -> {
-          // Delete the xml entity to remove the index(es) in all groups
-          getSharedConfiguration().deleteXmlEntity(xmlEntity, null);
-        });
-      }
-    } catch (FunctionInvocationTargetException ignore) {
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, LuceneCliStrings.LUCENE_DESTROY_INDEX));
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (IllegalArgumentException e) {
-      result = ResultBuilder.createInfoResult(e.getMessage());
-    } catch (Throwable t) {
-      t.printStackTrace();
-      SystemFailure.checkFailure();
-      getCache().getLogger().warning(LuceneCliStrings.LUCENE_DESTROY_INDEX__EXCEPTION_MESSAGE, t);
-      result = ResultBuilder.createGemFireErrorResult(t.getMessage());
+    List<CliFunctionResult> accumulatedResults = new ArrayList<>();
+    final XmlEntity xmlEntity =
+        executeDestroyIndexFunction(accumulatedResults, indexName, regionPath);
+    result = getDestroyIndexResult(accumulatedResults, indexName, regionPath);
+    if (xmlEntity != null) {
+      persistClusterConfiguration(result, () -> {
+        // Delete the xml entity to remove the index(es) in all groups
+        getSharedConfiguration().deleteXmlEntity(xmlEntity, null);
+      });
     }
+
     return result;
   }
 

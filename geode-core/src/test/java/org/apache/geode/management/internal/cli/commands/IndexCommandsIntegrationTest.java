@@ -236,8 +236,8 @@ public class IndexCommandsIntegrationTest {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, regionName);
-    gfsh.executeAndVerifyCommand(csb.toString());
-    assertThat(gfsh.getGfshOutput()).contains("Indexes on region : regionA successfully destroyed");
+    gfsh.executeAndVerifyCommand(csb.toString(),
+        "Indexes on region : /regionA successfully destroyed");
   }
 
   @Test
@@ -246,9 +246,7 @@ public class IndexCommandsIntegrationTest {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.GROUP, groupName);
-    gfsh.executeAndVerifyCommand(csb.toString());
-
-    assertThat(gfsh.getGfshOutput()).contains("Indexes successfully destroyed");
+    gfsh.executeAndVerifyCommand(csb.toString(), "Indexes successfully destroyed");
   }
 
   private void createSimpleIndexA() throws Exception {
@@ -256,8 +254,7 @@ public class IndexCommandsIntegrationTest {
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
-    gfsh.executeAndVerifyCommand(csb.toString());
-    assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
+    gfsh.executeAndVerifyCommand(csb.toString(), "Index successfully created");
   }
 
   private static Region<?, ?> createPartitionedRegion(String regionName, Cache cache,
