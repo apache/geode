@@ -32,15 +32,17 @@ public class ProtobufProtocolService implements ClientProtocolService {
 
   @Override
   public synchronized void initializeStatistics(String statisticsName, StatisticsFactory factory) {
-    statistics = new ProtobufClientStatisticsImpl(factory, statisticsName,
-        ProtobufClientStatistics.PROTOBUF_STATS_NAME);
+    if (statistics == null) {
+      statistics = new ProtobufClientStatisticsImpl(factory, statisticsName,
+          ProtobufClientStatistics.PROTOBUF_STATS_NAME);
+    }
   }
 
   /**
    * For internal use. This is necessary because the statistics may get initialized in another
    * thread.
    */
-  private ProtobufClientStatistics getStatistics() {
+  ProtobufClientStatistics getStatistics() {
     if (statistics == null) {
       return new NoOpStatistics();
     }

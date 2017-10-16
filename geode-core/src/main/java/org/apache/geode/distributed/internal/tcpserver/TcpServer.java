@@ -387,6 +387,8 @@ public class TcpServer {
             try {
               ClientProtocolService clientProtocolService =
                   clientProtocolServiceLoader.lookupService();
+              clientProtocolService.initializeStatistics("LocatorStats",
+                  internalLocator.getDistributedSystem());
               try (ClientProtocolProcessor pipeline =
                   clientProtocolService.createProcessorForLocator(internalLocator)) {
                 pipeline.processMessage(input, socket.getOutputStream());
