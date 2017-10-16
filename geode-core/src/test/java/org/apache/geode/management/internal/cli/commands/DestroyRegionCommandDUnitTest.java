@@ -97,8 +97,7 @@ public class DestroyRegionCommandDUnitTest {
 
     // destroy something that's not exist anymore
     gfsh.executeAndVerifyCommandError("destroy region --name=/Customer", "Could not find a Region");
-    gfsh.executeAndVerifyCommand("destroy region --name=/Customer --if-exists",
-        "Could not find a Region");
+    gfsh.executeAndVerifyCommand("destroy region --name=/Customer --if-exists");
   }
 
   @Test

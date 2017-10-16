@@ -18,9 +18,12 @@ package org.apache.geode.cache.lucene.internal;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters;
+import org.apache.geode.test.junit.categories.UnitTest;
 
+@Category(UnitTest.class)
 public class ValidateCommandParametersTest {
 
   @Test
