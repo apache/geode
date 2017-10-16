@@ -119,7 +119,7 @@ public class CreateRegionCommandDUnitTest {
         + "   public Object getRoutingObject(org.apache.geode.cache.EntryOperation opDetails) { "
         + "    return null; " + "   }" + "   @Override" + "   public String getName() { "
         + "    return \"TestPartitionResolver\";" + "   }" + " }";
-    final File prJarFile = new File (tmpDir.getRoot(), "myPartitionResolver.jar");
+    final File prJarFile = new File(tmpDir.getRoot(), "myPartitionResolver.jar");
     new JarBuilder().buildJar(prJarFile, PR_STRING);
 
     gfsh.executeAndVerifyCommand("deploy --jar=" + prJarFile.getAbsolutePath());
