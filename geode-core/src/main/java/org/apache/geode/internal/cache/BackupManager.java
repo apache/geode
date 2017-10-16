@@ -436,7 +436,8 @@ public class BackupManager implements MembershipListener {
     return oplogList.toArray(new Oplog[oplogList.size()]);
   }
 
-  private Map<File, File> addBaselineOplogToRestoreScript(BackupInspector baselineInspector, Oplog log) {
+  private Map<File, File> addBaselineOplogToRestoreScript(BackupInspector baselineInspector,
+      Oplog log) {
     Map<File, File> oplogMap = new HashMap<>();
     Set<String> matchingOplogs =
         log.gatherMatchingOplogFiles(baselineInspector.getIncrementalOplogFileNames());
