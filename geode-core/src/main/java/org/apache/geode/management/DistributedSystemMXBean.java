@@ -311,7 +311,7 @@ public interface DistributedSystemMXBean {
   String[] listRegions();
 
   /**
-   * Returns a list of full paths for all regions. returns an empty array if no region exists
+   * Returns a list of full paths for all regions. Returns an empty array if no region exists
    */
   String[] listAllRegionPaths();
 

@@ -84,7 +84,7 @@ public class CliStrings {
   public static final String JARS = "jars";
 
   public static final String IFEXISTS_HELP =
-      "If true, the command will be no-op if the entity does not exist.";
+      "If true, the command will be a no-op if the entity does not exist.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
