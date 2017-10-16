@@ -24,7 +24,7 @@ import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -79,8 +79,8 @@ public class CreateRegionCommandDUnitTest {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
       Region region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
-      assertThat(SnappyCompressor.getDefaultInstance())
-          .isEqualTo(region.getAttributes().getCompressor());
+      assertThat(region.getAttributes().getCompressor())
+          .isEqualTo(SnappyCompressor.getDefaultInstance());
     });
   }
 
@@ -113,18 +113,14 @@ public class CreateRegionCommandDUnitTest {
   @Test
   public void testCreateRegionWithPartitionResolver() throws Exception {
     String regionName = testName.getMethodName();
-    ClassBuilder classBuilder = new ClassBuilder();
-    // classBuilder.addToClassPath(".");
-    final File prJarFile = tmpDir.newFile("myPartitionResolver.jar");
     String PR_STRING = "package io.pivotal; "
         + "public class TestPartitionResolver implements org.apache.geode.cache.PartitionResolver { "
         + "   @Override" + "   public void close() {" + "   }" + "   @Override"
         + "   public Object getRoutingObject(org.apache.geode.cache.EntryOperation opDetails) { "
         + "    return null; " + "   }" + "   @Override" + "   public String getName() { "
         + "    return \"TestPartitionResolver\";" + "   }" + " }";
-    byte[] jarBytes =
-        classBuilder.createJarFromClassContent("io/pivotal/TestPartitionResolver", PR_STRING);
-    writeJarBytesToFile(prJarFile, jarBytes);
+    final File prJarFile = new File (tmpDir.getRoot(), "myPartitionResolver.jar");
+    new JarBuilder().buildJar(prJarFile, PR_STRING);
 
     gfsh.executeAndVerifyCommand("deploy --jar=" + prJarFile.getAbsolutePath());
 
@@ -136,7 +132,7 @@ public class CreateRegionCommandDUnitTest {
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
       PartitionResolver resolver = region.getPartitionAttributes().getPartitionResolver();
       assertThat(resolver).isNotNull();
-      assertThat("TestPartitionResolver").isEqualTo(resolver.getName());
+      assertThat(resolver.getName()).isEqualTo("TestPartitionResolver");
     });
   }
 
