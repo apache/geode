@@ -31,6 +31,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Size extends BaseCommand {
 
@@ -90,7 +92,7 @@ public class Size extends BaseCommand {
 
     // Size the entry
     try {
-      securityService.authorizeRegionRead(regionName);
+      securityService.authorize(Resource.DATA, Operation.READ, regionName);
       writeSizeResponse(region.size(), clientMessage, serverConnection);
     } catch (RegionDestroyedException rde) {
       writeException(clientMessage, rde, false, serverConnection);

@@ -15,7 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -23,6 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -31,6 +34,8 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.ExportDataFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class ExportDataCommand implements GfshCommand {
   private final ExportDataFunction exportDataFunction = new ExportDataFunction();
@@ -41,44 +46,35 @@ public class ExportDataCommand implements GfshCommand {
       @CliOption(key = CliStrings.EXPORT_DATA__REGION, mandatory = true,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.EXPORT_DATA__REGION__HELP) String regionName,
-      @CliOption(key = CliStrings.EXPORT_DATA__FILE, mandatory = true,
+      @CliOption(key = CliStrings.EXPORT_DATA__FILE,
           help = CliStrings.EXPORT_DATA__FILE__HELP) String filePath,
+      @CliOption(key = CliStrings.EXPORT_DATA__DIR,
+          help = CliStrings.EXPORT_DATA__DIR__HELP) String dirPath,
       @CliOption(key = CliStrings.MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId) {
+          mandatory = true, help = CliStrings.EXPORT_DATA__MEMBER__HELP) String memberNameOrId,
+      @CliOption(key = CliStrings.EXPORT_DATA__PARALLEL, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.EXPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
-    getSecurityService().authorizeRegionRead(regionName);
+    getSecurityService().authorize(Resource.DATA, Operation.READ, regionName);
     final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-    Result result;
-
-    if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
-      return ResultBuilder.createUserErrorResult(CliStrings
-          .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION));
+    if (targetMember == null) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.EXPORT_DATA__MEMBER__NOT__FOUND, memberNameOrId));
     }
+
+    Optional<Result> validationResult = validatePath(filePath, dirPath, parallel);
+    if (validationResult.isPresent()) {
+      return validationResult.get();
+    }
+
+    Result result;
     try {
-      if (targetMember != null) {
-        final String args[] = {regionName, filePath};
+      String path = dirPath != null ? defaultFileName(dirPath, regionName) : filePath;
+      final String args[] = {regionName, path, Boolean.toString(parallel)};
 
-        ResultCollector<?, ?> rc = CliUtil.executeFunction(exportDataFunction, args, targetMember);
-        List<Object> results = (List<Object>) rc.getResult();
-
-        if (results != null) {
-          Object resultObj = results.get(0);
-          if (resultObj instanceof String) {
-            result = ResultBuilder.createInfoResult((String) resultObj);
-          } else if (resultObj instanceof Exception) {
-            result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
-          } else {
-            result = ResultBuilder.createGemFireErrorResult(
-                CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.EXPORT_DATA));
-          }
-        } else {
-          result = ResultBuilder.createGemFireErrorResult(
-              CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.EXPORT_DATA));
-        }
-      } else {
-        result = ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.EXPORT_DATA__MEMBER__NOT__FOUND, memberNameOrId));
-      }
+      ResultCollector<?, ?> rc = CliUtil.executeFunction(exportDataFunction, args, targetMember);
+      result = DataCommandUtil.getFunctionResult(rc, CliStrings.EXPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
@@ -86,5 +82,29 @@ public class ExportDataCommand implements GfshCommand {
           CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, CliStrings.IMPORT_DATA));
     }
     return result;
+  }
+
+  private String defaultFileName(String dirPath, String regionName) {
+    return new File(dirPath, regionName + RegionSnapshotService.SNAPSHOT_FILE_EXTENSION)
+        .getAbsolutePath();
+  }
+
+  private Optional<Result> validatePath(String filePath, String dirPath, boolean parallel) {
+    if (filePath == null && dirPath == null) {
+      return Optional
+          .of(ResultBuilder.createUserErrorResult("Must specify a location to save snapshot"));
+    } else if (filePath != null && dirPath != null) {
+      return Optional.of(ResultBuilder.createUserErrorResult(
+          "Options \"file\" and \"dir\" cannot be specified at the same time"));
+    } else if (parallel && dirPath == null) {
+      return Optional.of(
+          ResultBuilder.createUserErrorResult("Must specify a directory to save snapshot files"));
+    }
+
+    if (dirPath == null && !filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
+      return Optional.of(ResultBuilder.createUserErrorResult(CliStrings
+          .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION)));
+    }
+    return Optional.empty();
   }
 }

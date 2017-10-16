@@ -48,8 +48,8 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -214,7 +214,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
     this.client1.invoke(() -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
       gfsh.secureConnectAndVerify(this.server.getJmxPort(),
-          GfshShellConnectionRule.PortType.jmxManger, "dataUser", "1234567");
+          GfshShellConnectionRule.PortType.jmxManager, "dataUser", "1234567");
 
       // get command
       CommandResult result = gfsh.executeAndVerifyCommand("get --key=key1 --region=AuthRegion");

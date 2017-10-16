@@ -66,6 +66,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     when(context.getResultSender()).thenReturn(resultSender);
+    when(context.getCache()).thenReturn(cache);
 
     XmlEntity xmlEntity = null;
     expectedResult = new CliFunctionResult(member, xmlEntity);
@@ -85,8 +86,6 @@ public class LuceneCreateIndexFunctionJUnitTest {
     when(context.getArguments()).thenReturn(indexInfo);
 
     LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
-    function = spy(function);
-    doReturn(cache).when(function).getCache();
     function.execute(context);
 
     ArgumentCaptor<Map> analyzersCaptor = ArgumentCaptor.forClass(Map.class);
@@ -111,8 +110,6 @@ public class LuceneCreateIndexFunctionJUnitTest {
     when(context.getArguments()).thenReturn(indexInfo);
 
     LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
-    function = spy(function);
-    doReturn(cache).when(function).getCache();
     function.execute(context);
 
     verify(factory).addField(eq("field1"));
@@ -136,8 +133,6 @@ public class LuceneCreateIndexFunctionJUnitTest {
     when(context.getArguments()).thenReturn(indexInfo);
 
     LuceneCreateIndexFunction function = new LuceneCreateIndexFunction();
-    function = spy(function);
-    doReturn(cache).when(function).getCache();
     function.execute(context);
 
     verify(factory).addField(eq("field1"));

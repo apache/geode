@@ -33,7 +33,7 @@ For configurations that apply to all members of a cluster, the locator creates a
 <!-- -->
 
 **Group-level configuration**  
-When you specify the `--group` parameter in a `gfsh` command, (for example, `start server` or `create region`) the locator writes the configurations for each group in a subdirectory with the same name as the group. When you start a server that specifies one or more group names, the server receives both the cluster-level configurations and the configurations from all groups specified. This subdirectory contains:
+When you specify the `--groups` parameter in a `gfsh` command, (for example, `start server` or `create region`) the locator writes the configurations for each group in a subdirectory with the same name as the group. When you start a server that specifies one or more group names, the server receives both the cluster-level configurations and the configurations from all groups specified. This subdirectory contains:
 
 -   `<group-name>.xml` -- A <%=vars.product_name%> `cache.xml` file containing configurations common to all members of the group
 -   `<group-name>.properties` -- A <%=vars.product_name%> `gemfire.properties` file containing properties common to all members of the group

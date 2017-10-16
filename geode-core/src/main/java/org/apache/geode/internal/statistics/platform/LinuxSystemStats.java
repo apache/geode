@@ -46,6 +46,7 @@ public class LinuxSystemStats {
   final static int cachedMemoryINT = 16;
   final static int dirtyMemoryINT = 17;
   final static int cpuNonUserINT = 18;
+  final static int cpuStealINT = 19;
 
   final static int loopbackPacketsLONG = 0;
   final static int loopbackBytesLONG = 1;
@@ -143,7 +144,9 @@ public class LinuxSystemStats {
             f.createIntGauge("cpuNonUser",
                 "The percentage of total available time that has been used to execute non-user code.(includes system, iowait, irq, softirq etc.)",
                 "%"),
-
+            f.createIntGauge("cpuSteal",
+                "Steal time is the amount of time the operating system wanted to execute, but was not allowed to by the hypervisor.",
+                "%"),
 
             f.createLongCounter("loopbackPackets",
                 "The number of network packets sent (or received) on the loopback interface",
@@ -245,6 +248,7 @@ public class LinuxSystemStats {
     checkOffset("cachedMemory", cachedMemoryINT);
     checkOffset("dirtyMemory", dirtyMemoryINT);
     checkOffset("cpuNonUser", cpuNonUserINT);
+    checkOffset("cpuSteal", cpuStealINT);
 
     checkOffset("loopbackPackets", loopbackPacketsLONG);
     checkOffset("loopbackBytes", loopbackBytesLONG);

@@ -15,49 +15,38 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.HashSet;
-import java.util.Iterator;
+import static org.apache.geode.internal.security.IntegratedSecurityService.CREDENTIALS_SESSION_ATTRIBUTE;
+
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.DistributedRegionMXBean;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.UserFunctionExecution;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.ResourcePermission;
 
 public class ExecuteFunctionCommand implements GfshCommand {
   @CliCommand(value = CliStrings.EXECUTE_FUNCTION, help = CliStrings.EXECUTE_FUNCTION__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION})
-  @ResourceOperation(resource = ResourcePermission.Resource.DATA,
-      operation = ResourcePermission.Operation.WRITE)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
+      interceptor = "org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommand$ExecuteFunctionCommandInterceptor")
   public Result executeFunction(
-      // TODO: Add optioncontext for functionID
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__ID, mandatory = true,
           help = CliStrings.EXECUTE_FUNCTION__ID__HELP) String functionId,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
@@ -75,227 +64,109 @@ public class ExecuteFunctionCommand implements GfshCommand {
           help = CliStrings.EXECUTE_FUNCTION__RESULTCOLLECTOR__HELP) String resultCollector,
       @CliOption(key = CliStrings.EXECUTE_FUNCTION__FILTER,
           help = CliStrings.EXECUTE_FUNCTION__FILTER__HELP) String filterString) {
+
     CompositeResultData executeFunctionResultTable = ResultBuilder.createCompositeResultData();
     TabularResultData resultTable = executeFunctionResultTable.addSection().addTable("Table1");
     String headerText = "Execution summary";
     resultTable.setHeader(headerText);
-    ResultCollector resultCollectorInstance = null;
-    Set<String> filters = new HashSet<>();
-    Execution execution;
-    if (functionId != null) {
-      functionId = functionId.trim();
-    }
-    if (onRegion != null) {
-      onRegion = onRegion.trim();
-    }
-    if (filterString != null) {
-      filterString = filterString.trim();
+
+    // when here, the options are already parsed and validated
+    // find out the members this function need to be executed on
+    Set<DistributedMember> dsMembers;
+    if (onRegion == null) {
+      // find the members based on the groups or members
+      dsMembers = CliUtil.findMembers(onGroups, onMembers);
+    } else {
+      dsMembers = CliUtil.getRegionAssociatedMembers(onRegion, getCache());
     }
 
-    try {
-      // validate otherwise return right away. no need to process anything
-      if (functionId == null || functionId.length() == 0) {
-        ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MISSING_FUNCTIONID);
-        return ResultBuilder.buildResult(errorResultData);
-      }
-
-      if (isMoreThanOneTrue(onRegion != null, onMembers != null, onGroups != null)) {
-        // Provide Only one of region/member/groups
-        ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
-        return ResultBuilder.buildResult(errorResultData);
-      } else if ((onRegion == null || onRegion.length() == 0) && (filterString != null)) {
-        ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-            .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-            .addLine(CliStrings.EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION);
-        return ResultBuilder.buildResult(errorResultData);
-      }
-
-      InternalCache cache = getCache();
-
-      if (resultCollector != null) {
-        resultCollectorInstance =
-            (ResultCollector) ClassPathLoader.getLatest().forName(resultCollector).newInstance();
-      }
-
-      if (filterString != null && filterString.length() > 0) {
-        filters.add(filterString);
-      }
-
-      if (onRegion == null && onMembers == null && onGroups == null) {
-        // run function on all the members excluding locators bug#46113
-        // if user wish to execute on locator then he can choose --member or --group option
-        Set<DistributedMember> dsMembers = CliUtil.getAllNormalMembers(cache);
-        if (dsMembers.size() > 0) {
-          LogWrapper.getInstance().info(CliStrings
-              .format(CliStrings.EXECUTE_FUNCTION__MSG__EXECUTING_0_ON_ENTIRE_DS, functionId));
-          for (DistributedMember member : dsMembers) {
-            executeAndGetResults(functionId, filterString, resultCollector, arguments, cache,
-                member, resultTable, onRegion);
-          }
-          return ResultBuilder.buildResult(resultTable);
-        } else {
-          return ResultBuilder
-              .createUserErrorResult(CliStrings.EXECUTE_FUNCTION__MSG__DS_HAS_NO_MEMBERS);
-        }
-      } else if (onRegion != null && onRegion.length() > 0) {
-        if (cache.getRegion(onRegion) == null) {
-          // find a member where region is present
-          DistributedRegionMXBean bean = ManagementService.getManagementService(getCache())
-              .getDistributedRegionMXBean(onRegion);
-          if (bean == null) {
-            bean = ManagementService.getManagementService(getCache())
-                .getDistributedRegionMXBean(Region.SEPARATOR + onRegion);
-
-            if (bean == null) {
-              return ResultBuilder.createGemFireErrorResult(CliStrings
-                  .format(CliStrings.EXECUTE_FUNCTION__MSG__MXBEAN_0_FOR_NOT_FOUND, onRegion));
-            }
-          }
-
-          DistributedMember member = null;
-          String[] membersName = bean.getMembers();
-          Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
-          Iterator it = dsMembers.iterator();
-          boolean matchFound = false;
-
-          if (membersName.length > 0) {
-            while (it.hasNext() && !matchFound) {
-              DistributedMember dsmember = (DistributedMember) it.next();
-              for (String memberName : membersName) {
-                if (MBeanJMXAdapter.getMemberNameOrId(dsmember).equals(memberName)) {
-                  member = dsmember;
-                  matchFound = true;
-                  break;
-                }
-              }
-            }
-          }
-          if (matchFound) {
-            executeAndGetResults(functionId, filterString, resultCollector, arguments, cache,
-                member, resultTable, onRegion);
-            return ResultBuilder.buildResult(resultTable);
-          } else {
-            return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                CliStrings.EXECUTE_FUNCTION__MSG__NO_ASSOCIATED_MEMBER_REGION, " " + onRegion));
-          }
-        } else {
-          execution = FunctionService.onRegion(cache.getRegion(onRegion));
-          if (execution != null) {
-            if (resultCollectorInstance != null) {
-              execution = execution.withCollector(resultCollectorInstance);
-            }
-            if (filters.size() > 0) {
-              execution = execution.withFilter(filters);
-            }
-            if (arguments != null && arguments.length > 0) {
-              execution = execution.setArguments(arguments);
-            }
-
-            try {
-              List<Object> results = (List<Object>) execution.execute(functionId).getResult();
-              if (results.size() > 0) {
-                StringBuilder strResult = new StringBuilder();
-                for (Object obj : results) {
-                  strResult.append(obj);
-                }
-                toTabularResultData(resultTable,
-                    cache.getDistributedSystem().getDistributedMember().getId(),
-                    strResult.toString());
-              }
-              return ResultBuilder.buildResult(resultTable);
-            } catch (FunctionException e) {
-              return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                  CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_REGION_1_DETAILS_2,
-                  functionId, onRegion, e.getMessage()));
-            }
-          } else {
-            return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_REGION_1_DETAILS_2,
-                functionId, onRegion,
-                CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR));
-          }
-        }
-      } else if (onGroups != null || onMembers != null) {
-        Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroups, onMembers);
-
-        if (dsMembers.size() == 0) {
-          return ResultBuilder.createUserErrorResult("No members found.");
-        }
-
-        for (DistributedMember member : dsMembers) {
-          executeAndGetResults(functionId, filterString, resultCollector, arguments, cache, member,
-              resultTable, onRegion);
-        }
-        return ResultBuilder.buildResult(resultTable);
-
-      }
-    } catch (Exception e) {
-      ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
-      return ResultBuilder.buildResult(errorResultData);
+    if (dsMembers.size() == 0) {
+      return ResultBuilder.createUserErrorResult("No members found.");
     }
-    return null;
+
+    for (DistributedMember member : dsMembers) {
+      executeAndGetResults(functionId, filterString, resultCollector, arguments, member,
+          resultTable, onRegion);
+    }
+    return ResultBuilder.buildResult(resultTable);
   }
 
-  private boolean isMoreThanOneTrue(Boolean... values) {
-    return Stream.of(values).mapToInt(BooleanUtils::toInteger).sum() > 1;
+  public static class ExecuteFunctionCommandInterceptor implements CliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+      String onRegion = parseResult.getParamValue(CliStrings.EXECUTE_FUNCTION__ONREGION);
+      String onMember = parseResult.getParamValue(CliStrings.MEMBER);
+      String onGroup = parseResult.getParamValue(CliStrings.GROUP);
+      String filter = parseResult.getParamValue(CliStrings.EXECUTE_FUNCTION__FILTER);
+
+      boolean moreThanOne =
+          Stream.of(onRegion, onMember, onGroup).filter(Objects::nonNull).count() > 1;
+
+      if (moreThanOne) {
+        return ResultBuilder.createUserErrorResult(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+      }
+
+      if (onRegion == null && filter != null) {
+        return ResultBuilder.createUserErrorResult(
+            CliStrings.EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION);
+      }
+
+      return ResultBuilder.createInfoResult("");
+    }
   }
 
   void executeAndGetResults(String functionId, String filterString, String resultCollector,
-      String[] arguments, InternalCache cache, DistributedMember member,
-      TabularResultData resultTable, String onRegion) {
+      String[] arguments, DistributedMember member, TabularResultData resultTable,
+      String onRegion) {
     StringBuilder resultMessage = new StringBuilder();
-    try {
-      Function function = new UserFunctionExecution();
-      Object[] args = new Object[5];
-      args[0] = functionId;
-      if (filterString != null) {
-        args[1] = filterString;
-      }
-      if (resultCollector != null) {
-        args[2] = resultCollector;
-      }
-      if (arguments != null && arguments.length > 0) {
-        args[3] = "";
-        for (String str : arguments) {
-          // send via CSV separated value format
-          if (str != null) {
-            args[3] = args[3] + str + ",";
-          }
+
+    Function function = new UserFunctionExecution();
+    Object[] args = new Object[6];
+    args[0] = functionId;
+    if (filterString != null) {
+      args[1] = filterString;
+    }
+    if (resultCollector != null) {
+      args[2] = resultCollector;
+    }
+    if (arguments != null && arguments.length > 0) {
+      args[3] = "";
+      for (String str : arguments) {
+        // send via CSV separated value format
+        if (str != null) {
+          args[3] = args[3] + str + ",";
         }
       }
-      args[4] = onRegion;
+    }
+    args[4] = onRegion;
 
-      Execution execution = FunctionService.onMember(member).setArguments(args);
-      if (execution != null) {
-        List<Object> results = (List<Object>) execution.execute(function).getResult();
-        if (results != null) {
-          for (Object resultObj : results) {
-            if (resultObj != null) {
-              if (resultObj instanceof String) {
-                resultMessage.append(((String) resultObj));
-              } else if (resultObj instanceof Exception) {
-                resultMessage.append(((Exception) resultObj).getMessage());
-              } else {
-                resultMessage.append(resultObj);
-              }
+    Subject currentUser = getSecurityService().getSubject();
+    if (currentUser != null) {
+      args[5] = currentUser.getSession().getAttribute(CREDENTIALS_SESSION_ATTRIBUTE);
+    } else {
+      args[5] = null;
+    }
+
+    Execution execution = FunctionService.onMember(member).setArguments(args);
+    if (execution != null) {
+      List<Object> results = (List<Object>) execution.execute(function).getResult();
+      if (results != null) {
+        for (Object resultObj : results) {
+          if (resultObj != null) {
+            if (resultObj instanceof String) {
+              resultMessage.append(((String) resultObj));
+            } else if (resultObj instanceof Exception) {
+              resultMessage.append(((Exception) resultObj).getMessage());
+            } else {
+              resultMessage.append(resultObj);
             }
           }
         }
-        toTabularResultData(resultTable, member.getId(), resultMessage.toString());
-      } else {
-        toTabularResultData(resultTable, member.getId(),
-            CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR);
       }
-    } catch (Exception e) {
-      resultMessage.append(CliStrings.format(
-          CliStrings.EXECUTE_FUNCTION__MSG__COULD_NOT_EXECUTE_FUNCTION_0_ON_MEMBER_1_ERROR_2,
-          functionId, member.getId(), e.getMessage()));
       toTabularResultData(resultTable, member.getId(), resultMessage.toString());
+    } else {
+      toTabularResultData(resultTable, member.getId(),
+          CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR);
     }
   }
 

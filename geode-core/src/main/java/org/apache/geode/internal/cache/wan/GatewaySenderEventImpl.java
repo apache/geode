@@ -781,7 +781,7 @@ public class GatewaySenderEventImpl
         .append(";creationTime=").append(this.creationTime).append(";shadowKey= ")
         .append(this.shadowKey).append(";timeStamp=").append(this.versionTimeStamp)
         .append(";acked=").append(this.isAcked).append(";dispatched=").append(this.isDispatched)
-        .append("]");
+        .append(";bucketId=").append(this.bucketId).append("]");
     return buffer.toString();
   }
 

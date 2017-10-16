@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
@@ -37,15 +36,11 @@ public class ContinuousQueryFunction implements Function, InternalEntity {
 
   public static final String ID = ContinuousQueryFunction.class.getName();
 
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
   @Override
   public void execute(FunctionContext context) {
     try {
       String clientID = (String) context.getArguments();
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) context.getCache();
       if (cache.getCacheServers().size() > 0) {
         CacheServerImpl server = (CacheServerImpl) cache.getCacheServers().iterator().next();
         if (server != null) {

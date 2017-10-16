@@ -68,7 +68,8 @@ public class LuceneCliStrings {
       "Name of the lucene index to search.";
   public static final String LUCENE_SEARCH_INDEX__REGION_HELP =
       "Name/Path of the region defining the lucene index to be searched.";
-  public static final String LUCENE_SEARCH_INDEX__QUERY_STRING = "queryStrings";
+  public static final String LUCENE_SEARCH_INDEX__QUERY_STRING = "queryString";
+  public static final String LUCENE_SEARCH_INDEX__QUERY_STRINGS = "queryStrings";
   public static final String LUCENE_SEARCH_INDEX__LIMIT = "limit";
   public static final String LUCENE_SEARCH_INDEX__LIMIT__HELP = "Number of search results needed";
   public static final String LUCENE_SEARCH_INDEX__QUERY_STRING__HELP =

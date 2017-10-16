@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -52,7 +51,7 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
   public void execute(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
@@ -156,6 +155,11 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
             (GatewayTransportFilter) newInstance(gatewayTransportFilterKlass,
                 CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER));
       }
+    }
+
+    String hostnameForSenders = gatewayReceiverCreateArgs.getHostnameForSenders();
+    if (hostnameForSenders != null) {
+      gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
     }
     return gatewayReceiverFactory.create();
   }

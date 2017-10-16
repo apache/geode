@@ -14,44 +14,38 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.internal.Op;
-import org.apache.geode.cache.query.CacheUtils;
-import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioPdx;
-
-import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
-import org.apache.geode.cache.query.internal.index.IndexProtocol;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
 public class CompactRangeIndexQueryIntegrationTest {
 
+  @Rule
+  public ServerStarterRule serverStarterRule = new ServerStarterRule().withAutoStart();
+
   @Test
   public void multipleNotEqualsClausesOnAPartitionedRegionShouldReturnCorrectResults()
       throws Exception {
-    Cache cache = CacheUtils.getCache();
+    Cache cache = serverStarterRule.getCache();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("portfolios");
     int numMatching = 10;
     QueryService qs = cache.getQueryService();
@@ -73,8 +67,7 @@ public class CompactRangeIndexQueryIntegrationTest {
   @Test
   public void whenAuxFilterWithAnIterableFilterShouldNotCombineFiltersIntoAndJunction()
       throws Exception {
-    CacheUtils.startCache();
-    Cache cache = CacheUtils.getCache();
+    Cache cache = serverStarterRule.getCache();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("ExampleRegion");
     QueryService qs = cache.getQueryService();
     qs.createIndex("ExampleRegionIndex", "er['codeNumber','origin']", "/ExampleRegion er");
@@ -97,5 +90,30 @@ public class CompactRangeIndexQueryIntegrationTest {
         "select * from /ExampleRegion E where E['codeNumber']=1 and E['origin']='src_common' and (E['country']='JPY' or E['ccountrycy']='USD')");
     SelectResults rs = (SelectResults) q.execute();
     assertEquals(4, rs.size());
+  }
+
+  @Test
+  // getSizeEstimate will be called only when having a choice between two indexes
+  public void getSizeEstimateShouldNotThrowClassCastException() throws Exception {
+    String regionName = "portfolio";
+
+    Cache cache = serverStarterRule.getCache();
+    assertNotNull(cache);
+    Region region =
+        cache.createRegionFactory().setDataPolicy(DataPolicy.REPLICATE).create(regionName);
+
+    Portfolio p = new Portfolio(1);
+    region.put(1, p);
+    Portfolio p2 = new Portfolio(3);
+    region.put(2, p2);
+
+    QueryService queryService = cache.getQueryService();
+    queryService.createIndex("statusIndex", "status", "/portfolio");
+    queryService.createIndex("idIndex", "ID", "/portfolio");
+
+    SelectResults results = (SelectResults) queryService
+        .newQuery("select * from /portfolio where status = 4 AND ID = 'StringID'").execute();
+
+    assertNotNull(results);
   }
 }

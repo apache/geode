@@ -87,7 +87,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
       Throwable thr = null;
       ResourceManagerProfile p = null;
       try {
-        final InternalCache cache = GemFireCacheImpl.getInstance();
+        final InternalCache cache = dm.getCache();
         if (cache != null && !cache.isClosed()) {
           final ResourceAdvisor ra = cache.getInternalResourceManager().getResourceAdvisor();
           if (this.profiles != null) {
@@ -339,9 +339,10 @@ public class ResourceAdvisor extends DistributionAdvisor {
     @Override
     public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
-      final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      final InternalCache cache = dm.getCache();
       if (cache != null && !cache.isClosed()) {
-        handleDistributionAdvisee(cache, removeProfile, exchangeProfiles, replyProfiles);
+        handleDistributionAdvisee((DistributionAdvisee) cache, removeProfile, exchangeProfiles,
+            replyProfiles);
       }
     }
 

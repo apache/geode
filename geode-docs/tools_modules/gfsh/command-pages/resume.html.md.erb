@@ -28,8 +28,8 @@ Resume the gateway sender on a member or members.
 **Syntax:**
 
 ``` pre
-resume gateway-sender --id=value [--group=value(,value)*] 
-[--member=value]
+resume gateway-sender --id=value [--groups=value(,value)*] 
+[--members=value(,value)*]
 ```
 
 <a id="concept_8B0532D13CF34E0CB04ACC3F14F1E4A2__table_rwp_vbg_2w"></a>
@@ -37,15 +37,15 @@ resume gateway-sender --id=value [--group=value(,value)*]
 | Name                                           | Description                                                  |
 |------------------------------------------------|--------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the Gateway Sender.                        |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to resume the Gateway Sender.   |
-| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member on which to resume the Gateway Sender. |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to resume the Gateway Sender.   |
+| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) on which to resume the Gateway Sender. |
 
 <span class="tablecap">Table 1. Resume Gateway-Sender Parameters</span>
 
 **Example Commands:**
 
 ``` pre
-resume gateway-sender --id=sender1-LN --group=LN-Group1
+resume gateway-sender --id=sender1-LN --groups=LN-Group1
 ```
 
 

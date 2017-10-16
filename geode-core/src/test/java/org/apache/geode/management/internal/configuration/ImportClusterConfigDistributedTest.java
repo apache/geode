@@ -30,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -71,9 +71,9 @@ public class ImportClusterConfigDistributedTest {
     gfsh.executeAndVerifyCommand(
         "export cluster-configuration --zip-file-name=" + exportedClusterConfig.getCanonicalPath());
 
-    lsRule.stopMember(0);
+    lsRule.stopVM(0);
 
-    lsRule.stopMember(1);
+    lsRule.stopVM(1);
 
     assertThat(this.exportedClusterConfig).exists();
     assertThat(this.exportedClusterConfig.length()).isGreaterThan(100);

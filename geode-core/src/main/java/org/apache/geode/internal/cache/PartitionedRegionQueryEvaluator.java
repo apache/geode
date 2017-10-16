@@ -29,6 +29,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.StreamingPartitionOperation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -828,7 +829,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }
     }
 
-    final List allNodes = getAllNodes();
+    final List allNodes = getAllNodes(this.pr.getRegionAdvisor());
     /*
      * for(Map.Entry<InternalDistributedMember, Collection<Collection>> entry :
      * resultsPerMember.entrySet()) { InternalDistributedMember member = entry.getKey();
@@ -877,8 +878,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return pr.getRegionAdvisor().getBucketOwners(bid.intValue());
   }
 
-  protected ArrayList getAllNodes() {
-    return new ArrayList(this.pr.getRegionAdvisor().adviseDataStore());
+  protected ArrayList getAllNodes(RegionAdvisor regionAdvisor) {
+    ArrayList nodes = new ArrayList(regionAdvisor.adviseDataStore());
+    Collections.shuffle(nodes);
+    return nodes;
   }
 
   /**

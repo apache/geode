@@ -15,13 +15,16 @@
 
 package org.apache.geode.management.internal.cli.domain;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.ObjectUtils;
-
-import java.io.Serializable;
 
 /**
  * The IndexDetails class encapsulates information for an Index on a Region in the GemFire Cache.
@@ -36,6 +39,7 @@ import java.io.Serializable;
 @SuppressWarnings("unused")
 public class IndexDetails implements Comparable<IndexDetails>, Serializable {
 
+  private static final long serialVersionUID = -2198907141534201288L;
   private IndexStatisticsDetails indexStatisticsDetails;
 
   private IndexType indexType;
@@ -45,6 +49,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   private String projectionAttributes;
   private String memberName;
   private String regionName;
+  private boolean isValid;
 
   private final String indexName;
   private final String memberId;
@@ -84,10 +89,18 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     setMemberName(member.getName());
     setProjectionAttributes(index.getProjectionAttributes());
     setRegionName(index.getRegion().getName());
-
+    if (index instanceof AbstractIndex) {
+      setIsValid(((AbstractIndex) index).isValid());
+    } else {
+      setIsValid(false);
+    }
     if (index.getStatistics() != null) {
       setIndexStatisticsDetails(createIndexStatisticsDetails(index.getStatistics()));
     }
+  }
+
+  public void setIsValid(boolean valid) {
+    this.isValid = valid;
   }
 
   public IndexDetails(final String memberId, final String regionPath, final String indexName) {
@@ -135,12 +148,9 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     return indexType;
   }
 
+
   public void setIndexType(final IndexType indexType) {
     this.indexType = indexType;
-  }
-
-  public void setIndexType(final org.apache.geode.cache.query.IndexType indexType) {
-    setIndexType(IndexType.valueOf(indexType));
   }
 
   public String getMemberId() {
@@ -173,6 +183,10 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
 
   public String getRegionPath() {
     return regionPath;
+  }
+
+  public boolean getIsValid() {
+    return this.isValid;
   }
 
   public int compareTo(final IndexDetails indexDetails) {
@@ -218,11 +232,12 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     buffer.append(" {fromClause = ").append(getFromClause());
     buffer.append(", indexExpression = ").append(getIndexedExpression());
     buffer.append(", indexName = ").append(getIndexName());
-    buffer.append(", indexType = ").append(getIndexType());
+    buffer.append(", indexType = ").append(getIndexType().getName());
     buffer.append(", memberId = ").append(getMemberId());
     buffer.append(", memberName = ").append(getMemberName());
     buffer.append(", regionName = ").append(getRegionName());
     buffer.append(", regionPath = ").append(getRegionPath());
+    buffer.append(", isValid = ").append(getIsValid());
     buffer.append(", projectAttributes = ").append(getProjectionAttributes());
     buffer.append("}");
 
@@ -291,47 +306,4 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
       return buffer.toString();
     }
   }
-
-  public static enum IndexType {
-    FUNCTIONAL("RANGE"), HASH("HASH"), PRIMARY_KEY("KEY");
-
-    private final String description;
-
-    public static IndexType valueOf(final org.apache.geode.cache.query.IndexType indexType) {
-      for (final IndexType type : values()) {
-        if (type.name().equalsIgnoreCase(ObjectUtils.toString(indexType))) {
-          return type;
-        }
-      }
-      return null;
-    }
-
-    IndexType(final String description) {
-      assertValidArgument(StringUtils.isNotBlank(description),
-          "The description for the IndexType must be specified!");
-      this.description = description;
-    }
-
-    public String getDescription() {
-      return this.description;
-    }
-
-    public org.apache.geode.cache.query.IndexType getType() {
-      switch (this) {
-        case HASH:
-          return null;
-        case PRIMARY_KEY:
-          return org.apache.geode.cache.query.IndexType.PRIMARY_KEY;
-        case FUNCTIONAL:
-        default:
-          return org.apache.geode.cache.query.IndexType.FUNCTIONAL;
-      }
-    }
-
-    @Override
-    public String toString() {
-      return getDescription();
-    }
-  }
-
 }

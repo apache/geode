@@ -27,16 +27,10 @@ import "server_API.proto";
 import "basicTypes.proto";
 
 message Message {
-    MessageHeader messageHeader = 1;
     oneof messageType {
-        Request request = 2;
-        Response response = 3;
+        Request request = 1;
+        Response response = 2;
     }
-}
-
-message MessageHeader {
-    int32 correlationId = 1;
-    MetaData metadata = 2;
 }
 
 message Request {
@@ -49,10 +43,6 @@ message Request {
         RemoveRequest removeRequest = 6;
         RemoveAllRequest removeAllRequest = 7;
 
-        CreateRegionRequest createRegionRequest = 21;
-        DestroyRegionRequest destroyRegionRequest = 22;
-
-//        PingRequest pingRequest = 41;
         GetAvailableServersRequest getAvailableServersRequest = 42;
         GetRegionNamesRequest getRegionNamesRequest = 43;
         GetRegionRequest getRegionRequest = 44;
@@ -70,19 +60,10 @@ message Response {
 
         ErrorResponse errorResponse = 13;
 
-        CreateRegionResponse createRegionResponse = 20;
-        DestroyRegionResponse destroyRegionResponse = 21;
-
-//        PingResponse pingResponse = 41;
         GetAvailableServersResponse getAvailableServersResponse = 42;
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;
     }
-}
-
-message MetaData {
-    int32 numberOfMetadata = 1;
-    map<int32, google.protobuf.Any> metaDataEntries = 2;
 }
 
 message ErrorResponse {

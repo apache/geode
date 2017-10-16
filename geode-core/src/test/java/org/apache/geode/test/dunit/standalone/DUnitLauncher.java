@@ -14,8 +14,14 @@
  */
 package org.apache.geode.test.dunit.standalone;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.distributed.internal.DistributionConfig.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -88,7 +94,7 @@ public class DUnitLauncher {
 
   static int locatorPort;
 
-  private static final int NUM_VMS = 4;
+  public static final int NUM_VMS = 4;
   private static final int DEBUGGING_VM_NUM = -1;
   private static final int LOCATOR_VM_NUM = -2;
 

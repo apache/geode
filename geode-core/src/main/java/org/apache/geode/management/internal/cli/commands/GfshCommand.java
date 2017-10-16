@@ -24,7 +24,6 @@ import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
@@ -33,6 +32,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
@@ -101,6 +101,7 @@ public interface GfshCommand extends CommandMarker {
     return getGfsh() != null;
   }
 
+
   default InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
@@ -145,55 +146,12 @@ public interface GfshCommand extends CommandMarker {
     return FunctionService.onMembers(members);
   }
 
-  default void logInfo(final String message) {
-    logInfo(message, null);
+  default Set<DistributedMember> findMembers(String[] groups, String[] members) {
+    return CliUtil.findMembers(groups, members);
   }
 
-  default void logInfo(final Throwable cause) {
-    logInfo(cause.getMessage(), cause);
+  default Set<DistributedMember> findMembersForRegion(InternalCache cache, String regionPath) {
+    return CliUtil.getRegionAssociatedMembers(regionPath, cache);
   }
 
-  default void logInfo(final String message, final Throwable cause) {
-    if (isLogging()) {
-      getGfsh().logInfo(message, cause);
-    }
-  }
-
-  default void logWarning(final String message) {
-    logWarning(message, null);
-  }
-
-  default void logWarning(final Throwable cause) {
-    logWarning(cause.getMessage(), cause);
-  }
-
-  default void logWarning(final String message, final Throwable cause) {
-    if (isLogging()) {
-      getGfsh().logWarning(message, cause);
-    }
-  }
-
-  default void logSevere(final String message) {
-    logSevere(message, null);
-  }
-
-  default void logSevere(final Throwable cause) {
-    logSevere(cause.getMessage(), cause);
-  }
-
-  default void logSevere(final String message, final Throwable cause) {
-    if (isLogging()) {
-      getGfsh().logSevere(message, cause);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  default <T extends Function> T register(T function) {
-    if (FunctionService.isRegistered(function.getId())) {
-      function = (T) FunctionService.getFunction(function.getId());
-    } else {
-      FunctionService.registerFunction(function);
-    }
-    return function;
-  }
 }

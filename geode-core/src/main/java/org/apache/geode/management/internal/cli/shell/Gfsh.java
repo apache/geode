@@ -56,11 +56,8 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.CompositeResultData.SectionResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler;
 import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler.ANSIStyle;
@@ -72,7 +69,8 @@ import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 /**
  * Extends an interactive shell provided by
  * <a href="https://github.com/SpringSource/spring-shell">Spring Shell</a> library.
- * <p />
+ *
+ * <p>
  * This class is used to plug-in implementations of the following Spring (Roo) Shell components
  * customized to suite GemFire Command Line Interface (CLI) requirements:
  * <ul>
@@ -83,6 +81,8 @@ import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
  * Additionally, this class is used to maintain GemFire SHell (gfsh) specific information like:
  * environment
  *
+ * <p>
+ * Additionally, this class is used to maintain GemFire SHell (gfsh) specific information
  *
  * @since GemFire 7.0
  */
@@ -122,13 +122,7 @@ public class Gfsh extends JLineShell {
   public static final String ENV_SYS_OS_LINE_SEPARATOR = "SYS_OS_LINE_SEPARATOR";
   public static final String ENV_SYS_GEODE_HOME_DIR = "SYS_GEODE_HOME_DIR";
 
-  // SSL Configuration properties. keystore/truststore type is not include
-  public static final String SSL_KEYSTORE = "javax.net.ssl.keyStore";
-  public static final String SSL_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
-  public static final String SSL_TRUSTSTORE = "javax.net.ssl.trustStore";
-  public static final String SSL_TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
-  public static final String SSL_ENABLED_CIPHERS = "javax.rmi.ssl.client.enabledCipherSuites";
-  public static final String SSL_ENABLED_PROTOCOLS = "javax.rmi.ssl.client.enabledProtocols";
+
   private static final String DEFAULT_SECONDARY_PROMPT = ">";
   private static final int DEFAULT_HEIGHT = 100;
   private static final Object INSTANCE_LOCK = new Object();
@@ -161,7 +155,7 @@ public class Gfsh extends JLineShell {
   private boolean isScriptRunning;
   private AbstractSignalNotificationHandler signalHandler;
 
-  protected Gfsh() {
+  public Gfsh() {
     this(null);
   }
 
@@ -590,7 +584,7 @@ public class Gfsh extends JLineShell {
         expandedPropCommandsMap.put(withPropsExpanded, line);
       }
       if (gfshFileLogger.fineEnabled()) {
-        gfshFileLogger.fine(logMessage + withPropsExpanded);
+        gfshFileLogger.fine(logMessage + ArgumentRedactor.redactScriptLine(withPropsExpanded));
       }
       success = super.executeScriptLine(withPropsExpanded);
     } catch (Exception e) {
@@ -980,6 +974,14 @@ public class Gfsh extends JLineShell {
     return env.get(propertyName);
   }
 
+  public String getEnvAppContextPath() {
+    String path = getEnvProperty(Gfsh.ENV_APP_CONTEXT_PATH);
+    if (path == null) {
+      return "";
+    }
+    return path;
+  }
+
   public Map<String, String> getEnv() {
     Map<String, String> map = new TreeMap<>();
     map.putAll(env);
@@ -1101,7 +1103,7 @@ public class Gfsh extends JLineShell {
     if (gfshFileLogger.severeEnabled()) {
       gfshFileLogger.severe(message);
     }
-    setPromptPath(RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
+    setPromptPath(getEnvAppContextPath());
   }
 
   public boolean getDebug() {
@@ -1130,62 +1132,5 @@ public class Gfsh extends JLineShell {
       output = output.replace(foundInLine, envProperty);
     }
     return output;
-  }
-}
-
-
-class ScriptExecutionDetails {
-  private final String filePath;
-  private final List<CommandAndStatus> commandAndStatusList;
-
-  ScriptExecutionDetails(String filePath) {
-    this.filePath = filePath;
-    this.commandAndStatusList = new ArrayList<>();
-  }
-
-  void addCommandAndStatus(String command, String status) {
-    this.commandAndStatusList.add(new CommandAndStatus(command, status));
-  }
-
-  Result getResult() {
-    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-    compositeResultData.setHeader(
-        "************************* Execution Summary ***********************\nScript file: "
-            + filePath);
-
-    for (int i = 0; i < this.commandAndStatusList.size(); i++) {
-      int commandSrNo = i + 1;
-      SectionResultData section = compositeResultData.addSection("" + (i + 1));
-      CommandAndStatus commandAndStatus = commandAndStatusList.get(i);
-      section.addData("Command-" + String.valueOf(commandSrNo), commandAndStatus.command);
-      section.addData("Status", commandAndStatus.status);
-      if (commandAndStatus.status.equals("FAILED")) {
-        compositeResultData.setStatus(Result.Status.ERROR);
-      }
-      if (i != this.commandAndStatusList.size()) {
-        section.setFooter(Gfsh.LINE_SEPARATOR);
-      }
-    }
-
-    return ResultBuilder.buildResult(compositeResultData);
-  }
-
-  void logScriptExecutionInfo(LogWrapper logWrapper, Result result) {
-    logWrapper.info(ResultBuilder.resultAsString(result));
-  }
-
-  static class CommandAndStatus {
-    private final String command;
-    private final String status;
-
-    public CommandAndStatus(String command, String status) {
-      this.command = command;
-      this.status = status;
-    }
-
-    @Override
-    public String toString() {
-      return command + "     " + status;
-    }
   }
 }

@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -74,36 +74,25 @@ public class ExportConfigCommand implements GfshCommand {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    try {
-      ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(this.exportConfigFunction, null, targetMembers);
-      List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
+    ResultCollector<?, ?> rc =
+        CliUtil.executeFunction(this.exportConfigFunction, null, targetMembers);
+    List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
-      for (CliFunctionResult result : results) {
-        if (result.getThrowable() != null) {
-          infoData.addLine(CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__EXCEPTION,
-              result.getMemberIdOrName(), result.getThrowable()));
-        } else if (result.isSuccessful()) {
-          String cacheFileName = result.getMemberIdOrName() + "-cache.xml";
-          String propsFileName = result.getMemberIdOrName() + "-gf.properties";
-          String[] fileContent = (String[]) result.getSerializables();
-          infoData.addAsFile(cacheFileName, fileContent[0], "Downloading Cache XML file: {0}",
-              false);
-          infoData.addAsFile(propsFileName, fileContent[1], "Downloading properties file: {0}",
-              false);
-        }
+    for (CliFunctionResult result : results) {
+      if (result.getThrowable() != null) {
+        infoData.addLine(CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__EXCEPTION,
+            result.getMemberIdOrName(), result.getThrowable()));
+      } else if (result.isSuccessful()) {
+        String cacheFileName = result.getMemberIdOrName() + "-cache.xml";
+        String propsFileName = result.getMemberIdOrName() + "-gf.properties";
+        String[] fileContent = (String[]) result.getSerializables();
+        infoData.addAsFile(cacheFileName, fileContent[0], "Downloading Cache XML file: {0}", false);
+        infoData.addAsFile(propsFileName, fileContent[1], "Downloading properties file: {0}",
+            false);
       }
-      return ResultBuilder.buildResult(infoData);
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      th.printStackTrace(System.err);
-      return ResultBuilder
-          .createGemFireErrorResult(CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__EXCEPTION,
-              th.getClass().getName() + ": " + th.getMessage()));
     }
+    return ResultBuilder.buildResult(infoData);
+
   }
 
   /**
@@ -116,20 +105,23 @@ public class ExportConfigCommand implements GfshCommand {
     public Result preExecution(GfshParseResult parseResult) {
       Map<String, String> paramValueMap = parseResult.getParamValueStrings();
       String dir = paramValueMap.get("dir");
-      dir = (dir == null) ? null : dir.trim();
-
-      File saveDirFile = new File(".");
-      if (dir != null && !dir.isEmpty()) {
-        saveDirFile = new File(dir);
-        if (saveDirFile.exists()) {
-          if (!saveDirFile.isDirectory())
-            return ResultBuilder.createGemFireErrorResult(
-                CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__NOT_A_DIRECTORY, dir));
-        } else if (!saveDirFile.mkdirs()) {
-          return ResultBuilder.createGemFireErrorResult(
-              CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__CANNOT_CREATE_DIR, dir));
-        }
+      if (StringUtils.isBlank(dir)) {
+        saveDirString = new File(".").getAbsolutePath();
+        return ResultBuilder.createInfoResult("OK");
       }
+
+      File saveDirFile = new File(dir.trim());
+
+      if (!saveDirFile.exists() && !saveDirFile.mkdirs()) {
+        return ResultBuilder.createGemFireErrorResult(
+            CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__CANNOT_CREATE_DIR, dir));
+      }
+
+      if (!saveDirFile.isDirectory()) {
+        return ResultBuilder.createGemFireErrorResult(
+            CliStrings.format(CliStrings.EXPORT_CONFIG__MSG__NOT_A_DIRECTORY, dir));
+      }
+
       try {
         if (!saveDirFile.canWrite()) {
           return ResultBuilder.createGemFireErrorResult(CliStrings.format(

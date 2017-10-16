@@ -14,9 +14,10 @@
  */
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
+import static org.apache.geode.management.MXBeanAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
@@ -33,8 +34,6 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,9 +57,13 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
+ * Distributed tests for {@link MemberMXBean}.
+ * <p>
+ *
  * This class checks and verifies various data and operations exposed through MemberMXBean
  * interface.
- * </p>
+ * <p>
+ *
  * Goal of the Test : MemberMBean gets created once cache is created. Data like config data and
  * stats are of proper value To check proper federation of MemberMBean including remote ops and
  * remote data access
@@ -302,14 +305,14 @@ public class CacheManagementDUnitTest implements Serializable {
 
   private void verifyQueryMBeans(final VM managerVM) {
     managerVM.invoke("validateQueryMBeans", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      SystemManagementService service = this.managementTestRule.getSystemManagementService();
       Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
       Set<ObjectName> superSet = new HashSet<>();
 
       for (DistributedMember member : otherMembers) {
         ObjectName memberMBeanName = service.getMemberMBeanName(member);
 
-        awaitMemberMXBeanProxy(member);
+        MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);
 
         Set<ObjectName> objectNames = service.queryMBeanNames(member);
         superSet.addAll(objectNames);
@@ -327,13 +330,13 @@ public class CacheManagementDUnitTest implements Serializable {
 
   private void verifyGetMBeanInstance(final VM managerVM) {
     managerVM.invoke("verifyGetMBeanInstance", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      SystemManagementService service = this.managementTestRule.getSystemManagementService();
       Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
 
       for (DistributedMember member : otherMembers) {
         ObjectName memberMBeanName = service.getMemberMBeanName(member);
 
-        awaitMemberMXBeanProxy(member);
+        MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);
 
         MemberMXBean memberMXBean = service.getMBeanInstance(memberMBeanName, MemberMXBean.class);
         assertThat(memberMXBean).isNotNull();
@@ -413,10 +416,11 @@ public class CacheManagementDUnitTest implements Serializable {
    * not.
    */
   private void verifyConfigDataRemote(final Map<DistributedMember, DistributionConfig> configMap) {
+    SystemManagementService service = this.managementTestRule.getSystemManagementService();
     Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
 
     for (DistributedMember member : otherMembers) {
-      MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
+      MemberMXBean memberMXBean = MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);
 
       GemFireProperties data = memberMXBean.listGemFireProperties();
       DistributionConfig config = configMap.get(member);
@@ -577,10 +581,11 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   private void invokeRemoteMemberMXBeanOps() {
+    SystemManagementService service = this.managementTestRule.getSystemManagementService();
     Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
 
     for (DistributedMember member : otherMembers) {
-      MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
+      MemberMXBean memberMXBean = MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);
 
       JVMMetrics metrics = memberMXBean.showJVMMetrics();
 
@@ -659,25 +664,6 @@ public class CacheManagementDUnitTest implements Serializable {
         .getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId);
 
     assertThat(region).isEmpty();
-  }
-
-  private MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
-    SystemManagementService service = this.managementTestRule.getSystemManagementService();
-    ObjectName objectName = service.getMemberMBeanName(member);
-
-    String alias = "Awaiting MemberMXBean proxy for " + member;
-    await(alias)
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
-
-    return service.getMBeanProxy(objectName, MemberMXBean.class);
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
-  }
-
-  private ConditionFactory await(final String alias) {
-    return Awaitility.await(alias).atMost(2, MINUTES);
   }
 
   private static String removeVMDir(String string) {

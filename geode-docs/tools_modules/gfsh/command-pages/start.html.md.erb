@@ -62,13 +62,13 @@ Note that you can only have one gateway receiver on each member, and unlike a ga
 **Syntax:**
 
 ``` pre
-start gateway-receiver [--group=value(,value)*] [--member=value]
+start gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 ```
 
 | Name                                           | Description                                                      |
 |------------------------------------------------|------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-member</span> | Name or ID of the member on which to start the Gateway Receiver. |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to start the Gateway Receiver.      |
+| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) on which to start the Gateway Receiver. |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Receiver.      |
 
 <span class="tablecap">Table 1. Start Gateway-Receiver Parameters</span>
 
@@ -76,7 +76,7 @@ start gateway-receiver [--group=value(,value)*] [--member=value]
 
 ``` pre
 start gateway-receiver
-start gateway-receiver --member=member1
+start gateway-receiver --members=member1
 ```
 
 **Sample Output:**
@@ -90,7 +90,7 @@ pc13(Manager:2242)<v5>:57631| Error  | GatewayReceiver is not available on membe
 pc13(2275)<v7>:47480        | OK     | GatewayReceiver is started on member pc13(2275)<v7>:47480
 pc13(2293)<v8>:55472        | OK     | GatewayReceiver is started on member pc13(2293)<v8>:55472
 
-gfsh>start gateway-receiver --member=pc13(2266)<v14>:36579
+gfsh>start gateway-receiver --members=pc13(2266)<v14>:36579
 GatewayReceiver is started on member pc13(2266)<v14>:36579
 
 gfsh>start gateway-receiver --group=RG1
@@ -112,14 +112,14 @@ For information on how to configure a gateway sender, see [Configure Gateway Sen
 **Syntax:**
 
 ``` pre
-start gateway-sender --id=value [--group=value(,value)*] [--member=value]
+start gateway-sender --id=value [--groups=value(,value)*] [--members=value(,value)*]
 ```
 
 | Name                                           | Description                                               |
 |------------------------------------------------|-----------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the GatewaySender.                      |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to start the Gateway Sender. |
-| <span class="keyword parmname">\\-\\-member</span> | Member used to start the Gateway Sender                   |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Sender. |
+| <span class="keyword parmname">\\-\\-members</span> | Member(s) on which to start the Gateway Sender                   |
 
 <span class="tablecap">Table 2. Start Gateway-Sender Parameters</span>
 
@@ -127,8 +127,8 @@ start gateway-sender --id=value [--group=value(,value)*] [--member=value]
 
 ``` pre
 start gateway-sender --id=sender1-NY
-start gateway-sender --id=sender1-NY --member=server1
-start gateway-sender --id=sender1-NY --group=MemberGroup1,MemberGroup2
+start gateway-sender --id=sender1-NY --members=server1
+start gateway-sender --id=sender1-NY --groups=MemberGroup1,MemberGroup2
 ```
 
 **Sample Output:**
@@ -142,9 +142,9 @@ pc13(30621)<v7>:36015         | OK      | GatewaySender ln is started on member 
 pc13(30633)<v8>:13633         | OK      | GatewaySender ln is started on member pc13(30633)<v8>:13633
 pc13(Manager:30588)<v5>:42792 | Error   | GatewaySender ln is not available on member pc13(Manager:30588)<v5>:42792
 
-gfsh>start gateway-sender --id=ln --member=pc13(30614)<v14>:44519
+gfsh>start gateway-sender --id=ln --members=pc13(30614)<v14>:44519
 GatewaySender ln is started on member pc13(30614)<v14>:44519
-gfsh>start gateway-sender --id=ln --group=SenderGroup1
+gfsh>start gateway-sender --id=ln --groups=SenderGroup1
 Member                 | Result| Message
 ---------------------- | ------| ------------------------------------------------------------
 pc13(30614)<v18>:15201 | OK    | GatewaySender ln is started on member pc13(30614)<v18>:15201
@@ -263,7 +263,8 @@ In addition, if gfsh is not already connected to a JMX Manager, the gfsh console
 **Syntax:**
 
 ``` pre
-start locator --name=value [--bind-address=value] [--force(=value)] [--group=value] [--hostname-for-clients=value]
+start locator --name=value [--bind-address=value] [--force(=value)]
+ [--groups=value(,value)*] [--hostname-for-clients=value]
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-from-cluster-configuration-dir(=value)]
@@ -302,7 +303,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td>false</td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
+<td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) the locator will be a part of.</td>
 <td> </td>
 </tr>
@@ -465,8 +466,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--cache-xml-file=value] [--classpath=value] [--disable-default-server(=value)]
     [--disable-exit-when-out-of-memory(=value)] [--enable-time-statistics(=value)]
     [--force(=value)] [--include-system-classpath(=value)] [--properties-file=value]
-    [--security-properties-file=value]
-    [--group=value] [--locators=value] [--locator-wait-time=value] [--log-level=value]
+    [--security-properties-file=value] [--groups=value(,value)*]
+    [--locators=value] [--locator-wait-time=value] [--log-level=value]
     [--mcast-address=value] [--mcast-port=value] [--memcached-port=value]
     [--memcached-protocol=value] [--rebalance(=value)] [--server-bind-address=value]
     [--server-port=value] [--spring-xml-location=value]
@@ -554,7 +555,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
+<td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) the Cache Server will be a part of.</td>
 <td> </td>
 </tr>

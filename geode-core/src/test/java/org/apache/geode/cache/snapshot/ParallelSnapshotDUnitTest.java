@@ -181,10 +181,6 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private void forEachVm(SerializableCallable call, boolean local) throws Exception {
-    this.forEachVm(call, local, Integer.MAX_VALUE);
-  }
-
   private void forEachVm(SerializableCallable call, boolean local, int maxNodes) throws Exception {
     Host host = Host.getHost(0);
     int vms = Math.min(host.getVMCount(), maxNodes);

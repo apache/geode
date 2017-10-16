@@ -31,7 +31,7 @@ import java.io.Serializable;
 public class Customer implements Serializable {
 
   @JsonProperty("id")
-  private Long customerId;
+  public Long customerId;
   private String firstName;
   private String lastName;
   @JsonProperty("ssn")

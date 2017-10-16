@@ -29,11 +29,11 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.awaitility.Awaitility;
@@ -99,7 +99,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
           });
     });
 
-    gfsh.connectAndVerify(locatorVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connectAndVerify(locatorVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         CliStrings.CONNECT__USERNAME, "dataUser", CliStrings.CONNECT__PASSWORD, "1234567");
 
     // get command

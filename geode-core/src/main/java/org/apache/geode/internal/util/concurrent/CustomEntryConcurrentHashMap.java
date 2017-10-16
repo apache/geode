@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
+/*
  * ConcurrentHashMap implementation adapted from JSR 166 backport
  * (http://backport-jsr166.sourceforge.net) JDK5 version release 3.1 with modifications to use
  * generics where appropriate: backport-util-concurrent-Java60-3.1-src.tar.gz
@@ -33,12 +33,10 @@
  * 
  * Original license follows below.
  */
-
 /*
  * Written by Doug Lea with assistance from members of JCP JSR-166 Expert Group and released to the
  * public domain, as explained at http://creativecommons.org/licenses/publicdomain
  */
-
 package org.apache.geode.internal.util.concurrent;
 
 import java.io.IOException;
@@ -114,7 +112,7 @@ import org.apache.geode.internal.util.ArrayUtils;
  * This class is a member of the <a href="{@docRoot} /../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  * 
- * @since GemFire 1.5
+ * @since Java 1.5
  * @author Doug Lea
  * @param <K> the type of keys maintained by this map
  * @param <V> the type of mapped values

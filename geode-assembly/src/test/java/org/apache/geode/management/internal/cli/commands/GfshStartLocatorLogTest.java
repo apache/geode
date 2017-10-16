@@ -25,15 +25,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AbstractConfig;
-import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.test.dunit.rules.gfsh.GfshExecution;
-import org.apache.geode.test.dunit.rules.gfsh.GfshRule;
-import org.apache.geode.test.dunit.rules.gfsh.GfshScript;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
+import org.apache.geode.test.junit.rules.gfsh.GfshRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshScript;
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(DistributedTest.class)
+@Category(AcceptanceTest.class)
 public class GfshStartLocatorLogTest {
   @Rule
   public GfshRule gfshRule = new GfshRule();

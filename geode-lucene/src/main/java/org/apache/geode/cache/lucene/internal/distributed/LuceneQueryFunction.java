@@ -18,6 +18,8 @@ package org.apache.geode.cache.lucene.internal.distributed;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
@@ -45,6 +47,7 @@ import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * {@link LuceneQueryFunction} coordinates text search on a member. It receives text search query
@@ -52,14 +55,14 @@ import org.apache.geode.internal.logging.LogService;
  * and provides a result collector. The locally collected results are sent to the search
  * coordinator.
  */
-public class LuceneQueryFunction implements Function, InternalEntity {
+public class LuceneQueryFunction implements Function<LuceneFunctionContext>, InternalEntity {
   private static final long serialVersionUID = 1L;
   public static final String ID = LuceneQueryFunction.class.getName();
 
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<LuceneFunctionContext> context) {
     RegionFunctionContext ctx = (RegionFunctionContext) context;
     ResultSender<TopEntriesCollector> resultSender = ctx.getResultSender();
 
@@ -173,6 +176,13 @@ public class LuceneQueryFunction implements Function, InternalEntity {
   @Override
   public boolean optimizeForWrite() {
     return true;
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    ResourcePermission read = new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, regionName);
+    return Collections.singleton(read);
   }
 }
 

@@ -1392,6 +1392,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
+  public int getRegionSize(DistributedMember target) {
+    // GEODE-3679. Do not forward the request again.
+    return getRegionSize();
+  }
+
+  @Override
   public void checkReadiness() {
     super.checkReadiness();
     if (isDestroyed()) {
@@ -2454,5 +2460,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  @Override
+  protected void postDestroyRegion(boolean destroyDiskRegion, RegionEventImpl event) {
+    DiskRegion dr = this.getDiskRegion();
+    if (dr != null && destroyDiskRegion) {
+      dr.statsClear(this);
+    }
+    super.postDestroyRegion(destroyDiskRegion, event);
+  }
 }
 

@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.BatchRemovalThreadHelper;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -513,7 +512,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
   private VM rollLocatorToCurrent(VM rollLocator, int port, int distributedSystemId,
       String locators, String remoteLocators) throws Exception {
     rollLocator.invoke(() -> stopLocator());
-    VM newLocator = Host.getHost(0).getVM(rollLocator.getPid());
+    VM newLocator = Host.getHost(0).getVM(rollLocator.getId());
     newLocator.invoke(() -> startLocator(port, distributedSystemId, locators, remoteLocators));
     return newLocator;
   }
@@ -522,7 +521,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
       int distributedSystem, String regionName, String senderId, int messageSyncInterval)
       throws Exception {
     oldServer.invoke(() -> closeCache());
-    VM rollServer = Host.getHost(0).getVM(oldServer.getPid());
+    VM rollServer = Host.getHost(0).getVM(oldServer.getId());
     startAndConfigureServers(rollServer, null, locators, distributedSystem, regionName, senderId,
         messageSyncInterval);
     return rollServer;

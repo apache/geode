@@ -82,7 +82,7 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     HashSet<PersistentID> compactedStores = new HashSet<>();
     if (cache != null && !cache.isClosed()) {
       for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {

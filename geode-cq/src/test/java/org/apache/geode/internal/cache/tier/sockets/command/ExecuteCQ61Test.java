@@ -35,12 +35,12 @@ public class ExecuteCQ61Test {
   public CQUnitTestRule cqRule = new CQUnitTestRule();
 
   @Test
-  public void needClusterQueryManageToExecute() throws Exception {
+  public void needRegionRegionToExecute() throws Exception {
     ExecuteCQ61 executeCQ61 = mock(ExecuteCQ61.class);
     doCallRealMethod().when(executeCQ61).cmdExecute(cqRule.message, cqRule.connection,
         cqRule.securityService, 0);
 
     executeCQ61.cmdExecute(cqRule.message, cqRule.connection, cqRule.securityService, 0);
-    verify(cqRule.securityService).authorize(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
+    verify(cqRule.securityService).authorize(Resource.DATA, Operation.READ, "regionName");
   }
 }

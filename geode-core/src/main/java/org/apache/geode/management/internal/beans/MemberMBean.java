@@ -24,7 +24,6 @@ import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.OSMetrics;
-import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 
 /**
  * This MBean is a gateway to cache and a member
@@ -404,12 +403,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
 
   @Override
   public String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData) {
-    try {
-      CommandExecutionContext.setBytesFromShell(ArrayUtils.toBytes(binaryData));
-      return bridge.processCommand(commandString, env);
-    } finally {
-      CommandExecutionContext.clear();
-    }
+    return bridge.processCommand(commandString, env, ArrayUtils.toBytes(binaryData));
   }
 
   @Override

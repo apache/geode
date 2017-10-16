@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.net.BindException;
 import java.net.InetAddress;
-import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
@@ -278,9 +277,9 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(serverState.getClasspath()).isNull();
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(serverState.getHost()).isNull();
-    assertThat(serverState.getJavaVersion()).isNull();
-    assertThat(serverState.getJvmArguments()).isEqualTo(Collections.emptyList());
+    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
+    assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(serverState.getLogFile()).isNull();
     assertThat(serverState.getMemberName()).isNull();
     assertThat(serverState.getPid()).isNull();

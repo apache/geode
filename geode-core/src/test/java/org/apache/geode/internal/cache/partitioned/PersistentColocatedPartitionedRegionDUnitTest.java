@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -1195,7 +1196,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           // Logger interval may have been hooked by the test, so adjust test delays here
           int logInterval = ColocationLogger.getLogInterval();
           List<LogEvent> logEvents = Collections.emptyList();
-          int nLogEvents = 0;
           int nExpectedLogs = 1;
 
           createPR("Parent", true);
@@ -1205,18 +1205,16 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
             String childPRName = (String) regionInfo[0];
             String colocatedWithRegionName = (String) regionInfo[1];
-            int nLogsAfterRegionCreation = (int) regionInfo[2];
 
             // delay between starting generations of child regions and verify expected logging
-            int n = nExpectedLogs;
             await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
-              verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
+              verify(mockAppender, times(nExpectedLogs)).append(loggingEventCaptor.capture());
             });
 
             // Finally start the next child region
             createPR(childPRName, colocatedWithRegionName, true);
           }
-          String logMsg = "";
+          String logMsg;
           logEvents = loggingEventCaptor.getAllValues();
           assertEquals(String.format("Expected warning messages to be logged."), nExpectedLogs,
               logEvents.size());
@@ -1228,6 +1226,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           try {
             // Another delay before exiting the thread to make sure that missing region logging
             // doesn't continue after all regions are created (delay > logInterval)
+            verify(mockAppender, atLeastOnce()).append(any(LogEvent.class));
             Thread.sleep(logInterval * 2);
             verifyNoMoreInteractions(mockAppender);
           } finally {

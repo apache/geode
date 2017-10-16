@@ -25,7 +25,7 @@ Export configurations, data, logs and stack-traces.
 
 -   **[export cluster-configuration](#topic_mdv_jgz_ck)**
 
-    Exports a cluster configuration zip file that contains the `cache.xml` files, `gemfire.properties` files, and application jar files needed to configure and operate a <%=vars.product_name%> distributed system.
+    Export a cluster configuration zip file that contains the `cache.xml` files, `gemfire.properties` files, and application jar files needed to configure and operate a <%=vars.product_name%> distributed system.
 
 -   **[export config](#topic_C7C69306F93743459E65D46537F4A1EE)**
 
@@ -61,24 +61,24 @@ See [Overview of the Cluster Configuration Service](../../../configuring/cluster
 export cluster-configuration --zip-file-name=value [--dir=value]
 ```
 
+**Export Cluster-Configuration Parameters:**
+
 | Name                                                  | Description                                                                          | Default Value     |
 |-------------------------------------------------------|--------------------------------------------------------------------------------------|-------------------|
 | <span class="keyword parmname">\\-\\-zip-file-name</span> | *Required.* File name of the zip file to contain the exported cluster configuration. |                   |
 | <span class="keyword parmname">\\-\\-dir</span>           | Directory where the cluster configuration zip files is saved.                        | Locator directory |
 
-<span class="tablecap">Table 1. Export Cluster-Configuration Parameters</span>
-
 **Example Commands:**
 
 ``` pre
-gfsh>export cluster-configuration --zip-file-name=/home/username/gemfire80/myClusterConfig.zip
+gfsh>export cluster-configuration --zip-file-name=/home/username/gemfire/myClusterConfig.zip
 ```
 
 **Sample Output:**
 
 ``` pre
 gfsh>export cluster-configuration --zip-file-name=mySharedConfig.zip
-Downloading cluster configuration : /home/username/gemfire80/myClusterConfig.zip
+Downloading cluster configuration : /home/username/gemfire/myClusterConfig.zip
 ```
 
 ## <a id="topic_C7C69306F93743459E65D46537F4A1EE" class="no-quick-link"></a>export config
@@ -92,67 +92,83 @@ If you do not specify any parameters, all member configuration will be exported.
 **Syntax:**
 
 ``` pre
-export config [--member=value(,value)*] [--group=value(,value)*]
+export config [--members=value(,value)*] [--groups=value(,value)*]
 [--dir=value]
 ```
 
+**Export Config Parameters:**
+
 | Name                                           | Description                                                          |
 |------------------------------------------------|----------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member(s) whose configuration will be exported.       |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members whose configuration will be exported.            |
+| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) whose configuration will be exported.       |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose configuration will be exported.            |
 | <span class="keyword parmname">\\-\\-dir</span>    | Directory to which the exported configuration files will be written. |
-
-<span class="tablecap">Table 2. Export Config Parameters</span>
 
 **Example Commands:**
 
 ``` pre
 export config
-export config --member=member1
+export config --members=member1
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>export config --member=member1
-Downloading Cache XML file: c:\PivotalGemFire70\Latest\.\member1-cache.xml
-Downloading properties file: c:\PivotalGemFire70\Latest\.\member1-gf.properties
+gfsh>export config --members=member1
+Downloading Cache XML file: c:\PivotalGemFire\Latest\.\member1-cache.xml
+Downloading properties file: c:\PivotalGemFire\Latest\.\member1-gf.properties
 ```
 
 ## <a id="topic_263B70069BFC4A7185F86B3272011734" class="no-quick-link"></a>export data
 
-Export user data from a region to a file.
+Export user data from a region to a file or files.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
 
+To export data from any region, replicated or partitioned, sequentially to a single file, use the `--file` option:
+
 ``` pre
-export data --region=value --file=value --member=value
+export data --region=value --member=value --file=value
 ```
+
+In this scenario, data from replicated and partitioned regions is exported sequentially to a single file on the specified member.
+
+In the case of partitioned regions, you can speed up the export process by using the `--parallel` option:
+
+``` pre
+export data  --parallel --region=value --member=value --dir=value
+```
+
+In this scenario, partitioned region data is exported simultaneously on all hosting nodes to directories local to those respective nodes.
+
+- Parallel export applies only to partitioned regions.
+
+- The `--file` and `--dir` options are mutually exclusive; `--file` can be used only for serial export, `--dir` can be used for both serial and parallel exports.
+
+**Export Data Parameters:**
 
 | Name                                           | Description                                                                                                                                     |
 |------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-region</span> | *Required.* Region from which data is to be exported.                                                                                           |
-| <span class="keyword parmname">\\-\\-file</span>   | *Required.* File to which the exported data is to be written. The file must have an extension of `.gfd`.                                        |
-| <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/Id of a member that hosts the region. The data will be exported to the specified file on the host where the member is running. |
-
-<span class="tablecap">Table 3. Export Data Parameters</span>
+| <span class="keyword parmname">&#8209;&#8209;member</span> | *Required.* Name/Id of a member that hosts the region. In a serial export, all data is exported to the specified file on the host where the member is running. In a parallel export, data from a partitioned region partially hosted on this member is exported for each partition to files on the nodes that host those partitions. |
+| <span class="keyword parmname">\\-\\-file</span>   | File to which the exported data is to be written. The file must have an extension of `.gfd`. Cannot be specified at the same time as \\-\\-dir, cannot be used with &#8209;&#8209;parallel.|
+| <span class="keyword parmname">\\-\\-dir</span>   | Directory to which the exported data is to be written. Required if \\-\\-parallel is true. Cannot be specified at the same time as \\-\\-file.|
+| <span class="keyword parmname">\\-\\-parallel</span>   | Export local data on each node to a directory on that machine. Available for partitioned regions only.  |
 
 **Example Commands:**
 
 ``` pre
 export data --region=region2 --file=region2_20121001.gfd --member=server2
-
 ```
 
 **Sample Output:**
 
 ``` pre
  gfsh>export data --region=region2 --file=region2_20121001.gfd --member=server1
-Data succesfully exported from region : region2 to file : C:\PivotalGemFire70\
+Data succesfully exported from region : region2 to file : C:\PivotalGemFire\
 Latest\server1\region2_20121001.gfd on host : 192.0.2.0
-
 ```
 
 ## <a id="topic_B80978CC659244AE91E2B8CE56EBDFE3" class="no-quick-link"></a>export logs
@@ -168,17 +184,19 @@ The `--dir` parameter specifies a local directory to which log files will be wri
 **Syntax:**
 
 ``` pre
-export logs [--dir=value] [--group=value(,value)*] [--member=value(,value)*] 
+export logs [--dir=value] [--groups=value(,value)*] [--members=value(,value)*] 
 [--log-level=value] [--only-log-level=value] [--merge-log=value] 
 [--start-time=value] [--end-time=value] [logs-only(=value)?] 
 [--stats-only(=value)?] [--file-size-limit(=value)?]
 ```
 
+**Export Logs Parameters:**
+
 | Name                                                   | Description                                                                                                                | Default Value |
 |--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|---------------|
 | <span class="keyword parmname">\\-\\-dir</span>            | Local directory to which log files will be written when logs are exported using an http connection. Ignored when the command is executed over JMX.     |               | 
-| <span class="keyword parmname">\\-\\-group</span>          | Group of members whose log files will be exported.                                                                         |               |
-| <span class="keyword parmname">&#8209;&#8209;member</span>         | Name/ID of the member whose log files will be exported.                                                                    |               |
+| <span class="keyword parmname">\\-\\-groups</span>          | Group(s) of members whose log files will be exported.                                                                         |               |
+| <span class="keyword parmname">&#8209;&#8209;members</span>         | Name/ID of the member(s) whose log files will be exported.                                                            |               |
 | <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `OFF`, `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, and `ALL`. | `INFO`        |
 | <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include only entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
 | <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory (deprecated).                                                             | false         |
@@ -187,8 +205,6 @@ export logs [--dir=value] [--group=value(,value)*] [--member=value(,value)*]
 | <span class="keyword parmname">\\-\\-logs-only</span>       | Whether to export only logs (not statistics)               | If parameter not specified: false. If parameter specified without a value: true      |
 | <span class="keyword parmname">\\-\\-stats-only</span>       | Whether to export only statistics (not logs)               | If parameter not specified: false. If parameter specified without a value: true      |
 | <span class="keyword parmname">\\-\\-file-size-limit</span>       | Limits total unzipped size of the exported files. Specify 0 (zero) for no limit. Value is in megabytes by default or [k,m,g,t] may be specified.              | If parameter not specified: 100m. If parameter specified without a value: 0      |
-
-<span class="tablecap">Table 4. Export Logs Parameters</span>
 
 **Example commands, showing output:**
 
@@ -219,13 +235,13 @@ Export region data from an offline disk store into gemfire snapshot files.
 export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 ```
 
+**Export Offline-Disk-Store Parameters:**
+
 | Name                                              | Description                                        |
 |---------------------------------------------------|----------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name</span>      | *Required.* Name of the disk store to be exported. |
 | <span class="keyword parmname">\\-\\-disk-dirs</span> | Directories which contain the disk store files.    |
 | <span class="keyword parmname">\\-\\-dir</span>       | Directory to export the snapshot files to.         |
-
-<span class="tablecap">Table 5. Export Offline-Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -243,16 +259,16 @@ Export the stack trace for a member or members.
 **Syntax:**
 
 ``` pre
-export stack-traces --file=value [--member=value] [--group=value]
+export stack-traces --file=value [--members=value(,value)*] [--groups=value(,value)*]
 ```
+
+**Export Stack-Traces Parameters:**
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-file</span>   | *Required.* Filename to which the stack-traces will be written. |
-| <span class="keyword parmname">\\-\\-member</span> | Name or ID of the member whose log files will be exported.      |
-| <span class="keyword parmname">\\-\\-group</span>  | Group of members whose log files will be exported.              |
-
-<span class="tablecap">Table 6. Export Stack-Traces Parameters</span>
+| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) whose log files will be exported.      |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members whose log files will be exported.          |
 
 **Example Commands:**
 
@@ -264,6 +280,6 @@ export stack-traces --file=stack.txt
 
 ``` pre
 gfsh>export stack-traces --file=stack.txt
-stack-trace(s) exported to file: C:\PivotalGemFire70\Latest\locator1\stack.txt
+stack-trace(s) exported to file: C:\PivotalGemFire\Latest\locator1\stack.txt
 On host : GemFireStymon
 ```

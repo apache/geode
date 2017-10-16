@@ -33,6 +33,7 @@ public class LinuxProcFsStatistics {
     IOWAIT,
     IRQ,
     SOFTIRQ,
+    STEAL,
     /** stands for aggregation of all columns not present in the enum list */
     OTHER
   }
@@ -150,6 +151,7 @@ public class LinuxProcFsStatistics {
             ints[LinuxSystemStats.cpuNiceINT] = cpuData[CPU.NICE.ordinal()];
             ints[LinuxSystemStats.cpuSystemINT] = cpuData[CPU.SYSTEM.ordinal()];
             ints[LinuxSystemStats.cpuUserINT] = cpuData[CPU.USER.ordinal()];
+            ints[LinuxSystemStats.cpuStealINT] = cpuData[CPU.STEAL.ordinal()];
             ints[LinuxSystemStats.iowaitINT] = cpuData[CPU.IOWAIT.ordinal()];
             ints[LinuxSystemStats.irqINT] = cpuData[CPU.IRQ.ordinal()];
             ints[LinuxSystemStats.softirqINT] = cpuData[CPU.SOFTIRQ.ordinal()];
@@ -637,12 +639,12 @@ public class LinuxProcFsStatistics {
       st.skipToken(); // cpu name
       final int MAX_CPU_STATS = CPU.values().length;
       /*
-       * newer kernels now have 8 columns for cpu in /proc/stat (up from 7). This number may
-       * increase even further, hence we now use List in place of long[]. We add up entries from all
-       * columns after 7 into CPU.OTHER
+       * newer kernels now have 10 columns for cpu in /proc/stat. This number may increase even
+       * further, hence we now use List in place of long[]. We add up entries from all columns after
+       * MAX_CPU_STATS into CPU.OTHER
        */
-      List<Long> newStats = new ArrayList<Long>(8);
-      List<Long> diffs = new ArrayList<Long>(8);
+      List<Long> newStats = new ArrayList<Long>(10);
+      List<Long> diffs = new ArrayList<Long>(10);
       long total_change = 0;
       int actualCpuStats = 0;
       long unaccountedCpuUtilization = 0;

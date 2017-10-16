@@ -16,20 +16,23 @@
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -37,26 +40,34 @@ public class LogNoPasswordTest {
 
   private static String PASSWORD = "abcdefghijklmn";
   @Rule
-  public LocatorStarterRule locator = new LocatorStarterRule().withProperty(LOG_LEVEL, "DEBUG")
-      .withWorkingDir().withLogFile().withSecurityManager(MySecurityManager.class);
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
   @Test
   public void testPasswordInLogs() throws Exception {
-    locator.startLocator();
+    Properties properties = new Properties();
+    properties.setProperty(LOG_LEVEL, "debug");
+    properties.setProperty(SECURITY_MANAGER, MySecurityManager.class.getName());
+    MemberVM locator = lsRule.startLocatorVM(0, properties);
     gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http, "any",
         PASSWORD);
     gfsh.executeAndVerifyCommand("list members");
 
-    // scan all log files to find any occurrences of password
-    File[] logFiles = locator.getWorkingDir().listFiles(file -> file.toString().endsWith(".log"));
+    // scan all locator log files to find any occurrences of password
+    File[] serverLogFiles =
+        locator.getWorkingDir().listFiles(file -> file.toString().endsWith(".log"));
+    File[] gfshLogFiles = gfsh.getWorkingDir().listFiles(file -> file.toString().endsWith(".log"));
+
+    File[] logFiles = (File[]) ArrayUtils.addAll(serverLogFiles, gfshLogFiles);
+
     for (File logFile : logFiles) {
       Scanner scanner = new Scanner(logFile);
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
-        assertThat(line).doesNotContain(PASSWORD);
+        assertThat(line).describedAs("File: %s, Line: %s", logFile.getAbsolutePath(), line)
+            .doesNotContain(PASSWORD);
       }
     }
   }

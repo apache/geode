@@ -55,7 +55,7 @@ Deletes a disk store and all files on disk used by the disk store. Data for clos
 **Syntax:**
 
 ``` pre
-destroy disk-store --name=value [--group=value(,value)*]
+destroy disk-store --name=value [--groups=value(,value)*]
 ```
 
 **Parameters, destroy disk-store:**
@@ -63,7 +63,7 @@ destroy disk-store --name=value [--group=value(,value)*]
 | Name                                          | Description                                                                                                                          |
 |-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name</span>  | *Required.* Name of the disk store to be deleted.                                                                                    |
-| <span class="keyword parmname">&#8209;&#8209;group</span> | Group(s) of members on which the disk store will be destroyed. If no group is specified, the disk store is destroyed on all members. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span> | Group(s) of members on which the disk store will be destroyed. If no group is specified, the disk store is destroyed on all members. |
 
 
 **Example Commands:**
@@ -92,7 +92,7 @@ The default is for the function to be unregistered from all members.
 **Syntax:**
 
 ``` pre
-destroy function --id=value [--group=value] [--member=value]
+destroy function --id=value [--groups=value(,value)*] [--member=value]
 ```
 
 **Parameters, destroy function:**
@@ -138,8 +138,8 @@ gfsh>alter region --name=regionA --gateway-sender-id=""
 **Syntax:**
 
 ``` pre
-destroy gateway-sender --id=value [--group=value(,value)*]
-  [--member=value(,value)*]
+destroy gateway-sender --id=value [--groups=value(,value)*]
+  [--members=value(,value)*]
 ```
 
 **Parameters, destroy gateway-sender:**
@@ -147,8 +147,8 @@ destroy gateway-sender --id=value [--group=value(,value)*]
 | Name                                           | Description                                                                                |
 |------------------------------------------------|--------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-id</span>     | *Required.* Unique gateway sender identifier. Use the `list gateways` command to obtain the ID. |
-| <span class="keyword parmname">\\-\\-group</span> | One or more groups of members from which this gateway sender will be destroyed.       |
-| <span class="keyword parmname">&#8209;&#8209;member</span> | Name or ID of the member from which this gateway sender will be destroyed.   |
+| <span class="keyword parmname">\\-\\-groups</span> | One or more groups of members from which this gateway sender will be destroyed.       |
+| <span class="keyword parmname">&#8209;&#8209;members</span> | Name or ID of the member(s) from which this gateway sender will be destroyed.   |
 
 **Example Commands:**
 
@@ -165,8 +165,8 @@ Destroy or remove the specified index.
 **Syntax:**
 
 ``` pre
-destroy index [--name=value] [--region=value] [--member=value] 
-[--group=value]
+destroy index [--name=value] [--region=value] [--members=value(,value)*]
+[--groups=value(,value)*]
 ```
 
 **Note:**
@@ -177,15 +177,15 @@ You must specify at least one of the parameter options. If you enter `destroy in
 | Name                                           | Description                                                                  |
 |------------------------------------------------|------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name</span>   | Name of the index to be removed.                                            |
-| <span class="keyword parmname">\\-\\-member</span> | Id of the member on which index is to be removed.                            |
+| <span class="keyword parmname">\\-\\-members</span> | Id of the member(s) on which index is to be removed.                            |
 | <span class="keyword parmname">\\-\\-region</span> | Name of the region from which an index or all indexes are to be destroyed. |
-| <span class="keyword parmname">\\-\\-group</span>  | The index will be removed on all the members in this member group.           |
+| <span class="keyword parmname">\\-\\-groups</span>  | The index will be removed on all the members in the group(s).           |
 
 
 **Example Commands:**
 
 ``` pre
-destroy index --member=server2
+destroy index --members=server2
 destroy index --name=MyKeyIndex
 ```
 

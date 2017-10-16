@@ -94,7 +94,11 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
             f.createIntGauge(LOAD_BALANCES_IN_PROGRESS, "Number of load balances in progress",
                 "operations"),
             f.createLongCounter(LOAD_BALANCE_TIME, "Total time spent load balancing this sender",
-                "nanoseconds"),});
+                "nanoseconds"),
+            f.createIntCounter(SYNCHRONIZATION_EVENTS_ENQUEUED,
+                "Number of synchronization events added to the event queue.", "operations"),
+            f.createIntCounter(SYNCHRONIZATION_EVENTS_PROVIDED,
+                "Number of synchronization events provided to other members.", "operations"),});
 
     // Initialize id fields
     eventsReceivedId = type.nameToId(EVENTS_RECEIVED);
@@ -123,6 +127,8 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
     loadBalancesCompletedId = type.nameToId(LOAD_BALANCES_COMPLETED);
     loadBalancesInProgressId = type.nameToId(LOAD_BALANCES_IN_PROGRESS);
     loadBalanceTimeId = type.nameToId(LOAD_BALANCE_TIME);
+    synchronizationEventsEnqueuedId = type.nameToId(SYNCHRONIZATION_EVENTS_ENQUEUED);
+    synchronizationEventsProvidedId = type.nameToId(SYNCHRONIZATION_EVENTS_PROVIDED);
   }
 
   /**

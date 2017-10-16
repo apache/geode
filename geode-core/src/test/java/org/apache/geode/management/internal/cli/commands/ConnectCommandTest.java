@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -69,7 +69,7 @@ public class ConnectCommandTest {
     when(connectCommand.getGfsh()).thenReturn(gfsh);
     doReturn(properties).when(connectCommand).loadProperties(any());
     CommandResult result = mock(CommandResult.class);
-    when(connectCommand.httpConnect(any(), any())).thenReturn(result);
+    when(connectCommand.httpConnect(any(), any(), anyBoolean())).thenReturn(result);
     when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
         .thenReturn(result);
     fileCaptor = ArgumentCaptor.forClass(File.class);

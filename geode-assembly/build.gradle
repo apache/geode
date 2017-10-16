@@ -26,8 +26,6 @@ extraArchive {
   tests = false
 }
 
-disableMavenPublishing()
-
 // Gradle doesn't automatically remove the jar artifact even though we disabled it
 // this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.
 configurations.all {
@@ -38,6 +36,12 @@ gradle.taskGraph.whenReady( { graph ->
   tasks.withType(Tar).each { tar ->
     tar.compression = Compression.GZIP
     tar.extension = 'tar.gz'
+  }
+  tasks.srcDistZip {
+    classifier 'src'
+  }
+  tasks.srcDistTar {
+    classifier 'src'
   }
 })
 
@@ -288,7 +292,7 @@ gradle.taskGraph.whenReady( { graph ->
 
 distributions {
   src {
-    baseName = 'apache-geode-src'
+    baseName = 'apache-geode'
     contents {
       from writeBuildInfo
       from (rootDir) {
@@ -435,22 +439,24 @@ def printJars(tree) {
   };
 }
 
-task dumpInstalledJars(dependsOn: installDist) << {
-  description "Dump a list of all of the jars shipped with the binary distribution, for validation purposes"
+task dumpInstalledJars(dependsOn: installDist) {
+  doLast {
+    description "Dump a list of all of the jars shipped with the binary distribution, for validation purposes"
 
-  FileTree installDir = fileTree(dir: installDist.destinationDir)
+    FileTree installDir = fileTree(dir: installDist.destinationDir)
 
-  println("Jars in the binary install")
-  println("==========================")
-  printJars(installDir)
+    println("Jars in the binary install")
+    println("==========================")
+    printJars(installDir)
 
-  installDir.include("**/*.war").visit{ file -> 
-    if(!file.isDirectory()) {
-        FileTree warContents = zipTree(file.file)
-        println ""
-        println file.name
-        println("==========================")
-        printJars(warContents);
-    } 
-  };
+    installDir.include("**/*.war").visit{ file ->
+      if(!file.isDirectory()) {
+          FileTree warContents = zipTree(file.file)
+          println ""
+          println file.name
+          println("==========================")
+          printJars(warContents);
+      }
+    };
+  }
 }

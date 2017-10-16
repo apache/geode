@@ -2752,11 +2752,13 @@ public class InternalDistributedSystem extends DistributedSystem
             attemptingToReconnect = false;
             return;
           }
+          logger.warn("Caught SystemConnectException in reconnect", e);
           continue;
         } catch (GemFireConfigException e) {
           if (isDebugEnabled) {
             logger.debug("Attempt to reconnect failed with GemFireConfigException");
           }
+          logger.warn("Caught GemFireConfigException in reconnect", e);
           continue;
         } catch (Exception ee) {
           logger.warn(
@@ -3090,5 +3092,9 @@ public class InternalDistributedSystem extends DistributedSystem
   public interface CreationStackGenerator {
 
     Throwable generateCreationStack(final DistributionConfig config);
+  }
+
+  public void setCache(InternalCache instance) {
+    this.dm.setCache(instance);
   }
 }

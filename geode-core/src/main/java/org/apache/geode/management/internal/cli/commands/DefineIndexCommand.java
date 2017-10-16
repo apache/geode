@@ -18,8 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -46,40 +45,11 @@ public class DefineIndexCommand implements GfshCommand {
           help = CliStrings.DEFINE_INDEX__REGION__HELP) String regionPath,
       @CliOption(key = CliStrings.DEFINE_INDEX__TYPE, unspecifiedDefaultValue = "range",
           optionContext = ConverterHint.INDEX_TYPE,
-          help = CliStrings.DEFINE_INDEX__TYPE__HELP) final String indexType) {
+          help = CliStrings.DEFINE_INDEX__TYPE__HELP) final IndexType indexType) {
 
     Result result;
-    int idxType;
 
-    // Index type check
-    if ("range".equalsIgnoreCase(indexType)) {
-      idxType = IndexInfo.RANGE_INDEX;
-    } else if ("hash".equalsIgnoreCase(indexType)) {
-      idxType = IndexInfo.HASH_INDEX;
-    } else if ("key".equalsIgnoreCase(indexType)) {
-      idxType = IndexInfo.KEY_INDEX;
-    } else {
-      return ResultBuilder
-          .createUserErrorResult(CliStrings.DEFINE_INDEX__INVALID__INDEX__TYPE__MESSAGE);
-    }
-
-    if (indexName == null || indexName.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.DEFINE_INDEX__INVALID__INDEX__NAME);
-    }
-
-    if (indexedExpression == null || indexedExpression.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.DEFINE_INDEX__INVALID__EXPRESSION);
-    }
-
-    if (StringUtils.isBlank(regionPath) || regionPath.equals(Region.SEPARATOR)) {
-      return ResultBuilder.createUserErrorResult(CliStrings.DEFINE_INDEX__INVALID__REGIONPATH);
-    }
-
-    if (!regionPath.startsWith(Region.SEPARATOR)) {
-      regionPath = Region.SEPARATOR + regionPath;
-    }
-
-    IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, idxType);
+    IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, indexType);
     IndexDefinition.indexDefinitions.add(indexInfo);
 
     final InfoResultData infoResult = ResultBuilder.createInfoResultData();

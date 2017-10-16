@@ -120,9 +120,9 @@ public class ExecuteCQ61 extends BaseCQCommand {
 
       // Authorization check
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
+      query = qService.newQuery(cqQueryString);
+      cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
       if (authzRequest != null) {
-        query = qService.newQuery(cqQueryString);
-        cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
         executeCQContext = authzRequest.executeCQAuthorize(cqName, cqQueryString, cqRegionNames);
         String newCqQueryString = executeCQContext.getQuery();
 
@@ -137,7 +137,8 @@ public class ExecuteCQ61 extends BaseCQCommand {
       }
 
       // auth check to see if user can create CQ or not
-      securityService.authorize(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
+      ((DefaultQuery) query).getRegionsInQuery(null).forEach((regionName) -> securityService
+          .authorize(Resource.DATA, Operation.READ, (String) regionName));
 
       // test hook to trigger vMotion during CQ registration
       if (CqServiceProvider.VMOTION_DURING_CQ_REGISTRATION_FLAG) {

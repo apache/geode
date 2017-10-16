@@ -999,7 +999,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         cf.setPoolSubscriptionEnabled(true);
         cf.setPoolSubscriptionRedundancy(1);
         // bug #50683 - secondary durable queue retains all GC messages
-        cf.set(DURABLE_CLIENT_ID, "" + vm.getPid());
+        cf.set(DURABLE_CLIENT_ID, "" + vm.getId());
         cf.set(DURABLE_CLIENT_TIMEOUT, "" + 200);
         cf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cache = getClientCache(cf);

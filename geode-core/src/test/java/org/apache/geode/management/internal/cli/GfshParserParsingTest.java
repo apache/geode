@@ -25,8 +25,8 @@ import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(IntegrationTest.class)
 public class GfshParserParsingTest {
@@ -202,7 +202,7 @@ public class GfshParserParsingTest {
     Map<String, String> params = parseParams(input, "startLocator");
 
     assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("'-Dgemfire.http-service-port= 8080'");
+    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port= 8080");
   }
 
   @Test
@@ -321,6 +321,45 @@ public class GfshParserParsingTest {
   public void testValueOfJsonWithSpaceAndOuterQuotes() throws Exception {
     String command = "put --key=\"('name' : 'id')\" --value=456 --region=/test";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("key")).isEqualTo("\"('name' : 'id')\"");
+    assertThat(result.getParamValue("key")).isEqualTo("('name' : 'id')");
+  }
+
+  @Test
+  public void optionValueWillNotBeTrimmedIfInQuotes() throws Exception {
+    String command = "start locator --name=' test '";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo(" test ");
+  }
+
+  @Test
+  public void optionValueWithExtraSpaceInBetween() throws Exception {
+    String command = "start locator --name= test    --bind-address=123";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("test");
+    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+  }
+
+  @Test
+  public void optionValueWithEmptyString() throws Exception {
+    String command = "start locator --name= --bind-address=123";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isNull();
+    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+  }
+
+  @Test
+  public void optionValueWithQuotedEmptyString() throws Exception {
+    String command = "start locator --name='' --bind-address=123";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isNull();
+    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+  }
+
+  @Test
+  public void testMultiLineCommand() throws Exception {
+    String command = "start server " + GfshParser.LINE_SEPARATOR + "--name=test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("name")).isEqualTo("test");
+    assertThat(result.getCommandName()).isEqualTo("start server");
   }
 }

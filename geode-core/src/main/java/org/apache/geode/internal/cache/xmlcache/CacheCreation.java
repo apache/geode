@@ -58,6 +58,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.internal.InternalQueryService;
+import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.server.CacheServer;
@@ -88,6 +90,7 @@ import org.apache.geode.internal.cache.DiskStoreFactoryImpl;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.DiskStoreMonitor;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.cache.ExpirationScheduler;
 import org.apache.geode.internal.cache.FilterProfile;
@@ -535,7 +538,7 @@ public class CacheCreation implements InternalCache {
       for (GatewayTransportFilter filter : receiverCreation.getGatewayTransportFilters()) {
         factory.addGatewayTransportFilter(filter);
       }
-      factory.setHostnameForSenders(receiverCreation.getHost());
+      factory.setHostnameForSenders(receiverCreation.getHostnameForSenders());
       GatewayReceiver receiver = factory.create();
       if (receiver.isManualStart()) {
         cache.getLoggerI18n().info(
@@ -942,7 +945,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public QueryService getQueryService() {
+  public InternalQueryService getQueryService() {
     return this.queryService;
   }
 
@@ -1734,7 +1737,7 @@ public class CacheCreation implements InternalCache {
     return null;
   }
 
-  private final QueryService queryService = new QueryService() {
+  private final InternalQueryService queryService = new InternalQueryService() {
 
     private final Map<String, List<Index>> indexes = new HashMap<>();
 
@@ -1957,6 +1960,10 @@ public class CacheCreation implements InternalCache {
       throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
     }
 
+    @Override
+    public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
+      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    }
   };
 
   @Override
@@ -2207,6 +2214,18 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public boolean hasPersistentRegion() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void shutDownAll() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
+      InternalDistributedMember sender, LocalRegion region,
+      List<InitialImageOperation.Entry> entriesToSynchronize) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 }

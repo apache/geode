@@ -17,15 +17,14 @@ package org.apache.geode.management;
 import java.util.Map;
 
 public interface CompositeTestMXBean {
-  // [A] MBean Attributes
-  // 0. Basic
-  public CompositeStats getCompositeStats();
 
-  public CompositeStats listCompositeStats();
+  CompositeStats getCompositeStats();
 
-  public Map<String, Integer> getMap();
+  CompositeStats listCompositeStats();
 
-  public Integer[] getIntegerArray();
+  Map<String, Integer> getMap();
 
-  public CompositeStats[] getCompositeArray();
+  Integer[] getIntegerArray();
+
+  CompositeStats[] getCompositeArray();
 }

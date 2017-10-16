@@ -34,6 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
@@ -75,7 +76,7 @@ public class CacheServerBridgeClientMembershipRegressionTest {
     this.acceptor = mock(AcceptorImpl.class);
     this.monitor = mock(MBeanStatsMonitor.class);
 
-    when(cache.getQueryService()).thenReturn(mock(QueryService.class));
+    when(cache.getQueryService()).thenReturn(mock(InternalQueryService.class));
     when(acceptor.getStats()).thenReturn(mock(CacheServerStats.class));
   }
 

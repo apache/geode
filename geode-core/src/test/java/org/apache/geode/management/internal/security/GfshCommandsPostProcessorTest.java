@@ -27,9 +27,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.TestPostProcessor;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -43,7 +43,7 @@ public class GfshCommandsPostProcessorTest {
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
-      serverStarter::getJmxPort, GfshShellConnectionRule.PortType.jmxManger);
+      serverStarter::getJmxPort, GfshShellConnectionRule.PortType.jmxManager);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

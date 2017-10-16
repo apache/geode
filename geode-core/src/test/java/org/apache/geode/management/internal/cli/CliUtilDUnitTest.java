@@ -14,8 +14,14 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 import java.util.Set;
@@ -36,8 +42,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.RegionMXBean;
-import org.apache.geode.management.internal.cli.result.CommandResultException;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -327,7 +331,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
 
     InternalCache cache = getCache();
 
-    Set<DistributedMember> set = CliUtil.getRegionAssociatedMembers(region1, cache, true);
+    Set<DistributedMember> set = CliUtil.getRegionAssociatedMembers(region1, cache);
     assertNotNull(set);
     assertEquals(4, set.size());
     assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
@@ -341,13 +345,13 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
      * assertIndexDetailsEquals(1, set.size());
      */
 
-    set = CliUtil.getRegionAssociatedMembers(region_group1, cache, true);
+    set = CliUtil.getRegionAssociatedMembers(region_group1, cache);
     assertNotNull(set);
     assertEquals(2, set.size());
     assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
     assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
 
-    set = CliUtil.getRegionAssociatedMembers(region_member2_group1, cache, true);
+    set = CliUtil.getRegionAssociatedMembers(region_member2_group1, cache);
     assertNotNull(set);
     assertEquals(1, set.size());
     assertEquals(true, containsMember(set, MEMBER_2_GROUP1));

@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
 import org.apache.shiro.subject.support.SubjectThreadState;
@@ -59,6 +60,7 @@ public class IntegratedSecurityServiceTest {
     when(provider.getSecurityManager()).thenReturn(mockSecurityManager);
     when(shiroManager.createSubject(any(SubjectContext.class))).thenReturn(mockSubject);
     when(mockSubject.getPrincipal()).thenReturn("principal");
+    when(mockSubject.getSession()).thenReturn(mock(Session.class));
 
     this.securityService = new IntegratedSecurityService(provider, null);
   }

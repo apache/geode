@@ -170,29 +170,14 @@ public class LonerDMJUnitTest {
     cfg.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     DistributedSystem ds = DistributedSystem.connect(cfg);
     System.out.println("MemberId = " + ds.getMemberId());
-    assertEquals(host.toString(), ds.getDistributedMember().getHost());
     assertEquals(OSProcess.getId(), ds.getDistributedMember().getProcessId());
     if (!PureJavaMode.isPure()) {
       String pid = String.valueOf(OSProcess.getId());
       assertTrue(ds.getMemberId().indexOf(pid) > -1);
     }
     assertTrue(ds.getMemberId().indexOf(name) > -1);
-    String memberid = ds.getMemberId();
-    String shortname = shortName(host);
-    assertTrue("'" + memberid + "' does not contain '" + shortname + "'",
-        memberid.indexOf(shortname) > -1);
     // make sure the loner port can be updated
     ((LonerDistributionManager) ((InternalDistributedSystem) ds).getDM()).updateLonerPort(100);
-  }
-
-  private String shortName(String hostname) {
-    assertNotNull(hostname);
-    int index = hostname.indexOf('.');
-
-    if (index > 0 && !Character.isDigit(hostname.charAt(0)))
-      return hostname.substring(0, index);
-    else
-      return hostname;
   }
 
 }

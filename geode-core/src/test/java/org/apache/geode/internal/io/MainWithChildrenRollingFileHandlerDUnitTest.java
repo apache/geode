@@ -19,7 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.test.dunit.rules.Locator;
+import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;

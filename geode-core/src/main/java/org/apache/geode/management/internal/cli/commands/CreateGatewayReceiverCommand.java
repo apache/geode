@@ -73,15 +73,18 @@ public class CreateGatewayReceiverCommand implements GfshCommand {
           help = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE__HELP) Integer socketBufferSize,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER,
-          help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilters) {
+          help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilters,
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS,
+          help = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP) String hostnameForSenders) {
 
     Result result;
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
-      GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs =
-          new GatewayReceiverFunctionArgs(manualStart, startPort, endPort, bindAddress,
-              socketBufferSize, maximumTimeBetweenPings, gatewayTransportFilters);
+      GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs = new GatewayReceiverFunctionArgs(
+          manualStart, startPort, endPort, bindAddress, socketBufferSize, maximumTimeBetweenPings,
+          gatewayTransportFilters, hostnameForSenders);
 
       Set<DistributedMember> membersToCreateGatewayReceiverOn =
           CliUtil.findMembers(onGroups, onMember);

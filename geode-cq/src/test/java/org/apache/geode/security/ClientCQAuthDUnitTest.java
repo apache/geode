@@ -35,7 +35,7 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -70,9 +70,8 @@ public class ClientCQAuthDUnitTest {
       // Create the CqQuery (this is on the client side)
       CqQuery cq = qs.newCq("CQ1", query, cqa);
 
-      assertNotAuthorized(cq::execute, "CLUSTER:MANAGE:QUERY");
-      assertNotAuthorized(cq::executeWithInitialResults, "CLUSTER:MANAGE:QUERY");
-      assertNotAuthorized(cq::close, "CLUSTER:MANAGE:QUERY");
+      assertNotAuthorized(cq::execute, "DATA:READ:AuthRegion");
+      assertNotAuthorized(cq::executeWithInitialResults, "DATA:READ:AuthRegion");
       assertNotAuthorized(qs::getAllDurableCqsFromServer, "CLUSTER:READ");
     });
 

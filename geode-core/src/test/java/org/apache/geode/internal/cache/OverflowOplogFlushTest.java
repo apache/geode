@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.cache;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doAnswer;
@@ -26,8 +25,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,6 +32,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Testing recovery from failures writing OverflowOplog entries
@@ -82,9 +81,9 @@ public class OverflowOplogFlushTest extends DiskRegionTestingBase {
     }
   }
 
-  class FakeChannelWriteArrayBB implements Answer<Integer> {
+  class FakeChannelWriteArrayBB implements Answer<Long> {
     @Override
-    public Integer answer(InvocationOnMock invocation) throws Throwable {
+    public Long answer(InvocationOnMock invocation) throws Throwable {
       System.out.println("### in FakeChannelWriteArrayBB.answer :");
       return fakeWriteArrayBB(bbArray);
     }
@@ -93,7 +92,7 @@ public class OverflowOplogFlushTest extends DiskRegionTestingBase {
   /**
    * This method tries to write half of the byte buffer to the channel.
    */
-  private int fakeWriteArrayBB(ByteBuffer[] bbArray) throws IOException {
+  private long fakeWriteArrayBB(ByteBuffer[] bbArray) throws IOException {
     nFakeChannelWrites++;
     for (ByteBuffer b : bbArray) {
       int numFakeWrite = b.limit() / 2;

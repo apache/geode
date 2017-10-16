@@ -49,8 +49,8 @@ public class VersionManager {
     final String installLocations = "geodeOldVersionInstalls.txt";
     instance.findVersions(fileName);
     instance.findInstalls(installLocations);
-    System.out
-        .println("VersionManager has loaded the following classpaths:\n" + instance.classPaths);
+    // System.out
+    // .println("VersionManager has loaded the following classpaths:\n" + instance.classPaths);
   }
 
   public static VersionManager getInstance() {

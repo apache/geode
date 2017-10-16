@@ -14,12 +14,11 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.management.cli.CliMetaData;
-
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.management.cli.CliMetaData;
 
 /**
  * The CommandRequest class encapsulates information pertaining to the command the user entered in
@@ -31,19 +30,13 @@ import java.util.Map;
  */
 @SuppressWarnings("unused")
 public class CommandRequest {
-
-  protected static final String OPTION_SPECIFIER = "--";
-
   private final byte[][] fileData;
-
   private final GfshParseResult parseResult;
-
-  private final Map<String, String> customParameters = new HashMap<String, String>();
   private final Map<String, String> env;
   private final boolean downloadFile;
 
-  private String customInput;
 
+  @TestingOnly
   public CommandRequest(final Map<String, String> env) {
     this.env = env;
     this.fileData = null;
@@ -58,10 +51,6 @@ public class CommandRequest {
     downloadFile = false;
   }
 
-  public CommandRequest(final GfshParseResult parseResult, final Map<String, String> env) {
-    this(parseResult, env, null);
-  }
-
   public CommandRequest(final GfshParseResult parseResult, final Map<String, String> env,
       final byte[][] fileData) {
     assert parseResult != null : "The Gfsh ParseResult cannot be null!";
@@ -74,38 +63,11 @@ public class CommandRequest {
     this.downloadFile = (metaData != null && metaData.isFileDownloadOverHttp());
   }
 
-  public String getName() {
-    if (getUserInput() != null) {
-      final String[] userInputTokenized = getUserInput().split("\\s");
-      final StringBuilder buffer = new StringBuilder();
-
-      for (final String token : userInputTokenized) {
-        if (!token.startsWith(OPTION_SPECIFIER)) {
-          buffer.append(token).append(StringUtils.SPACE);
-        }
-      }
-
-      return buffer.toString().trim();
-    } else {
-      return "unknown";
-    }
-  }
-
-  public String getCustomInput() {
-    return customInput;
-  }
 
   public boolean isDownloadFile() {
     return downloadFile;
   }
 
-  public void setCustomInput(final String input) {
-    this.customInput = input;
-  }
-
-  public Map<String, String> getCustomParameters() {
-    return customParameters;
-  }
 
   public Map<String, String> getEnvironment() {
     return Collections.unmodifiableMap(env);
@@ -119,27 +81,6 @@ public class CommandRequest {
     return (getFileData() != null);
   }
 
-  public String getInput() {
-    return StringUtils.defaultIfBlank(getCustomInput(), getUserInput());
-  }
-
-  public Map<String, String> getParameters() {
-    final Map<String, String> parameters = new HashMap<>();
-    for (Map.Entry<String, String> mapEntry : getUserParameters().entrySet()) {
-      String key = mapEntry.getKey();
-      String value = mapEntry.getValue();
-
-      if (hasQuotesAroundNegativeNumber(value)) {
-        String trimmed = value.substring(1, value.length() - 1);
-        parameters.put(key, trimmed);
-      } else {
-        parameters.put(key, value);
-      }
-    }
-    parameters.putAll(getCustomParameters());
-    return Collections.unmodifiableMap(parameters);
-  }
-
   protected GfshParseResult getParseResult() {
     return parseResult;
   }
@@ -148,16 +89,8 @@ public class CommandRequest {
     return getParseResult().getUserInput();
   }
 
-  public Map<String, String> getUserParameters() {
+  @TestingOnly
+  public Map<String, String> getParameters() {
     return getParseResult().getParamValueStrings();
   }
-
-  private boolean hasQuotesAroundNegativeNumber(String value) {
-    if (value == null) {
-      return false;
-    } else {
-      return value.startsWith("\"") && value.endsWith("\"") && value.matches("\"-[0-9]+\"");
-    }
-  }
-
 }

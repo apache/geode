@@ -76,8 +76,6 @@ public class CloseCQ extends BaseCQCommand {
       return;
     }
 
-    securityService.authorize(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
-
     // Process CQ close request
     try {
       // Append Client ID to CQ name
@@ -90,19 +88,23 @@ public class CloseCQ extends BaseCQCommand {
       }
       InternalCqQuery cqQuery = cqService.getCq(serverCqName);
 
-      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-      if (authzRequest != null) {
+      if (cqQuery != null) {
+        securityService.authorize(Resource.DATA, Operation.READ, cqQuery.getRegionName());
 
-        if (cqQuery != null) {
-          String queryStr = cqQuery.getQueryString();
-          Set cqRegionNames = new HashSet();
-          cqRegionNames.add(cqQuery.getRegionName());
-          authzRequest.closeCQAuthorize(cqName, queryStr, cqRegionNames);
+        AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
+        if (authzRequest != null) {
+
+          if (cqQuery != null) {
+            String queryStr = cqQuery.getQueryString();
+            Set cqRegionNames = new HashSet();
+            cqRegionNames.add(cqQuery.getRegionName());
+            authzRequest.closeCQAuthorize(cqName, queryStr, cqRegionNames);
+          }
+
         }
 
+        cqService.closeCq(cqName, id);
       }
-
-      cqService.closeCq(cqName, id);
       if (cqQuery != null)
         serverConnection.removeCq(cqName, cqQuery.isDurable());
     } catch (CqException cqe) {

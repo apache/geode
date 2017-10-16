@@ -45,6 +45,8 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Destroy65 extends BaseCommand {
 
@@ -225,7 +227,8 @@ public class Destroy65 extends BaseCommand {
 
     try {
       // for integrated security
-      securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorize(Resource.DATA, ResourcePermission.Operation.WRITE, regionName,
+          key.toString());
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

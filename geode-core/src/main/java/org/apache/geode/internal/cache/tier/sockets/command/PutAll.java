@@ -44,6 +44,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class PutAll extends BaseCommand {
 
@@ -164,7 +166,7 @@ public class PutAll extends BaseCommand {
         serverConnection.setRequestSpecificTimeout(timeout);
       }
 
-      securityService.authorizeRegionWrite(regionName);
+      securityService.authorize(Resource.DATA, Operation.WRITE, regionName);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

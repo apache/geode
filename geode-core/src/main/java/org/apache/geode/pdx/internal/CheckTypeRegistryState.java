@@ -70,7 +70,7 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
   protected void process(DistributionManager dm) {
     ReplyException e = null;
     try {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (cache != null && !cache.isClosed()) {
         TypeRegistry pdxRegistry = cache.getPdxRegistry();
         if (pdxRegistry != null) {

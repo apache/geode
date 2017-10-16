@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -33,7 +32,7 @@ public class MemberRegionFunction implements Function, InternalEntity {
     Object[] args = (Object[]) context.getArguments();
     String region = (String) args[0];
     String functionId = (String) args[1];
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
 
     try {
       Function function = FunctionService.getFunction(functionId);

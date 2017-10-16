@@ -79,9 +79,12 @@ public class CliStrings {
   public static final String GROUPS = "groups";
   public static final String MEMBER = "member";
   public static final String MEMBERS = "members";
+  public static final String IFEXISTS = "if-exists";
   public static final String JAR = "jar";
   public static final String JARS = "jars";
 
+  public static final String IFEXISTS_HELP =
+      "If true, the command will be a no-op if the entity does not exist.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
@@ -1314,7 +1317,7 @@ public class CliStrings {
   public static final String EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_MEMBER_1_ON_REGION_2_DETAILS_3 =
       "While executing function : {0} on member : {1} one region : {2} error occurred : {3}";
   public static final String EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION =
-      "Filters for executing on \"member\"/\"members of group\" is not supported.";
+      "Filters for executing on member or group is not supported.";
 
   /* exit command */
   public static final String EXIT = "exit";
@@ -1348,9 +1351,15 @@ public class CliStrings {
   public static final String EXPORT_DATA__REGION__HELP = "Region from which data will be exported.";
   public static final String EXPORT_DATA__FILE = "file";
   public static final String EXPORT_DATA__FILE__HELP =
-      "File to which the exported data will be written. The file must have an extension of \".gfd\".";
+      "File to which the exported data will be written. The file must have an extension of \".gfd\". Cannot be specified at the same time as \"dir\"";
   public static final String EXPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be exported to the specified file on the host where the member is running.";
+  public static final String EXPORT_DATA__DIR = "dir";
+  public static final String EXPORT_DATA__DIR__HELP =
+      "Directory to which the exported data will be written. Required if parallel set to true. Cannot be specified at the same time as \"file\"";
+  public static final String EXPORT_DATA__PARALLEL = "parallel";
+  public static final String EXPORT_DATA__PARALLEL_HELP =
+      "Export local data on each node to a directory on that machine. Available for partitioned regions only";
   public static final String EXPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found";
   public static final String EXPORT_DATA__REGION__NOT__FOUND = "Region {0} not found";
   public static final String EXPORT_DATA__SUCCESS__MESSAGE =
@@ -1528,7 +1537,13 @@ public class CliStrings {
   public static final String IMPORT_DATA__REGION__HELP = "Region into which data will be imported.";
   public static final String IMPORT_DATA__FILE = "file";
   public static final String IMPORT_DATA__FILE__HELP =
-      "File from which the imported data will be read. The file must have an extension of \".gfd\".";
+      "File from which the imported data will be read. The file must have an extension of \".gfd\". Cannot be specified at the same time as \"dir\"";
+  public static final String IMPORT_DATA__DIR = "dir";
+  public static final String IMPORT_DATA__DIR__HELP =
+      "Directory from which all data files (\".gfd\") will be read. Required if parallel set to true. Cannot be specified at the same time as \"file\"";
+  public static final String IMPORT_DATA__PARALLEL = "parallel";
+  public static final String IMPORT_DATA__PARALLEL_HELP =
+      "Import data from given directory on all members. Used to import data from a parallel export. Available for partitioned regions only";
   public static final String IMPORT_DATA__MEMBER__HELP =
       "Name/Id of a member which hosts the region. The data will be imported from the specified file on the host where the member is running.";
   public static final String IMPORT_DATA__MEMBER__NOT__FOUND = "Member {0} not found.";
@@ -1871,9 +1886,6 @@ public class CliStrings {
       "Clears the region by removing all entries. Partitioned region does not support remove-all";
   public static final String REMOVE__MSG__REGIONNAME_EMPTY = "Region name is either empty or Null";
   public static final String REMOVE__MSG__KEY_EMPTY = "Key is Null";
-  public static final String REMOVE__MSG__VALUE_EMPTY = "Value is either empty or Null";
-  public static final String REMOVE__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS =
-      "Region <{0}> not found in any of the members";
   public static final String REMOVE__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
   public static final String REMOVE__MSG__KEY_NOT_FOUND_REGION = "Key is not present in the region";
   public static final String REMOVE__MSG__CLEARED_ALL_CLEARS = "Cleared all keys in the region";
@@ -2009,6 +2021,8 @@ public class CliStrings {
       "Port number of the Cache Server whose metrics are to be displayed/exported. This can only be used along with the --member parameter.";
   public static final String SHOW_METRICS__CANNOT__USE__CACHESERVERPORT =
       "If the --port parameter is specified, then the --member parameter must also be specified.";
+  public static final String SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT =
+      "The --region and --port parameters are mutually exclusive. Please only use one or the other.";
   public static final String SHOW_METRICS__CACHE__SERVER__NOT__FOUND =
       "Metrics for the Cache Server with port : {0} and member : {1} not found.\n Please check the port number and the member name/id";
 
@@ -2067,8 +2081,6 @@ public class CliStrings {
       "Cannot execute change log-level.";
   public static final String CHANGE_LOGLEVEL__COLUMN_MEMBER = "Member";
   public static final String CHANGE_LOGLEVEL__COLUMN_STATUS = "Changed log-level";
-  public static final String CHANGE_LOGLEVEL__MSG_NO_MEMBERS =
-      "No members were observed for changing log-level.";
 
   /* 'sleep' command */
   public static final String SLEEP = "sleep";
@@ -2110,7 +2122,9 @@ public class CliStrings {
   public static final String CREATE_GATEWAYRECEIVER__MANUALSTART = "manual-start";
   public static final String CREATE_GATEWAYRECEIVER__MANUALSTART__HELP =
       "Whether manual start is to be enabled or the receiver will start automatically after creation.";
-
+  public static final String CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS = "hostname-for-senders";
+  public static final String CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP =
+      "The host name that server locators will tell GatewaySenders this GatewayReceiver is listening on.";
 
   /* start gateway-receiver */
   public static final String START_GATEWAYRECEIVER = "start gateway-receiver";
@@ -2140,7 +2154,8 @@ public class CliStrings {
       "Whether this is Parallel GatewaySender.";
   public static final String CREATE_GATEWAYSENDER__MANUALSTART = "manual-start";
   public static final String CREATE_GATEWAYSENDER__MANUALSTART__HELP =
-      "Whether manual start is to be enabled or the sender will start automatically after creation.";
+      "Whether manual start is to be enabled or the sender will start automatically after creation.\n"
+          + "Deprecated: Manual start of senders is deprecated and will be removed in a later release.";
   public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE = SOCKET_BUFFER_SIZE;
   public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE__HELP =
       "The buffer size of the socket connection between this GatewaySender and its receiving GatewayReceiver.";

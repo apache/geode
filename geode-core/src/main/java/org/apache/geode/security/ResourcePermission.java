@@ -16,7 +16,6 @@ package org.apache.geode.security;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Region;
-import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.shiro.authz.permission.WildcardPermission;
 
 /**
@@ -30,6 +29,15 @@ public class ResourcePermission extends WildcardPermission {
 
   public static String ALL = "*";
 
+  /**
+   * @deprecated use ALL
+   */
+  public static String ALL_REGIONS = "*";
+  /**
+   * @deprecated use All
+   */
+  public static String ALL_KEYS = "*";
+
   public enum Resource {
     NULL, CLUSTER, DATA
   }
@@ -40,7 +48,7 @@ public class ResourcePermission extends WildcardPermission {
 
   // when ALL is specified, we need it to convert to string "*" instead of "ALL".
   public enum Target {
-    ALL(ResourcePermission.ALL), DISK, GATEWAY, QUERY, JAR;
+    ALL(ResourcePermission.ALL), DISK, GATEWAY, QUERY, DEPLOY;
 
     private String name;
 
@@ -68,6 +76,20 @@ public class ResourcePermission extends WildcardPermission {
     this(Resource.NULL, Operation.NULL, ALL, ALL);
   }
 
+  public ResourcePermission(String resource, String operation) {
+    this(resource, operation, ALL, ALL);
+  }
+
+  public ResourcePermission(String resource, String operation, String target) {
+    this(resource, operation, target, ALL);
+  }
+
+  public ResourcePermission(String resource, String operation, String target, String key) {
+    this((resource == null) ? Resource.NULL : Resource.valueOf(resource.toUpperCase()),
+        (operation == null) ? Operation.NULL : Operation.valueOf(operation.toUpperCase()), target,
+        key);
+  }
+
   public ResourcePermission(Resource resource, Operation operation) {
     this(resource, operation, ALL, ALL);
   }
@@ -86,14 +108,18 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   public ResourcePermission(Resource resource, Operation operation, String target, String key) {
-    if (resource != null)
+    if (resource != null) {
       this.resource = resource;
-    if (operation != null)
+    }
+    if (operation != null) {
       this.operation = operation;
-    if (target != null)
+    }
+    if (target != null) {
       this.target = StringUtils.stripStart(target, Region.SEPARATOR);
-    if (key != null)
+    }
+    if (key != null) {
       this.key = key;
+    }
 
     setParts(this.resource + ":" + this.operation + ":" + this.target + ":" + this.key, true);
   }
@@ -113,10 +139,17 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   /**
-   * returns the regionName, could be "*", meaning all regions
+   * returns the regionName, or cluster target, could be "*", meaning all regions or all targets
    */
   public String getTarget() {
     return target;
+  }
+
+  /**
+   * @deprecated use getTarget()
+   */
+  public String getRegionName() {
+    return getTarget();
   }
 
   /**

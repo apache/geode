@@ -2822,7 +2822,8 @@ public class WANTestBase extends JUnit4DistributedTestCase {
                 true, (regionSize <= r.keySet().size())));
     for (int i = 0; i < regionSize; i++) {
       LogWriterUtils.getLogWriter().info("For Key : Key_" + i + " : Values : " + r.get("Key_" + i));
-      assertEquals(new SimpleClass(i, (byte) i), r.get("Key_" + i));
+      assertEquals("keySet = " + r.keySet() + " values() = " + r.values(),
+          new SimpleClass(i, (byte) i), r.get("Key_" + i));
     }
   }
 
@@ -3229,7 +3230,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       Set<BucketRegion> buckets = ((PartitionedRegion) regionQueue.getRegion()).getDataStore()
           .getAllLocalPrimaryBucketRegions();
       for (final BucketRegion bucket : buckets) {
-        Awaitility.await().atMost(180, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
           assertEquals("Expected bucket entries for bucket: " + bucket.getId()
               + " is: 0 but actual entries: " + bucket.keySet().size() + " This bucket isPrimary: "
               + bucket.getBucketAdvisor().isPrimary() + " KEYSET: " + bucket.keySet(), 0,

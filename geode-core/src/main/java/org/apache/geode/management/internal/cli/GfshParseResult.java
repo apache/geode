@@ -82,18 +82,9 @@ public class GfshParseResult extends ParseResult {
       } else {
         argumentAsString = argument.toString();
       }
-      // need to quote the argument with single quote if it contains white space.
-      // these will be used for the http request parameters, when turned into the
-      // commands again, the options will be quoted.
-      if (argumentAsString.contains(" ")) {
-        if (argumentAsString.contains("'")) {
-          argumentAsString = "\"" + argumentAsString + "\"";
-        } else {
-          argumentAsString = "'" + argumentAsString + "'";
-        }
-      }
-      // this always uses the first variation of the option as the key, so all the controllers
-      // should use this as the parameter key
+
+      // this maps are used for easy access of option values in String form.
+      // It's used in tests and validation of option values in pre-execution
       paramValueStringMap.put(cliOption.key()[0], argumentAsString);
     }
   }
@@ -105,11 +96,16 @@ public class GfshParseResult extends ParseResult {
     return userInput;
   }
 
+  /**
+   * Used only in tests and command pre-execution for validating arguments
+   */
   public String getParamValue(String param) {
     return paramValueStringMap.get(param);
   }
 
   /**
+   * Used only in tests and command pre-execution for validating arguments
+   * 
    * @return the unmodifiable paramValueStringMap
    */
   public Map<String, String> getParamValueStrings() {

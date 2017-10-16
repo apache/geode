@@ -16,17 +16,19 @@
 package org.apache.geode.internal.util;
 
 import static org.apache.geode.internal.util.ArgumentRedactor.redact;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * ArgumentRedactor Tester.
@@ -121,5 +123,15 @@ public class ArgumentRedactorJUnitTest {
 
     arg = "-Dgemfire.security-properties=\"c:\\Program Files (x86)\\My Folder\"";
     assertEquals(arg, (redact(arg)));
+  }
+
+  @Test
+  public void redactScriptLine() throws Exception {
+    assertThat(ArgumentRedactor.redactScriptLine("connect --password=test --user=test"))
+        .isEqualTo("connect --password=******** --user=test");
+
+    assertThat(
+        ArgumentRedactor.redactScriptLine("connect --test-password=test --product-password=test1"))
+            .isEqualTo("connect --test-password=******** --product-password=********");
   }
 }

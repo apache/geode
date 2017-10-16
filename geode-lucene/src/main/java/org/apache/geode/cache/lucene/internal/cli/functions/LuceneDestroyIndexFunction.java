@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
+import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneService;
@@ -32,12 +32,12 @@ public class LuceneDestroyIndexFunction implements Function, InternalEntity {
 
   public void execute(final FunctionContext context) {
     CliFunctionResult result = null;
-    String memberId = getCache().getDistributedSystem().getDistributedMember().getId();
+    String memberId = context.getCache().getDistributedSystem().getDistributedMember().getId();
     try {
       LuceneDestroyIndexInfo indexInfo = (LuceneDestroyIndexInfo) context.getArguments();
       String indexName = indexInfo.getIndexName();
       String regionPath = indexInfo.getRegionPath();
-      LuceneService service = LuceneServiceProvider.get(getCache());
+      LuceneService service = LuceneServiceProvider.get(context.getCache());
       if (indexName == null) {
         if (indexInfo.isDefinedDestroyOnly()) {
           ((LuceneServiceImpl) service).destroyDefinedIndexes(regionPath);
@@ -62,11 +62,8 @@ public class LuceneDestroyIndexFunction implements Function, InternalEntity {
   }
 
   protected XmlEntity getXmlEntity(String indexName, String regionPath) {
-    return new XmlEntity(CacheXml.REGION, "name", regionPath, LuceneXmlConstants.PREFIX,
+    String regionName = StringUtils.stripStart(regionPath, "/");
+    return new XmlEntity(CacheXml.REGION, "name", regionName, LuceneXmlConstants.PREFIX,
         LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, "name", indexName);
-  }
-
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
   }
 }

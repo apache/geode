@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -49,7 +48,7 @@ public class RegionDestroyFunction implements Function, InternalEntity {
         Object arguments = context.getArguments();
         if (arguments != null) {
           regionPath = (String) arguments;
-          Cache cache = CacheFactory.getAnyInstance();
+          Cache cache = context.getCache();
           Region<?, ?> region = cache.getRegion(regionPath);
           region.destroyRegion();
           String regionName =

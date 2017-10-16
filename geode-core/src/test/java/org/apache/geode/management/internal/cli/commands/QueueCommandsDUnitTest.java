@@ -56,7 +56,7 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -99,7 +99,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultToString(cmdResult).contains("No Async Event Queues Found"));
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final File diskStoreDir = new File(new File(".").getAbsolutePath(), diskStoreName);
     this.filesToBeDeleted.add(diskStoreDir.getAbsolutePath());
     vm1.invoke(new SerializableRunnable() {
@@ -115,7 +115,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     });
 
     final VM vm2 = Host.getHost(0).getVM(2);
-    final String vm2Name = "VM" + vm2.getPid();
+    final String vm2Name = "VM" + vm2.getId();
     vm2.invoke(new SerializableRunnable() {
       public void run() {
         Properties localProps = new Properties();

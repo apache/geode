@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -159,7 +160,7 @@ public class ExecuteRegionFunction65 extends BaseCommand {
     int earlierClientReadTimeout = handShake.getClientReadTimeout();
     handShake.setClientReadTimeout(0);
     ServerToClientFunctionResultSender resultSender = null;
-    Function functionObject = null;
+    Function<?> functionObject = null;
     try {
       if (function instanceof String) {
         functionObject = FunctionService.getFunction((String) function);
@@ -190,9 +191,8 @@ public class ExecuteRegionFunction65 extends BaseCommand {
         functionObject = (Function) function;
       }
 
-      securityService.authorizeDataWrite();
-
       // check if the caller is authorized to do this operation on server
+      functionObject.getRequiredPermissions(regionName).forEach(securityService::authorize);
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       final String functionName = functionObject.getId();
       final String regionPath = region.getFullPath();

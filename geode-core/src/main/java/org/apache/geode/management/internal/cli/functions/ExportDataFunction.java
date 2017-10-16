@@ -17,13 +17,14 @@ package org.apache.geode.management.internal.cli.functions;
 import java.io.File;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /***
@@ -41,17 +42,27 @@ public class ExportDataFunction extends FunctionAdapter implements InternalEntit
 
   public void execute(FunctionContext context) {
     final String[] args = (String[]) context.getArguments();
+    if (args.length < 3) {
+      throw new IllegalStateException(
+          "Arguments length does not match required length. Export command may have been sent from incompatible older version");
+    }
     final String regionName = args[0];
     final String fileName = args[1];
+    final boolean parallel = Boolean.parseBoolean(args[2]);
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       Region<?, ?> region = cache.getRegion(regionName);
       String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
       if (region != null) {
         RegionSnapshotService<?, ?> snapshotService = region.getSnapshotService();
         final File exportFile = new File(fileName);
-        snapshotService.save(exportFile, SnapshotFormat.GEMFIRE);
+        if (parallel) {
+          SnapshotOptions options = new SnapshotOptionsImpl<>().setParallelMode(true);
+          snapshotService.save(exportFile, SnapshotFormat.GEMFIRE, options);
+        } else {
+          snapshotService.save(exportFile, SnapshotFormat.GEMFIRE);
+        }
         String successMessage = CliStrings.format(CliStrings.EXPORT_DATA__SUCCESS__MESSAGE,
             regionName, exportFile.getCanonicalPath(), hostName);
         context.getResultSender().lastResult(successMessage);

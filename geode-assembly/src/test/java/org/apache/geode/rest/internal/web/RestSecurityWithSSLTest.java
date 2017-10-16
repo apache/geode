@@ -25,22 +25,29 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import java.net.URL;
+
 import org.apache.http.HttpResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.net.URL;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
 public class RestSecurityWithSSLTest {
-  private static URL KEYSTORE_URL =
+
+  private static final URL KEYSTORE_URL =
       RestSecurityWithSSLTest.class.getClassLoader().getResource("ssl/trusted.keystore");
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Rule
   public ServerStarterRule serverStarter = new ServerStarterRule().withRestService()

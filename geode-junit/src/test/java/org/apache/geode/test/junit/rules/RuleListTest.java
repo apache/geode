@@ -16,6 +16,7 @@ package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.test.junit.runners.TestRunner;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

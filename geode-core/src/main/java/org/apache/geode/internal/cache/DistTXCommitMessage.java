@@ -73,7 +73,7 @@ public class DistTXCommitMessage extends TXMessage {
       logger.debug("DistTXCommitMessage.operateOnTx: Tx {}", txId);
     }
 
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     TXManagerImpl txMgr = cache.getTXMgr();
     final TXStateProxy txStateProxy = txMgr.getTXState();
     TXCommitMessage cmsg = null;

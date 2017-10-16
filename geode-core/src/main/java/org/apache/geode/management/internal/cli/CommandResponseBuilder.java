@@ -31,7 +31,7 @@ public class CommandResponseBuilder {
     content = result.getContent();
     return new CommandResponse(memberName, getType(result), result.getStatus().getCode(), "1/1",
         CliMetaData.ANNOTATION_NULL_VALUE, getDebugInfo(result), result.getHeader(), content,
-        result.getFooter(), result.failedToPersist());
+        result.getFooter(), result.failedToPersist(), result.getFileToDownload());
   }
 
   // De-serializing to CommandResponse

@@ -40,11 +40,11 @@ Cache cache = ...
 cache.getSnapshotService().save(mySnapshotDir, SnapshotFormat.GEMFIRE);
 ```
 
-Optionally, you can set a filter on the snapshot entries during the export. See [Filtering Entries During Import or Export](filtering_snapshot_entries.html#concept_7E1F89E70A25465EBEBA584FADFEF353) for an example.
+Optionally, you can set a filter on the snapshot entries during the export. See [Filtering Entries During Import or Export](filtering_snapshot_entries.html) for an example.
 
 ## <a id="concept_D1A4D9677F4146078F65C73BF436C19D__section_30C1BBB41C194825A46E49E5756369D6" class="no-quick-link"></a>Exporting a Region Snapshot
 
-You can also export a specific region using the following API or gfsh command:
+You can also export a specific region using the following API or gfsh commands:
 
 **Java API:**
 
@@ -60,15 +60,38 @@ region.getSnapshotService().save(mySnapshot, SnapshotFormat.GEMFIRE);
 Open a gfsh prompt. After connecting to a <%=vars.product_name%> distributed system, at the prompt type:
 
 ``` pre
-gfsh>export data --region=Region --file=filename.gfd 
---member=membername
+gfsh>export data --region=Region --file=FileName.gfd --member=MemberName
 ```
 
-where *Region* corresponds to the name of the region that you want to export, *filename* (must end in .gfd) corresponds to the name of the export file and *membername* corresponds to a member where the region to export is hosted. For example:
+where *Region* corresponds to the name of the region that you want to export, *FileName* (must end in .gfd) corresponds to the name of the export file and *MemberName* corresponds to a member that hosts the region. For example:
 
 ``` pre
-gfsh>export data --region=region1 --file=region1_2012_10_10.gfd 
---member=server1
+gfsh>export data --region=region1 --file=region1_2012_10_10.gfd --member=server1
 ```
 
 The snapshot file will be written on the remote member at the location specified by the `--file` argument. For example, in the example command above, the `region1_2012_10_10.gfd` file will be written in the working directory of `server1`. For more information on this command, see [export data](../../tools_modules/gfsh/command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734).
+
+###<a id="export_example_with_options" class="no-quick-link"></a>Export Example with Options
+
+These examples show how to include the `parallel` option for exporting partitioned regions. 
+Note that the `parallel` option takes a directory rather than a file; see [export data](../../tools_modules/gfsh/command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734) for details.
+
+**Java API:**
+
+``` pre
+File mySnapshotDir = ...
+Region<String, MyObject> region = ... 
+
+SnapshotOptions<Integer, MyObject> options = 
+ region.getSnapshotServive.createOptions().setParallelMode(true);
+region.getSnapshotService().save(mySnapshotDir, SnapshotFormat.GEMFIRE, options);
+```
+
+**gfsh:**
+
+The Java API example, above, accomplishes the same purpose as the following gfsh command:
+
+``` pre
+gfsh>export data --parallel --region=region1 --dir=region1_2012_10_10 --member=server1
+```
+

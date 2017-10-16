@@ -51,6 +51,8 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * @since GemFire 6.5
@@ -233,7 +235,8 @@ public class Put65 extends BaseCommand {
       boolean isMetaRegion = region.isUsedForMetaRegion();
       clientMessage.setMetaRegion(isMetaRegion);
 
-      securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorize(Resource.DATA, ResourcePermission.Operation.WRITE, regionName,
+          key.toString());
 
       AuthorizeRequest authzRequest = null;
       if (!isMetaRegion) {

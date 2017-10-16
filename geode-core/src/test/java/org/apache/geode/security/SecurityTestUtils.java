@@ -991,6 +991,8 @@ public class SecurityTestUtils {
         fail("Expected a NotAuthorizedException while executing sizeOnServer");
       }
       assertEquals(size, sizeOnServer);
+    } catch (NoSuchMethodError ex) {
+      // expected with backward-compatibility tests
     } catch (Exception ex) {
       fail("Got unexpected exception when executing sizeOnServer", ex);
     }
@@ -1004,6 +1006,8 @@ public class SecurityTestUtils {
         fail("Expected a NotAuthorizedException while executing isEmptyOnServer");
       }
       assertEquals(isEmpty, isEmptyOnServer);
+    } catch (NoSuchMethodError ex) {
+      // expected with old version clients
     } catch (Exception ex) {
       fail("Got unexpected exception when executing isEmptyOnServer", ex);
     }

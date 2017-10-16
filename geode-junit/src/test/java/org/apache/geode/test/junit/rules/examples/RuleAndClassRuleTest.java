@@ -17,7 +17,7 @@ package org.apache.geode.test.junit.rules.examples;
 import static org.assertj.core.api.Assertions.*;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.rules.TestRunner;
+import org.apache.geode.test.junit.runners.TestRunner;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

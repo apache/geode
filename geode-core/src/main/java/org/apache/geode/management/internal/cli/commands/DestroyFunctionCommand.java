@@ -47,7 +47,7 @@ public class DestroyFunctionCommand implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_FUNCTION},
       interceptor = "org.apache.geode.management.internal.cli.commands.DestroyFunctionCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
-      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.JAR)
+      operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   // TODO: Add optioncontext for functionId
   public Result destroyFunction(
       @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,

@@ -22,7 +22,6 @@ import static org.apache.geode.management.internal.cli.commands.DataCommandsUtil
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -34,6 +33,8 @@ import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class LocateEntryCommand implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
@@ -52,19 +53,9 @@ public class LocateEntryCommand implements GfshCommand {
           help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP,
           unspecifiedDefaultValue = "false") boolean recursive) {
 
-    getSecurityService().authorizeRegionRead(regionPath, key);
+    getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
 
     DataCommandResult dataResult;
-
-    if (StringUtils.isEmpty(regionPath)) {
-      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
-          CliStrings.LOCATE_ENTRY__MSG__REGIONNAME_EMPTY, false));
-    }
-
-    if (StringUtils.isEmpty(key)) {
-      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
-          CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false));
-    }
 
     DataCommandFunction locateEntry = new DataCommandFunction();
     Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), true);

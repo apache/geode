@@ -57,6 +57,7 @@ import java.net.URISyntaxException;
 import java.util.Properties;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -65,13 +66,16 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.security.SecurableCommunicationChannels;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class ConnectCommandWithSSLTest {
+  @ClassRule
+  public static CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
 
   private static File jks;
 
@@ -137,6 +141,12 @@ public class ConnectCommandWithSSLTest {
     }
   };
 
+  private static Properties httpSslPropertiesSkipValidation = new Properties() {
+    {
+      setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+    }
+  };
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -170,7 +180,7 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.getGfshOutput())
         .contains("trying to connect a non-SSL-enabled client to an SSL-enabled locator");
 
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     assertThat(gfsh.isConnected()).isFalse();
     assertThat(gfsh.getGfshOutput()).contains("non-JRMP server at remote endpoint");
 
@@ -188,7 +198,7 @@ public class ConnectCommandWithSSLTest {
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
 
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
@@ -210,12 +220,12 @@ public class ConnectCommandWithSSLTest {
         .contains("trying to connect a non-SSL-enabled client to an SSL-enabled locator");
 
     // can connect to jmx
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
 
-    // cannot conect to http
+    // cannot connect to http
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
@@ -237,7 +247,7 @@ public class ConnectCommandWithSSLTest {
     gfsh.disconnect();
 
     // can connect to jmx
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isTrue();
     gfsh.disconnect();
@@ -256,12 +266,31 @@ public class ConnectCommandWithSSLTest {
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 
-    // can connect to jmx
-    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+    // cannot connect to jmx
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isFalse();
 
-    // can conect to http
+    // can connect to http
+    gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
+        "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
+    assertThat(gfsh.isConnected()).isTrue();
+  }
+
+  @Test
+  public void connectWithHttpSSLAndSkipSSLValidation() throws Exception {
+    httpSslPropertiesSkipValidation.store(out, null);
+    // cannot connect to locator and jmx
+    gfsh.connect(locator.getPort(), GfshShellConnectionRule.PortType.locator,
+        "security-properties-file", sslConfigFile.getAbsolutePath());
+    assertThat(gfsh.isConnected()).isFalse();
+
+    // cannot connect to jmx
+    gfsh.connect(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
+        "security-properties-file", sslConfigFile.getAbsolutePath());
+    assertThat(gfsh.isConnected()).isFalse();
+
+    // can connect to http
     gfsh.connect(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
         "security-properties-file", sslConfigFile.getAbsolutePath(), "skip-ssl-validation", "true");
     assertThat(gfsh.isConnected()).isTrue();

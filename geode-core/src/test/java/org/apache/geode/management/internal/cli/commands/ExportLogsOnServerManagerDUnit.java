@@ -27,10 +27,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 
@@ -47,7 +47,7 @@ public class ExportLogsOnServerManagerDUnit {
   @Test
   public void testExportWithOneServer() throws Exception {
     MemberVM server0 = lsRule.startServerAsJmxManager(0);
-    gfshConnector.connect(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfshConnector.connect(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     gfshConnector.executeAndVerifyCommand("export logs");
 
     String message = gfshConnector.getGfshOutput();

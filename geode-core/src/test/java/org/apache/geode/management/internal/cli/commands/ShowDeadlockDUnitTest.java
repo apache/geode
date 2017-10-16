@@ -37,7 +37,7 @@ import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetectorDUn
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.concurrent.FileBasedCountDownLatch;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;

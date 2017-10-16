@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -38,8 +39,6 @@ import org.apache.geode.internal.cache.IncomingGatewayStatus;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -55,6 +54,8 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  */
 public class ClientHealthMonitor {
   private static final Logger logger = LogService.getLogger();
+  public static final String CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY =
+      "geode.client-health-monitor-interval";
 
   /**
    * The map of known clients
@@ -81,6 +82,12 @@ public class ClientHealthMonitor {
    */
   private final InternalCache _cache;
 
+  public int getMaximumTimeBetweenPings() {
+    return maximumTimeBetweenPings;
+  }
+
+  private final int maximumTimeBetweenPings;
+
   /**
    * A thread that validates client connections
    */
@@ -100,9 +107,9 @@ public class ClientHealthMonitor {
   /**
    * The interval between client monitor iterations
    */
-  final protected static long CLIENT_MONITOR_INTERVAL = 1000;
+  private final static long DEFAULT_CLIENT_MONITOR_INTERVAL_IN_MILLIS = 1000;
 
-  final private CacheClientNotifierStats stats;
+  private final CacheClientNotifierStats stats;
 
   /**
    * Used to track the number of handshakes in a VM primary use, license enforcement.
@@ -124,6 +131,12 @@ public class ClientHealthMonitor {
    * @see CacheClientNotifier#addClientProxy(CacheClientProxy)
    */
   AtomicIntegerArray numOfClientsPerVersion = new AtomicIntegerArray(Version.HIGHEST_VERSION + 1);
+
+  public long getMonitorInterval() {
+    return monitorInterval;
+  }
+
+  private long monitorInterval;
 
   /**
    * Factory method to construct or return the singleton <code>ClientHealthMonitor</code> instance.
@@ -667,9 +680,14 @@ public class ClientHealthMonitor {
       CacheClientNotifierStats stats) {
     // Set the Cache
     this._cache = cache;
+    this.maximumTimeBetweenPings = maximumTimeBetweenPings;
 
     // Initialize the client threads map
     this._clientThreads = new HashMap();
+
+    this.monitorInterval = Long.getLong(CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
+        DEFAULT_CLIENT_MONITOR_INTERVAL_IN_MILLIS);
+    logger.debug("Setting monitorInterval to {}", this.monitorInterval);
 
     if (maximumTimeBetweenPings > 0) {
       if (logger.isDebugEnabled()) {
@@ -800,7 +818,7 @@ public class ClientHealthMonitor {
       while (!this._isStopped) {
         SystemFailure.checkFailure();
         try {
-          Thread.sleep(CLIENT_MONITOR_INTERVAL);
+          Thread.sleep(monitorInterval);
           if (logger.isTraceEnabled()) {
             logger.trace("Monitoring {} client(s)", getClientHeartbeats().size());
           }

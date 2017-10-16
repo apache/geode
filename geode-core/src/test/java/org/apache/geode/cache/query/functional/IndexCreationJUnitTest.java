@@ -41,8 +41,10 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.Query;
@@ -79,6 +81,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 @Category(IntegrationTest.class)
 public class IndexCreationJUnitTest {
@@ -1003,6 +1006,35 @@ public class IndexCreationJUnitTest {
                                                                                                 // keys
     assertEquals("Index should not have been empty ", 4, i3.getStatistics().getNumberOfValues());
   }
+
+
+  @Test
+  public void failedIndexCreationCorrectlyRemovesItself() throws Exception {
+    QueryService qs;
+    qs = CacheUtils.getQueryService();
+    Cache cache = CacheUtils.getCache();
+    cache.createRegionFactory(RegionShortcut.PARTITION).create("portfoliosInPartitionedRegion");
+    Region region = CacheUtils.getCache().getRegion("/portfoliosInPartitionedRegion");
+    IntStream.range(0, 3).forEach((i) -> {
+      region.put(i, new Portfolio(i));
+    });
+
+    Index i1 = qs.createIndex("statusIndex", "secId",
+        "/portfoliosInPartitionedRegion p, p.positions pos, pos.secId secId");
+    try {
+      Index i2 =
+          qs.createIndex("anotherIndex", "secId", "/portfoliosInPartitionedRegion p, p.positions");
+      // index should fail to create
+      fail();
+    } catch (IndexInvalidException e) {
+    }
+    qs.removeIndex(i1);
+    // This test should not throw an exception if i2 was properly cleaned up.
+    Index i3 = qs.createIndex("anotherIndex", "secType",
+        "/portfoliosInPartitionedRegion p, p.positions pos, pos.secType secType");
+    assertNotNull(i3);
+  }
+
 
   private static class QueryObserverImpl extends QueryObserverAdapter {
 

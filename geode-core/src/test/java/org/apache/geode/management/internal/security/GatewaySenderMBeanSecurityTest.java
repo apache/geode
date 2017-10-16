@@ -32,9 +32,9 @@ import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -96,19 +96,19 @@ public class GatewaySenderMBeanSecurityTest {
     SoftAssertions softly = new SoftAssertions();
 
     softly.assertThatThrownBy(() -> bean.getAlertThreshold())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getAverageDistributionTimePerBatch())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getBatchSize())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getMaximumQueueMemory())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.getOrderPolicy())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.isBatchConflationEnabled())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.isManualStart())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
     softly.assertThatThrownBy(() -> bean.pause())
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
     softly.assertThatThrownBy(() -> bean.rebalance())

@@ -73,7 +73,7 @@ public class TXRemoteCommitMessage extends TXMessage {
 
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     TXManagerImpl txMgr = cache.getTXMgr();
 
     if (logger.isDebugEnabled()) {

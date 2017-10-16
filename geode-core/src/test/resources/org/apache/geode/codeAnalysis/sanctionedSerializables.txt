@@ -141,6 +141,7 @@ org/apache/geode/cache/query/IndexExistsException,true,-168312863985932144
 org/apache/geode/cache/query/IndexInvalidException,true,3285601274732772770
 org/apache/geode/cache/query/IndexMaintenanceException,true,3326023943226474039
 org/apache/geode/cache/query/IndexNameConflictException,true,7047969935188485334
+org/apache/geode/cache/query/IndexType,false,name:java/lang/String
 org/apache/geode/cache/query/MultiIndexCreationException,true,6312081720315894780,exceptionsMap:java/util/Map
 org/apache/geode/cache/query/NameNotFoundException,true,4827972941932684358
 org/apache/geode/cache/query/NameResolutionException,true,-7409771357534316562
@@ -488,7 +489,6 @@ org/apache/geode/management/cli/CommandProcessingException,true,-139877952163957
 org/apache/geode/management/cli/CommandServiceException,true,7316102209844678329
 org/apache/geode/management/cli/Result$Status,false,code:int
 org/apache/geode/management/internal/JmxManagerLocator$StartJmxManagerFunction,true,-2860286061903069789
-org/apache/geode/management/internal/ManagementAgent$GemFireRMIClientSocketFactory,true,-7604285019188827617
 org/apache/geode/management/internal/ManagementAgent$GemFireRMIServerSocketFactory,true,-811909050641332716,bindAddr:java/net/InetAddress
 org/apache/geode/management/internal/ManagementFunction,true,1,mbeanServer:javax/management/MBeanServer,notificationHub:org/apache/geode/management/internal/NotificationHub
 org/apache/geode/management/internal/NotificationKey,false,currentTime:long,objectName:javax/management/ObjectName
@@ -512,10 +512,9 @@ org/apache/geode/management/internal/cli/domain/DiskStoreDetails$RegionDetails,f
 org/apache/geode/management/internal/cli/domain/DurableCqNamesResult,true,1,cqNames:java/util/List
 org/apache/geode/management/internal/cli/domain/EvictionAttributesInfo,true,1,evictionAction:java/lang/String,evictionAlgorithm:java/lang/String,evictionMaxValue:int,nonDefaultAttributes:java/util/Map
 org/apache/geode/management/internal/cli/domain/FixedPartitionAttributesInfo,true,1,isPrimary:boolean,numBuckets:int,partitionName:java/lang/String
-org/apache/geode/management/internal/cli/domain/IndexDetails,false,fromClause:java/lang/String,indexName:java/lang/String,indexStatisticsDetails:org/apache/geode/management/internal/cli/domain/IndexDetails$IndexStatisticsDetails,indexType:org/apache/geode/management/internal/cli/domain/IndexDetails$IndexType,indexedExpression:java/lang/String,memberId:java/lang/String,memberName:java/lang/String,projectionAttributes:java/lang/String,regionName:java/lang/String,regionPath:java/lang/String
+org/apache/geode/management/internal/cli/domain/IndexDetails,true,-2198907141534201288,fromClause:java/lang/String,indexName:java/lang/String,indexStatisticsDetails:org/apache/geode/management/internal/cli/domain/IndexDetails$IndexStatisticsDetails,indexType:org/apache/geode/cache/query/IndexType,indexedExpression:java/lang/String,isValid:boolean,memberId:java/lang/String,memberName:java/lang/String,projectionAttributes:java/lang/String,regionName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/management/internal/cli/domain/IndexDetails$IndexStatisticsDetails,false,numberOfKeys:java/lang/Long,numberOfUpdates:java/lang/Long,numberOfValues:java/lang/Long,totalUpdateTime:java/lang/Long,totalUses:java/lang/Long
-org/apache/geode/management/internal/cli/domain/IndexDetails$IndexType,false,description:java/lang/String
-org/apache/geode/management/internal/cli/domain/IndexInfo,true,1,indexName:java/lang/String,indexType:int,indexedExpression:java/lang/String,regionPath:java/lang/String
+org/apache/geode/management/internal/cli/domain/IndexInfo,true,1,indexName:java/lang/String,indexType:org/apache/geode/cache/query/IndexType,indexedExpression:java/lang/String,regionPath:java/lang/String
 org/apache/geode/management/internal/cli/domain/MemberConfigurationInfo,false,cacheAttributes:java/util/Map,cacheServerAttributes:java/util/List,gfePropsRuntime:java/util/Map,gfePropsSetFromFile:java/util/Map,gfePropsSetUsingApi:java/util/Map,gfePropsSetWithDefaults:java/util/Map,jvmInputArguments:java/util/List,pdxAttributes:java/util/Map,systemProperties:java/util/Properties
 org/apache/geode/management/internal/cli/domain/MemberInformation,true,1,cacheServerList:java/util/List,cacheXmlFilePath:java/lang/String,clientCount:int,cpuUsage:double,groups:java/lang/String,heapUsage:java/lang/String,host:java/lang/String,hostedRegions:java/util/Set,id:java/lang/String,initHeapSize:java/lang/String,isServer:boolean,locatorBindAddress:java/lang/String,locatorPort:int,locators:java/lang/String,logFilePath:java/lang/String,maxHeapSize:java/lang/String,name:java/lang/String,offHeapMemorySize:java/lang/String,processId:java/lang/String,serverBindAddress:java/lang/String,statArchiveFilePath:java/lang/String,workingDirPath:java/lang/String
 org/apache/geode/management/internal/cli/domain/MemberResult,true,1,errorMessage:java/lang/String,exceptionMessage:java/lang/String,isSuccessful:boolean,memberNameOrId:java/lang/String,opPossible:boolean,successMessage:java/lang/String
@@ -554,7 +553,7 @@ org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction
 org/apache/geode/management/internal/cli/functions/FetchSharedConfigurationStatusFunction,true,1
 org/apache/geode/management/internal/cli/functions/GarbageCollectionFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewayReceiverCreateFunction,true,8746830191680509335
-org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,true,-5158224572470173267,bindAddress:java/lang/String,endPort:java/lang/Integer,gatewayTransportFilters:java/lang/String[],manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
+org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,true,-5158224572470173267,bindAddress:java/lang/String,endPort:java/lang/Integer,gatewayTransportFilters:java/lang/String[],hostnameForSenders:java/lang/String,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
 org/apache/geode/management/internal/cli/functions/GatewaySenderCreateFunction,true,8746830191680509335
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunctionArgs,true,3848480256348119530,id:java/lang/String
@@ -612,12 +611,8 @@ org/apache/geode/management/internal/configuration/domain/SharedConfigurationSta
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
 org/apache/geode/management/internal/configuration/functions/UploadJarFunction,true,1
-org/apache/geode/management/internal/web/domain/Link,false,href:java/net/URI,method:org/apache/geode/management/internal/web/http/HttpMethod,relation:java/lang/String
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
-org/apache/geode/management/internal/web/http/HttpHeader,false,name:java/lang/String
-org/apache/geode/management/internal/web/http/HttpMethod,false
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
-org/apache/geode/management/internal/web/shell/RestApiCallForCommandNotFoundException,true,6686566370779394304
 org/apache/geode/memcached/GemFireMemcachedServer$Protocol,false
 org/apache/geode/pdx/FieldType,false,defaultSerializedValue:java/nio/ByteBuffer,defaultValue:java/lang/Object,isFixedWidth:boolean,name:java/lang/String,width:int
 org/apache/geode/pdx/JSONFormatter$states,false

@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.cli.converters.DiskStoreNameConverte
 import org.apache.geode.management.internal.cli.converters.FilePathConverter;
 import org.apache.geode.management.internal.cli.converters.FilePathStringConverter;
 import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
-import org.apache.geode.test.dunit.rules.GfshParserRule;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

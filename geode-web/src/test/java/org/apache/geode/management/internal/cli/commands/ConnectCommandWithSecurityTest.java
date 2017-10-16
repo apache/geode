@@ -21,8 +21,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -37,19 +37,22 @@ public class ConnectCommandWithSecurityTest {
 
   @Test
   public void connectToLocator() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator, "test",
-        "test");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
+        "clusterRead", "clusterRead");
+    gfsh.executeAndVerifyCommand("list members");
   }
 
   @Test
   public void connectOverJmx() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
-        "test", "test");
+    gfsh.secureConnectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
+        "clusterRead", "clusterRead");
+    gfsh.executeAndVerifyCommand("list members");
   }
 
   @Test
   public void connectOverHttp() throws Exception {
     gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
-        "test", "test");
+        "clusterRead", "clusterRead");
+    gfsh.executeAndVerifyCommand("list members");
   }
 }

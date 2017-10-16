@@ -45,6 +45,7 @@ import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
@@ -3937,6 +3938,8 @@ public class DistributionManager implements DM {
   /* -----------------------------Health Monitor------------------------------ */
   private final ConcurrentMap hmMap = new ConcurrentHashMap();
 
+  private InternalCache cache;
+
   /**
    * Returns the health monitor for this distribution manager and owner.
    * 
@@ -4805,5 +4808,15 @@ public class DistributionManager implements DM {
       }
       return result;
     }
+  }
+
+  @Override
+  public void setCache(InternalCache instance) {
+    this.cache = instance;
+  }
+
+  @Override
+  public InternalCache getCache() {
+    return this.cache;
   }
 }

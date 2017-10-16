@@ -76,7 +76,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     TXManagerImpl txMgr = cache.getTXMgr();
 
     if (logger.isDebugEnabled()) {

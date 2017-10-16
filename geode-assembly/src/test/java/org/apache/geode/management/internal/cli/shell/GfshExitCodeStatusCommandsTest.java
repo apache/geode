@@ -37,9 +37,9 @@ import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
-import org.apache.geode.test.dunit.rules.gfsh.GfshExecution;
-import org.apache.geode.test.dunit.rules.gfsh.GfshRule;
-import org.apache.geode.test.dunit.rules.gfsh.GfshScript;
+import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
+import org.apache.geode.test.junit.rules.gfsh.GfshRule;
+import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 
 // Originally created in response to GEODE-2971
@@ -182,6 +182,15 @@ public class GfshExitCodeStatusCommandsTest {
     executeScriptWithExpectedExitCode(statusCommand, config, ExitCode.NORMAL);
   }
 
+  @Test
+  public void onlineStatusCommandShouldFailWhenConnectedNonDefaultPort_locator_host() {
+    TestConfiguration config = LOCATOR_ONLINE_AND_CONNECTED;
+    config.startNecessaryMembers(startLocatorCommand(), startServerCommand(), gfsh);
+
+    String statusCommand = statusLocatorCommandByHost();
+    executeScriptWithExpectedExitCode(statusCommand, config, ExitCode.FATAL);
+  }
+
 
 
   @Test
@@ -312,6 +321,10 @@ public class GfshExitCodeStatusCommandsTest {
   private String statusLocatorCommandByHostAndPort() {
     return new CommandStringBuilder("status locator").addOption("host", "localhost")
         .addOption("port", String.valueOf(locatorPort)).toString();
+  }
+
+  private String statusLocatorCommandByHost() {
+    return new CommandStringBuilder("status locator").addOption("host", "localhost").toString();
   }
 
   private String statusLocatorCommandByDir() {

@@ -20,8 +20,8 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.NO_MEMBER
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class GfshMultilineCommandTest {
 
   @Test
   public void testMultiLineCommand() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
     // Execute a command
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MEMBER);
     csb.addOption(GROUP, "nogroup");

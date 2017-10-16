@@ -40,11 +40,17 @@ public class RegisterDataSerializers extends BaseCommand {
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
+    serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received register dataserializer request ({} parts) from {}",
           serverConnection.getName(), clientMessage.getNumberOfParts(),
           serverConnection.getSocketString());
     }
+
+    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
+      serverConnection.getAuthzRequest();
+    }
+
     int noOfParts = clientMessage.getNumberOfParts();
 
     // 2 parts per instantiator and one eventId part

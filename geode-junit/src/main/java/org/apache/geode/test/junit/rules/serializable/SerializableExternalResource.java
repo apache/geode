@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import java.io.Serializable;
-
 import org.junit.rules.ExternalResource;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -26,7 +24,7 @@ import org.junit.runners.model.Statement;
 public abstract class SerializableExternalResource extends ExternalResource
     implements SerializableTestRule {
 
-  public Statement apply(Statement base, Description description) {
+  public Statement apply(final Statement base, final Description description) {
     return statement(base);
   }
 

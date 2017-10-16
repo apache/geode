@@ -31,20 +31,27 @@ import java.util.Properties;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.junit.Assert;
+import org.junit.Rule;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.client.internal.RegisterDataSerializersOp;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 
 public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTestCase {
 
@@ -92,15 +99,22 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     }
   }
 
-
+  public String clientVersion = VersionManager.CURRENT_VERSION;
 
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     server2 = host.getVM(1);
-    client1 = host.getVM(2);
-    client2 = host.getVM(3);
+    server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
+    server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
+    if (VersionManager.isCurrentVersion(clientVersion)) {
+      client1 = host.getVM(2);
+      client2 = host.getVM(3);
+    } else {
+      client1 = host.getVM(clientVersion, 2);
+      client2 = host.getVM(clientVersion, 3);
+    }
 
     addIgnoredException("Connection refused: connect");
 
@@ -109,6 +123,14 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     client1.invoke(() -> registerExpectedExceptions(clientIgnoredExceptions));
     client2.invoke(() -> registerExpectedExceptions(clientIgnoredExceptions));
   }
+
+  @Override
+  public void postTearDown() throws Exception {
+    super.postTearDown();
+    server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = true);
+    server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = true);
+  }
+
 
   protected void doTestValidCredentials(final boolean multiUser) throws Exception {
     CredentialGenerator gen = new DummyCredentialGenerator();
@@ -246,20 +268,24 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
       client2.invoke(() -> doPuts(2, OTHER_EXCEPTION));
 
     } else {
-      client2.invoke(
+      client1.invoke(
           () -> createCacheClient(null, null, null, port1, port2, 0, multiUser, AUTHREQ_EXCEPTION));
 
       // Try to register a PDX type with the server
-      client2.invoke("register a PDX type", () -> {
+      client1.invoke("register a PDX type", () -> {
         HeapDataOutputStream outputStream = new HeapDataOutputStream(100, Version.CURRENT);
         try {
           DataSerializer.writeObject(new Employee(106l, "David", "Copperfield"), outputStream);
           throw new Error("operation should have been rejected");
+        } catch (ServerOperationException e) {
+          Assert.assertEquals(AuthenticationRequiredException.class, e.getCause().getClass());
         } catch (UnsupportedOperationException e) {
-          // "UnsupportedOperationException: Use Pool APIs for doing operations when
-          // multiuser-secure-mode-enabled is set to true."
+          // expected
         }
       });
+
+      client2.invoke(
+          () -> createCacheClient(null, null, null, port1, port2, 0, multiUser, AUTHREQ_EXCEPTION));
 
       // Try to register a DataSerializer with the server
       client2.invoke("register a data serializer", () -> {
@@ -269,9 +295,10 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
           RegisterDataSerializersOp.execute((ExecutablePool) pool,
               new DataSerializer[] {new MyDataSerializer()}, eventId);
           throw new Error("operation should have been rejected");
+        } catch (ServerOperationException e) {
+          Assert.assertEquals(AuthenticationRequiredException.class, e.getCause().getClass());
         } catch (UnsupportedOperationException e) {
-          // "UnsupportedOperationException: Use Pool APIs for doing operations when
-          // multiuser-secure-mode-enabled is set to true."
+          // expected
         }
       });
     }

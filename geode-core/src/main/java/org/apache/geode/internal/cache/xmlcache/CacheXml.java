@@ -111,7 +111,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * 
    * @since GemFire 8.1
    */
-  protected static final String SCHEMA_8_1_LOCATION =
+  public static final String SCHEMA_8_1_LOCATION =
       "http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd";
   /**
    * The location of the Geode 1.0 schema file.

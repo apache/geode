@@ -21,7 +21,11 @@ import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTI
 import static org.apache.geode.internal.i18n.LocalizedStrings.AUTH_PEER_AUTHENTICATION_MISSING_CREDENTIALS;
 import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHENTICATOR_OBJECT;
 
+import java.security.Principal;
+import java.util.Properties;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -35,9 +39,8 @@ import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
-
-import java.security.Principal;
-import java.util.Properties;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GMSAuthenticator implements Authenticator {
 
@@ -121,7 +124,7 @@ public class GMSAuthenticator implements Authenticator {
     try {
       if (securityService.isIntegratedSecurity()) {
         securityService.login(credentials);
-        securityService.authorizeClusterManage();
+        securityService.authorize(Resource.CLUSTER, Operation.MANAGE);
       } else {
         invokeAuthenticator(secProps, member, credentials);
       }

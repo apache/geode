@@ -117,7 +117,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * member for use in the P2P cache. Use of other constructors can break
    * network-partition-detection.
    *
-   * @param i
+   * @param i the inet address
    * @param p the membership port
    * @param splitBrainEnabled whether this feature is enabled for the member
    * @param canBeCoordinator whether the member is eligible to be the membership coordinator

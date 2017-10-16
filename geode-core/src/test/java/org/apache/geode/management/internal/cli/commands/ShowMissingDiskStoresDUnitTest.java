@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -97,8 +97,8 @@ public class ShowMissingDiskStoresDUnitTest {
     putUsingGfsh(gfshConnector, testRegionName, 2, "B");
     putUsingGfsh(gfshConnector, testRegionName, 3, "C");
 
-    lsRule.stopMember(1);
-    lsRule.stopMember(2);
+    lsRule.stopVM(1);
+    lsRule.stopVM(2);
 
     AsyncInvocation restart1 = restartServerAsync(server1);
     checkAsyncResults(restart1, gfshConnector, 5);

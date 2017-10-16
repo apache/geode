@@ -26,6 +26,7 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.KeyInfo;
@@ -45,17 +46,16 @@ import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage.RemoteConta
 import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
 import org.apache.geode.internal.cache.RemotePutMessage.PutResult;
 import org.apache.geode.internal.cache.RemotePutMessage.RemotePutResponse;
-import org.apache.geode.internal.cache.partitioned.RemoteSizeMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
-  private final LocalRegion region;
+  private final DistributedRegion region;
 
-  public DistributedTXRegionStub(TXStateStub txstate, LocalRegion r) {
-    super(txstate, r);
+  public DistributedTXRegionStub(TXStateStub txstate, DistributedRegion r) {
+    super(txstate);
     this.region = r;
   }
 
@@ -224,18 +224,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   public int entryCount() {
-    try {
-      RemoteSizeMessage.SizeResponse response =
-          RemoteSizeMessage.send(Collections.singleton(state.getTarget()), region);
-      return response.waitForSize();
-    } catch (RegionDestroyedException rde) {
-      throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
-          rde);
-    } catch (Exception e) {
-      throw new TransactionException(e);
-    }
+    return this.region.getRegionSize(this.state.getTarget());
   }
 
 

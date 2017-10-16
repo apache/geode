@@ -33,6 +33,8 @@ import org.apache.geode.management.internal.cli.remote.MemberCommandService;
  *
  *
  * @since GemFire 7.0
+ *
+ * @deprecated since 1.3 use OnlineCommandProcessor directly
  */
 public abstract class CommandService {
   protected static final Map<String, String> EMPTY_ENV = Collections.emptyMap();
@@ -78,6 +80,7 @@ public abstract class CommandService {
    *         command.
    *
    * @see CommandStatement#process()
+   * @deprecated since Geode 1.3, simply call processCommand to execute the command
    */
   public abstract CommandStatement createCommandStatement(String commandString);
 
@@ -91,6 +94,7 @@ public abstract class CommandService {
    *         command.
    *
    * @see CommandStatement#process()
+   * @deprecated since Geode 1.3, simply call processCommand to execute the command
    */
   protected abstract CommandStatement createCommandStatement(String commandString,
       Map<String, String> env);

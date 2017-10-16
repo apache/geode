@@ -151,6 +151,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   // //////////////////// Instance Methods ///////////////////
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return cache.getCancelCriterion();
   }
@@ -272,6 +273,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
 
+  @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {
     return this.clientSubscriptionConfig;
   }
@@ -422,10 +424,12 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     }
   }
 
+  @Override
   public boolean isRunning() {
     return this.acceptor != null && this.acceptor.isRunning();
   }
 
+  @Override
   public synchronized void stop() {
     if (!isRunning()) {
       return;
@@ -525,24 +529,29 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * 
    * @return the internal acceptor
    */
+  @Override
   public AcceptorImpl getAcceptor() {
     return this.acceptor;
   }
 
   // DistributionAdvisee methods
 
+  @Override
   public DM getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 
+  @Override
   public ClientSession getClientSession(String durableClientId) {
     return getCacheClientNotifier().getClientProxy(durableClientId);
   }
 
+  @Override
   public ClientSession getClientSession(DistributedMember member) {
     return getCacheClientNotifier().getClientProxy(ClientProxyMembershipID.getClientId(member));
   }
 
+  @Override
   public Set getAllClientSessions() {
     return new HashSet(getCacheClientNotifier().getClientProxies());
   }
@@ -657,6 +666,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * Marker class name to identify the lock more easily in thread dumps private static class
    * ClientMessagesRegionLock extends Object { }
    */
+  @Override
   public DistributionAdvisor getDistributionAdvisor() {
     return this.advisor;
   }
@@ -668,10 +678,12 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return this.advisor;
   }
 
+  @Override
   public Profile getProfile() {
     return getDistributionAdvisor().createProfile();
   }
 
+  @Override
   public DistributionAdvisee getParentAdvisee() {
     return null;
   }
@@ -681,14 +693,17 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * 
    * @return the underlying{@code InternalDistributedSystem}
    */
+  @Override
   public InternalDistributedSystem getSystem() {
     return (InternalDistributedSystem) this.cache.getDistributedSystem();
   }
 
+  @Override
   public String getName() {
     return "CacheServer";
   }
 
+  @Override
   public String getFullPath() {
     return getName();
   }
@@ -721,6 +736,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return groupList.toArray(groups);
   }
 
+  @Override
   public /* synchronized causes deadlock */ void fillInProfile(Profile profile) {
     assert profile instanceof CacheServerProfile;
     CacheServerProfile bp = (CacheServerProfile) profile;
@@ -734,6 +750,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     bp.finishInit();
   }
 
+  @Override
   public int getSerialNumber() {
     return this.serialNumber;
   }
@@ -751,6 +768,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * @throws IllegalStateException if the BridgeServer has not been started
    * @since GemFire 5.8Beta
    */
+  @Override
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
     if (!this.isRunning()) {
       throw new IllegalStateException(
@@ -767,6 +785,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * 
    * @since GemFire 5.8Beta
    */
+  @Override
   public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
     getCacheClientNotifier().unregisterInterestRegistrationListener(listener);
   }
@@ -778,6 +797,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * 
    * @since GemFire 5.8Beta
    */
+  @Override
   public Set getInterestRegistrationListeners() {
     return getCacheClientNotifier().getInterestRegistrationListeners();
   }

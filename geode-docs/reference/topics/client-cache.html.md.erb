@@ -221,6 +221,12 @@ Use for client caches. Defines a client's server pool used to communicate with s
 <td>Size for socket buffers from the client to the server. Default: 32768.</td>
 <td>32768</td>
 </tr>
+<tr class="odd">
+<td>socket-connect-timeout</td>
+<td>The number of milliseconds to wait before timing out on the client socket connect to a server or locator. A value of zero is interpreted as an infinite timeout. If zero, the connection will block until established or an error occurs.
+</td>
+<td>59000</td>
+</tr>
 <tr class="even">
 <td>statistic-interval</td>
 <td>Interval, in milliseconds, at which to send client statistics to the server. If set to -1, statistics are not sent.</td>

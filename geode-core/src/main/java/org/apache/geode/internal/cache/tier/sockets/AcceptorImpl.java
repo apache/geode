@@ -12,47 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
-
-import org.apache.geode.CancelException;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.ToDataException;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.LonerDistributionManager;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
-import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.cache.BucketAdvisor;
-import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessage;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.internal.util.ArrayUtils;
-import org.apache.logging.log4j.Logger;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -92,6 +55,43 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.ToDataException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.LonerDistributionManager;
+import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.BucketAdvisor;
+import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessage;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.ArrayUtils;
+
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from the edge and starts
  * up threads to process requests from these.
@@ -99,7 +99,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since GemFire 2.0.2
  */
 @SuppressWarnings("deprecation")
-public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
+public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private static final Logger logger = LogService.getLogger();
 
   private static final boolean isJRockit = System.getProperty("java.vm.name").contains("JRockit");
@@ -281,7 +281,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
   /**
    * The client health monitor tracking connections for this acceptor
    */
-  private ClientHealthMonitor healthMonitor;
+  private final ClientHealthMonitor healthMonitor;
 
   /**
    * bridge's setting of notifyBySubscription
@@ -511,7 +511,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
         }
       }
       this.localPort = port;
-      String sockName = this.serverSock.getLocalSocketAddress().toString();
+      String sockName = getServerName();
       logger.info(LocalizedMessage.create(
           LocalizedStrings.AcceptorImpl_CACHE_SERVER_CONNECTION_LISTENER_BOUND_TO_ADDRESS_0_WITH_BACKLOG_1,
           new Object[] {sockName, Integer.valueOf(backLog)}));
@@ -1178,6 +1178,17 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
     return localPort;
   }
 
+  @Override
+  public String getServerName() {
+    String name = this.serverSock.getLocalSocketAddress().toString();
+    try {
+      name = SocketCreator.getLocalHost().getCanonicalHostName() + "-" + name;
+    } catch (Exception e) {
+    }
+    return name;
+  }
+
+
   public InetAddress getServerInetAddr() {
     return this.serverSock.getInetAddress();
   }
@@ -1400,70 +1411,34 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
     // communication, create a ServerConnection. If this socket is being used
     // for 'server to client' communication, send it to the CacheClientNotifier
     // for processing.
-    byte communicationMode;
-    if (isSelector()) {
-      ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1);
-      final SocketChannel socketChannel = socket.getChannel();
-      socketChannel.configureBlocking(false);
-      // try to read the byte first in non-blocking mode
-      int res = socketChannel.read(byteBuffer);
-      socketChannel.configureBlocking(true);
-      if (res < 0) {
-        throw new EOFException();
-      } else if (res == 0) {
-        // now do a blocking read so setup a timer to close the socket if the
-        // the read takes too long
-        SystemTimer.SystemTimerTask timerTask = new SystemTimer.SystemTimerTask() {
-          @Override
-          public void run2() {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.AcceptorImpl_CACHE_SERVER_TIMED_OUT_WAITING_FOR_HANDSHAKE_FROM__0,
-                socket.getRemoteSocketAddress()));
-            closeSocket(socket);
-          }
-        };
-        this.hsTimer.schedule(timerTask, this.acceptTimeout);
-        res = socketChannel.read(byteBuffer);
-        if ((!timerTask.cancel()) || res <= 0) {
-          throw new EOFException();
-        }
-      }
-      communicationMode = byteBuffer.get(0);
-    } else {
-      socket.setSoTimeout(this.acceptTimeout);
-      this.socketCreator.configureServerSSLSocket(socket);
-      communicationMode = (byte) socket.getInputStream().read();
-      if (communicationMode == -1) {
-        throw new EOFException();
-      }
-      socket.setSoTimeout(0);
-    }
-
-    socket.setTcpNoDelay(this.tcpNoDelay);
-
-    final CommunicationMode mode;
+    final CommunicationMode communicationMode;
     try {
-      mode = CommunicationMode.fromModeNumber(communicationMode);
+      if (isSelector()) {
+        communicationMode = getCommunicationModeForSelector(socket);
+      } else {
+        communicationMode = getCommunicationModeForNonSelector(socket);
+      }
+      socket.setTcpNoDelay(this.tcpNoDelay);
+
     } catch (IllegalArgumentException e) {
-      // possible if a client uses SSL & the server isn't configured to use SSL
+      // possible if a client uses SSL & the server isn't configured to use SSL,
+      // or if an invalid communication communication mode byte is sent.
       logger.warn("Error processing client connection", e);
       throw new EOFException();
     }
 
-    String communicationModeStr;
-    if (mode.isSubscriptionFeed()) {
-      boolean primary = mode == CommunicationMode.PrimaryServerToClient;
+    if (communicationMode.isSubscriptionFeed()) {
+      boolean primary = communicationMode == CommunicationMode.PrimaryServerToClient;
       logger.debug(":Bridge server: Initializing {} server-to-client communication socket: {}",
           primary ? "primary" : "secondary", socket);
       AcceptorImpl.this.clientNotifier.registerClient(socket, primary, this.acceptorId,
           this.notifyBySubscription);
       return;
     }
-    communicationModeStr = mode.toString();
 
-    logger.debug("Bridge server: Initializing {} communication socket: {}", communicationModeStr,
+    logger.debug("Bridge server: Initializing {} communication socket: {}", communicationMode,
         socket);
-    boolean notForQueue = (mode != ClientToServerForQueue);
+    boolean notForQueue = (communicationMode != ClientToServerForQueue);
     if (notForQueue) {
       int curCnt = this.getClientServerCnxCount();
       if (curCnt >= this.maxConnections) {
@@ -1471,21 +1446,24 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
             LocalizedStrings.AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_CURRENT_CONNECTION_COUNT_OF_1_IS_GREATER_THAN_OR_EQUAL_TO_THE_CONFIGURED_MAX_OF_2,
             new Object[] {socket.getInetAddress(), Integer.valueOf(curCnt),
                 Integer.valueOf(this.maxConnections)}));
-        try {
-          ServerHandShakeProcessor.refuse(socket.getOutputStream(),
-              LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
-                  .toLocalizedString(Integer.valueOf(this.maxConnections)));
-        } catch (Exception ex) {
-          logger.debug("rejection message failed", ex);
+        if (communicationMode.expectsConnectionRefusalMessage()) {
+          try {
+            ServerHandShakeProcessor.refuse(socket.getOutputStream(),
+                LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
+                    .toLocalizedString(Integer.valueOf(this.maxConnections)));
+          } catch (Exception ex) {
+            logger.debug("rejection message failed", ex);
+          }
         }
         closeSocket(socket);
         return;
       }
     }
 
-    ServerConnection serverConn = serverConnectionFactory.makeServerConnection(socket, this.cache,
-        this.crHelper, this.stats, AcceptorImpl.handShakeTimeout, this.socketBufferSize,
-        communicationModeStr, communicationMode, this, this.securityService);
+    ServerConnection serverConn =
+        serverConnectionFactory.makeServerConnection(socket, this.cache, this.crHelper, this.stats,
+            AcceptorImpl.handShakeTimeout, this.socketBufferSize, communicationMode.toString(),
+            communicationMode.getModeNumber(), this, this.securityService);
 
     synchronized (this.allSCsLock) {
       this.allSCs.add(serverConn);
@@ -1518,6 +1496,47 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
         serverConn.cleanup();
       }
     }
+  }
+
+  private CommunicationMode getCommunicationModeForNonSelector(Socket socket) throws IOException {
+    socket.setSoTimeout(this.acceptTimeout);
+    this.socketCreator.configureServerSSLSocket(socket);
+    byte communicationModeByte = (byte) socket.getInputStream().read();
+    if (communicationModeByte == -1) {
+      throw new EOFException();
+    }
+    socket.setSoTimeout(0);
+    return CommunicationMode.fromModeNumber(communicationModeByte);
+  }
+
+  private CommunicationMode getCommunicationModeForSelector(Socket socket) throws IOException {
+    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1);
+    final SocketChannel socketChannel = socket.getChannel();
+    socketChannel.configureBlocking(false);
+    // try to read the byte first in non-blocking mode
+    int res = socketChannel.read(byteBuffer);
+    socketChannel.configureBlocking(true);
+    if (res < 0) {
+      throw new EOFException();
+    } else if (res == 0) {
+      // now do a blocking read so setup a timer to close the socket if the
+      // the read takes too long
+      SystemTimer.SystemTimerTask timerTask = new SystemTimer.SystemTimerTask() {
+        @Override
+        public void run2() {
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.AcceptorImpl_CACHE_SERVER_TIMED_OUT_WAITING_FOR_HANDSHAKE_FROM__0,
+              socket.getRemoteSocketAddress()));
+          closeSocket(socket);
+        }
+      };
+      this.hsTimer.schedule(timerTask, this.acceptTimeout);
+      res = socketChannel.read(byteBuffer);
+      if ((!timerTask.cancel()) || res <= 0) {
+        throw new EOFException();
+      }
+    }
+    return CommunicationMode.fromModeNumber(byteBuffer.get(0));
   }
 
   @Override
@@ -1717,6 +1736,7 @@ public class AcceptorImpl extends Acceptor implements Runnable, CommBufferPool {
    *
    * @return the instance that provides client notification
    */
+  @Override
   public CacheClientNotifier getCacheClientNotifier() {
     return this.clientNotifier;
   }

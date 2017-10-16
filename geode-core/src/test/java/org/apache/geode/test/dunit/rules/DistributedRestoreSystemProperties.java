@@ -46,7 +46,7 @@ public class DistributedRestoreSystemProperties extends RestoreSystemProperties
   @Override
   public void before() throws Throwable {
     super.before();
-    this.invoker.invokeInEveryVM(new SerializableRunnable() {
+    this.invoker.invokeInEveryVMAndController(new SerializableRunnable() {
       @Override
       public void run() {
         if (originalProperties == null) {
@@ -60,7 +60,7 @@ public class DistributedRestoreSystemProperties extends RestoreSystemProperties
   @Override
   public void after() {
     super.after();
-    this.invoker.invokeInEveryVM(new SerializableRunnable() {
+    this.invoker.invokeInEveryVMAndController(new SerializableRunnable() {
       @Override
       public void run() {
         if (originalProperties != null) {

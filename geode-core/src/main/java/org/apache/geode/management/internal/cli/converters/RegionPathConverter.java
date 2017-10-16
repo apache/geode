@@ -14,25 +14,25 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import org.apache.geode.cache.Region;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * 
  * @since GemFire 7.0
  */
 public class RegionPathConverter implements Converter<String> {
-
-  public static final String DEFAULT_APP_CONTEXT_PATH = "";
-
   @Override
   public boolean supports(Class<?> type, String optionContext) {
     return String.class.equals(type) && optionContext.contains(ConverterHint.REGION_PATH);
@@ -40,6 +40,18 @@ public class RegionPathConverter implements Converter<String> {
 
   @Override
   public String convertFromText(String value, Class<?> targetType, String optionContext) {
+    // When value is null, this should not be called. this is here for safety reasons
+    if (value == null) {
+      return null;
+    }
+
+    if (value.equals(Region.SEPARATOR)) {
+      throw new IllegalArgumentException("invalid region path: " + value);
+    }
+
+    if (!value.startsWith(Region.SEPARATOR)) {
+      value = Region.SEPARATOR + value;
+    }
     return value;
   }
 
@@ -47,18 +59,6 @@ public class RegionPathConverter implements Converter<String> {
   public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
       String existingData, String optionContext, MethodTarget target) {
     Set<String> regionPathSet = getAllRegionPaths();
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    String currentContextPath = "";
-    if (gfsh != null) {
-      currentContextPath = gfsh.getEnvProperty(Gfsh.ENV_APP_CONTEXT_PATH);
-      if (currentContextPath != null
-          && !org.apache.geode.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH
-              .equals(currentContextPath)) {
-        regionPathSet.remove(currentContextPath);
-        regionPathSet.add(
-            org.apache.geode.management.internal.cli.converters.RegionPathConverter.DEFAULT_APP_CONTEXT_PATH);
-      }
-    }
 
     for (String regionPath : regionPathSet) {
       if (existingData != null) {
@@ -79,16 +79,8 @@ public class RegionPathConverter implements Converter<String> {
     if (gfsh != null && gfsh.isConnectedAndReady()) {
       String[] regionPaths =
           gfsh.getOperationInvoker().getDistributedSystemMXBean().listAllRegionPaths();
-      if (regionPaths != null && regionPaths.length > 0) {
-        regionPathSet = new TreeSet<String>();
-        for (String regionPath : regionPaths) {
-          if (regionPath != null) { // Not needed after 46387/46502 are addressed
-            regionPathSet.add(regionPath);
-          }
-        }
-      }
+      regionPathSet = Arrays.stream(regionPaths).collect(Collectors.toSet());
     }
-
     return regionPathSet;
   }
 

@@ -30,6 +30,7 @@ import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
  * {@code disconnectAllFromDS} during tear down.
  */
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class JUnit4OverridingGetPropertiesDisconnectsAllDUnitTest
     extends JUnit4DistributedTestCase {
 

@@ -14,16 +14,10 @@
  */
 package org.apache.geode.test.junit.runners;
 
-import org.junit.runner.RunWith;
 import org.junit.runner.Runner;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.parameterized.BlockJUnit4ClassRunnerWithParameters;
 import org.junit.runners.parameterized.ParametersRunnerFactory;
 import org.junit.runners.parameterized.TestWithParameters;
-
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class provides an early fix for JUnit issue <a
@@ -34,6 +28,7 @@ import java.util.List;
  * See also <a href="https://issues.apache.org/jira/browse/GEODE-1350">GEODE-1350</a>
  */
 public class CategoryWithParameterizedRunnerFactory implements ParametersRunnerFactory {
+
   @Override
   public Runner createRunnerForTestWithParameters(TestWithParameters test)
       throws InitializationError {

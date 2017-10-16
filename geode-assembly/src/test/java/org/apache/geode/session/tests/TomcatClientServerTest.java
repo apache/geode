@@ -24,7 +24,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 
 /**
@@ -66,6 +66,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
     command.addOption(CliStrings.START_SERVER__CLASSPATH,
         binDirJars + File.pathSeparator + libDirJars);
     command.addOption(CliStrings.START_SERVER__LOCATORS, DUnitEnv.get().getLocatorString());
+    command.addOption(CliStrings.START_SERVER__J, "-Dgemfire.member-timeout=60000");
 
     // Start server
     gfsh.executeAndVerifyCommand(command.toString());

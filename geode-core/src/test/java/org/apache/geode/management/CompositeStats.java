@@ -17,16 +17,13 @@ package org.apache.geode.management;
 import java.beans.ConstructorProperties;
 
 public class CompositeStats {
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
-  private final String connectionStatsType; // shouldn't change
-  private long connectionsOpened;
-  private long connectionsClosed;
-  private long connectionsAttempted;
-  private long connectionsFailed;
-  private long connectionLifeTime; // is this total TTL??
+
+  private final String connectionStatsType;
+  private final long connectionsOpened;
+  private final long connectionsClosed;
+  private final long connectionsAttempted;
+  private final long connectionsFailed;
+  private final long connectionLifeTime;
 
   @ConstructorProperties(value = {"connectionStatsType", "connectionsOpened", "connectionsClosed",
       "connectionsAttempted", "connectionsFailed", "connectionLifeTime"})
@@ -40,44 +37,26 @@ public class CompositeStats {
     this.connectionLifeTime = connectionLifeTime;
   }
 
-  /**
-   * @return the connectionStatsType
-   */
   public String getConnectionStatsType() {
     return connectionStatsType;
   }
 
-  /**
-   * @return the connectionsOpened
-   */
   public long getConnectionsOpened() {
     return connectionsOpened;
   }
 
-  /**
-   * @return the connectionsClosed
-   */
   public long getConnectionsClosed() {
     return connectionsClosed;
   }
 
-  /**
-   * @return the connectionsAttempted
-   */
   public long getConnectionsAttempted() {
     return connectionsAttempted;
   }
 
-  /**
-   * @return the connectionsFailed
-   */
   public long getConnectionsFailed() {
     return connectionsFailed;
   }
 
-  /**
-   * @return the connectionLifeTime
-   */
   public long getConnectionLifeTime() {
     return connectionLifeTime;
   }
@@ -95,6 +74,4 @@ public class CompositeStats {
     builder.append("]");
     return builder.toString();
   }
-
-
 }

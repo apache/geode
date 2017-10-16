@@ -168,7 +168,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
         case REGION_PATH:
           matcher = Pattern.compile("[aA-zZ0-9-_./]+").matcher(name);
           msg = "Region" + msg + ", underscores, or forward slashes: ";
-          iae = name.startsWith("__") || !matcher.matches();
+          iae = name.startsWith("__") || name.startsWith("/__") || !matcher.matches();
           break;
         case INDEX_NAME:
           matcher = Pattern.compile("[aA-zZ0-9-_.]+").matcher(name);

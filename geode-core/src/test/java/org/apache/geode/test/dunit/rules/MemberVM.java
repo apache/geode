@@ -23,6 +23,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.rules.Locator;
+import org.apache.geode.test.junit.rules.Member;
+import org.apache.geode.test.junit.rules.Server;
 
 public class MemberVM<T extends Member> implements Member {
   private T member;
@@ -56,7 +59,7 @@ public class MemberVM<T extends Member> implements Member {
   }
 
   public T getMember() {
-    return (T) member;
+    return member;
   }
 
   @Override
@@ -86,6 +89,13 @@ public class MemberVM<T extends Member> implements Member {
     return member.getName();
   }
 
+  public int getEmbeddedLocatorPort() {
+    if (!(member instanceof Server)) {
+      throw new RuntimeException("member needs to be a server");
+    }
+    return ((Server) member).getEmbeddedLocatorPort();
+  }
+
   public void stopMember() {
     this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
     if (tempWorkingDir) {
@@ -102,5 +112,9 @@ public class MemberVM<T extends Member> implements Member {
       Arrays.stream(getWorkingDir().listFiles((dir, name) -> {
         return !name.startsWith("locator0view");
       })).forEach(FileUtils::deleteQuietly);
+  }
+
+  public static void invokeInEveryMember(SerializableRunnableIF runnableIF, MemberVM... members) {
+    Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
   }
 }

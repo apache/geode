@@ -146,8 +146,6 @@ public class SSLConfig {
     this.truststoreType = truststoreType;
   }
 
-
-
   public Properties getProperties() {
     return this.properties;
   }

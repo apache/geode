@@ -14,62 +14,58 @@
  */
 package org.apache.geode.management;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.management.MXBeanAwaitility.awaitLocalLocatorMXBean;
+import static org.apache.geode.management.MXBeanAwaitility.awaitLocatorMXBeanProxy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.File;
+import java.net.InetAddress;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Test cases
- * 
- * DistributedSystem Cache Locator no no yes yes no yes yes yes yes
+ * Distributed tests for {@link LocatorMXBean}.
  */
 @Category(DistributedTest.class)
 public class LocatorManagementDUnitTest extends ManagementTestBase {
 
-  private static final int MAX_WAIT = 8 * ManagementConstants.REFRESH_TIME;
+  private VM managerVM;
+  private VM locatorVM;
 
-  private VM locator;
+  private String hostName;
+  private int locatorPort;
 
-  @Override
-  protected final void postSetUpManagementTestBase() throws Exception {
-    locator = managedNode1;
+  @Before
+  public void setUp() throws Exception {
+    managerVM = managingNode;
+    locatorVM = managedNode1;
+
+    hostName = Host.getHost(0).getHostName();
+    locatorPort = getRandomAvailableTCPPort();
   }
 
-  @Override
-  protected final void preTearDownManagementTestBase() throws Exception {
-    stopLocator(locator);
+  @After
+  public void tearDown() throws Exception {
+    stopLocator(locatorVM);
   }
 
   /**
@@ -77,46 +73,41 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
    */
   @Test
   public void testPeerLocation() throws Exception {
-    int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, locPort);
-    locatorMBeanExist(locator, locPort);
+    startLocator(locatorVM, locatorPort);
+    validateLocatorMXBean(locatorVM, locatorPort);
 
-    Host host = Host.getHost(0);
-    String host0 = getServerHostName(host);
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
-    props.setProperty(JMX_MANAGER, "true");
-    props.setProperty(JMX_MANAGER_START, "false");
-    props.setProperty(JMX_MANAGER_PORT, "0");
-    props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
-    createCache(managingNode, props);
-    startManagingNode(managingNode);
-    DistributedMember locatorMember = getMember(locator);
-    remoteLocatorMBeanExist(managingNode, locatorMember);
+    Properties config = new Properties();
+    config.setProperty(LOCATORS, hostName + "[" + locatorPort + "]");
+    config.setProperty(JMX_MANAGER, "true");
+    config.setProperty(JMX_MANAGER_START, "false");
+    config.setProperty(JMX_MANAGER_PORT, "0");
+    config.setProperty(JMX_MANAGER_HTTP_PORT, "0");
 
+    createCache(managerVM, config);
+    startManagingNode(managerVM);
+    DistributedMember locatorMember = getMember(locatorVM);
+
+    validateLocatorMXBean(managerVM, locatorMember);
   }
 
   @Test
   public void testPeerLocationWithPortZero() throws Exception {
-    // Start the locator with port=0
-    int locPort = startLocator(locator, 0);
-    locatorMBeanExist(locator, locPort);
+    locatorPort = startLocator(locatorVM, 0);
 
-    Host host = Host.getHost(0);
-    String host0 = getServerHostName(host);
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
-    props.setProperty(JMX_MANAGER, "true");
-    props.setProperty(JMX_MANAGER_START, "false");
-    props.setProperty(JMX_MANAGER_PORT, "0");
-    props.setProperty(JMX_MANAGER_HTTP_PORT, "0");
-    createCache(managingNode, props);
-    startManagingNode(managingNode);
-    DistributedMember locatorMember = getMember(locator);
-    remoteLocatorMBeanExist(managingNode, locatorMember);
+    validateLocatorMXBean(locatorVM, locatorPort);
 
+    Properties config = new Properties();
+    config.setProperty(LOCATORS, hostName + "[" + locatorPort + "]");
+    config.setProperty(JMX_MANAGER, "true");
+    config.setProperty(JMX_MANAGER_START, "false");
+    config.setProperty(JMX_MANAGER_PORT, "0");
+    config.setProperty(JMX_MANAGER_HTTP_PORT, "0");
+
+    createCache(managerVM, config);
+    startManagingNode(managerVM);
+    DistributedMember locatorMember = getMember(locatorVM);
+
+    validateLocatorMXBean(managerVM, locatorMember);
   }
 
   /**
@@ -125,260 +116,125 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   @Test
   public void testColocatedLocator() throws Exception {
     initManagement(false);
-    int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, locPort);
-    locatorMBeanExist(locator, locPort);
 
+    startLocator(locatorVM, locatorPort);
+
+    validateLocatorMXBean(locatorVM, locatorPort);
   }
 
   @Test
   public void testColocatedLocatorWithPortZero() throws Exception {
     initManagement(false);
-    int locPort = startLocator(locator, 0);
-    locatorMBeanExist(locator, locPort);
 
+    locatorPort = startLocator(locatorVM, 0);
+
+    validateLocatorMXBean(locatorVM, locatorPort);
   }
 
   @Test
   public void testListManagers() throws Exception {
     initManagement(false);
-    int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, locPort);
-    listManagers(locator, locPort);
+
+    startLocator(locatorVM, locatorPort);
+
+    validateManagers(locatorVM);
   }
 
   @Test
   public void testListManagersWithPortZero() throws Exception {
     initManagement(false);
-    int locPort = startLocator(locator, 0);
-    listManagers(locator, locPort);
+
+    startLocator(locatorVM, 0);
+
+    validateManagers(locatorVM);
   }
 
   @Test
   public void testWillingManagers() throws Exception {
-    int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, locPort);
+    startLocator(locatorVM, locatorPort);
 
-    Host host = Host.getHost(0);
-    String host0 = getServerHostName(host);
+    Properties config = new Properties();
+    config.setProperty(LOCATORS, hostName + "[" + locatorPort + "]");
+    config.setProperty(JMX_MANAGER, "true");
 
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
-    props.setProperty(JMX_MANAGER, "true");
+    createCache(managedNode2, config);
+    createCache(managedNode3, config);
 
-    createCache(managedNode2, props);
-    createCache(managedNode3, props);
-
-    listWillingManagers(locator);
+    validatePotentialManagers(locatorVM, 3);
   }
 
   @Test
   public void testWillingManagersWithPortZero() throws Exception {
-    int locPort = startLocator(locator, 0);
+    locatorPort = startLocator(locatorVM, 0);
 
-    Host host = Host.getHost(0);
-    String host0 = getServerHostName(host);
+    Properties config = new Properties();
+    config.setProperty(LOCATORS, hostName + "[" + locatorPort + "]");
+    config.setProperty(JMX_MANAGER, "true");
 
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
-    props.setProperty(JMX_MANAGER, "true");
+    createCache(managedNode2, config);
+    createCache(managedNode3, config);
 
-    createCache(managedNode2, props);
-    createCache(managedNode3, props);
-
-    listWillingManagers(locator);
+    validatePotentialManagers(locatorVM, 3);
   }
 
   /**
    * Starts a locator with given configuration. If DS is already started it will use the same DS
-   * 
-   * @param vm reference to VM
    */
-  protected Integer startLocator(final VM vm, final int port) {
+  private int startLocator(final VM locatorVM, final int port) {
+    return locatorVM.invoke("Start Locator In VM", () -> {
+      assertThat(InternalLocator.hasLocator()).isFalse();
 
-    return (Integer) vm.invoke(new SerializableCallable("Start Locator In VM") {
+      Properties config = new Properties();
+      config.setProperty(LOCATORS, "");
 
-      public Object call() throws Exception {
+      InetAddress bindAddress = InetAddress.getByName(hostName);
 
-        assertFalse(InternalLocator.hasLocator());
+      File logFile = new File(getTestMethodName() + "-locator" + port + ".log");
+      Locator locator = Locator.startLocatorAndDS(port, logFile, bindAddress, config);
 
-        Properties props = new Properties();
-        props.setProperty(MCAST_PORT, "0");
-
-        props.setProperty(LOCATORS, "");
-        props.setProperty(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-
-        InetAddress bindAddr = null;
-        try {
-          bindAddr = InetAddress.getByName(getServerHostName(vm.getHost()));
-        } catch (UnknownHostException uhe) {
-          Assert.fail("While resolving bind address ", uhe);
-        }
-
-        Locator locator = null;
-        try {
-          File logFile = new File(getTestMethodName() + "-locator" + port + ".log");
-          locator = Locator.startLocatorAndDS(port, logFile, bindAddr, props);
-        } catch (IOException ex) {
-          Assert.fail("While starting locator on port " + port, ex);
-        }
-
-        assertTrue(InternalLocator.hasLocator());
-        return locator.getPort();
-      }
+      assertThat(InternalLocator.hasLocator()).isTrue();
+      return locator.getPort();
     });
   }
 
-  /**
-   * Creates a persistent region
-   * 
-   * @param vm reference to VM
-   */
-  protected String stopLocator(VM vm) {
+  private void stopLocator(final VM vm) {
+    vm.invoke("Stop Locator In VM", () -> {
+      assertThat(InternalLocator.hasLocator()).isTrue();
 
-    return (String) vm.invoke(new SerializableCallable("Stop Locator In VM") {
-
-      public Object call() throws Exception {
-
-        assertTrue(InternalLocator.hasLocator());
-        InternalLocator.getLocator().stop();
-        return null;
-      }
+      InternalLocator.getLocator().stop();
     });
   }
 
-  /**
-   * Creates a persistent region
-   *
-   * @param vm reference to VM
-   */
-  protected void locatorMBeanExist(VM vm, final int locPort) {
+  private void validateLocatorMXBean(final VM locatorVM, final int port) {
+    locatorVM.invoke("validateLocatorMXBean", () -> {
+      LocatorMXBean locatorMXBean = awaitLocalLocatorMXBean();
 
-    vm.invoke(new SerializableCallable("Locator MBean created") {
-
-      public Object call() throws Exception {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-
-        ManagementService service = ManagementService.getExistingManagementService(cache);
-        assertNotNull(service);
-        LocatorMXBean bean = service.getLocalLocatorMXBean();
-        assertNotNull(bean);
-        assertEquals(locPort, bean.getPort());
-        LogWriterUtils.getLogWriter().info("Log of Locator" + bean.viewLog());
-        LogWriterUtils.getLogWriter().info("BindAddress" + bean.getBindAddress());
-        return null;
-      }
+      assertThat(locatorMXBean.getPort()).isEqualTo(port);
     });
   }
 
-  /**
-   * Creates a persistent region
-   * 
-   * @param vm reference to VM
-   */
-  protected void remoteLocatorMBeanExist(VM vm, final DistributedMember member) {
-
-    vm.invoke(new SerializableCallable("Locator MBean created") {
-
-      public Object call() throws Exception {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        ManagementService service = ManagementService.getExistingManagementService(cache);
-        assertNotNull(service);
-        LocatorMXBean bean = MBeanUtil.getLocatorMbeanProxy(member);
-        assertNotNull(bean);
-
-        LogWriterUtils.getLogWriter().info("Log of Locator" + bean.viewLog());
-        LogWriterUtils.getLogWriter().info("BindAddress" + bean.getBindAddress());
-
-        return null;
-      }
+  private void validateLocatorMXBean(final VM vm, final DistributedMember member) {
+    vm.invoke("validateLocatorMXBean", () -> {
+      LocatorMXBean locatorMXBean = awaitLocatorMXBeanProxy(member);
+      assertThat(locatorMXBean).isNotNull();
     });
   }
 
-  /**
-   * Creates a persistent region
-   *
-   * @param vm reference to VM
-   */
-  protected void listManagers(VM vm, final int locPort) {
+  private void validateManagers(final VM locatorVM) {
+    locatorVM.invoke("validateManagers", () -> {
+      LocatorMXBean locatorMXBean = awaitLocalLocatorMXBean();
 
-    vm.invoke(new SerializableCallable("List Managers") {
-
-      public Object call() throws Exception {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-
-        ManagementService service = ManagementService.getExistingManagementService(cache);
-        assertNotNull(service);
-        final LocatorMXBean bean = service.getLocalLocatorMXBean();
-        assertNotNull(bean);
-
-        Wait.waitForCriterion(new WaitCriterion() {
-
-          public String description() {
-            return "Waiting for the managers List";
-          }
-
-          public boolean done() {
-
-            boolean done = bean.listManagers().length == 1;
-            return done;
-          }
-
-        }, MAX_WAIT, 500, true);
-
-        return null;
-      }
+      await().atMost(2, MINUTES).until(() -> assertThat(locatorMXBean.listManagers()).hasSize(1));
     });
   }
 
-  /**
-   * Creates a persistent region
-   *
-   * @param vm reference to VM
-   */
-  protected void listWillingManagers(VM vm) {
+  private void validatePotentialManagers(final VM locatorVM,
+      final int expectedNumberPotentialManagers) {
+    locatorVM.invoke("List Willing Managers", () -> {
+      LocatorMXBean locatorMXBean = awaitLocalLocatorMXBean();
 
-    vm.invoke(new SerializableCallable("List Willing Managers") {
-
-      public Object call() throws Exception {
-        GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-
-        ManagementService service = ManagementService.getExistingManagementService(cache);
-        assertNotNull(service);
-        final LocatorMXBean bean = service.getLocalLocatorMXBean();
-        assertNotNull(bean);
-
-        Wait.waitForCriterion(new WaitCriterion() {
-
-          public String description() {
-            return "Waiting for the Willing managers List";
-          }
-
-          public boolean done() {
-
-            boolean done = bean.listPotentialManagers().length == 3;
-            return done;
-          }
-
-        }, MAX_WAIT, 500, true);
-
-        return null;
-      }
+      await().atMost(2, MINUTES).until(() -> assertThat(locatorMXBean.listPotentialManagers())
+          .hasSize(expectedNumberPotentialManagers));
     });
   }
-
-  /**
-   * get the host name to use for a server cache in client/server dunit testing
-   * 
-   * @param host
-   * @return the host name
-   */
-  public static String getServerHostName(Host host) {
-    return System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address") != null
-        ? System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address")
-        : host.getHostName();
-  }
-
 }

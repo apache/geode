@@ -68,6 +68,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.test.dunit.DUnitBlackboard;
+import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
@@ -286,35 +287,19 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   public static final void disconnectAllFromDS() {
-    disconnectFromDS();
-    invokeInEveryVM("disconnectFromDS", () -> disconnectFromDS());
+    Disconnect.disconnectAllFromDS();
   }
 
   /**
    * Disconnects this VM from the distributed system
    */
   public static final void disconnectFromDS() {
-    GemFireCacheImpl.testCacheXml = null;
     if (system != null) {
       system.disconnect();
       system = null;
     }
 
-    for (;;) {
-      DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-      if (ds == null) {
-        break;
-      }
-      try {
-        ds.disconnect();
-      } catch (Exception ignore) {
-      }
-    }
-
-    AdminDistributedSystemImpl ads = AdminDistributedSystemImpl.getConnectedInstance();
-    if (ads != null) {
-      ads.disconnect();
-    }
+    Disconnect.disconnectFromDS();
   }
 
   /**

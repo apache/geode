@@ -17,8 +17,22 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
@@ -37,6 +51,7 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
 import org.apache.geode.management.internal.configuration.functions.RecreateCacheFunction;
@@ -44,19 +59,6 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.logging.log4j.Logger;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Commands for the cluster configuration
@@ -74,7 +76,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       mandatory = true, help = CliStrings.EXPORT_SHARED_CONFIG__FILE__HELP) String zipFileName) {
 
     InternalLocator locator = InternalLocator.getLocator();
-    if (!locator.isSharedConfigurationRunning()) {
+    if (locator == null || !locator.isSharedConfigurationRunning()) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
     }
 
@@ -82,7 +84,9 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
     try {
       tempDir = Files.createTempDirectory("clusterConfig");
     } catch (IOException e) {
-      logSevere(e);
+      if (Gfsh.getCurrentInstance() != null) {
+        Gfsh.getCurrentInstance().logSevere(e.getMessage(), e);
+      }
       ErrorResultData errorData =
           ResultBuilder.createErrorResultData().addLine("Unable to create temp directory");
       return ResultBuilder.buildResult(errorData);
@@ -106,7 +110,9 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
     } catch (Exception e) {
       ErrorResultData errorData = ResultBuilder.createErrorResultData();
       errorData.addLine("Export failed");
-      logSevere(e);
+      if (Gfsh.getCurrentInstance() != null) {
+        Gfsh.getCurrentInstance().logSevere(e.getMessage(), e);
+      }
       result = ResultBuilder.buildResult(errorData);
     } finally {
       zipFile.delete();
@@ -119,7 +125,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       help = CliStrings.IMPORT_SHARED_CONFIG__HELP)
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.ExportImportClusterConfigurationCommands$ImportInterceptor",
-      relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+      isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   @SuppressWarnings("unchecked")
   public Result importSharedConfig(@CliOption(key = {CliStrings.IMPORT_SHARED_CONFIG__ZIP},
@@ -172,7 +178,9 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
     } catch (Exception e) {
       ErrorResultData errorData = ResultBuilder.createErrorResultData();
       errorData.addLine("Import failed");
-      logSevere(e);
+      if (Gfsh.getCurrentInstance() != null) {
+        Gfsh.getCurrentInstance().logSevere(e.getMessage(), e);
+      }
       result = ResultBuilder.buildResult(errorData);
       // if import is unsuccessful, don't need to bounce the server.
       return result;

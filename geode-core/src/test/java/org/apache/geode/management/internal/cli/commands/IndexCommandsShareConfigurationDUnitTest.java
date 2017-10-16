@@ -48,7 +48,7 @@ import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -86,7 +86,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
 
     locator = startupRule.startLocatorVM(0, locatorProps);
 
-    gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+    gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
 
     Properties props = new Properties();
     props.setProperty(GROUPS, groupName);
@@ -141,8 +141,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     });
 
     // Restart the data member cache to make sure that the index is destroyed.
-
-    startupRule.stopMember(1);
+    startupRule.stopVM(1);
 
     Properties props = new Properties();
     props.setProperty(GROUPS, groupName);

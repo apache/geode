@@ -366,103 +366,74 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   }
 
   /**
-   * Tests that distributed updates are delivered in order
+   * Verifies that distributed updates are delivered in order.
    *
-   * <P>
-   *
+   * <p>
    * Note that this test does not make sense for regions that are {@link Scope#DISTRIBUTED_NO_ACK}
    * for which we do not guarantee the ordering of updates for a single producer/single consumer.
-   *
-   * DISABLED 4-16-04 - the current implementation assumes events are processed synchronously, which
-   * is no longer true.
    */
-  @Ignore("TODO: test is DISABLED 4-16-04 - the current implementation assumes events are processed synchronously, which is no longer true")
   @Test
   public void testOrderedUpdates() throws Exception {
     assumeFalse(getRegionAttributes().getScope() == Scope.DISTRIBUTED_NO_ACK);
 
-    final String name = this.getUniqueName();
-    final Object key = "KEY";
-    final int lastNumber = 10;
+    final String regionName = getUniqueName();
+    final String key = "KEY";
+    final int lastValue = 10;
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = Host.getHost(0).getVM(0);
+    VM vm1 = Host.getHost(0).getVM(1);
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region entry") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = createRegion(name);
-        region.create(key, null);
-      }
-    };
-
-    vm0.invoke(create);
-    vm1.invoke(create);
-
-    vm1.invoke(new CacheSerializableRunnable("Set listener") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
-        region.setUserAttribute(new LinkedBlockingQueue());
-        region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
-          @Override
-          public void afterUpdate(EntryEvent e) {
-            Region region2 = e.getRegion();
-            LinkedBlockingQueue queue = (LinkedBlockingQueue) region2.getUserAttribute();
-            Object value = e.getNewValue();
-            assertNotNull(value);
-            try {
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Adding " + value);
-              queue.put(value);
-
-            } catch (InterruptedException ex) {
-              fail("Why was I interrupted?", ex);
-            }
-          }
-        });
-        flushIfNecessary(region);
-      }
+    vm0.invoke("Create region", () -> {
+      createRegion(regionName);
     });
-    AsyncInvocation ai1 = vm1.invokeAsync(new CacheSerializableRunnable("Verify") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
-        LinkedBlockingQueue queue = (LinkedBlockingQueue) region.getUserAttribute();
-        for (int i = 0; i <= lastNumber; i++) {
+
+    vm1.invoke("Create region and region entry", () -> {
+      Region<String, Integer> region = createRegion(regionName);
+      region.create(key, null);
+    });
+
+    vm1.invoke("Set listener", () -> {
+      Region<String, Integer> region = getRootRegion().getSubregion(regionName);
+      region.setUserAttribute(new LinkedBlockingQueue());
+
+      region.getAttributesMutator().addCacheListener(new CacheListenerAdapter<String, Integer>() {
+        @Override
+        public void afterUpdate(EntryEvent<String, Integer> event) {
+          Region<String, Integer> region = event.getRegion();
+          LinkedBlockingQueue<Integer> queue = (LinkedBlockingQueue) region.getUserAttribute();
+          int value = event.getNewValue();
           try {
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Waiting for " + i);
-            Integer value = (Integer) queue.take();
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Got " + value);
-            assertEquals(i, value.intValue());
-
-          } catch (InterruptedException ex) {
-            fail("Why was I interrupted?", ex);
+            queue.put(value);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
           }
         }
-      }
+      });
+      flushIfNecessary(region);
     });
 
-    AsyncInvocation ai0 = vm0.invokeAsync(new CacheSerializableRunnable("Populate") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
-        for (int i = 0; i <= lastNumber; i++) {
-          // org.apache.geode.internal.GemFireVersion.waitForJavaDebugger(getLogWriter());
-          region.put(key, new Integer(i));
+    AsyncInvocation verify = vm1.invokeAsync("Verify", () -> {
+      Region<String, Integer> region = getRootRegion().getSubregion(regionName);
+      LinkedBlockingQueue<Integer> queue = (LinkedBlockingQueue) region.getUserAttribute();
+      for (int i = 0; i <= lastValue; i++) {
+        try {
+          int value = queue.take();
+          assertEquals(i, value);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
         }
       }
     });
 
-    ThreadUtils.join(ai0, 30 * 1000);
-    ThreadUtils.join(ai1, 30 * 1000);
+    AsyncInvocation populate = vm0.invokeAsync("Populate", () -> {
+      Region<String, Integer> region = getRootRegion().getSubregion(regionName);
+      for (int i = 0; i <= lastValue; i++) {
+        region.put(key, i);
+      }
+    });
 
-    if (ai0.exceptionOccurred()) {
-      fail("ai0 failed", ai0.getException());
-
-    } else if (ai1.exceptionOccurred()) {
-      fail("ai1 failed", ai1.getException());
-    }
+    populate.await();
+    verify.await();
   }
 
   /**
@@ -3933,8 +3904,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                       ((InternalDistributedSystem) (region.getCache().getDistributedSystem()))
                           .getClock().getStopTime();
                   logger.info("DEBUG: waiting for expire destroy expirationTime= "
-                      + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime
-                      + " currentTimeMillis=" + System.currentTimeMillis());
+                      + eet.getExpirationTime() + " now=" + eet.calculateNow() + " stopTime="
+                      + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
                 } else {
                   logger.info("DEBUG: waiting for expire destroy but expiry task is null");
                 }
@@ -3948,8 +3919,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               try {
                 EntryExpiryTask eet = getEntryExpiryTask(region, key);
                 if (eet != null) {
-                  expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow()
-                      + " currentTimeMillis=" + System.currentTimeMillis();
+                  expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now="
+                      + eet.calculateNow() + " currentTimeMillis=" + System.currentTimeMillis();
                 }
               } catch (EntryNotFoundException ex) {
                 expiryInfo = "EntryNotFoundException when getting expiry task";

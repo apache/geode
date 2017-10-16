@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.LowMemoryException;
@@ -105,7 +106,7 @@ public class ExecuteFunction extends BaseCommand {
 
     // Execute function on the cache
     try {
-      Function functionObject = null;
+      Function<?> functionObject = null;
       if (function instanceof String) {
         functionObject = FunctionService.getFunction((String) function);
         if (functionObject == null) {
@@ -121,15 +122,16 @@ public class ExecuteFunction extends BaseCommand {
 
       FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId());
 
-      securityService.authorizeDataWrite();
-
       // check if the caller is authorized to do this operation on server
+      functionObject.getRequiredPermissions(null).forEach(securityService::authorize);
+
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       ExecuteFunctionOperationContext executeContext = null;
       if (authzRequest != null) {
         executeContext = authzRequest.executeFunctionAuthorize(functionObject.getId(), null, null,
             args, functionObject.optimizeForWrite());
       }
+
       ChunkedMessage m = serverConnection.getFunctionResponseMessage();
       m.setTransactionId(clientMessage.getTransactionId());
       ResultSender resultSender = new ServerToClientFunctionResultSender(m,
@@ -146,6 +148,7 @@ public class ExecuteFunction extends BaseCommand {
       } else {
         context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender);
       }
+
       HandShake handShake = (HandShake) serverConnection.getHandshake();
       int earlierClientReadTimeout = handShake.getClientReadTimeout();
       handShake.setClientReadTimeout(0);

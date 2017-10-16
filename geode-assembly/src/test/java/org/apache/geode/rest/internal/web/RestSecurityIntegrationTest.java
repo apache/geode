@@ -20,22 +20,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.http.MediaType;
 
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
 public class RestSecurityIntegrationTest {
 
   protected static final String REGION_NAME = "AuthRegion";
@@ -49,6 +52,9 @@ public class RestSecurityIntegrationTest {
 
   private final GeodeRestClient restClient =
       new GeodeRestClient("localhost", serverStarter.getHttpPort());
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @BeforeClass
   public static void before() throws Exception {

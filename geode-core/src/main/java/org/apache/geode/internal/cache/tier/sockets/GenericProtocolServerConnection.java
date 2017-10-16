@@ -15,41 +15,48 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.server.Authenticator;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+
+import org.apache.geode.cache.IncompatibleVersionException;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Holds the socket and protocol handler for the new client protocol.
  */
 public class GenericProtocolServerConnection extends ServerConnection {
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
-  private final ClientProtocolMessageHandler messageHandler;
-  private final SecurityManager securityManager;
-  private final Authenticator authenticator;
+  private final ClientProtocolProcessor protocolPipeline;
+  private boolean cleanedUp;
+  private ClientProxyMembershipID clientProxyMembershipID;
 
   /**
    * Creates a new <code>GenericProtocolServerConnection</code> that processes messages received
    * from an edge client over a given <code>Socket</code>.
    */
-  public GenericProtocolServerConnection(Socket s, InternalCache c, CachedRegionHelper helper,
+  public GenericProtocolServerConnection(Socket socket, InternalCache c, CachedRegionHelper helper,
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-      byte communicationMode, Acceptor acceptor, ClientProtocolMessageHandler newClientProtocol,
-      SecurityService securityService, Authenticator authenticator) {
-    super(s, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr, communicationMode,
-        acceptor, securityService);
-    securityManager = securityService.getSecurityManager();
-    this.messageHandler = newClientProtocol;
-    this.authenticator = authenticator;
+      byte communicationMode, Acceptor acceptor, ClientProtocolProcessor clientProtocolProcessor,
+      SecurityService securityService) {
+    super(socket, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
+        communicationMode, acceptor, securityService);
+    this.protocolPipeline = clientProtocolProcessor;
+
+    setClientProxyMembershipId();
+
+    doHandShake(CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), 0);
   }
 
   @Override
@@ -59,26 +66,52 @@ public class GenericProtocolServerConnection extends ServerConnection {
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
 
-      if (!authenticator.isAuthenticated()) {
-        authenticator.authenticate(inputStream, outputStream, securityManager);
-      } else {
-        messageHandler.receiveMessage(inputStream, outputStream,
-            new MessageExecutionContext(this.getCache(), authenticator.getAuthorizer()));
-      }
+      protocolPipeline.processMessage(inputStream, outputStream);
     } catch (EOFException e) {
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
-    } catch (IOException e) {
+      logger.debug("Encountered EOF while processing message: {}", e);
+    } catch (IOException | IncompatibleVersionException e) {
       logger.warn(e);
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
+    } finally {
+      acceptor.getClientHealthMonitor().receivedPing(this.clientProxyMembershipID);
     }
+  }
+
+  private void setClientProxyMembershipId() {
+    ServerLocation serverLocation = new ServerLocation(
+        ((InetSocketAddress) this.getSocket().getRemoteSocketAddress()).getHostName(),
+        this.getSocketPort());
+    DistributedMember distributedMember = new InternalDistributedMember(serverLocation);
+    // no handshake for new client protocol.
+    clientProxyMembershipID = new ClientProxyMembershipID(distributedMember);
+  }
+
+  @Override
+  public boolean cleanup() {
+    synchronized (this) {
+      if (!cleanedUp) {
+        cleanedUp = true;
+        protocolPipeline.close();
+      }
+    }
+    return super.cleanup();
   }
 
   @Override
   protected boolean doHandShake(byte epType, int qSize) {
-    // no handshake for new client protocol.
+    ClientHealthMonitor clientHealthMonitor = getAcceptor().getClientHealthMonitor();
+    clientHealthMonitor.registerClient(clientProxyMembershipID);
+    clientHealthMonitor.addConnection(clientProxyMembershipID, this);
+
     return true;
+  }
+
+  @Override
+  protected int getClientReadTimeout() {
+    return PoolFactory.DEFAULT_READ_TIMEOUT;
   }
 
   @Override

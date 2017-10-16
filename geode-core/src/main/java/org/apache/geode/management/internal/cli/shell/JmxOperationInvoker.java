@@ -14,9 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PREFIX;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
-
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -44,7 +41,6 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -175,30 +171,6 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
   }
 
-  private String checkforSystemPropertyPrefix(String key) {
-    String returnKey = key;
-    if (key.startsWith("javax.")) {
-      returnKey = key;
-    }
-    if (key.startsWith(CLUSTER_SSL_PREFIX) || key.startsWith(JMX_MANAGER_SSL_PREFIX)
-        || key.startsWith(DistributionConfig.SSL_PREFIX)) {
-      if (key.endsWith("keystore")) {
-        returnKey = Gfsh.SSL_KEYSTORE;
-      } else if (key.endsWith("keystore-password")) {
-        returnKey = Gfsh.SSL_KEYSTORE_PASSWORD;
-      } else if (key.endsWith("ciphers")) {
-        returnKey = Gfsh.SSL_ENABLED_CIPHERS;
-      } else if (key.endsWith("truststore-password")) {
-        returnKey = Gfsh.SSL_TRUSTSTORE_PASSWORD;
-      } else if (key.endsWith("truststore")) {
-        returnKey = Gfsh.SSL_TRUSTSTORE;
-      } else if (key.endsWith("protocols")) {
-        returnKey = Gfsh.SSL_ENABLED_PROTOCOLS;
-      }
-    }
-    return returnKey;
-  }
-
   @Override
   public Object getAttribute(String resourceName, String attributeName)
       throws JMXInvocationException {
@@ -274,13 +246,12 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   @Override
   public Object processCommand(final CommandRequest commandRequest) throws JMXInvocationException {
+    Byte[][] binaryData = null;
     if (commandRequest.hasFileData()) {
-      return memberMXBeanProxy.processCommand(commandRequest.getInput(),
-          commandRequest.getEnvironment(), ArrayUtils.toByteArray(commandRequest.getFileData()));
-    } else {
-      return memberMXBeanProxy.processCommand(commandRequest.getInput(),
-          commandRequest.getEnvironment());
+      binaryData = ArrayUtils.toByteArray(commandRequest.getFileData());
     }
+    return memberMXBeanProxy.processCommand(commandRequest.getUserInput(),
+        commandRequest.getEnvironment(), binaryData);
   }
 
   @Override
@@ -309,14 +280,6 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   public JMXServiceURL getJmxServiceUrl() {
     return this.url;
-  }
-
-  public String getManagerHost() {
-    return managerHost;
-  }
-
-  public int getManagerPort() {
-    return managerPort;
   }
 
   public <T> T getMBeanProxy(final ObjectName objectName, final Class<T> mbeanInterface) {

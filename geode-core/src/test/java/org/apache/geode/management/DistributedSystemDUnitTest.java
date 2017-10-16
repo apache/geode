@@ -14,16 +14,20 @@
  */
 package org.apache.geode.management;
 
-import static java.lang.management.ManagementFactory.*;
-import static java.util.concurrent.TimeUnit.*;
-import static org.apache.geode.management.internal.MBeanJMXAdapter.*;
-import static org.apache.geode.test.dunit.Host.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.Invoke.*;
-import static org.assertj.core.api.Assertions.*;
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrId;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +40,9 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,20 +65,31 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Distributed System management tests
- * </p>
- * a) For all the notifications i) gemfire.distributedsystem.member.joined ii)
- * gemfire.distributedsystem.member.left iii) gemfire.distributedsystem.member.suspect iv ) All
- * notifications emitted by member mbeans vi) Alerts
- * </p>
+ * DistributedSystemMXBean tests:
+ *
+ * <p>
+ * a) For all the notifications
+ * <ul>
+ * <li>i) gemfire.distributedsystem.member.joined
+ * <li>ii) gemfire.distributedsystem.member.left
+ * <li>iii) gemfire.distributedsystem.member.suspect
+ * <li>iv) All notifications emitted by member mbeans
+ * <li>v) Alerts
+ * </ul>
+ *
+ * <p>
  * b) Concurrently modify proxy list by removing member and accessing the distributed system MBean
- * </p>
+ *
+ * <p>
  * c) Aggregate Operations like shutDownAll
- * </p>
+ *
+ * <p>
  * d) Member level operations like fetchJVMMetrics()
- * </p>
+ *
+ * <p>
  * e ) Statistics
- * </p>
+ *
+ * <p>
  * TODO: break up the large tests into smaller tests
  */
 @Category(DistributedTest.class)
@@ -86,8 +101,8 @@ public class DistributedSystemDUnitTest implements Serializable {
   private static final String WARNING_LEVEL_MESSAGE = "Warning Level Alert Message";
   private static final String SEVERE_LEVEL_MESSAGE = "Severe Level Alert Message";
 
-  private static List<Notification> notifications;
-  private static Map<ObjectName, NotificationListener> notificationListenerMap;
+  private static volatile List<Notification> notifications;
+  private static volatile Map<ObjectName, NotificationListener> notificationListenerMap;
 
   @Manager
   private VM managerVM;
@@ -100,16 +115,20 @@ public class DistributedSystemDUnitTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    notifications = new ArrayList<>();
-    notificationListenerMap = new HashMap<>();
-
-    invokeInEveryVM(() -> notifications = new ArrayList<>());
-    invokeInEveryVM(() -> notificationListenerMap = new HashMap<>());
+    notifications = Collections.synchronizedList(new ArrayList<>());
+    notificationListenerMap = Collections.synchronizedMap(new HashMap<>());
+    invokeInEveryVM(() -> notifications = Collections.synchronizedList(new ArrayList<>()));
+    invokeInEveryVM(() -> notificationListenerMap = Collections.synchronizedMap(new HashMap<>()));
   }
 
   @After
   public void after() throws Exception {
     resetAlertCounts(this.managerVM);
+
+    notifications = null;
+    notificationListenerMap = null;
+    invokeInEveryVM(() -> notifications = null);
+    invokeInEveryVM(() -> notificationListenerMap = null);
   }
 
   /**

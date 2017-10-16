@@ -68,6 +68,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * 
    * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
    */
+  public static final short FINAL_CHECK_PASSED_MESSAGE = -158;
   public static final short NETWORK_PARTITION_MESSAGE = -157;
   public static final short SUSPECT_MEMBERS_MESSAGE = -156;
 
@@ -812,6 +813,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short DESTROY_LUCENE_INDEX_MESSAGE = 2178;
   public static final short LUCENE_PAGE_RESULTS = 2179;
   public static final short LUCENE_RESULT_STRUCT = 2180;
+  public static final short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_MESSAGE = 2181;
+  public static final short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY = 2182;
 
   // NOTE, codes > 65535 will take 4 bytes to serialize
 

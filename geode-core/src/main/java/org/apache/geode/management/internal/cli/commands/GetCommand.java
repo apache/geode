@@ -22,7 +22,6 @@ import static org.apache.geode.management.internal.cli.commands.DataCommandsUtil
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -37,6 +36,8 @@ import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetCommand implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
@@ -56,18 +57,8 @@ public class GetCommand implements GfshCommand {
           help = CliStrings.GET__LOAD__HELP) Boolean loadOnCacheMiss) {
 
     InternalCache cache = getCache();
-    cache.getSecurityService().authorizeRegionRead(regionPath, key);
+    cache.getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
     DataCommandResult dataResult;
-
-    if (StringUtils.isEmpty(regionPath)) {
-      return makePresentationResult(DataCommandResult.createGetResult(key, null, null,
-          CliStrings.GET__MSG__REGIONNAME_EMPTY, false));
-    }
-
-    if (StringUtils.isEmpty(key)) {
-      return makePresentationResult(DataCommandResult.createGetResult(key, null, null,
-          CliStrings.GET__MSG__KEY_EMPTY, false));
-    }
 
     @SuppressWarnings("rawtypes")
     Region region = cache.getRegion(regionPath);

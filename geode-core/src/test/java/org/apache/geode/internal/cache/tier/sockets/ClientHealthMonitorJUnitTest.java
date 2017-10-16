@@ -14,6 +14,21 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.AttributesFactory;
@@ -30,25 +45,12 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * This is a functional-test for <code>ClientHealthMonitor</code>.
- * 
- * 
  */
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientHealthMonitorJUnitTest {
@@ -59,16 +61,24 @@ public class ClientHealthMonitorJUnitTest {
     return 0;
   }
 
-  /** connection proxy object for the client */
+  /**
+   * connection proxy object for the client
+   */
   PoolImpl proxy = null;
 
-  /** the distributed system instance for the test */
+  /**
+   * the distributed system instance for the test
+   */
   DistributedSystem system;
 
-  /** the cache instance for the test */
+  /**
+   * the cache instance for the test
+   */
   Cache cache;
 
-  /** name of the region created */
+  /**
+   * name of the region created
+   */
   final String regionName = "region1";
 
   private static int PORT;
@@ -81,13 +91,17 @@ public class ClientHealthMonitorJUnitTest {
 
   {
     removeExceptions();
-    this.cache.close();
-    this.system.disconnect();
+    if (this.cache != null) {
+      this.cache.close();
+    }
+    if (this.system != null) {
+      this.system.disconnect();
+    }
+    ClientHealthMonitor.shutdownInstance();
   }
 
   /**
    * Initializes proxy object and creates region for client
-   * 
    */
   private void createProxyAndRegionForClient() {
     try {
@@ -104,11 +118,10 @@ public class ClientHealthMonitorJUnitTest {
     }
   }
 
-  private final static int TIME_BETWEEN_PINGS = 2500;
+  private final static int TIME_BETWEEN_PINGS = 50;
 
   /**
    * Creates and starts the server instance
-   * 
    */
   private int createServer() {
     CacheServer server = null;
@@ -133,6 +146,36 @@ public class ClientHealthMonitorJUnitTest {
     return server.getPort();
   }
 
+  @Test
+  public void settingMonitorIntervalViaProperty() {
+    int monitorInterval = 10;
+    System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
+        String.valueOf(monitorInterval));
+
+    assertEquals(monitorInterval,
+        ClientHealthMonitor
+            .getInstance(mock(InternalCache.class), 0, mock(CacheClientNotifierStats.class))
+            .getMonitorInterval());
+  }
+
+  @Test
+  public void monitorIntervalDefaultsWhenNotSet() {
+    assertNotNull(ClientHealthMonitor
+        .getInstance(mock(InternalCache.class), 0, mock(CacheClientNotifierStats.class))
+        .getMonitorInterval());
+  }
+
+  @Test
+  public void monitorIntervalDefaultsWhenInvalidValue() {
+    String monitorInterval = "this isn't a number";
+    System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
+        monitorInterval);
+
+    assertNotNull(ClientHealthMonitor
+        .getInstance(mock(InternalCache.class), 0, mock(CacheClientNotifierStats.class))
+        .getMonitorInterval());
+  }
+
   /**
    * This test performs the following:<br>
    * 1)create server<br>
@@ -145,54 +188,46 @@ public class ClientHealthMonitorJUnitTest {
    */
   @Test
   public void testDeadClientRemovalByServer() throws Exception {
+    System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
+        String.valueOf("100"));
     PORT = createServer();
     createProxyAndRegionForClient();
-    // String connection2String = null;
-    StatisticsType st = this.system.findType("CacheServerStats");
-    final Statistics s = this.system.findStatisticsByType(st)[0];
-    assertEquals(0, s.getInt("currentClients"));
-    assertEquals(0, s.getInt("currentClientConnections"));
-    this.system.getLogWriter().info("beforeAcquireConnection clients=" + s.getInt("currentClients")
-        + " cnxs=" + s.getInt("currentClientConnections"));
+    StatisticsType statisticsType = this.system.findType("CacheServerStats");
+    final Statistics statistics = this.system.findStatisticsByType(statisticsType)[0];
+    assertEquals(0, statistics.getInt("currentClients"));
+    assertEquals(0, statistics.getInt("currentClientConnections"));
+    this.system.getLogWriter()
+        .info("beforeAcquireConnection clients=" + statistics.getInt("currentClients") + " cnxs="
+            + statistics.getInt("currentClientConnections"));
     Connection connection1 = proxy.acquireConnection();
-    this.system.getLogWriter().info("afterAcquireConnection clients=" + s.getInt("currentClients")
-        + " cnxs=" + s.getInt("currentClientConnections"));
+    this.system.getLogWriter()
+        .info("afterAcquireConnection clients=" + statistics.getInt("currentClients") + " cnxs="
+            + statistics.getInt("currentClientConnections"));
     this.system.getLogWriter().info("acquired connection " + connection1);
-    WaitCriterion ev = new WaitCriterion() {
-      public boolean done() {
-        return s.getInt("currentClients") != 0;
-      }
 
-      public String description() {
-        return null;
-      }
-    };
-    Wait.waitForCriterion(ev, 20 * 1000, 200, true);
+    int pollInterval = 20;
+    int maximumTimeBetweenPings = ClientHealthMonitor.getInstance().getMaximumTimeBetweenPings();
 
-    assertEquals(1, s.getInt("currentClients"));
-    assertEquals(1, s.getInt("currentClientConnections"));
-    // String connection1String = connection1.toString();
+    long monitorInterval = ClientHealthMonitor.getInstance().getMonitorInterval();
+
+    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(1, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 1);
+
+    assertEquals(1, statistics.getInt("currentClients"));
+    assertEquals(1, statistics.getInt("currentClientConnections"));
     ServerRegionProxy srp = new ServerRegionProxy("region1", proxy);
+
     srp.putOnForTestsOnly(connection1, "key-1", "value-1", new EventID(new byte[] {1}, 1, 1), null);
     this.system.getLogWriter().info("did put 1");
-    // proxy.testfinalizeServerConnectionMonitor();
-    ev = new WaitCriterion() {
-      public boolean done() {
-        return s.getInt("currentClients") == 0;
-      }
 
-      public String description() {
-        return null;
-      }
-    };
-    Wait.waitForCriterion(ev, TIME_BETWEEN_PINGS * 5, 200, true);
+    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
+        .atMost(1, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 0);
 
-    {
-      this.system.getLogWriter().info("currentClients=" + s.getInt("currentClients")
-          + " currentClientConnections=" + s.getInt("currentClientConnections"));
-      assertEquals(0, s.getInt("currentClients"));
-      assertEquals(0, s.getInt("currentClientConnections"));
-    }
+    this.system.getLogWriter().info("currentClients=" + statistics.getInt("currentClients")
+        + " currentClientConnections=" + statistics.getInt("currentClientConnections"));
+    assertEquals(0, statistics.getInt("currentClients"));
+    assertEquals(0, statistics.getInt("currentClientConnections"));
+
     addExceptions();
     // the connection should now fail since the server timed it out
     try {
@@ -200,41 +235,9 @@ public class ClientHealthMonitorJUnitTest {
       fail("expected EOF");
     } catch (ServerConnectivityException expected) {
     }
-    // The rest of this test no longer works.
-    // connection1.finalizeConnection();
-    // proxy.release();
-
-    // connection1 = proxy.acquireConnection();
-    // connection2String = connection1.toString();
-    // this.system.getLogWriter().info("connection is now " + connection2String);
-
-    // if (connection1String.equals(connection2String)) {
-    // fail("New connection object was not obtained");
-    // }
-    // connection1.putObject("region1", "key-1", "value-2", new EventID(new byte[] {1},1,3), null);
-    // this.system.getLogWriter().info("did put 2");
-    // assertIndexDetailsEquals(1, s.getInt("currentClients"));
-    // assertIndexDetailsEquals(1, s.getInt("currentClientConnections"));
-
-    // // now lets see what happens when we close our connection
-    // // note we use a nasty close which just closes the socket instead
-    // // of sending a nice message to the server telling him we are going away
-    // ((ConnectionImpl)connection1).finalizeConnection();
-    // {
-    // int retry = (TIME_BETWEEN_PINGS*5) / 100;
-    // while (s.getInt("currentClients") > 0 && retry-- > 0) {
-    // Thread.sleep(100);
-    // }
-    // this.system.getLogWriter().info("currentClients="
-    // + s.getInt("currentClients")
-    // + " currentClientConnections="
-    // + s.getInt("currentClientConnections"));
-    // assertIndexDetailsEquals(0, s.getInt("currentClients"));
-    // assertIndexDetailsEquals(0, s.getInt("currentClientConnections"));
-    // }
   }
 
-  public void addExceptions() throws Exception {
+  public void addExceptions() {
     if (this.system != null) {
       this.system.getLogWriter()
           .info("<ExpectedException action=add>" + "java.io.EOFException" + "</ExpectedException>");

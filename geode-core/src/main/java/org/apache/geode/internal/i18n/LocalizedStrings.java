@@ -286,7 +286,7 @@ public class LocalizedStrings {
           "CacheClientNotifier: The requested durable client has the same identifier ( {0} ) as an existing durable client ( {1} ). Duplicate durable clients are not allowed.");
   public static final StringId CacheClientNotifier_CACHECLIENTNOTIFIER_UNSUCCESSFULLY_REGISTERED_CLIENT_WITH_IDENTIFIER__0 =
       new StringId(1143,
-          "CacheClientNotifier: Unsuccessfully registered client with identifier  {0}");
+          "CacheClientNotifier: Unsuccessfully registered client with identifier  {0} and response code {1}");
   public static final StringId CacheClientNotifier_CANNOT_NOTIFY_CLIENTS_TO_PERFORM_OPERATION_0_ON_EVENT_1 =
       new StringId(1144,
           "CacheClientNotifier: Cannot notify clients to perform operation {0} on event {1}");
@@ -2086,6 +2086,8 @@ public class LocalizedStrings {
           "Method '' {0} '' in class '' {1} '' is not accessible to the query processor");
   public static final StringId AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1 =
       new StringId(2253, "No public attribute named '' {0} '' was found in class  {1}");
+  public static final StringId AttributeDescriptor_NO_ACCESS_BECAUSE_METHOD_WAS_BLACKLISTED =
+      new StringId(2254, "No access to attribute named '' {0} '' because it has been blacklisted");
 
   public static final StringId AvailablePort_UNKNOWN_PROTOCOL_0 =
       new StringId(2258, "Unknown protocol:  {0}");
@@ -7213,7 +7215,7 @@ public class LocalizedStrings {
       new StringId(5305,
           "Exception occurred while handling call to {0}.afterAcknowledgement for event {1}:");
   public static final StringId GatewayReceiverImpl_USING_LOCAL_HOST =
-      new StringId(5399, "No bind-address or hostname-for-sender is specified, Using local host ");
+      new StringId(5399, "No bind-address or hostname-for-senders specified, Using local host ");
   public static final StringId GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME =
       new StringId(5400, "Could not get host name");
   public static final StringId CqService_ERROR_SENDING_CQ_CONNECTION_STATUS =
@@ -7699,6 +7701,20 @@ public class LocalizedStrings {
 
   public static final StringId LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED = new StringId(6660,
       "Region {0} cannot be destroyed because it defines Lucene index(es) [{1}]. Destroy all Lucene indexes before destroying the region.");
+
+  public static final StringId AbstractGatewaySender_CAUGHT_EXCEPTION_ENQUEUEING_SYNCHRONIZATION_EVENT =
+      new StringId(6661,
+          "{0}: Caught the following exception attempting to enqueue synchronization event={1}:");
+  public static final StringId GemFireCacheImpl_CAUGHT_EXCEPTION_SYNCHRONIZING_EVENTS =
+      new StringId(6662,
+          "Caught the following exception attempting to synchronize events from member={0}; regionPath={1}; entriesToSynchronize={2}:");
+  public static final StringId GatewaySenderQueueEntrySynchronizationReplyProcessor_REPLY_IS_EMPTY =
+      new StringId(6663,
+          "Synchronization event reply from member={0}; regionPath={1}; key={2}; entryVersion={3} is empty");
+  public static final StringId AbstractGatewaySender_PROVIDING_SYNCHRONIZATION_EVENT =
+      new StringId(6664, "{0}: Providing synchronization event for key={1}; timestamp={2}: {3}");
+  public static final StringId AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT =
+      new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
 
   /** Testing strings, messageId 90000-99999 **/
 

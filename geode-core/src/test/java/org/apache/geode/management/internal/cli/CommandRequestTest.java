@@ -18,14 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.management.internal.cli.commands.RebalanceCommand;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.geode.management.internal.cli.commands.RebalanceCommand;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class CommandRequestTest {
@@ -57,7 +58,7 @@ public class CommandRequestTest {
 
     Map<String, String> parameters = this.commandRequest.getParameters();
     assertThat(parameters).containsKey(key);
-    assertThat(parameters.get(key)).isEqualTo(value.substring(1, value.length() - 1));
+    assertThat(parameters.get(key)).isEqualTo(value);
   }
 
   @Test
