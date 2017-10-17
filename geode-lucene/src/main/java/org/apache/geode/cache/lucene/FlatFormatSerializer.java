@@ -30,7 +30,7 @@ import org.apache.lucene.document.Document;
 /**
  * A built-in {@link LuceneSerializer} to parse user's nested object into a flat format, i.e. a
  * single document. Each nested object will become a set of fields, with field name in format of
- * contact.name, contact.homepage.title.
+ * contacts.name, contacts.homepage.title.
  * 
  * Here is a example of usage:
  * 
@@ -38,16 +38,18 @@ import org.apache.lucene.document.Document;
  * objects' indexed fields in following format:
  * 
  * luceneService.createIndexFactory().setLuceneSerializer(new FlatFormatSerializer())
- * .addField("name").addField("contact.name").addField("contact.email", new KeywordAnalyzer())
- * .addField("contact.address").addField("contact.homepage.content") .create(INDEX_NAME,
+ * .addField("name").addField("contacts.name").addField("contacts.email", new KeywordAnalyzer())
+ * .addField("contacts.address").addField("contacts.homepage.content") .create(INDEX_NAME,
  * REGION_NAME);
  * 
  * Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
  * 
- * When querying, use the same dot-separated index field name, such as contact.homepage.content
+ * When querying, use the same dot-separated index field name, such as contacts.homepage.content
  * 
  * LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
- * "contact.homepage.content:Hello*", "name"); results = query.findPages();
+ * "contacts.homepage.content:Hello*", "name");
+ * 
+ * results = query.findPages();
  */
 public class FlatFormatSerializer implements LuceneSerializer {
 
@@ -57,7 +59,7 @@ public class FlatFormatSerializer implements LuceneSerializer {
 
   /**
    * Recursively serialize each indexed field's value into a field of lucene document. The field
-   * name will be in the same format as its indexed, such as contact.homepage.content
+   * name will be in the same format as its indexed, such as contacts.homepage.content
    * 
    * @param index lucene index
    * @param value user object to be serialized into index
@@ -94,6 +96,23 @@ public class FlatFormatSerializer implements LuceneSerializer {
       return;
     }
 
+    if (fieldValue.getClass().isArray()) {
+      Object[] array = (Object[]) fieldValue;
+      for (Object item : array) {
+        addFieldValueForNonCollectionObject(doc, indexedFieldName, item, tokenizedFields);
+      }
+    } else if (fieldValue instanceof Collection) {
+      Collection collection = (Collection) fieldValue;
+      for (Object item : collection) {
+        addFieldValueForNonCollectionObject(doc, indexedFieldName, item, tokenizedFields);
+      }
+    } else {
+      addFieldValueForNonCollectionObject(doc, indexedFieldName, fieldValue, tokenizedFields);
+    }
+  }
+
+  private void addFieldValueForNonCollectionObject(Document doc, String indexedFieldName,
+      Object fieldValue, List<String> tokenizedFields) {
     if (tokenizedFields.size() == 1) {
       SerializerUtil.addField(doc, indexedFieldName, fieldValue);
     } else {
