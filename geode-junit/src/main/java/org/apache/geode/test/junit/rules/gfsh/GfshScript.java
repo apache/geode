@@ -18,7 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang.RandomStringUtils;
 
 public class GfshScript {
   private final String[] commands;
@@ -28,10 +32,11 @@ public class GfshScript {
   private boolean awaitQuietly = false;
   private int expectedExitValue = 0;
   private List<String> extendedClasspath = new ArrayList<>();
+  private Random random = new Random();
 
   public GfshScript(String... commands) {
     this.commands = commands;
-    this.name = defaultName(commands);
+    this.name = defaultName();
   }
 
   /**
@@ -151,11 +156,7 @@ public class GfshScript {
     return name;
   }
 
-  private String defaultName(String... commands) {
-    try {
-      return commands[0].substring(0, commands[0].indexOf("-")).trim();
-    } catch (Exception handled) {
-      return commands[0];
-    }
+  private String defaultName() {
+    return Long.toHexString(random.nextLong());
   }
 }
