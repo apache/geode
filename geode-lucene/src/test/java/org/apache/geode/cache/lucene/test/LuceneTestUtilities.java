@@ -79,6 +79,8 @@ public class LuceneTestUtilities {
       "Cannot create Lucene index index2 on region /region because it is not defined in another member.";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3 =
       "Cannot create Lucene index index on region /region because it is not defined in another member.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER =
+      "Cannot create Lucene index index on region /region with serializer DummyLuceneSerializer because another member defines the same index with different serializer HeterogeneousLuceneSerializer.";
 
   public static String Quarter1 = "Q1";
   public static String Quarter2 = "Q2";

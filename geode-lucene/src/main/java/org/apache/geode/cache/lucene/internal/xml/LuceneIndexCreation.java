@@ -17,7 +17,9 @@ package org.apache.geode.cache.lucene.internal.xml;
 
 import java.util.*;
 
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.lucene.LuceneIndexExistsException;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +43,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   private Map<String, Analyzer> fieldAnalyzers;
 
   private static Logger logger = LogService.getLogger();
+  private LuceneSerializer luceneSerializer;
 
 
   public void setRegion(Region region) {
@@ -77,6 +80,15 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   }
 
   @Override
+  public LuceneSerializer getLuceneSerializer() {
+    return this.luceneSerializer;
+  }
+
+  public void setLuceneSerializer(LuceneSerializer luceneSerializer) {
+    this.luceneSerializer = luceneSerializer;
+  }
+
+  @Override
   public XmlGenerator<Region<?, ?>> getXmlGenerator() {
     return new LuceneIndexXmlGenerator(this);
   }
@@ -88,7 +100,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
         : new PerFieldAnalyzerWrapper(new StandardAnalyzer(), this.fieldAnalyzers);
     try {
       service.createIndex(getName(), getRegionPath(), analyzer, this.fieldAnalyzers,
-          getFieldNames());
+          getLuceneSerializer(), getFieldNames());
     } catch (LuceneIndexExistsException e) {
       logger
           .info(LocalizedStrings.LuceneIndexCreation_IGNORING_DUPLICATE_INDEX_CREATION_0_ON_REGION_1

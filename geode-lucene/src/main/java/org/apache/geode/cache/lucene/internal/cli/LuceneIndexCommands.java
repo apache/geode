@@ -137,6 +137,7 @@ public class LuceneIndexCommands implements GfshCommand {
         indexData.accumulate("Server Name", indexDetails.getServerName());
         indexData.accumulate("Indexed Fields", indexDetails.getSearchableFieldNamesString());
         indexData.accumulate("Field Analyzer", indexDetails.getFieldAnalyzersString());
+        indexData.accumulate("Serializer", indexDetails.getSerializerString());
         indexData.accumulate("Status", indexDetails.getInitialized() ? "Initialized" : "Defined");
 
         if (stats) {
@@ -179,7 +180,9 @@ public class LuceneIndexCommands implements GfshCommand {
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD_HELP) final String[] fields,
 
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
-          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers)
+          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers,
+      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
+          help = LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER_HELP) final String serializer)
       throws CommandResultException {
 
     Result result;
@@ -193,9 +196,10 @@ public class LuceneIndexCommands implements GfshCommand {
     // trim fields for any leading trailing spaces.
     String[] trimmedFields = Arrays.stream(fields).map(String::trim).toArray(String[]::new);
     LuceneIndexInfo indexInfo =
-        new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers);
+        new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers, serializer);
 
-    final ResultCollector<?, ?> rc = executeFunctionOnAllMembers(createIndexFunction, indexInfo);
+    final ResultCollector<?, ?> rc =
+        this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
     final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
     final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
@@ -211,8 +215,8 @@ public class LuceneIndexCommands implements GfshCommand {
         tabularResult.accumulate("Status", "Failed: " + cliFunctionResult.getMessage());
       }
     }
-    result = ResultBuilder.buildResult(tabularResult);
 
+    result = ResultBuilder.buildResult(tabularResult);
 
     return result;
   }

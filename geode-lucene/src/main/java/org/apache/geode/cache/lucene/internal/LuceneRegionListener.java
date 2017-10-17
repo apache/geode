@@ -24,6 +24,7 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.RegionListener;
@@ -44,10 +45,13 @@ public class LuceneRegionListener implements RegionListener {
 
   private final String[] fields;
 
+  private LuceneSerializer serializer;
+
   private LuceneIndexImpl luceneIndex;
 
   public LuceneRegionListener(LuceneServiceImpl service, InternalCache cache, String indexName,
-      String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers) {
+      String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
+      LuceneSerializer serializer) {
     this.service = service;
     this.cache = cache;
     this.indexName = indexName;
@@ -55,6 +59,7 @@ public class LuceneRegionListener implements RegionListener {
     this.fields = fields;
     this.analyzer = analyzer;
     this.fieldAnalyzers = fieldAnalyzers;
+    this.serializer = serializer;
   }
 
   public String getRegionPath() {
@@ -98,10 +103,10 @@ public class LuceneRegionListener implements RegionListener {
 
       // Add index creation profile
       internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(this.indexName,
-          this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers));
+          this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers, serializer));
 
       luceneIndex = this.service.beforeDataRegionCreated(this.indexName, this.regionPath, attrs,
-          this.analyzer, this.fieldAnalyzers, aeqId, this.fields);
+          this.analyzer, this.fieldAnalyzers, aeqId, serializer, this.fields);
 
       // Add internal async event id
       internalRegionArgs.addInternalAsyncEventQueueId(aeqId);

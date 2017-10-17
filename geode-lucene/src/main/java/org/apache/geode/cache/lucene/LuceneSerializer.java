@@ -13,15 +13,26 @@
  * the License.
  */
 
-package org.apache.geode.cache.lucene.internal.xml;
+package org.apache.geode.cache.lucene;
 
-public class LuceneXmlConstants {
-  public static final String NAMESPACE = "http://geode.apache.org/schema/lucene";
-  public static final String PREFIX = "lucene";
-  public static final String NAME = "name";
-  public static final String INDEX = "index";
-  public static final String FIELD = "field";
-  public static final String ANALYZER = "analyzer";
-  public static final String SERIALIZER = "serializer";
+import java.util.Collection;
 
+import org.apache.geode.cache.Declarable;
+import org.apache.lucene.document.Document;
+
+import org.apache.geode.annotations.Experimental;
+
+/**
+ * An interface for writing the fields of an object into a lucene document
+ */
+@Experimental
+public interface LuceneSerializer extends Declarable {
+
+  /**
+   * Add the fields of the given value to a set of documents
+   * 
+   * @param index lucene index
+   * @param value user object to be serialized into index
+   */
+  Collection<Document> toDocuments(LuceneIndex index, Object value);
 }

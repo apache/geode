@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.internal.cache.InternalCache;
@@ -25,8 +26,11 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   }
 
   @Override
-  protected RepositoryManager createRepositoryManager() {
-    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+  protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
+    HeterogeneousLuceneSerializer mapper = (HeterogeneousLuceneSerializer) luceneSerializer;
+    if (mapper == null) {
+      mapper = new HeterogeneousLuceneSerializer();
+    }
     RawLuceneRepositoryManager rawLuceneRepositoryManager =
         new RawLuceneRepositoryManager(this, mapper);
     return rawLuceneRepositoryManager;

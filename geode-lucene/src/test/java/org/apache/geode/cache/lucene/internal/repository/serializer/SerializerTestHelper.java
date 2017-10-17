@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -14,25 +14,21 @@
  */
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
-import java.util.Collection;
-import java.util.Collections;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.cache.lucene.LuceneSerializer;
-import org.apache.geode.cache.lucene.LuceneService;
+import java.util.Collection;
 
 import org.apache.lucene.document.Document;
+import org.mockito.Mockito;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 
-/**
- * A LuceneSerializer that can serialize a primitive value (String, int, long, double) by creating a
- * document with a special field containing the value
- */
-public class PrimitiveSerializer implements LuceneSerializer {
-
-  @Override
-  public Collection<Document> toDocuments(LuceneIndex index, final Object value) {
-    Document doc = new Document();
-    SerializerUtil.addField(doc, LuceneService.REGION_VALUE_FIELD, value);
-    return Collections.singleton(doc);
+public class SerializerTestHelper {
+  public static Document invokeSerializer(LuceneSerializer mapper, Object object, String[] fields) {
+    LuceneIndex index = Mockito.mock(LuceneIndex.class);
+    Mockito.when(index.getFieldNames()).thenReturn(fields);
+    Collection<Document> docs = mapper.toDocuments(index, object);
+    assertEquals(1, docs.size());
+    return docs.iterator().next();
   }
 }
