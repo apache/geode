@@ -34,7 +34,7 @@ class WindowsBackupInspector extends BackupInspector {
 
   @Override
   public String getCopyFromForOplogFile(final String oplogFileName) {
-    String line = this.oplogLineMap.get(oplogFileName);
+    String line = getOplogLineFromFilename(oplogFileName);
     if (line == null) {
       return null;
     }
@@ -45,7 +45,7 @@ class WindowsBackupInspector extends BackupInspector {
 
   @Override
   public String getCopyToForOplogFile(final String oplogFileName) {
-    String line = this.oplogLineMap.get(oplogFileName);
+    String line = getOplogLineFromFilename(oplogFileName);
     if (line == null) {
       return null;
     }
@@ -69,8 +69,7 @@ class WindowsBackupInspector extends BackupInspector {
         beginIndex = line.lastIndexOf("\"") + 1;
         endIndex = line.indexOf(WindowsScriptGenerator.ROBOCOPY_NO_JOB_HEADER, beginIndex) - 1;
         oplogName = (line.substring(beginIndex, endIndex)).trim();
-        this.oplogFileNames.add(oplogName);
-        this.oplogLineMap.put(oplogName, line);
+        addOplogLine(oplogName, line);
       }
     }
   }

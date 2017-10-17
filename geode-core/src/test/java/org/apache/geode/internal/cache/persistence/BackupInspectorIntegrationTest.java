@@ -138,7 +138,7 @@ public class BackupInspectorIntegrationTest {
     restoreScript.addExistenceTest(new File(diskDir, IF_FILE_NAME));
     restoreScript.addFile(diskDir, backupDirToRestoreFrom);
     if (incrementalBaseDir != null) {
-      Map<File, File> baselineFilesMap = new HashMap<File, File>();
+      Map<File, File> baselineFilesMap = new HashMap<>();
       baselineFilesMap.put(new File(incrementalBaseDir, CRF_FILE_NAME),
           new File(diskDir, CRF_FILE_NAME));
       baselineFilesMap.put(new File(incrementalBaseDir, DRF_FILE_NAME),

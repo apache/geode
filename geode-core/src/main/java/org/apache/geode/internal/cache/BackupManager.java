@@ -141,7 +141,12 @@ public class BackupManager implements MembershipListener {
       }
 
       if (!backupByDiskStore.isEmpty()) {
-        completeRestoreScript(backupDir);
+        backupAdditionalFiles(backupDir);
+        restoreScript.generate(backupDir);
+        File incompleteFile = new File(backupDir, INCOMPLETE_BACKUP_FILE);
+        if (!incompleteFile.delete()) {
+          throw new IOException("Could not delete file " + INCOMPLETE_BACKUP_FILE);
+        }
       }
 
       return persistentIds;
@@ -232,15 +237,11 @@ public class BackupManager implements MembershipListener {
     return baselineDir;
   }
 
-  private void completeRestoreScript(File backupDir) throws IOException {
-    backupConfigFiles(restoreScript, backupDir);
-    backupUserFiles(restoreScript, backupDir);
-    backupDeployedJars(restoreScript, backupDir);
-    restoreScript.generate(backupDir);
-    File incompleteFile = new File(backupDir, INCOMPLETE_BACKUP_FILE);
-    if (!incompleteFile.delete()) {
-      throw new IOException("Could not delete file " + INCOMPLETE_BACKUP_FILE);
-    }
+  private void backupAdditionalFiles(File backupDir) throws IOException {
+    backupConfigFiles(backupDir);
+    backupUserFiles(backupDir);
+    backupDeployedJars(backupDir);
+
   }
 
   /**
@@ -336,9 +337,7 @@ public class BackupManager implements MembershipListener {
           // Incremental backup so filter out oplogs that have already been
           // backed up
           if (null != baselineInspector) {
-            Map<File, File> baselineCopyMap = new HashMap<>();
-            allOplogs = filterBaselineOplogs(diskStore, baselineInspector, baselineCopyMap);
-            restoreScript.addBaselineFiles(baselineCopyMap);
+            allOplogs = filterBaselineOplogs(diskStore, baselineInspector);
           } else {
             allOplogs = diskStore.getAllOplogsForBackup();
           }
@@ -376,11 +375,11 @@ public class BackupManager implements MembershipListener {
     // Create the directories for this disk store
     DirectoryHolder[] directories = diskStore.getDirectoryHolders();
     for (int i = 0; i < directories.length; i++) {
-      File dir = getBackupDir(targetDir, i);
-      if (!dir.mkdirs()) {
-        throw new IOException("Could not create directory " + dir);
+      File backupDir = getBackupDir(targetDir, i);
+      if (!backupDir.mkdirs()) {
+        throw new IOException("Could not create directory " + backupDir);
       }
-      restoreScript.addFile(directories[i].getDir(), dir);
+      restoreScript.addFile(directories[i].getDir(), backupDir);
     }
   }
 
@@ -389,12 +388,10 @@ public class BackupManager implements MembershipListener {
    * incremental backup
    *
    * @param baselineInspector the inspector for the previous backup.
-   * @param baselineCopyMap this will be populated with baseline oplogs Files that will be used in
-   *        the restore script.
    * @return an array of Oplogs to be copied for an incremental backup.
    */
-  private Oplog[] filterBaselineOplogs(DiskStoreImpl diskStore, BackupInspector baselineInspector,
-      Map<File, File> baselineCopyMap) throws IOException {
+  private Oplog[] filterBaselineOplogs(DiskStoreImpl diskStore, BackupInspector baselineInspector)
+      throws IOException {
     File baselineDir =
         new File(baselineInspector.getBackupDir(), BackupManager.DATA_STORES_DIRECTORY);
     baselineDir = new File(baselineDir, getBackupDirName(diskStore));
@@ -418,14 +415,7 @@ public class BackupManager implements MembershipListener {
 
       // No? Then see if they were backed up in previous baselines
       if (oplogMap.isEmpty() && baselineInspector.isIncremental()) {
-        Set<String> matchingOplogs =
-            log.gatherMatchingOplogFiles(baselineInspector.getIncrementalOplogFileNames());
-        if (!matchingOplogs.isEmpty()) {
-          for (String matchingOplog : matchingOplogs) {
-            oplogMap.put(new File(baselineInspector.getCopyFromForOplogFile(matchingOplog)),
-                new File(baselineInspector.getCopyToForOplogFile(matchingOplog)));
-          }
-        }
+        oplogMap = addBaselineOplogToRestoreScript(baselineInspector, log);
       }
 
       if (oplogMap.isEmpty()) {
@@ -438,7 +428,7 @@ public class BackupManager implements MembershipListener {
          * These have been backed up before so lets just add their entries from the previous backup
          * or restore script into the current one.
          */
-        baselineCopyMap.putAll(oplogMap);
+        restoreScript.addBaselineFiles(oplogMap);
       }
     }
 
@@ -446,11 +436,23 @@ public class BackupManager implements MembershipListener {
     return oplogList.toArray(new Oplog[oplogList.size()]);
   }
 
+  private Map<File, File> addBaselineOplogToRestoreScript(BackupInspector baselineInspector,
+      Oplog log) {
+    Map<File, File> oplogMap = new HashMap<>();
+    Set<String> matchingOplogs =
+        log.gatherMatchingOplogFiles(baselineInspector.getIncrementalOplogFileNames());
+    for (String matchingOplog : matchingOplogs) {
+      oplogMap.put(new File(baselineInspector.getCopyFromForOplogFile(matchingOplog)),
+          new File(baselineInspector.getCopyToForOplogFile(matchingOplog)));
+    }
+    return oplogMap;
+  }
+
   private File getBackupDir(File targetDir, int index) {
     return new File(targetDir, BACKUP_DIR_PREFIX + index);
   }
 
-  private void backupConfigFiles(RestoreScript restoreScript, File backupDir) throws IOException {
+  private void backupConfigFiles(File backupDir) throws IOException {
     File configBackupDir = new File(backupDir, CONFIG_DIRECTORY);
     configBackupDir.mkdirs();
     URL url = cache.getCacheXmlURL();
@@ -470,7 +472,7 @@ public class BackupManager implements MembershipListener {
     // TODO: should the gfsecurity.properties file be backed up?
   }
 
-  private void backupUserFiles(RestoreScript restoreScript, File backupDir) throws IOException {
+  private void backupUserFiles(File backupDir) throws IOException {
     List<File> backupFiles = cache.getBackupFiles();
     File userBackupDir = new File(backupDir, USER_FILES);
     if (!userBackupDir.exists()) {
@@ -480,13 +482,12 @@ public class BackupManager implements MembershipListener {
       if (original.exists()) {
         original = original.getAbsoluteFile();
         File dest = new File(userBackupDir, original.getName());
+        restoreScript.addUserFile(original, dest);
         if (original.isDirectory()) {
           FileUtils.copyDirectory(original, dest);
         } else {
           FileUtils.copyFile(original, dest);
         }
-        restoreScript.addExistenceTest(original);
-        restoreScript.addFile(original, dest);
       }
     }
   }
@@ -494,11 +495,10 @@ public class BackupManager implements MembershipListener {
   /**
    * Copies user deployed jars to the backup directory.
    * 
-   * @param restoreScript Used to restore from this backup.
    * @param backupDir The backup directory for this member.
    * @throws IOException one or more of the jars did not successfully copy.
    */
-  private void backupDeployedJars(RestoreScript restoreScript, File backupDir) throws IOException {
+  private void backupDeployedJars(File backupDir) throws IOException {
     JarDeployer deployer = null;
 
     try {
@@ -518,12 +518,12 @@ public class BackupManager implements MembershipListener {
         for (DeployedJar loader : jarList) {
           File source = new File(loader.getFileCanonicalPath());
           File dest = new File(userBackupDir, source.getName());
+          restoreScript.addFile(source, dest);
           if (source.isDirectory()) {
             FileUtils.copyDirectory(source, dest);
           } else {
             FileUtils.copyFile(source, dest);
           }
-          restoreScript.addFile(source, dest);
         }
       }
     } finally {

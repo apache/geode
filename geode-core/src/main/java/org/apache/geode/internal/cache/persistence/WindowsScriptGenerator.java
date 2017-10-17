@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 class WindowsScriptGenerator implements ScriptGenerator {
@@ -33,45 +35,56 @@ class WindowsScriptGenerator implements ScriptGenerator {
   private static final String EXIT_BLOCK = ":Exit_Good\nexit /B 0\n\n:Exit_Bad\nexit /B 1";
 
   @Override
-  public void writePreamble(PrintWriter writer) {
-    writer.println(ECHO_OFF);
-    writer.println(CD_TO_SCRIPT_DIR);
+  public void writePreamble(BufferedWriter writer) throws IOException {
+    writer.write(ECHO_OFF);
+    writer.newLine();
+    writer.write(CD_TO_SCRIPT_DIR);
+    writer.newLine();
   }
 
   @Override
-  public void writeComment(PrintWriter writer, String string) {
-    writer.println("rem " + string);
+  public void writeComment(BufferedWriter writer, String string) throws IOException {
+    writer.write("rem " + string);
+    writer.newLine();
   }
 
   @Override
-  public void writeCopyDirectoryContents(PrintWriter writer, File backup, File original,
-      boolean backupHasFiles) {
-    writer.println(MKDIR + " \"" + original + "\"");
-    writer.println(ROBOCOPY_COMMAND + " \"" + backup + "\" \"" + original + "\" "
+  public void writeCopyDirectoryContents(BufferedWriter writer, File backup, File original,
+      boolean backupHasFiles) throws IOException {
+    writer.write(MKDIR + " \"" + original + "\"");
+    writer.newLine();
+    writer.write(ROBOCOPY_COMMAND + " \"" + backup + "\" \"" + original + "\" "
         + ROBOCOPY_COPY_SUBDIRS + " " + ROBOCOPY_NO_JOB_HEADER + " " + ROBOCOPY_NO_JOB_SUMMARY);
-    writer.println(ERROR_CHECK);
+    writer.newLine();
+    writer.write(ERROR_CHECK);
+    writer.newLine();
   }
 
   @Override
-  public void writeCopyFile(PrintWriter writer, File source, File destination) {
+  public void writeCopyFile(BufferedWriter writer, File source, File destination)
+      throws IOException {
     String fileName = source.getName();
     String sourcePath = source.getParent() == null ? "." : source.getParent();
     String destinationPath = destination.getParent() == null ? "." : destination.getParent();
-    writer.println(ROBOCOPY_COMMAND + " \"" + sourcePath + "\" \"" + destinationPath + "\" "
+    writer.write(ROBOCOPY_COMMAND + " \"" + sourcePath + "\" \"" + destinationPath + "\" "
         + fileName + " " + ROBOCOPY_NO_JOB_HEADER + " " + ROBOCOPY_NO_JOB_SUMMARY);
-    writer.println(ERROR_CHECK);
+    writer.newLine();
+    writer.write(ERROR_CHECK);
+    writer.newLine();
   }
 
   @Override
-  public void writeExistenceTest(PrintWriter writer, File file) {
-    writer.println("IF EXIST \"" + file + "\" echo \"" + RestoreScript.REFUSE_TO_OVERWRITE_MESSAGE
+  public void writeExistenceTest(BufferedWriter writer, File file) throws IOException {
+    writer.write("IF EXIST \"" + file + "\" echo \"" + RestoreScript.REFUSE_TO_OVERWRITE_MESSAGE
         + file + "\" && exit /B 1 ");
+    writer.newLine();
   }
 
   @Override
-  public void writeExit(PrintWriter writer) {
+  public void writeExit(BufferedWriter writer) throws IOException {
     writeComment(writer, WindowsScriptGenerator.EXIT_MARKER);
-    writer.println(EXIT_BLOCK);
+    writer.write(EXIT_BLOCK);
+    writer.newLine();
   }
 
   @Override

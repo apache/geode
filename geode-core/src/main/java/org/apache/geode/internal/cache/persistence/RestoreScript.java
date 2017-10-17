@@ -14,9 +14,11 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -51,18 +53,15 @@ public class RestoreScript {
   private static final String RESTORE_DATA_COMMENT = "Restore data";
 
   private final ScriptGenerator generator;
-  private final Map<File, File> baselineFiles = new HashMap<File, File>();
-  private final Map<File, File> backedUpFiles = new LinkedHashMap<File, File>();
-  private final List<File> existenceTests = new ArrayList<File>();
-
-  private PrintWriter writer;
-  private File outputDir;
+  private final Map<File, File> baselineFiles = new HashMap<>();
+  private final Map<File, File> backedUpFiles = new LinkedHashMap<>();
+  private final List<File> existenceTests = new ArrayList<>();
 
   public RestoreScript() {
     this(SystemUtils.isWindows() ? new WindowsScriptGenerator() : new UnixScriptGenerator());
   }
 
-  RestoreScript(final ScriptGenerator generator) {
+  private RestoreScript(final ScriptGenerator generator) {
     this.generator = generator;
   }
 
@@ -78,56 +77,49 @@ public class RestoreScript {
     existenceTests.add(originalFile.getAbsoluteFile());
   }
 
-  public void generate(final File outputDir) throws FileNotFoundException {
-    this.outputDir = outputDir;
+  public void generate(final File outputDir) throws IOException {
     File outputFile = new File(outputDir, generator.getScriptName());
-    generateScript(outputFile);
-  }
+    try (BufferedWriter writer = Files.newBufferedWriter(outputFile.toPath())) {
 
-  private void generateScript(final File outputFile) throws FileNotFoundException {
-    writer = new PrintWriter(outputFile);
-    try {
-
-      writePreamble();
-      writeAbout();
-      writeExistenceTest();
-      writeRestoreData();
-      writeIncrementalData();
+      writePreamble(writer);
+      writeAbout(writer);
+      writeExistenceTest(writer);
+      writeRestoreData(writer, outputDir.toPath());
+      writeIncrementalData(writer);
       generator.writeExit(writer);
-
-    } finally {
-      writer.close();
     }
 
     outputFile.setExecutable(true, true);
   }
 
-  private void writePreamble() {
+  private void writePreamble(BufferedWriter writer) throws IOException {
     generator.writePreamble(writer);
-    writer.println();
+    writer.newLine();
   }
 
-  private void writeAbout() {
+  private void writeAbout(BufferedWriter writer) throws IOException {
     for (String comment : ABOUT_SCRIPT_COMMENT) {
       generator.writeComment(writer, comment);
     }
-    writer.println();
+    writer.newLine();
   }
 
-  private void writeExistenceTest() {
+  private void writeExistenceTest(BufferedWriter writer) throws IOException {
     generator.writeComment(writer, EXISTENCE_CHECK_COMMENT);
     for (File file : existenceTests) {
       generator.writeExistenceTest(writer, file);
     }
-    writer.println();
+    writer.newLine();
   }
 
-  private void writeRestoreData() {
+  private void writeRestoreData(BufferedWriter writer, Path outputDir) throws IOException {
     generator.writeComment(writer, RESTORE_DATA_COMMENT);
     for (Map.Entry<File, File> entry : backedUpFiles.entrySet()) {
       File backup = entry.getKey();
-      boolean backupHasFiles = backup.isDirectory() && backup.list().length != 0;
-      backup = outputDir.toPath().relativize(backup.toPath()).toFile();
+      String[] backupFiles = backup.list();
+      boolean backupHasFiles =
+          backup.isDirectory() && backupFiles != null && backupFiles.length != 0;
+      backup = outputDir.relativize(backup.toPath()).toFile();
       File original = entry.getValue();
       if (original.isDirectory()) {
         generator.writeCopyDirectoryContents(writer, backup, original, backupHasFiles);
@@ -137,17 +129,22 @@ public class RestoreScript {
     }
   }
 
-  private void writeIncrementalData() {
+  private void writeIncrementalData(BufferedWriter writer) throws IOException {
     // Write out baseline file copies in restore script (if there are any) if this is a restore
     // for an incremental backup
     if (this.baselineFiles.isEmpty()) {
       return;
     }
 
-    writer.println();
+    writer.newLine();
     generator.writeComment(writer, INCREMENTAL_MARKER_COMMENT);
     for (Map.Entry<File, File> entry : this.baselineFiles.entrySet()) {
       generator.writeCopyFile(writer, entry.getKey(), entry.getValue());
     }
+  }
+
+  public void addUserFile(File original, File dest) {
+    addExistenceTest(original);
+    addFile(original, dest);
   }
 }
