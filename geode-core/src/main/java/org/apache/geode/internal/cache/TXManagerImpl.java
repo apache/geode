@@ -316,6 +316,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
                 .toLocalizedString(tid));
       }
     }
+    {
+      TXStateProxy curProxy = txContext.get();
+      if (curProxy == PAUSED) {
+        throw new java.lang.IllegalStateException(
+            "Currend thread is in a paused state, it can not start a new transaction");
+      }
+    }
     TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
     TXStateProxyImpl proxy = null;
     if (isDistributed()) {

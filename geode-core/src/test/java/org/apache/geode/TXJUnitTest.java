@@ -15,6 +15,7 @@
 package org.apache.geode;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -4397,10 +4399,10 @@ public class TXJUnitTest {
     // TX load conflict: no-inital state, tx load->update, committed update
     {
       final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
-      TXStateProxy tx;
+      TransactionId txId = null;
       this.txMgr.begin();
       reg1.create("key1", "txValue");
-      tx = txMgrImpl.pauseTransaction();
+      txId = txMgrImpl.suspend();
       assertTrue(!reg1.containsKey("key1"));
       // new transaction, load(create) + put
       this.txMgr.begin();
@@ -4413,7 +4415,7 @@ public class TXJUnitTest {
       assertTrue(reg1.containsKey("key1"));
       assertEquals("txValue2", reg1.get("key1"));
       assertEquals("txValue2", reg1.getEntry("key1").getValue());
-      txMgrImpl.unpauseTransaction(tx);
+      txMgrImpl.resume(txId);
       assertEquals("txValue", reg1.getEntry("key1").getValue());
       assertEquals("txValue", reg1.get("key1"));
       try {
@@ -4905,7 +4907,7 @@ public class TXJUnitTest {
   }
 
   @Test
-  public void testSuspendResume() {
+  public void testPauseUnpause() {
     TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
     assertTrue(!this.txMgr.exists());
     assertEquals(null, txMgrImpl.pauseTransaction());
@@ -4919,15 +4921,40 @@ public class TXJUnitTest {
     {
       TXStateProxy tx = txMgrImpl.pauseTransaction();
       assertTrue(!this.txMgr.exists());
+      assertThatThrownBy(() -> this.txMgr.begin()).isInstanceOf(IllegalStateException.class);
+      assertTrue(!this.txMgr.exists());
+      txMgrImpl.unpauseTransaction(tx);
+    }
+    assertTrue(this.txMgr.exists());
+    assertEquals(origId, this.txMgr.getTransactionId());
+    this.txMgr.rollback();
+  }
+
+  @Test
+  public void testSuspendResume() {
+    TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
+    assertTrue(!this.txMgr.exists());
+    assertEquals(null, txMgrImpl.pauseTransaction());
+    TXStateProxy txProxy = null;
+    txMgrImpl.unpauseTransaction(txProxy);
+    assertTrue(!this.txMgr.exists());
+
+    this.txMgr.begin();
+    TransactionId origId = this.txMgr.getTransactionId();
+    assertTrue(this.txMgr.exists());
+    {
+      TXStateProxy tx = txMgrImpl.internalSuspend();
+      assertTrue(!this.txMgr.exists());
       this.txMgr.begin();
       try {
-        txMgrImpl.unpauseTransaction(tx);
+        txMgrImpl.internalResume(tx);
         fail("expected IllegalStateException");
       } catch (IllegalStateException expected) {
+        LogService.getLogger().info("expected ", expected);
       }
       this.txMgr.rollback();
       assertTrue(!this.txMgr.exists());
-      txMgrImpl.unpauseTransaction(tx);
+      txMgrImpl.internalResume(tx);
     }
     assertTrue(this.txMgr.exists());
     assertEquals(origId, this.txMgr.getTransactionId());
@@ -5868,7 +5895,7 @@ public class TXJUnitTest {
     // eviction, force TX eviction
     {
       final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
-      TXStateProxy tx1, tx2;
+      TransactionId txId1, txId2;
       numToPut = lruSize + 4;
       assertEquals(0, lruRegion.entrySet(false).size());
       // Create entries
@@ -5884,7 +5911,7 @@ public class TXJUnitTest {
         lruRegion.put("key" + i, new Long(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
-      tx1 = txMgrImpl.pauseTransaction();
+      txId1 = txMgrImpl.suspend();
 
       this.txMgr.begin();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
@@ -5893,7 +5920,7 @@ public class TXJUnitTest {
         lruRegion.put("key" + i, new Double(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_DOUBLE);
-      tx2 = txMgrImpl.pauseTransaction();
+      txId2 = txMgrImpl.suspend();
 
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
 
@@ -5906,13 +5933,13 @@ public class TXJUnitTest {
       assertNull(lruRegion.get("non-tx key0"));
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
 
-      txMgrImpl.unpauseTransaction(tx1);
+      txMgrImpl.resume(txId1);
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
       // Check to make sure no conflict was caused by non-TX put evictions
       // This should remove all references for each committed entry
       this.txMgr.commit();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_LONG);
-      txMgrImpl.unpauseTransaction(tx2);
+      txMgrImpl.resume(txId2);
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_DOUBLE);
       this.txMgr.rollback();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_LONG);

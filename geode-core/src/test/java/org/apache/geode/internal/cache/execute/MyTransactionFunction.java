@@ -25,6 +25,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -425,7 +426,8 @@ public class MyTransactionFunction implements Function {
     TXEntryState txEntry = txRegion.readEntry(txRegion.getEntryKeys().iterator().next());
     mImp.unpauseTransaction(txState);
     orderPR.put(vOrderId, new Order("foo"));
-    txState = mImp.pauseTransaction();
+    TransactionId txId = null;
+    txId = mImp.suspend();
     // since both puts were on same key, verify that
     // TxRegionState and TXEntryState are same
     LocalRegion lr1 = (LocalRegion) txState.getRegions().iterator().next();
@@ -439,7 +441,7 @@ public class MyTransactionFunction implements Function {
     orderPR.put(vOrderId, new Order("foobar"));
     mImp.commit();
     // now begin the first
-    mImp.unpauseTransaction(txState);
+    mImp.resume(txId);
     boolean caughtException = false;
     try {
       mImp.commit();
