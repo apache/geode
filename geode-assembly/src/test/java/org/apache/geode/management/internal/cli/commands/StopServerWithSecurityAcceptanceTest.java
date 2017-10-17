@@ -60,7 +60,7 @@ public class StopServerWithSecurityAcceptanceTest {
     startCluster();
 
     GfshExecution stopServer = dataReaderCannotStopServer(true);
-    assertThat(stopServer.getStdErrText()).contains("dataReader not authorized for CLUSTER:READ");
+    assertThat(stopServer.getOutputText()).contains("dataReader not authorized for CLUSTER:READ");
   }
 
   @Test
@@ -75,7 +75,7 @@ public class StopServerWithSecurityAcceptanceTest {
     startCluster();
 
     GfshExecution stopServer = dataReaderCannotStopServer(false);
-    assertThat(stopServer.getStdErrText()).contains("dataReader not authorized for CLUSTER:READ");
+    assertThat(stopServer.getOutputText()).contains("dataReader not authorized for CLUSTER:READ");
   }
 
   @Test
@@ -90,7 +90,7 @@ public class StopServerWithSecurityAcceptanceTest {
     startCluster();
 
     GfshExecution stopServer = clusterReaderCannotStopServer(false);
-    assertThat(stopServer.getStdErrText())
+    assertThat(stopServer.getOutputText())
         .contains("clusterRead not authorized for CLUSTER:MANAGE");
   }
 
@@ -99,7 +99,7 @@ public class StopServerWithSecurityAcceptanceTest {
     startCluster();
 
     GfshExecution stopServer = clusterReaderCannotStopServer(true);
-    assertThat(stopServer.getStdErrText())
+    assertThat(stopServer.getOutputText())
         .contains("clusterRead not authorized for CLUSTER:MANAGE");
   }
 
