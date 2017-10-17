@@ -15,19 +15,30 @@
 package org.apache.geode.cache.lucene.test;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 
 public class Customer implements Serializable {
   private String name;
-  private Person contact; // search nested object
+  private Collection<String> phoneNumbers;
+  private Collection<Person> contacts;
+  private Page[] myHomePages;
 
-  public Customer(String name, String contactName, int pageId) {
+  public Customer(String name, Collection<String> phoneNumbers, Collection<Person> contacts,
+      Page[] myHomePages) {
     this.name = name;
+    this.phoneNumbers = phoneNumbers;
+    this.contacts = contacts;
+    this.myHomePages = myHomePages;
+  }
 
-    this.contact = new Person(contactName, pageId);
+  public void addContact(Person contact) {
+    this.contacts.add(contact);
   }
 
   @Override
   public String toString() {
-    return "Customer[name=" + name + ",contact=" + contact + "]";
+    return "Customer[name=" + name + ",phoneNumbers=" + phoneNumbers + ",contacts=" + contacts
+        + ",homepage=" + myHomePages + "]";
   }
 }
