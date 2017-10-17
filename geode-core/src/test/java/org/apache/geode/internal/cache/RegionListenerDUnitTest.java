@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
@@ -58,13 +59,9 @@ public class RegionListenerDUnitTest implements Serializable {
     String regionName = "testCleanupFailedInitializationInvoked";
     vm0.invoke(() -> createRegion(regionName, false));
 
-    // Attempt to create the region with incompatible configuration in another member
-    try {
-      vm1.invoke(() -> createRegion(regionName, true));
-      fail("should not have succeeded in creating region");
-    } catch (Exception e) {
-      assertThat(e.getCause()).isInstanceOf(IllegalStateException.class);
-    }
+    // Attempt to create the region with incompatible configuration in another member. Verify that
+    // it throws an IllegalStateException.
+    vm1.invoke(() -> createRegion(regionName, IllegalStateException.class));
 
     // Verify the RegionListener cleanupFailedInitialization callback was invoked
     vm1.invoke(() -> verifyRegionListenerCleanupFailedInitializationInvoked());
@@ -80,6 +77,12 @@ public class RegionListenerDUnitTest implements Serializable {
       rf.addAsyncEventQueueId("aeqId");
     }
     rf.create(regionName);
+  }
+
+  private void createRegion(String regionName, Class exception) {
+    RegionFactory rf = this.cacheRule.getCache().createRegionFactory(RegionShortcut.REPLICATE)
+        .addAsyncEventQueueId("aeqId");
+    assertThatThrownBy(() -> rf.create(regionName)).isInstanceOf(exception);
   }
 
   private void verifyRegionListenerCleanupFailedInitializationInvoked() {
