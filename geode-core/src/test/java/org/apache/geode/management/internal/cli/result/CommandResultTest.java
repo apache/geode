@@ -26,7 +26,6 @@ import org.junit.experimental.categories.Category;
 
 @Category({UnitTest.class})
 public class CommandResultTest {
-  public CommandResultTest() {}
 
   @Test
   public void emptyResultHasOneEmptyLine() {
