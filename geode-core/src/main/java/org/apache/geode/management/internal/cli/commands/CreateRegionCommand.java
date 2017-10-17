@@ -29,7 +29,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -159,7 +158,6 @@ public class CreateRegionCommand implements GfshCommand {
   ) {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-    String lastError = null;
 
     try {
       InternalCache cache = getCache();
@@ -297,7 +295,7 @@ public class CreateRegionCommand implements GfshCommand {
         if (success) {
           xmlEntity.set(regionCreateResult.getXmlEntity());
         } else {
-          lastError = regionCreateResult.getMessage();
+          tabularResultData.setStatus(Result.Status.ERROR);
         }
       }
       result = ResultBuilder.buildResult(tabularResultData);
@@ -306,10 +304,6 @@ public class CreateRegionCommand implements GfshCommand {
     } catch (IllegalArgumentException | IllegalStateException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
-    }
-
-    if (lastError != null) {
-      result = ResultBuilder.createUserErrorResult(lastError);
     }
 
     if (xmlEntity.get() != null) {
