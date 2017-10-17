@@ -14,12 +14,9 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static java.util.stream.Collectors.joining;
-
 import java.io.File;
-import java.util.List;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
 public class GfshExecution {
   private final Process process;
@@ -32,16 +29,8 @@ public class GfshExecution {
     this.processLogger = new ProcessLogger(process, workingDir.getName());
   }
 
-  public List<String> getStdOutLines() {
-    return processLogger.getStdOutLines();
-  }
-
-  public List<String> getStdErrLines() {
-    return processLogger.getStdErrLines();
-  }
-
-  public String getStdErrText() {
-    return getStdErrLines().stream().collect(joining(SystemUtils.LINE_SEPARATOR));
+  public String getOutputText() {
+    return processLogger.getOutputText();
   }
 
   /**
