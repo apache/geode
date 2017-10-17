@@ -136,6 +136,9 @@ public class Repository {
     }
   }
 
+  public void logoutUser(String username) {
+    clusterMap.remove(username);
+  }
 
   // This method is used to remove all cluster threads
   public void removeAllClusters() {

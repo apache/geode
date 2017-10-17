@@ -14,6 +14,7 @@
  */
 package org.apache.geode.tools.pulse.internal.security;
 
+import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.Authentication;
@@ -42,6 +43,7 @@ public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements Logo
     GemFireAuthentication gemauthentication = (GemFireAuthentication) authentication;
     if (gemauthentication != null) {
       gemauthentication.getJmxc().close();
+      Repository.get().logoutUser(gemauthentication.getName());
       logger.info("#LogoutHandler : Closing GemFireAuthentication JMX Connection...");
     }
     super.onLogoutSuccess(request, response, authentication);
