@@ -12,13 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.rules.gfsh;
+package org.apache.geode.test.junit.rules.gfsh.internal;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.google.common.collect.Lists;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Filter;
@@ -34,16 +37,15 @@ public class ProcessLogger {
   private static final LoggerContext LOGGER_CONTEXT = createLoggerContext();
   private final Logger logger;
 
-  private final Queue<String> stdOutLines = new ConcurrentLinkedQueue<>();
-  private final Queue<String> stdErrorLines = new ConcurrentLinkedQueue<>();
-  private final StreamGobbler stdOutGobbler;
-  private final StreamGobbler stdErrGobbler;
+  private final Queue<OutputLine> outputLines = new ConcurrentLinkedQueue<>();
 
   public ProcessLogger(Process process, String name) {
     this.logger = LOGGER_CONTEXT.getLogger(name);
 
-    this.stdOutGobbler = new StreamGobbler(process.getInputStream(), this::consumeInfoMessage);
-    this.stdErrGobbler = new StreamGobbler(process.getErrorStream(), this::consumeErrorMessage);
+    StreamGobbler stdOutGobbler =
+        new StreamGobbler(process.getInputStream(), this::consumeInfoMessage);
+    StreamGobbler stdErrGobbler =
+        new StreamGobbler(process.getErrorStream(), this::consumeErrorMessage);
 
     stdOutGobbler.startInNewThread();
     stdErrGobbler.startInNewThread();
@@ -51,12 +53,12 @@ public class ProcessLogger {
 
   private void consumeInfoMessage(String message) {
     logger.info(message);
-    stdOutLines.add(message);
+    outputLines.add(OutputLine.fromStdOut(message));
   }
 
   private void consumeErrorMessage(String message) {
     logger.error(message);
-    stdErrorLines.add(message);
+    outputLines.add(OutputLine.fromStdErr(message));
   }
 
   private static LoggerContext createLoggerContext() {
@@ -80,10 +82,24 @@ public class ProcessLogger {
   }
 
   public List<String> getStdOutLines() {
-    return Lists.newArrayList(stdOutLines.iterator());
+    return getOutputLines(OutputLine.OutputSource.STD_OUT);
   }
 
   public List<String> getStdErrLines() {
-    return Lists.newArrayList(stdErrorLines.iterator());
+    return getOutputLines(OutputLine.OutputSource.STD_ERR);
+  }
+
+  public List<String> getOutputLines() {
+    return outputLines.stream().map(OutputLine::getLine).collect(toList());
+  }
+
+  public String getOutputText() {
+    return outputLines.stream().map(OutputLine::getLine)
+        .collect(joining(SystemUtils.LINE_SEPARATOR));
+  }
+
+  private List<String> getOutputLines(OutputLine.OutputSource source) {
+    return outputLines.stream().filter(line -> line.getSource().equals(source))
+        .map(OutputLine::getLine).collect(toList());
   }
 }
