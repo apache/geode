@@ -19,20 +19,27 @@ import java.util.Collection;
 
 import org.apache.geode.cache.Declarable;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 
 import org.apache.geode.annotations.Experimental;
 
 /**
  * An interface for writing the fields of an object into a lucene document
+ * 
+ * @param <T> The type of object supported by this lucene serializer
  */
 @Experimental
-public interface LuceneSerializer extends Declarable {
+public interface LuceneSerializer<T> extends Declarable {
 
   /**
    * Add the fields of the given value to a set of documents
+   *
+   * Added fields should be marked with {@link Field.Store#NO}. These fields are only used for
+   * searches. When doing a query, geode will return the value from the region, not any fields that
+   * are stored on the returned Documents.
    * 
    * @param index lucene index
    * @param value user object to be serialized into index
    */
-  Collection<Document> toDocuments(LuceneIndex index, Object value);
+  Collection<Document> toDocuments(LuceneIndex index, T value);
 }
