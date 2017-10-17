@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
@@ -76,7 +75,7 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
   @Override
   public void execute(FunctionContext functionContext) {
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = functionContext.getCache();
 
       /*
        * TODO: 1) Get the CPU usage%

@@ -12,16 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.server;
+package org.apache.geode.security.internal.server;
 
 import org.apache.geode.security.ResourcePermission;
 
-/**
- * An implementation of {@link Authorizer} that doesn't use its parameters and always returns true.
- */
-public class NoOpAuthorizer implements Authorizer {
-  @Override
-  public boolean authorize(ResourcePermission permissionRequested) {
-    return true;
-  }
+public interface Authorizer {
+  boolean authorize(ResourcePermission permissionRequested);
 }

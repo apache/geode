@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
@@ -43,7 +42,7 @@ public class GarbageCollectionFunction implements Function, InternalEntity {
 
     Map<String, String> resultMap = null;
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
       long freeMemoryBeforeGC = Runtime.getRuntime().freeMemory();
       long totalMemoryBeforeGC = Runtime.getRuntime().totalMemory();

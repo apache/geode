@@ -66,10 +66,8 @@ import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.serialization.SerializationService;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -82,8 +80,6 @@ public class CacheConnectionJUnitTest {
   private final String TEST_KEY = "testKey";
   private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
-  private final int TEST_PUT_CORRELATION_ID = 574;
-  private final int TEST_GET_CORRELATION_ID = 68451;
 
   private final String DEFAULT_STORE = "default.keystore";
   private final String SSL_PROTOCOLS = "any";
@@ -160,22 +156,21 @@ public class CacheConnectionJUnitTest {
   public void testBasicMessagesAndStats() throws Exception {
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     ClientProtocol.Message putMessage =
-        MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION,
-            ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
+        MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
     protobufProtocolSerializer.serialize(putMessage, outputStream);
     validatePutResponse(socket, protobufProtocolSerializer);
 
-    ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
-        TEST_KEY, TEST_REGION, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
+    ClientProtocol.Message getMessage =
+        MessageUtil.makeGetRequestMessage(serializationService, TEST_KEY, TEST_REGION);
     protobufProtocolSerializer.serialize(getMessage, outputStream);
     validateGetResponse(socket, protobufProtocolSerializer, TEST_VALUE);
 
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) cache.getDistributedSystem();
-    Statistics[] protobufServerStats =
-        distributedSystem.findStatisticsByType(distributedSystem.findType("ProtobufServerStats"));
-    assertEquals(1, protobufServerStats.length);
-    Statistics statistics = protobufServerStats[0];
+    Statistics[] protobufStats = distributedSystem.findStatisticsByType(
+        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_STATS_NAME));
+    assertEquals(1, protobufStats.length);
+    Statistics statistics = protobufStats[0];
     assertEquals(1, statistics.get("currentClientConnections"));
     assertEquals(2L, statistics.get("messagesReceived"));
     assertEquals(2L, statistics.get("messagesSent"));
@@ -196,8 +191,8 @@ public class CacheConnectionJUnitTest {
 
     // make a request to the server
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
-        TEST_KEY, TEST_REGION, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
+    ClientProtocol.Message getMessage =
+        MessageUtil.makeGetRequestMessage(serializationService, TEST_KEY, TEST_REGION);
     protobufProtocolSerializer.serialize(getMessage, outputStream);
 
     // make sure socket is still open
@@ -209,18 +204,15 @@ public class CacheConnectionJUnitTest {
 
   private void validatePutResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_PUT_CORRELATION_ID);
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
     assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
         response.getResponseAPICase());
   }
 
   private void validateGetResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
-      throws InvalidProtocolMessageException, IOException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_GET_CORRELATION_ID);
+      throws InvalidProtocolMessageException, IOException {
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
 
     assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -231,11 +223,10 @@ public class CacheConnectionJUnitTest {
   }
 
   private ClientProtocol.Response deserializeResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer, int expectedCorrelationId)
+      ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(expectedCorrelationId, message.getMessageHeader().getCorrelationId());
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
     return message.getResponse();
   }

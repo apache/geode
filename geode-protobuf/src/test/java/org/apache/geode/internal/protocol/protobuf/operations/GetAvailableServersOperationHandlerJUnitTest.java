@@ -25,6 +25,7 @@ import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI.GetAvailableServersResponse;
 import org.apache.geode.internal.protocol.protobuf.Success;
+import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
@@ -74,8 +75,9 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
 
     ServerAPI.GetAvailableServersRequest getAvailableServersRequest =
         ProtobufRequestUtilities.createGetAvailableServersRequest();
-    Result operationHandlerResult = operationHandler.process(serializationServiceStub,
-        getAvailableServersRequest, new MessageExecutionContext(internalLocatorMock));
+    Result operationHandlerResult =
+        operationHandler.process(serializationServiceStub, getAvailableServersRequest,
+            new MessageExecutionContext(internalLocatorMock, new NoOpStatistics()));
     assertTrue(operationHandlerResult instanceof Success);
     ValidateGetAvailableServersResponse(
         (GetAvailableServersResponse) operationHandlerResult.getMessage());
@@ -88,8 +90,9 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
 
     ServerAPI.GetAvailableServersRequest getAvailableServersRequest =
         ProtobufRequestUtilities.createGetAvailableServersRequest();
-    Result operationHandlerResult = operationHandler.process(serializationServiceStub,
-        getAvailableServersRequest, new MessageExecutionContext(internalLocatorMock));
+    Result operationHandlerResult =
+        operationHandler.process(serializationServiceStub, getAvailableServersRequest,
+            new MessageExecutionContext(internalLocatorMock, new NoOpStatistics()));
     assertTrue(operationHandlerResult instanceof Success);
     GetAvailableServersResponse availableServersResponse =
         (GetAvailableServersResponse) operationHandlerResult.getMessage();

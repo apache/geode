@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
@@ -55,7 +56,9 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
@@ -156,8 +159,8 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.processMessage(new HeartbeatRequestMessage(mbr, 1));
     verify(messenger, atLeastOnce()).send(any(HeartbeatMessage.class));
-    Assert.assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatRequestsReceived());
-    Assert.assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatsSent());
+    assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatRequestsReceived());
+    assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatsSent());
   }
 
   /**
@@ -166,7 +169,7 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testHMNextNeighborVerify() throws IOException {
     installAView();
-    Assert.assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
+    assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
   }
 
   // @Category(FlakyTest.class) // GEODE-2073
@@ -215,7 +218,7 @@ public class GMSHealthMonitorJUnitTest {
     System.out.println("next neighbor is " + gmsHealthMonitor.getNextNeighbor() + "\nmy address is "
         + mockMembers.get(myAddressIndex) + "\nview is " + joinLeave.getView());
 
-    Assert.assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
+    assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
   }
 
   /***
@@ -476,6 +479,72 @@ public class GMSHealthMonitorJUnitTest {
 
 
   @Test
+  public void testNeighborRemainsSameAfterSuccessfulFinalCheck() {
+    useGMSHealthMonitorTestClass = true;
+
+    try {
+      NetView v = installAView();
+
+      setFailureDetectionPorts(v);
+
+      InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+
+      gmsHealthMonitor.setNextNeighbor(v, memberToCheck);
+      assertNotEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
+
+      boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+
+      assertTrue("CheckIfAvailable should have return true", retVal);
+      // we should now be watching the same member
+      assertEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
+
+    } finally {
+      useGMSHealthMonitorTestClass = false;
+    }
+  }
+
+
+  @Test
+  public void testExonerationMessageIsSentAfterSuccessfulFinalCheck() {
+    useGMSHealthMonitorTestClass = true;
+
+    try {
+      NetView v = installAView();
+
+      setFailureDetectionPorts(v);
+
+      InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+
+      gmsHealthMonitor.setNextNeighbor(v, memberToCheck);
+      assertNotEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
+
+      boolean retVal = gmsHealthMonitor.inlineCheckIfAvailable(mockMembers.get(0), v, true,
+          memberToCheck, "Not responding");
+
+      assertTrue("CheckIfAvailable should have return true", retVal);
+      verify(messenger, atLeastOnce()).send(isA(FinalCheckPassedMessage.class));
+
+    } finally {
+      useGMSHealthMonitorTestClass = false;
+    }
+  }
+
+
+  @Test
+  public void testInitiatorRewatchesSuspectAfterSuccessfulFinalCheck() {
+    NetView v = installAView();
+
+    setFailureDetectionPorts(v);
+
+    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    gmsHealthMonitor.memberSuspected(mockMembers.get(0), memberToCheck, "Not responding");
+    assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
+    gmsHealthMonitor.processMessage(new FinalCheckPassedMessage(mockMembers.get(0), memberToCheck));
+    assertFalse(gmsHealthMonitor.isSuspectMember(memberToCheck));
+  }
+
+
+  @Test
   public void testShutdown() {
 
     installAView();
@@ -584,7 +653,7 @@ public class GMSHealthMonitorJUnitTest {
     // verify the written bytes are as expected
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
     int byteReply = dis.read();
-    Assert.assertEquals(expectedResult, byteReply);
+    assertEquals(expectedResult, byteReply);
 
     Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckResponsesSent() > 0);
     Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckResponsesSent() > 0);
@@ -652,7 +721,7 @@ public class GMSHealthMonitorJUnitTest {
     when(fakeSocket.getOutputStream()).thenReturn(outputStream);
     when(fakeSocket.isConnected()).thenReturn(true);
 
-    Assert.assertEquals(expectedResult, gmsHealthMonitor.doTCPCheckMember(otherMember, fakeSocket));
+    assertEquals(expectedResult, gmsHealthMonitor.doTCPCheckMember(otherMember, fakeSocket));
     Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckRequestsSent() > 0);
     Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckRequestsSent() > 0);
     Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckResponsesReceived() > 0);

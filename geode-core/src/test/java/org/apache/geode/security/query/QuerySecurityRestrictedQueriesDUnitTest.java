@@ -14,6 +14,8 @@
  */
 package org.apache.geode.security.query;
 
+import static org.junit.Assert.fail;
+
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,6 +34,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -162,30 +166,34 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
   }
 
   @Test
+  public void RegionMethodInvocationShouldThrowSecurityExceptionNotTypeMismatch() {
+    String query = "select * from /" + regionName + ".containsValue('value')";
+    specificUserClient.invoke(() -> {
+      QueryService queryService = getClientCache().getQueryService();
+      try {
+        queryService.newQuery(query).execute();
+        fail();
+      } catch (Exception e) {
+        e.printStackTrace();
+        if (!e.getMessage().matches(regexForExpectedExceptions)) {
+          Throwable cause = e.getCause();
+          while (cause != null || cause instanceof TypeMismatchException) {
+            if (cause.getMessage().matches(regexForExpectedExceptions)) {
+              return;
+            }
+            cause = cause.getCause();
+          }
+          e.printStackTrace();
+          fail();
+        }
+      }
+    });
+  }
+
+  @Test
   public void usersWhoCanExecuteQueryShouldNotInvokeRegionCreateForSelectRegionCreateQuery()
       throws Exception {
     String query = "select * from /" + regionName + ".create('key2', 15)";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
-    executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
-  }
-
-
-  @Test
-  // @Parameters(method = "getAllUsersWhoCanExecuteQuery")
-  public void usersWhoCanExecuteQueryShouldGetResultsForSelectCreateFromRegionQuery()
-      throws Exception {
-    String query = "select r.create('key2', 15) from /" + regionName + " r";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
-    executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
-  }
-
-  @Test
-  // @Parameters(method = "getAllUsersWhoCanExecuteQuery")
-  public void usersWhoCanExecuteQueryShouldNotInvokeDestroyForSelectRegionDestroyQuery()
-      throws Exception {
-    String query = "select * from /" + regionName + ".destroyKey('" + keys[0] + "')";
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         regexForExpectedExceptions);
     executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
@@ -205,13 +213,6 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
   }
 
   @Test
-  public void checkUserAuthorizationsForSelectRegionGetQuery() {
-    String query = "select * from /" + regionName + ".getKey('" + keys[0] + "')";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
-  }
-
-  @Test
   public void usersWhoCanExecuteQueryShouldNotInvokeRegionPutForSelectRegionPutQuery()
       throws Exception {
     String query = "select * from /" + regionName + ".put('key-2', 'something')";
@@ -219,18 +220,6 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
         regexForExpectedExceptions);
     executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
   }
-
-
-
-  @Test
-  public void usersWhoCanExecuteQueryShouldNotInvokePutIfAbsentForSelectRegionPutIfAbsentQuery()
-      throws Exception {
-    String query = "select * from /" + regionName + ".putIfAbsent('key-2', 'something')";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
-    executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
-  }
-
 
   @Test
   @Parameters(method = "getAllUsersWhoCanExecuteQuery")
@@ -240,30 +229,6 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         regexForExpectedExceptions);
     executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
-  }
-
-  @Test
-  @Parameters(method = "getAllUsersWhoCanExecuteQuery")
-  public void usersWhoCannExecuteQueryShouldReceiveExpectedResultsForSelectRegionReplaceQuery()
-      throws Exception {
-    String query = "select * from /" + regionName + ".replace('key-0', 'something')";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
-    executeAndConfirmRegionMatches(specificUserClient, regionName, Arrays.asList(values));
-  }
-
-  @Test
-  public void checkUserAuthorizationsForSelectGetInterestListRegexRegionQuery() {
-    String query = "select r.getInterestListRegex from /" + regionName + " r";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
-  }
-
-  @Test
-  public void checkUserAuthorizationsForSelectGetInterestListRegexParenRegionQuery() {
-    String query = "select r.getInterestListRegex() from /" + regionName + " r";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
   }
 
   @Test
@@ -305,13 +270,6 @@ public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {
   @Test
   public void checkUserAuthorizationsForSelectByCapitalClassQuery() {
     String query = "select * from /" + regionName + " r where r.Class != '1'";
-    executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
-        regexForExpectedExceptions);
-  }
-
-  @Test
-  public void checkUserAuthorizationsForSelectRegionCloneQuery() {
-    String query = "select * from /" + regionName + ".clone";
     executeQueryWithCheckForAccessPermissions(specificUserClient, query, regionName,
         regexForExpectedExceptions);
   }

@@ -196,7 +196,6 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   // Put data, get data and make the metadata stable.
   // Now verify that metadata has all 8 buckets info.
   // Now update and ensure the fetch service is never called.
-  @Category(FlakyTest.class) // GEODE-1176: random ports, time sensitive, waitForCriterion
   @Test
   public void test_MetadataContents() {
 

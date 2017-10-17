@@ -21,7 +21,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -44,7 +43,7 @@ public class MembersForRegionFunction implements Function, InternalEntity {
   public void execute(FunctionContext context) {
     Map<String, String> resultMap = new HashMap<String, String>();
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       String memberNameOrId = cache.getDistributedSystem().getDistributedMember().getId();
       Object args = (Object) context.getArguments();
       String regionName = ((String) args);
@@ -63,7 +62,6 @@ public class MembersForRegionFunction implements Function, InternalEntity {
       }
       context.getResultSender().lastResult(resultMap);
     } catch (Exception ex) {
-      Cache cache = CacheFactory.getAnyInstance();
       logger.info("MembersForRegionFunction exception {}", ex.getMessage(), ex);
       resultMap.put("", "");
       context.getResultSender().lastResult(resultMap);

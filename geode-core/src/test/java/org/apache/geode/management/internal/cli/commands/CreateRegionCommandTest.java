@@ -38,22 +38,6 @@ public class CreateRegionCommandTest {
   public GfshParserRule parser = new GfshParserRule();
 
   @Test
-  public void testCreateRegionWithInvalidPartitionResolver() throws Exception {
-    InternalCache cache = mock(InternalCache.class);
-    DistributedSystemMXBean dsMBean = mock(DistributedSystemMXBean.class);
-    CreateRegionCommand spy = Mockito.spy(CreateRegionCommand.class);
-
-    doReturn(cache).when(spy).getCache();
-    doReturn(dsMBean).when(spy).getDSMBean(cache);
-
-    String command = "create region --name=region3 --type=PARTITION --partition-resolver=Foo";
-    CommandResult result = parser.executeCommandWithInstance(spy, command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("Foo is an invalid Partition Resolver");
-  }
-
-  @Test
   public void testRegionExistsReturnsCorrectValue() throws Exception {
     InternalCache cache = mock(InternalCache.class);
     assertThat(regionExists(cache, null)).isFalse();

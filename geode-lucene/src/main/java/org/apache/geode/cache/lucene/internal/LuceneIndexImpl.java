@@ -29,6 +29,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.InternalCache;
@@ -53,6 +54,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
   protected Analyzer analyzer;
+  protected LuceneSerializer luceneSerializer;
   protected LocalRegion dataRegion;
 
   protected LuceneIndexImpl(String indexName, String regionPath, InternalCache cache) {
@@ -115,6 +117,14 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.analyzer;
   }
 
+  public LuceneSerializer getLuceneSerializer() {
+    return this.luceneSerializer;
+  }
+
+  public void setLuceneSerializer(LuceneSerializer serializer) {
+    this.luceneSerializer = serializer;
+  }
+
   public Cache getCache() {
     return this.cache;
   }
@@ -146,11 +156,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
   }
 
-  protected void setupRepositoryManager() {
-    repositoryManager = createRepositoryManager();
+  protected void setupRepositoryManager(LuceneSerializer luceneSerializer) {
+    repositoryManager = createRepositoryManager(luceneSerializer);
   }
 
-  protected abstract RepositoryManager createRepositoryManager();
+  protected abstract RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer);
 
   protected abstract void createLuceneListenersAndFileChunkRegions(
       AbstractPartitionedRepositoryManager partitionedRepositoryManager);
@@ -209,6 +219,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.addFieldNames(this.getFieldNames());
     creation.setRegion(dataRegion);
     creation.setFieldAnalyzers(this.getFieldAnalyzers());
+    creation.setLuceneSerializer(this.getLuceneSerializer());
     dataRegion.getExtensionPoint().addExtension(creation);
   }
 

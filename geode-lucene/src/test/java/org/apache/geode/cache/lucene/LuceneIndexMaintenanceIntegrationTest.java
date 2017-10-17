@@ -18,6 +18,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -26,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
 import org.awaitility.Awaitility;
 
 import org.junit.Test;
@@ -41,8 +44,11 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.lucene.document.Document;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest {
@@ -104,6 +110,74 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
         TimeUnit.MILLISECONDS);
 
     assertEquals(3, query.findPages().size());
+  }
+
+  @Test
+  public void useSerializerToIndex() throws Exception {
+    luceneService.createIndexFactory().setFields("title", "description")
+        .setLuceneSerializer(new HeterogeneousLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    region.put("object-1", new TestObject("title 1", "hello world"));
+    region.put("object-2", new TestObject("title 2", "this will not match"));
+    region.put("object-3", new TestObject("title 3", "hello world"));
+    region.put("object-4", new TestObject("hello world", "hello world"));
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "description:\"hello world\"", DEFAULT_FIELD);
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(3, results.size());
+  }
+
+  @Test
+  public void serializerExceptionShouldNotImpactOtherEvents() throws Exception {
+    luceneService.createIndexFactory().setFields("title", "description")
+        .setLuceneSerializer(new TestCatchingExceptionInSerializer("title 3"))
+        .create(INDEX_NAME, REGION_NAME);
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    region.put("object-1", new TestObject("title 1", "hello world"));
+    region.put("object-2", new TestObject("title 2", "this will not match"));
+    region.put("object-3", new TestObject("title 3", "hello world"));
+    region.put("object-4", new TestObject("hello world", "hello world"));
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "description:\"hello world\"", DEFAULT_FIELD);
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(2, results.size());
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
+    LuceneIndexStats indexStats = indexForPR.getIndexStats();
+    assertEquals(1, indexStats.getFailedEntries());
+    assertEquals(4, indexStats.getUpdates());
+  }
+
+  @Test
+  public void pdxInstanceShouldNotBeDeserialized() throws Exception {
+    luceneService.createIndexFactory().setFields("status", "description")
+        .setLuceneSerializer(new TestPdxInstanceSerializer()).create(INDEX_NAME, REGION_NAME);
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    for (int i = 0; i < 10; i++) {
+      PortfolioPdx p = new PortfolioPdx(i);
+      region.put(i, p);
+    }
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "status:active", "status");
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(5, results.size());
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
+    LuceneIndexStats indexStats = indexForPR.getIndexStats();
+    assertEquals(10, indexStats.getUpdates());
   }
 
   @Test
@@ -284,6 +358,34 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     public TestObject(String title, String description) {
       this.title = title;
       this.description = description;
+    }
+  }
+
+  private static class TestCatchingExceptionInSerializer extends HeterogeneousLuceneSerializer {
+
+    String match;
+
+    TestCatchingExceptionInSerializer(String match) {
+      this.match = match;
+    }
+
+    @Override
+    public Collection<Document> toDocuments(LuceneIndex index, Object value) {
+      TestObject testObject = (TestObject) value;
+      if (testObject.title.equals(match)) {
+        throw new RuntimeException("Expected exception in Serializer:" + value);
+      } else {
+        return super.toDocuments(index, value);
+      }
+    }
+  }
+
+  private static class TestPdxInstanceSerializer extends HeterogeneousLuceneSerializer {
+
+    @Override
+    public Collection<Document> toDocuments(LuceneIndex index, Object value) {
+      assertTrue(value instanceof PdxInstance);
+      return super.toDocuments(index, value);
     }
   }
 }

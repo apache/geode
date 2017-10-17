@@ -16,6 +16,10 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CacheServiceProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.lucene.analysis.Analyzer;
@@ -26,7 +30,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
-public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSerializable {
+public class LuceneIndexCreationProfile implements CacheServiceProfile, VersionedDataSerializable {
 
   private String indexName;
 
@@ -36,18 +40,23 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   private Map<String, String> fieldAnalyzers;
 
+  private String serializerClass = HeterogeneousLuceneSerializer.class.getSimpleName();
+
   private String regionPath;
 
   /* Used by DataSerializer */
   public LuceneIndexCreationProfile() {}
 
   public LuceneIndexCreationProfile(String indexName, String regionPath, String[] fieldNames,
-      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers) {
+      Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers, LuceneSerializer serializer) {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.fieldNames = fieldNames;
     this.analyzerClass = analyzer.getClass().getSimpleName();
     initializeFieldAnalyzers(fieldAnalyzers);
+    if (serializer != null) {
+      this.serializerClass = serializer.getClass().getSimpleName();
+    }
   }
 
   public String getIndexName() {
@@ -64,6 +73,10 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   public Map<String, String> getFieldAnalyzers() {
     return this.fieldAnalyzers;
+  }
+
+  public String getSerializerClass() {
+    return this.serializerClass;
   }
 
   protected void initializeFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
@@ -129,6 +142,13 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
         }
       }
     }
+
+    if (!getSerializerClass().equals(remoteProfile.getSerializerClass())) {
+      return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_SERIALIZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_DIFFERENT_SERIALIZER_3
+          .toString(getIndexName(), regionPath, getSerializerClass(),
+              remoteProfile.getSerializerClass());
+    }
+
     return result;
   }
 
@@ -143,6 +163,11 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_1_3_0_0(out);
+    DataSerializer.writeString(this.serializerClass, out);
+  }
+
+  public void toDataPre_GEODE_1_3_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.indexName, out);
     DataSerializer.writeString(this.regionPath, out);
     DataSerializer.writeStringArray(this.fieldNames, out);
@@ -152,6 +177,11 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_3_0_0(in);
+    this.serializerClass = DataSerializer.readString(in);
+  }
+
+  public void fromDataPre_GEODE_1_3_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.indexName = DataSerializer.readString(in);
     this.regionPath = DataSerializer.readString(in);
     this.fieldNames = DataSerializer.readStringArray(in);
@@ -164,10 +194,15 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
         .append(this.indexName).append("; regionPath=").append(this.regionPath)
         .append("; fieldNames=").append(Arrays.toString(this.fieldNames)).append("; analyzerClass=")
         .append(this.analyzerClass).append("; fieldAnalyzers=").append(this.fieldAnalyzers)
-        .append("]").toString();
+        .append("; serializer=").append(this.serializerClass).append("]").toString();
   }
 
   public String getRegionPath() {
     return this.regionPath;
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_130};
   }
 }

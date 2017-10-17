@@ -66,6 +66,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
     command.addOption(CliStrings.START_SERVER__CLASSPATH,
         binDirJars + File.pathSeparator + libDirJars);
     command.addOption(CliStrings.START_SERVER__LOCATORS, DUnitEnv.get().getLocatorString());
+    command.addOption(CliStrings.START_SERVER__J, "-Dgemfire.member-timeout=60000");
 
     // Start server
     gfsh.executeAndVerifyCommand(command.toString());

@@ -227,7 +227,7 @@ import org.apache.logging.log4j.Logger;
  * distribution behavior.
  */
 @SuppressWarnings("deprecation")
-public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
+public class LocalRegion extends AbstractRegion implements InternalRegion, LoaderHelperFactory,
     ResourceListener<MemoryEvent>, DiskExceptionHandler, DiskRecoveryStore {
 
   // package-private to avoid synthetic accessor

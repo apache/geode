@@ -59,8 +59,9 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({DistributedTest.class, ClientServerTest.class, FlakyTest.class})
 public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

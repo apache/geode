@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
@@ -67,6 +68,249 @@ public class RestrictedMethodInvocationAuthorizerTest {
   }
 
   @Test
+  public void toCharAtOnStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("charAt", int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void codePointAtStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("codePointAt", int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void codePointBeforeStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("codePointBefore", int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void codePointCountStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("codePointCount", int.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void compareToStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("compareTo", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void compareToIgnoreCaseStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("compareToIgnoreCase", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void concatStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("compareTo", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void containsStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("contains", CharSequence.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void contentEqualsStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("contentEquals", CharSequence.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void contentEqualsWithStringBufferStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("contentEquals", StringBuffer.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void endsWithOnStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("endsWith", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void equalsIgnoreCase() throws Exception {
+    Method stringMethod = String.class.getMethod("equalsIgnoreCase", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void getBytesOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("getBytes");
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void getBytesWithCharsetOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("getBytes", Charset.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void hashCodeOnStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("hashCode");
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void indexOfOnStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("indexOf", int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void indexOfWithStringOnStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("indexOf", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void indexOfWithStringAndIntOnStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("indexOf", String.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void internOnStringObject() throws Exception {
+    Method stringMethod = String.class.getMethod("intern");
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void isEmpty() throws Exception {
+    Method stringMethod = String.class.getMethod("isEmpty");
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void lastIndexOfWithIntOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("lastIndexOf", int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void lastIndexOfWithIntAndFronIndexOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("lastIndexOf", int.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void lastIndexOfWithStringOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("lastIndexOf", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void lastIndexOfWithStringAndFromIndexOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("lastIndexOf", String.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void lengthOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("length");
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void matchesOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("matches", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void offsetByCodePointsOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("offsetByCodePoints", int.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+
+  @Test
+  public void regionMatchesWith5ParamsOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("regionMatches", boolean.class, int.class,
+        String.class, int.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void regionMatchesWith4ParamsOnString() throws Exception {
+    Method stringMethod =
+        String.class.getMethod("regionMatches", int.class, String.class, int.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void replaceOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("replace", char.class, char.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void replaceWithCharSequenceOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("replace", CharSequence.class, CharSequence.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void replaceAllOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("replaceAll", String.class, String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void replaceFirstOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("replaceFirst", String.class, String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void splitOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("split", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void splitWithLimitOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("split", String.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void startsOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("startsWith", String.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void startsWithOffsetOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("startsWith", String.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void substringOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("substring", int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void substringWithEndIndexOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("substring", int.class, int.class);
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void toCharArrayOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("toCharArray");
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
   public void toLowerCaseOnStringObject() throws Exception {
     Method stringMethod = String.class.getMethod("toLowerCase");
     assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
@@ -75,6 +319,12 @@ public class RestrictedMethodInvocationAuthorizerTest {
   @Test
   public void toUpperCaseOnStringObject() throws Exception {
     Method stringMethod = String.class.getMethod("toUpperCase");
+    assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
+  }
+
+  @Test
+  public void trimOnString() throws Exception {
+    Method stringMethod = String.class.getMethod("trim");
     assertTrue(methodInvocationAuthorizer.isWhitelisted(stringMethod));
   }
 

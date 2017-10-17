@@ -79,9 +79,12 @@ public class CliStrings {
   public static final String GROUPS = "groups";
   public static final String MEMBER = "member";
   public static final String MEMBERS = "members";
+  public static final String IFEXISTS = "if-exists";
   public static final String JAR = "jar";
   public static final String JARS = "jars";
 
+  public static final String IFEXISTS_HELP =
+      "If true, the command will be a no-op if the entity does not exist.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
@@ -2151,7 +2154,8 @@ public class CliStrings {
       "Whether this is Parallel GatewaySender.";
   public static final String CREATE_GATEWAYSENDER__MANUALSTART = "manual-start";
   public static final String CREATE_GATEWAYSENDER__MANUALSTART__HELP =
-      "Whether manual start is to be enabled or the sender will start automatically after creation.";
+      "Whether manual start is to be enabled or the sender will start automatically after creation.\n"
+          + "Deprecated: Manual start of senders is deprecated and will be removed in a later release.";
   public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE = SOCKET_BUFFER_SIZE;
   public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE__HELP =
       "The buffer size of the socket connection between this GatewaySender and its receiving GatewayReceiver.";

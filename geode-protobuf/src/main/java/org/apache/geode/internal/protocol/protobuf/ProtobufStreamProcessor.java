@@ -21,17 +21,14 @@ import java.io.OutputStream;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
 import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.registry.OperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 
 /**
@@ -43,23 +40,12 @@ import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   private final ProtobufProtocolSerializer protobufProtocolSerializer;
   private final ProtobufOpsProcessor protobufOpsProcessor;
-  private ProtobufClientStatistics statistics;
   private static final Logger logger = LogService.getLogger();
 
   public ProtobufStreamProcessor() {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
     protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
         new OperationContextRegistry());
-  }
-
-  @Override
-  public void initializeStatistics(String statisticsName, StatisticsFactory factory) {
-    statistics = new ProtobufClientStatisticsImpl(factory, statisticsName, "ProtobufServerStats");
-  }
-
-  @Override
-  public ClientProtocolStatistics getStatistics() {
-    return statistics;
   }
 
   @Override
@@ -81,14 +67,12 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
       logger.debug(errorMessage);
       throw new EOFException(errorMessage);
     }
+    ProtobufClientStatistics statistics = executionContext.getStatistics();
     statistics.messageReceived(message.getSerializedSize());
 
     ClientProtocol.Request request = message.getRequest();
     ClientProtocol.Response response = protobufOpsProcessor.process(request, executionContext);
-    ClientProtocol.MessageHeader responseHeader =
-        ProtobufUtilities.createMessageHeaderForRequest(message);
-    ClientProtocol.Message responseMessage =
-        ProtobufUtilities.createProtobufResponse(responseHeader, response);
+    ClientProtocol.Message responseMessage = ProtobufUtilities.createProtobufResponse(response);
     statistics.messageSent(responseMessage.getSerializedSize());
     protobufProtocolSerializer.serialize(responseMessage, outputStream);
   }

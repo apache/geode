@@ -14,13 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
+import java.util.Collection;
 
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,84 +31,82 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.Server;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(DistributedTest.class)
-public class IndexCommandsDUnitTest {
-  // This test seemed to be leaving behind state that caused ConnectCommandWithSSLTest to fail if it
-  // was run afterwards. So, this rule ensures we leave behind a clean state.
+/**
+ * this test class test: CreateIndexCommand, DestroyIndexCommand, ListIndexCommand
+ */
+@Category(IntegrationTest.class)
+public class IndexCommandsIntegrationTest {
+  private static final String regionName = "regionA";
+  private static final String groupName = "groupA";
+  private static final String indexName = "indexA";
+
+
   @ClassRule
-  public static CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
+  public static ServerStarterRule server =
+      new ServerStarterRule().withProperty(GROUPS, groupName).withJMXManager().withAutoStart();
+
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    InternalCache cache = server.getCache();
+    Region region = createPartitionedRegion(regionName, cache, String.class, Stock.class);
+    region.put("VMW", new Stock("VMW", 98));
+    region.put("APPL", new Stock("APPL", 600));
+  }
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
-  @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
-  private static final String partitionedRegionName = "partitionedRegion";
-  private static final String indexName = "index1";
-  private static final String groupName = "group1";
-
   @Before
   public void before() throws Exception {
-    Properties props = new Properties();
-    props.setProperty("groups", groupName);
-    MemberVM serverVM = startupRule.startServerAsJmxManager(0, props);
-    serverVM.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
-      Region parReg =
-          createPartitionedRegion(partitionedRegionName, cache, String.class, Stock.class);
-      parReg.put("VMW", new Stock("VMW", 98));
-      parReg.put("APPL", new Stock("APPL", 600));
-    });
-    connect(serverVM);
+    connect(server);
   }
 
-  public void connect(MemberVM serverVM) throws Exception {
-    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+  @After
+  public void after() throws Exception {
+    // destroy all existing indexes
+    Collection<Index> indices = server.getCache().getQueryService().getIndexes();
+    indices.stream().map(Index::getName).forEach(indexName -> {
+      gfsh.executeAndVerifyCommand("destroy index --name=" + indexName);
+    });
+
+    gfsh.executeAndVerifyCommand("list index");
+    assertThat(gfsh.getGfshOutput()).contains("No Indexes Found");
+  }
+
+  public void connect(Server server) throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
   }
 
   @Test
-  public void testCreateAndDestroyIndex() throws Exception {
-    // Create an index
-    CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
-    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
-
-    assertTrue(indexIsListed());
-
-    // Destroy the index
-    CommandStringBuilder destroyStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    destroyStringBuilder.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
-    destroyStringBuilder.addOption(CliStrings.DESTROY_INDEX__REGION, "/" + partitionedRegionName);
-    gfsh.executeAndVerifyCommand(destroyStringBuilder.toString());
-
-    assertFalse(indexIsListed());
+  public void testCreate() throws Exception {
+    createSimpleIndexA();
   }
 
   @Test
   public void testCreateIndexWithMultipleIterators() throws Exception {
     CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, "indexA");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
-        "\"/" + partitionedRegionName + " s, s.history h\"");
+        "\"/" + regionName + " s, s.history h\"");
 
     gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+    assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
 
-    assertTrue(indexIsListed());
+    gfsh.executeAndVerifyCommand("list index");
+    assertThat(gfsh.getGfshOutput()).contains("indexA");
   }
 
   @Test
@@ -116,26 +115,41 @@ public class IndexCommandsDUnitTest {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "\"h.low\"");
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
-        "\"/" + partitionedRegionName + " s, s.history h\"");
+        "\"/" + regionName + " s, s.history h\"");
 
     gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+    assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
 
-    assertTrue(indexIsListedAsValid());
+    gfsh.executeAndVerifyCommand("list index");
+    assertThat(gfsh.getGfshOutput()).contains("indexA");
   }
 
   @Test
   public void testCannotCreateIndexWithExistingIndexName() throws Exception {
-    createBaseIndexForTesting();
+    createSimpleIndexA();
 
     // CREATE the same index
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void creatIndexWithNoBeginningSlash() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
+    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, regionName);
+    gfsh.executeAndVerifyCommand(csb.toString());
+    assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
+
+    gfsh.executeAndVerifyCommand("list index");
+    assertThat(gfsh.getGfshOutput()).contains("indexA");
   }
 
   @Test
@@ -149,8 +163,16 @@ public class IndexCommandsDUnitTest {
 
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(gfsh.getGfshOutput()).contains("Region not found : \"/InvalidRegionName\"");
   }
 
+  @Test
+  public void cannotCreateWithTheSameName() throws Exception {
+    createSimpleIndexA();
+    gfsh.execute("create index --name=indexA --expression=key --region=/regionA");
+    assertThat(gfsh.getGfshOutput())
+        .contains("Index \"indexA\" already exists.  Create failed due to duplicate name");
+  }
 
   @Test
   public void testCannotCreateIndexWithInvalidIndexExpression() throws Exception {
@@ -158,7 +180,7 @@ public class IndexCommandsDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "InvalidExpressionOption");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
     CommandResult result = gfsh.executeCommand(csb.toString());
@@ -166,22 +188,7 @@ public class IndexCommandsDUnitTest {
   }
 
   @Test
-  public void testCannotCreateIndexWithInvalidIndexType() throws Exception {
-    // Create index with wrong type
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
-    csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "InvalidIndexType");
-
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-  }
-
-  @Test
   public void testCannotDestroyIndexWithInvalidIndexName() throws Exception {
-    createBaseIndexForTesting();
-
     // Destroy index with incorrect indexName
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, "IncorrectIndexName");
@@ -193,22 +200,17 @@ public class IndexCommandsDUnitTest {
 
   @Test
   public void testCannotDestroyIndexWithInvalidRegion() throws Exception {
-    createBaseIndexForTesting();
-
     // Destroy index with incorrect region
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "IncorrectRegion");
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains(
-        CliStrings.format(CliStrings.DESTROY_INDEX__REGION__NOT__FOUND, "IncorrectRegion"));
+    assertThat(gfsh.getGfshOutput()).contains("Region \"IncorrectRegion\" not found.");
   }
 
   @Test
   public void testCannotDestroyIndexWithInvalidMember() throws Exception {
-    createBaseIndexForTesting();
-
     // Destroy index with incorrect member name
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
@@ -216,59 +218,43 @@ public class IndexCommandsDUnitTest {
     csb.addOption(CliStrings.MEMBER, "InvalidMemberName");
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(gfsh.getGfshOutput()).contains("No Members Found");
   }
 
   @Test
   public void testCannotDestroyIndexWithNoOptions() throws Exception {
-    createBaseIndexForTesting();
-
     // Destroy index with no option
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(gfsh.getGfshOutput()).contains("requires that one or more parameters be provided.");
   }
 
   @Test
   public void testDestroyIndexViaRegion() throws Exception {
-    createBaseIndexForTesting();
+    createSimpleIndexA();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    csb.addOption(CliStrings.DESTROY_INDEX__REGION, partitionedRegionName);
-    gfsh.executeAndVerifyCommand(csb.toString());
-
-    assertFalse(indexIsListed());
+    csb.addOption(CliStrings.DESTROY_INDEX__REGION, regionName);
+    gfsh.executeAndVerifyCommand(csb.toString(),
+        "Indexes on region : /regionA successfully destroyed");
   }
 
   @Test
   public void testDestroyIndexViaGroup() throws Exception {
-    createBaseIndexForTesting();
+    createSimpleIndexA();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.GROUP, groupName);
-    gfsh.executeAndVerifyCommand(csb.toString());
-
-    assertFalse(indexIsListed());
-
+    gfsh.executeAndVerifyCommand(csb.toString(), "Indexes successfully destroyed");
   }
 
-  private void createBaseIndexForTesting() throws Exception {
+  private void createSimpleIndexA() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
-    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
-    csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
-    gfsh.executeAndVerifyCommand(csb.toString());
-    assertTrue(indexIsListed());
-  }
-
-  private boolean indexIsListed() throws Exception {
-    gfsh.executeAndVerifyCommand(CliStrings.LIST_INDEX);
-    return gfsh.getGfshOutput().contains(indexName);
-  }
-
-  private boolean indexIsListedAsValid() throws Exception {
-    gfsh.executeAndVerifyCommand(CliStrings.LIST_INDEX);
-    return gfsh.getGfshOutput().contains("true");
+    csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
+    gfsh.executeAndVerifyCommand(csb.toString(), "Index successfully created");
   }
 
   private static Region<?, ?> createPartitionedRegion(String regionName, Cache cache,

@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import java.io.File;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -48,7 +47,7 @@ public class ImportDataFunction extends FunctionAdapter implements InternalEntit
     final boolean parallel = (boolean) args[3];
 
     try {
-      final Cache cache = CacheFactory.getAnyInstance();
+      final Cache cache = context.getCache();
       final Region<?, ?> region = cache.getRegion(regionName);
       final String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
       if (region != null) {

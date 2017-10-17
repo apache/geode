@@ -17,14 +17,14 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.Server;
 
-@Category(DistributedTest.class)
-public class IndexCommandOverHttpTest extends IndexCommandsDUnitTest {
+@Category(IntegrationTest.class)
+public class IndexCommandOverHttpTest extends IndexCommandsIntegrationTest {
   @Override
-  public void connect(MemberVM serverVM) throws Exception {
-    gfsh.connectAndVerify(serverVM.getHttpPort(), GfshShellConnectionRule.PortType.http);
+  public void connect(Server server) throws Exception {
+    gfsh.connectAndVerify(server.getHttpPort(), GfshShellConnectionRule.PortType.http);
   }
 }

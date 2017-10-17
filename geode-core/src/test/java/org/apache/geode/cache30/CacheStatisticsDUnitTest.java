@@ -425,6 +425,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
         assertEquals(0, hc);
         assertEquals(0, mc);
         lastAccessed = stats.getLastAccessedTime();
+        lastModified = stats.getLastModifiedTime();
       }
     });
 
@@ -439,7 +440,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
         Region region = getRootRegion().getSubregion(name);
         CacheStatistics stats = region.getEntry(key).getStatistics();
         assertEquals(lastAccessed, stats.getLastAccessedTime());
-        assertEquals(lastAccessed, stats.getLastModifiedTime());
+        assertEquals(lastModified, stats.getLastModifiedTime());
         assertEquals(0, stats.getHitCount());
         assertEquals(0, stats.getMissCount());
       }

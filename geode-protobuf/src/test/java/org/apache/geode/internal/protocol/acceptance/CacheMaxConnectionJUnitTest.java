@@ -67,7 +67,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class CacheMaxConnectionJUnitTest {
   private static final String TEST_KEY = "testKey";
   private static final String TEST_VALUE = "testValue";
-  private static final int TEST_PUT_CORRELATION_ID = 12355;
   private static final String TEST_REGION = "testRegion";
 
   private Cache cache;
@@ -191,9 +190,8 @@ public class CacheMaxConnectionJUnitTest {
           OutputStream outputStream = socket.getOutputStream();
           outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
-          ClientProtocol.Message putMessage =
-              MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE,
-                  TEST_REGION, ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID));
+          ClientProtocol.Message putMessage = MessageUtil
+              .makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
           protobufProtocolSerializer.serialize(putMessage, outputStream);
           validatePutResponse(socket, protobufProtocolSerializer);
         } catch (Exception e) {
@@ -223,18 +221,16 @@ public class CacheMaxConnectionJUnitTest {
 
   private void validatePutResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_PUT_CORRELATION_ID);
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
     assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
         response.getResponseAPICase());
   }
 
   private ClientProtocol.Response deserializeResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer, int expectedCorrelationId)
+      ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(expectedCorrelationId, message.getMessageHeader().getCorrelationId());
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
     return message.getResponse();
   }

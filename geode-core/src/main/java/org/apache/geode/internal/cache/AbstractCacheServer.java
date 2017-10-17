@@ -38,7 +38,7 @@ import org.apache.geode.management.membership.ClientMembershipListener;
  *
  * @since GemFire 5.7
  */
-public abstract class AbstractCacheServer implements CacheServer {
+public abstract class AbstractCacheServer implements InternalCacheServer {
 
   public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "test.CacheServer.OVERRIDE_DEFAULT_PORT";

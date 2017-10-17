@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,48 +28,27 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.server.Authenticator;
+import org.apache.geode.security.internal.server.Authenticator;
 
 /**
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
-  private ClientProtocolMessageHandler protocolHandler;
-  private Map<String, Class<? extends Authenticator>> authenticators = null;
+  private final ClientProtocolServiceLoader clientProtocolServiceLoader;
+  private volatile ClientProtocolService clientProtocolService;
+  private Map<String, Class<? extends Authenticator>> authenticators;
 
-  public ServerConnectionFactory() {}
+  public ServerConnectionFactory() {
 
-  private synchronized void initializeAuthenticatorsMap() {
-    if (authenticators != null) {
-      return;
-    }
-    HashMap tmp = new HashMap<>();
-
+    authenticators = new HashMap<>();
     ServiceLoader<Authenticator> loader = ServiceLoader.load(Authenticator.class);
     for (Authenticator streamAuthenticator : loader) {
-      tmp.put(streamAuthenticator.implementationID(), streamAuthenticator.getClass());
+      authenticators.put(streamAuthenticator.implementationID(), streamAuthenticator.getClass());
     }
-
-    authenticators = tmp;
-  }
-
-  private synchronized ClientProtocolMessageHandler initializeMessageHandler(
-      StatisticsFactory statisticsFactory, String statisticsName) {
-    if (protocolHandler != null) {
-      return protocolHandler;
-    }
-
-    ClientProtocolMessageHandler tempHandler = new MessageHandlerFactory().makeMessageHandler();
-    tempHandler.initializeStatistics(statisticsName, statisticsFactory);
-
-    protocolHandler = tempHandler;
-    return protocolHandler;
+    clientProtocolServiceLoader = new ClientProtocolServiceLoader();
   }
 
   private Authenticator findStreamAuthenticator(String implementationID) {
-    if (authenticators == null) {
-      initializeAuthenticatorsMap();
-    }
     Class<? extends Authenticator> streamAuthenticatorClass = authenticators.get(implementationID);
     if (streamAuthenticatorClass == null) {
       throw new ServiceLoadingFailureException(
@@ -86,34 +64,52 @@ public class ServerConnectionFactory {
     }
   }
 
-  private ClientProtocolMessageHandler getOrCreateClientProtocolMessageHandler(
+  private synchronized ClientProtocolService getClientProtocolService(
       StatisticsFactory statisticsFactory, String serverName) {
-    if (protocolHandler == null) {
-      return initializeMessageHandler(statisticsFactory, serverName);
+    if (clientProtocolService == null) {
+      clientProtocolService = clientProtocolServiceLoader.lookupService();
+      clientProtocolService.initializeStatistics(serverName, statisticsFactory);
     }
-    return protocolHandler;
+    return clientProtocolService;
   }
 
   public ServerConnection makeServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService, InetAddress bindAddress) throws IOException {
-    if (communicationMode == ProtobufClientServerProtocol.getModeNumber()) {
+      SecurityService securityService) throws IOException {
+    if (ProtobufClientServerProtocol.getModeNumber() == communicationMode) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
       } else {
-        String authenticationMode =
-            System.getProperty("geode.protocol-authentication-mode", "NOOP");
+        try {
+          String authenticationMode =
+              System.getProperty("geode.protocol-authentication-mode", "NOOP");
 
-        return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
-            socketBufferSize, communicationModeStr, communicationMode, acceptor,
-            getOrCreateClientProtocolMessageHandler(cache.getDistributedSystem(),
-                acceptor.getServerName()),
-            securityService, findStreamAuthenticator(authenticationMode));
+          return createGenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
+              socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService,
+              authenticationMode);
+        } catch (ServiceLoadingFailureException ex) {
+          throw new IOException("Could not load protobuf client protocol", ex);
+        }
       }
     } else {
       return new LegacyServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
           communicationModeStr, communicationMode, acceptor, securityService);
     }
+  }
+
+  private ServerConnection createGenericProtocolServerConnection(Socket socket, InternalCache cache,
+      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
+      String communicationModeStr, byte communicationMode, Acceptor acceptor,
+      SecurityService securityService, String authenticationMode) {
+    ClientProtocolService service =
+        getClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
+
+    ClientProtocolProcessor processor = service.createProcessorForCache(cache,
+        findStreamAuthenticator(authenticationMode), securityService);
+
+    return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
+        socketBufferSize, communicationModeStr, communicationMode, acceptor, processor,
+        securityService);
   }
 }

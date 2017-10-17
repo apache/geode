@@ -68,6 +68,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * 
    * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
    */
+  public static final short FINAL_CHECK_PASSED_MESSAGE = -158;
   public static final short NETWORK_PARTITION_MESSAGE = -157;
   public static final short SUSPECT_MEMBERS_MESSAGE = -156;
 

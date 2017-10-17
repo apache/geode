@@ -27,6 +27,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
@@ -69,6 +70,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
 
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
+      String serializerName = indexInfo.getSerializer();
 
       final LuceneIndexFactory indexFactory = service.createIndexFactory();
       if (analyzerName == null || analyzerName.length == 0) {
@@ -84,6 +86,10 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
         }
       }
 
+      if (serializerName != null && !serializerName.equals("")) {
+        indexFactory.setLuceneSerializer(toSerializer(serializerName));
+      }
+
       REGION_PATH.validateName(indexInfo.getRegionPath());
 
       indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
@@ -96,6 +102,17 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     }
+  }
+
+  private LuceneSerializer toSerializer(String serializerName)
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    String trimmedName = StringUtils.trim(serializerName);
+    if (trimmedName == "") {
+      return null;
+    }
+    Class<? extends LuceneSerializer> clazz =
+        CliUtil.forName(serializerName, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
+    return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
   }
 
   private Analyzer toAnalyzer(String className) {

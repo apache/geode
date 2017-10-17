@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EvictionAction;
@@ -73,10 +72,6 @@ public class DescribeDiskStoreFunction extends FunctionAdapter implements Intern
     }
   }
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   public String getId() {
     return getClass().getName();
   }
@@ -85,7 +80,7 @@ public class DescribeDiskStoreFunction extends FunctionAdapter implements Intern
   public void init(final Properties props) {}
 
   public void execute(final FunctionContext context) {
-    Cache cache = getCache();
+    Cache cache = context.getCache();
 
     try {
       if (cache instanceof InternalCache) {

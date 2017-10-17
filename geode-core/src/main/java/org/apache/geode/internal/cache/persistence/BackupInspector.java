@@ -36,12 +36,12 @@ public abstract class BackupInspector {
    * files. These lines will be added to future restore scripts if the operation logs are still
    * relevant to the member.
    */
-  final Map<String, String> oplogLineMap = new HashMap<>();
+  private final Map<String, String> oplogLineMap = new HashMap<>();
 
   /**
    * Contains the unique set of operation log file names contained in the restore script.
    */
-  final Set<String> oplogFileNames = new HashSet<>();
+  private final Set<String> oplogFileNames = new HashSet<>();
 
   /**
    * Root directory for a member's backup.
@@ -84,6 +84,15 @@ public abstract class BackupInspector {
     try (BufferedReader reader = new BufferedReader(new FileReader(restoreFile))) {
       parseRestoreFile(reader);
     }
+  }
+
+  void addOplogLine(String filename, String line) {
+    oplogFileNames.add(filename);
+    oplogLineMap.put(filename, line);
+  }
+
+  String getOplogLineFromFilename(String filename) {
+    return oplogLineMap.get(filename);
   }
 
   /**

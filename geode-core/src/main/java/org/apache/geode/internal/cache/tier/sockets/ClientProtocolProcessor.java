@@ -12,37 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.server;
+
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.geode.security.SecurityManager;
+import org.apache.geode.cache.IncompatibleVersionException;
 
 /**
- * An implementation of {@link Authenticator} that doesn't use its parameters and always returns
- * true.
+ * An interface that does the message handling part of a protocol for a particular connection. It
+ * does not manage the socket.
  */
-public class NoOpAuthenticator implements Authenticator {
-  @Override
-  public void authenticate(InputStream inputStream, OutputStream outputStream,
-      SecurityManager securityManager) throws IOException {
-    // this method needs to do nothing as it is a pass-through implementation
-  }
+public interface ClientProtocolProcessor extends AutoCloseable {
+  /**
+   * @throws IncompatibleVersionException if a client tries to connect with version that is
+   *         incompatible with the current version of the server.
+   */
+  void processMessage(InputStream inputStream, OutputStream outputStream)
+      throws IOException, IncompatibleVersionException;
 
+  /**
+   * Close the pipeline, incrementing stats and releasing any resources.
+   *
+   * This declaration narrows the exception type to be IOException.
+   */
   @Override
-  public boolean isAuthenticated() {
-    return true;
-  }
-
-  @Override
-  public Authorizer getAuthorizer() {
-    return new NoOpAuthorizer();
-  }
-
-  @Override
-  public String implementationID() {
-    return "NOOP";
-  }
+  void close();
 }

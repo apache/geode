@@ -159,6 +159,7 @@ public class CreateRegionCommand implements GfshCommand {
   ) {
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
+    String lastError = null;
 
     try {
       InternalCache cache = getCache();
@@ -252,7 +253,7 @@ public class CreateRegionCommand implements GfshCommand {
               CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
               regionFunctionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " "
               + CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION,
-                  useAttributesFrom));
+                  regionPath));
         }
       }
 
@@ -295,6 +296,8 @@ public class CreateRegionCommand implements GfshCommand {
 
         if (success) {
           xmlEntity.set(regionCreateResult.getXmlEntity());
+        } else {
+          lastError = regionCreateResult.getMessage();
         }
       }
       result = ResultBuilder.buildResult(tabularResultData);
@@ -304,6 +307,11 @@ public class CreateRegionCommand implements GfshCommand {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
     }
+
+    if (lastError != null) {
+      result = ResultBuilder.createUserErrorResult(lastError);
+    }
+
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
@@ -550,22 +558,6 @@ public class CreateRegionCommand implements GfshCommand {
         throw new IllegalArgumentException(
             CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR,
                 new Object[] {regionFunctionArgs.getCompressor()}));
-      }
-    }
-
-    if (regionFunctionArgs.hasPartitionAttributes()) {
-      if (regionFunctionArgs.isPartitionResolverSet()) {
-        String partitionResolverClassName = regionFunctionArgs.getPartitionResolver();
-        try {
-          Class<PartitionResolver> resolverClass = (Class<PartitionResolver>) ClassPathLoader
-              .getLatest().forName(partitionResolverClassName);
-          PartitionResolver partitionResolver = resolverClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-          throw new IllegalArgumentException(
-              CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-                  new Object[] {regionFunctionArgs.getPartitionResolver()}),
-              e);
-        }
       }
     }
   }

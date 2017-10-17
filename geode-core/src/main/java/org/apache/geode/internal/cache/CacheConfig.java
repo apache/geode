@@ -31,14 +31,14 @@ import java.util.List;
  * @since GemFire 6.6
  */
 public class CacheConfig {
-  public static boolean DEFAULT_PDX_READ_SERIALIZED = false;
-  public static PdxSerializer DEFAULT_PDX_SERIALIZER = null;
-  public static String DEFAULT_PDX_DISK_STORE = null;
-  public static boolean DEFAULT_PDX_PERSISTENT = false;
-  public static boolean DEFAULT_PDX_IGNORE_UNREAD_FIELDS = false;
+  public static final boolean DEFAULT_PDX_READ_SERIALIZED = false;
+  public static final PdxSerializer DEFAULT_PDX_SERIALIZER = null;
+  public static final String DEFAULT_PDX_DISK_STORE = null;
+  public static final boolean DEFAULT_PDX_PERSISTENT = false;
+  public static final boolean DEFAULT_PDX_IGNORE_UNREAD_FIELDS = false;
 
-  private static SecurityManager securityManager = null;
-  private static PostProcessor postProcessor = null;
+  private SecurityManager securityManager = null;
+  private PostProcessor postProcessor = null;
 
   public boolean pdxReadSerialized = DEFAULT_PDX_READ_SERIALIZED;
 
@@ -98,7 +98,7 @@ public class CacheConfig {
   }
 
   public void setSecurityManager(SecurityManager securityManager) {
-    CacheConfig.securityManager = securityManager;
+    this.securityManager = securityManager;
   }
 
   public void setPdxSerializer(PdxSerializer pdxSerializer) {
@@ -111,7 +111,7 @@ public class CacheConfig {
   }
 
   public void setPostProcessor(PostProcessor postProcessor) {
-    CacheConfig.postProcessor = postProcessor;
+    this.postProcessor = postProcessor;
   }
 
   public String getPdxDiskStore() {

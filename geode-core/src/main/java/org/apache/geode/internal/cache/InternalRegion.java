@@ -12,10 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.server;
+package org.apache.geode.internal.cache;
 
-import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.cache.Region;
 
-public interface Authorizer {
-  boolean authorize(ResourcePermission permissionRequested);
+/**
+ * Interface to be used instead of type-casting to LocalRegion.
+ *
+ * <p>
+ * The following interfaces are implemented by LocalRegion and may need to be extended by
+ * InternalRegion to completely allow code to move to using InternalRegion:
+ * <ul>
+ * <li>RegionAttributes
+ * <li>AttributesMutator
+ * <li>CacheStatistics
+ * <li>DataSerializableFixedID
+ * <li>RegionEntryContext
+ * <li>Extensible
+ * </pre>
+ * </ul>
+ */
+public interface InternalRegion extends Region, HasCachePerfStats {
+
+  CachePerfStats getCachePerfStats();
 }

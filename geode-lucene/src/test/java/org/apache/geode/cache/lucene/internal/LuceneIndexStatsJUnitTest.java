@@ -89,6 +89,20 @@ public class LuceneIndexStatsJUnitTest {
   }
 
   @Test
+  public void shouldIncrementFailedEntriesStats() {
+
+    stats.startUpdate();
+    verifyIncInt("updatesInProgress", 1);
+    stats.incFailedEntries();
+    stats.endUpdate(5);
+    verifyIncInt("updatesInProgress", -1);
+    verifyIncInt("updates", 1);
+    verifyIncInt("failedEntries", 1);
+    // Because the initial stat time is 0 and the final time is 5, the delta is -5
+    verifyIncLong("updateTime", -5);
+  }
+
+  @Test
   public void shouldIncrementCommitStats() {
 
     stats.startCommit();

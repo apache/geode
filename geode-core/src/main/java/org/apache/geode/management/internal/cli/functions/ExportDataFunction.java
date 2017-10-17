@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 import java.io.File;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -52,7 +51,7 @@ public class ExportDataFunction extends FunctionAdapter implements InternalEntit
     final boolean parallel = Boolean.parseBoolean(args[2]);
 
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       Region<?, ?> region = cache.getRegion(regionName);
       String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
       if (region != null) {

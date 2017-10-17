@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -12,16 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
+package org.apache.geode.cache.lucene.test;
 
-public class NoOpStatistics implements ClientProtocolStatistics {
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
+
+import java.util.Properties;
+
+/**
+ * A Test LuceneSerializer that takes properties during construction (init)
+ */
+public class LuceneDeclarable2TestSerializer extends LuceneTestSerializer implements Declarable2 {
+
   @Override
-  public void clientConnected() {
-
-  }
-
-  @Override
-  public void clientDisconnected() {
-
+  public Properties getConfig() {
+    return super.getProperties();
   }
 }

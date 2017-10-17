@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ public class CommandResultTest {
   public void resultWithOneLineHasOneLine() {
     CommandResult commandResult = new CommandResult(new InfoResultData("oneLine"));
 
-    assertThat(commandResult.nextLine()).isEqualTo("oneLine\n");
+    assertThat(commandResult.nextLine()).isEqualTo("oneLine" + LINE_SEPARATOR);
     assertThat(commandResult.hasNextLine()).isFalse();
   }
 
@@ -50,7 +51,8 @@ public class CommandResultTest {
     resultData.addLine("lineTwo");
     CommandResult commandResult = new CommandResult(resultData);
 
-    assertThat(commandResult.nextLine()).isEqualTo("lineOne\nlineTwo\n");
+    assertThat(commandResult.nextLine())
+        .isEqualTo("lineOne" + LINE_SEPARATOR + "lineTwo" + LINE_SEPARATOR);
     assertThat(commandResult.hasNextLine()).isFalse();
   }
 
@@ -67,7 +69,7 @@ public class CommandResultTest {
     CommandResult commandResult = new CommandResult(fileToDownload);
 
     assertThat(commandResult.hasFileToDownload()).isTrue();
-    assertThat(commandResult.nextLine()).isEqualTo(fileToDownload.toString() + '\n');
+    assertThat(commandResult.nextLine()).isEqualTo(fileToDownload.toString() + LINE_SEPARATOR);
     assertThat(commandResult.getFileToDownload()).isEqualTo(fileToDownload);
   }
 

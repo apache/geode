@@ -29,14 +29,13 @@ When a component initiates a connection to the distributed system,
 the `SecurityManager.authenticate` method is invoked.
 The component provides its credentials in the form of properties
 as a parameter to the `authenticate` method.
-The credential is presumed to be the two properties:
+The credential is presumed to be the two properties
 `security-username` and `security-password`.
 The `authenticate` method is expected to either return an object
 representing a principal or throw an `AuthenticationFailedException`.
 
-A well-designed `authenticate` method will have or will have a way of
-obtaining a set of known user and password pairs that can be compared
-to the credential presented.
+A well-designed `authenticate` method will have a set of known user and password pairs that can be
+compared to the credential presented or will have a way of obtaining those pairs.
 
 ## How a Server Sets Its Credential
 

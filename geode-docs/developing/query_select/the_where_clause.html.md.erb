@@ -235,6 +235,30 @@ If more than one method can be invoked, the query processor chooses the method w
 
 The query processor uses the runtime types of the parameters and the receiver to determine the proper method to invoke. Because runtime types are used, an argument with a null value has no typing information, and so can be matched with any object type parameter. When a null argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an `AmbiguousNameException`.
 
+**Methods calls with the `SecurityManager` enabled**
+
+When the `SecurityManager` is enabled,
+<%=vars.product_name%> throws a `NotAuthorizedException` when any
+method not on this list of whitelisted methods is invoked:
+
+- On a `Map`, `Collection`, or `Region` object: `keySet`, `entrySet`, `values`, `containsKey` or `get`
+- On a `Region.Entry` object: `getKey` or `getValue`
+- On a `Date` or `Timestamp` object: `after`, `before`, `getNanos`, or `getTime`
+- On a `String` object: any method
+- On any `Number` object: `intValue`, `longValue`, `shortValue`, etc.
+- On any `Boolean` object: `booleanValue`
+- On any object: `equals`, `compareTo`, or `toString`
+
+To disable the authorization check,
+start all servers with the added system property
+`gemfire.QueryService.allowUntrustedMethodInvocation`.
+For example:
+
+```
+gfsh>start server --name=Server1 \
+     --J=-Dgemfire.QueryService.allowUntrustedMethodInvocation=true
+```
+
 ## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
 
 To write a query based on the value of an Enum object field, you must use the `toString` method of the enum object or use a query bind parameter.
