@@ -71,10 +71,6 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
     statistics.messageReceived(message.getSerializedSize());
 
     ClientProtocol.Request request = message.getRequest();
-    if (message.getMessageTypeCase()
-        .getNumber() == ClientProtocol.Request.SIMPLEAUTHENTICATIONREQUEST_FIELD_NUMBER) {
-      // auith
-    }
     ClientProtocol.Response response = protobufOpsProcessor.process(request, executionContext);
     ClientProtocol.MessageHeader responseHeader =
         ProtobufUtilities.createMessageHeaderForRequest(message);

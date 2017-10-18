@@ -26,11 +26,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.distributed.internal.SecurityConfig;
+import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -203,19 +202,15 @@ public class AuthenticationIntegrationTest {
     cache = createCacheWithSecurityManagerTakingExpectedCreds();
     setupCacheServerAndSocket();
 
-    assertTrue(((InternalCache) cache).getSecurityService().isIntegratedSecurity());
-    assertTrue(((InternalCache) cache).getSecurityService().isClientSecurityRequired());
-    assertTrue(((InternalCache) cache).getSecurityService().isPeerSecurityRequired());
-
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.SimpleAuthenticationRequest
-                .newBuilder().putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.SimpleAuthenticationResponse authenticationResponse =
+    AuthenticationAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertTrue(authenticationResponse.getAuthenticated());
 
@@ -236,13 +231,13 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setSimpleAuthenticationRequest(
-            AuthenticationAPI.SimpleAuthenticationRequest.newBuilder()))
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.SimpleAuthenticationResponse authenticationResponse =
+    AuthenticationAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
   }
@@ -254,14 +249,14 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.SimpleAuthenticationRequest
-                .newBuilder().putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, "wrong password")))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.SimpleAuthenticationResponse authenticationResponse =
+    AuthenticationAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
   }
@@ -283,32 +278,35 @@ public class AuthenticationIntegrationTest {
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setSimpleAuthenticationRequest(
-            AuthenticationAPI.SimpleAuthenticationRequest.newBuilder()))
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.SimpleAuthenticationResponse authenticationResponse =
+    AuthenticationAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
   }
 
   @Test
-  public void peerAuthenticatorSet() throws IOException {
+  public void peerAuthenticatorSet() throws IOException, InvalidProtocolMessageException {
     createLegacyAuthCache("security-peer-authenticator");
     setupCacheServerAndSocket();
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setSimpleAuthenticationRequest(
-            AuthenticationAPI.SimpleAuthenticationRequest.newBuilder()))
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.SimpleAuthenticationResponse authenticationResponse =
-        parseSimpleAuthenticationResponseFromInput();
-    assertFalse(authenticationResponse.getAuthenticated());
+
+    ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
+    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
+        errorResponse.getResponse().getResponseAPICase());
+    assertEquals(AUTHENTICATION_FAILED.codeValue,
+        errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
   }
 
   private void createLegacyAuthCache(String authenticationProperty) {
@@ -322,11 +320,12 @@ public class AuthenticationIntegrationTest {
     // tests.
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.setSecurityManager(null);
 
     cache = cacheFactory.create();
   }
 
-  private AuthenticationAPI.SimpleAuthenticationResponse parseSimpleAuthenticationResponseFromInput()
+  private AuthenticationAPI.AuthenticationResponse parseSimpleAuthenticationResponseFromInput()
       throws IOException {
     ClientProtocol.Message authenticationResponseMessage =
         ClientProtocol.Message.parseDelimitedFrom(inputStream);

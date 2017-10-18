@@ -17,5 +17,5 @@ package org.apache.geode.internal.protocol.protobuf.security;
 import org.apache.geode.security.ResourcePermission;
 
 public interface Authorizer {
-  boolean authorize(Object userCredBlob, ResourcePermission permissionRequested);
+  boolean authorize(Object authenticatedSubject, ResourcePermission permissionRequested);
 }

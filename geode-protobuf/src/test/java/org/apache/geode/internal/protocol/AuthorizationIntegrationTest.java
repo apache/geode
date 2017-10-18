@@ -28,7 +28,6 @@ import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.distributed.internal.SecurityConfig;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -117,8 +116,8 @@ public class AuthorizationIntegrationTest {
     when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(false);
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.SimpleAuthenticationRequest
-                .newBuilder().putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
@@ -128,7 +127,7 @@ public class AuthorizationIntegrationTest {
         responseMessage.getMessageTypeCase().getNumber());
     assertEquals(ClientProtocol.Response.SIMPLEAUTHENTICATIONRESPONSE_FIELD_NUMBER,
         responseMessage.getResponse().getResponseAPICase().getNumber());
-    AuthenticationAPI.SimpleAuthenticationResponse authenticationResponse =
+    AuthenticationAPI.AuthenticationResponse authenticationResponse =
         responseMessage.getResponse().getSimpleAuthenticationResponse();
     assertTrue(authenticationResponse.getAuthenticated());
   }

@@ -52,8 +52,8 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
   public void setUp() throws IOException {
     ClientProtocol.Message basicAuthenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.SimpleAuthenticationRequest
-                .newBuilder().putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
 
@@ -78,10 +78,10 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
     protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityService);
 
-    AuthenticationAPI.SimpleAuthenticationResponse simpleAuthenticationResponse =
+    AuthenticationAPI.AuthenticationResponse authenticationResponse =
         getSimpleAuthenticationResponse(byteArrayOutputStream);
 
-    assertTrue(simpleAuthenticationResponse.getAuthenticated());
+    assertTrue(authenticationResponse.getAuthenticated());
   }
 
   @Test(expected = AuthenticationFailedException.class)
@@ -102,13 +102,13 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
     protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityService);
 
-    AuthenticationAPI.SimpleAuthenticationResponse simpleAuthenticationResponse =
+    AuthenticationAPI.AuthenticationResponse authenticationResponse =
         getSimpleAuthenticationResponse(byteArrayOutputStream);
 
-    assertTrue(simpleAuthenticationResponse.getAuthenticated());
+    assertTrue(authenticationResponse.getAuthenticated());
   }
 
-  private AuthenticationAPI.SimpleAuthenticationResponse getSimpleAuthenticationResponse(
+  private AuthenticationAPI.AuthenticationResponse getSimpleAuthenticationResponse(
       ByteArrayOutputStream outputStream) throws IOException {
     ByteArrayInputStream responseStream = new ByteArrayInputStream(outputStream.toByteArray());
     return ClientProtocol.Message.parseDelimitedFrom(responseStream).getResponse()

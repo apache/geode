@@ -30,7 +30,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.Failure;
-import org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Result;
@@ -68,7 +68,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processValidKeyRemovesTheEntryAndReturnSuccess() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, false).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, ProtobufTestUtilities.getNoAuthExecutionContext(cacheStub));
+        removeRequest, ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     verify(regionStub).remove(TEST_KEY);
@@ -78,7 +78,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processReturnsUnsucessfulResponseForInvalidRegion() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(true, false).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, ProtobufTestUtilities.getNoAuthExecutionContext(cacheStub));
+        removeRequest, ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
@@ -89,7 +89,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processReturnsSuccessWhenKeyIsNotFound() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, true).getRemoveRequest();
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, ProtobufTestUtilities.getNoAuthExecutionContext(cacheStub));
+        removeRequest, ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
   }
@@ -109,7 +109,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     RegionAPI.RemoveRequest removeRequest =
         ProtobufRequestUtilities.createRemoveRequest(TEST_REGION, encodedKey).getRemoveRequest();;
     Result<RegionAPI.RemoveResponse> result = operationHandler.process(serializationServiceStub,
-        removeRequest, ProtobufTestUtilities.getNoAuthExecutionContext(cacheStub));
+        removeRequest, ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
     assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,

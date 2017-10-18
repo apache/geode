@@ -24,20 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class ProtobufTestUtilities {
-  public static ByteArrayInputStream messageToByteArrayInputStream(GeneratedMessageV3 message)
-      throws IOException {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    message.writeDelimitedTo(byteArrayOutputStream);
-    return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-  }
-
-  public static ClientProtocol.Request createProtobufRequestWithGetRegionNamesRequest(
-      RegionAPI.GetRegionNamesRequest getRegionNamesRequest) {
-    return ClientProtocol.Request.newBuilder().setGetRegionNamesRequest(getRegionNamesRequest)
-        .build();
-  }
-
+public class ProtobufTestExecutionContext {
   public static MessageExecutionContext getNoAuthExecutionContext(Cache cache) {
     return new MessageExecutionContext(cache, new NoOpAuthorizer(), new Object(),
         new NoOpStatistics());

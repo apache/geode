@@ -21,7 +21,7 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class NoOpAuthorizer implements Authorizer {
   @Override
-  public boolean authorize(Object subject, ResourcePermission permissionRequested) {
+  public boolean authorize(Object authenticatedSubject, ResourcePermission permissionRequested) {
     return true;
   }
 }

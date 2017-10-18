@@ -52,7 +52,8 @@ public class ProtobufOpsProcessor {
     ClientProtocol.Response.Builder builder;
     Result result;
     try {
-      if (context.authorize(operationContext.getAccessPermissionRequired())) {
+      if (context.getAuthorizer().authorize(context.getSubject(),
+          operationContext.getAccessPermissionRequired())) {
         result = operationContext.getOperationHandler().process(serializationService,
             operationContext.getFromRequest().apply(request), context);
       } else {

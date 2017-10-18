@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.ProtobufTestUtilities.getNoAuthExecutionContext;
+import static org.apache.geode.internal.protocol.protobuf.ProtobufTestExecutionContext.getNoAuthExecutionContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;

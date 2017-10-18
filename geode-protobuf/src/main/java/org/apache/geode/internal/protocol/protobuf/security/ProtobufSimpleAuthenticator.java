@@ -21,10 +21,8 @@ import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,7 +32,7 @@ import org.apache.shiro.subject.Subject;
 
 public class ProtobufSimpleAuthenticator implements Authenticator {
 
-  public static final String SHOULD_HAVE_AUTHED =
+  private static final String SHOULD_HAVE_AUTHED =
       "Got non-auth request while expecting authentication request";
 
   @Override
@@ -47,7 +45,7 @@ public class ProtobufSimpleAuthenticator implements Authenticator {
       failAuth(outputStream);
     }
 
-    AuthenticationAPI.SimpleAuthenticationRequest authenticationRequest =
+    AuthenticationAPI.AuthenticationRequest authenticationRequest =
         message.getRequest().getSimpleAuthenticationRequest();
     if (authenticationRequest == null) {
       failAuth(outputStream);
@@ -73,7 +71,7 @@ public class ProtobufSimpleAuthenticator implements Authenticator {
       throws IOException {
     ClientProtocol.Message.newBuilder()
         .setResponse(ClientProtocol.Response.newBuilder().setSimpleAuthenticationResponse(
-            AuthenticationAPI.SimpleAuthenticationResponse.newBuilder().setAuthenticated(success)))
+            AuthenticationAPI.AuthenticationResponse.newBuilder().setAuthenticated(success)))
         .build().writeDelimitedTo(outputStream);
   }
 

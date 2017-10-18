@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.internal.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -35,8 +38,13 @@ public class InvalidConfigAuthenticator implements Authenticator {
     logger.warn(
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
 
-    AuthenticationAPI.SimpleAuthenticationResponse.newBuilder().setAuthenticated(false).build()
-        .writeDelimitedTo(outputStream);
+    ClientProtocol.Message.newBuilder()
+        .setResponse(ClientProtocol.Response.newBuilder()
+            .setErrorResponse(ClientProtocol.ErrorResponse.newBuilder()
+                .setError(BasicTypes.Error.newBuilder()
+                    .setErrorCode(ProtocolErrorCode.AUTHENTICATION_FAILED.codeValue).setMessage(
+                        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication."))))
+        .build().writeDelimitedTo(outputStream);
 
     throw new IOException("Protobuf clients not supported with legacy security.");
   }

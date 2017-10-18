@@ -16,10 +16,10 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf;
 
-message SimpleAuthenticationRequest {
+message AuthenticationRequest {
     map<string,string> credentials = 1;
 }
 
-message SimpleAuthenticationResponse {
+message AuthenticationResponse {
     bool authenticated = 1;
 }

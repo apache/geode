@@ -79,8 +79,18 @@ public class MessageExecutionContext {
         "Operations on the server should not to try to operate on a locator");
   }
 
-  public boolean authorize(ResourcePermission permissionRequested) {
-    return authorizer.authorize(authenticatedSubject, permissionRequested);
+  /**
+   * Return the authorizer associated with this execution
+   */
+  public Authorizer getAuthorizer() {
+    return authorizer;
+  }
+
+  /**
+   * Returns the authentication/authorization subject associated with this execution
+   */
+  public Object getSubject() {
+    return authenticatedSubject;
   }
 
 
