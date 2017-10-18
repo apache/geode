@@ -15,11 +15,7 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
@@ -33,32 +29,17 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 // key int: KEY_INT
 // key long: KEY_LONG
 // key uuid: KEY_UUID
-// key string1: 1
+// key string1: KEY_STRING1
 // key string2: KEY_STRING2
-
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinRegionEntryHeapStringKey1 extends VMThinRegionEntryHeap {
-  public VMThinRegionEntryHeapStringKey1(RegionEntryContext context, String key,
-
-
-
-      Object value
-
-      , boolean byteEncode
-
-  ) {
-    super(context,
-
-
-
-        value
-
-    );
+  public VMThinRegionEntryHeapStringKey1(RegionEntryContext context, String key, Object value,
+      boolean byteEncode) {
+    super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
     long tmpBits1 = 0L;
     if (byteEncode) {
@@ -77,11 +58,9 @@ public class VMThinRegionEntryHeapStringKey1 extends VMThinRegionEntryHeap {
     }
     tmpBits1 |= key.length();
     this.bits1 = tmpBits1;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -89,7 +68,6 @@ public class VMThinRegionEntryHeapStringKey1 extends VMThinRegionEntryHeap {
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMThinRegionEntryHeapStringKey1> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMThinRegionEntryHeapStringKey1.class, "lastModified");
-
   private volatile Object value;
 
   @Override
@@ -135,12 +113,8 @@ public class VMThinRegionEntryHeapStringKey1 extends VMThinRegionEntryHeap {
     this.next = n;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   private final long bits1;
 
   private int getKeyLength() {
@@ -173,7 +147,6 @@ public class VMThinRegionEntryHeapStringKey1 extends VMThinRegionEntryHeap {
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public boolean isKeyEqual(Object k) {
     if (k instanceof String) {
@@ -203,8 +176,5 @@ public class VMThinRegionEntryHeapStringKey1 extends VMThinRegionEntryHeap {
     }
     return false;
   }
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-

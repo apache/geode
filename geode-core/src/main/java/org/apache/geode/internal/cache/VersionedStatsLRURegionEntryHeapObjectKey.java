@@ -15,74 +15,45 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.cache.EntryEvent;
-
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
-
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
 // disk: DISK
-// lru: 1
-// stats: 1
-// versioned: 1
+// lru: LRU
+// stats: STATS
+// versioned: VERSIONED
 // offheap: OFFHEAP
 // One of the following key macros must be defined:
-// key object: 1
+// key object: KEY_OBJECT
 // key int: KEY_INT
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
 // key string2: KEY_STRING2
-
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRURegionEntryHeap {
   public VersionedStatsLRURegionEntryHeapObjectKey(RegionEntryContext context, Object key,
-
-
-
-      Object value
-
-
-
-  ) {
-    super(context,
-
-
-
-        value
-
-    );
+      Object value) {
+    super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
     this.key = key;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -91,7 +62,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   private static final AtomicLongFieldUpdater<VersionedStatsLRURegionEntryHeapObjectKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VersionedStatsLRURegionEntryHeapObjectKey.class,
           "lastModified");
-
   private volatile Object value;
 
   @Override
@@ -137,18 +107,11 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
     this.next = n;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // lru code
   @Override
   public void setDelayedDiskId(LocalRegion r) {
-
-
-
     // nothing needed for LRUs with no disk
-
   }
 
   public synchronized int updateEntrySize(EnableLRU capacityController) {
@@ -158,7 +121,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public synchronized int updateEntrySize(EnableLRU capacityController, Object value) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize(getKeyForSizing(), value);
@@ -193,7 +155,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   private LRUClockNode nextLRU;
   private LRUClockNode prevLRU;
   private int size;
@@ -223,21 +184,13 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public Object getKeyForSizing() {
-
     // default implementation.
     return getKey();
-
-
-
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // stats code
   @Override
   public void updateStatsForGet(boolean hit, long time) {
@@ -260,7 +213,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   private volatile long lastAccessed;
   private volatile int hitCount;
   private volatile int missCount;
-
   private static final AtomicIntegerFieldUpdater<VersionedStatsLRURegionEntryHeapObjectKey> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VersionedStatsLRURegionEntryHeapObjectKey.class,
           "hitCount");
@@ -302,7 +254,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public void txDidDestroy(long currTime) {
     setLastModified(currTime);
@@ -316,10 +267,7 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
     return true;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // versioned code
   private VersionSource memberID;
   private short entryVersionLowBytes;
@@ -335,7 +283,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
-
 
   public long getVersionTimeStamp() {
     return getLastModified();
@@ -354,7 +301,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public void setVersions(VersionTag tag) {
     this.memberID = tag.getMemberID();
     int eVersion = tag.getEntryVersion();
@@ -384,7 +330,6 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberID);
     tag.setEntryVersion(getEntryVersion());
@@ -417,19 +362,13 @@ public class VersionedStatsLRURegionEntryHeapObjectKey extends VersionedStatsLRU
     return this.regionVersionLowBytes;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   private final Object key;
 
   @Override
   public Object getKey() {
     return this.key;
   }
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-
