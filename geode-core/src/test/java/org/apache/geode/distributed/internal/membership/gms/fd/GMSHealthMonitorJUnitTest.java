@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.fd;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
@@ -30,6 +31,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMe
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
+import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -528,6 +530,21 @@ public class GMSHealthMonitorJUnitTest {
       useGMSHealthMonitorTestClass = false;
     }
   }
+
+  @Test
+  public void testFinalCheckPassedMessageCanBeSerializedAndDeserialized()
+      throws IOException, ClassNotFoundException {
+    HeapDataOutputStream heapDataOutputStream = new HeapDataOutputStream(500, Version.CURRENT);
+    FinalCheckPassedMessage message =
+        new FinalCheckPassedMessage(mockMembers.get(0), mockMembers.get(1));
+    DataSerializer.writeObject(message, heapDataOutputStream);
+    ByteArrayInputStream byteArrayInputStream =
+        new ByteArrayInputStream(heapDataOutputStream.toByteArray());
+    DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+    message = DataSerializer.readObject(dataInputStream);
+    assertEquals(mockMembers.get(1), message.getSuspect());
+  }
+
 
 
   @Test

@@ -96,6 +96,7 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
@@ -475,6 +476,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private static void registerDSFIDTypes() {
+    registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
     registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
     registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
     registerDSFID(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);

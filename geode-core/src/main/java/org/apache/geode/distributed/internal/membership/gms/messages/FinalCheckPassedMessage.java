@@ -28,6 +28,8 @@ public class FinalCheckPassedMessage extends HighPriorityDistributionMessage {
 
   private InternalDistributedMember suspect;
 
+  public FinalCheckPassedMessage() {}
+
   public FinalCheckPassedMessage(InternalDistributedMember recipient,
       InternalDistributedMember suspect) {
     super();
