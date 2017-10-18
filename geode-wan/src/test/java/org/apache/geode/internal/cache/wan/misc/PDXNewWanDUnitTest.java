@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -604,7 +607,6 @@ public class PDXNewWanDUnitTest extends WANTestBase {
   }
 
 
-  @Category(FlakyTest.class) // GEODE-1319
   @Test
   public void testWANPDX_RR_SerialSenderWithFilter() {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
@@ -713,9 +715,13 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
 
   public static void verifyFilterInvocation(int invocation) {
-    assertEquals(((PDXGatewayEventFilter) eventFilter).beforeEnqueueInvoked, invocation);
-    assertEquals(((PDXGatewayEventFilter) eventFilter).beforeTransmitInvoked, invocation);
-    assertEquals(((PDXGatewayEventFilter) eventFilter).afterAckInvoked, invocation);
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+        () -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeEnqueueInvoked, invocation));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeTransmitInvoked,
+            invocation));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+        () -> assertEquals(((PDXGatewayEventFilter) eventFilter).afterAckInvoked, invocation));
   }
 
 
