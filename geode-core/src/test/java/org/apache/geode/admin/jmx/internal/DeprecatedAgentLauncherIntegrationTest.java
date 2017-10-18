@@ -239,13 +239,13 @@ public class DeprecatedAgentLauncherIntegrationTest {
 
     assertThat(expectedStatusFile).exists();
 
-    final AgentLauncher.Status actualStatus = launcher.readStatus(temporaryFolder.getRoot(), expectedStatusFile.getName());
+    final AgentLauncher.Status actualStatus = launcher.readStatus(temporaryFolder.getRoot());
 
     assertThat(actualStatus).isNotNull();
     assertAgentLauncherStatusEquals(expectedStatus, actualStatus);
     assertThat(expectedStatusFile).exists();
 
-    launcher.deleteStatus(temporaryFolder.getRoot(), expectedStatusFile.getName());
+    launcher.deleteStatus(temporaryFolder.getRoot());
 
     assertThat(expectedStatusFile).doesNotExist();
   }
