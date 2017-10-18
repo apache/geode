@@ -273,7 +273,7 @@ public class AuthenticationIntegrationTest {
   }
 
   @Test
-  public void someAuthenticatorSet() throws IOException {
+  public void legacyClientAuthenticatorSet() throws Exception {
     createLegacyAuthCache("security-client-authenticator");
     setupCacheServerAndSocket();
 
@@ -284,13 +284,15 @@ public class AuthenticationIntegrationTest {
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.AuthenticationResponse authenticationResponse =
-        parseSimpleAuthenticationResponseFromInput();
-    assertFalse(authenticationResponse.getAuthenticated());
+    ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
+    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
+        errorResponse.getResponse().getResponseAPICase());
+    assertEquals(AUTHENTICATION_FAILED.codeValue,
+        errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
   }
 
   @Test
-  public void peerAuthenticatorSet() throws IOException, InvalidProtocolMessageException {
+  public void legacyPeerAuthenticatorSet() throws Exception {
     createLegacyAuthCache("security-peer-authenticator");
     setupCacheServerAndSocket();
 
@@ -300,7 +302,6 @@ public class AuthenticationIntegrationTest {
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
-
 
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
