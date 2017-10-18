@@ -70,8 +70,9 @@ public class DeprecatedAgentLauncherIntegrationTest {
 
   @Test
   public void testGetStartOptions() throws Exception {
-    final String[] commandLineArguments = {"start", "appendto-log-file=true", "log-level=warn",
-        "mcast-port=0", "-dir=" + temporaryFolder.getRoot().getAbsolutePath(), "-J-Xms256M", "-J-Xmx1024M"};
+    final String[] commandLineArguments =
+        {"start", "appendto-log-file=true", "log-level=warn", "mcast-port=0",
+            "-dir=" + temporaryFolder.getRoot().getAbsolutePath(), "-J-Xms256M", "-J-Xmx1024M"};
 
     final AgentLauncher launcher = new AgentLauncher("Agent");
 
@@ -96,8 +97,8 @@ public class DeprecatedAgentLauncherIntegrationTest {
     assertThat(vmArgs).contains("-Xmx1024M");
 
     // now assert the System property 'gfAgentPropertyFile'
-    assertThat(System.getProperty(AGENT_PROPSFILE_PROPERTY_NAME)).isEqualTo(
-        new File(temporaryFolder.getRoot(), DEFAULT_PROPERTY_FILE).getPath());
+    assertThat(System.getProperty(AGENT_PROPSFILE_PROPERTY_NAME))
+        .isEqualTo(new File(temporaryFolder.getRoot(), DEFAULT_PROPERTY_FILE).getPath());
   }
 
   /**
@@ -108,9 +109,9 @@ public class DeprecatedAgentLauncherIntegrationTest {
    */
   @Test
   public void testGetStartOptionsWithPropertyFileOption() throws Exception {
-    final String[] commandLineArguments =
-        {"start", "-dir=" + temporaryFolder.getRoot().getAbsolutePath(), "-J-Xms512M", "log-level=warn",
-            "mcast-port=0", "property-file=/path/to/custom/property/file.properties",};
+    final String[] commandLineArguments = {"start",
+        "-dir=" + temporaryFolder.getRoot().getAbsolutePath(), "-J-Xms512M", "log-level=warn",
+        "mcast-port=0", "property-file=/path/to/custom/property/file.properties",};
 
     final AgentLauncher launcher = new AgentLauncher("Agent");
 
@@ -142,7 +143,8 @@ public class DeprecatedAgentLauncherIntegrationTest {
 
   @Test
   public void testGetStopOptions() throws Exception {
-    final String[] commandLineArguments = {"stop", "-dir=" + temporaryFolder.getRoot().getAbsolutePath()};
+    final String[] commandLineArguments =
+        {"stop", "-dir=" + temporaryFolder.getRoot().getAbsolutePath()};
 
     final AgentLauncher launcher = new AgentLauncher("Agent");
 

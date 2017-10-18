@@ -143,7 +143,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     disconnectAllFromDS();
 
     invokeFailSafe();
-    
+
     unexportObject(this.status);
     unexportObject(this.registry);
     destroy(this.processWrapper);
