@@ -125,7 +125,7 @@ public class DestroyRegionCommandDUnitTest {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
       factory.create("Customer");
-      factory.create("Customer-2");
+      factory.create("Customer_2");
       factory.create("Customer_3");
     }, server1, server2);
 
@@ -134,20 +134,22 @@ public class DestroyRegionCommandDUnitTest {
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       factory.setScope(Scope.LOCAL);
       factory.create("Customer");
-      factory.create("Customer-2");
+      factory.create("Customer_2");
       factory.create("Customer_3");
     });
 
     locator.invoke(() -> waitForRegionMBeanCreation("/Customer", 3));
+    locator.invoke(() -> waitForRegionMBeanCreation("/Customer_2", 3));
+    locator.invoke(() -> waitForRegionMBeanCreation("/Customer_3", 3));
 
     gfsh.executeAndVerifyCommand("destroy region --name=Customer", "destroyed successfully");
-    gfsh.executeAndVerifyCommand("destroy region --name=Customer-2", "destroyed successfully");
+    gfsh.executeAndVerifyCommand("destroy region --name=Customer_2", "destroyed successfully");
     gfsh.executeAndVerifyCommand("destroy region --name=Customer_3", "destroyed successfully");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
       assertThat(cache.getRegion("Customer")).isNull();
-      assertThat(cache.getRegion("Customer-2")).isNull();
+      assertThat(cache.getRegion("Customer_2")).isNull();
       assertThat(cache.getRegion("Customer_3")).isNull();
     }, server1, server2, server3);
   }
@@ -199,7 +201,7 @@ public class DestroyRegionCommandDUnitTest {
         String queryExp =
             MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN, regionPath, "*");
         ObjectName queryExpON = new ObjectName(queryExp);
-        return mbeanServer.queryNames(null, queryExpON).size() == mbeanCount;
+        return mbeanServer.queryNames(queryExpON, null).size() == mbeanCount;
       } catch (MalformedObjectNameException mone) {
         throw new RuntimeException(mone);
       }
