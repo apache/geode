@@ -30,20 +30,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.protocol.protobuf.security.ProtobufSimpleAuthenticator;
+import org.apache.geode.internal.protocol.protobuf.security.ProtobufShiroAuthenticator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ProtobufSimpleAuthenticatorJUnitTest {
+public class ProtobufShiroAuthenticatorJUnitTest {
   private static final String TEST_USERNAME = "user1";
   private static final String TEST_PASSWORD = "hunter2";
   private ByteArrayInputStream byteArrayInputStream; // initialized with an incoming request in
                                                      // setUp.
   private ByteArrayOutputStream byteArrayOutputStream;
-  private ProtobufSimpleAuthenticator protobufSimpleAuthenticator;
+  private ProtobufShiroAuthenticator protobufShiroAuthenticator;
   private SecurityService mockSecurityService;
   private Subject mockSecuritySubject;
   private Properties expectedAuthProperties;
@@ -70,12 +70,12 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
     mockSecurityService = mock(SecurityService.class);
     when(mockSecurityService.login(expectedAuthProperties)).thenReturn(mockSecuritySubject);
 
-    protobufSimpleAuthenticator = new ProtobufSimpleAuthenticator();
+    protobufShiroAuthenticator = new ProtobufShiroAuthenticator();
   }
 
   @Test
   public void successfulAuthentication() throws IOException {
-    protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
+    protobufShiroAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityService);
 
     AuthenticationAPI.AuthenticationResponse authenticationResponse =
@@ -89,7 +89,7 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
     when(mockSecurityService.login(expectedAuthProperties))
         .thenThrow(new AuthenticationFailedException("BOOM!"));
 
-    protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
+    protobufShiroAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityService);
   }
 
@@ -99,7 +99,7 @@ public class ProtobufSimpleAuthenticatorJUnitTest {
     when(mockSecurityService.isClientSecurityRequired()).thenReturn(false);
     when(mockSecurityService.isPeerSecurityRequired()).thenReturn(false);
 
-    protobufSimpleAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
+    protobufShiroAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
         mockSecurityService);
 
     AuthenticationAPI.AuthenticationResponse authenticationResponse =

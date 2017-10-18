@@ -22,9 +22,9 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
 import org.apache.geode.internal.protocol.protobuf.security.Authorizer;
 import org.apache.geode.internal.protocol.protobuf.security.InvalidConfigAuthenticator;
 import org.apache.geode.internal.protocol.protobuf.security.NoOpAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.security.ProtobufSimpleAuthenticator;
+import org.apache.geode.internal.protocol.protobuf.security.ProtobufShiroAuthenticator;
 import org.apache.geode.internal.protocol.protobuf.ProtobufStreamProcessor;
-import org.apache.geode.internal.protocol.protobuf.security.ProtobufSimpleAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.security.ProtobufShiroAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
@@ -75,7 +75,7 @@ public class ProtobufProtocolService implements ClientProtocolService {
   private Authenticator getAuthenticator(SecurityService securityService) {
     if (securityService.isIntegratedSecurity()) {
       // Simple authenticator...normal shiro
-      return new ProtobufSimpleAuthenticator();
+      return new ProtobufShiroAuthenticator();
     }
     if (securityService.isPeerSecurityRequired() || securityService.isClientSecurityRequired()) {
       // Failing authentication...legacy security
@@ -89,7 +89,7 @@ public class ProtobufProtocolService implements ClientProtocolService {
   private Authorizer getAuthorizer(SecurityService securityService) {
     if (securityService.isIntegratedSecurity()) {
       // Simple authenticator...normal shiro
-      return new ProtobufSimpleAuthorizer(securityService);
+      return new ProtobufShiroAuthorizer(securityService);
     }
     if (securityService.isPeerSecurityRequired() || securityService.isClientSecurityRequired()) {
       // Failing authentication...legacy security

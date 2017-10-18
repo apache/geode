@@ -30,7 +30,7 @@ import java.util.Properties;
 
 import org.apache.shiro.subject.Subject;
 
-public class ProtobufSimpleAuthenticator implements Authenticator {
+public class ProtobufShiroAuthenticator implements Authenticator {
 
   private static final String SHOULD_HAVE_AUTHED =
       "Got non-auth request while expecting authentication request";

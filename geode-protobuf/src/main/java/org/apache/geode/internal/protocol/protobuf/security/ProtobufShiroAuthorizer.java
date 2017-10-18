@@ -22,10 +22,10 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.internal.protocol.protobuf.security.Authorizer;
 
-public class ProtobufSimpleAuthorizer implements Authorizer {
+public class ProtobufShiroAuthorizer implements Authorizer {
   private final SecurityService securityService;
 
-  public ProtobufSimpleAuthorizer(SecurityService securityService) {
+  public ProtobufShiroAuthorizer(SecurityService securityService) {
     this.securityService = securityService;
   }
 
