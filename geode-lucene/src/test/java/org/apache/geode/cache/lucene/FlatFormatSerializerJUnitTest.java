@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -36,8 +35,17 @@ import org.junit.experimental.categories.Category;
 @Category(UnitTest.class)
 public class FlatFormatSerializerJUnitTest {
 
+  private HashSet<Person> createCollectionObjectContacts() {
+    Person contact1 = new Person("Tommi Jackson", new String[] {"5036330001", "5036330002"}, 1);
+    Person contact2 = new Person("Tommi2 Skywalker", new String[] {"5036330003", "5036330004"}, 2);
+    HashSet<Person> contacts1 = new HashSet();
+    contacts1.add(contact1);
+    contacts1.add(contact2);
+    return contacts1;
+  }
+
   @Test
-  public void shouldParseMultiLayerNestObject() {
+  public void verifyFieldCountsInDocument() {
     String[] fields = new String[] {"name", "phoneNumbers", "myHomePages.content", "contacts.name",
         "contacts.email", "contacts.phoneNumbers", "contacts.address", "contacts.revenue",
         "contacts.homepage.id", "contacts.homepage.title", "contacts.homepage.content",
@@ -58,48 +66,91 @@ public class FlatFormatSerializerJUnitTest {
     Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
     assertEquals(23, doc1.getFields().size());
     assertEquals("Tommy Jackson", doc1.getField("name").stringValue());
+  }
+
+  @Test
+  public void shouldQueryOnFieldInArrayObject() {
+    String[] fields = new String[] {"myHomePages.content"};
+
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    Page[] myHomePages1 = new Page[] {new Page(131), new Page(132)};
+    Customer customer = new Customer("Tommy Jackson", null, null, myHomePages1);
+    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
 
     IndexableField[] fieldsInDoc = doc1.getFields("myHomePages.content");
-    Collection<String> results = getStringResultCollection(fieldsInDoc);
+    Collection<Object> results = getResultCollection(fieldsInDoc, false);
     assertEquals(2, results.size());
     assertTrue(results.contains("Hello world no 131"));
     assertTrue(results.contains("Hello world no 132"));
+  }
 
-    fieldsInDoc = doc1.getFields("contacts.name");
-    results = getStringResultCollection(fieldsInDoc);
+  @Test
+  public void shouldQueryOnFieldInCollectionObject() {
+    String[] fields = new String[] {"contacts.name"};
+
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    HashSet<Person> contacts1 = createCollectionObjectContacts();
+    Customer customer = new Customer("Tommy Jackson", null, contacts1, null);
+    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
+
+    IndexableField[] fieldsInDoc = doc1.getFields("contacts.name");
+    Collection<Object> results = getResultCollection(fieldsInDoc, false);
     assertEquals(2, results.size());
     assertTrue(results.contains("Tommi Jackson"));
     assertTrue(results.contains("Tommi2 Skywalker"));
+  }
 
-    fieldsInDoc = doc1.getFields("contacts.email");
-    results = getStringResultCollection(fieldsInDoc);
+  @Test
+  public void shouldQueryOnFieldWithAnalyzerInCollectionObject() {
+    String[] fields = new String[] {"contacts.email"};
+
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    HashSet<Person> contacts1 = createCollectionObjectContacts();
+    Customer customer = new Customer("Tommy Jackson", null, contacts1, null);
+    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
+
+    IndexableField[] fieldsInDoc = doc1.getFields("contacts.email");
+    Collection<Object> results = getResultCollection(fieldsInDoc, false);
     assertEquals(2, results.size());
     assertTrue(results.contains("Tommi.Jackson@pivotal.io"));
     assertTrue(results.contains("Tommi2.Skywalker@pivotal.io"));
+  }
 
-    fieldsInDoc = doc1.getFields("contacts.revenue");
-    Collection<Integer> intResults = getIntResultCollection(fieldsInDoc);
+  @Test
+  public void shouldQueryOnIntFieldInCollectionObject() {
+    String[] fields = new String[] {"contacts.revenue"};
+
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    HashSet<Person> contacts1 = createCollectionObjectContacts();
+    Customer customer = new Customer("Tommy Jackson", null, contacts1, null);
+    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
+
+    IndexableField[] fieldsInDoc = doc1.getFields("contacts.revenue");
+    Collection<Object> intResults = getResultCollection(fieldsInDoc, true);
     assertEquals(2, intResults.size());
     assertTrue(intResults.contains(100));
     assertTrue(intResults.contains(200));
+  }
 
-    fieldsInDoc = doc1.getFields("contacts.address");
-    results = getStringResultCollection(fieldsInDoc);
-    assertEquals(2, results.size());
-    assertTrue(results.contains("1 NW Greenbrier PKWY, Portland OR 97006"));
-    assertTrue(results.contains("2 NW Greenbrier PKWY, Portland OR 97006"));
+  @Test
+  public void shouldQueryOnFieldInThirdLevelObject() {
+    String[] fields = new String[] {"contacts.homepage.title"};
 
-    fieldsInDoc = doc1.getFields("contacts.homepage.title");
-    results = getStringResultCollection(fieldsInDoc);
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    HashSet<Person> contacts1 = createCollectionObjectContacts();
+    Customer customer = new Customer("Tommy Jackson", null, contacts1, null);
+    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
+
+    IndexableField[] fieldsInDoc = doc1.getFields("contacts.homepage.title");
+    Collection<Object> results = getResultCollection(fieldsInDoc, false);
     assertEquals(2, results.size());
     assertTrue(results.contains("developer"));
     assertTrue(results.contains("manager"));
-
-    fieldsInDoc = doc1.getFields("contacts.homepage.content");
-    results = getStringResultCollection(fieldsInDoc);
-    assertEquals(2, results.size());
-    assertTrue(results.contains("Hello world no 1"));
-    assertTrue(results.contains("Hello world no 1"));
   }
 
   @Test
@@ -149,20 +200,15 @@ public class FlatFormatSerializerJUnitTest {
     assertEquals("Tommy Jackson", doc1.getField("name").stringValue());
   }
 
-  private Collection<String> getStringResultCollection(IndexableField[] fieldsInDoc) {
-    Collection<String> results = new LinkedHashSet();
+  private Collection<Object> getResultCollection(IndexableField[] fieldsInDoc, boolean isNumeric) {
+    Collection<Object> results = new LinkedHashSet();
     for (IndexableField field : fieldsInDoc) {
-      results.add(field.stringValue());
+      if (isNumeric) {
+        results.add((Object) field.numericValue());
+      } else {
+        results.add(field.stringValue());
+      }
     }
     return results;
   }
-
-  private Collection<Integer> getIntResultCollection(IndexableField[] fieldsInDoc) {
-    Collection<Integer> results = new LinkedHashSet();
-    for (IndexableField field : fieldsInDoc) {
-      results.add((Integer) field.numericValue());
-    }
-    return results;
-  }
-
 }
