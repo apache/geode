@@ -15,65 +15,40 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: 1
+// disk: DISK
 // lru: LRU
-// stats: 1
+// stats: STATS
 // versioned: VERSIONED
-// offheap: 1
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
-// key string2: 1
-
+// key string2: KEY_STRING2
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEntryOffHeap {
   public VMStatsDiskRegionEntryOffHeapStringKey2(RegionEntryContext context, String key,
-
-      @Retained
-
-      Object value
-
-      , boolean byteEncode
-
-  ) {
-    super(context,
-
-        (value instanceof RecoveredEntry ? null : value)
-
-
-
-    );
+      @Retained Object value, boolean byteEncode) {
+    super(context, (value instanceof RecoveredEntry ? null : value));
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     initialize(context, value);
-
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
     long tmpBits1 = 0L;
     long tmpBits2 = 0L;
@@ -104,11 +79,9 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
     tmpBits1 |= key.length();
     this.bits1 = tmpBits1;
     this.bits2 = tmpBits2;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -117,7 +90,6 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
   private static final AtomicLongFieldUpdater<VMStatsDiskRegionEntryOffHeapStringKey2> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMStatsDiskRegionEntryOffHeapStringKey2.class,
           "lastModified");
-
   /**
    * All access done using ohAddrUpdater so it is used even though the compiler can not tell it is.
    */
@@ -148,19 +120,13 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
-
   @Unretained
   protected void setValueField(@Unretained Object v) {
-
-
-
     OffHeapRegionEntryHelper.setValue(this, v);
   }
 
   @Override
-
   @Retained
-
   public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
     return OffHeapRegionEntryHelper._getValueRetain(this, decompress, context);
   }
@@ -176,9 +142,7 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
   }
 
   @Override
-
   @Released
-
   public void release() {
     OffHeapRegionEntryHelper.releaseEntry(this);
   }
@@ -186,9 +150,6 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
   @Override
   public void returnToPool() {
     // Deadcoded for now; never was working
-    // if (this instanceof VMThinRegionEntryLongKey) {
-    // factory.returnToPool((VMThinRegionEntryLongKey)this);
-    // }
   }
 
   protected long getLastModifiedField() {
@@ -224,11 +185,8 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
     this.next = n;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // disk code
-
   protected void initialize(RegionEntryContext context, Object value) {
     diskInitialize(context, value);
   }
@@ -238,9 +196,7 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
     throw new IllegalStateException("should never be called");
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -265,50 +221,8 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
   void setDiskId(RegionEntry old) {
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
-  // // inlining DiskId
-  // // always have these fields
-  // /**
-  // * id consists of
-  // * most significant
-  // * 1 byte = users bits
-  // * 2-8 bytes = oplog id
-  // * least significant.
-  // *
-  // * The highest bit in the oplog id part is set to 1 if the oplog id
-  // * is negative.
-  // * @todo this field could be an int for an overflow only region
-  // */
-  // private long id;
-  // /**
-  // * Length of the bytes on disk.
-  // * This is always set. If the value is invalid then it will be set to 0.
-  // * The most significant bit is used by overflow to mark it as needing to be written.
-  // */
-  // protected int valueLength = 0;
-  // // have intOffset or longOffset
-  // // intOffset
-  // /**
-  // * The position in the oplog (the oplog offset) where this entry's value is
-  // * stored
-  // */
-  // private volatile int offsetInOplog;
-  // // longOffset
-  // /**
-  // * The position in the oplog (the oplog offset) where this entry's value is
-  // * stored
-  // */
-  // private volatile long offsetInOplog;
-  // // have overflowOnly or persistence
-  // // overflowOnly
-  // // no fields
-  // // persistent
-  // /** unique entry identifier * */
-  // private long keyId;
-
-
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // stats code
   @Override
   public void updateStatsForGet(boolean hit, long time) {
@@ -331,7 +245,6 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
   private volatile long lastAccessed;
   private volatile int hitCount;
   private volatile int missCount;
-
   private static final AtomicIntegerFieldUpdater<VMStatsDiskRegionEntryOffHeapStringKey2> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsDiskRegionEntryOffHeapStringKey2.class,
           "hitCount");
@@ -373,7 +286,6 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public void txDidDestroy(long currTime) {
     setLastModified(currTime);
@@ -387,12 +299,8 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
     return true;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   // strlen is encoded in lowest 6 bits (max strlen is 63)
   // character encoding info is in bits 7 and 8
   // The other bits are used to encoded character data.
@@ -441,7 +349,6 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public boolean isKeyEqual(Object k) {
     if (k instanceof String) {
@@ -484,7 +391,5 @@ public class VMStatsDiskRegionEntryOffHeapStringKey2 extends VMStatsDiskRegionEn
     }
     return false;
   }
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-
