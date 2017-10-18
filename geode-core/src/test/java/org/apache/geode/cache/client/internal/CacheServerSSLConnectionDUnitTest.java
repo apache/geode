@@ -22,7 +22,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.sql.Time;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -35,18 +34,20 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
-import org.junit.Ignore;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -161,7 +162,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   }
 
   public void setUpClientVM(String host, int port, boolean cacheServerSslenabled,
-      boolean cacheServerSslRequireAuth, String keyStore, String trustStore, boolean subscription) {
+      boolean cacheServerSslRequireAuth, String keyStore, String trustStore, boolean subscription,
+      boolean clientHasTrustedKeystore) {
 
     Properties gemFireProps = new Properties();
 
@@ -178,11 +180,20 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
     gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
-    gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
-    gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
-    gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
-    gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
-    gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
+
+    if (clientHasTrustedKeystore) {
+      gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+      gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
+      gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+      gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
+      gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
+    } else {
+      gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+      gemFireProps.put(SERVER_SSL_KEYSTORE, "");
+      gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+      gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
+      gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
+    }
 
     StringWriter sw = new StringWriter();
     PrintWriter writer = new PrintWriter(sw);
@@ -223,20 +234,30 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   }
 
   public static void setUpClientVMTask(String host, int port, boolean cacheServerSslenabled,
-      boolean cacheServerSslRequireAuth, String keyStore, String trustStore) throws Exception {
+      boolean cacheServerSslRequireAuth, String keyStore, String trustStore,
+      boolean clientHasTrustedKeystore) throws Exception {
     instance.setUpClientVM(host, port, cacheServerSslenabled, cacheServerSslRequireAuth, keyStore,
-        trustStore, true);
+        trustStore, true, clientHasTrustedKeystore);
   }
 
   public static void setUpClientVMTaskNoSubscription(String host, int port,
       boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth, String keyStore,
       String trustStore) throws Exception {
     instance.setUpClientVM(host, port, cacheServerSslenabled, cacheServerSslRequireAuth, keyStore,
-        trustStore, false);
+        trustStore, false, true);
   }
 
   public static void doClientRegionTestTask() {
     instance.doClientRegionTest();
+  }
+
+  public static void verifyServerDoesNotReceiveClientUpdate() {
+    instance.doVerifyServerDoesNotReceiveClientUpdate();
+  }
+
+  private void doVerifyServerDoesNotReceiveClientUpdate() {
+    Region<String, String> region = cache.getRegion("serverRegion");
+    assertFalse(region.containsKey("clientkey"));
   }
 
   public static void doServerRegionTestTask() {
@@ -278,7 +299,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String hostName = host.getHostName();
 
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
   }
@@ -299,7 +320,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String hostName = host.getHostName();
 
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
   }
@@ -340,7 +361,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
       getBlackboard().waitForGate("serverIsBlocked", 60, TimeUnit.SECONDS);
 
       clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
       clientVM.invoke(() -> doClientRegionTestTask());
       serverVM.invoke(() -> doServerRegionTestTask());
 
@@ -432,24 +453,43 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
-    try {
-      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
-      clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
-      serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
+    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
+    clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
+    serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
+  }
 
-    } catch (Exception rmiException) {
-      Throwable e = rmiException.getCause();
-      // getLogWriter().info("ExceptionCause at clientVM " + e);
-      if (e instanceof org.apache.geode.cache.client.ServerOperationException) {
-        Throwable t = e.getCause();
-        // getLogWriter().info("Cause is " + t);
-        assertTrue(t instanceof org.apache.geode.security.AuthenticationRequiredException);
-      } else {
-        // getLogWriter().error("Unexpected exception ", e);
-        fail("Unexpected Exception...expected " + AuthenticationRequiredException.class);
-      }
+  @Test()
+  public void clientWithNoKeystoreIsRejected() throws Throwable {
+    final Host host = Host.getHost(0);
+    VM serverVM = host.getVM(1);
+    VM clientVM = host.getVM(2);
+
+    boolean cacheServerSslenabled = true;
+    boolean cacheClientSslenabled = true;
+    boolean cacheClientSslRequireAuth = false;
+
+    serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, true));
+    serverVM.invoke(() -> createServerTask());
+
+    Object array[] = (Object[]) serverVM.invoke(() -> getCacheServerEndPointTask());
+    String hostName = (String) array[0];
+    int port = (Integer) array[1];
+
+    IgnoredException.addIgnoredException("SSLHandshakeException");
+
+    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+        cacheClientSslRequireAuth, "default.keystore", CLIENT_TRUST_STORE, false));
+
+    try {
+      clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
+      fail("client should not have been able to execute a cache operation");
+    } catch (RMIException e) {
+      assertTrue("expected a NoAvailableServersException but received " + e.getCause(),
+          e.getCause() instanceof NoAvailableServersException);
     }
+    serverVM
+        .invoke(() -> CacheServerSSLConnectionDUnitTest.verifyServerDoesNotReceiveClientUpdate());
   }
 
   @Test
@@ -473,7 +513,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
         IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException", serverVM);
     try {
       clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
-          cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
+          cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE, true));
       clientVM.invoke(() -> doClientRegionTestTask());
       serverVM.invoke(() -> doServerRegionTestTask());
       fail(
