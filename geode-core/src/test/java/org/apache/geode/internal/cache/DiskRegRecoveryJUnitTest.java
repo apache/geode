@@ -661,7 +661,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     region.put("3", value);
     File oplogFile = null;
     try {
-      oplogFile = ((LocalRegion) region).getDiskRegion().testHook_getChild().getOplogFile();
+      oplogFile = ((LocalRegion) region).getDiskRegion().testHook_getChild().getOplogFileForTest();
     } catch (Exception e) {
       logWriter.error(
           "Exception in synching data present in the buffers of RandomAccessFile of Oplog, to the disk",

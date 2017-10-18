@@ -35,4 +35,6 @@ import org.apache.geode.cache.Region;
 public interface InternalRegion extends Region, HasCachePerfStats {
 
   CachePerfStats getCachePerfStats();
+
+  DiskRegion getDiskRegion();
 }
