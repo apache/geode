@@ -455,7 +455,7 @@ start pulse --url=http://gemfire.example.com:7070/pulse
 
 Start a <%=vars.product_name%> cache server process.
 
-**Note:** When both <span class="keyword parmname">\\-\\-max-heap</span> and <span class="keyword parmname">\\-\\-initial-heap</span> are specified during locator startup, additional GC parameters are specified internally by <%=vars.product_name%>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+**Note:** When both <span class="keyword parmname">\\-\\-max-heap</span> and <span class="keyword parmname">\\-\\-initial-heap</span> are specified during server startup, additional GC parameters are specified on your behalf. If you do not want the additional default GC properties set, then use the `-Xms` and `-Xmx` JVM options to set just these parameters. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
 **Availability:** Online or offline.
 
