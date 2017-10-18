@@ -23,11 +23,6 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.DiskBackupStatus;
 
-/**
- * Composite data type used to distribute the status of disk backup operations.
- *
- * @since GemFire 7.0
- */
 public class DiskBackupStatusImpl implements DiskBackupStatus {
 
   /**
@@ -40,19 +35,11 @@ public class DiskBackupStatusImpl implements DiskBackupStatus {
    */
   private String[] offlineDiskStores;
 
-  /**
-   * Returns a map of member names/IDs and the {@link PersistentID} of the disk stores that were
-   * backed up.
-   */
   @Override
   public Map<String, String[]> getBackedUpDiskStores() {
     return backedUpDiskStores;
   }
 
-  /**
-   * Returns a list of directories for the disk stores that were off-line at the time the backup
-   * occurred.
-   */
   @Override
   public String[] getOfflineDiskStores() {
     return offlineDiskStores;
@@ -62,7 +49,6 @@ public class DiskBackupStatusImpl implements DiskBackupStatus {
    * Sets the map of member names/IDs and the {@link PersistentID} of the disk stores that were
    * backed up.
    */
-  @SuppressWarnings("unused")
   public void setBackedUpDiskStores(Map<String, String[]> backedUpDiskStores) {
     this.backedUpDiskStores = backedUpDiskStores;
   }
@@ -71,7 +57,6 @@ public class DiskBackupStatusImpl implements DiskBackupStatus {
    * Sets the list of directories for the disk stores that were off-line at the time the backup
    * occurred.
    */
-  @SuppressWarnings("unused")
   public void setOfflineDiskStores(String[] offLineDiskStores) {
     this.offlineDiskStores = offLineDiskStores;
   }
