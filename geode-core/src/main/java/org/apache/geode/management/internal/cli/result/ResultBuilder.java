@@ -230,6 +230,13 @@ public class ResultBuilder {
         resultData = errorResultData;
       }
 
+      Integer statusCode = (Integer) jsonObject.get("status");
+      if (Result.Status.OK.getCode() == statusCode) {
+        resultData.setStatus(Result.Status.OK);
+      } else {
+        resultData.setStatus(Result.Status.ERROR);
+      }
+
       result = buildResult(resultData);
 
       String fileToDownloadPath = jsonObject.getString("fileToDownload");

@@ -98,8 +98,10 @@ public class ErrorResultData extends InfoResultData {
 
   @Override
   public void setStatus(final Status status) {
-    throw new UnsupportedOperationException(
-        "The status of an ErrorResultData result must always be ERROR");
+    if (status != Status.ERROR) {
+      throw new UnsupportedOperationException(
+          "The status of an ErrorResultData result must always be ERROR");
+    }
   }
 
   @Override
