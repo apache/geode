@@ -24,8 +24,6 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
@@ -58,170 +56,151 @@ public class DescribeRegionCommand implements GfshCommand {
           help = CliStrings.DESCRIBE_REGION__NAME__HELP, mandatory = true) String regionName) {
 
     Result result;
-    try {
 
-      if (regionName == null || regionName.isEmpty()) {
-        return ResultBuilder.createUserErrorResult("Please provide a region name");
-      }
+    InternalCache cache = getCache();
+    ResultCollector<?, ?> rc =
+        CliUtil.executeFunction(getRegionDescription, regionName, CliUtil.getAllMembers(cache));
 
-      if (regionName.equals(Region.SEPARATOR)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.INVALID_REGION_NAME);
-      }
+    List<?> resultList = (List<?>) rc.getResult();
 
-      InternalCache cache = getCache();
-      ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(getRegionDescription, regionName, CliUtil.getAllMembers(cache));
+    // The returned result could be a region description with per member and /or single local
+    // region
+    Object[] results = resultList.toArray();
+    List<RegionDescription> regionDescriptionList = new ArrayList<>();
 
-      List<?> resultList = (List<?>) rc.getResult();
+    for (int i = 0; i < results.length; i++) {
 
-      // The returned result could be a region description with per member and /or single local
-      // region
-      Object[] results = resultList.toArray();
-      List<RegionDescription> regionDescriptionList = new ArrayList<>();
+      if (results[i] instanceof RegionDescriptionPerMember) {
+        RegionDescriptionPerMember regionDescPerMember = (RegionDescriptionPerMember) results[i];
 
-      for (int i = 0; i < results.length; i++) {
+        if (regionDescPerMember != null) {
+          RegionDescription regionDescription = new RegionDescription();
+          regionDescription.add(regionDescPerMember);
 
-        if (results[i] instanceof RegionDescriptionPerMember) {
-          RegionDescriptionPerMember regionDescPerMember = (RegionDescriptionPerMember) results[i];
-
-          if (regionDescPerMember != null) {
-            RegionDescription regionDescription = new RegionDescription();
-            regionDescription.add(regionDescPerMember);
-
-            for (int j = i + 1; j < results.length; j++) {
-              if (results[j] != null && results[j] instanceof RegionDescriptionPerMember) {
-                RegionDescriptionPerMember preyRegionDescPerMember =
-                    (RegionDescriptionPerMember) results[j];
-                if (regionDescription.add(preyRegionDescPerMember)) {
-                  results[j] = null;
-                }
+          for (int j = i + 1; j < results.length; j++) {
+            if (results[j] != null && results[j] instanceof RegionDescriptionPerMember) {
+              RegionDescriptionPerMember preyRegionDescPerMember =
+                  (RegionDescriptionPerMember) results[j];
+              if (regionDescription.add(preyRegionDescPerMember)) {
+                results[j] = null;
               }
             }
-            regionDescriptionList.add(regionDescription);
           }
-        } else if (results[i] instanceof Throwable) {
-          Throwable t = (Throwable) results[i];
-          LogWrapper.getInstance().info(t.getMessage(), t);
+          regionDescriptionList.add(regionDescription);
         }
+      } else if (results[i] instanceof Throwable) {
+        Throwable t = (Throwable) results[i];
+        LogWrapper.getInstance().info(t.getMessage(), t);
       }
-
-      if (regionDescriptionList.isEmpty()) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
-      }
-
-      CompositeResultData crd = ResultBuilder.createCompositeResultData();
-
-      for (RegionDescription regionDescription : regionDescriptionList) {
-        // No point in displaying the scope for PR's
-        if (regionDescription.isPartition()) {
-          regionDescription.getCndRegionAttributes().remove(RegionAttributesNames.SCOPE);
-        } else {
-          String scope =
-              regionDescription.getCndRegionAttributes().get(RegionAttributesNames.SCOPE);
-          if (scope != null) {
-            scope = scope.toLowerCase().replace('_', '-');
-            regionDescription.getCndRegionAttributes().put(RegionAttributesNames.SCOPE, scope);
-          }
-        }
-        CompositeResultData.SectionResultData regionSection = crd.addSection();
-        regionSection.addSeparator('-');
-        regionSection.addData("Name", regionDescription.getName());
-
-        String dataPolicy =
-            regionDescription.getDataPolicy().toString().toLowerCase().replace('_', ' ');
-        regionSection.addData("Data Policy", dataPolicy);
-
-        String memberType;
-
-        if (regionDescription.isAccessor()) {
-          memberType = CliStrings.DESCRIBE_REGION__ACCESSOR__MEMBER;
-        } else {
-          memberType = CliStrings.DESCRIBE_REGION__HOSTING__MEMBER;
-        }
-        regionSection.addData(memberType,
-            CliUtil.convertStringSetToString(regionDescription.getHostingMembers(), '\n'));
-        regionSection.addSeparator('.');
-
-        TabularResultData commonNonDefaultAttrTable = regionSection.addSection().addTable();
-
-        commonNonDefaultAttrTable.setHeader(CliStrings
-            .format(CliStrings.DESCRIBE_REGION__NONDEFAULT__COMMONATTRIBUTES__HEADER, memberType));
-        // Common Non Default Region Attributes
-        Map<String, String> cndRegionAttrsMap = regionDescription.getCndRegionAttributes();
-
-        // Common Non Default Eviction Attributes
-        Map<String, String> cndEvictionAttrsMap = regionDescription.getCndEvictionAttributes();
-
-        // Common Non Default Partition Attributes
-        Map<String, String> cndPartitionAttrsMap = regionDescription.getCndPartitionAttributes();
-
-        writeCommonAttributesToTable(commonNonDefaultAttrTable,
-            CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__REGION, cndRegionAttrsMap);
-        writeCommonAttributesToTable(commonNonDefaultAttrTable,
-            CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__EVICTION, cndEvictionAttrsMap);
-        writeCommonAttributesToTable(commonNonDefaultAttrTable,
-            CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__PARTITION, cndPartitionAttrsMap);
-
-        // Member-wise non default Attributes
-        Map<String, RegionDescriptionPerMember> regDescPerMemberMap =
-            regionDescription.getRegionDescriptionPerMemberMap();
-        Set<String> members = regDescPerMemberMap.keySet();
-
-        TabularResultData table = regionSection.addSection().addTable();
-
-        boolean setHeader = false;
-        for (String member : members) {
-          RegionDescriptionPerMember regDescPerMem = regDescPerMemberMap.get(member);
-          Map<String, String> ndRa = regDescPerMem.getNonDefaultRegionAttributes();
-          Map<String, String> ndEa = regDescPerMem.getNonDefaultEvictionAttributes();
-          Map<String, String> ndPa = regDescPerMem.getNonDefaultPartitionAttributes();
-
-          // Get all the member-specific non-default attributes by removing the common keys
-          ndRa.keySet().removeAll(cndRegionAttrsMap.keySet());
-          ndEa.keySet().removeAll(cndEvictionAttrsMap.keySet());
-          ndPa.keySet().removeAll(cndPartitionAttrsMap.keySet());
-
-          // Scope is not valid for PR's
-          if (regionDescription.isPartition()) {
-            if (ndRa.get(RegionAttributesNames.SCOPE) != null) {
-              ndRa.remove(RegionAttributesNames.SCOPE);
-            }
-          }
-
-          List<FixedPartitionAttributesInfo> fpaList = regDescPerMem.getFixedPartitionAttributes();
-
-          if (!(ndRa.isEmpty() && ndEa.isEmpty() && ndPa.isEmpty()) || fpaList != null) {
-            setHeader = true;
-            boolean memberNameAdded;
-            memberNameAdded = writeAttributesToTable(table,
-                CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__REGION, ndRa, member, false);
-            memberNameAdded =
-                writeAttributesToTable(table, CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__EVICTION,
-                    ndEa, member, memberNameAdded);
-            memberNameAdded = writeAttributesToTable(table,
-                CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__PARTITION, ndPa, member,
-                memberNameAdded);
-
-            writeFixedPartitionAttributesToTable(table, fpaList, member, memberNameAdded);
-          }
-        }
-
-        if (setHeader) {
-          table.setHeader(CliStrings.format(
-              CliStrings.DESCRIBE_REGION__NONDEFAULT__PERMEMBERATTRIBUTES__HEADER, memberType));
-        }
-      }
-
-      result = ResultBuilder.buildResult(crd);
-    } catch (FunctionInvocationTargetException e) {
-      result = ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.DESCRIBE_REGION));
-    } catch (Exception e) {
-      String errorMessage = CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE,
-          e.getClass().getName(), e.getMessage());
-      result = ResultBuilder.createGemFireErrorResult(errorMessage);
     }
+
+    if (regionDescriptionList.isEmpty()) {
+      return ResultBuilder
+          .createUserErrorResult(CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
+    }
+
+    CompositeResultData crd = ResultBuilder.createCompositeResultData();
+
+    for (RegionDescription regionDescription : regionDescriptionList) {
+      // No point in displaying the scope for PR's
+      if (regionDescription.isPartition()) {
+        regionDescription.getCndRegionAttributes().remove(RegionAttributesNames.SCOPE);
+      } else {
+        String scope = regionDescription.getCndRegionAttributes().get(RegionAttributesNames.SCOPE);
+        if (scope != null) {
+          scope = scope.toLowerCase().replace('_', '-');
+          regionDescription.getCndRegionAttributes().put(RegionAttributesNames.SCOPE, scope);
+        }
+      }
+      CompositeResultData.SectionResultData regionSection = crd.addSection();
+      regionSection.addSeparator('-');
+      regionSection.addData("Name", regionDescription.getName());
+
+      String dataPolicy =
+          regionDescription.getDataPolicy().toString().toLowerCase().replace('_', ' ');
+      regionSection.addData("Data Policy", dataPolicy);
+
+      String memberType;
+
+      if (regionDescription.isAccessor()) {
+        memberType = CliStrings.DESCRIBE_REGION__ACCESSOR__MEMBER;
+      } else {
+        memberType = CliStrings.DESCRIBE_REGION__HOSTING__MEMBER;
+      }
+      regionSection.addData(memberType,
+          CliUtil.convertStringSetToString(regionDescription.getHostingMembers(), '\n'));
+      regionSection.addSeparator('.');
+
+      TabularResultData commonNonDefaultAttrTable = regionSection.addSection().addTable();
+
+      commonNonDefaultAttrTable.setHeader(CliStrings
+          .format(CliStrings.DESCRIBE_REGION__NONDEFAULT__COMMONATTRIBUTES__HEADER, memberType));
+      // Common Non Default Region Attributes
+      Map<String, String> cndRegionAttrsMap = regionDescription.getCndRegionAttributes();
+
+      // Common Non Default Eviction Attributes
+      Map<String, String> cndEvictionAttrsMap = regionDescription.getCndEvictionAttributes();
+
+      // Common Non Default Partition Attributes
+      Map<String, String> cndPartitionAttrsMap = regionDescription.getCndPartitionAttributes();
+
+      writeCommonAttributesToTable(commonNonDefaultAttrTable,
+          CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__REGION, cndRegionAttrsMap);
+      writeCommonAttributesToTable(commonNonDefaultAttrTable,
+          CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__EVICTION, cndEvictionAttrsMap);
+      writeCommonAttributesToTable(commonNonDefaultAttrTable,
+          CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__PARTITION, cndPartitionAttrsMap);
+
+      // Member-wise non default Attributes
+      Map<String, RegionDescriptionPerMember> regDescPerMemberMap =
+          regionDescription.getRegionDescriptionPerMemberMap();
+      Set<String> members = regDescPerMemberMap.keySet();
+
+      TabularResultData table = regionSection.addSection().addTable();
+
+      boolean setHeader = false;
+      for (String member : members) {
+        RegionDescriptionPerMember regDescPerMem = regDescPerMemberMap.get(member);
+        Map<String, String> ndRa = regDescPerMem.getNonDefaultRegionAttributes();
+        Map<String, String> ndEa = regDescPerMem.getNonDefaultEvictionAttributes();
+        Map<String, String> ndPa = regDescPerMem.getNonDefaultPartitionAttributes();
+
+        // Get all the member-specific non-default attributes by removing the common keys
+        ndRa.keySet().removeAll(cndRegionAttrsMap.keySet());
+        ndEa.keySet().removeAll(cndEvictionAttrsMap.keySet());
+        ndPa.keySet().removeAll(cndPartitionAttrsMap.keySet());
+
+        // Scope is not valid for PR's
+        if (regionDescription.isPartition()) {
+          if (ndRa.get(RegionAttributesNames.SCOPE) != null) {
+            ndRa.remove(RegionAttributesNames.SCOPE);
+          }
+        }
+
+        List<FixedPartitionAttributesInfo> fpaList = regDescPerMem.getFixedPartitionAttributes();
+
+        if (!(ndRa.isEmpty() && ndEa.isEmpty() && ndPa.isEmpty()) || fpaList != null) {
+          setHeader = true;
+          boolean memberNameAdded;
+          memberNameAdded = writeAttributesToTable(table,
+              CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__REGION, ndRa, member, false);
+          memberNameAdded = writeAttributesToTable(table,
+              CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__EVICTION, ndEa, member, memberNameAdded);
+          memberNameAdded =
+              writeAttributesToTable(table, CliStrings.DESCRIBE_REGION__ATTRIBUTE__TYPE__PARTITION,
+                  ndPa, member, memberNameAdded);
+
+          writeFixedPartitionAttributesToTable(table, fpaList, member, memberNameAdded);
+        }
+      }
+
+      if (setHeader) {
+        table.setHeader(CliStrings.format(
+            CliStrings.DESCRIBE_REGION__NONDEFAULT__PERMEMBERATTRIBUTES__HEADER, memberType));
+      }
+    }
+
+    result = ResultBuilder.buildResult(crd);
     return result;
   }
 

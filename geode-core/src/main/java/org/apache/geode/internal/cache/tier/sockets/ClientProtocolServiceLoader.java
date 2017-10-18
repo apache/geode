@@ -15,26 +15,37 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ServiceLoader;
 
 public class ClientProtocolServiceLoader {
-  public ClientProtocolService loadService() {
-    ServiceLoader<ClientProtocolService> loader = ServiceLoader.load(ClientProtocolService.class);
-    Iterator<ClientProtocolService> iterator = loader.iterator();
+  private final List<ClientProtocolService> clientProtocolServices;
 
-    if (!iterator.hasNext()) {
+  public ClientProtocolServiceLoader() {
+    clientProtocolServices = initializeProtocolServices();
+  }
+
+  private static List<ClientProtocolService> initializeProtocolServices() {
+    List<ClientProtocolService> resultList = new LinkedList<>();
+    for (ClientProtocolService clientProtocolService : ServiceLoader
+        .load(ClientProtocolService.class)) {
+      resultList.add(clientProtocolService);
+    }
+
+    return resultList;
+  }
+
+  public ClientProtocolService lookupService() {
+    if (clientProtocolServices.isEmpty()) {
       throw new ServiceLoadingFailureException(
           "There is no ClientProtocolService implementation found in JVM");
     }
 
-    ClientProtocolService service = iterator.next();
-
-    if (iterator.hasNext()) {
+    if (clientProtocolServices.size() > 1) {
       throw new ServiceLoadingFailureException(
           "There is more than one ClientProtocolService implementation found in JVM; aborting");
     }
-
-    return service;
+    return clientProtocolServices.get(0);
   }
 }

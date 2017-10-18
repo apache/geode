@@ -29,7 +29,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -252,7 +251,7 @@ public class CreateRegionCommand implements GfshCommand {
               CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
               regionFunctionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " "
               + CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION,
-                  useAttributesFrom));
+                  regionPath));
         }
       }
 
@@ -295,6 +294,8 @@ public class CreateRegionCommand implements GfshCommand {
 
         if (success) {
           xmlEntity.set(regionCreateResult.getXmlEntity());
+        } else {
+          tabularResultData.setStatus(Result.Status.ERROR);
         }
       }
       result = ResultBuilder.buildResult(tabularResultData);
@@ -304,6 +305,7 @@ public class CreateRegionCommand implements GfshCommand {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
     }
+
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
@@ -552,22 +554,6 @@ public class CreateRegionCommand implements GfshCommand {
                 new Object[] {regionFunctionArgs.getCompressor()}));
       }
     }
-
-    if (regionFunctionArgs.hasPartitionAttributes()) {
-      if (regionFunctionArgs.isPartitionResolverSet()) {
-        String partitionResolverClassName = regionFunctionArgs.getPartitionResolver();
-        try {
-          Class<PartitionResolver> resolverClass = (Class<PartitionResolver>) ClassPathLoader
-              .getLatest().forName(partitionResolverClassName);
-          PartitionResolver partitionResolver = resolverClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-          throw new IllegalArgumentException(
-              CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
-                  new Object[] {regionFunctionArgs.getPartitionResolver()}),
-              e);
-        }
-      }
-    }
   }
 
   private static <K, V> FetchRegionAttributesFunction.FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(
@@ -582,7 +568,7 @@ public class CreateRegionCommand implements GfshCommand {
     // First check whether the region exists on a this manager, if yes then no
     // need to use FetchRegionAttributesFunction to fetch RegionAttributes
     try {
-      attributes = FetchRegionAttributesFunction.getRegionAttributes(regionPath);
+      attributes = FetchRegionAttributesFunction.getRegionAttributes(cache, regionPath);
     } catch (IllegalArgumentException e) {
       /* region doesn't exist on the manager */
     }

@@ -1178,7 +1178,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @param oplogFileNames a Set of operation log file names.
    */
   Set<String> gatherMatchingOplogFiles(Set<String> oplogFileNames) {
-    Set<String> matchingFiles = new HashSet<String>();
+    Set<String> matchingFiles = new HashSet<>();
 
     // CRF match?
     if ((null != this.crf.f) && this.crf.f.exists()
@@ -1217,7 +1217,7 @@ public class Oplog implements CompactableOplog, Flushable {
         TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
 
     // Returned Map of baseline file to current oplog file
-    Map<File, File> baselineToOplogMap = new HashMap<File, File>();
+    Map<File, File> baselineToOplogMap = new HashMap<>();
 
     // Check for crf existence
     if ((null != this.crf.f) && this.crf.f.exists()

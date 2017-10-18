@@ -729,7 +729,25 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       logger.warn("unable to record a membership view request due to this exception", t);
       throw t;
     }
+  }
 
+  private void sendDHKeys() {
+    if (isCoordinator
+        && !services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
+      synchronized (viewRequests) {
+        for (DistributionMessage request : viewRequests) {
+          if (request instanceof JoinRequestMessage) {
+
+            services.getMessenger().initClusterKey();
+            JoinRequestMessage jreq = (JoinRequestMessage) request;
+            // this will inform about cluster-secret key, as we have authenticated at this point
+            JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(),
+                services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
+            services.getMessenger().send(response);
+          }
+        }
+      }
+    }
   }
 
   // for testing purposes, returns a copy of the view requests for verification
@@ -783,6 +801,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (locator != null) {
       locator.setIsCoordinator(true);
     }
+    sendDHKeys();
     if (currentView == null) {
       // create the initial membership view
       NetView newView = new NetView(this.localAddress);

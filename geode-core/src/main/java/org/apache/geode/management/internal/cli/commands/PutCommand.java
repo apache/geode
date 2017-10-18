@@ -22,7 +22,6 @@ import static org.apache.geode.management.internal.cli.commands.DataCommandsUtil
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -60,20 +59,6 @@ public class PutCommand implements GfshCommand {
     InternalCache cache = getCache();
     cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath);
     DataCommandResult dataResult;
-    if (StringUtils.isEmpty(regionPath)) {
-      return makePresentationResult(DataCommandResult.createPutResult(key, null, null,
-          CliStrings.PUT__MSG__REGIONNAME_EMPTY, false));
-    }
-
-    if (StringUtils.isEmpty(key)) {
-      return makePresentationResult(DataCommandResult.createPutResult(key, null, null,
-          CliStrings.PUT__MSG__KEY_EMPTY, false));
-    }
-
-    if (StringUtils.isEmpty(value)) {
-      return makePresentationResult(DataCommandResult.createPutResult(value, null, null,
-          CliStrings.PUT__MSG__VALUE_EMPTY, false));
-    }
 
     @SuppressWarnings("rawtypes")
     Region region = cache.getRegion(regionPath);
@@ -96,7 +81,7 @@ public class PutCommand implements GfshCommand {
             false);
       }
     } else {
-      dataResult = putfn.put(key, value, putIfAbsent, keyClass, valueClass, regionPath);
+      dataResult = putfn.put(key, value, putIfAbsent, keyClass, valueClass, regionPath, cache);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null) {

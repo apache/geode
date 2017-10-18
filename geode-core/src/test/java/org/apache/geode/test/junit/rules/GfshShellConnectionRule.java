@@ -245,7 +245,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return gfsh.outputString;
   }
 
-  public CommandResult executeAndVerifyCommand(String command) {
+  public CommandResult executeAndVerifyCommand(String command, String... expectedOutputs) {
     CommandResult result = null;
     try {
       result = executeCommand(command);
@@ -253,10 +253,13 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       throw new RuntimeException(e);
     }
     assertThat(result.getStatus()).describedAs(getGfshOutput()).isEqualTo(Result.Status.OK);
+    for (String expectedOutput : expectedOutputs) {
+      assertThat(getGfshOutput()).contains(expectedOutput);
+    }
     return result;
   }
 
-  public CommandResult executeAndVerifyCommandError(String command) {
+  public CommandResult executeAndVerifyCommandError(String command, String... expectedOutputs) {
     CommandResult result = null;
     try {
       result = executeCommand(command);
@@ -264,6 +267,9 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       throw new RuntimeException(e);
     }
     assertThat(result.getStatus()).describedAs(getGfshOutput()).isEqualTo(Result.Status.ERROR);
+    for (String expectedOutput : expectedOutputs) {
+      assertThat(getGfshOutput()).contains(expectedOutput);
+    }
     return result;
   }
 

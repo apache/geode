@@ -72,10 +72,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
 
     ClientProtocol.Request request = message.getRequest();
     ClientProtocol.Response response = protobufOpsProcessor.process(request, executionContext);
-    ClientProtocol.MessageHeader responseHeader =
-        ProtobufUtilities.createMessageHeaderForRequest(message);
-    ClientProtocol.Message responseMessage =
-        ProtobufUtilities.createProtobufResponse(responseHeader, response);
+    ClientProtocol.Message responseMessage = ProtobufUtilities.createProtobufResponse(response);
     statistics.messageSent(responseMessage.getSerializedSize());
     protobufProtocolSerializer.serialize(responseMessage, outputStream);
   }

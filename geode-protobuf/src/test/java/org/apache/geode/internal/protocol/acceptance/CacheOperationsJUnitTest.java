@@ -81,9 +81,6 @@ import org.apache.geode.util.test.TestUtil;
 public class CacheOperationsJUnitTest {
   private final String TEST_KEY = "testKey";
   private final String TEST_REGION = "testRegion";
-  private final int TEST_PUT_CORRELATION_ID = 574;
-  private final int TEST_GET_CORRELATION_ID = 68451;
-  private final int TEST_REMOVE_CORRELATION_ID = 51;
 
   private final String DEFAULT_STORE = "default.keystore";
   private final String SSL_PROTOCOLS = "any";
@@ -171,7 +168,6 @@ public class CacheOperationsJUnitTest {
     putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
         TEST_MULTIOP_VALUE3));
     ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID),
         ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, putEntries));
     protobufProtocolSerializer.serialize(putAllMessage, outputStream);
     validatePutAllResponse(socket, protobufProtocolSerializer, new HashSet<>());
@@ -185,7 +181,6 @@ public class CacheOperationsJUnitTest {
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, getEntries);
 
     ClientProtocol.Message getAllMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID),
         ProtobufUtilities.createProtobufRequestWithGetAllRequest(getAllRequest));
     protobufProtocolSerializer.serialize(getAllMessage, outputStream);
     validateGetAllResponse(socket, protobufProtocolSerializer);
@@ -206,15 +201,12 @@ public class CacheOperationsJUnitTest {
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     Set<BasicTypes.Entry> putEntries = new HashSet<>();
-    Float validKey = new Float(2.2);
-    putEntries
-        .add(ProtobufUtilities.createEntry(serializationService, validKey, TEST_MULTIOP_VALUE1));
+    putEntries.add(ProtobufUtilities.createEntry(serializationService, 2.2f, TEST_MULTIOP_VALUE1));
     putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY2,
         TEST_MULTIOP_VALUE2));
     putEntries.add(ProtobufUtilities.createEntry(serializationService, TEST_MULTIOP_KEY3,
         TEST_MULTIOP_VALUE3));
     ClientProtocol.Message putAllMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createMessageHeader(TEST_PUT_CORRELATION_ID),
         ProtobufRequestUtilities.createPutAllRequest(regionName, putEntries));
 
     protobufProtocolSerializer.serialize(putAllMessage, outputStream);
@@ -225,15 +217,14 @@ public class CacheOperationsJUnitTest {
         .add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY3));
     validatePutAllResponse(socket, protobufProtocolSerializer, expectedFailedKeys);
 
-    ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
-        validKey, regionName, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
+    ClientProtocol.Message getMessage =
+        MessageUtil.makeGetRequestMessage(serializationService, 2.2f, regionName);
     protobufProtocolSerializer.serialize(getMessage, outputStream);
     validateGetResponse(socket, protobufProtocolSerializer, TEST_MULTIOP_VALUE1);
 
-    ClientProtocol.Message removeMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createMessageHeader(TEST_REMOVE_CORRELATION_ID),
-        ProtobufRequestUtilities.createRemoveRequest(TEST_REGION,
-            ProtobufUtilities.createEncodedValue(serializationService, TEST_KEY)));
+    ClientProtocol.Message removeMessage =
+        ProtobufUtilities.createProtobufMessage(ProtobufRequestUtilities.createRemoveRequest(
+            TEST_REGION, ProtobufUtilities.createEncodedValue(serializationService, TEST_KEY)));
     protobufProtocolSerializer.serialize(removeMessage, outputStream);
     validateRemoveResponse(socket, protobufProtocolSerializer);
   }
@@ -242,12 +233,11 @@ public class CacheOperationsJUnitTest {
   public void testResponseToGetWithNoData() throws Exception {
     // Get request without any data set must return a null
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    ClientProtocol.Message getMessage = MessageUtil.makeGetRequestMessage(serializationService,
-        TEST_KEY, TEST_REGION, ProtobufUtilities.createMessageHeader(TEST_GET_CORRELATION_ID));
+    ClientProtocol.Message getMessage =
+        MessageUtil.makeGetRequestMessage(serializationService, TEST_KEY, TEST_REGION);
     protobufProtocolSerializer.serialize(getMessage, outputStream);
 
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_GET_CORRELATION_ID);
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
     assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
     RegionAPI.GetResponse getResponse = response.getGetResponse();
@@ -257,17 +247,14 @@ public class CacheOperationsJUnitTest {
 
   @Test
   public void testNewProtocolGetRegionNamesCallSucceeds() throws Exception {
-    int correlationId = TEST_GET_CORRELATION_ID; // reuse this value for this test
-
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
     RegionAPI.GetRegionNamesRequest getRegionNamesRequest =
         ProtobufRequestUtilities.createGetRegionNamesRequest();
 
     ClientProtocol.Message getRegionsMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createMessageHeader(correlationId),
         ProtobufUtilities.createProtobufRequestWithGetRegionNamesRequest(getRegionNamesRequest));
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
-    validateGetRegionNamesResponse(socket, correlationId, protobufProtocolSerializer);
+    validateGetRegionNamesResponse(socket, protobufProtocolSerializer);
   }
 
   @Test
@@ -280,8 +267,7 @@ public class CacheOperationsJUnitTest {
     outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    ClientProtocol.Message getRegionMessage = MessageUtil.makeGetRegionRequestMessage(TEST_REGION,
-        ClientProtocol.MessageHeader.newBuilder().build());
+    ClientProtocol.Message getRegionMessage = MessageUtil.makeGetRegionRequestMessage(TEST_REGION);
     protobufProtocolSerializer.serialize(getRegionMessage, outputStream);
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
@@ -303,10 +289,8 @@ public class CacheOperationsJUnitTest {
 
   private void validateGetResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
-      throws InvalidProtocolMessageException, IOException, UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_GET_CORRELATION_ID);
+      throws InvalidProtocolMessageException, IOException {
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
 
     assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
         response.getResponseAPICase());
@@ -317,20 +301,18 @@ public class CacheOperationsJUnitTest {
   }
 
   private ClientProtocol.Response deserializeResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer, int expectedCorrelationId)
+      ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(expectedCorrelationId, message.getMessageHeader().getCorrelationId());
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
     return message.getResponse();
   }
 
-  private void validateGetRegionNamesResponse(Socket socket, int correlationId,
+  private void validateGetRegionNamesResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, correlationId);
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
 
     assertEquals(ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE,
         response.getResponseAPICase());
@@ -342,8 +324,7 @@ public class CacheOperationsJUnitTest {
   private void validatePutAllResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer,
       Collection<BasicTypes.EncodedValue> expectedFailedKeys) throws Exception {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_PUT_CORRELATION_ID);
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
 
     assertEquals(ClientProtocol.Response.ResponseAPICase.PUTALLRESPONSE,
         response.getResponseAPICase());
@@ -358,8 +339,7 @@ public class CacheOperationsJUnitTest {
   private void validateGetAllResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws InvalidProtocolMessageException,
       IOException, UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_GET_CORRELATION_ID);
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
     assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
         response.getResponseAPICase());
     RegionAPI.GetAllResponse getAllResponse = response.getGetAllResponse();
@@ -386,8 +366,7 @@ public class CacheOperationsJUnitTest {
 
   private void validateRemoveResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
-    ClientProtocol.Response response =
-        deserializeResponse(socket, protobufProtocolSerializer, TEST_REMOVE_CORRELATION_ID);
+    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
     assertEquals(ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE,
         response.getResponseAPICase());
   }

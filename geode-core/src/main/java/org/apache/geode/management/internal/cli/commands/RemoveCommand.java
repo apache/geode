@@ -23,7 +23,6 @@ import static org.apache.geode.management.internal.cli.result.ResultBuilder.crea
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -57,10 +56,6 @@ public class RemoveCommand implements GfshCommand {
           help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
     InternalCache cache = getCache();
 
-    if (StringUtils.isEmpty(regionPath)) {
-      return createUserErrorResult(CliStrings.REMOVE__MSG__REGIONNAME_EMPTY);
-    }
-
     if (!removeAllKeys && (key == null)) {
       return createUserErrorResult(CliStrings.REMOVE__MSG__KEY_EMPTY);
     }
@@ -89,7 +84,7 @@ public class RemoveCommand implements GfshCommand {
       request.setRegionName(regionPath);
       dataResult = callFunctionForRegion(request, removefn, memberList);
     } else {
-      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null);
+      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null, cache);
     }
 
     dataResult.setKeyClass(keyClass);

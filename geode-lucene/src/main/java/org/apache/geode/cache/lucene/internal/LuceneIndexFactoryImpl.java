@@ -15,6 +15,8 @@
 package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
@@ -24,6 +26,7 @@ import java.util.Map;
 public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.LuceneIndexFactory {
   private final LuceneServiceImpl service;
   private final Map<String, Analyzer> fields = new LinkedHashMap<String, Analyzer>();
+  private LuceneSerializer serializer;
 
 
   public LuceneIndexFactoryImpl(final LuceneServiceImpl luceneService) {
@@ -59,7 +62,12 @@ public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.Luc
 
   @Override
   public void create(final String indexName, final String regionPath) {
-    service.createIndex(indexName, regionPath, fields);
+    service.createIndex(indexName, regionPath, fields, serializer);
+  }
 
+  @Override
+  public LuceneIndexFactory setLuceneSerializer(LuceneSerializer luceneSerializer) {
+    this.serializer = luceneSerializer;
+    return this;
   }
 }

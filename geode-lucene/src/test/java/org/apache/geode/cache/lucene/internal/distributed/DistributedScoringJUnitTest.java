@@ -32,6 +32,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
@@ -43,7 +44,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class DistributedScoringJUnitTest {
 
   private String[] indexedFields = new String[] {"txt"};
-  private HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
+  private HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
 
   private final StandardAnalyzer analyzer = new StandardAnalyzer();
   private Region<String, String> region;
@@ -135,8 +136,10 @@ public class DistributedScoringJUnitTest {
 
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(dir, config);
+    LuceneIndex index = Mockito.mock(LuceneIndex.class);
+    Mockito.when(index.getFieldNames()).thenReturn(new String[] {"txt"});
 
-    return new IndexRepositoryImpl(region, writer, mapper, indexStats, null, null, "");
+    return new IndexRepositoryImpl(region, writer, mapper, indexStats, null, null, "", index);
   }
 
   private static class TestType {

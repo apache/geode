@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
@@ -76,10 +75,6 @@ public class CreateIndexCommand implements GfshCommand {
 
     Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-
-    if (!regionPath.startsWith(Region.SEPARATOR)) {
-      regionPath = Region.SEPARATOR + regionPath;
-    }
 
     final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 

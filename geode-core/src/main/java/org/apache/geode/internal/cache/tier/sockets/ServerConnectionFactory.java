@@ -30,29 +30,19 @@ import org.apache.geode.internal.security.SecurityService;
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
+  private final ClientProtocolServiceLoader clientProtocolServiceLoader;
   private volatile ClientProtocolService clientProtocolService;
 
-  public ServerConnectionFactory() {}
-
-  private synchronized ClientProtocolService initializeClientProtocolService(
-      StatisticsFactory statisticsFactory, String statisticsName) {
-    if (clientProtocolService != null) {
-      return clientProtocolService;
-    }
-
-    // use temp to make sure we publish properly.
-    ClientProtocolService tmp = new ClientProtocolServiceLoader().loadService();
-    tmp.initializeStatistics(statisticsName, statisticsFactory);
-
-    clientProtocolService = tmp;
-    return clientProtocolService;
+  public ServerConnectionFactory() {
+    clientProtocolServiceLoader = new ClientProtocolServiceLoader();
   }
 
 
-  private ClientProtocolService getOrCreateClientProtocolService(
+  private synchronized ClientProtocolService getClientProtocolService(
       StatisticsFactory statisticsFactory, String serverName) {
     if (clientProtocolService == null) {
-      return initializeClientProtocolService(statisticsFactory, serverName);
+      clientProtocolService = clientProtocolServiceLoader.lookupService();
+      clientProtocolService.initializeStatistics(serverName, statisticsFactory);
     }
     return clientProtocolService;
   }
@@ -61,7 +51,7 @@ public class ServerConnectionFactory {
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
       SecurityService securityService) throws IOException {
-    if (communicationMode == ProtobufClientServerProtocol.getModeNumber()) {
+    if (ProtobufClientServerProtocol.getModeNumber() == communicationMode) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
       } else {
@@ -83,7 +73,7 @@ public class ServerConnectionFactory {
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
       SecurityService securityService) {
     ClientProtocolService service =
-        getOrCreateClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
+        getClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
 
     ClientProtocolProcessor processor = service.createProcessorForCache(cache, securityService);
 

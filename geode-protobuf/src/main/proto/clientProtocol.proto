@@ -21,21 +21,17 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf;
 
+import "google/protobuf/any.proto";
 import "region_API.proto";
 import "server_API.proto";
 import "basicTypes.proto";
 import "authentication_API.proto";
 
 message Message {
-    MessageHeader messageHeader = 1;
     oneof messageType {
-        Request request = 2;
-        Response response = 3;
+        Request request = 1;
+        Response response = 2;
     }
-}
-
-message MessageHeader {
-    int32 correlationId = 1;
 }
 
 message Request {
@@ -72,7 +68,6 @@ message Response {
         GetRegionResponse getRegionResponse = 44;
 
         AuthenticationResponse simpleAuthenticationResponse = 100;
-
     }
 }
 

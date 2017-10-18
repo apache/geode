@@ -17,6 +17,9 @@ package org.apache.geode.cache.lucene.internal.xml;
 
 import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.*;
 
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.internal.cache.xmlcache.*;
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -24,11 +27,14 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
-import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
+  private static final AttributesImpl EMPTY = new AttributesImpl();
+
   private final LuceneIndex index;
 
   public LuceneIndexXmlGenerator(LuceneIndex index) {
@@ -59,7 +65,13 @@ public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
       }
       XmlGeneratorUtils.emptyElement(handler, PREFIX, FIELD, fieldAttr);
     }
+
+    LuceneSerializer serializer = index.getLuceneSerializer();
+    if (serializer != null) {
+      XmlGeneratorUtils.startElement(handler, PREFIX, SERIALIZER, EMPTY);
+      XmlGeneratorUtils.addDeclarable(handler, serializer);
+      XmlGeneratorUtils.endElement(handler, PREFIX, SERIALIZER);
+    }
     XmlGeneratorUtils.endElement(handler, PREFIX, INDEX);
   }
-
 }

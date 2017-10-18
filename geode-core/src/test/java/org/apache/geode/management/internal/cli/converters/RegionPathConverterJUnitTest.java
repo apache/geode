@@ -14,70 +14,66 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
+import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
 
 @Category(UnitTest.class)
 public class RegionPathConverterJUnitTest {
+  @ClassRule
+  public static GfshParserRule parser = new GfshParserRule();
+  private static RegionPathConverter converter;
 
-  private Mockery mockContext;
+  private static String[] allRegionPaths = {"/region1", "/region2", "/rg3"};
 
-  @Before
-  public void setup() {
-    mockContext = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-        setThreadingPolicy(new Synchroniser());
-      }
-    };
-  }
-
-  @After
-  public void tearDown() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
-  }
-
-  private RegionPathConverter createMockRegionPathConverter(final String[] allRegionPaths) {
-
-    final RegionPathConverter mockRegionPathConverter =
-        mockContext.mock(RegionPathConverter.class, "RPC");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockRegionPathConverter).getAllRegionPaths();
-        will(returnValue(new TreeSet<String>(Arrays.asList(allRegionPaths))));
-      }
-    });
-
-    return mockRegionPathConverter;
+  @BeforeClass
+  public static void before() {
+    // this will let the parser use the spied converter instead of creating its own
+    converter = parser.spyConverter(RegionPathConverter.class);
+    when(converter.getAllRegionPaths())
+        .thenReturn(Arrays.stream(allRegionPaths).collect(Collectors.toSet()));
   }
 
 
   @Test
-  public void testGetAllRegionPaths() throws Exception {
-    String[] allRegionPaths = {"/region1", "/region2", "/rg3"};
-    TreeSet<String> expectedPaths = new TreeSet<String>(Arrays.asList(allRegionPaths));
-
-    final RegionPathConverter mockRegionPathConverter =
-        createMockRegionPathConverter(allRegionPaths);
-
-    Set<String> mocked = mockRegionPathConverter.getAllRegionPaths();
-
-    assertEquals("mocked paths don't match expectedPaths.", mocked, expectedPaths);
+  public void testSupports() throws Exception {
+    assertThat(converter.supports(String.class, ConverterHint.REGION_PATH)).isTrue();
   }
 
+  @Test
+  public void convert() throws Exception {
+    assertThatThrownBy(() -> converter.convertFromText("/", String.class, ""))
+        .isInstanceOf(IllegalArgumentException.class).hasMessage("invalid region path: /");
+
+    assertThat(converter.convertFromText("region", String.class, "")).isEqualTo("/region");
+    assertThat(converter.convertFromText("/region/t", String.class, "")).isEqualTo("/region/t");
+  }
+
+  @Test
+  public void complete() throws Exception {
+    CommandCandidate candidate = parser.complete("destroy region --name=");
+    assertThat(candidate.size()).isEqualTo(allRegionPaths.length);
+    assertThat(candidate.getFirstCandidate()).isEqualTo("destroy region --name=/region1");
+
+    candidate = parser.complete("destroy region --name=/");
+    assertThat(candidate.size()).isEqualTo(allRegionPaths.length);
+    assertThat(candidate.getFirstCandidate()).isEqualTo("destroy region --name=/region1");
+
+    candidate = parser.complete("destroy region --name=/region");
+    assertThat(candidate.size()).isEqualTo(2);
+    assertThat(candidate.getFirstCandidate()).isEqualTo("destroy region --name=/region1");
+  }
 }

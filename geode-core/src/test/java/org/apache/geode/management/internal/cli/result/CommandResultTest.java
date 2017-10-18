@@ -14,32 +14,31 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-
-@Category(UnitTest.class)
+@Category({UnitTest.class})
 public class CommandResultTest {
 
   @Test
   public void emptyResultHasOneEmptyLine() {
     CommandResult commandResult = new CommandResult(new InfoResultData());
-
-    assertThat(commandResult.nextLine()).isEqualTo("");
-    assertThat(commandResult.hasNextLine()).isFalse();
+    Assertions.assertThat(commandResult.nextLine()).isEqualTo("");
+    Assertions.assertThat(commandResult.hasNextLine()).isFalse();
   }
 
   @Test
   public void resultWithOneLineHasOneLine() {
     CommandResult commandResult = new CommandResult(new InfoResultData("oneLine"));
 
-    assertThat(commandResult.nextLine()).isEqualTo("oneLine\n");
+    assertThat(commandResult.nextLine()).isEqualTo("oneLine" + LINE_SEPARATOR);
     assertThat(commandResult.hasNextLine()).isFalse();
   }
 
@@ -50,15 +49,15 @@ public class CommandResultTest {
     resultData.addLine("lineTwo");
     CommandResult commandResult = new CommandResult(resultData);
 
-    assertThat(commandResult.nextLine()).isEqualTo("lineOne\nlineTwo\n");
+    assertThat(commandResult.nextLine())
+        .isEqualTo("lineOne" + LINE_SEPARATOR + "lineTwo" + LINE_SEPARATOR);
     assertThat(commandResult.hasNextLine()).isFalse();
   }
 
   @Test
   public void emptyResultDoesNotHaveFileToDownload() {
     CommandResult commandResult = new CommandResult(new InfoResultData());
-
-    assertThat(commandResult.hasFileToDownload()).isFalse();
+    Assertions.assertThat(commandResult.hasFileToDownload()).isFalse();
   }
 
   @Test
@@ -67,9 +66,7 @@ public class CommandResultTest {
     CommandResult commandResult = new CommandResult(fileToDownload);
 
     assertThat(commandResult.hasFileToDownload()).isTrue();
-    assertThat(commandResult.nextLine()).isEqualTo(fileToDownload.toString() + '\n');
+    assertThat(commandResult.nextLine()).isEqualTo(fileToDownload.toString() + LINE_SEPARATOR);
     assertThat(commandResult.getFileToDownload()).isEqualTo(fileToDownload);
   }
-
-
 }

@@ -22,7 +22,6 @@ import static org.apache.geode.management.internal.cli.commands.DataCommandsUtil
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -57,16 +56,6 @@ public class LocateEntryCommand implements GfshCommand {
     getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
 
     DataCommandResult dataResult;
-
-    if (StringUtils.isEmpty(regionPath)) {
-      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
-          CliStrings.LOCATE_ENTRY__MSG__REGIONNAME_EMPTY, false));
-    }
-
-    if (StringUtils.isEmpty(key)) {
-      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
-          CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false));
-    }
 
     DataCommandFunction locateEntry = new DataCommandFunction();
     Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), true);

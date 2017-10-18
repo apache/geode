@@ -310,6 +310,28 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     assertEquals(numberOfExecutions() - 1, customCollector.getResult().size());
   }
 
+  /**
+   * Test the a result collector will timeout using the timeout provided
+   */
+  @Test
+  public void resultCollectorHonorsFunctionTimeout() throws InterruptedException {
+    Function sleepingFunction = context -> {
+      try {
+        long endTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+        while (!context.getCache().isClosed() && System.nanoTime() < endTime) {
+          Thread.sleep(10);
+        }
+      } catch (InterruptedException e) {
+        // exit
+      }
+      context.getResultSender().sendResult("FAILED");
+    };
+
+    ResultCollector collector = getExecution().execute(sleepingFunction);
+    thrown.expect(FunctionException.class);
+    collector.getResult(1, TimeUnit.SECONDS);
+  }
+
   protected List<InternalDistributedMember> getAllMembers() {
     // Get a list of all of the members
     ResultCollector rs = getExecution().execute(functionContext -> {

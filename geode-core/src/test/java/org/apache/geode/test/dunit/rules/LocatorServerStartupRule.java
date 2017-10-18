@@ -208,6 +208,12 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return startServerVM(index, properties, -1);
   }
 
+  public MemberVM startServerAsJmxManager(int index, Properties properties, int locatorPort)
+      throws IOException {
+    properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
+    return startServerVM(index, properties, locatorPort);
+  }
+
   public MemberVM startServerAsEmbededLocator(int index) throws IOException {
     return startServerAsEmbededLocator(index, new Properties());
   }

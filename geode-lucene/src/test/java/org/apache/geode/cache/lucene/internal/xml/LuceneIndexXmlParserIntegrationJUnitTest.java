@@ -19,8 +19,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.test.LuceneTestSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -43,8 +45,10 @@ import java.io.FileNotFoundException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -117,6 +121,52 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     validateExpectedAnalyzers(region, expectedIndexAnalyzers);
   }
 
+  @Test
+  public void parseIndexWithSerializerAndStringProperty() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+
+    // Validate expected indexes
+    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    expectedIndexes.put("index", new String[] {"a"});
+    validateExpectedIndexes(region, expectedIndexes);
+
+    // Validate expected serializer
+    Properties expected = new Properties();
+    expected.setProperty("param_from_xml", "value_from_xml");
+    validateExpectedSerializer(region, expected);
+  }
+
+  @Test
+  public void parseIndexWithSerializerAndDeclarableProperty() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+
+    // Validate expected indexes
+    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    expectedIndexes.put("index", new String[] {"a"});
+    validateExpectedIndexes(region, expectedIndexes);
+
+    // Validate expected serializer
+    LuceneTestSerializer nestedSerializer = new LuceneTestSerializer();
+    nestedSerializer.getProperties().setProperty("nested_param", "nested_value");
+    Properties expected = new Properties();
+    expected.put("param_from_xml", nestedSerializer);
+    validateExpectedSerializer(region, expected);
+  }
+
+  @Test
+  public void parseIndexWithSerializer() throws FileNotFoundException {
+    RegionCreation region = createRegionCreation("region");
+
+    // Validate expected indexes
+    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    expectedIndexes.put("index", new String[] {"a"});
+    validateExpectedIndexes(region, expectedIndexes);
+
+    // Validate expected serializer
+    Properties expected = new Properties();
+    validateExpectedSerializer(region, expected);
+  }
+
   private RegionCreation createRegionCreation(String regionName) throws FileNotFoundException {
     CacheXmlParser parser = CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()));
     CacheCreation cache = parser.getCacheCreation();
@@ -140,6 +190,15 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
       expectedIndexAnalyzers.remove(index.getName());
     }
     assertEquals(Collections.emptyMap(), expectedIndexAnalyzers);
+  }
+
+  private void validateExpectedSerializer(RegionCreation region, Properties expectedProps) {
+    Extension extension = region.getExtensionPoint().getExtensions().iterator().next();
+    LuceneIndexCreation index = (LuceneIndexCreation) extension;
+    LuceneSerializer testSerializer = index.getLuceneSerializer();
+    assertThat(testSerializer).isInstanceOf(LuceneTestSerializer.class);
+    Properties p = ((LuceneTestSerializer) testSerializer).getProperties();
+    assertEquals(expectedProps, p);
   }
 
   /**

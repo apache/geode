@@ -18,6 +18,11 @@ package org.apache.geode.cache.lucene.internal.repository.serializer;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -26,18 +31,15 @@ import org.apache.geode.pdx.PdxInstance;
  */
 class PdxLuceneSerializer implements LuceneSerializer {
 
-  private String[] indexedFields;
-
   private static final Logger logger = LogService.getLogger();
 
-  public PdxLuceneSerializer(String[] indexedFields) {
-    this.indexedFields = indexedFields;
-  }
+  public PdxLuceneSerializer() {}
 
   @Override
-  public void toDocument(Object value, Document doc) {
+  public Collection<Document> toDocuments(LuceneIndex index, Object value) {
+    Document doc = new Document();
     PdxInstance pdx = (PdxInstance) value;
-    for (String field : indexedFields) {
+    for (String field : index.getFieldNames()) {
       if (pdx.hasField(field)) {
         Object fieldValue = pdx.getField(field);
         if (fieldValue == null) {
@@ -49,5 +51,6 @@ class PdxLuceneSerializer implements LuceneSerializer {
     if (logger.isDebugEnabled()) {
       logger.debug("PdxLuceneSerializer.toDocument:" + doc);
     }
+    return Collections.singleton(doc);
   }
 }

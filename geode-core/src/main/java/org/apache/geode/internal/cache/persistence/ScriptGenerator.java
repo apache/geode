@@ -14,23 +14,24 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.PrintWriter;
+import java.io.IOException;
 
 interface ScriptGenerator {
 
-  void writePreamble(PrintWriter writer);
+  void writePreamble(BufferedWriter writer) throws IOException;
 
-  void writeExit(PrintWriter writer);
+  void writeExit(BufferedWriter writer) throws IOException;
 
-  void writeCopyFile(PrintWriter writer, File backup, File original);
+  void writeCopyFile(BufferedWriter writer, File backup, File original) throws IOException;
 
-  void writeCopyDirectoryContents(PrintWriter writer, File backup, File original,
-      boolean backupHasFiles);
+  void writeCopyDirectoryContents(BufferedWriter writer, File backup, File original,
+      boolean backupHasFiles) throws IOException;
 
-  void writeExistenceTest(PrintWriter writer, File file);
+  void writeExistenceTest(BufferedWriter writer, File file) throws IOException;
 
-  void writeComment(PrintWriter writer, String string);
+  void writeComment(BufferedWriter writer, String string) throws IOException;
 
   String getScriptName();
 

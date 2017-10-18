@@ -20,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
@@ -52,12 +51,13 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
   @Override
   public void execute(FunctionContext context) {
     try {
+      Cache cache = context.getCache();
       String regionPath = (String) context.getArguments();
       if (regionPath == null) {
         throw new IllegalArgumentException(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
       }
-      FetchRegionAttributesFunctionResult<?, ?> result = getRegionAttributes(regionPath);
+      FetchRegionAttributesFunctionResult<?, ?> result = getRegionAttributes(cache, regionPath);
       context.getResultSender().lastResult(result);
     } catch (IllegalArgumentException e) {
       if (logger.isDebugEnabled()) {
@@ -68,9 +68,8 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
   }
 
   @SuppressWarnings("deprecation")
-  public static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(
+  public static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(Cache cache,
       String regionPath) {
-    Cache cache = CacheFactory.getAnyInstance();
     Region<K, V> foundRegion = cache.getRegion(regionPath);
 
     if (foundRegion == null) {
