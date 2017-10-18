@@ -108,4 +108,11 @@ public class PulseSecurityTest {
     assertThat(result.toString()).contains("No Data Found");
   }
 
+  @Test
+  public void loginAfterLogout() throws Exception {
+    client.loginToPulseAndVerify("data", "data");
+    client.logoutFromPulse();
+    client.loginToPulseAndVerify("data", "data");
+    client.logoutFromPulse();
+  }
 }
