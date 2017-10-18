@@ -15,67 +15,41 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
 // disk: DISK
 // lru: LRU
-// stats: 1
+// stats: STATS
 // versioned: VERSIONED
-// offheap: 1
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
-// key object: 1
+// key object: KEY_OBJECT
 // key int: KEY_INT
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
 // key string2: KEY_STRING2
-
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHeap {
   public VMStatsRegionEntryOffHeapObjectKey(RegionEntryContext context, Object key,
-
-      @Retained
-
-      Object value
-
-
-
-  ) {
-    super(context,
-
-
-
-        value
-
-    );
+      @Retained Object value) {
+    super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
     this.key = key;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -83,7 +57,6 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMStatsRegionEntryOffHeapObjectKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMStatsRegionEntryOffHeapObjectKey.class, "lastModified");
-
   /**
    * All access done using ohAddrUpdater so it is used even though the compiler can not tell it is.
    */
@@ -114,19 +87,13 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
-
   @Unretained
   protected void setValueField(@Unretained Object v) {
-
-
-
     OffHeapRegionEntryHelper.setValue(this, v);
   }
 
   @Override
-
   @Retained
-
   public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
     return OffHeapRegionEntryHelper._getValueRetain(this, decompress, context);
   }
@@ -142,9 +109,7 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
   }
 
   @Override
-
   @Released
-
   public void release() {
     OffHeapRegionEntryHelper.releaseEntry(this);
   }
@@ -152,9 +117,6 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
   @Override
   public void returnToPool() {
     // Deadcoded for now; never was working
-    // if (this instanceof VMThinRegionEntryLongKey) {
-    // factory.returnToPool((VMThinRegionEntryLongKey)this);
-    // }
   }
 
   protected long getLastModifiedField() {
@@ -190,10 +152,7 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
     this.next = n;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // stats code
   @Override
   public void updateStatsForGet(boolean hit, long time) {
@@ -216,7 +175,6 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
   private volatile long lastAccessed;
   private volatile int hitCount;
   private volatile int missCount;
-
   private static final AtomicIntegerFieldUpdater<VMStatsRegionEntryOffHeapObjectKey> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsRegionEntryOffHeapObjectKey.class, "hitCount");
   private static final AtomicIntegerFieldUpdater<VMStatsRegionEntryOffHeapObjectKey> missCountUpdater =
@@ -256,7 +214,6 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public void txDidDestroy(long currTime) {
     setLastModified(currTime);
@@ -270,20 +227,13 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
     return true;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   private final Object key;
 
   @Override
   public Object getKey() {
     return this.key;
   }
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-
