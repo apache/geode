@@ -32,11 +32,11 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GfshCommandsSecurityTest {
@@ -135,12 +135,9 @@ public class GfshCommandsSecurityTest {
       CommandResult result = gfshConnection.executeCommand(permitted.getCommand());
       assertThat(result).isNotNull();
 
-      if (result.getResultData() instanceof ErrorResultData) {
-        assertThat(ResultBuilder.ERRORCODE_UNAUTHORIZED).describedAs(permitted.getCommand())
-            .isNotEqualTo(((ErrorResultData) result.getResultData()).getErrorCode());
-      } else {
-        assertThat(Result.Status.OK).describedAs(permitted.toString())
-            .isEqualTo(result.getStatus());
+      // for permitted commands, if any error happens, it's not an Unauthorized error
+      if (result.getStatus() == Result.Status.ERROR) {
+        assertThat(result.getContent().toString()).doesNotContain("not authorized");
       }
     }
 
@@ -148,7 +145,6 @@ public class GfshCommandsSecurityTest {
     List<TestCommand> others = TestCommand.getOnlineCommands();
     others.removeAll(allPermitted);
     for (TestCommand other : others) {
-
       System.out.println("Processing unauthorized command: " + other.getCommand());
       CommandResult result = gfshConnection.executeCommand(other.getCommand());
       int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
