@@ -113,5 +113,6 @@ public class PulseSecurityTest {
     client.loginToPulseAndVerify("data", "data");
     client.logoutFromPulse();
     client.loginToPulseAndVerify("data", "data");
+    client.logoutFromPulse();
   }
 }

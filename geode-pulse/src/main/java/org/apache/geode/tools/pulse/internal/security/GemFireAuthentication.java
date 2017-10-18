@@ -81,8 +81,4 @@ public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 
   }
 
-  public JMXConnector getJmxc() {
-    return jmxc;
-  }
-
 }

@@ -137,7 +137,14 @@ public class Repository {
   }
 
   public void logoutUser(String username) {
-    clusterMap.remove(username);
+    Cluster data = clusterMap.remove(username);
+    if (data != null) {
+      try {
+        data.getJMXConnector().close();
+      } catch (Exception e) {
+        // We're logging out so this can be ignored
+      }
+    }
   }
 
   // This method is used to remove all cluster threads
