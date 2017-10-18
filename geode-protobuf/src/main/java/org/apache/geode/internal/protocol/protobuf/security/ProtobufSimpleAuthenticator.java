@@ -61,7 +61,6 @@ public class ProtobufSimpleAuthenticator implements Authenticator {
       sendAuthenticationResponse(outputStream, true);
       return authToken;
     } catch (AuthenticationFailedException ex) {
-      // If authentication failed, send back a response to that effect and rethrow
       sendAuthenticationResponse(outputStream, false);
       throw ex;
     }

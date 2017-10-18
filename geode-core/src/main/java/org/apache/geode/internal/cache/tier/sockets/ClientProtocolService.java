@@ -28,14 +28,14 @@ public interface ClientProtocolService {
 
   /**
    *
-   * The pipeline MUST use an available authenticator for authentication of all operations once the
+   * The processor MUST use an available authenticator for authentication of all operations once the
    * handshake has happened.
    *
    */
   ClientProtocolProcessor createProcessorForCache(Cache cache, SecurityService securityService);
 
   /**
-   * Create a locator pipeline. The locator does not currently provide any authentication.
+   * Create a locator processor. The locator does not currently provide any authentication.
    */
   ClientProtocolProcessor createProcessorForLocator(InternalLocator locator);
 }
