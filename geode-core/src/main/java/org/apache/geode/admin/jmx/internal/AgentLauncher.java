@@ -588,6 +588,10 @@ public class AgentLauncher {
    * Removes an agent's status file
    */
   protected void deleteStatus() throws IOException {
+    deleteStatus(workingDirectory, statusFileName);
+  }
+
+  void deleteStatus(final File workingDirectory, final String statusFileName) throws IOException {
     final File statusFile = new File(workingDirectory, statusFileName);
 
     if (statusFile.exists() && !statusFile.delete()) {
@@ -607,6 +611,10 @@ public class AgentLauncher {
    *         type Status.
    */
   protected Status readStatus() throws IOException {
+    return readStatus(workingDirectory, statusFileName);
+  }
+
+  Status readStatus(final File workingDirectory, final String statusFileName) throws IOException {
     FileInputStream fileIn = null;
     ObjectInputStream objectIn = null;
 
@@ -687,6 +695,10 @@ public class AgentLauncher {
    * @throws IOException if the Status could not be successfully persisted to disk.
    */
   public Status writeStatus(final Status status) throws IOException {
+    return writeStatus(status, workingDirectory);
+  }
+
+  Status writeStatus(final Status status, final File workingDirectory) throws IOException {
     FileOutputStream fileOut = null;
     ObjectOutputStream objectOut = null;
 
