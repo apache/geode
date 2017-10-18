@@ -67,5 +67,4 @@ task zip(type: Zip) {
     destinationDir = file("$buildDir/libs")
 }
 
-build.dependsOn 'zip'
 assemble.dependsOn 'zip'
