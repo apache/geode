@@ -35,6 +35,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -123,7 +124,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return InternalLuceneService.class;
   }
 
-  @Override
   public void beforeRegionDestroyed(Region region) {
     List<LuceneIndex> indexes = getIndexes(region.getFullPath());
     if (!indexes.isEmpty()) {
@@ -131,6 +131,21 @@ public class LuceneServiceImpl implements InternalLuceneService {
       throw new IllegalStateException(
           LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
               .toLocalizedString(region.getFullPath(), indexNames));
+    }
+  }
+
+  public void cleanupFailedInitialization(Region region) {
+    List<LuceneIndexCreationProfile> definedIndexes = getDefinedIndexes(region.getFullPath());
+    for (LuceneIndexCreationProfile definedIndex : definedIndexes) {
+      // Get the AsyncEventQueue
+      String aeqId = LuceneServiceImpl.getUniqueIndexName(definedIndex.getIndexName(),
+          definedIndex.getRegionPath());
+      AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+      // Stop and remove the AsyncEventQueue if it exists
+      if (aeq != null) {
+        aeq.stop();
+        this.cache.removeAsyncEventQueue(aeq);
+      }
     }
   }
 
@@ -285,6 +300,16 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return Collections.unmodifiableList(indexes);
   }
 
+  public List<LuceneIndexCreationProfile> getDefinedIndexes(String regionPath) {
+    List<LuceneIndexCreationProfile> profiles = new ArrayList();
+    for (LuceneIndexCreationProfile profile : getAllDefinedIndexes()) {
+      if (profile.getRegionPath().equals(regionPath)) {
+        profiles.add(profile);
+      }
+    }
+    return Collections.unmodifiableList(profiles);
+  }
+
   @Override
   public void destroyIndex(String indexName, String regionPath) {
     destroyIndex(indexName, regionPath, true);
@@ -312,16 +337,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     String uniqueIndexName = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     if (definedIndexMap.containsKey(uniqueIndexName)) {
       definedIndexMap.remove(uniqueIndexName);
-      RegionListener listenerToRemove = null;
-      for (RegionListener listener : cache.getRegionListeners()) {
-        if (listener instanceof LuceneRegionListener) {
-          LuceneRegionListener lrl = (LuceneRegionListener) listener;
-          if (lrl.getRegionPath().equals(regionPath) && lrl.getIndexName().equals(indexName)) {
-            listenerToRemove = lrl;
-            break;
-          }
-        }
-      }
+      RegionListener listenerToRemove = getRegionListener(indexName, regionPath);
       if (listenerToRemove != null) {
         cache.removeRegionListener(listenerToRemove);
       }
@@ -332,6 +348,23 @@ public class LuceneServiceImpl implements InternalLuceneService {
           LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1.toLocalizedString(indexName,
               regionPath));
     }
+  }
+
+  protected RegionListener getRegionListener(String indexName, String regionPath) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/" + regionPath;
+    }
+    RegionListener rl = null;
+    for (RegionListener listener : cache.getRegionListeners()) {
+      if (listener instanceof LuceneRegionListener) {
+        LuceneRegionListener lrl = (LuceneRegionListener) listener;
+        if (lrl.getRegionPath().equals(regionPath) && lrl.getIndexName().equals(indexName)) {
+          rl = lrl;
+          break;
+        }
+      }
+    }
+    return rl;
   }
 
   @Override

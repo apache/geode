@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene;
 
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
@@ -325,7 +326,6 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex2, regionType));
   }
 
-  @Test
   @Parameters("PARTITION")
   public void verifyDifferentSerializerShouldFail(RegionTestableType regionType) {
     SerializableRunnableIF createIndex1 = getIndexWithDefaultSerializer();
@@ -347,6 +347,33 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
         CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER));
   }
 
+  @Test
+  public void verifyAsyncEventQueueIsCleanedUpIfRegionCreationFails() {
+    SerializableRunnableIF createIndex = get2FieldsIndexes();
+
+    // Create a Cache in dataStore1 with a PR defining 10 buckets
+    dataStore1.invoke(() -> initDataStore(createIndex, RegionTestableType.PARTITION));
+
+    // Attempt to create a Cache in dataStore2 with a PR defining 20 buckets. This will fail.
+    String exceptionMessage =
+        LocalizedStrings.PartitionedRegion_THE_TOTAL_NUMBER_OF_BUCKETS_FOUND_IN_PARTITIONATTRIBUTES_0_IS_INCOMPATIBLE_WITH_THE_TOTAL_NUMBER_OF_BUCKETS_USED_BY_OTHER_DISTRIBUTED_MEMBERS_SET_THE_NUMBER_OF_BUCKETS_TO_1
+            .toLocalizedString(new Object[] {NUM_BUCKETS * 2, NUM_BUCKETS});
+    dataStore2.invoke(() -> initDataStore(createIndex,
+        RegionTestableType.PARTITION_WITH_DOUBLE_BUCKETS, exceptionMessage));
+
+    // Verify dataStore1 has two AsyncEventQueues
+    dataStore1.invoke(() -> verifyAsyncEventQueues(2));
+
+    // Verify dataStore2 has no AsyncEventQueues
+    dataStore2.invoke(() -> verifyAsyncEventQueues(0));
+
+    // Create a Cache in dataStore2 with a PR defining 10 buckets. This will succeed.
+    dataStore2.invoke(() -> initDataStore(RegionTestableType.PARTITION));
+
+    // Verify dataStore2 has two AsyncEventQueues
+    dataStore2.invoke(() -> verifyAsyncEventQueues(2));
+  }
+
   protected String getXmlFileForTest(String testName) {
     return TestUtil.getResourcePath(getClass(),
         getClassSimpleName() + "." + testName + ".cache.xml");
@@ -361,7 +388,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     createIndex.run();
     try {
       regionType.createDataStore(getCache(), REGION_NAME);
-      fail("Should not have been able to create index");
+      fail("Should not have been able to create region");
     } catch (IllegalStateException e) {
       assertEquals(message, e.getMessage());
     }
@@ -416,14 +443,14 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   protected void verifyIndexList(final int expectedSize) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     Collection<LuceneIndex> indexList = luceneService.getAllIndexes();
-    assertEquals(indexList.size(), expectedSize);
+    assertEquals(expectedSize, indexList.size());
   }
 
   protected void verifyIndexes(final int numberOfIndexes) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     for (int count = 1; count <= numberOfIndexes; count++) {
-      assertEquals(luceneService.getIndex(INDEX_NAME + "_" + count, REGION_NAME).getName(),
-          INDEX_NAME + "_" + count);
+      assertEquals(INDEX_NAME + "_" + count,
+          luceneService.getIndex(INDEX_NAME + "_" + count, REGION_NAME).getName());
     }
   }
 
@@ -508,5 +535,13 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
           .setLuceneSerializer(new HeterogeneousLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
     };
+  }
+
+  protected void initDataStore(RegionTestableType regionTestType) throws Exception {
+    regionTestType.createDataStore(getCache(), REGION_NAME);
+  }
+
+  protected void verifyAsyncEventQueues(final int expectedSize) {
+    assertEquals(expectedSize, getCache().getAsyncEventQueues(false).size());
   }
 }
