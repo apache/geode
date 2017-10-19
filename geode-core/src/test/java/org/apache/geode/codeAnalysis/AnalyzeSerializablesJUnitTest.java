@@ -45,9 +45,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Category(IntegrationTest.class)
 public class AnalyzeSerializablesJUnitTest {
@@ -61,6 +63,8 @@ public class AnalyzeSerializablesJUnitTest {
 
   /** all loaded classes */
   private Map<String, CompiledClass> classes;
+
+  List<String> excludedClasses;
 
   private File expectedDataSerializablesFile;
   private File expectedSerializablesFile;
@@ -162,7 +166,7 @@ public class AnalyzeSerializablesJUnitTest {
   private void loadClasses() throws IOException {
     System.out.println("loadClasses starting");
 
-    List<String> excludedClasses = loadExcludedClasses(getResourceAsFile("excludedClasses.txt"));
+    excludedClasses = loadExcludedClasses(getResourceAsFile("excludedClasses.txt"));
     List<String> openBugs = loadOpenBugs(getResourceAsFile("openBugs.txt"));
 
     excludedClasses.addAll(openBugs);
@@ -276,9 +280,15 @@ public class AnalyzeSerializablesJUnitTest {
 
   private List<ClassAndVariables> findSerializables() {
     List<ClassAndVariables> result = new ArrayList<>(2000);
+    System.out.println("excluded classes are " + excludedClasses);
+    Set<String> setOfExclusions = new HashSet<>(excludedClasses);
     for (Map.Entry<String, CompiledClass> entry : this.classes.entrySet()) {
       CompiledClass compiledClass = entry.getValue();
-      System.out.println("processing class " + compiledClass.fullyQualifiedName());
+      if (setOfExclusions.contains(compiledClass.fullyQualifiedName())) {
+        System.out.println("excluding class " + compiledClass.fullyQualifiedName());
+        continue;
+      }
+      // System.out.println("processing class " + compiledClass.fullyQualifiedName());
 
       if (!compiledClass.isInterface() && compiledClass.isSerializableAndNotDataSerializable()) {
         ClassAndVariables classAndVariables = new ClassAndVariables(compiledClass);
