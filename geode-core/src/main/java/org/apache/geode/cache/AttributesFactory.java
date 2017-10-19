@@ -14,14 +14,6 @@
  */
 package org.apache.geode.cache;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -36,6 +28,14 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Creates instances of {@link RegionAttributes}. An {@code AttributesFactory} instance maintains
@@ -329,6 +329,11 @@ public class AttributesFactory<K, V> {
    * @since GemFire 6.5
    */
   public static final boolean DEFAULT_DISK_SYNCHRONOUS = true;
+
+  /**
+   * The default concurrency level for updates to region values
+   */
+  public static final int DEFAULT_CONCURRENCY_LEVEL = 16;
 
   /**
    * Creates a new instance of AttributesFactory ready to create a {@code RegionAttributes} with
@@ -1559,7 +1564,7 @@ public class AttributesFactory<K, V> {
     Class<V> valueConstraint = null;
     int initialCapacity = 16;
     float loadFactor = 0.75f;
-    int concurrencyLevel = 16;
+    int concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL;
     boolean concurrencyChecksEnabled = true;
     boolean earlyAck = false;
     boolean publisher = false;

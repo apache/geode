@@ -15,19 +15,18 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Used to carry arguments between gfsh region command implementations and the functions that do the
@@ -38,165 +37,181 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 public class RegionFunctionArgs implements Serializable {
   private static final long serialVersionUID = -5158224572470173267L;
 
-  private final String regionPath;
-  private final RegionShortcut regionShortcut;
-  private final String useAttributesFrom;
-  private final Boolean skipIfExists;
-  private final String keyConstraint;
-  private final String valueConstraint;
+  private String regionPath;
+  private RegionShortcut regionShortcut;
+  private String templateRegion;
+  private boolean skipIfExists;
+  private String keyConstraint;
+  private String valueConstraint;
   private Boolean statisticsEnabled;
-  private final boolean isSetStatisticsEnabled;
-  private final RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime;
-  private final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL;
-  private final RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime;
-  private final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL;
-  private final String diskStore;
+  private RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime;
+  private RegionFunctionArgs.ExpirationAttrs entryExpirationTTL;
+  private RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime;
+  private RegionFunctionArgs.ExpirationAttrs regionExpirationTTL;
+  private String diskStore;
   private Boolean diskSynchronous;
-  private final boolean isSetDiskSynchronous;
   private Boolean enableAsyncConflation;
-  private final boolean isSetEnableAsyncConflation;
   private Boolean enableSubscriptionConflation;
-  private final boolean isSetEnableSubscriptionConflation;
-  private final Set<String> cacheListeners;
-  private final String cacheLoader;
-  private final String cacheWriter;
-  private final Set<String> asyncEventQueueIds;
-  private final Set<String> gatewaySenderIds;
+  private Set<String> cacheListeners = Collections.emptySet();
+  private String cacheLoader;
+  private String cacheWriter;
+  private Set<String> asyncEventQueueIds = Collections.emptySet();
+  private Set<String> gatewaySenderIds = Collections.emptySet();
   private Boolean concurrencyChecksEnabled;
-  private final boolean isSetConcurrencyChecksEnabled;
   private Boolean cloningEnabled;
-  private final boolean isSetCloningEnabled;
   private Boolean mcastEnabled;
-  private final boolean isSetMcastEnabled;
   private Integer concurrencyLevel;
-  private final boolean isSetConcurrencyLevel;
-  private final PartitionArgs partitionArgs;
-  private final Integer evictionMax;
+  private PartitionArgs partitionArgs;
+  private Integer evictionMax;
   private String compressor;
-  private final boolean isSetCompressor;
   private Boolean offHeap;
-  private final boolean isSetOffHeap;
   private RegionAttributes<?, ?> regionAttributes;
-  private final boolean isPartitionResolver;
-  private String partitionResolver;
 
-  public RegionFunctionArgs(String regionPath, RegionShortcut regionShortcut,
-      String useAttributesFrom, boolean skipIfExists, String keyConstraint, String valueConstraint,
-      Boolean statisticsEnabled, RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime,
-      RegionFunctionArgs.ExpirationAttrs entryExpirationTTL,
-      RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime,
-      RegionFunctionArgs.ExpirationAttrs regionExpirationTTL, String diskStore,
-      Boolean diskSynchronous, Boolean enableAsyncConflation, Boolean enableSubscriptionConflation,
-      String[] cacheListeners, String cacheLoader, String cacheWriter, String[] asyncEventQueueIds,
-      String[] gatewaySenderIds, Boolean concurrencyChecksEnabled, Boolean cloningEnabled,
-      Integer concurrencyLevel, String prColocatedWith, Integer prLocalMaxMemory,
-      Long prRecoveryDelay, Integer prRedundantCopies, Long prStartupRecoveryDelay,
-      Long prTotalMaxMemory, Integer prTotalNumBuckets, Integer evictionMax, String compressor,
-      Boolean offHeap, Boolean mcastEnabled, final String partitionResolver) {
+  public RegionFunctionArgs() {
+    this.partitionArgs = new PartitionArgs();
+  }
+
+  public void setRegionPath(String regionPath) {
     this.regionPath = regionPath;
-    this.regionShortcut = regionShortcut;
-    this.useAttributesFrom = useAttributesFrom;
-    this.skipIfExists = skipIfExists;
-    this.keyConstraint = keyConstraint;
-    this.valueConstraint = valueConstraint;
-    this.evictionMax = evictionMax;
-    this.isSetStatisticsEnabled = statisticsEnabled != null;
-    if (this.isSetStatisticsEnabled) {
-      this.statisticsEnabled = statisticsEnabled;
-    }
-    this.entryExpirationIdleTime = entryExpirationIdleTime;
-    this.entryExpirationTTL = entryExpirationTTL;
-    this.regionExpirationIdleTime = regionExpirationIdleTime;
-    this.regionExpirationTTL = regionExpirationTTL;
-    this.diskStore = diskStore;
-    this.isSetDiskSynchronous = diskSynchronous != null;
-    if (this.isSetDiskSynchronous) {
-      this.diskSynchronous = diskSynchronous;
-    }
-    this.isSetEnableAsyncConflation = enableAsyncConflation != null;
-    if (this.isSetEnableAsyncConflation) {
-      this.enableAsyncConflation = enableAsyncConflation;
-    }
-    this.isSetEnableSubscriptionConflation = enableSubscriptionConflation != null;
-    if (this.isSetEnableSubscriptionConflation) {
-      this.enableSubscriptionConflation = enableSubscriptionConflation;
-    }
-    if (cacheListeners != null) {
-      this.cacheListeners = new LinkedHashSet<>();
-      this.cacheListeners.addAll(Arrays.asList(cacheListeners));
-    } else {
-      this.cacheListeners = null;
-    }
-    this.cacheLoader = cacheLoader;
-    this.cacheWriter = cacheWriter;
-    if (asyncEventQueueIds != null) {
-      this.asyncEventQueueIds = new LinkedHashSet<>();
-      this.asyncEventQueueIds.addAll(Arrays.asList(asyncEventQueueIds));
-    } else {
-      this.asyncEventQueueIds = null;
-    }
-    if (gatewaySenderIds != null) {
-      this.gatewaySenderIds = new LinkedHashSet<>();
-      this.gatewaySenderIds.addAll(Arrays.asList(gatewaySenderIds));
-    } else {
-      this.gatewaySenderIds = null;
-    }
-    this.isSetConcurrencyChecksEnabled = concurrencyChecksEnabled != null;
-    if (this.isSetConcurrencyChecksEnabled) {
-      this.concurrencyChecksEnabled = concurrencyChecksEnabled;
-    }
-    this.isSetCloningEnabled = cloningEnabled != null;
-    if (this.isSetCloningEnabled) {
-      this.cloningEnabled = cloningEnabled;
-    }
-    this.isSetMcastEnabled = mcastEnabled != null;
-    if (isSetMcastEnabled) {
-      this.mcastEnabled = mcastEnabled;
-    }
-    this.isSetConcurrencyLevel = concurrencyLevel != null;
-    if (this.isSetConcurrencyLevel) {
-      this.concurrencyLevel = concurrencyLevel;
-    }
-    this.partitionArgs =
-        new PartitionArgs(prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
-            prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, partitionResolver);
+  }
 
-    this.isSetCompressor = (compressor != null);
-    if (this.isSetCompressor) {
-      this.compressor = compressor;
-    }
-    this.isSetOffHeap = (offHeap != null);
-    if (this.isSetOffHeap) {
-      this.offHeap = offHeap;
-    }
-    this.isPartitionResolver = (partitionResolver != null);
-    if (this.isPartitionResolver) {
-      this.partitionResolver = partitionResolver;
+  public void setTemplateRegion(String templateRegion) {
+    this.templateRegion = templateRegion;
+  }
+
+  public void setRegionShortcut(RegionShortcut regionShortcut) {
+    this.regionShortcut = regionShortcut;
+  }
+
+
+  public void setSkipIfExists(boolean skipIfExists) {
+    this.skipIfExists = skipIfExists;
+  }
+
+  public void setKeyConstraint(String keyConstraint) {
+    this.keyConstraint = keyConstraint;
+  }
+
+  public void setValueConstraint(String valueConstraint) {
+    this.valueConstraint = valueConstraint;
+  }
+
+  public void setStatisticsEnabled(Boolean statisticsEnabled) {
+    this.statisticsEnabled = statisticsEnabled;
+  }
+
+  public void setEntryExpirationIdleTime(Integer timeout, String action) {
+    if (timeout != null) {
+      this.entryExpirationIdleTime = new ExpirationAttrs(
+          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_IDLE, timeout, action);
     }
   }
 
-  // Constructor to be used for supplied region attributes
-  public RegionFunctionArgs(String regionPath, String useAttributesFrom, boolean skipIfExists,
-      String keyConstraint, String valueConstraint, Boolean statisticsEnabled,
-      RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime,
-      RegionFunctionArgs.ExpirationAttrs entryExpirationTTL,
-      RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime,
-      RegionFunctionArgs.ExpirationAttrs regionExpirationTTL, String diskStore,
-      Boolean diskSynchronous, Boolean enableAsyncConflation, Boolean enableSubscriptionConflation,
-      String[] cacheListeners, String cacheLoader, String cacheWriter, String[] asyncEventQueueIds,
-      String[] gatewaySenderIds, Boolean concurrencyChecksEnabled, Boolean cloningEnabled,
-      Integer concurrencyLevel, String prColocatedWith, Integer prLocalMaxMemory,
+  public void setEntryExpirationTTL(Integer timeout, String action) {
+    if (timeout != null) {
+      this.entryExpirationTTL = new ExpirationAttrs(
+          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_TTL, timeout, action);
+    }
+  }
+
+  public void setRegionExpirationIdleTime(Integer timeout, String action) {
+    if (timeout != null) {
+      this.regionExpirationIdleTime = new ExpirationAttrs(
+          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_IDLE, timeout, action);
+    }
+  }
+
+  public void setRegionExpirationTTL(Integer timeout, String action) {
+    if (timeout != null) {
+      this.regionExpirationTTL = new ExpirationAttrs(
+          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL, timeout, action);
+    }
+  }
+
+  public void setDiskStore(String diskStore) {
+    this.diskStore = diskStore;
+  }
+
+  public void setDiskSynchronous(Boolean diskSynchronous) {
+    this.diskSynchronous = diskSynchronous;
+  }
+
+  public void setEnableAsyncConflation(Boolean enableAsyncConflation) {
+    this.enableAsyncConflation = enableAsyncConflation;
+  }
+
+  public void setEnableSubscriptionConflation(Boolean enableSubscriptionConflation) {
+    this.enableSubscriptionConflation = enableSubscriptionConflation;
+  }
+
+  public void setCacheListeners(String[] cacheListeners) {
+    if (cacheListeners != null) {
+      this.cacheListeners = Arrays.stream(cacheListeners).collect(Collectors.toSet());
+    }
+  }
+
+  public void setCacheLoader(String cacheLoader) {
+    this.cacheLoader = cacheLoader;
+  }
+
+  public void setCacheWriter(String cacheWriter) {
+    this.cacheWriter = cacheWriter;
+  }
+
+  public void setAsyncEventQueueIds(String[] asyncEventQueueIds) {
+    if (asyncEventQueueIds != null) {
+      this.asyncEventQueueIds = Arrays.stream(asyncEventQueueIds).collect(Collectors.toSet());
+    }
+  }
+
+  public void setGatewaySenderIds(String[] gatewaySenderIds) {
+    if (gatewaySenderIds != null) {
+      this.gatewaySenderIds = Arrays.stream(gatewaySenderIds).collect(Collectors.toSet());
+    }
+  }
+
+  public void setConcurrencyChecksEnabled(Boolean concurrencyChecksEnabled) {
+    this.concurrencyChecksEnabled = concurrencyChecksEnabled;
+  }
+
+  public void setCloningEnabled(Boolean cloningEnabled) {
+    this.cloningEnabled = cloningEnabled;
+  }
+
+  public void setMcastEnabled(Boolean mcastEnabled) {
+    this.mcastEnabled = mcastEnabled;
+  }
+
+  public void setConcurrencyLevel(Integer concurrencyLevel) {
+    this.concurrencyLevel = concurrencyLevel;
+  }
+
+  public void setPartitionArgs(String prColocatedWith, Integer prLocalMaxMemory,
       Long prRecoveryDelay, Integer prRedundantCopies, Long prStartupRecoveryDelay,
-      Long prTotalMaxMemory, Integer prTotalNumBuckets, Boolean offHeap, Boolean mcastEnabled,
-      RegionAttributes<?, ?> regionAttributes, final String partitionResolver) {
-    this(regionPath, null, useAttributesFrom, skipIfExists, keyConstraint, valueConstraint,
-        statisticsEnabled, entryExpirationIdleTime, entryExpirationTTL, regionExpirationIdleTime,
-        regionExpirationTTL, diskStore, diskSynchronous, enableAsyncConflation,
-        enableSubscriptionConflation, cacheListeners, cacheLoader, cacheWriter, asyncEventQueueIds,
-        gatewaySenderIds, concurrencyChecksEnabled, cloningEnabled, concurrencyLevel,
-        prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
-        prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, null, null, offHeap,
-        mcastEnabled, partitionResolver);
+      Long prTotalMaxMemory, Integer prTotalNumBuckets, String partitionResolver) {
+    partitionArgs.setPrColocatedWith(prColocatedWith);
+    partitionArgs.setPrLocalMaxMemory(prLocalMaxMemory);
+    partitionArgs.setPrRecoveryDelay(prRecoveryDelay);
+    partitionArgs.setPrRedundantCopies(prRedundantCopies);
+    partitionArgs.setPrStartupRecoveryDelay(prStartupRecoveryDelay);
+    partitionArgs.setPrTotalMaxMemory(prTotalMaxMemory);
+    partitionArgs.setPrTotalNumBuckets(prTotalNumBuckets);
+    partitionArgs.setPartitionResolver(partitionResolver);
+  }
+
+  public void setEvictionMax(Integer evictionMax) {
+    this.evictionMax = evictionMax;
+  }
+
+  public void setCompressor(String compressor) {
+    this.compressor = compressor;
+  }
+
+  public void setOffHeap(Boolean offHeap) {
+    this.offHeap = offHeap;
+  }
+
+  public void setRegionAttributes(RegionAttributes<?, ?> regionAttributes) {
     this.regionAttributes = regionAttributes;
   }
 
@@ -215,18 +230,10 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   /**
-   * @return the useAttributesFrom
+   * @return the templateRegion
    */
-  public String getUseAttributesFrom() {
-    return this.useAttributesFrom;
-  }
-
-  /**
-   * @return true if need to use specified region attributes
-   */
-  public Boolean isSetUseAttributesFrom() {
-    return this.regionShortcut == null && this.useAttributesFrom != null
-        && this.regionAttributes != null;
+  public String getTemplateRegion() {
+    return this.templateRegion;
   }
 
   /**
@@ -255,13 +262,6 @@ public class RegionFunctionArgs implements Serializable {
    */
   public Boolean isStatisticsEnabled() {
     return this.statisticsEnabled;
-  }
-
-  /**
-   * @return the isSetStatisticsEnabled
-   */
-  public Boolean isSetStatisticsEnabled() {
-    return this.isSetStatisticsEnabled;
   }
 
   /**
@@ -306,19 +306,8 @@ public class RegionFunctionArgs implements Serializable {
     return this.diskSynchronous;
   }
 
-  /**
-   * @return the isSetDiskSynchronous
-   */
-  public Boolean isSetDiskSynchronous() {
-    return this.isSetDiskSynchronous;
-  }
-
   public Boolean isOffHeap() {
     return this.offHeap;
-  }
-
-  public Boolean isSetOffHeap() {
-    return this.isSetOffHeap;
   }
 
   /**
@@ -329,24 +318,10 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   /**
-   * @return the isSetEnableAsyncConflation
-   */
-  public Boolean isSetEnableAsyncConflation() {
-    return this.isSetEnableAsyncConflation;
-  }
-
-  /**
    * @return the enableSubscriptionConflation
    */
   public Boolean isEnableSubscriptionConflation() {
     return this.enableSubscriptionConflation;
-  }
-
-  /**
-   * @return the isSetEnableSubscriptionConflation
-   */
-  public Boolean isSetEnableSubscriptionConflation() {
-    return this.isSetEnableSubscriptionConflation;
   }
 
   /**
@@ -394,31 +369,10 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   /**
-   * @return the PartitionResolver
-   */
-  public String getPartitionResolver() {
-    return this.partitionResolver;
-  }
-
-  /**
-   * @return True if Partition Resolver is set otherwise False
-   */
-  public Boolean isPartitionResolverSet() {
-    return this.isPartitionResolver;
-  }
-
-  /**
    * @return the concurrencyChecksEnabled
    */
   public Boolean isConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
-  }
-
-  /**
-   * @return the isSetConcurrencyChecksEnabled
-   */
-  public Boolean isSetConcurrencyChecksEnabled() {
-    return this.isSetConcurrencyChecksEnabled;
   }
 
   /**
@@ -429,13 +383,6 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   /**
-   * @return the isSetCloningEnabled
-   */
-  public Boolean isSetCloningEnabled() {
-    return this.isSetCloningEnabled;
-  }
-
-  /**
    * @return the mcastEnabled setting
    */
   public Boolean isMcastEnabled() {
@@ -443,24 +390,10 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   /**
-   * @return the isSetCloningEnabled
-   */
-  public Boolean isSetMcastEnabled() {
-    return this.isSetMcastEnabled;
-  }
-
-  /**
    * @return the concurrencyLevel
    */
   public Integer getConcurrencyLevel() {
     return this.concurrencyLevel;
-  }
-
-  /**
-   * @return the isSetConcurrencyLevel
-   */
-  public Boolean isSetConcurrencyLevel() {
-    return this.isSetConcurrencyLevel;
   }
 
   public boolean withPartitioning() {
@@ -472,7 +405,7 @@ public class RegionFunctionArgs implements Serializable {
    * @return the partitionArgs
    */
   public boolean hasPartitionAttributes() {
-    return this.partitionArgs != null && this.partitionArgs.hasPartitionAttributes();
+    return this.partitionArgs.hasPartitionAttributes();
   }
 
   /**
@@ -497,13 +430,6 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   /**
-   * @return the isSetCompressor.
-   */
-  public boolean isSetCompressor() {
-    return this.isSetCompressor;
-  }
-
-  /**
    * @return the regionAttributes
    */
   @SuppressWarnings("unchecked")
@@ -514,26 +440,20 @@ public class RegionFunctionArgs implements Serializable {
   public static class ExpirationAttrs implements Serializable {
     private static final long serialVersionUID = 1474255033398008062L;
 
-    private ExpirationFor type;
-    private Integer time;
-    private ExpirationAction action;
+    private final ExpirationFor type;
+    private final ExpirationAttributes timeAndAction;
 
     public ExpirationAttrs(ExpirationFor type, Integer time, String action) {
       this.type = type;
-      this.time = time;
-      if (action != null) {
-        this.action = getExpirationAction(action);
+      if (time != null) {
+        this.timeAndAction = new ExpirationAttributes(time, getExpirationAction(action));
+      } else {
+        this.timeAndAction = new ExpirationAttributes(0, getExpirationAction(action));
       }
     }
 
     public ExpirationAttributes convertToExpirationAttributes() {
-      ExpirationAttributes expirationAttr;
-      if (action != null) {
-        expirationAttr = new ExpirationAttributes(time, action);
-      } else {
-        expirationAttr = new ExpirationAttributes(time);
-      }
-      return expirationAttr;
+      return timeAndAction;
     }
 
     /**
@@ -547,14 +467,14 @@ public class RegionFunctionArgs implements Serializable {
      * @return the time
      */
     public Integer getTime() {
-      return time;
+      return timeAndAction.getTimeout();
     }
 
     /**
      * @return the action
      */
     public ExpirationAction getAction() {
-      return action;
+      return timeAndAction.getAction();
     }
 
     @Override
@@ -563,9 +483,9 @@ public class RegionFunctionArgs implements Serializable {
       builder.append(ExpirationAttrs.class.getSimpleName() + " [type=");
       builder.append(type);
       builder.append(", time=");
-      builder.append(time);
+      builder.append(timeAndAction.getTimeout());
       builder.append(", action=");
-      builder.append(action);
+      builder.append(timeAndAction.getAction());
       builder.append("]");
       return builder.toString();
     }
@@ -598,90 +518,104 @@ public class RegionFunctionArgs implements Serializable {
   public static class PartitionArgs implements Serializable {
     private static final long serialVersionUID = 5907052187323280919L;
 
-    private final String prColocatedWith;
-    private int prLocalMaxMemory;
-    private final boolean isSetPRLocalMaxMemory;
-    private long prRecoveryDelay;
-    private final boolean isSetPRRecoveryDelay;
-    private int prRedundantCopies;
-    private final boolean isSetPRRedundantCopies;
-    private long prStartupRecoveryDelay;
-    private final boolean isSetPRStartupRecoveryDelay;
-    private long prTotalMaxMemory;
-    private final boolean isSetPRTotalMaxMemory;
-    private int prTotalNumBuckets;
-    private final boolean isSetPRTotalNumBuckets;
-    private final boolean isPartitionResolver;
+    private String prColocatedWith;
+    private Integer prLocalMaxMemory;
+    private Long prRecoveryDelay;
+    private Integer prRedundantCopies;
+    private Long prStartupRecoveryDelay;
+    private Long prTotalMaxMemory;
+    private Integer prTotalNumBuckets;
     private String partitionResolver;
 
-    private boolean hasPartitionAttributes;
-    private final Set<String> userSpecifiedPartitionAttributes = new HashSet<>();
-
-    public PartitionArgs(String prColocatedWith, Integer prLocalMaxMemory, Long prRecoveryDelay,
-        Integer prRedundantCopies, Long prStartupRecoveryDelay, Long prTotalMaxMemory,
-        Integer prTotalNumBuckets, String partitionResolver) {
-      this.prColocatedWith = prColocatedWith;
-      if (this.prColocatedWith != null) {
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__COLOCATEDWITH);
-      }
-      this.isSetPRLocalMaxMemory = prLocalMaxMemory != null;
-      if (this.isSetPRLocalMaxMemory) {
-        this.prLocalMaxMemory = prLocalMaxMemory;
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
-      }
-      this.isSetPRRecoveryDelay = prRecoveryDelay != null;
-      if (this.isSetPRRecoveryDelay) {
-        this.prRecoveryDelay = prRecoveryDelay;
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__RECOVERYDELAY);
-      }
-      this.isSetPRRedundantCopies = prRedundantCopies != null;
-      if (this.isSetPRRedundantCopies) {
-        this.prRedundantCopies = prRedundantCopies;
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
-      }
-      this.isSetPRStartupRecoveryDelay = prStartupRecoveryDelay != null;
-      if (this.isSetPRStartupRecoveryDelay) {
-        this.prStartupRecoveryDelay = prStartupRecoveryDelay;
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY);
-      }
-      this.isSetPRTotalMaxMemory = prTotalMaxMemory != null;
-      if (this.isSetPRTotalMaxMemory) {
-        this.prTotalMaxMemory = prTotalMaxMemory;
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
-      }
-      this.isSetPRTotalNumBuckets = prTotalNumBuckets != null;
-      if (this.isSetPRTotalNumBuckets) {
-        this.prTotalNumBuckets = prTotalNumBuckets;
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__TOTALNUMBUCKETS);
-      }
-      this.isPartitionResolver = partitionResolver != null;
-      if (this.isPartitionResolver) {
-        this.partitionResolver = partitionResolver;
-        this.hasPartitionAttributes = true;
-        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__PARTITION_RESOLVER);
-      }
-
-    }
+    public PartitionArgs() {}
 
     /**
      * @return the hasPartitionAttributes
      */
     public Boolean hasPartitionAttributes() {
-      return hasPartitionAttributes;
+      return !getUserSpecifiedPartitionAttributes().isEmpty();
     }
 
     /**
      * @return the userSpecifiedPartitionAttributes
      */
-    public String getUserSpecifiedPartitionAttributes() {
-      return CliUtil.collectionToString(userSpecifiedPartitionAttributes, -1);
+    public Set<String> getUserSpecifiedPartitionAttributes() {
+      Set<String> userSpecifiedPartitionAttributes = new HashSet<>();
+
+      if (this.prColocatedWith != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__COLOCATEDWITH);
+      }
+      if (this.prLocalMaxMemory != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
+      }
+      if (this.prRecoveryDelay != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__RECOVERYDELAY);
+      }
+      if (this.prRedundantCopies != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
+      }
+      if (this.prStartupRecoveryDelay != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY);
+      }
+      if (this.prTotalMaxMemory != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
+      }
+      if (this.prTotalNumBuckets != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__TOTALNUMBUCKETS);
+      }
+      if (this.partitionResolver != null) {
+        userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__PARTITION_RESOLVER);
+      }
+
+      return userSpecifiedPartitionAttributes;
+    }
+
+    public void setPrColocatedWith(String prColocatedWith) {
+      if (prColocatedWith != null) {
+        this.prColocatedWith = prColocatedWith;
+      }
+    }
+
+    public void setPrLocalMaxMemory(Integer prLocalMaxMemory) {
+      if (prLocalMaxMemory != null) {
+        this.prLocalMaxMemory = prLocalMaxMemory;
+      }
+    }
+
+    public void setPrRecoveryDelay(Long prRecoveryDelay) {
+      if (prRecoveryDelay != null) {
+        this.prRecoveryDelay = prRecoveryDelay;
+      }
+    }
+
+    public void setPrRedundantCopies(Integer prRedundantCopies) {
+      if (prRedundantCopies != null) {
+        this.prRedundantCopies = prRedundantCopies;
+      }
+    }
+
+    public void setPrStartupRecoveryDelay(Long prStartupRecoveryDelay) {
+      if (prStartupRecoveryDelay != null) {
+        this.prStartupRecoveryDelay = prStartupRecoveryDelay;
+      }
+    }
+
+    public void setPrTotalMaxMemory(Long prTotalMaxMemory) {
+      if (prTotalMaxMemory != null) {
+        this.prTotalMaxMemory = prTotalMaxMemory;
+      }
+    }
+
+    public void setPrTotalNumBuckets(Integer prTotalNumBuckets) {
+      if (prTotalNumBuckets != null) {
+        this.prTotalNumBuckets = prTotalNumBuckets;
+      }
+    }
+
+    public void setPartitionResolver(String partitionResolver) {
+      if (partitionResolver != null) {
+        this.partitionResolver = partitionResolver;
+      }
     }
 
     /**
@@ -699,24 +633,10 @@ public class RegionFunctionArgs implements Serializable {
     }
 
     /**
-     * @return the isSetPRLocalMaxMemory
-     */
-    public Boolean isSetPRLocalMaxMemory() {
-      return isSetPRLocalMaxMemory;
-    }
-
-    /**
      * @return the prRecoveryDelay
      */
     public Long getPrRecoveryDelay() {
       return prRecoveryDelay;
-    }
-
-    /**
-     * @return the isSetPRRecoveryDelay
-     */
-    public Boolean isSetPRRecoveryDelay() {
-      return isSetPRRecoveryDelay;
     }
 
     /**
@@ -727,24 +647,10 @@ public class RegionFunctionArgs implements Serializable {
     }
 
     /**
-     * @return the isSetPRRedundantCopies
-     */
-    public Boolean isSetPRRedundantCopies() {
-      return isSetPRRedundantCopies;
-    }
-
-    /**
      * @return the prStartupRecoveryDelay
      */
     public Long getPrStartupRecoveryDelay() {
       return prStartupRecoveryDelay;
-    }
-
-    /**
-     * @return the isSetPRStartupRecoveryDelay
-     */
-    public Boolean isSetPRStartupRecoveryDelay() {
-      return isSetPRStartupRecoveryDelay;
     }
 
     /**
@@ -755,13 +661,6 @@ public class RegionFunctionArgs implements Serializable {
     }
 
     /**
-     * @return the isSetPRTotalMaxMemory
-     */
-    public Boolean isSetPRTotalMaxMemory() {
-      return isSetPRTotalMaxMemory;
-    }
-
-    /**
      * @return the prTotalNumBuckets
      */
     public Integer getPrTotalNumBuckets() {
@@ -769,10 +668,10 @@ public class RegionFunctionArgs implements Serializable {
     }
 
     /**
-     * @return the isSetPRTotalNumBuckets
+     * @return the partition resolver
      */
-    public Boolean isSetPRTotalNumBuckets() {
-      return isSetPRTotalNumBuckets;
+    public String getPartitionResolver() {
+      return partitionResolver;
     }
   }
 }

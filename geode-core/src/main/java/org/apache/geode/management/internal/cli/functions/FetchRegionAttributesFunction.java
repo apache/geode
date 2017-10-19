@@ -14,21 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.Serializable;
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.logging.log4j.Logger;
 
 /**
  * 
@@ -57,7 +51,7 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
         throw new IllegalArgumentException(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
       }
-      FetchRegionAttributesFunctionResult<?, ?> result = getRegionAttributes(cache, regionPath);
+      RegionAttributes<?, ?> result = getRegionAttributes(cache, regionPath);
       context.getResultSender().lastResult(result);
     } catch (IllegalArgumentException e) {
       if (logger.isDebugEnabled()) {
@@ -68,8 +62,7 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
   }
 
   @SuppressWarnings("deprecation")
-  public static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(Cache cache,
-      String regionPath) {
+  public static <K, V> RegionAttributes<K, V> getRegionAttributes(Cache cache, String regionPath) {
     Region<K, V> foundRegion = cache.getRegion(regionPath);
 
     if (foundRegion == null) {
@@ -81,65 +74,11 @@ public class FetchRegionAttributesFunction extends FunctionAdapter {
     // Using AttributesFactory to get the serializable RegionAttributes
     // Is there a better way?
     AttributesFactory<K, V> afactory = new AttributesFactory<K, V>(foundRegion.getAttributes());
-    FetchRegionAttributesFunctionResult<K, V> result =
-        new FetchRegionAttributesFunctionResult<K, V>(afactory);
-    return result;
+    return afactory.create();
   }
 
   @Override
   public String getId() {
     return ID;
-  }
-
-  public static class FetchRegionAttributesFunctionResult<K, V> implements Serializable {
-    private static final long serialVersionUID = -3970828263897978845L;
-
-    private RegionAttributes<K, V> regionAttributes;
-    private String[] cacheListenerClasses;
-    private String cacheLoaderClass;
-    private String cacheWriterClass;
-
-    @SuppressWarnings("deprecation")
-    public FetchRegionAttributesFunctionResult(AttributesFactory<K, V> afactory) {
-      this.regionAttributes = afactory.create();
-
-      CacheListener<K, V>[] cacheListeners = this.regionAttributes.getCacheListeners();
-      if (cacheListeners != null && cacheListeners.length != 0) {
-        cacheListenerClasses = new String[cacheListeners.length];
-        for (int i = 0; i < cacheListeners.length; i++) {
-          cacheListenerClasses[i] = cacheListeners[i].getClass().getName();
-        }
-        afactory.initCacheListeners(null);
-      }
-      CacheLoader<K, V> cacheLoader = this.regionAttributes.getCacheLoader();
-      if (cacheLoader != null) {
-        cacheLoaderClass = cacheLoader.getClass().getName();
-        afactory.setCacheLoader(null);
-      }
-      CacheWriter<K, V> cacheWriter = this.regionAttributes.getCacheWriter();
-      if (cacheWriter != null) {
-        cacheWriterClass = cacheWriter.getClass().getName();
-        afactory.setCacheWriter(null);
-      }
-
-      // recreate attributes
-      this.regionAttributes = afactory.create();
-    }
-
-    public RegionAttributes<K, V> getRegionAttributes() {
-      return regionAttributes;
-    }
-
-    public String[] getCacheListenerClasses() {
-      return cacheListenerClasses;
-    }
-
-    public String getCacheLoaderClass() {
-      return cacheLoaderClass;
-    }
-
-    public String getCacheWriterClass() {
-      return cacheWriterClass;
-    }
   }
 }

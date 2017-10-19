@@ -14,17 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
-import org.springframework.shell.core.CommandMarker;
-
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -36,6 +31,12 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
+import org.springframework.shell.core.CommandMarker;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
@@ -152,6 +153,11 @@ public interface GfshCommand extends CommandMarker {
 
   default Set<DistributedMember> findMembersForRegion(InternalCache cache, String regionPath) {
     return CliUtil.getRegionAssociatedMembers(regionPath, cache);
+  }
+
+  default ResultCollector<?, ?> executeFunction(final Function function, Object args,
+      final Set<DistributedMember> targetMembers) {
+    return CliUtil.executeFunction(function, args, targetMembers);
   }
 
 }

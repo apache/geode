@@ -16,15 +16,6 @@ package org.apache.geode.test.junit.rules;
 
 import static org.mockito.Mockito.spy;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.rules.ExternalResource;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.util.ReflectionUtils;
-
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -34,6 +25,14 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.junit.rules.ExternalResource;
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.util.ReflectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class GfshParserRule extends ExternalResource {
 
@@ -76,6 +75,9 @@ public class GfshParserRule extends ExternalResource {
         }
       }
     }
+
+    // CommandExecutor executor = new CommandExecutor();
+    // return (CommandResult)executor.execute(parseResult);
 
     return (CommandResult) ReflectionUtils.invokeMethod(parseResult.getMethod(), instance,
         parseResult.getArguments());

@@ -15,13 +15,13 @@
 
 package org.apache.geode.cache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * Immutable parameter object for accessing and setting the attributes associated with
@@ -79,8 +79,16 @@ public class ExpirationAttributes implements DataSerializable {
    * @throws IllegalArgumentException if expirationTime is nonpositive
    */
   public ExpirationAttributes(int expirationTime, ExpirationAction expirationAction) {
-    this.timeout = expirationTime;
-    this.action = expirationAction;
+    if (expirationTime < 0) {
+      this.timeout = 0;
+    } else {
+      this.timeout = expirationTime;
+    }
+    if (expirationAction == null) {
+      this.action = ExpirationAction.INVALIDATE;
+    } else {
+      this.action = expirationAction;
+    }
   }
 
 
