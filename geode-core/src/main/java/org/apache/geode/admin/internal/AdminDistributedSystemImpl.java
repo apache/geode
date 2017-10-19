@@ -28,6 +28,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.admin.remote.*;
+import org.apache.geode.internal.cache.BackupUtil;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -38,12 +39,12 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.util.concurrent.FutureResult;
+
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -2311,39 +2312,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public static BackupStatus backupAllMembers(DM dm, File targetDir, File baselineDir)
       throws AdminException {
-    BackupStatus status = null;
-    if (BackupDataStoreHelper.obtainLock(dm)) {
-      try {
-        Set<PersistentID> missingMembers = getMissingPersistentMembers(dm);
-        Set recipients = dm.getOtherDistributionManagerIds();
-
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        targetDir = new File(targetDir, format.format(new Date()));
-        BackupDataStoreResult result =
-            BackupDataStoreHelper.backupAllMembers(dm, recipients, targetDir, baselineDir);
-
-        // It's possible that when calling getMissingPersistentMembers, some members are
-        // still creating/recovering regions, and at FinishBackupRequest.send, the
-        // regions at the members are ready. Logically, since the members in successfulMembers
-        // should override the previous missingMembers
-        for (Set<PersistentID> onlineMembersIds : result.getSuccessfulMembers().values()) {
-          missingMembers.removeAll(onlineMembersIds);
-        }
-
-        result.getExistingDataStores().keySet().removeAll(result.getSuccessfulMembers().keySet());
-        for (Set<PersistentID> lostMembersIds : result.getExistingDataStores().values()) {
-          missingMembers.addAll(lostMembersIds);
-        }
-
-        status = new BackupStatusImpl(result.getSuccessfulMembers(), missingMembers);
-      } finally {
-        BackupDataStoreHelper.releaseLock(dm);
-      }
-    } else {
-      throw new AdminException(
-          LocalizedStrings.DistributedSystem_BACKUP_ALREADY_IN_PROGRESS.toLocalizedString());
-    }
-    return status;
+    return (org.apache.geode.admin.BackupStatus) BackupUtil.backupAllMembers(dm, targetDir,
+        baselineDir);
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {

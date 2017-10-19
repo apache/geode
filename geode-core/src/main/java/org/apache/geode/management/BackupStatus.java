@@ -15,24 +15,31 @@
 package org.apache.geode.management;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.cache.BackupUtil;
 
 /**
- * Composite data type used to distribute the status of disk backup operations.
+ * The status of a backup operation, returned by
+ * {@link BackupUtil#backupAllMembers(DM, java.io.File,java.io.File)}.
  * 
- * @since GemFire 7.0
+ * @since GemFire 6.5
  */
-public interface DiskBackupStatus {
-  /**
-   * Returns a map of member names/IDs and the {@link PersistentID} of the disk stores that were
-   * backed up.
-   */
-  Map<String, String[]> getBackedUpDiskStores();
+public interface BackupStatus {
 
   /**
-   * Returns a list of directories for the disk stores that were off-line at the time the backup
-   * occurred.
+   * Returns a map of disk stores that were successfully backed up. The key is an online distributed
+   * member. The value is the set of disk stores on that distributed member.
    */
-  String[] getOfflineDiskStores();
+  Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores();
+
+  /**
+   * Returns the set of disk stores that were known to be offline at the time of the backup. These
+   * members were not backed up. If this set is not empty the backup may not contain a complete
+   * snapshot of any partitioned regions in the distributed system.
+   */
+  Set<PersistentID> getOfflineDiskStores();
 }
