@@ -255,7 +255,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     if (oldRe == null && (re instanceof OffHeapRegionEntry) && _isOwnerALocalRegion()
         && _getOwner().isThisRegionBeingClosedOrDestroyed()) {
       // prevent orphan during concurrent destroy (#48068)
-      Object v = re._getValue();
+      Object v = re.getValue();
       if (v != Token.REMOVED_PHASE1 && v != Token.REMOVED_PHASE2 && v instanceof StoredObject
           && ((StoredObject) v).hasRefCount()) {
         if (_getMap().remove(key, re)) {
@@ -404,7 +404,7 @@ public abstract class AbstractRegionMap implements RegionMap {
               // note: it.remove() did not reliably remove the entry so we use remove(K,V) here
               if (_getMap().remove(re.getKey(), re)) {
                 if (OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()) {
-                  GatewaySenderEventImpl.release(re._getValue()); // OFFHEAP _getValue ok
+                  GatewaySenderEventImpl.release(re.getValue()); // OFFHEAP _getValue ok
                 }
                 // If this is an overflow only region, we need to free the entry on
                 // disk at this point.
@@ -562,7 +562,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         @Retained
         @Released
         Object value = oldRe
-            ._getValueRetain((RegionEntryContext) ((AbstractRegionMap) rm)._getOwnerObject(), true);
+            .getValueRetain((RegionEntryContext) ((AbstractRegionMap) rm)._getOwnerObject(), true);
 
         try {
           if (value == Token.NOT_AVAILABLE) {
@@ -2945,9 +2945,9 @@ public abstract class AbstractRegionMap implements RegionMap {
 
         @Retained
         @Released
-        Object oldValueInVM = re._getValueRetain(event.getLocalRegion(), true); // OFFHEAP: re
-                                                                                // synced so can use
-                                                                                // its ref.
+        Object oldValueInVM = re.getValueRetain(event.getLocalRegion(), true); // OFFHEAP: re
+                                                                               // synced so can use
+                                                                               // its ref.
 
         ReferenceCountHelper.unskipRefCountTracking();
         try {
@@ -2960,8 +2960,8 @@ public abstract class AbstractRegionMap implements RegionMap {
       // if the old value is in memory then if it is a GatewaySenderEventImpl then
       // we want to set the old value.
       @Unretained
-      Object ov = re._getValue(); // OFFHEAP _getValue is ok since re is synced and we only use it
-                                  // if its a GatewaySenderEventImpl.
+      Object ov = re.getValue(); // OFFHEAP _getValue is ok since re is synced and we only use it
+                                 // if its a GatewaySenderEventImpl.
       // Since GatewaySenderEventImpl is never stored in an off-heap region nor a compressed region
       // we don't need to worry about ov being compressed.
       if (ov instanceof GatewaySenderEventImpl) {

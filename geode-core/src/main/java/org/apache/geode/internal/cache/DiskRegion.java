@@ -345,7 +345,7 @@ public class DiskRegion extends AbstractDiskRegion {
    *         completed successfully, resulting in the put operation to abort.
    * @throws IllegalArgumentException If <code>id</code> is less than zero
    */
-  void put(DiskEntry entry, LocalRegion region, ValueWrapper value, boolean async)
+  void put(DiskEntry entry, InternalRegion region, ValueWrapper value, boolean async)
       throws RegionClearedException {
     getDiskStore().put(region, entry, value, async);
   }
@@ -417,7 +417,7 @@ public class DiskRegion extends AbstractDiskRegion {
     getDiskStore().remove(region, entry, false, false);
   }
 
-  void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
+  void remove(InternalRegion region, DiskEntry entry, boolean async, boolean isClear)
       throws RegionClearedException {
     getDiskStore().remove(region, entry, async, isClear);
   }

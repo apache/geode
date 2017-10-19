@@ -15,36 +15,60 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+
+
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-// macros whose definition changes this class:
-// disk: DISK
-// lru: LRU
-// stats: STATS
-// versioned: VERSIONED
-// offheap: OFFHEAP
-// One of the following key macros must be defined:
-// key object: KEY_OBJECT
-// key int: KEY_INT
-// key long: KEY_LONG
-// key uuid: KEY_UUID
-// key string1: KEY_STRING1
-// key string2: KEY_STRING2
+/*
+ * macros whose definition changes this class:
+ *
+ * disk: DISK lru: LRU stats: STATS versioned: VERSIONED offheap: OFFHEAP
+ *
+ * One of the following key macros must be defined:
+ *
+ * key object: KEY_OBJECT key int: KEY_INT key long: KEY_LONG key uuid: KEY_UUID key string1:
+ * KEY_STRING1 key string2: KEY_STRING2
+ */
+
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
-  public VMStatsRegionEntryHeapLongKey(RegionEntryContext context, long key, Object value) {
-    super(context, value);
+
+  public VMStatsRegionEntryHeapLongKey(final RegionEntryContext context, final long key,
+
+
+
+      final Object value
+
+
+
+  ) {
+    super(context,
+
+
+
+        value
+
+    );
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+
+
     this.key = key;
+
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -52,6 +76,7 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMStatsRegionEntryHeapLongKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMStatsRegionEntryHeapLongKey.class, "lastModified");
+
   private volatile Object value;
 
   @Override
@@ -60,49 +85,48 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
   }
 
   @Override
-  protected void setValueField(Object v) {
-    this.value = v;
+  protected void setValueField(final Object value) {
+    this.value = value;
   }
+
 
   protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 
-  protected boolean compareAndSetLastModifiedField(long expectedValue, long newValue) {
+  protected boolean compareAndSetLastModifiedField(final long expectedValue, final long newValue) {
     return lastModifiedUpdater.compareAndSet(this, expectedValue, newValue);
   }
 
-  /**
-   * @see HashEntry#getEntryHash()
-   */
+  @Override
   public int getEntryHash() {
     return this.hash;
   }
 
-  protected void setEntryHash(int v) {
-    this.hash = v;
+  protected void setEntryHash(final int hash) {
+    this.hash = hash;
   }
 
-  /**
-   * @see HashEntry#getNextEntry()
-   */
+  @Override
   public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
-  /**
-   * @see HashEntry#setNextEntry
-   */
-  public void setNextEntry(final HashEntry<Object, Object> n) {
-    this.next = n;
+  @Override
+  public void setNextEntry(final HashEntry<Object, Object> next) {
+    this.next = next;
   }
 
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // stats code
+
   @Override
-  public void updateStatsForGet(boolean hit, long time) {
+  public void updateStatsForGet(final boolean isHit, final long time) {
     setLastAccessed(time);
-    if (hit) {
+    if (isHit) {
       incrementHitCount();
     } else {
       incrementMissCount();
@@ -110,8 +134,8 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
   }
 
   @Override
-  protected void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
-    _setLastModified(lastModified);
+  protected void setLastModifiedAndAccessedTimes(final long lastModified, final long lastAccessed) {
+    setLastModified(lastModified);
     if (!DISABLE_ACCESS_TIME_UPDATE_ON_PUT) {
       setLastAccessed(lastAccessed);
     }
@@ -120,8 +144,10 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
   private volatile long lastAccessed;
   private volatile int hitCount;
   private volatile int missCount;
+
   private static final AtomicIntegerFieldUpdater<VMStatsRegionEntryHeapLongKey> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsRegionEntryHeapLongKey.class, "hitCount");
+
   private static final AtomicIntegerFieldUpdater<VMStatsRegionEntryHeapLongKey> missCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsRegionEntryHeapLongKey.class, "missCount");
 
@@ -130,7 +156,7 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  private void setLastAccessed(final long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 
@@ -159,10 +185,11 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   @Override
-  public void txDidDestroy(long currTime) {
-    setLastModified(currTime);
-    setLastAccessed(currTime);
+  public void txDidDestroy(long timeStamp) {
+    setLastModified(timeStamp);
+    setLastAccessed(timeStamp);
     this.hitCount = 0;
     this.missCount = 0;
   }
@@ -172,8 +199,13 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
     return true;
   }
 
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // key code
+
+
   private final long key;
 
   @Override
@@ -182,11 +214,15 @@ public class VMStatsRegionEntryHeapLongKey extends VMStatsRegionEntryHeap {
   }
 
   @Override
-  public boolean isKeyEqual(Object k) {
-    if (k instanceof Long) {
-      return ((Long) k).longValue() == this.key;
+  public boolean isKeyEqual(final Object key) {
+    if (key instanceof Long) {
+      return ((Long) key).longValue() == this.key;
     }
     return false;
   }
+
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
+

@@ -178,12 +178,12 @@ public class PersistentOplogSet implements OplogSet {
   }
 
   @Override
-  public void create(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
+  public void create(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
     getChild().create(region, entry, value, async);
   }
 
   @Override
-  public void modify(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
+  public void modify(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
     getChild().modify(region, entry, value, async);
   }
 
@@ -193,7 +193,7 @@ public class PersistentOplogSet implements OplogSet {
   }
 
   @Override
-  public void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear) {
+  public void remove(InternalRegion region, DiskEntry entry, boolean async, boolean isClear) {
     getChild().remove(region, entry, async, isClear);
   }
 
@@ -1034,9 +1034,6 @@ public class PersistentOplogSet implements OplogSet {
 
   /**
    * Add compactable oplogs to the list, up to the maximum size.
-   * 
-   * @param l
-   * @param max
    */
   public void getCompactableOplogs(List<CompactableOplog> l, int max) {
     synchronized (this.oplogIdToOplog) {

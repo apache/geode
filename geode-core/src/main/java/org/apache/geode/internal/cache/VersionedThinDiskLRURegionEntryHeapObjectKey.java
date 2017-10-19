@@ -15,47 +15,74 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+
+
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
 import org.apache.geode.cache.EntryEvent;
+
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
+
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-// macros whose definition changes this class:
-// disk: DISK
-// lru: LRU
-// stats: STATS
-// versioned: VERSIONED
-// offheap: OFFHEAP
-// One of the following key macros must be defined:
-// key object: KEY_OBJECT
-// key int: KEY_INT
-// key long: KEY_LONG
-// key uuid: KEY_UUID
-// key string1: KEY_STRING1
-// key string2: KEY_STRING2
+/*
+ * macros whose definition changes this class:
+ *
+ * disk: DISK lru: LRU stats: STATS versioned: VERSIONED offheap: OFFHEAP
+ *
+ * One of the following key macros must be defined:
+ *
+ * key object: KEY_OBJECT key int: KEY_INT key long: KEY_LONG key uuid: KEY_UUID key string1:
+ * KEY_STRING1 key string2: KEY_STRING2
+ */
+
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VersionedThinDiskLRURegionEntryHeapObjectKey
     extends VersionedThinDiskLRURegionEntryHeap {
-  public VersionedThinDiskLRURegionEntryHeapObjectKey(RegionEntryContext context, Object key,
-      Object value) {
-    super(context, (value instanceof RecoveredEntry ? null : value));
+
+  public VersionedThinDiskLRURegionEntryHeapObjectKey(final RegionEntryContext context,
+      final Object key,
+
+
+
+      final Object value
+
+
+
+  ) {
+    super(context,
+
+        (value instanceof RecoveredEntry ? null : value)
+
+
+
+    );
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
     initialize(context, value);
+
+
     this.key = key;
+
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -64,6 +91,7 @@ public class VersionedThinDiskLRURegionEntryHeapObjectKey
   private static final AtomicLongFieldUpdater<VersionedThinDiskLRURegionEntryHeapObjectKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VersionedThinDiskLRURegionEntryHeapObjectKey.class,
           "lastModified");
+
   private volatile Object value;
 
   @Override
@@ -72,62 +100,61 @@ public class VersionedThinDiskLRURegionEntryHeapObjectKey
   }
 
   @Override
-  protected void setValueField(Object v) {
-    this.value = v;
+  protected void setValueField(final Object value) {
+    this.value = value;
   }
+
 
   protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 
-  protected boolean compareAndSetLastModifiedField(long expectedValue, long newValue) {
+  protected boolean compareAndSetLastModifiedField(final long expectedValue, final long newValue) {
     return lastModifiedUpdater.compareAndSet(this, expectedValue, newValue);
   }
 
-  /**
-   * @see HashEntry#getEntryHash()
-   */
+  @Override
   public int getEntryHash() {
     return this.hash;
   }
 
-  protected void setEntryHash(int v) {
-    this.hash = v;
+  protected void setEntryHash(final int hash) {
+    this.hash = hash;
   }
 
-  /**
-   * @see HashEntry#getNextEntry()
-   */
+  @Override
   public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
-  /**
-   * @see HashEntry#setNextEntry
-   */
-  public void setNextEntry(final HashEntry<Object, Object> n) {
-    this.next = n;
+  @Override
+  public void setNextEntry(final HashEntry<Object, Object> next) {
+    this.next = next;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // disk code
-  protected void initialize(RegionEntryContext drs, Object value) {
+
+
+  protected void initialize(final RegionEntryContext context, final Object value) {
     boolean isBackup;
-    if (drs instanceof LocalRegion) {
-      isBackup = ((LocalRegion) drs).getDiskRegion().isBackup();
-    } else if (drs instanceof PlaceHolderDiskRegion) {
+    if (context instanceof LocalRegion) {
+      isBackup = ((LocalRegion) context).getDiskRegion().isBackup();
+    } else if (context instanceof PlaceHolderDiskRegion) {
       isBackup = true;
     } else {
       throw new IllegalArgumentException("expected a LocalRegion or PlaceHolderDiskRegion");
     }
     // Delay the initialization of DiskID if overflow only
     if (isBackup) {
-      diskInitialize(drs, value);
+      diskInitialize(context, value);
     }
   }
 
   @Override
-  public synchronized int updateAsyncEntrySize(EnableLRU capacityController) {
+  public synchronized int updateAsyncEntrySize(final EnableLRU capacityController) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize(getKeyForSizing(), null);
     setEntrySize(newSize);
@@ -135,49 +162,60 @@ public class VersionedThinDiskLRURegionEntryHeapObjectKey
     return delta;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-  private void diskInitialize(RegionEntryContext context, Object value) {
-    DiskRecoveryStore drs = (DiskRecoveryStore) context;
-    DiskStoreImpl ds = drs.getDiskStore();
-    long maxOplogSize = ds.getMaxOplogSize();
+
+  private void diskInitialize(final RegionEntryContext context, final Object value) {
+    DiskRecoveryStore diskRecoveryStore = (DiskRecoveryStore) context;
+    DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
+    long maxOplogSize = diskStore.getMaxOplogSize();
     // get appropriate instance of DiskId implementation based on maxOplogSize
-    this.id = DiskId.createDiskId(maxOplogSize, true/* is persistence */, ds.needsLinkedList());
-    Helper.initialize(this, drs, value);
+    this.id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
+    Helper.initialize(this, diskRecoveryStore, value);
   }
 
   /**
-   * DiskId
-   * 
    * @since GemFire 5.1
    */
-  protected DiskId id;// = new DiskId();
+  protected DiskId id;
 
+  @Override
   public DiskId getDiskId() {
     return this.id;
   }
 
   @Override
-  void setDiskId(RegionEntry old) {
-    this.id = ((AbstractDiskRegionEntry) old).getDiskId();
+  void setDiskId(final RegionEntry oldEntry) {
+    this.id = ((AbstractDiskRegionEntry) oldEntry).getDiskId();
   }
 
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // lru code
+
   @Override
-  public void setDelayedDiskId(LocalRegion r) {
-    DiskStoreImpl ds = r.getDiskStore();
-    long maxOplogSize = ds.getMaxOplogSize();
-    this.id = DiskId.createDiskId(maxOplogSize, false /* over flow only */, ds.needsLinkedList());
+  public void setDelayedDiskId(final DiskRecoveryStore diskRecoveryStore) {
+
+    DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
+    long maxOplogSize = diskStore.getMaxOplogSize();
+    this.id = DiskId.createDiskId(maxOplogSize, false, diskStore.needsLinkedList());
+
+
+
   }
 
-  public synchronized int updateEntrySize(EnableLRU capacityController) {
-    return updateEntrySize(capacityController, _getValue()); // OFHEAP: _getValue ok w/o incing
-                                                             // refcount because we are synced and
-                                                             // only getting the size
+  @Override
+  public synchronized int updateEntrySize(final EnableLRU capacityController) {
+    // OFFHEAP: getValue ok w/o incing refcount because we are synced and only getting the size
+    return updateEntrySize(capacityController, getValue());
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-  public synchronized int updateEntrySize(EnableLRU capacityController, Object value) {
+
+  @Override
+  public synchronized int updateEntrySize(final EnableLRU capacityController, final Object value) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize(getKeyForSizing(), value);
     setEntrySize(newSize);
@@ -185,6 +223,7 @@ public class VersionedThinDiskLRURegionEntryHeapObjectKey
     return delta;
   }
 
+  @Override
   public boolean testRecentlyUsed() {
     return areAnyBitsSet(RECENTLY_USED);
   }
@@ -194,113 +233,144 @@ public class VersionedThinDiskLRURegionEntryHeapObjectKey
     setBits(RECENTLY_USED);
   }
 
+  @Override
   public void unsetRecentlyUsed() {
     clearBits(~RECENTLY_USED);
   }
 
+  @Override
   public boolean testEvicted() {
     return areAnyBitsSet(EVICTED);
   }
 
+  @Override
   public void setEvicted() {
     setBits(EVICTED);
   }
 
+  @Override
   public void unsetEvicted() {
     clearBits(~EVICTED);
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   private LRUClockNode nextLRU;
-  private LRUClockNode prevLRU;
+  private LRUClockNode previousLRU;
   private int size;
 
-  public void setNextLRUNode(LRUClockNode next) {
-    this.nextLRU = next;
+  @Override
+  public void setNextLRUNode(final LRUClockNode nextLRU) {
+    this.nextLRU = nextLRU;
   }
 
+  @Override
   public LRUClockNode nextLRUNode() {
     return this.nextLRU;
   }
 
-  public void setPrevLRUNode(LRUClockNode prev) {
-    this.prevLRU = prev;
+  @Override
+  public void setPrevLRUNode(final LRUClockNode previousLRU) {
+    this.previousLRU = previousLRU;
   }
 
+  @Override
   public LRUClockNode prevLRUNode() {
-    return this.prevLRU;
+    return this.previousLRU;
   }
 
+  @Override
   public int getEntrySize() {
     return this.size;
   }
 
-  protected void setEntrySize(int size) {
+  protected void setEntrySize(final int size) {
     this.size = size;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   @Override
   public Object getKeyForSizing() {
+
     // default implementation.
     return getKey();
+
+
+
   }
 
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // versioned code
-  private VersionSource memberID;
+
+  private VersionSource memberId;
   private short entryVersionLowBytes;
   private short regionVersionHighBytes;
   private int regionVersionLowBytes;
   private byte entryVersionHighByte;
   private byte distributedSystemId;
 
+  @Override
   public int getEntryVersion() {
     return ((entryVersionHighByte << 16) & 0xFF0000) | (entryVersionLowBytes & 0xFFFF);
   }
 
+  @Override
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
 
+  @Override
   public long getVersionTimeStamp() {
     return getLastModified();
   }
 
-  public void setVersionTimeStamp(long time) {
-    setLastModified(time);
+  @Override
+  public void setVersionTimeStamp(final long timeStamp) {
+    setLastModified(timeStamp);
   }
 
+  @Override
   public VersionSource getMemberID() {
-    return this.memberID;
+    return this.memberId;
   }
 
+  @Override
   public int getDistributedSystemId() {
     return this.distributedSystemId;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-  public void setVersions(VersionTag tag) {
-    this.memberID = tag.getMemberID();
-    int eVersion = tag.getEntryVersion();
+
+  @Override
+  public void setVersions(final VersionTag versionTag) {
+    this.memberId = versionTag.getMemberID();
+    int eVersion = versionTag.getEntryVersion();
     this.entryVersionLowBytes = (short) (eVersion & 0xffff);
     this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = tag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = tag.getRegionVersionLowBytes();
-    if (!(tag.isGatewayTag()) && this.distributedSystemId == tag.getDistributedSystemId()) {
-      if (getVersionTimeStamp() <= tag.getVersionTimeStamp()) {
-        setVersionTimeStamp(tag.getVersionTimeStamp());
+    this.regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
+    this.regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
+
+    if (!versionTag.isGatewayTag()
+        && this.distributedSystemId == versionTag.getDistributedSystemId()) {
+      if (getVersionTimeStamp() <= versionTag.getVersionTimeStamp()) {
+        setVersionTimeStamp(versionTag.getVersionTimeStamp());
       } else {
-        tag.setVersionTimeStamp(getVersionTimeStamp());
+        versionTag.setVersionTimeStamp(getVersionTimeStamp());
       }
     } else {
-      setVersionTimeStamp(tag.getVersionTimeStamp());
+      setVersionTimeStamp(versionTag.getVersionTimeStamp());
     }
-    this.distributedSystemId = (byte) (tag.getDistributedSystemId() & 0xff);
+
+    this.distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
   }
 
-  public void setMemberID(VersionSource memberID) {
-    this.memberID = memberID;
+  @Override
+  public void setMemberID(final VersionSource memberId) {
+    this.memberId = memberId;
   }
 
   @Override
@@ -309,8 +379,10 @@ public class VersionedThinDiskLRURegionEntryHeapObjectKey
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+  @Override
   public VersionTag asVersionTag() {
-    VersionTag tag = VersionTag.create(memberID);
+    VersionTag tag = VersionTag.create(memberId);
     tag.setEntryVersion(getEntryVersion());
     tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
@@ -318,36 +390,47 @@ public class VersionedThinDiskLRURegionEntryHeapObjectKey
     return tag;
   }
 
-  public void processVersionTag(LocalRegion r, VersionTag tag, boolean isTombstoneFromGII,
-      boolean hasDelta, VersionSource thisVM, InternalDistributedMember sender,
-      boolean checkForConflicts) {
-    basicProcessVersionTag(r, tag, isTombstoneFromGII, hasDelta, thisVM, sender, checkForConflicts);
+  @Override
+  public void processVersionTag(final InternalRegion region, final VersionTag versionTag,
+      final boolean isTombstoneFromGII, final boolean hasDelta, final VersionSource versionSource,
+      final InternalDistributedMember sender, final boolean checkForConflicts) {
+    basicProcessVersionTag(region, versionTag, isTombstoneFromGII, hasDelta, versionSource, sender,
+        checkForConflicts);
   }
 
   @Override
-  public void processVersionTag(EntryEvent cacheEvent) {
-    // this keeps Eclipse happy. without it the sender chain becomes confused
-    // while browsing this code
+  public void processVersionTag(final EntryEvent cacheEvent) {
+    // this keeps IDE happy. without it the sender chain becomes confused while browsing this code
     super.processVersionTag(cacheEvent);
   }
 
   /** get rvv internal high byte. Used by region entries for transferring to storage */
+  @Override
   public short getRegionVersionHighBytes() {
     return this.regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
+  @Override
   public int getRegionVersionLowBytes() {
     return this.regionVersionLowBytes;
   }
 
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // key code
+
+
   private final Object key;
 
   @Override
   public Object getKey() {
     return this.key;
   }
+
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
+

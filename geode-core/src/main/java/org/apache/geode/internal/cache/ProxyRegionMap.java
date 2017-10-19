@@ -68,34 +68,42 @@ class ProxyRegionMap implements RegionMap {
 
   private final Attributes attr;
 
+  @Override
   public RegionEntryFactory getEntryFactory() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Attributes getAttributes() {
     return this.attr;
   }
 
+  @Override
   public void setOwner(Object r) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void changeOwner(LocalRegion r) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public int size() {
     return 0;
   }
 
+  @Override
   public boolean isEmpty() {
     return true;
   }
 
+  @Override
   public Set keySet() {
     return Collections.EMPTY_SET;
   }
 
+  @Override
   public Collection<RegionEntry> regionEntries() {
     return Collections.emptySet();
   }
@@ -105,18 +113,22 @@ class ProxyRegionMap implements RegionMap {
     return Collections.emptySet();
   }
 
+  @Override
   public boolean containsKey(Object key) {
     return false;
   }
 
+  @Override
   public RegionEntry getEntry(Object key) {
     return null;
   }
 
+  @Override
   public RegionEntry putEntryIfAbsent(Object key, RegionEntry re) {
     return null;
   }
 
+  @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
   public Set<VersionSource> clear(RegionVersionVector rvv) {
     // nothing needs to be done
@@ -132,10 +144,12 @@ class ProxyRegionMap implements RegionMap {
     // nothing needs to be done
   }
 
+  @Override
   public RegionEntry initRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public RegionEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     throw new UnsupportedOperationException();
   }
@@ -144,12 +158,14 @@ class ProxyRegionMap implements RegionMap {
    * Used to modify an existing RegionEntry or create a new one when processing the values obtained
    * during a getInitialImage.
    */
+  @Override
   public boolean initialImagePut(Object key, long lastModified, Object newValue,
-      boolean wasRecovered, boolean deferLRUCallback, VersionTag version,
+      boolean wasRecovered, boolean deferLRUCallback, VersionTag entryVersion,
       InternalDistributedMember sender, boolean forceValue) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
       boolean cacheWrite, boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
@@ -166,8 +182,9 @@ class ProxyRegionMap implements RegionMap {
     return true;
   }
 
+  @Override
   public boolean invalidate(EntryEventImpl event, boolean invokeCallbacks, boolean forceNewEntry,
-      boolean forceCallback) throws EntryNotFoundException {
+      boolean forceCallbacks) throws EntryNotFoundException {
 
     if (event.getOperation().isLocal()) {
       if (this.owner.isInitialized()) {
@@ -186,6 +203,7 @@ class ProxyRegionMap implements RegionMap {
     // noop
   }
 
+  @Override
   public void evictValue(Object key) {
     // noop
   }
@@ -195,6 +213,7 @@ class ProxyRegionMap implements RegionMap {
    */
   private static final RegionEntry markerEntry = new ProxyRegionEntry();
 
+  @Override
   public RegionEntry basicPut(EntryEventImpl event, long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, boolean overwriteDestroyed)
       throws CacheWriterException, TimeoutException {
@@ -232,31 +251,34 @@ class ProxyRegionMap implements RegionMap {
     return markerEntry;
   }
 
+  @Override
   public void writeSyncIfPresent(Object key, Runnable runner) {
     // nothing needed
   }
 
+  @Override
   public void removeIfDestroyed(Object key) {
     // nothing needed
   }
 
-  public void txApplyDestroy(Object key, TransactionId txId, TXRmtEvent txEvent,
+  @Override
+  public void txApplyDestroy(Object key, TransactionId rmtOrigin, TXRmtEvent event,
       boolean inTokenMode, boolean inRI, Operation op, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext, boolean isOriginRemote, TXEntryState txEntryState,
+      ClientProxyMembershipID bridgeContext, boolean isOperationRemote, TXEntryState txEntryState,
       VersionTag versionTag, long tailKey) {
     this.owner.txApplyDestroyPart2(markerEntry, key, inTokenMode,
         false /* Clear conflict occurred */);
     if (!inTokenMode) {
-      if (txEvent != null) {
-        txEvent.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
+      if (event != null) {
+        event.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner, !inTokenMode)) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op, key, null, txId, txEvent,
-            eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag,
-            tailKey);
+        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, op, key, null, rmtOrigin,
+            event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
+            versionTag, tailKey);
         boolean cbEventInPending = false;
         try {
           AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
@@ -275,23 +297,24 @@ class ProxyRegionMap implements RegionMap {
     }
   }
 
-  public void txApplyInvalidate(Object key, Object newValue, boolean didDestroy, TransactionId txId,
-      TXRmtEvent txEvent, boolean localOp, EventID eventId, Object aCallbackArgument,
-      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
-      long tailKey) {
+  @Override
+  public void txApplyInvalidate(Object key, Object newValue, boolean didDestroy,
+      TransactionId rmtOrigin, TXRmtEvent event, boolean localOp, EventID eventId,
+      Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
+      FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
+      TXEntryState txEntryState, VersionTag versionTag, long tailKey) {
     this.owner.txApplyInvalidatePart2(markerEntry, key, didDestroy, true);
     if (this.owner.isInitialized()) {
-      if (txEvent != null) {
-        txEvent.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
+      if (event != null) {
+        event.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
         @Released
         EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner,
-            localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
-            txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
+            localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
+            event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
         try {
           AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
@@ -310,26 +333,26 @@ class ProxyRegionMap implements RegionMap {
     }
   }
 
-  public void txApplyPut(Operation p_putOp, Object key, Object newValue, boolean didDestroy,
-      TransactionId txId, TXRmtEvent txEvent, EventID eventId, Object aCallbackArgument,
+  @Override
+  public void txApplyPut(Operation putOp, Object key, Object newValue, boolean didDestroy,
+      TransactionId rmtOrigin, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    Operation putOp = p_putOp.getCorrespondingCreateOp();
+    Operation putOperation = putOp.getCorrespondingCreateOp();
     long lastMod = owner.cacheTimeMillis();
-    this.owner.txApplyPutPart2(markerEntry, key, lastMod, true, didDestroy,
-        false /* Clear conflict occurred */);
+    this.owner.txApplyPutPart2(markerEntry, key, lastMod, true, didDestroy, false);
     if (this.owner.isInitialized()) {
-      if (txEvent != null) {
-        txEvent.addPut(putOp, this.owner, markerEntry, key, newValue, aCallbackArgument);
+      if (event != null) {
+        event.addPut(putOperation, this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
       if (AbstractRegionMap.shouldCreateCBEvent(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         boolean cbEventInPending = false;
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOp, key, newValue, txId,
-            txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
-            versionTag, tailKey);
+        EntryEventImpl e = AbstractRegionMap.createCBEvent(this.owner, putOperation, key, newValue,
+            rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+            txEntryState, versionTag, tailKey);
         try {
           AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
           if (pendingCallbacks == null) {
@@ -348,15 +371,18 @@ class ProxyRegionMap implements RegionMap {
   }
 
   // LRUMapCallbacks methods
+  @Override
   public void lruUpdateCallback() {
     // nothing needed
   }
 
+  @Override
   public boolean disableLruUpdateCallback() {
     // nothing needed
     return false;
   }
 
+  @Override
   public void enableLruUpdateCallback() {
     // nothing needed
   }
@@ -371,18 +397,22 @@ class ProxyRegionMap implements RegionMap {
     return false;
   }
 
+  @Override
   public void lruCloseStats() {
     // nothing needed
   }
 
+  @Override
   public void resetThreadLocals() {
     // nothing needed
   }
 
-  public void removeEntry(Object key, RegionEntry entry, boolean updateStats) {
+  @Override
+  public void removeEntry(Object key, RegionEntry value, boolean updateStats) {
     // nothing to do
   }
 
+  @Override
   public void removeEntry(Object key, RegionEntry re, boolean updateStat, EntryEventImpl event,
       LocalRegion owner) {
     // nothing to do
@@ -394,40 +424,47 @@ class ProxyRegionMap implements RegionMap {
    */
   public static class ProxyRegionEntry implements RegionEntry {
 
+    @Override
     public long getLastModified() {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public long getLastAccessed() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public long getHitCount() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public long getMissCount() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public VersionStamp getVersionStamp() {
       return null;
     }
 
+    @Override
     public boolean isTombstone() {
       return false;
     }
 
+    @Override
     public VersionTag generateVersionTag(VersionSource member, boolean withDelta,
-        LocalRegion region, EntryEventImpl event) {
+        InternalRegion region, EntryEventImpl event) {
       return null; // proxies don't do versioning
     }
 
@@ -435,77 +472,92 @@ class ProxyRegionMap implements RegionMap {
       return;
     }
 
-    public void makeTombstone(LocalRegion r, VersionTag isOperationRemote) {
+    @Override
+    public void makeTombstone(InternalRegion region, VersionTag version) {
       return;
     }
 
+    @Override
     public void updateStatsForPut(long lastModifiedTime, long lastAccessedTime) {
       // do nothing; called by LocalRegion.updateStatsForPut
     }
 
+    @Override
     public void setRecentlyUsed() {
       // do nothing; called by LocalRegion.updateStatsForPut
     }
 
+    @Override
     public void updateStatsForGet(boolean hit, long time) {
       // do nothing; no entry stats
     }
 
-    public void txDidDestroy(long currTime) {
+    @Override
+    public void txDidDestroy(long currentTime) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public void resetCounts() throws InternalStatisticsDisabledException {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public void removePhase1(LocalRegion r, boolean isClear) {
+    @Override
+    public void removePhase1(InternalRegion region, boolean clear) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public void removePhase2() {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public boolean isRemoved() {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public boolean isRemovedPhase2() {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public boolean fillInValue(LocalRegion r, Entry entry, ByteArrayDataInput in, DM mgr,
-        final Version version) {
+    @Override
+    public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
+        DM distributionManager, final Version version) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public boolean isOverflowedToDisk(LocalRegion r, DistributedRegion.DiskPosition dp) {
+    @Override
+    public boolean isOverflowedToDisk(InternalRegion region,
+        DistributedRegion.DiskPosition diskPosition) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public Object getKey() {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public Object getValue(RegionEntryContext context) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
@@ -519,6 +571,7 @@ class ProxyRegionMap implements RegionMap {
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public void setValue(RegionEntryContext context, Object value) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
@@ -526,18 +579,13 @@ class ProxyRegionMap implements RegionMap {
     }
 
     @Override
-    public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) {
+    public Object prepareValueForCache(RegionEntryContext context, Object value,
+        boolean isEntryUpdate) {
       throw new IllegalStateException("Should never be called");
     }
 
-    // @Override
-    // public void _setValue(Object value) {
-    // throw new
-    // UnsupportedOperationException(LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0.toLocalizedString(DataPolicy.EMPTY));
-    // }
-
     @Override
-    public Object _getValue() {
+    public Object getValue() {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
@@ -551,7 +599,7 @@ class ProxyRegionMap implements RegionMap {
     }
 
     @Override
-    public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
+    public Object getValueRetain(RegionEntryContext context, boolean decompress) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
@@ -569,39 +617,45 @@ class ProxyRegionMap implements RegionMap {
       return null; // called by TXRmtEvent.createEvent
     }
 
-    public Object getValueOnDisk(LocalRegion r) throws EntryNotFoundException {
+    @Override
+    public Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public Object getValueOnDiskOrBuffer(LocalRegion r) throws EntryNotFoundException {
+    @Override
+    public Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public Object getSerializedValueOnDisk(LocalRegion localRegion) {
+    @Override
+    public Object getSerializedValueOnDisk(InternalRegion region) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public boolean initialImagePut(LocalRegion region, long lastModified, Object newValue,
-        boolean wasRecovered, boolean versionTagAccepted) {
+    @Override
+    public boolean initialImagePut(InternalRegion region, long lastModified, Object newValue,
+        boolean wasRecovered, boolean acceptedVersionTag) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public boolean initialImageInit(LocalRegion region, long lastModified, Object newValue,
-        boolean create, boolean wasRecovered, boolean versionTagAccepted) {
+    @Override
+    public boolean initialImageInit(InternalRegion region, long lastModified, Object newValue,
+        boolean create, boolean wasRecovered, boolean acceptedVersionTag) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public boolean destroy(LocalRegion region, EntryEventImpl event, boolean inTokenMode,
+    @Override
+    public boolean destroy(InternalRegion region, EntryEventImpl event, boolean inTokenMode,
         boolean cacheWrite, Object expectedOldValue, boolean forceDestroy,
         boolean removeRecoveredEntry)
         throws CacheWriterException, EntryNotFoundException, TimeoutException {
@@ -610,54 +664,44 @@ class ProxyRegionMap implements RegionMap {
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
+    @Override
     public boolean getValueWasResultOfSearch() {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    public void setValueResultOfSearch(boolean v) {
-      throw new UnsupportedOperationException(
-          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
-              .toLocalizedString(DataPolicy.EMPTY));
-    }
-
-    public boolean dispatchListenerEvents(EntryEventImpl event) throws InterruptedException {
-      // note that we don't synchronize on the RE before dispatching
-      // events
-      event.invokeCallbacks(event.getRegion(), event.inhibitCacheListenerNotification(), false);
-      return true;
-    }
-
-    public boolean hasStats() {
-      return false;
-    }
-
-    public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
+    @Override
+    public void setValueResultOfSearch(boolean value) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
     @Override
-    public Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner) {
+    public boolean dispatchListenerEvents(EntryEventImpl event) throws InterruptedException {
+      // note that we don't synchronize on the RE before dispatching events
+      event.invokeCallbacks(event.getRegion(), event.inhibitCacheListenerNotification(), false);
+      return true;
+    }
+
+    @Override
+    public boolean hasStats() {
+      return false;
+    }
+
+    @Override
+    public Object getValueInVMOrDiskWithoutFaultIn(InternalRegion region) {
       throw new UnsupportedOperationException(
           LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
               .toLocalizedString(DataPolicy.EMPTY));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.apache.geode.internal.cache.RegionEntry#concurrencyCheck(org.apache.geode.internal.cache.
-     * LocalRegion, org.apache.geode.internal.cache.versions.VersionTag,
-     * org.apache.geode.distributed.internal.membership.InternalDistributedMember,
-     * org.apache.geode.distributed.internal.membership.InternalDistributedMember)
-     */
-    public void processVersionTag(LocalRegion r, VersionTag tag, InternalDistributedMember thisVM,
-        InternalDistributedMember sender) {
-      return;
+    @Override
+    public Object getValueOffHeapOrDiskWithoutFaultIn(InternalRegion region) {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.ProxyRegionMap_NO_ENTRY_SUPPORT_ON_REGIONS_WITH_DATAPOLICY_0
+              .toLocalizedString(DataPolicy.EMPTY));
     }
 
     @Override
@@ -725,8 +769,7 @@ class ProxyRegionMap implements RegionMap {
 
     @Override
     public void returnToPool() {
-      // TODO Auto-generated method stub
-
+      // nothing
     }
 
     @Override
@@ -739,14 +782,12 @@ class ProxyRegionMap implements RegionMap {
 
     @Override
     public boolean isCacheListenerInvocationInProgress() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public void setCacheListenerInvocationInProgress(boolean isListenerInvoked) {
-      // TODO Auto-generated method stub
-
+      // nothing
     }
 
     @Override
@@ -763,46 +804,58 @@ class ProxyRegionMap implements RegionMap {
     }
 
     @Override
-    public void setInUseByTransaction(boolean v) {}
+    public void setInUseByTransaction(boolean inUseByTransaction) {
+      // nothing
+    }
 
     @Override
     public void incRefCount() {}
 
     @Override
-    public void decRefCount(NewLRUClockHand lruList, LocalRegion lr) {}
+    public void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
+      // nothing
+    }
 
     @Override
-    public void resetRefCount(NewLRUClockHand lruList) {}
+    public void resetRefCount(NewLRUClockHand lruList) {
+      // nothing
+    }
 
     @Override
-    public Object prepareValueForCache(RegionEntryContext r, Object val, EntryEventImpl event,
-        boolean isEntryUpdate) {
+    public Object prepareValueForCache(RegionEntryContext context, Object value,
+        EntryEventImpl event, boolean isEntryUpdate) {
       throw new IllegalStateException("Should never be called");
     }
   }
 
+  @Override
   public void lruUpdateCallback(int n) {
     // do nothing
   }
 
+  @Override
   public void lruEntryFaultIn(LRUEntry entry) {
     // do nothing.
 
   }
 
+  @Override
   public void copyRecoveredEntries(RegionMap rm) {
     throw new IllegalStateException("copyRecoveredEntries should never be called on proxy");
   }
 
+  @Override
   public boolean removeTombstone(RegionEntry re, VersionHolder destroyedVersion, boolean isEviction,
       boolean isScheduledTombstone) {
     throw new IllegalStateException("removeTombstone should never be called on a proxy");
   }
 
+  @Override
   public boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion) {
     throw new IllegalStateException("removeTombstone should never be called on a proxy");
   }
 
+  @Override
   public void setEntryFactory(RegionEntryFactory f) {
     throw new IllegalStateException("Should not be called on a ProxyRegionMap");
   }

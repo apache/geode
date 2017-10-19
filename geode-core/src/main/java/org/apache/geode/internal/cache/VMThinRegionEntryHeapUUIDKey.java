@@ -15,36 +15,57 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
+
+
 import java.util.UUID;
+
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-// macros whose definition changes this class:
-// disk: DISK
-// lru: LRU
-// stats: STATS
-// versioned: VERSIONED
-// offheap: OFFHEAP
-// One of the following key macros must be defined:
-// key object: KEY_OBJECT
-// key int: KEY_INT
-// key long: KEY_LONG
-// key uuid: KEY_UUID
-// key string1: KEY_STRING1
-// key string2: KEY_STRING2
+/*
+ * macros whose definition changes this class:
+ *
+ * disk: DISK lru: LRU stats: STATS versioned: VERSIONED offheap: OFFHEAP
+ *
+ * One of the following key macros must be defined:
+ *
+ * key object: KEY_OBJECT key int: KEY_INT key long: KEY_LONG key uuid: KEY_UUID key string1:
+ * KEY_STRING1 key string2: KEY_STRING2
+ */
+
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
-  public VMThinRegionEntryHeapUUIDKey(RegionEntryContext context, UUID key, Object value) {
-    super(context, value);
+
+  public VMThinRegionEntryHeapUUIDKey(final RegionEntryContext context, final UUID key,
+
+
+
+      final Object value
+
+
+
+  ) {
+    super(context,
+
+
+
+        value
+
+    );
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
     this.keyMostSigBits = key.getMostSignificantBits();
     this.keyLeastSigBits = key.getLeastSignificantBits();
+
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -52,6 +73,7 @@ public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMThinRegionEntryHeapUUIDKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMThinRegionEntryHeapUUIDKey.class, "lastModified");
+
   private volatile Object value;
 
   @Override
@@ -60,45 +82,45 @@ public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
   }
 
   @Override
-  protected void setValueField(Object v) {
-    this.value = v;
+  protected void setValueField(final Object value) {
+    this.value = value;
   }
+
 
   protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 
-  protected boolean compareAndSetLastModifiedField(long expectedValue, long newValue) {
+  protected boolean compareAndSetLastModifiedField(final long expectedValue, final long newValue) {
     return lastModifiedUpdater.compareAndSet(this, expectedValue, newValue);
   }
 
-  /**
-   * @see HashEntry#getEntryHash()
-   */
+  @Override
   public int getEntryHash() {
     return this.hash;
   }
 
-  protected void setEntryHash(int v) {
-    this.hash = v;
+  protected void setEntryHash(final int hash) {
+    this.hash = hash;
   }
 
-  /**
-   * @see HashEntry#getNextEntry()
-   */
+  @Override
   public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
-  /**
-   * @see HashEntry#setNextEntry
-   */
-  public void setNextEntry(final HashEntry<Object, Object> n) {
-    this.next = n;
+  @Override
+  public void setNextEntry(final HashEntry<Object, Object> next) {
+    this.next = next;
   }
 
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   // key code
+
+
   private final long keyMostSigBits;
   private final long keyLeastSigBits;
 
@@ -108,13 +130,17 @@ public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
   }
 
   @Override
-  public boolean isKeyEqual(Object k) {
-    if (k instanceof UUID) {
-      UUID uuid = (UUID) k;
+  public boolean isKeyEqual(final Object key) {
+    if (key instanceof UUID) {
+      UUID uuid = (UUID) key;
       return uuid.getLeastSignificantBits() == this.keyLeastSigBits
           && uuid.getMostSignificantBits() == this.keyMostSigBits;
     }
     return false;
   }
+
+
+
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
+

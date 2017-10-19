@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.LRUEntry;
+import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -210,7 +211,7 @@ public interface DiskEntry extends RegionEntry {
         synchronized (syncObj) {
           if (did != null && did.isPendingAsync()) {
             @Retained
-            Object v = entry._getValueRetain(context, true);
+            Object v = entry.getValueRetain(context, true);
 
             if (Token.isRemovedFromDisk(v)) {
               v = null;
@@ -299,7 +300,7 @@ public interface DiskEntry extends RegionEntry {
 
           // OFFHEAP copied to heap entry;
           // TODO: allow entry to refer to offheap since it will be copied to network.
-          v = de._getValueRetain(context, true);
+          v = de.getValueRetain(context, true);
 
           ReferenceCountHelper.setReferenceCountOwner(null);
           if (v == null) {
@@ -421,12 +422,12 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Used to initialize a new disk entry
      */
-    static void initialize(DiskEntry entry, DiskRecoveryStore r, Object newValue) {
+    static void initialize(DiskEntry entry, DiskRecoveryStore diskRecoveryStore, Object newValue) {
       DiskRegionView drv = null;
-      if (r instanceof LocalRegion) {
-        drv = ((LocalRegion) r).getDiskRegion();
-      } else if (r instanceof DiskRegionView) {
-        drv = (DiskRegionView) r;
+      if (diskRecoveryStore instanceof InternalRegion) {
+        drv = ((InternalRegion) diskRecoveryStore).getDiskRegion();
+      } else if (diskRecoveryStore instanceof DiskRegionView) {
+        drv = (DiskRegionView) diskRecoveryStore;
       }
       if (drv == null) {
         throw new IllegalArgumentException(
@@ -443,12 +444,12 @@ public interface DiskEntry extends RegionEntry {
         did.setUserBits(re.getUserBits());
         did.setValueLength(re.getValueLength());
         if (!re.getValueRecovered()) {
-          updateStats(drv, r, 0/* InVM */, 1/* OnDisk */, did.getValueLength());
+          updateStats(drv, diskRecoveryStore, 0, 1, did.getValueLength());
         } else {
-          entry.setValueWithContext(drv,
-              entry.prepareValueForCache((RegionEntryContext) r, re.getValue(), false));
+          entry.setValueWithContext(drv, entry
+              .prepareValueForCache((RegionEntryContext) diskRecoveryStore, re.getValue(), false));
           if (!Token.isInvalidOrRemoved(re.getValue())) {
-            updateStats(drv, r, 1/* InVM */, 0/* OnDisk */, 0);
+            updateStats(drv, diskRecoveryStore, 1, 0, 0);
           }
         }
       } else {
@@ -457,7 +458,7 @@ public interface DiskEntry extends RegionEntry {
           did.setKeyId(DiskRegion.INVALID_ID);
         }
         if (newValue != null && !Token.isInvalidOrRemoved(newValue)) {
-          updateStats(drv, r, 1/* InVM */, 0/* OnDisk */, 0);
+          updateStats(drv, diskRecoveryStore, 1, 0, 0);
         }
       }
     }
@@ -756,7 +757,7 @@ public interface DiskEntry extends RegionEntry {
       }
     }
 
-    public static ValueWrapper createValueWrapperFromEntry(DiskEntry entry, LocalRegion region,
+    public static ValueWrapper createValueWrapperFromEntry(DiskEntry entry, InternalRegion region,
         EntryEventImpl event) {
       if (event != null) {
         // For off-heap it should be faster to pass a reference to the
@@ -779,7 +780,7 @@ public interface DiskEntry extends RegionEntry {
         }
       }
       @Retained
-      Object value = entry._getValueRetain(region, true);
+      Object value = entry.getValueRetain(region, true);
       try {
         return createValueWrapper(value, event);
       } finally {
@@ -787,7 +788,7 @@ public interface DiskEntry extends RegionEntry {
       }
     }
 
-    private static void writeToDisk(DiskEntry entry, LocalRegion region, boolean async)
+    private static void writeToDisk(DiskEntry entry, InternalRegion region, boolean async)
         throws RegionClearedException {
       writeToDisk(entry, region, async, null);
     }
@@ -797,12 +798,12 @@ public interface DiskEntry extends RegionEntry {
      * 
      * @see DiskRegion#put
      */
-    private static void writeToDisk(DiskEntry entry, LocalRegion region, boolean async,
+    private static void writeToDisk(DiskEntry entry, InternalRegion region, boolean async,
         EntryEventImpl event) throws RegionClearedException {
       writeBytesToDisk(entry, region, async, createValueWrapperFromEntry(entry, region, event));
     }
 
-    private static void writeBytesToDisk(DiskEntry entry, LocalRegion region, boolean async,
+    private static void writeBytesToDisk(DiskEntry entry, InternalRegion region, boolean async,
         ValueWrapper vw) throws RegionClearedException {
       // @todo does the following unmark need to be called when an async
       // write is scheduled or is it ok for doAsyncFlush to do it?
@@ -981,7 +982,7 @@ public interface DiskEntry extends RegionEntry {
       return result;
     }
 
-    public static Object getValueInVMOrDiskWithoutFaultIn(DiskEntry entry, LocalRegion region) {
+    public static Object getValueInVMOrDiskWithoutFaultIn(DiskEntry entry, InternalRegion region) {
       Object result =
           OffHeapHelper.copyAndReleaseIfNeeded(getValueOffHeapOrDiskWithoutFaultIn(entry, region));
       if (result instanceof CachedDeserializable) {
@@ -991,13 +992,14 @@ public interface DiskEntry extends RegionEntry {
     }
 
     @Retained
-    public static Object getValueOffHeapOrDiskWithoutFaultIn(DiskEntry entry, LocalRegion region) {
+    public static Object getValueOffHeapOrDiskWithoutFaultIn(DiskEntry entry,
+        InternalRegion region) {
       @Retained
-      Object v = entry._getValueRetain(region, true);
+      Object v = entry.getValueRetain(region, true);
 
       if (v == null || Token.isRemovedFromDisk(v) && !region.isIndexCreationThread()) {
         synchronized (entry) {
-          v = entry._getValueRetain(region, true);
+          v = entry.getValueRetain(region, true);
 
           if (v == null) {
             v = Helper.getOffHeapValueOnDiskOrBuffer(entry, region.getDiskRegion(), region);
@@ -1027,7 +1029,7 @@ public interface DiskEntry extends RegionEntry {
     private static Object faultInValue(DiskEntry entry, LocalRegion region, boolean retainResult) {
       DiskRegion dr = region.getDiskRegion();
       @Retained
-      Object v = entry._getValueRetain(region, true);
+      Object v = entry.getValueRetain(region, true);
 
       boolean lruFaultedIn = false;
       boolean done = false;
@@ -1055,7 +1057,7 @@ public interface DiskEntry extends RegionEntry {
         }
         if (!done && (v == null || Token.isRemovedFromDisk(v) && !region.isIndexCreationThread())) {
           synchronized (entry) {
-            v = entry._getValueRetain(region, true);
+            v = entry.getValueRetain(region, true);
 
             if (v == null) {
               v = readValueFromDisk(entry, region);
@@ -1354,16 +1356,17 @@ public interface DiskEntry extends RegionEntry {
     }
 
     private static void scheduleAsyncWrite(AsyncDiskEntry ade) {
-      DiskRegion dr = ade.region.getDiskRegion();
+      DiskRegion dr = ((Bucket) ade.region).getDiskRegion();
       dr.scheduleAsyncWrite(ade);
     }
 
 
-    public static void handleFullAsyncQueue(DiskEntry entry, LocalRegion region, VersionTag tag) {
+    public static void handleFullAsyncQueue(DiskEntry entry, InternalRegion region,
+        VersionTag tag) {
       writeEntryToDisk(entry, region, tag, true);
     }
 
-    public static void doAsyncFlush(VersionTag tag, LocalRegion region) {
+    public static void doAsyncFlush(VersionTag tag, InternalRegion region) {
       if (region.isThisRegionBeingClosedOrDestroyed())
         return;
       DiskRegion dr = region.getDiskRegion();
@@ -1384,7 +1387,7 @@ public interface DiskEntry extends RegionEntry {
      * 
      * @since GemFire prPersistSprint1
      */
-    public static void doAsyncFlush(DiskEntry entry, LocalRegion region, VersionTag tag) {
+    public static void doAsyncFlush(DiskEntry entry, InternalRegion region, VersionTag tag) {
       writeEntryToDisk(entry, region, tag, false);
     }
 
@@ -1395,7 +1398,7 @@ public interface DiskEntry extends RegionEntry {
      * @param asyncQueueWasFull true if caller wanted to put this entry in the queue but could not
      *        do so because it was full
      */
-    private static void writeEntryToDisk(DiskEntry entry, LocalRegion region, VersionTag tag,
+    private static void writeEntryToDisk(DiskEntry entry, InternalRegion region, VersionTag tag,
         boolean asyncQueueWasFull) {
       if (region.isThisRegionBeingClosedOrDestroyed())
         return;
@@ -1418,7 +1421,8 @@ public interface DiskEntry extends RegionEntry {
               if (did.isPendingAsync()) {
                 did.setPendingAsync(false);
                 final Token entryVal = entry.getValueAsToken();
-                final int entryValSize = region.calculateRegionEntryValueSize(entry);
+                final int entryValSize =
+                    ((DiskRecoveryStore) region).calculateRegionEntryValueSize(entry);
                 try {
                   if (Token.isRemovedFromDisk(entryVal)) {
                     if (region.isThisRegionBeingClosedOrDestroyed())
@@ -1488,7 +1492,7 @@ public interface DiskEntry extends RegionEntry {
      * @throws RegionClearedException If the operation is aborted due to a clear
      * @see DiskRegion#remove
      */
-    public static void removeFromDisk(DiskEntry entry, LocalRegion region, boolean isClear)
+    public static void removeFromDisk(DiskEntry entry, InternalRegion region, boolean isClear)
         throws RegionClearedException {
       DiskRegion dr = region.getDiskRegion();
       DiskId did = entry.getDiskId();
@@ -1515,7 +1519,7 @@ public interface DiskEntry extends RegionEntry {
       }
     }
 
-    private static AsyncDiskEntry basicRemoveFromDisk(DiskEntry entry, LocalRegion region,
+    private static AsyncDiskEntry basicRemoveFromDisk(DiskEntry entry, InternalRegion region,
         boolean isClear) throws RegionClearedException {
       final DiskRegion dr = region.getDiskRegion();
       final DiskId did = entry.getDiskId();
@@ -1546,7 +1550,7 @@ public interface DiskEntry extends RegionEntry {
       } else {
         // If we have concurrency checks enabled for a persistent region, we need
         // to add an entry to the async queue for every update to maintain the RVV
-        boolean maintainRVV = region.concurrencyChecksEnabled && dr.isBackup();
+        boolean maintainRVV = region.isConcurrencyChecksEnabled() && dr.isBackup();
         if (!did.isPendingAsync() || maintainRVV) {
           did.setPendingAsync(true);
           VersionTag tag = null;
@@ -1565,7 +1569,7 @@ public interface DiskEntry extends RegionEntry {
       return result;
     }
 
-    public static void updateVersionOnly(DiskEntry entry, LocalRegion region, VersionTag tag) {
+    public static void updateVersionOnly(DiskEntry entry, InternalRegion region, VersionTag tag) {
       DiskRegion dr = region.getDiskRegion();
       if (!dr.isBackup()) {
         return;

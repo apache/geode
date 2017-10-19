@@ -15,27 +15,15 @@
 package org.apache.geode.internal.cache.versions;
 
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 
-/**
- *
- */
-public interface VersionStamp<T extends VersionSource> extends VersionHolder<T> {
-
-
+public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<T> {
 
   /**
-   * set the time stamp from the given clock value
+   * Sets the time stamp from the given clock value
    */
   void setVersionTimeStamp(long time);
-
-  // /**
-  // * @return the ID of the previous member that last changed the corresponding entry.
-  // */
-  // DistributedMember getPreviousMemberID();
-
 
   /**
    * Sets the version information with what is in the tag
@@ -49,44 +37,36 @@ public interface VersionStamp<T extends VersionSource> extends VersionHolder<T> 
    */
   void setMemberID(VersionSource memberID);
 
-  // /**
-  // * @param previousMemberID the previousMemberID to set
-  // */
-  // void setPreviousMemberID(DistributedMember previousMemberID);
-
   /**
-   * returns a VersionTag carrying this stamps information. This is used for transmission of the
+   * Returns a VersionTag carrying this stamps information. This is used for transmission of the
    * stamp in initial image transfer
    */
   VersionTag<T> asVersionTag();
 
-
   /**
    * Perform a versioning check with the incoming event. Throws a
    * ConcurrentCacheModificationException if there is a problem.
-   * 
-   * @param event
    */
-  public void processVersionTag(EntryEvent event);
+  void processVersionTag(EntryEvent event);
 
   /**
    * Perform a versioning check with the given GII information. Throws a
    * ConcurrentCacheModificationException if there is a problem.
    * 
-   * @param r the region being modified
+   * @param region the region being modified
    * @param tag the version info for the modification
    * @param isTombstoneFromGII it's a tombstone
    * @param hasDelta it has delta
-   * @param thisVM this cache's DM identifier
+   * @param versionSource this cache's DM identifier
    * @param sender the identifier of the member providing the entry
    * @param checkConflicts true if conflict checks should be performed
    */
-  public void processVersionTag(LocalRegion r, VersionTag<T> tag, boolean isTombstoneFromGII,
-      boolean hasDelta, VersionSource thisVM, InternalDistributedMember sender,
+  void processVersionTag(InternalRegion region, VersionTag<T> tag, boolean isTombstoneFromGII,
+      boolean hasDelta, VersionSource<T> versionSource, InternalDistributedMember sender,
       boolean checkConflicts);
 
   /**
-   * return true if this stamp has valid entry/region version information, false if not
+   * Returns true if this stamp has valid entry/region version information, false if not
    */
-  public boolean hasValidVersion();
+  boolean hasValidVersion();
 }

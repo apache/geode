@@ -1912,7 +1912,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           LocalRegion reRegion;
           reRegion = (LocalRegion) region;
           RegionEntry re = reRegion.getRegionEntry(key2);
-          StoredObject so = (StoredObject) re._getValue();
+          StoredObject so = (StoredObject) re.getValue();
           assertEquals(1, so.getRefCount());
           assertEquals(1, ma.getStats().getObjects());
         }
@@ -2000,7 +2000,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertEquals(2, ma.getStats().getObjects());
           LocalRegion reRegion;
           reRegion = (LocalRegion) region;
-          StoredObject so = (StoredObject) reRegion.getRegionEntry(key)._getValue();
+          StoredObject so = (StoredObject) reRegion.getRegionEntry(key).getValue();
           assertEquals(1, so.getRefCount());
         }
       }
@@ -2067,7 +2067,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(2, ma.getStats().getObjects());
             LocalRegion reRegion;
             reRegion = (LocalRegion) region;
-            StoredObject so = (StoredObject) reRegion.getRegionEntry(key)._getValue();
+            StoredObject so = (StoredObject) reRegion.getRegionEntry(key).getValue();
             assertEquals(1, so.getRefCount());
           }
         }

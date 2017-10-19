@@ -37,11 +37,9 @@ public class OverflowOplogSet implements OplogSet {
   private static final Logger logger = LogService.getLogger();
 
   private final AtomicInteger overflowOplogId = new AtomicInteger(0);
-  private OverflowOplog lastOverflowWrite = null;
-  private final ConcurrentMap<Integer, OverflowOplog> overflowMap =
-      new ConcurrentHashMap<Integer, OverflowOplog>();
-  private final Map<Integer, OverflowOplog> compactableOverflowMap =
-      new LinkedHashMap<Integer, OverflowOplog>();
+  private OverflowOplog lastOverflowWrite;
+  private final ConcurrentMap<Integer, OverflowOplog> overflowMap = new ConcurrentHashMap<>();
+  private final Map<Integer, OverflowOplog> compactibleOverflowMap = new LinkedHashMap<>();
 
   private int lastOverflowDir = 0;
 
@@ -51,14 +49,13 @@ public class OverflowOplogSet implements OplogSet {
     this.parent = parent;
   }
 
-
   OverflowOplog getActiveOverflowOplog() {
     return this.lastOverflowWrite;
   }
 
   @Override
-  public void modify(LocalRegion lr, DiskEntry entry, ValueWrapper value, boolean async) {
-    DiskRegion dr = lr.getDiskRegion();
+  public void modify(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
+    DiskRegion dr = region.getDiskRegion();
     synchronized (this.overflowMap) {
       if (this.lastOverflowWrite != null) {
         if (this.lastOverflowWrite.modify(dr, entry, value, async)) {
@@ -81,7 +78,6 @@ public class OverflowOplogSet implements OplogSet {
   private DirectoryHolder[] getDirectories() {
     return parent.directories;
   }
-
 
   /**
    * @param minSize the minimum size this oplog can be
@@ -163,8 +159,8 @@ public class OverflowOplogSet implements OplogSet {
 
   void removeOverflow(OverflowOplog oo) {
     if (!basicRemoveOverflow(oo)) {
-      synchronized (this.compactableOverflowMap) {
-        this.compactableOverflowMap.remove(oo.getOplogId());
+      synchronized (this.compactibleOverflowMap) {
+        this.compactibleOverflowMap.remove(oo.getOplogId());
       }
     }
   }
@@ -176,14 +172,12 @@ public class OverflowOplogSet implements OplogSet {
     return this.overflowMap.remove(oo.getOplogId(), oo);
   }
 
-
-
   public void closeOverflow() {
     for (OverflowOplog oo : this.overflowMap.values()) {
       oo.destroy();
     }
-    synchronized (this.compactableOverflowMap) {
-      for (OverflowOplog oo : this.compactableOverflowMap.values()) {
+    synchronized (this.compactibleOverflowMap) {
+      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
         oo.destroy();
       }
     }
@@ -204,8 +198,6 @@ public class OverflowOplogSet implements OplogSet {
       }
     }
   }
-
-
 
   void copyForwardForOverflowCompact(DiskEntry de, byte[] valueBytes, int length, byte userBits) {
     synchronized (this.overflowMap) {
@@ -232,37 +224,34 @@ public class OverflowOplogSet implements OplogSet {
   public OverflowOplog getChild(int oplogId) {
     OverflowOplog result = this.overflowMap.get(oplogId);
     if (result == null) {
-      synchronized (this.compactableOverflowMap) {
-        result = this.compactableOverflowMap.get(oplogId);
+      synchronized (this.compactibleOverflowMap) {
+        result = this.compactibleOverflowMap.get(oplogId);
       }
     }
     return result;
   }
 
-
   @Override
-  public void create(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
+  public void create(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
     modify(region, entry, value, async);
   }
 
-
   @Override
-  public void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear) {
+  public void remove(InternalRegion region, DiskEntry entry, boolean async, boolean isClear) {
     removeOverflow(region.getDiskRegion(), entry);
   }
 
   void addOverflowToBeCompacted(OverflowOplog oplog) {
-    synchronized (this.compactableOverflowMap) {
-      this.compactableOverflowMap.put(oplog.getOplogId(), oplog);
+    synchronized (this.compactibleOverflowMap) {
+      this.compactibleOverflowMap.put(oplog.getOplogId(), oplog);
     }
     basicRemoveOverflow(oplog);
     parent.scheduleCompaction();
   }
 
-
   public void getCompactableOplogs(List<CompactableOplog> l, int max) {
-    synchronized (this.compactableOverflowMap) {
-      Iterator<OverflowOplog> itr = this.compactableOverflowMap.values().iterator();
+    synchronized (this.compactibleOverflowMap) {
+      Iterator<OverflowOplog> itr = this.compactibleOverflowMap.values().iterator();
       while (itr.hasNext() && l.size() < max) {
         OverflowOplog oplog = itr.next();
         if (oplog.needsCompaction()) {
@@ -282,8 +271,8 @@ public class OverflowOplogSet implements OplogSet {
         }
       }
     }
-    synchronized (this.compactableOverflowMap) {
-      for (OverflowOplog oo : this.compactableOverflowMap.values()) {
+    synchronized (this.compactibleOverflowMap) {
+      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
         FileChannel oplogFileChannel = oo.getFileChannel();
         try {
           oplogFileChannel.close();
@@ -294,14 +283,14 @@ public class OverflowOplogSet implements OplogSet {
   }
 
   ArrayList<OverflowOplog> testHookGetAllOverflowOplogs() {
-    ArrayList<OverflowOplog> result = new ArrayList<OverflowOplog>();
+    ArrayList<OverflowOplog> result = new ArrayList<>();
     synchronized (this.overflowMap) {
       for (OverflowOplog oo : this.overflowMap.values()) {
         result.add(oo);
       }
     }
-    synchronized (this.compactableOverflowMap) {
-      for (OverflowOplog oo : this.compactableOverflowMap.values()) {
+    synchronized (this.compactibleOverflowMap) {
+      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
         result.add(oo);
       }
     }
@@ -315,13 +304,12 @@ public class OverflowOplogSet implements OplogSet {
         oo.close();
       }
     }
-    synchronized (this.compactableOverflowMap) {
-      for (OverflowOplog oo : this.compactableOverflowMap.values()) {
+    synchronized (this.compactibleOverflowMap) {
+      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
         oo.close();
       }
     }
   }
-
 
   public DiskStoreImpl getParent() {
     return parent;

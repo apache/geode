@@ -295,7 +295,7 @@ public class FetchEntriesMessage extends PartitionMessage {
           LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) it.next();
           RegionEntry re = entry.getRegionEntry();
           synchronized (re) {
-            Object value = re._getValueRetain(map, true);
+            Object value = re.getValueRetain(map, true);
             try {
               if (value == null) {
                 // only possible for disk entry

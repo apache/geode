@@ -1260,7 +1260,8 @@ public class Oplog implements CompactableOplog, Flushable {
    *        present. @param faultingIn @param bitOnly boolean indicating whether to extract just the
    *        UserBit or UserBit with value @return BytesAndBits object wrapping the value & user bit
    */
-  public BytesAndBits getBytesAndBits(DiskRegionView dr, DiskId id, boolean faultingIn,
+  @Override
+  public BytesAndBits getBytesAndBits(DiskRegionView dr, DiskId id, boolean faultIn,
       boolean bitOnly) {
     Oplog retryOplog = null;
     long offset = 0;
@@ -1276,7 +1277,7 @@ public class Oplog implements CompactableOplog, Flushable {
       }
     }
     if (retryOplog != null) {
-      return retryOplog.getBytesAndBits(dr, id, faultingIn, bitOnly);
+      return retryOplog.getBytesAndBits(dr, id, faultIn, bitOnly);
     }
     BytesAndBits bb = null;
     long start = this.stats.startRead();
@@ -1325,6 +1326,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * 
    * @param id A DiskId object for which the value on disk will be fetched
    */
+  @Override
   public BytesAndBits getNoBuffer(DiskRegion dr, DiskId id) {
     if (logger.isDebugEnabled()) {
       logger.debug("Oplog::getNoBuffer:Before invoking Oplog.basicGet for DiskID ={}", id);
@@ -3495,7 +3497,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @param entry The DiskEntry object for this key/value pair.
    * @param value byte array representing the value
    */
-  public void create(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
+  public void create(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
 
     if (this != getOplogSet().getChild()) {
       getOplogSet().getChild().create(region, entry, value, async);
@@ -3810,6 +3812,7 @@ public class Oplog implements CompactableOplog, Flushable {
       // RAF
       // as needed.
       getParent().executeDelayedExpensiveWrite(new Runnable() {
+        @Override
         public void run() {
           // need to truncate crf and drf if their actual size is less than
           // their pregrow size
@@ -3861,6 +3864,7 @@ public class Oplog implements CompactableOplog, Flushable {
    */
   protected void createKrfAsync() {
     getParent().executeDiskStoreTask(new Runnable() {
+      @Override
       public void run() {
         createKrf(false);
       }
@@ -4108,7 +4112,6 @@ public class Oplog implements CompactableOplog, Flushable {
 
       allClosed = true;
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       if (getParent().getDiskAccessException() == null) {
         throw new DiskAccessException("Fail to close krf file " + this.krf.f, e, getParent());
       } else {
@@ -4200,14 +4203,13 @@ public class Oplog implements CompactableOplog, Flushable {
               CacheObserverHolder.getInstance().afterKrfCreated();
             }
           } catch (FileNotFoundException ex) {
-            // TODO handle exception; we couldn't open the krf file
+            // we couldn't open the krf file
             throw new IllegalStateException("could not create krf " + this.krf.f, ex);
           } catch (IOException ex) {
-            // TODO handle io exceptions; we failed to write to the file
+            // we failed to write to the file
             throw new IllegalStateException("failed writing krf " + this.krf.f, ex);
           } finally {
-            // if IOException happened in writeOneKeyEntryForKRF(), delete krf
-            // here
+            // if IOException happened in writeOneKeyEntryForKRF(), delete krf here
             if (!krfCreateSuccess) {
               closeAndDeleteKrf();
             }
@@ -4242,6 +4244,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
     // idx is now the length of sortedLiveEntries
     Arrays.sort(sortedLiveEntries, 0, idx, new Comparator<KRFEntry>() {
+      @Override
       public int compare(KRFEntry o1, KRFEntry o2) {
         long val1 = o1.getOffsetInOplogForSorting();
         long val2 = o2.getOffsetInOplogForSorting();
@@ -4273,7 +4276,7 @@ public class Oplog implements CompactableOplog, Flushable {
     ReferenceCountHelper.skipRefCountTracking();
     @Retained
     @Released
-    Object value = entry._getValueRetain(dr, true);
+    Object value = entry.getValueRetain(dr, true);
     ReferenceCountHelper.unskipRefCountTracking();
     boolean foundData = false;
     if (value == null) {
@@ -4417,7 +4420,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * 
    * @param value byte array representing the value
    */
-  public void modify(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
+  public void modify(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
     if (getOplogSet().getChild() != this) {
       getOplogSet().getChild().modify(region, entry, value, async);
     } else {
@@ -4496,7 +4499,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  public void saveConflictVersionTag(LocalRegion region, VersionTag tag, boolean async) {
+  public void saveConflictVersionTag(InternalRegion region, VersionTag tag, boolean async) {
     if (getOplogSet().getChild() != this) {
       getOplogSet().getChild().saveConflictVersionTag(region, tag, async);
     } else {
@@ -4900,7 +4903,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * 
    * @param entry DiskEntry object on which remove operation is called
    */
-  public void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear) {
+  public void remove(InternalRegion region, DiskEntry entry, boolean async, boolean isClear) {
     DiskRegion dr = region.getDiskRegion();
     if (getOplogSet().getChild() != this) {
       getOplogSet().getChild().remove(region, entry, async, isClear);
@@ -5158,13 +5161,13 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   @Override
-  public void flush(ByteBuffer b1, ByteBuffer b2) throws IOException {
-    if (b1 == this.drf.writeBuf) {
-      flush(this.drf, b1, b2);
+  public void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException {
+    if (bb == this.drf.writeBuf) {
+      flush(this.drf, bb, chunkbb);
       flush(this.crf, false);
     } else {
       flush(this.drf, false);
-      flush(this.crf, b1, b2);
+      flush(this.crf, bb, chunkbb);
     }
   }
 
@@ -5719,6 +5722,7 @@ public class Oplog implements CompactableOplog, Flushable {
         return;
       }
       getParent().executeDelayedExpensiveWrite(new Runnable() {
+        @Override
         public void run() {
           if (!krf.delete()) {
             if (krf.exists()) {
@@ -5802,6 +5806,7 @@ public class Oplog implements CompactableOplog, Flushable {
       // bounded
       // queue
       getParent().executeDelayedExpensiveWrite(new Runnable() {
+        @Override
         public void run() {
           if (!olf.f.delete() && olf.f.exists()) {
             logger.warn(LocalizedMessage.create(LocalizedStrings.Oplog_DELETE_FAIL_0_1_2,
@@ -5979,6 +5984,7 @@ public class Oplog implements CompactableOplog, Flushable {
         } else {
           // schedule another thread to do it
           getParent().executeDiskStoreTask(new Runnable() {
+            @Override
             public void run() {
               handleEmptyAndOldest(false);
             }
@@ -5991,6 +5997,7 @@ public class Oplog implements CompactableOplog, Flushable {
         } else {
           // schedule another thread to do it
           getParent().executeDiskStoreTask(new Runnable() {
+            @Override
             public void run() {
               handleEmpty(false);
             }
@@ -6043,6 +6050,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
+  @Override
   public void prepareForCompact() {
     this.compacting = true;
   }
@@ -6061,6 +6069,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Copy any live entries last stored in this oplog to the current oplog. No need to copy deletes
    * in the drf. Backup only needs them until all the older crfs are empty.
    */
+  @Override
   public int compact(OplogCompactor compactor) {
     if (!needsCompaction()) {
       return 0; // @todo check new logic that deals with not compacting oplogs
@@ -6891,18 +6900,22 @@ public class Oplog implements CompactableOplog, Flushable {
     private DiskEntry next = this;
     private DiskEntry prev = this;
 
+    @Override
     public synchronized DiskEntry getPrev() {
       return this.prev;
     }
 
+    @Override
     public synchronized void setPrev(DiskEntry v) {
       this.prev = v;
     }
 
+    @Override
     public synchronized DiskEntry getNext() {
       return this.next;
     }
 
+    @Override
     public synchronized void setNext(DiskEntry v) {
       this.next = v;
     }
@@ -7007,7 +7020,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public Object _getValue() {
+    public Object getValue() {
       throw new IllegalStateException();
     }
 
@@ -7022,12 +7035,13 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate) {
+    public Object prepareValueForCache(RegionEntryContext context, Object value,
+        boolean isEntryUpdate) {
       throw new IllegalStateException("Should never be called");
     }
 
     @Override
-    public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
+    public Object getValueRetain(RegionEntryContext context, boolean decompress) {
       throw new IllegalStateException();
     }
 
@@ -7040,10 +7054,12 @@ public class Oplog implements CompactableOplog, Flushable {
       throw new IllegalStateException();
     }
 
+    @Override
     public DiskId getDiskId() {
       throw new IllegalStateException();
     }
 
+    @Override
     public long getLastModified() {
       throw new IllegalStateException();
     }
@@ -7052,14 +7068,17 @@ public class Oplog implements CompactableOplog, Flushable {
       throw new IllegalStateException();
     }
 
+    @Override
     public boolean isValueNull() {
       throw new IllegalStateException();
     }
 
+    @Override
     public boolean isRemovedFromDisk() {
       throw new IllegalStateException();
     }
 
+    @Override
     public int updateAsyncEntrySize(EnableLRU capacityController) {
       throw new IllegalStateException();
     }
@@ -7101,115 +7120,104 @@ public class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public boolean hasStats() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public long getLastAccessed() throws InternalStatisticsDisabledException {
-      // TODO Auto-generated method stub
       return 0;
     }
 
     @Override
     public long getHitCount() throws InternalStatisticsDisabledException {
-      // TODO Auto-generated method stub
       return 0;
     }
 
     @Override
     public long getMissCount() throws InternalStatisticsDisabledException {
-      // TODO Auto-generated method stub
       return 0;
     }
 
     @Override
     public void updateStatsForPut(long lastModifiedTime, long lastAccessedTime) {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public VersionTag generateVersionTag(VersionSource member, boolean withDelta,
-        LocalRegion region, EntryEventImpl event) {
-      // TODO Auto-generated method stub
+        InternalRegion region, EntryEventImpl event) {
       return null;
     }
 
     @Override
     public boolean dispatchListenerEvents(EntryEventImpl event) throws InterruptedException {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public void setRecentlyUsed() {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public void updateStatsForGet(boolean hit, long time) {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
-    public void txDidDestroy(long currTime) {
-      // TODO Auto-generated method stub
+    public void txDidDestroy(long currentTime) {
+      // nothing
     }
 
     @Override
     public void resetCounts() throws InternalStatisticsDisabledException {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
-    public void makeTombstone(LocalRegion r, VersionTag version) throws RegionClearedException {
-      // TODO Auto-generated method stub
+    public void makeTombstone(InternalRegion region, VersionTag version)
+        throws RegionClearedException {
+      // nothing
     }
 
     @Override
-    public void removePhase1(LocalRegion r, boolean clear) throws RegionClearedException {
-      // TODO Auto-generated method stub
+    public void removePhase1(InternalRegion region, boolean clear) throws RegionClearedException {
+      // nothing
     }
 
     @Override
     public void removePhase2() {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public boolean isRemoved() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public boolean isRemovedPhase2() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public boolean isTombstone() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
-    public boolean fillInValue(LocalRegion r, InitialImageOperation.Entry entry,
-        ByteArrayDataInput in, DM mgr, final Version version) {
-      // TODO Auto-generated method stub
+    public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
+        ByteArrayDataInput in, DM distributionManager, final Version version) {
       return false;
     }
 
     @Override
-    public boolean isOverflowedToDisk(LocalRegion r, DiskPosition dp) {
-      // TODO Auto-generated method stub
+    public boolean isOverflowedToDisk(InternalRegion region, DiskPosition diskPosition) {
       return false;
     }
 
     @Override
     public Object getValue(RegionEntryContext context) {
-      // TODO Auto-generated method stub
       return null;
     }
 
@@ -7220,153 +7228,134 @@ public class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public void setValue(RegionEntryContext context, Object value) throws RegionClearedException {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public void setValueWithTombstoneCheck(Object value, EntryEvent event)
         throws RegionClearedException {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public Object getTransformedValue() {
-      // TODO Auto-generated method stub
       return null;
     }
 
     @Override
     public Object getValueInVM(RegionEntryContext context) {
-      // TODO Auto-generated method stub
       return null;
     }
 
     @Override
-    public Object getValueOnDisk(LocalRegion r) throws EntryNotFoundException {
-      // TODO Auto-generated method stub
+    public Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException {
       return null;
     }
 
     @Override
-    public Object getValueOnDiskOrBuffer(LocalRegion r) throws EntryNotFoundException {
-      // TODO Auto-generated method stub
+    public Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException {
       return null;
     }
 
     @Override
-    public boolean initialImagePut(LocalRegion region, long lastModified, Object newValue,
+    public boolean initialImagePut(InternalRegion region, long lastModified, Object newValue,
         boolean wasRecovered, boolean acceptedVersionTag) throws RegionClearedException {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
-    public boolean initialImageInit(LocalRegion region, long lastModified, Object newValue,
+    public boolean initialImageInit(InternalRegion region, long lastModified, Object newValue,
         boolean create, boolean wasRecovered, boolean acceptedVersionTag)
         throws RegionClearedException {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
-    public boolean destroy(LocalRegion region, EntryEventImpl event, boolean inTokenMode,
+    public boolean destroy(InternalRegion region, EntryEventImpl event, boolean inTokenMode,
         boolean cacheWrite, Object expectedOldValue, boolean forceDestroy,
         boolean removeRecoveredEntry) throws CacheWriterException, EntryNotFoundException,
         TimeoutException, RegionClearedException {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public boolean getValueWasResultOfSearch() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
-    public void setValueResultOfSearch(boolean v) {
-      // TODO Auto-generated method stub
+    public void setValueResultOfSearch(boolean value) {
+      // nothing
     }
 
     @Override
-    public Object getSerializedValueOnDisk(LocalRegion localRegion) {
-      // TODO Auto-generated method stub
+    public Object getSerializedValueOnDisk(InternalRegion region) {
       return null;
     }
 
     @Override
-    public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
-      // TODO Auto-generated method stub
+    public Object getValueInVMOrDiskWithoutFaultIn(InternalRegion region) {
       return null;
     }
 
     @Override
-    public Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner) {
-      // TODO Auto-generated method stub
+    public Object getValueOffHeapOrDiskWithoutFaultIn(InternalRegion region) {
       return null;
     }
 
     @Override
     public boolean isUpdateInProgress() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public void setUpdateInProgress(boolean underUpdate) {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public boolean isInvalid() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public boolean isDestroyed() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public boolean isDestroyedOrRemoved() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public boolean isDestroyedOrRemovedButNotTombstone() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public boolean isInvalidOrRemoved() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public void setValueToNull() {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public void returnToPool() {
-      // TODO Auto-generated method stub
+      // nothing
     }
 
     @Override
     public boolean isCacheListenerInvocationInProgress() {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public void setCacheListenerInvocationInProgress(boolean isListenerInvoked) {
-      // TODO Auto-generated method stub
-
+      // nothing
     }
 
     @Override
@@ -7379,20 +7368,28 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public void setInUseByTransaction(boolean v) {}
+    public void setInUseByTransaction(boolean inUseByTransaction) {
+      // nothing
+    }
 
     @Override
-    public void incRefCount() {}
+    public void incRefCount() {
+      // nothing
+    }
 
     @Override
-    public void decRefCount(NewLRUClockHand lruList, LocalRegion lr) {}
+    public void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
+      // nothing
+    }
 
     @Override
-    public void resetRefCount(NewLRUClockHand lruList) {}
+    public void resetRefCount(NewLRUClockHand lruList) {
+      // nothing
+    }
 
     @Override
-    public Object prepareValueForCache(RegionEntryContext r, Object val, EntryEventImpl event,
-        boolean isEntryUpdate) {
+    public Object prepareValueForCache(RegionEntryContext context, Object value,
+        EntryEventImpl event, boolean isEntryUpdate) {
       throw new IllegalStateException("Should never be called");
     }
 
@@ -7446,20 +7443,26 @@ public class Oplog implements CompactableOplog, Flushable {
       this.dr = dr;
     }
 
+    @Override
     public abstract void addLive(DiskEntry de);
 
+    @Override
     public abstract DiskEntry getNextLiveEntry();
 
+    @Override
     public abstract long clear(RegionVersionVector rvv);
 
+    @Override
     public DiskRegionView getDiskRegion() {
       return this.dr;
     }
 
+    @Override
     public void setDiskRegion(DiskRegionView dr) {
       this.dr = dr;
     }
 
+    @Override
     synchronized public boolean testAndSetUnrecovered() {
       boolean result = !this.unrecovered;
       if (result) {
@@ -7469,10 +7472,12 @@ public class Oplog implements CompactableOplog, Flushable {
       return result;
     }
 
+    @Override
     synchronized public boolean getUnrecovered() {
       return this.unrecovered;
     }
 
+    @Override
     synchronized public boolean testAndSetRecovered(DiskRegionView dr) {
       boolean result = this.unrecovered;
       if (result) {
@@ -7518,11 +7523,13 @@ public class Oplog implements CompactableOplog, Flushable {
       return this.liveCount.getAndSet(0);
     }
 
+    @Override
     public int addLiveEntriesToList(KRFEntry[] liveEntries, int idx) {
       // nothing needed since no linked list
       return idx;
     }
 
+    @Override
     public void afterKrfCreated() {
       // do nothing
     }
@@ -7565,10 +7572,10 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public void update(DiskEntry de) {
-      if (pendingKrfTags != null && de.getVersionStamp() != null) {
+    public void update(DiskEntry entry) {
+      if (pendingKrfTags != null && entry.getVersionStamp() != null) {
         // Remember the version tag of the entry as it was written to the crf.
-        pendingKrfTags.put(de, new CompactVersionHolder(de.getVersionStamp()));
+        pendingKrfTags.put(entry, new CompactVersionHolder(entry.getVersionStamp()));
       }
     }
 
@@ -7626,6 +7633,7 @@ public class Oplog implements CompactableOplog, Flushable {
       return result;
     }
 
+    @Override
     public int addLiveEntriesToList(KRFEntry[] liveEntries, int idx) {
       synchronized (liveEntries) {
         return this.liveEntries.addLiveEntriesToList(liveEntries, idx, getDiskRegion(),
@@ -7633,6 +7641,7 @@ public class Oplog implements CompactableOplog, Flushable {
       }
     }
 
+    @Override
     public void afterKrfCreated() {
       synchronized (liveEntries) {
         this.pendingKrfTags = null;
@@ -7838,13 +7847,14 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public boolean equals(Object other) {
-      if (!(other instanceof RawByteKey)) {
+    public boolean equals(Object obj) {
+      if (!(obj instanceof RawByteKey)) {
         return false;
       }
-      return Arrays.equals(this.bytes, ((RawByteKey) other).bytes);
+      return Arrays.equals(this.bytes, ((RawByteKey) obj).bytes);
     }
 
+    @Override
     public void sendTo(DataOutput out) throws IOException {
       out.write(this.bytes);
     }

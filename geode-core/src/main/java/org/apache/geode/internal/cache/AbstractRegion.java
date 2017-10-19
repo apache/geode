@@ -98,8 +98,8 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  * Takes care of RegionAttributes, AttributesMutator, and some no-brainer method implementations.
  */
 @SuppressWarnings("deprecation")
-public abstract class AbstractRegion implements Region, RegionAttributes, AttributesMutator,
-    CacheStatistics, DataSerializableFixedID, RegionEntryContext, Extensible<Region<?, ?>> {
+public abstract class AbstractRegion implements InternalRegion, AttributesMutator, CacheStatistics,
+    DataSerializableFixedID, Extensible<Region<?, ?>> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -427,8 +427,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   }
 
   abstract Map basicGetAll(Collection keys, Object callback);
-
-  public abstract RegionEntry basicGetEntry(Object key);
 
   protected StringBuilder getStringBuilder() {
     StringBuilder buf = new StringBuilder();
@@ -808,6 +806,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Get IndexManger for region
    */
+  @Override
   public IndexManager getIndexManager() {
     return this.indexManager;
   }
@@ -845,7 +844,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   // block
   // in case the value of the entry is "REMOVED" token. This prevents dead lock
   // caused by the Bug # 33336
-  boolean isIndexCreationThread() {
+  @Override
+  public boolean isIndexCreationThread() {
     Boolean value = isIndexCreator.get();
     return value != null ? value : false;
   }
@@ -1473,7 +1473,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
    *
    * @since GemFire 5.0
    */
-  protected boolean isProxy() {
+  @Override
+  public boolean isProxy() {
     return getDataPolicy().isEmpty();
   }
 
@@ -1515,7 +1516,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Returns true if this region could expire an entry
    */
-  boolean isEntryExpiryPossible() {
+  @Override
+  public boolean isEntryExpiryPossible() {
     return this.entryExpiryPossible;
   }
 
@@ -1760,6 +1762,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
     return this.cache;
   }
 
+  @Override
   public DM getDistributionManager() {
     return getSystem().getDistributionManager();
   }
