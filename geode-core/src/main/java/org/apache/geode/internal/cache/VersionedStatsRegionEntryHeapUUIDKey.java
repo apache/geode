@@ -35,30 +35,28 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-// macros whose definition changes this class:
-// disk: DISK
-// lru: LRU
-// stats: 1
-// versioned: 1
-// offheap: OFFHEAP
-// One of the following key macros must be defined:
-// key object: KEY_OBJECT
-// key int: KEY_INT
-// key long: KEY_LONG
-// key uuid: 1
-// key string1: KEY_STRING1
-// key string2: KEY_STRING2
+/*
+ * macros whose definition changes this class:
+ *
+ * disk: DISK lru: LRU stats: STATS versioned: VERSIONED offheap: OFFHEAP
+ *
+ * One of the following key macros must be defined:
+ *
+ * key object: KEY_OBJECT key int: KEY_INT key long: KEY_LONG key uuid: KEY_UUID key string1:
+ * KEY_STRING1 key string2: KEY_STRING2
+ */
 
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEntryHeap {
-  public VersionedStatsRegionEntryHeapUUIDKey(RegionEntryContext context, UUID key,
+
+  public VersionedStatsRegionEntryHeapUUIDKey(final RegionEntryContext context, final UUID key,
 
 
 
-      Object value
+      final Object value
 
 
 
@@ -95,41 +93,36 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
   }
 
   @Override
-  protected void setValueField(Object v) {
-    this.value = v;
+  protected void setValueField(final Object value) {
+    this.value = value;
   }
+
 
   protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 
-  protected boolean compareAndSetLastModifiedField(long expectedValue, long newValue) {
+  protected boolean compareAndSetLastModifiedField(final long expectedValue, final long newValue) {
     return lastModifiedUpdater.compareAndSet(this, expectedValue, newValue);
   }
 
-  /**
-   * @see HashEntry#getEntryHash()
-   */
+  @Override
   public int getEntryHash() {
     return this.hash;
   }
 
-  protected void setEntryHash(int v) {
-    this.hash = v;
+  protected void setEntryHash(final int hash) {
+    this.hash = hash;
   }
 
-  /**
-   * @see HashEntry#getNextEntry()
-   */
+  @Override
   public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
-  /**
-   * @see HashEntry#setNextEntry
-   */
-  public void setNextEntry(final HashEntry<Object, Object> n) {
-    this.next = n;
+  @Override
+  public void setNextEntry(final HashEntry<Object, Object> next) {
+    this.next = next;
   }
 
 
@@ -137,10 +130,11 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
   // stats code
+
   @Override
-  public void updateStatsForGet(boolean hit, long time) {
+  public void updateStatsForGet(final boolean isHit, final long time) {
     setLastAccessed(time);
-    if (hit) {
+    if (isHit) {
       incrementHitCount();
     } else {
       incrementMissCount();
@@ -148,8 +142,8 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
   }
 
   @Override
-  protected void setLastModifiedAndAccessedTimes(long lastModified, long lastAccessed) {
-    _setLastModified(lastModified);
+  protected void setLastModifiedAndAccessedTimes(final long lastModified, final long lastAccessed) {
+    setLastModified(lastModified);
     if (!DISABLE_ACCESS_TIME_UPDATE_ON_PUT) {
       setLastAccessed(lastAccessed);
     }
@@ -161,6 +155,7 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
 
   private static final AtomicIntegerFieldUpdater<VersionedStatsRegionEntryHeapUUIDKey> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VersionedStatsRegionEntryHeapUUIDKey.class, "hitCount");
+
   private static final AtomicIntegerFieldUpdater<VersionedStatsRegionEntryHeapUUIDKey> missCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VersionedStatsRegionEntryHeapUUIDKey.class, "missCount");
 
@@ -169,7 +164,7 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  private void setLastAccessed(final long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 
@@ -200,9 +195,9 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
   @Override
-  public void txDidDestroy(long currTime) {
-    setLastModified(currTime);
-    setLastAccessed(currTime);
+  public void txDidDestroy(long timeStamp) {
+    setLastModified(timeStamp);
+    setLastAccessed(timeStamp);
     this.hitCount = 0;
     this.missCount = 0;
   }
@@ -217,61 +212,72 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
   // versioned code
-  private VersionSource memberID;
+
+  private VersionSource memberId;
   private short entryVersionLowBytes;
   private short regionVersionHighBytes;
   private int regionVersionLowBytes;
   private byte entryVersionHighByte;
   private byte distributedSystemId;
 
+  @Override
   public int getEntryVersion() {
     return ((entryVersionHighByte << 16) & 0xFF0000) | (entryVersionLowBytes & 0xFFFF);
   }
 
+  @Override
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
 
-
+  @Override
   public long getVersionTimeStamp() {
     return getLastModified();
   }
 
-  public void setVersionTimeStamp(long time) {
-    setLastModified(time);
+  @Override
+  public void setVersionTimeStamp(final long timeStamp) {
+    setLastModified(timeStamp);
   }
 
+  @Override
   public VersionSource getMemberID() {
-    return this.memberID;
+    return this.memberId;
   }
 
+  @Override
   public int getDistributedSystemId() {
     return this.distributedSystemId;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
-  public void setVersions(VersionTag tag) {
-    this.memberID = tag.getMemberID();
-    int eVersion = tag.getEntryVersion();
+  @Override
+  public void setVersions(final VersionTag versionTag) {
+    this.memberId = versionTag.getMemberID();
+    int eVersion = versionTag.getEntryVersion();
     this.entryVersionLowBytes = (short) (eVersion & 0xffff);
     this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = tag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = tag.getRegionVersionLowBytes();
-    if (!(tag.isGatewayTag()) && this.distributedSystemId == tag.getDistributedSystemId()) {
-      if (getVersionTimeStamp() <= tag.getVersionTimeStamp()) {
-        setVersionTimeStamp(tag.getVersionTimeStamp());
+    this.regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
+    this.regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
+
+    if (!versionTag.isGatewayTag()
+        && this.distributedSystemId == versionTag.getDistributedSystemId()) {
+      if (getVersionTimeStamp() <= versionTag.getVersionTimeStamp()) {
+        setVersionTimeStamp(versionTag.getVersionTimeStamp());
       } else {
-        tag.setVersionTimeStamp(getVersionTimeStamp());
+        versionTag.setVersionTimeStamp(getVersionTimeStamp());
       }
     } else {
-      setVersionTimeStamp(tag.getVersionTimeStamp());
+      setVersionTimeStamp(versionTag.getVersionTimeStamp());
     }
-    this.distributedSystemId = (byte) (tag.getDistributedSystemId() & 0xff);
+
+    this.distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
   }
 
-  public void setMemberID(VersionSource memberID) {
-    this.memberID = memberID;
+  @Override
+  public void setMemberID(final VersionSource memberId) {
+    this.memberId = memberId;
   }
 
   @Override
@@ -281,8 +287,9 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
+  @Override
   public VersionTag asVersionTag() {
-    VersionTag tag = VersionTag.create(memberID);
+    VersionTag tag = VersionTag.create(memberId);
     tag.setEntryVersion(getEntryVersion());
     tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
@@ -290,25 +297,28 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
     return tag;
   }
 
-  public void processVersionTag(LocalRegion r, VersionTag tag, boolean isTombstoneFromGII,
-      boolean hasDelta, VersionSource thisVM, InternalDistributedMember sender,
-      boolean checkForConflicts) {
-    basicProcessVersionTag(r, tag, isTombstoneFromGII, hasDelta, thisVM, sender, checkForConflicts);
+  @Override
+  public void processVersionTag(final InternalRegion region, final VersionTag versionTag,
+      final boolean isTombstoneFromGII, final boolean hasDelta, final VersionSource versionSource,
+      final InternalDistributedMember sender, final boolean checkForConflicts) {
+    basicProcessVersionTag(region, versionTag, isTombstoneFromGII, hasDelta, versionSource, sender,
+        checkForConflicts);
   }
 
   @Override
-  public void processVersionTag(EntryEvent cacheEvent) {
-    // this keeps Eclipse happy. without it the sender chain becomes confused
-    // while browsing this code
+  public void processVersionTag(final EntryEvent cacheEvent) {
+    // this keeps IDE happy. without it the sender chain becomes confused while browsing this code
     super.processVersionTag(cacheEvent);
   }
 
   /** get rvv internal high byte. Used by region entries for transferring to storage */
+  @Override
   public short getRegionVersionHighBytes() {
     return this.regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
+  @Override
   public int getRegionVersionLowBytes() {
     return this.regionVersionLowBytes;
   }
@@ -317,6 +327,7 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
   // key code
+
 
   private final long keyMostSigBits;
   private final long keyLeastSigBits;
@@ -327,14 +338,15 @@ public class VersionedStatsRegionEntryHeapUUIDKey extends VersionedStatsRegionEn
   }
 
   @Override
-  public boolean isKeyEqual(Object k) {
-    if (k instanceof UUID) {
-      UUID uuid = (UUID) k;
+  public boolean isKeyEqual(final Object key) {
+    if (key instanceof UUID) {
+      UUID uuid = (UUID) key;
       return uuid.getLeastSignificantBits() == this.keyLeastSigBits
           && uuid.getMostSignificantBits() == this.keyMostSigBits;
     }
     return false;
   }
+
 
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp

@@ -22,30 +22,28 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-// macros whose definition changes this class:
-// disk: DISK
-// lru: LRU
-// stats: STATS
-// versioned: VERSIONED
-// offheap: OFFHEAP
-// One of the following key macros must be defined:
-// key object: KEY_OBJECT
-// key int: 1
-// key long: KEY_LONG
-// key uuid: KEY_UUID
-// key string1: KEY_STRING1
-// key string2: KEY_STRING2
+/*
+ * macros whose definition changes this class:
+ *
+ * disk: DISK lru: LRU stats: STATS versioned: VERSIONED offheap: OFFHEAP
+ *
+ * One of the following key macros must be defined:
+ *
+ * key object: KEY_OBJECT key int: KEY_INT key long: KEY_LONG key uuid: KEY_UUID key string1:
+ * KEY_STRING1 key string2: KEY_STRING2
+ */
 
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinRegionEntryHeapIntKey extends VMThinRegionEntryHeap {
-  public VMThinRegionEntryHeapIntKey(RegionEntryContext context, int key,
+
+  public VMThinRegionEntryHeapIntKey(final RegionEntryContext context, final int key,
 
 
 
-      Object value
+      final Object value
 
 
 
@@ -83,41 +81,36 @@ public class VMThinRegionEntryHeapIntKey extends VMThinRegionEntryHeap {
   }
 
   @Override
-  protected void setValueField(Object v) {
-    this.value = v;
+  protected void setValueField(final Object value) {
+    this.value = value;
   }
+
 
   protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 
-  protected boolean compareAndSetLastModifiedField(long expectedValue, long newValue) {
+  protected boolean compareAndSetLastModifiedField(final long expectedValue, final long newValue) {
     return lastModifiedUpdater.compareAndSet(this, expectedValue, newValue);
   }
 
-  /**
-   * @see HashEntry#getEntryHash()
-   */
+  @Override
   public int getEntryHash() {
     return this.hash;
   }
 
-  protected void setEntryHash(int v) {
-    this.hash = v;
+  protected void setEntryHash(final int hash) {
+    this.hash = hash;
   }
 
-  /**
-   * @see HashEntry#getNextEntry()
-   */
+  @Override
   public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
-  /**
-   * @see HashEntry#setNextEntry
-   */
-  public void setNextEntry(final HashEntry<Object, Object> n) {
-    this.next = n;
+  @Override
+  public void setNextEntry(final HashEntry<Object, Object> next) {
+    this.next = next;
   }
 
 
@@ -125,7 +118,6 @@ public class VMThinRegionEntryHeapIntKey extends VMThinRegionEntryHeap {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
   // key code
-
 
 
   private final int key;
@@ -136,12 +128,13 @@ public class VMThinRegionEntryHeapIntKey extends VMThinRegionEntryHeap {
   }
 
   @Override
-  public boolean isKeyEqual(Object k) {
-    if (k instanceof Integer) {
-      return ((Integer) k).intValue() == this.key;
+  public boolean isKeyEqual(final Object key) {
+    if (key instanceof Integer) {
+      return ((Integer) key).intValue() == this.key;
     }
     return false;
   }
+
 
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp

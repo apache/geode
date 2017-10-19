@@ -2356,7 +2356,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * @return true if cacheWrite was performed
    */
   @Override
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
     boolean result = false;

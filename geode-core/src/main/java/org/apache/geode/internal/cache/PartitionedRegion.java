@@ -7699,7 +7699,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
+  public void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
     // don't dispatch the event if the interest policy forbids it
     if (hasListener()) {
       if (event.getOperation().isEntry()) {
@@ -7794,7 +7794,7 @@ public class PartitionedRegion extends LocalRegion
    * @see BucketRegion#cacheWriteBeforeDestroy(EntryEventImpl, Object)
    */
   @Override
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     // return if notifications are inhibited
     if (event.inhibitAllNotifications()) {

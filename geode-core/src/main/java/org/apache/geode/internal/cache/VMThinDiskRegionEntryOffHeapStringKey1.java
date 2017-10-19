@@ -21,7 +21,6 @@ package org.apache.geode.internal.cache;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
@@ -31,32 +30,30 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-// macros whose definition changes this class:
-// disk: 1
-// lru: LRU
-// stats: STATS
-// versioned: VERSIONED
-// offheap: 1
-// One of the following key macros must be defined:
-// key object: KEY_OBJECT
-// key int: KEY_INT
-// key long: KEY_LONG
-// key uuid: KEY_UUID
-// key string1: 1
-// key string2: KEY_STRING2
+/*
+ * macros whose definition changes this class:
+ *
+ * disk: DISK lru: LRU stats: STATS versioned: VERSIONED offheap: OFFHEAP
+ *
+ * One of the following key macros must be defined:
+ *
+ * key object: KEY_OBJECT key int: KEY_INT key long: KEY_LONG key uuid: KEY_UUID key string1:
+ * KEY_STRING1 key string2: KEY_STRING2
+ */
 
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntryOffHeap {
-  public VMThinDiskRegionEntryOffHeapStringKey1(RegionEntryContext context, String key,
+
+  public VMThinDiskRegionEntryOffHeapStringKey1(final RegionEntryContext context, final String key,
 
       @Retained
 
-      Object value
+      final Object value
 
-      , boolean byteEncode
+      , final boolean byteEncode
 
   ) {
     super(context,
@@ -71,23 +68,23 @@ public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntr
     initialize(context, value);
 
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
-    long tmpBits1 = 0L;
+    long tempBits1 = 0L;
     if (byteEncode) {
       for (int i = key.length() - 1; i >= 0; i--) {
         // Note: we know each byte is <= 0x7f so the "& 0xff" is not needed. But I added it in to
         // keep findbugs happy.
-        tmpBits1 |= (byte) key.charAt(i) & 0xff;
-        tmpBits1 <<= 8;
+        tempBits1 |= (byte) key.charAt(i) & 0xff;
+        tempBits1 <<= 8;
       }
-      tmpBits1 |= 1 << 6;
+      tempBits1 |= 1 << 6;
     } else {
       for (int i = key.length() - 1; i >= 0; i--) {
-        tmpBits1 |= key.charAt(i);
-        tmpBits1 <<= 16;
+        tempBits1 |= key.charAt(i);
+        tempBits1 <<= 16;
       }
     }
-    tmpBits1 |= key.length();
-    this.bits1 = tmpBits1;
+    tempBits1 |= key.length();
+    this.bits1 = tempBits1;
 
   }
 
@@ -103,12 +100,13 @@ public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntr
           "lastModified");
 
   /**
-   * All access done using ohAddrUpdater so it is used even though the compiler can not tell it is.
+   * All access done using offHeapAddressUpdater so it is used even though the compiler can not tell
+   * it is.
    */
   @SuppressWarnings("unused")
   @Retained
   @Released
-  private volatile long ohAddress;
+  private volatile long offHeapAddress;
   /**
    * I needed to add this because I wanted clear to call setValue which normally can only be called
    * while the re is synced. But if I sync in that code it causes a lock ordering deadlock with the
@@ -117,8 +115,9 @@ public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntr
    * re and we will once again be deadlocked. I don't know if we support any of the hardware
    * platforms that do not have a 64bit CAS. If we do then we can expect deadlocks on disk regions.
    */
-  private final static AtomicLongFieldUpdater<VMThinDiskRegionEntryOffHeapStringKey1> ohAddrUpdater =
-      AtomicLongFieldUpdater.newUpdater(VMThinDiskRegionEntryOffHeapStringKey1.class, "ohAddress");
+  private final static AtomicLongFieldUpdater<VMThinDiskRegionEntryOffHeapStringKey1> offHeapAddressUpdater =
+      AtomicLongFieldUpdater.newUpdater(VMThinDiskRegionEntryOffHeapStringKey1.class,
+          "offHeapAddress");
 
   @Override
   public Token getValueAsToken() {
@@ -131,32 +130,33 @@ public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntr
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
+
   @Override
 
   @Unretained
-  protected void setValueField(@Unretained Object v) {
+  protected void setValueField(@Unretained final Object value) {
 
 
 
-    OffHeapRegionEntryHelper.setValue(this, v);
+    OffHeapRegionEntryHelper.setValue(this, value);
   }
 
   @Override
 
   @Retained
 
-  public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
+  public Object getValueRetain(final RegionEntryContext context, final boolean decompress) {
     return OffHeapRegionEntryHelper._getValueRetain(this, decompress, context);
   }
 
   @Override
   public long getAddress() {
-    return ohAddrUpdater.get(this);
+    return offHeapAddressUpdater.get(this);
   }
 
   @Override
-  public boolean setAddress(long expectedAddr, long newAddr) {
-    return ohAddrUpdater.compareAndSet(this, expectedAddr, newAddr);
+  public boolean setAddress(final long expectedAddress, long newAddress) {
+    return offHeapAddressUpdater.compareAndSet(this, expectedAddress, newAddress);
   }
 
   @Override
@@ -169,43 +169,35 @@ public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntr
 
   @Override
   public void returnToPool() {
-    // Deadcoded for now; never was working
-    // if (this instanceof VMThinRegionEntryLongKey) {
-    // factory.returnToPool((VMThinRegionEntryLongKey)this);
-    // }
+    // never implemented
   }
+
 
   protected long getLastModifiedField() {
     return lastModifiedUpdater.get(this);
   }
 
-  protected boolean compareAndSetLastModifiedField(long expectedValue, long newValue) {
+  protected boolean compareAndSetLastModifiedField(final long expectedValue, final long newValue) {
     return lastModifiedUpdater.compareAndSet(this, expectedValue, newValue);
   }
 
-  /**
-   * @see HashEntry#getEntryHash()
-   */
+  @Override
   public int getEntryHash() {
     return this.hash;
   }
 
-  protected void setEntryHash(int v) {
-    this.hash = v;
+  protected void setEntryHash(final int hash) {
+    this.hash = hash;
   }
 
-  /**
-   * @see HashEntry#getNextEntry()
-   */
+  @Override
   public HashEntry<Object, Object> getNextEntry() {
     return this.next;
   }
 
-  /**
-   * @see HashEntry#setNextEntry
-   */
-  public void setNextEntry(final HashEntry<Object, Object> n) {
-    this.next = n;
+  @Override
+  public void setNextEntry(final HashEntry<Object, Object> next) {
+    this.next = next;
   }
 
 
@@ -213,87 +205,49 @@ public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntr
 
   // disk code
 
-  protected void initialize(RegionEntryContext context, Object value) {
+
+  protected void initialize(final RegionEntryContext context, final Object value) {
     diskInitialize(context, value);
   }
 
   @Override
-  public int updateAsyncEntrySize(EnableLRU capacityController) {
+  public int updateAsyncEntrySize(final EnableLRU capacityController) {
     throw new IllegalStateException("should never be called");
   }
 
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
-  private void diskInitialize(RegionEntryContext context, Object value) {
-    DiskRecoveryStore drs = (DiskRecoveryStore) context;
-    DiskStoreImpl ds = drs.getDiskStore();
-    long maxOplogSize = ds.getMaxOplogSize();
+  private void diskInitialize(final RegionEntryContext context, final Object value) {
+    DiskRecoveryStore diskRecoveryStore = (DiskRecoveryStore) context;
+    DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
+    long maxOplogSize = diskStore.getMaxOplogSize();
     // get appropriate instance of DiskId implementation based on maxOplogSize
-    this.id = DiskId.createDiskId(maxOplogSize, true/* is persistence */, ds.needsLinkedList());
-    Helper.initialize(this, drs, value);
+    this.id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
+    Helper.initialize(this, diskRecoveryStore, value);
   }
 
   /**
-   * DiskId
-   * 
    * @since GemFire 5.1
    */
-  protected DiskId id;// = new DiskId();
+  protected DiskId id;
 
+  @Override
   public DiskId getDiskId() {
     return this.id;
   }
 
   @Override
-  void setDiskId(RegionEntry old) {
-    this.id = ((AbstractDiskRegionEntry) old).getDiskId();
+  void setDiskId(final RegionEntry oldEntry) {
+    this.id = ((AbstractDiskRegionEntry) oldEntry).getDiskId();
   }
-  // // inlining DiskId
-  // // always have these fields
-  // /**
-  // * id consists of
-  // * most significant
-  // * 1 byte = users bits
-  // * 2-8 bytes = oplog id
-  // * least significant.
-  // *
-  // * The highest bit in the oplog id part is set to 1 if the oplog id
-  // * is negative.
-  // * @todo this field could be an int for an overflow only region
-  // */
-  // private long id;
-  // /**
-  // * Length of the bytes on disk.
-  // * This is always set. If the value is invalid then it will be set to 0.
-  // * The most significant bit is used by overflow to mark it as needing to be written.
-  // */
-  // protected int valueLength = 0;
-  // // have intOffset or longOffset
-  // // intOffset
-  // /**
-  // * The position in the oplog (the oplog offset) where this entry's value is
-  // * stored
-  // */
-  // private volatile int offsetInOplog;
-  // // longOffset
-  // /**
-  // * The position in the oplog (the oplog offset) where this entry's value is
-  // * stored
-  // */
-  // private volatile long offsetInOplog;
-  // // have overflowOnly or persistence
-  // // overflowOnly
-  // // no fields
-  // // persistent
-  // /** unique entry identifier * */
-  // private long keyId;
 
 
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
   // key code
+
 
   private final long bits1;
 
@@ -309,54 +263,60 @@ public class VMThinDiskRegionEntryOffHeapStringKey1 extends VMThinDiskRegionEntr
 
   @Override
   public Object getKey() {
-    int keylen = getKeyLength();
-    char[] chars = new char[keylen];
-    long tmpBits1 = this.bits1;
+    int keyLength = getKeyLength();
+    char[] chars = new char[keyLength];
+    long tempBits1 = this.bits1;
+
     if (getEncoding() == 1) {
-      for (int i = 0; i < keylen; i++) {
-        tmpBits1 >>= 8;
-        chars[i] = (char) (tmpBits1 & 0x00ff);
+      for (int i = 0; i < keyLength; i++) {
+        tempBits1 >>= 8;
+        chars[i] = (char) (tempBits1 & 0x00ff);
       }
     } else {
-      for (int i = 0; i < keylen; i++) {
-        tmpBits1 >>= 16;
-        chars[i] = (char) (tmpBits1 & 0x00FFff);
+      for (int i = 0; i < keyLength; i++) {
+        tempBits1 >>= 16;
+        chars[i] = (char) (tempBits1 & 0x00FFff);
       }
     }
+
     return new String(chars);
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 
   @Override
-  public boolean isKeyEqual(Object k) {
-    if (k instanceof String) {
-      String str = (String) k;
-      int keylen = getKeyLength();
-      if (str.length() == keylen) {
-        long tmpBits1 = this.bits1;
+  public boolean isKeyEqual(final Object key) {
+    if (key instanceof String) {
+      String stringKey = (String) key;
+      int keyLength = getKeyLength();
+      if (stringKey.length() == keyLength) {
+        long tempBits1 = this.bits1;
+
         if (getEncoding() == 1) {
-          for (int i = 0; i < keylen; i++) {
-            tmpBits1 >>= 8;
-            char c = (char) (tmpBits1 & 0x00ff);
-            if (str.charAt(i) != c) {
+          for (int i = 0; i < keyLength; i++) {
+            tempBits1 >>= 8;
+            char character = (char) (tempBits1 & 0x00ff);
+            if (stringKey.charAt(i) != character) {
               return false;
             }
           }
+
         } else {
-          for (int i = 0; i < keylen; i++) {
-            tmpBits1 >>= 16;
-            char c = (char) (tmpBits1 & 0x00FFff);
-            if (str.charAt(i) != c) {
+          for (int i = 0; i < keyLength; i++) {
+            tempBits1 >>= 16;
+            char character = (char) (tempBits1 & 0x00FFff);
+            if (stringKey.charAt(i) != character) {
               return false;
             }
           }
         }
+
         return true;
       }
     }
     return false;
   }
+
 
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp

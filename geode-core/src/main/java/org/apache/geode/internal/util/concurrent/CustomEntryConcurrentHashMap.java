@@ -1040,8 +1040,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
                   if (p instanceof RegionEntry) {
                     // It is ok to call GatewaySenderEventImpl release without being synced
                     // on the region entry. It will not create an orphan.
-                    GatewaySenderEventImpl.release(((RegionEntry) p)._getValue()); // OFFHEAP
-                                                                                   // _getValue ok
+                    GatewaySenderEventImpl.release(((RegionEntry) p).getValue()); // OFFHEAP
+                                                                                  // _getValue ok
                   }
                 }
               }

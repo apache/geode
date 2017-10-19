@@ -181,7 +181,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
         // no need to worry about the value changing form with entry LRU.
         return false;
       }
-      Object curVal = le._getValue(); // OFFHEAP: _getValue ok
+      Object curVal = le.getValue(); // OFFHEAP: _getValue ok
       if (curVal != cd) {
         if (cd instanceof StoredObject) {
           if (!cd.equals(curVal)) {
