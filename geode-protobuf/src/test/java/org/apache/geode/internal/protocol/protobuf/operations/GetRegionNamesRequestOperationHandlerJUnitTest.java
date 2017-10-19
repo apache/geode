@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.protocol.protobuf.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.ProtobufTestExecutionContext.getNoAuthExecutionContext;
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.internal.protocol.ProtobufTestExecutionContext.getNoAuthCacheExecutionContext;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,8 +33,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.Result;
-import org.apache.geode.internal.protocol.protobuf.Success;
+import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -65,7 +67,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
         serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
-        getNoAuthExecutionContext(cacheStub));
+        getNoAuthCacheExecutionContext(cacheStub));
     Assert.assertTrue(result instanceof Success);
 
     RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
@@ -76,10 +78,15 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
     String name2 = getRegionsResponse.getRegions(1);
     String name3 = getRegionsResponse.getRegions(2);
     Assert.assertTrue("The same region was returned multiple times",
-        name1 != name2 && name1 != name3 && name2 != name3);
-    Assert.assertTrue(name1 == TEST_REGION1 || name1 == TEST_REGION2 || name1 == TEST_REGION3);
-    Assert.assertTrue(name2 == TEST_REGION1 || name2 == TEST_REGION2 || name2 == TEST_REGION3);
-    Assert.assertTrue(name3 == TEST_REGION1 || name3 == TEST_REGION2 || name3 == TEST_REGION3);
+        !name1.equals(name2) && !name1.equals(name3) && !name2.equals(name3));
+    ArrayList arrayList = new ArrayList();
+    arrayList.add(TEST_REGION1);
+    arrayList.add(TEST_REGION2);
+    arrayList.add(TEST_REGION3);
+
+    assertTrue(arrayList.contains(name1));
+    assertTrue(arrayList.contains(name2));
+    assertTrue(arrayList.contains(name3));
   }
 
   @Test
@@ -89,7 +96,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
         serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
-        getNoAuthExecutionContext(emptyCache));
+        getNoAuthCacheExecutionContext(emptyCache));
     Assert.assertTrue(result instanceof Success);
 
     RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();

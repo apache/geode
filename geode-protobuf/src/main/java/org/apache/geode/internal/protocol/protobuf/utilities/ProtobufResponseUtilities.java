@@ -16,14 +16,12 @@ package org.apache.geode.internal.protocol.protobuf.utilities;
 
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 
 
 /**

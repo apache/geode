@@ -18,23 +18,22 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.Failure;
-import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.Result;
-import org.apache.geode.internal.protocol.protobuf.Success;
+import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
-import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
 
 @Experimental
 public class GetRequestOperationHandler
@@ -43,10 +42,10 @@ public class GetRequestOperationHandler
 
   @Override
   public Result<RegionAPI.GetResponse> process(SerializationService serializationService,
-      RegionAPI.GetRequest request, MessageExecutionContext executionContext)
+      RegionAPI.GetRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
-    Region region = executionContext.getCache().getRegion(regionName);
+    Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received Get request for non-existing region {}", regionName);
       return Failure

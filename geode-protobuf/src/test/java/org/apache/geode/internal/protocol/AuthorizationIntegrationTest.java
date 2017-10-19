@@ -43,7 +43,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
@@ -116,7 +115,7 @@ public class AuthorizationIntegrationTest {
     when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(false);
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
                 .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
@@ -125,10 +124,10 @@ public class AuthorizationIntegrationTest {
     ClientProtocol.Message responseMessage = ClientProtocol.Message.parseDelimitedFrom(inputStream);
     assertEquals(ClientProtocol.Message.RESPONSE_FIELD_NUMBER,
         responseMessage.getMessageTypeCase().getNumber());
-    assertEquals(ClientProtocol.Response.SIMPLEAUTHENTICATIONRESPONSE_FIELD_NUMBER,
+    assertEquals(ClientProtocol.Response.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
         responseMessage.getResponse().getResponseAPICase().getNumber());
     AuthenticationAPI.AuthenticationResponse authenticationResponse =
-        responseMessage.getResponse().getSimpleAuthenticationResponse();
+        responseMessage.getResponse().getAuthenticationResponse();
     assertTrue(authenticationResponse.getAuthenticated());
   }
 

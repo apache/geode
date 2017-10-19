@@ -16,6 +16,7 @@
 package org.apache.geode.internal.protocol.protobuf;
 
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,8 +41,8 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class ProtobufShiroAuthenticatorJUnitTest {
   private static final String TEST_USERNAME = "user1";
   private static final String TEST_PASSWORD = "hunter2";
-  private ByteArrayInputStream byteArrayInputStream; // initialized with an incoming request in
-                                                     // setUp.
+  // initialized with an incoming request in setUp.
+  private ByteArrayInputStream byteArrayInputStream;
   private ByteArrayOutputStream byteArrayOutputStream;
   private ProtobufShiroAuthenticator protobufShiroAuthenticator;
   private SecurityService mockSecurityService;
@@ -52,7 +53,7 @@ public class ProtobufShiroAuthenticatorJUnitTest {
   public void setUp() throws IOException {
     ClientProtocol.Message basicAuthenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
                 .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
@@ -70,18 +71,19 @@ public class ProtobufShiroAuthenticatorJUnitTest {
     mockSecurityService = mock(SecurityService.class);
     when(mockSecurityService.login(expectedAuthProperties)).thenReturn(mockSecuritySubject);
 
-    protobufShiroAuthenticator = new ProtobufShiroAuthenticator();
+    protobufShiroAuthenticator = new ProtobufShiroAuthenticator(mockSecurityService);
   }
 
   @Test
   public void successfulAuthentication() throws IOException {
-    protobufShiroAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
-        mockSecurityService);
 
-    AuthenticationAPI.AuthenticationResponse authenticationResponse =
-        getSimpleAuthenticationResponse(byteArrayOutputStream);
+    Properties properties = new Properties();
+    properties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
+    properties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
 
-    assertTrue(authenticationResponse.getAuthenticated());
+    Subject authenticate = protobufShiroAuthenticator.authenticate(properties);
+
+    assertNotNull(authenticate);
   }
 
   @Test(expected = AuthenticationFailedException.class)
@@ -89,8 +91,11 @@ public class ProtobufShiroAuthenticatorJUnitTest {
     when(mockSecurityService.login(expectedAuthProperties))
         .thenThrow(new AuthenticationFailedException("BOOM!"));
 
-    protobufShiroAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
-        mockSecurityService);
+    Properties properties = new Properties();
+    properties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
+    properties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
+
+    protobufShiroAuthenticator.authenticate(properties);
   }
 
   @Test
@@ -99,19 +104,12 @@ public class ProtobufShiroAuthenticatorJUnitTest {
     when(mockSecurityService.isClientSecurityRequired()).thenReturn(false);
     when(mockSecurityService.isPeerSecurityRequired()).thenReturn(false);
 
-    protobufShiroAuthenticator.authenticate(byteArrayInputStream, byteArrayOutputStream,
-        mockSecurityService);
+    Properties properties = new Properties();
+    properties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
+    properties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
 
-    AuthenticationAPI.AuthenticationResponse authenticationResponse =
-        getSimpleAuthenticationResponse(byteArrayOutputStream);
+    Subject authenticate = protobufShiroAuthenticator.authenticate(properties);
 
-    assertTrue(authenticationResponse.getAuthenticated());
-  }
-
-  private AuthenticationAPI.AuthenticationResponse getSimpleAuthenticationResponse(
-      ByteArrayOutputStream outputStream) throws IOException {
-    ByteArrayInputStream responseStream = new ByteArrayInputStream(outputStream.toByteArray());
-    return ClientProtocol.Message.parseDelimitedFrom(responseStream).getResponse()
-        .getSimpleAuthenticationResponse();
+    assertNotNull(authenticate);
   }
 }

@@ -22,13 +22,13 @@ import java.io.OutputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolMessageHandler;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.protocol.ClientProtocolMessageHandler;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.registry.OperationContextRegistry;
+import org.apache.geode.internal.protocol.protobuf.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
+import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 
 /**
@@ -45,7 +45,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   public ProtobufStreamProcessor() {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
     protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
-        new OperationContextRegistry());
+        new ProtobufOperationContextRegistry());
   }
 
   @Override
@@ -67,7 +67,7 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
       logger.debug(errorMessage);
       throw new EOFException(errorMessage);
     }
-    ProtobufClientStatistics statistics = executionContext.getStatistics();
+    ProtocolClientStatistics statistics = executionContext.getStatistics();
     statistics.messageReceived(message.getSerializedSize());
 
     ClientProtocol.Request request = message.getRequest();
