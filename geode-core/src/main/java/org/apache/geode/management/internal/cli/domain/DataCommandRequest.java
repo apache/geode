@@ -195,35 +195,35 @@ public class DataCommandRequest implements /* Data */ Serializable {
     this.principal = principal;
   }
 
-  // @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(command, out);
-    DataSerializer.writeString(key, out);
-    DataSerializer.writeString(value, out);
-    DataSerializer.writeBoolean(putIfAbsent, out);
-    DataSerializer.writeString(keyClass, out);
-    DataSerializer.writeString(valueClass, out);
-    DataSerializer.writeString(regionName, out);
-    DataSerializer.writeString(removeAllKeys, out);
-    DataSerializer.writeBoolean(recursive, out);
-    DataSerializer.writeBoolean(loadOnCacheMiss, out);
-    DataSerializer.writeObject(principal, out);
-  }
-
-  // @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    command = DataSerializer.readString(in);
-    key = DataSerializer.readString(in);
-    value = DataSerializer.readString(in);
-    putIfAbsent = DataSerializer.readBoolean(in);
-    keyClass = DataSerializer.readString(in);
-    valueClass = DataSerializer.readString(in);
-    regionName = DataSerializer.readString(in);
-    removeAllKeys = DataSerializer.readString(in);
-    recursive = DataSerializer.readBoolean(in);
-    loadOnCacheMiss = DataSerializer.readBoolean(in);
-    principal = DataSerializer.readObject(in);
-  }
+  // // @Override
+  // public void toData(DataOutput out) throws IOException {
+  // DataSerializer.writeString(command, out);
+  // DataSerializer.writeString(key, out);
+  // DataSerializer.writeString(value, out);
+  // DataSerializer.writeBoolean(putIfAbsent, out);
+  // DataSerializer.writeString(keyClass, out);
+  // DataSerializer.writeString(valueClass, out);
+  // DataSerializer.writeString(regionName, out);
+  // DataSerializer.writeString(removeAllKeys, out);
+  // DataSerializer.writeBoolean(recursive, out);
+  // DataSerializer.writeBoolean(loadOnCacheMiss, out);
+  // DataSerializer.writeObject(principal, out);
+  // }
+  //
+  // // @Override
+  // public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  // command = DataSerializer.readString(in);
+  // key = DataSerializer.readString(in);
+  // value = DataSerializer.readString(in);
+  // putIfAbsent = DataSerializer.readBoolean(in);
+  // keyClass = DataSerializer.readString(in);
+  // valueClass = DataSerializer.readString(in);
+  // regionName = DataSerializer.readString(in);
+  // removeAllKeys = DataSerializer.readString(in);
+  // recursive = DataSerializer.readBoolean(in);
+  // loadOnCacheMiss = DataSerializer.readBoolean(in);
+  // principal = DataSerializer.readObject(in);
+  // }
 
 
 
