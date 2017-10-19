@@ -198,9 +198,9 @@ public class TXExpiryJUnitTest {
         } else {
           checkVal = "conflictVal";
           final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
-          TXStateProxy tx = txMgrImpl.internalSuspend();
+          TXStateProxy tx = txMgrImpl.pauseTransaction();
           exprReg.put("key0", checkVal);
-          txMgrImpl.internalResume(tx);
+          txMgrImpl.unpauseTransaction(tx);
           try {
             this.txMgr.commit();
             fail("Expected CommitConflictException!");

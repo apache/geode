@@ -85,9 +85,9 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
     TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
     mgr.begin();
     region.put(key, newValue);
-    TXStateProxyImpl tx = (TXStateProxyImpl) mgr.internalSuspend();
+    TXStateProxyImpl tx = (TXStateProxyImpl) mgr.pauseTransaction();
     ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
-    mgr.internalResume(tx);
+    mgr.unpauseTransaction(tx);
     try {
       txStub.beforeCompletion();
       fail("expected to get CommitConflictException");
@@ -145,9 +145,9 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
     TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
     mgr.begin();
     region.put(key, newValue);
-    TXStateProxyImpl tx = (TXStateProxyImpl) mgr.internalSuspend();
+    TXStateProxyImpl tx = (TXStateProxyImpl) mgr.pauseTransaction();
     ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
-    mgr.internalResume(tx);
+    mgr.unpauseTransaction(tx);
     txStub.beforeCompletion();
     if (withWait) {
       getBlackboard().signalGate(first);

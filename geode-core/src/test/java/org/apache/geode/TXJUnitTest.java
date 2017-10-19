@@ -15,6 +15,7 @@
 package org.apache.geode;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -4332,11 +4334,11 @@ public class TXJUnitTest {
       this.txMgr.begin();
       reg1.create("key1", "txValue");
       assertEquals("txValue", reg1.getEntry("key1").getValue());
-      tx = txMgrImpl.internalSuspend();
+      tx = txMgrImpl.pauseTransaction();
       assertTrue(!reg1.containsKey("key1"));
       assertEquals("LV 4", reg1.get("key1"));
       assertTrue(reg1.containsKey("key1"));
-      txMgrImpl.internalResume(tx);
+      txMgrImpl.unpauseTransaction(tx);
       assertEquals("txValue", reg1.getEntry("key1").getValue());
       assertEquals("txValue", reg1.get("key1"));
       try {
@@ -4377,12 +4379,12 @@ public class TXJUnitTest {
       this.txMgr.begin();
       assertEquals("LV 8", reg1.get("key1"));
       assertEquals("LV 8", reg1.getEntry("key1").getValue());
-      tx = txMgrImpl.internalSuspend();
+      tx = txMgrImpl.pauseTransaction();
       assertTrue(!reg1.containsKey("key1"));
       reg1.create("key1", "txValue");
       assertTrue(reg1.containsKey("key1"));
       assertEquals("txValue", reg1.get("key1"));
-      txMgrImpl.internalResume(tx);
+      txMgrImpl.unpauseTransaction(tx);
       assertEquals("LV 8", reg1.getEntry("key1").getValue());
       try {
         this.txMgr.commit(); // should conflict
@@ -4397,10 +4399,10 @@ public class TXJUnitTest {
     // TX load conflict: no-inital state, tx load->update, committed update
     {
       final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
-      TXStateProxy tx;
+      TransactionId txId = null;
       this.txMgr.begin();
       reg1.create("key1", "txValue");
-      tx = txMgrImpl.internalSuspend();
+      txId = txMgrImpl.suspend();
       assertTrue(!reg1.containsKey("key1"));
       // new transaction, load(create) + put
       this.txMgr.begin();
@@ -4413,7 +4415,7 @@ public class TXJUnitTest {
       assertTrue(reg1.containsKey("key1"));
       assertEquals("txValue2", reg1.get("key1"));
       assertEquals("txValue2", reg1.getEntry("key1").getValue());
-      txMgrImpl.internalResume(tx);
+      txMgrImpl.resume(txId);
       assertEquals("txValue", reg1.getEntry("key1").getValue());
       assertEquals("txValue", reg1.get("key1"));
       try {
@@ -4755,10 +4757,10 @@ public class TXJUnitTest {
     } catch (EntryExistsException ok) {
     }
     // begin other tx simulation
-    TXStateProxy tx = txMgrImpl.internalSuspend();
+    TXStateProxy tx = txMgrImpl.pauseTransaction();
     this.region.put("stats1", "stats success1");
     this.region.put("stats2", "stats success2");
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     // end other tx simulation
     pause(SLEEP_MS);
     try {
@@ -4905,12 +4907,36 @@ public class TXJUnitTest {
   }
 
   @Test
+  public void testPauseUnpause() {
+    TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
+    assertTrue(!this.txMgr.exists());
+    assertEquals(null, txMgrImpl.pauseTransaction());
+    TXStateProxy txProxy = null;
+    txMgrImpl.unpauseTransaction(txProxy);
+    assertTrue(!this.txMgr.exists());
+
+    this.txMgr.begin();
+    TransactionId origId = this.txMgr.getTransactionId();
+    assertTrue(this.txMgr.exists());
+    {
+      TXStateProxy tx = txMgrImpl.pauseTransaction();
+      assertTrue(!this.txMgr.exists());
+      assertThatThrownBy(() -> this.txMgr.begin()).isInstanceOf(IllegalStateException.class);
+      assertTrue(!this.txMgr.exists());
+      txMgrImpl.unpauseTransaction(tx);
+    }
+    assertTrue(this.txMgr.exists());
+    assertEquals(origId, this.txMgr.getTransactionId());
+    this.txMgr.rollback();
+  }
+
+  @Test
   public void testSuspendResume() {
     TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
     assertTrue(!this.txMgr.exists());
-    assertEquals(null, txMgrImpl.internalSuspend());
+    assertEquals(null, txMgrImpl.pauseTransaction());
     TXStateProxy txProxy = null;
-    txMgrImpl.internalResume(txProxy);
+    txMgrImpl.unpauseTransaction(txProxy);
     assertTrue(!this.txMgr.exists());
 
     this.txMgr.begin();
@@ -4924,6 +4950,7 @@ public class TXJUnitTest {
         txMgrImpl.internalResume(tx);
         fail("expected IllegalStateException");
       } catch (IllegalStateException expected) {
+        LogService.getLogger().info("expected ", expected);
       }
       this.txMgr.rollback();
       assertTrue(!this.txMgr.exists());
@@ -5040,9 +5067,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     assertEquals("value1", this.region.get("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
 
     assertEquals("value1", this.region.get("key1"));
     txMgrImpl.commit();
@@ -5051,9 +5078,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     assertEquals("value1", this.region.get("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals("value1", this.region.get("key1"));
     this.region.put("key1", "value3");
     assertEquals("value3", this.region.get("key1"));
@@ -5067,9 +5094,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     this.region.getEntry("key1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
 
     assertEquals("value1", this.region.get("key1"));
     txMgrImpl.commit();
@@ -5078,9 +5105,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     this.region.getEntry("key1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     this.region.put("key1", "value3");
     try {
       txMgrImpl.commit();
@@ -5093,9 +5120,9 @@ public class TXJUnitTest {
     txMgrImpl.begin();
     this.region.get("key1"); // bootstrap the tx, entrySet does not
     this.region.entrySet(false).iterator().next();
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
 
     assertEquals("value1", this.region.get("key1"));
     txMgrImpl.commit();
@@ -5105,9 +5132,9 @@ public class TXJUnitTest {
     txMgrImpl.begin();
     this.region.get("key1"); // bootstrap the tx, entrySet does not
     this.region.entrySet(false).iterator().next();
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals("value1", this.region.get("key1"));
     this.region.put("key1", "value3");
     try {
@@ -5120,17 +5147,17 @@ public class TXJUnitTest {
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     assertEquals(true, this.region.containsKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.remove("key1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(true, this.region.containsKey("key1"));
     txMgrImpl.commit();
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     assertEquals(true, this.region.containsKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.remove("key1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(true, this.region.containsKey("key1"));
     this.region.put("key1", "value3");
     assertEquals(true, this.region.containsKey("key1"));
@@ -5143,17 +5170,17 @@ public class TXJUnitTest {
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     assertEquals(true, this.region.containsValueForKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.remove("key1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(true, this.region.containsValueForKey("key1"));
     txMgrImpl.commit();
     this.region.put("key1", "value1"); // non-tx
     txMgrImpl.begin();
     assertEquals(true, this.region.containsValueForKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.remove("key1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(true, this.region.containsValueForKey("key1"));
     this.region.put("key1", "value3");
     assertEquals(true, this.region.containsValueForKey("key1"));
@@ -5169,9 +5196,9 @@ public class TXJUnitTest {
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(null, this.region.get("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
 
     assertEquals(null, this.region.get("key1"));
     txMgrImpl.commit();
@@ -5180,9 +5207,9 @@ public class TXJUnitTest {
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(null, this.region.get("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(null, this.region.get("key1"));
     this.region.put("key1", "value3");
     assertEquals("value3", this.region.get("key1"));
@@ -5196,9 +5223,9 @@ public class TXJUnitTest {
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(null, this.region.getEntry("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
 
     assertEquals(null, this.region.getEntry("key1"));
     txMgrImpl.commit();
@@ -5207,9 +5234,9 @@ public class TXJUnitTest {
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(null, this.region.getEntry("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(null, this.region.getEntry("key1"));
     this.region.put("key1", "value3");
     try {
@@ -5222,17 +5249,17 @@ public class TXJUnitTest {
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(false, this.region.containsKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(false, this.region.containsKey("key1"));
     txMgrImpl.commit();
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(false, this.region.containsKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(false, this.region.containsKey("key1"));
     this.region.put("key1", "value3");
     assertEquals(true, this.region.containsKey("key1"));
@@ -5246,17 +5273,17 @@ public class TXJUnitTest {
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(false, this.region.containsValueForKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(false, this.region.containsValueForKey("key1"));
     txMgrImpl.commit();
     this.region.remove("key1"); // non-tx
     txMgrImpl.begin();
     assertEquals(false, this.region.containsValueForKey("key1"));
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(false, this.region.containsValueForKey("key1"));
     this.region.put("key1", "value3");
     assertEquals(true, this.region.containsValueForKey("key1"));
@@ -5272,9 +5299,9 @@ public class TXJUnitTest {
     txMgrImpl.begin();
     this.region.get("key1");
     this.region.localInvalidate("key1"); // should be a noop since it is already invalid
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.remove("key1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     txMgrImpl.commit();
     assertEquals(false, this.region.containsKey("key1"));
 
@@ -5283,9 +5310,9 @@ public class TXJUnitTest {
     this.region.create("key1", null); // non-tx
     txMgrImpl.begin();
     this.region.localInvalidate("key1"); // should be a noop since it is already invalid
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.remove("key1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(true, this.region.containsKey("key1"));
     assertEquals(false, this.region.containsValueForKey("key1"));
     txMgrImpl.commit();
@@ -5299,9 +5326,9 @@ public class TXJUnitTest {
       fail("expected EntryNotFoundException");
     } catch (EntryNotFoundException expected) {
     }
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.create("key1", "value1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(false, this.region.containsKey("key1"));
     txMgrImpl.commit();
     assertEquals(true, this.region.containsKey("key1"));
@@ -5315,9 +5342,9 @@ public class TXJUnitTest {
       fail("expected EntryExistsException");
     } catch (EntryExistsException expected) {
     }
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.remove("key1"); // non-tx
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     assertEquals(true, this.region.containsKey("key1"));
     txMgrImpl.commit();
     assertEquals(false, this.region.containsKey("key1"));
@@ -5337,9 +5364,9 @@ public class TXJUnitTest {
     // now try a put with a conflict and make sure it is detected
     txMgrImpl.begin();
     this.region.put("key1", "value1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // do a non-tx put to force conflict
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
@@ -5360,9 +5387,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value0");
     txMgrImpl.begin();
     this.region.put("key1", "value1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // do a non-tx put to force conflict
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
@@ -5381,9 +5408,9 @@ public class TXJUnitTest {
     // now try a create with a conflict and make sure it is detected
     txMgrImpl.begin();
     this.region.create("key1", "value1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // do a non-tx put to force conflict
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
@@ -5404,9 +5431,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value0");
     txMgrImpl.begin();
     this.region.localInvalidate("key1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // do a non-tx put to force conflict
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
@@ -5427,9 +5454,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value0");
     txMgrImpl.begin();
     this.region.invalidate("key1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // do a non-tx put to force conflict
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
@@ -5441,9 +5468,9 @@ public class TXJUnitTest {
     // check C + DD is a NOOP that still gets conflict if non-tx entry created */
     this.txMgr.begin();
     this.region.create("newKey", "valueTX");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.create("newKey", "valueNONTX");
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     this.region.destroy("newKey");
     assertTrue(!this.region.containsKey("key1"));
     try {
@@ -5457,9 +5484,9 @@ public class TXJUnitTest {
     // check C + LD is a NOOP that still gets conflict if non-tx entry created */
     this.txMgr.begin();
     this.region.create("newKey", "valueTX");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.create("newKey", "valueNONTX");
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     this.region.localDestroy("newKey");
     assertTrue(!this.region.containsKey("key1"));
     try {
@@ -5481,9 +5508,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value0");
     txMgrImpl.begin();
     this.region.localDestroy("key1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // do a non-tx put to force conflict
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
@@ -5503,9 +5530,9 @@ public class TXJUnitTest {
     this.region.put("key1", "value0");
     txMgrImpl.begin();
     this.region.destroy("key1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.put("key1", "value2"); // do a non-tx put to force conflict
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
@@ -5522,9 +5549,9 @@ public class TXJUnitTest {
     this.region.localInvalidate("key1");
     txMgrImpl.begin();
     this.region.put("key1", "txVal1");
-    tx = txMgrImpl.internalSuspend();
+    tx = txMgrImpl.pauseTransaction();
     this.region.invalidate("key1");
-    txMgrImpl.internalResume(tx);
+    txMgrImpl.unpauseTransaction(tx);
     txMgrImpl.commit();
     assertEquals("txVal1", this.region.getEntry("key1").getValue());
     this.region.destroy("key1");
@@ -5532,9 +5559,9 @@ public class TXJUnitTest {
     // now try a put and a region destroy.
     txMgrImpl.begin();
     this.region.create("key1", "value1");
-    TXStateProxy tis = txMgrImpl.internalSuspend();
+    TXStateProxy tis = txMgrImpl.pauseTransaction();
     this.region.localDestroyRegion(); // non-tx
-    txMgrImpl.internalResume(tis);
+    txMgrImpl.unpauseTransaction(tis);
 
     try {
       txMgrImpl.commit();
@@ -5800,7 +5827,7 @@ public class TXJUnitTest {
         lruRegion.put("key" + i, new Long(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
-      tx = txMgrImpl.internalSuspend();
+      tx = txMgrImpl.pauseTransaction();
 
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
       for (int i = 0; i < numToPut; ++i) {
@@ -5809,7 +5836,7 @@ public class TXJUnitTest {
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
       assertNull(lruRegion.get("non-tx key0"));
 
-      txMgrImpl.internalResume(tx);
+      txMgrImpl.unpauseTransaction(tx);
       this.txMgr.commit();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_LONG);
     }
@@ -5841,7 +5868,7 @@ public class TXJUnitTest {
         lruRegion.get("key" + i, new Integer(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_STRING);
-      tx = txMgrImpl.internalSuspend();
+      tx = txMgrImpl.pauseTransaction();
 
       assertEquals(lruSize, lruRegion.entrySet(false).size());
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_NULL);
@@ -5851,7 +5878,7 @@ public class TXJUnitTest {
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_NULL);
       assertNull(lruRegion.getEntry("non-tx key0"));
 
-      txMgrImpl.internalResume(tx);
+      txMgrImpl.unpauseTransaction(tx);
       this.txMgr.commit();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_STRING);
       Iterator it = lruRegion.keySet().iterator();
@@ -5868,7 +5895,7 @@ public class TXJUnitTest {
     // eviction, force TX eviction
     {
       final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
-      TXStateProxy tx1, tx2;
+      TransactionId txId1, txId2;
       numToPut = lruSize + 4;
       assertEquals(0, lruRegion.entrySet(false).size());
       // Create entries
@@ -5884,7 +5911,7 @@ public class TXJUnitTest {
         lruRegion.put("key" + i, new Long(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
-      tx1 = txMgrImpl.internalSuspend();
+      txId1 = txMgrImpl.suspend();
 
       this.txMgr.begin();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
@@ -5893,7 +5920,7 @@ public class TXJUnitTest {
         lruRegion.put("key" + i, new Double(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_DOUBLE);
-      tx2 = txMgrImpl.internalSuspend();
+      txId2 = txMgrImpl.suspend();
 
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
 
@@ -5906,13 +5933,13 @@ public class TXJUnitTest {
       assertNull(lruRegion.get("non-tx key0"));
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
 
-      txMgrImpl.internalResume(tx1);
+      txMgrImpl.resume(txId1);
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
       // Check to make sure no conflict was caused by non-TX put evictions
       // This should remove all references for each committed entry
       this.txMgr.commit();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_LONG);
-      txMgrImpl.internalResume(tx2);
+      txMgrImpl.resume(txId2);
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_DOUBLE);
       this.txMgr.rollback();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_LONG);
@@ -5946,7 +5973,7 @@ public class TXJUnitTest {
         lruRegion.put("key" + i, new Long(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
-      tx = txMgrImpl.internalSuspend();
+      tx = txMgrImpl.pauseTransaction();
 
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
       // Force the Non-Tx "put" to remove each attempt since region is full
@@ -5957,7 +5984,7 @@ public class TXJUnitTest {
       assertNull(lruRegion.get("non-tx key0"));
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
 
-      txMgrImpl.internalResume(tx);
+      txMgrImpl.unpauseTransaction(tx);
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
       // This should remove all references for each committed entry
       this.txMgr.rollback();
@@ -5992,12 +6019,12 @@ public class TXJUnitTest {
         lruRegion.put("key" + i, new Long(i));
       }
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
-      tx = txMgrImpl.internalSuspend();
+      tx = txMgrImpl.pauseTransaction();
 
       // Cause a conflict
       lruRegion.put("key" + (numToPut - 1), new Integer(numToPut - 1));
 
-      txMgrImpl.internalResume(tx);
+      txMgrImpl.unpauseTransaction(tx);
       assertLRUEntries(lruRegion.entrySet(false), numToPut, "key", LRUENTRY_LONG);
       // This should remove all references for each committed entry
       try {
@@ -6102,12 +6129,12 @@ public class TXJUnitTest {
       this.region.put("syncKey3", "syncVal3");
       assertEquals("syncVal3", this.region.getEntry("syncKey3").getValue());
 
-      TXStateProxy gfTx = gfTxMgrImpl.internalSuspend();
+      TXStateProxy gfTx = gfTxMgrImpl.pauseTransaction();
       javax.transaction.Transaction jtaTx = jtaTxMgr.suspend();
       assertNull(jtaTxMgr.getTransaction());
       this.region.put("syncKey3", "syncVal4");
       assertEquals("syncVal4", this.region.getEntry("syncKey3").getValue());
-      gfTxMgrImpl.internalResume(gfTx);
+      gfTxMgrImpl.unpauseTransaction(gfTx);
       try {
         jtaTxMgr.resume(jtaTx);
       } catch (Exception failure) {
@@ -6346,7 +6373,7 @@ public class TXJUnitTest {
     assertNotNull(this.txMgr.getTransactionId());
     {
       TXManagerImpl gfTxMgrImpl = (TXManagerImpl) this.txMgr;
-      TXStateProxy gfTx = gfTxMgrImpl.internalSuspend();
+      TXStateProxy gfTx = gfTxMgrImpl.pauseTransaction();
 
       javax.transaction.TransactionManager jtaTxMgr = this.cache.getJTATransactionManager();
       javax.transaction.Transaction jtaTx = jtaTxMgr.suspend();
@@ -6359,7 +6386,7 @@ public class TXJUnitTest {
       } catch (Exception failure) {
         fail("JTA resume failed");
       }
-      gfTxMgrImpl.internalResume(gfTx);
+      gfTxMgrImpl.unpauseTransaction(gfTx);
     }
     assertEquals("enlistVal", this.region.get("enlistKey"));
     try {
@@ -6804,10 +6831,10 @@ public class TXJUnitTest {
     ctm.begin();
     pr.putAll(map);
     r.putAll(map);
-    TXStateProxy tx = ctm.internalSuspend();
+    TXStateProxy tx = ctm.pauseTransaction();
     assertTrue(!pr.containsKey("stuff"));
     assertTrue(!r.containsKey("stuff"));
-    ctm.internalResume(tx);
+    ctm.unpauseTransaction(tx);
     ctm.commit();
     assertTrue(pr.containsKey("stuff"));
     assertTrue(r.containsKey("stuff"));

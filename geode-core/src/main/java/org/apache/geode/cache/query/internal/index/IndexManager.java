@@ -277,7 +277,7 @@ public class IndexManager {
 
     TXStateProxy tx = null;
     if (!((InternalCache) this.region.getCache()).isClient()) {
-      tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).internalSuspend();
+      tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).pauseTransaction();
     }
 
     try {
@@ -431,7 +431,8 @@ public class IndexManager {
       DefaultQuery.setPdxReadSerialized(this.region.getCache(), oldReadSerialized);
 
       if (tx != null) {
-        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).internalResume(tx);
+        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager())
+            .unpauseTransaction(tx);
       }
     }
   }
@@ -1005,7 +1006,7 @@ public class IndexManager {
     DefaultQuery.setPdxReadSerialized(this.region.getCache(), true);
     TXStateProxy tx = null;
     if (!((InternalCache) this.region.getCache()).isClient()) {
-      tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).internalSuspend();
+      tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).pauseTransaction();
     }
 
     try {
@@ -1149,7 +1150,8 @@ public class IndexManager {
     } finally {
       DefaultQuery.setPdxReadSerialized(this.region.getCache(), false);
       if (tx != null) {
-        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).internalResume(tx);
+        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager())
+            .unpauseTransaction(tx);
       }
       getCachePerfStats().endIndexUpdate(startPA);
     }

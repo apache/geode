@@ -202,6 +202,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -1836,6 +1837,9 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   public Set entrySet(boolean recursive) {
     checkReadiness();
     checkForNoAccess();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return basicEntries(recursive);
   }
 
@@ -1858,6 +1862,9 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   public Set keys() {
     checkReadiness();
     checkForNoAccess();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return new EntriesSet(this, false, IteratorType.KEYS, false);
   }
 
@@ -1877,6 +1884,9 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   public Collection values() {
     checkReadiness();
     checkForNoAccess();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return new EntriesSet(this, false, IteratorType.VALUES, false);
   }
 
@@ -6133,7 +6143,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       boolean callbackEvents) throws CacheWriterException, TimeoutException {
     preDestroyChecks();
 
-    final TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
+    final TXStateProxy tx = this.cache.getTXMgr().pauseTransaction();
     try {
       boolean acquiredLock = false;
       if (lock) {
@@ -6248,7 +6258,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       }
 
     } finally {
-      this.cache.getTXMgr().internalResume(tx);
+      this.cache.getTXMgr().unpauseTransaction(tx);
     }
   }
 
@@ -6384,6 +6394,9 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     getDataView().destroyExistingEntry(event, cacheWrite, expectedOldValue);
   }
 
+  protected final boolean restoreSetOperationTransactionBehavior =
+      SystemPropertyHelper.restoreSetOperationTransactionBehavior();
+
   /**
    * Do the expensive work of discovering an existing JTA transaction Only needs to be called at
    * Region.Entry entry points e.g. Region.put, Region.invalidate, etc.
@@ -6395,6 +6408,11 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       // prevent internal regions from participating in a TX
       getJTAEnlistedTX();
     }
+  }
+
+  private boolean isTransactionPaused() {
+    TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+    return txMgr.isTransactionPaused();
   }
 
   /**
@@ -6796,7 +6814,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   }
 
   void basicInvalidateRegion(RegionEventImpl event) {
-    final TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
+    final TXStateProxy tx = this.cache.getTXMgr().pauseTransaction();
     try {
       this.regionInvalid = true;
       getImageState().setRegionInvalidated(true);
@@ -6840,7 +6858,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       }
 
     } finally {
-      this.cache.getTXMgr().internalResume(tx);
+      this.cache.getTXMgr().unpauseTransaction(tx);
     }
   }
 
@@ -8277,6 +8295,10 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
               || jtaTransaction.getStatus() == Status.STATUS_NO_TRANSACTION) {
             return null;
           }
+          if (isTransactionPaused()) {
+            // Do not bootstrap JTA again, if the transaction has been paused.
+            return null;
+          }
           txState = this.cache.getTXMgr().beginJTA();
           jtaTransaction.registerSynchronization(txState);
           return txState;
@@ -9182,7 +9204,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
             if (!alreadyInvalid(key, event)) {
               // bug #47716 - don't update if it's already here & invalid
-              TXStateProxy txState = this.cache.getTXMgr().internalSuspend();
+              TXStateProxy txState = this.cache.getTXMgr().pauseTransaction();
               try {
                 basicPutEntry(event, 0L);
               } catch (ConcurrentCacheModificationException e) {
@@ -9192,7 +9214,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
                       key, e);
                 }
               } finally {
-                this.cache.getTXMgr().internalResume(txState);
+                this.cache.getTXMgr().unpauseTransaction(txState);
               }
               getCachePerfStats().endPut(startPut, event.isOriginRemote());
             }
@@ -11404,6 +11426,10 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       // operations
       throw new UnsupportedOperationException();
     }
+  }
+
+  public boolean canStoreDataLocally() {
+    return this.dataPolicy.withStorage();
   }
 
   /**
