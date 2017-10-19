@@ -2435,13 +2435,14 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         mgr.begin();
         pr.put(custId, new Customer("name10", "address10"));
         r.put(10, "value10");
-        final TXStateProxy txState = mgr.pauseTransaction();
+
+        final TransactionId txId = mgr.suspend();
         assertNull(pr.get(custId));
         assertNull(r.get(10));
         final CountDownLatch latch = new CountDownLatch(1);
         Thread t = new Thread(new Runnable() {
           public void run() {
-            mgr.unpauseTransaction(txState);
+            mgr.resume(txId);
             mgr.commit();
             latch.countDown();
           }
@@ -2916,7 +2917,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             Map<CustId, Customer> m = new HashMap<CustId, Customer>();
             m.put(new CustId(2), new Customer("name2", "address2"));
             r.putAll(m);
-            TXStateProxyImpl tx = (TXStateProxyImpl) mgr.pauseTransaction();
+            TXStateProxyImpl tx = (TXStateProxyImpl) mgr.getTXState();
+            TransactionId txId = mgr.suspend();
             ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
             txStub.setAfterLocalLocks(new Runnable() {
               public void run() {
@@ -2928,7 +2930,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
                 }
               }
             });
-            mgr.unpauseTransaction(tx);
+            mgr.resume(txId);
             mgr.commit();
           }
         });
