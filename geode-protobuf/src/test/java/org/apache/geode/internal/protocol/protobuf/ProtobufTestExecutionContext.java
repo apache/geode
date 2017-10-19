@@ -14,21 +14,19 @@
  */
 package org.apache.geode.internal.protocol.protobuf;
 
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.SecurityManager;
-import org.apache.geode.security.internal.server.Authorizer;
+import com.google.protobuf.GeneratedMessageV3;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.security.NoOpAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 
-public class ProtobufSimpleAuthorizer implements Authorizer {
-  private final Object authenticatedPrincipal;
-  private final SecurityManager securityManager;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-  public ProtobufSimpleAuthorizer(Object authenticatedPrincipal, SecurityManager securityManager) {
-    this.authenticatedPrincipal = authenticatedPrincipal;
-    this.securityManager = securityManager;
-  }
-
-  @Override
-  public boolean authorize(ResourcePermission permissionRequested) {
-    return securityManager.authorize(authenticatedPrincipal, permissionRequested);
+public class ProtobufTestExecutionContext {
+  public static MessageExecutionContext getNoAuthExecutionContext(Cache cache) {
+    return new MessageExecutionContext(cache, new NoOpAuthorizer(), new Object(),
+        new NoOpStatistics());
   }
 }

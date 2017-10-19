@@ -12,13 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
+package org.apache.geode.internal.protocol.protobuf.security;
+
+import org.apache.geode.security.ResourcePermission;
 
 /**
- * Implementations of this interface record statistics for the corresponding client/server protocol
+ * An implementation of {@link Authorizer} that doesn't use its parameters and always returns true.
  */
-public interface ClientProtocolStatistics {
-  public void clientConnected();
-
-  public void clientDisconnected();
+public class NoOpAuthorizer implements Authorizer {
+  @Override
+  public boolean authorize(Object authenticatedSubject, ResourcePermission permissionRequested) {
+    return true;
+  }
 }
