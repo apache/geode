@@ -19,6 +19,7 @@ import static org.junit.Assert.assertSame;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.protocol.EncodingTypeTranslator;
 import org.apache.geode.internal.serialization.SerializationType;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;

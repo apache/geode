@@ -48,7 +48,7 @@ message Request {
         GetRegionNamesRequest getRegionNamesRequest = 43;
         GetRegionRequest getRegionRequest = 44;
 
-        AuthenticationRequest simpleAuthenticationRequest = 100;
+        AuthenticationRequest authenticationRequest = 100;
     }
 }
 
@@ -67,7 +67,7 @@ message Response {
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;
 
-        AuthenticationResponse simpleAuthenticationResponse = 100;
+        AuthenticationResponse authenticationResponse = 100;
     }
 }
 

@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.protocol;
 
-import static junit.framework.TestCase.fail;
-import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.AUTHENTICATION_FAILED;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.AUTHENTICATION_FAILED;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +27,6 @@ import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -204,7 +201,7 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
                 .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
@@ -232,7 +229,7 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
+            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
@@ -249,7 +246,7 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
                 .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, "wrong password")))
         .build();
@@ -279,7 +276,7 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
+            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
@@ -287,7 +284,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(AUTHENTICATION_FAILED.codeValue,
+    assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
   }
 
@@ -298,7 +295,7 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setSimpleAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
+            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
@@ -306,7 +303,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(AUTHENTICATION_FAILED.codeValue,
+    assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
   }
 
@@ -332,8 +329,8 @@ public class AuthenticationIntegrationTest {
         ClientProtocol.Message.parseDelimitedFrom(inputStream);
     assertEquals(ClientProtocol.Message.RESPONSE_FIELD_NUMBER,
         authenticationResponseMessage.getMessageTypeCase().getNumber());
-    assertEquals(ClientProtocol.Response.SIMPLEAUTHENTICATIONRESPONSE_FIELD_NUMBER,
+    assertEquals(ClientProtocol.Response.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
         authenticationResponseMessage.getResponse().getResponseAPICase().getNumber());
-    return authenticationResponseMessage.getResponse().getSimpleAuthenticationResponse();
+    return authenticationResponseMessage.getResponse().getAuthenticationResponse();
   }
 }

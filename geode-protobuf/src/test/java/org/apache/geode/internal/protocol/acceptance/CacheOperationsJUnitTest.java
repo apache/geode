@@ -251,8 +251,9 @@ public class CacheOperationsJUnitTest {
     RegionAPI.GetRegionNamesRequest getRegionNamesRequest =
         ProtobufRequestUtilities.createGetRegionNamesRequest();
 
-    ClientProtocol.Message getRegionsMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createProtobufRequestWithGetRegionNamesRequest(getRegionNamesRequest));
+    ClientProtocol.Message getRegionsMessage =
+        ProtobufUtilities.createProtobufMessage(ClientProtocol.Request.newBuilder()
+            .setGetRegionNamesRequest(getRegionNamesRequest).build());
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
     validateGetRegionNamesResponse(socket, protobufProtocolSerializer);
   }

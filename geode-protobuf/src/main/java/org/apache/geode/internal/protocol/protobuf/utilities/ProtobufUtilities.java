@@ -21,7 +21,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.EncodingTypeTranslator;
+import org.apache.geode.internal.protocol.EncodingTypeTranslator;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.utilities.exception.UnknownProtobufPrimitiveType;
@@ -192,12 +192,6 @@ public abstract class ProtobufUtilities {
     protoRegionBuilder.setScope(regionAttributes.getScope().toString());
     protoRegionBuilder.setDataPolicy(regionAttributes.getDataPolicy().toString());
     return protoRegionBuilder.build();
-  }
-
-  public static ClientProtocol.Request createProtobufRequestWithGetRegionNamesRequest(
-      RegionAPI.GetRegionNamesRequest getRegionNamesRequest) {
-    return ClientProtocol.Request.newBuilder().setGetRegionNamesRequest(getRegionNamesRequest)
-        .build();
   }
 
   public static ClientProtocol.Request.Builder createProtobufRequestBuilder() {

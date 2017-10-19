@@ -21,31 +21,23 @@ import java.io.OutputStream;
 
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
+import org.apache.geode.internal.protocol.protobuf.security.exception.IncompatibleAuthenticationMechanismsException;
+import org.apache.geode.internal.protocol.security.Authenticator;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.AuthenticationFailedException;
 
-public class InvalidConfigAuthenticator implements Authenticator {
+public class InvalidConfigAuthenticator implements Authenticator<Object, Object> {
   private static final Logger logger = LogService.getLogger(InvalidConfigAuthenticator.class);
 
   @Override
-  public Object authenticate(InputStream inputStream, OutputStream outputStream,
-      SecurityService securityService) throws IOException {
+  public Object authenticate(Object object) throws AuthenticationFailedException {
     logger.warn(
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
-
-    ClientProtocol.Message.newBuilder()
-        .setResponse(ClientProtocol.Response.newBuilder()
-            .setErrorResponse(ClientProtocol.ErrorResponse.newBuilder()
-                .setError(BasicTypes.Error.newBuilder()
-                    .setErrorCode(ProtocolErrorCode.AUTHENTICATION_FAILED.codeValue).setMessage(
-                        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication."))))
-        .build().writeDelimitedTo(outputStream);
-
-    throw new IOException("Protobuf clients not supported with legacy security.");
+    throw new IncompatibleAuthenticationMechanismsException(
+        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 }

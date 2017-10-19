@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.EncodingTypeTranslator;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.internal.serialization.SerializationType;
 import org.apache.geode.internal.serialization.TypeCodec;

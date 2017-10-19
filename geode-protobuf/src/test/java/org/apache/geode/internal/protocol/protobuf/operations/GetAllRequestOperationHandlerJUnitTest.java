@@ -35,10 +35,10 @@ import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.ProtobufTestExecutionContext;
+import org.apache.geode.internal.protocol.ProtobufTestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.Result;
-import org.apache.geode.internal.protocol.protobuf.Success;
+import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
@@ -78,7 +78,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processReturnsExpectedValuesForValidKeys() throws Exception {
     Result<RegionAPI.GetAllResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(true, false),
-            ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
+            ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 
@@ -99,7 +99,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Result<RegionAPI.GetAllResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(false, false),
-            ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
+            ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 
@@ -116,7 +116,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     RegionAPI.GetAllRequest getAllRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, testKeys);
     Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
-        getAllRequest, ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
+        getAllRequest, ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     RegionAPI.GetAllResponse message = result.getMessage();
@@ -132,7 +132,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
     Result<RegionAPI.GetAllResponse> result =
         operationHandler.process(serializationServiceStub, generateTestRequest(true, true),
-            ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
+            ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 

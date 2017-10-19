@@ -14,74 +14,23 @@
  */
 package org.apache.geode.internal.protocol.protobuf.security;
 
-import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.AUTHENTICATION_FAILED;
-
-import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
-
-import org.apache.geode.internal.protocol.protobuf.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.AuthenticationFailedException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Properties;
 
 import org.apache.shiro.subject.Subject;
 
-public class ProtobufShiroAuthenticator implements Authenticator {
+import org.apache.geode.internal.protocol.security.Authenticator;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.AuthenticationFailedException;
 
-  private static final String SHOULD_HAVE_AUTHED =
-      "Got non-auth request while expecting authentication request";
+public class ProtobufShiroAuthenticator implements Authenticator<Properties, Subject> {
+  private final SecurityService securityService;
+
+  public ProtobufShiroAuthenticator(SecurityService securityService) {
+    this.securityService = securityService;
+  }
 
   @Override
-  public Subject authenticate(InputStream inputStream, OutputStream outputStream,
-      SecurityService securityService) throws IOException, AuthenticationFailedException {
-    ClientProtocol.Message message = ClientProtocol.Message.parseDelimitedFrom(inputStream);
-
-    if (message.getRequest().getRequestAPICase()
-        .getNumber() != ClientProtocol.Request.SIMPLEAUTHENTICATIONREQUEST_FIELD_NUMBER) {
-      failAuth(outputStream);
-    }
-
-    AuthenticationAPI.AuthenticationRequest authenticationRequest =
-        message.getRequest().getSimpleAuthenticationRequest();
-    if (authenticationRequest == null) {
-      failAuth(outputStream);
-    }
-
-    Properties properties = new Properties();
-    properties.putAll(authenticationRequest.getCredentialsMap());
-
-    try {
-      // throws AuthenticationFailedException on failure.
-      Subject authToken = securityService.login(properties);
-
-      sendAuthenticationResponse(outputStream, true);
-      return authToken;
-    } catch (AuthenticationFailedException ex) {
-      sendAuthenticationResponse(outputStream, false);
-      throw ex;
-    }
-  }
-
-  private void sendAuthenticationResponse(OutputStream outputStream, boolean success)
-      throws IOException {
-    ClientProtocol.Message.newBuilder()
-        .setResponse(ClientProtocol.Response.newBuilder().setSimpleAuthenticationResponse(
-            AuthenticationAPI.AuthenticationResponse.newBuilder().setAuthenticated(success)))
-        .build().writeDelimitedTo(outputStream);
-  }
-
-  private void failAuth(OutputStream outputStream) throws IOException {
-    ClientProtocol.Message.newBuilder()
-        .setResponse(ClientProtocol.Response.newBuilder()
-            .setErrorResponse(ClientProtocol.ErrorResponse.newBuilder()
-                .setError(BasicTypes.Error.newBuilder()
-                    .setErrorCode(AUTHENTICATION_FAILED.codeValue).setMessage(SHOULD_HAVE_AUTHED))))
-        .build().writeDelimitedTo(outputStream);
-
-    throw new IOException(SHOULD_HAVE_AUTHED);
+  public Subject authenticate(Properties properties) throws AuthenticationFailedException {
+    return securityService.login(properties);
   }
 }

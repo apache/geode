@@ -21,13 +21,13 @@ import java.util.stream.Collectors;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.Result;
+import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI;
-import org.apache.geode.internal.protocol.protobuf.Success;
+import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.serialization.SerializationService;
 
 @Experimental
@@ -37,9 +37,9 @@ public class GetAvailableServersOperationHandler implements
   @Override
   public Result<ServerAPI.GetAvailableServersResponse> process(
       SerializationService serializationService, ServerAPI.GetAvailableServersRequest request,
-      MessageExecutionContext executionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
-    InternalLocator internalLocator = (InternalLocator) executionContext.getLocator();
+    InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
     ArrayList serversFromSnapshot =
         internalLocator.getServerLocatorAdvisee().getLoadSnapshot().getServers(null);
     if (serversFromSnapshot == null) {
