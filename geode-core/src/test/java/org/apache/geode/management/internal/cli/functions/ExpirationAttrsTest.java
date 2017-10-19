@@ -19,8 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs.ExpirationAttrs;
+import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(UnitTest.class)
 public class ExpirationAttrsTest {
 
   private static ExpirationAttrs.ExpirationFor expirationFor =
