@@ -54,7 +54,7 @@ import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -65,6 +65,7 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -148,7 +149,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   @Override
   @SuppressWarnings("IMSE_DONT_CATCH_IMSE")
   public boolean dispatchListenerEvents(final EntryEventImpl event) throws InterruptedException {
-    final LocalRegion rgn = event.getRegion();
+    final InternalRegion rgn = event.getRegion();
 
     if (event.callbacksInvoked()) {
       return true;
@@ -177,7 +178,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         // by the RegionMap. It is unclear why this code is needed. ARM destroy
         // does this also and we are now doing it as phase3 of the ARM destroy.
         removePhase2();
-        rgn.getRegionMap().removeEntry(event.getKey(), this, true, event, rgn);
+        ((DiskRecoveryStore) rgn).getRegionMap().removeEntry(event.getKey(), this, true, event,
+            rgn);
       }
     }
   }
@@ -220,8 +222,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public void txDidDestroy(long currTime) {
-    setLastModifiedAndAccessedTimes(currTime, currTime);
+  public void txDidDestroy(long currentTime) {
+    setLastModifiedAndAccessedTimes(currentTime, currentTime);
   }
 
   @Override
@@ -249,7 +251,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public void removePhase1(LocalRegion r, boolean clear) throws RegionClearedException {
+  public void removePhase1(InternalRegion region, boolean clear) throws RegionClearedException {
     _removePhase1();
   }
 
@@ -259,37 +261,38 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public void makeTombstone(LocalRegion r, VersionTag version) throws RegionClearedException {
-    assert r.getVersionVector() != null;
+  public void makeTombstone(InternalRegion region, VersionTag version)
+      throws RegionClearedException {
+    assert region.getVersionVector() != null;
     assert version != null;
-    if (r.getServerProxy() == null && r.getVersionVector().isTombstoneTooOld(version.getMemberID(),
-        version.getRegionVersion())) {
+    if (region.getServerProxy() == null && region.getVersionVector()
+        .isTombstoneTooOld(version.getMemberID(), version.getRegionVersion())) {
       // distributed gc with higher vector version preempts this operation
       if (!isTombstone()) {
-        basicMakeTombstone(r);
-        r.incTombstoneCount(1);
+        basicMakeTombstone(region);
+        region.getCachePerfStats().incTombstoneCount(1);
       }
-      r.getRegionMap().removeTombstone(this, version, false, true);
+      ((DiskRecoveryStore) region).getRegionMap().removeTombstone(this, version, false, true);
     } else {
       if (isTombstone()) {
         // unschedule the old tombstone
-        r.unscheduleTombstone(this);
+        region.unscheduleTombstone(this);
       }
       setRecentlyUsed();
       boolean newEntry = getValueAsToken() == Token.REMOVED_PHASE1;
-      basicMakeTombstone(r);
-      r.scheduleTombstone(this, version);
+      basicMakeTombstone(region);
+      region.scheduleTombstone(this, version);
       if (newEntry) {
         // bug #46631 - entry count is decremented by scheduleTombstone but this is a new entry
-        r.getCachePerfStats().incEntryCount(1);
+        region.getCachePerfStats().incEntryCount(1);
       }
     }
   }
 
-  private void basicMakeTombstone(LocalRegion r) throws RegionClearedException {
+  private void basicMakeTombstone(InternalRegion region) throws RegionClearedException {
     boolean setValueCompleted = false;
     try {
-      setValue(r, Token.TOMBSTONE);
+      setValue(region, Token.TOMBSTONE);
       setValueCompleted = true;
     } finally {
       if (!setValueCompleted && isTombstone()) {
@@ -302,7 +305,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   public void setValueWithTombstoneCheck(@Unretained Object v, EntryEvent e)
       throws RegionClearedException {
     if (v == Token.TOMBSTONE) {
-      makeTombstone((LocalRegion) e.getRegion(), ((InternalCacheEvent) e).getVersionTag());
+      makeTombstone((InternalRegion) e.getRegion(), ((InternalCacheEvent) e).getVersionTag());
     } else {
       setValue((RegionEntryContext) e.getRegion(), v, (EntryEventImpl) e);
     }
@@ -344,7 +347,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public boolean fillInValue(LocalRegion region,
+  public boolean fillInValue(InternalRegion region,
       @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in, DM mgr,
       final Version version) {
 
@@ -435,7 +438,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public boolean isOverflowedToDisk(LocalRegion r, DistributedRegion.DiskPosition dp) {
+  public boolean isOverflowedToDisk(InternalRegion region,
+      DistributedRegion.DiskPosition diskPosition) {
     return false;
   }
 
@@ -443,7 +447,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   public Object getValue(RegionEntryContext context) {
     ReferenceCountHelper.createReferenceCountOwner();
     @Retained
-    Object result = _getValueRetain(context, true);
+    Object result = getValueRetain(context, true);
 
     // If the thread is an Index Creation Thread & the value obtained is
     // Token.REMOVED , we can skip synchronization block. This is required to prevent
@@ -468,7 +472,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   @Retained
   public Object getValueRetain(RegionEntryContext context) {
     @Retained
-    Object result = _getValueRetain(context, true);
+    Object result = getValueRetain(context, true);
     if (Token.isRemoved(result)) {
       return null;
     } else {
@@ -510,8 +514,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   private boolean isThisRegionBeingClosedOrDestroyed(RegionEntryContext context) {
-    return context instanceof LocalRegion
-        && ((LocalRegion) context).isThisRegionBeingClosedOrDestroyed();
+    return context instanceof InternalRegion
+        && ((InternalRegion) context).isThisRegionBeingClosedOrDestroyed();
   }
 
   private boolean isOffHeapReference(Object ref) {
@@ -608,7 +612,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   public Object getValueInVM(RegionEntryContext context) {
     ReferenceCountHelper.createReferenceCountOwner();
     @Released
-    Object v = _getValueRetain(context, true);
+    Object v = getValueRetain(context, true);
 
     if (v == null) {
       // should only be possible if disk entry
@@ -620,27 +624,27 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
-    return getValueInVM(owner);
+  public Object getValueInVMOrDiskWithoutFaultIn(InternalRegion region) {
+    return getValueInVM(region);
   }
 
   @Override
   @Retained
-  public Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner) {
+  public Object getValueOffHeapOrDiskWithoutFaultIn(InternalRegion region) {
     @Retained
-    Object result = _getValueRetain(owner, true);
+    Object result = getValueRetain(region, true);
     return result;
   }
 
   @Override
-  public Object getValueOnDisk(LocalRegion r) throws EntryNotFoundException {
+  public Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException {
     throw new IllegalStateException(
         LocalizedStrings.AbstractRegionEntry_CANNOT_GET_VALUE_ON_DISK_FOR_A_REGION_THAT_DOES_NOT_ACCESS_THE_DISK
             .toLocalizedString());
   }
 
   @Override
-  public Object getSerializedValueOnDisk(final LocalRegion localRegion)
+  public Object getSerializedValueOnDisk(final InternalRegion region)
       throws EntryNotFoundException {
     throw new IllegalStateException(
         LocalizedStrings.AbstractRegionEntry_CANNOT_GET_VALUE_ON_DISK_FOR_A_REGION_THAT_DOES_NOT_ACCESS_THE_DISK
@@ -648,7 +652,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public Object getValueOnDiskOrBuffer(LocalRegion r) throws EntryNotFoundException {
+  public Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException {
     throw new IllegalStateException(
         LocalizedStrings.AbstractRegionEntry_CANNOT_GET_VALUE_ON_DISK_FOR_A_REGION_THAT_DOES_NOT_ACCESS_THE_DISK
             .toLocalizedString());
@@ -656,15 +660,16 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public boolean initialImagePut(final LocalRegion region, final long lastModified, Object newValue,
-      boolean wasRecovered, boolean acceptedVersionTag) throws RegionClearedException {
+  public boolean initialImagePut(final InternalRegion region, final long lastModified,
+      Object newValue, boolean wasRecovered, boolean acceptedVersionTag)
+      throws RegionClearedException {
     // note that the caller has already write synced this RegionEntry
     return initialImageInit(region, lastModified, newValue, this.isTombstone(), wasRecovered,
         acceptedVersionTag);
   }
 
   @Override
-  public boolean initialImageInit(final LocalRegion region, final long lastModified,
+  public boolean initialImageInit(final InternalRegion region, final long lastModified,
       final Object newValue, final boolean create, final boolean wasRecovered,
       final boolean acceptedVersionTag) throws RegionClearedException {
 
@@ -772,7 +777,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
    */
   @Override
   @Released
-  public boolean destroy(LocalRegion region, EntryEventImpl event, boolean inTokenMode,
+  public boolean destroy(InternalRegion region, EntryEventImpl event, boolean inTokenMode,
       boolean cacheWrite, @Unretained Object expectedOldValue, boolean forceDestroy,
       boolean removeRecoveredEntry) throws CacheWriterException, EntryNotFoundException,
       TimeoutException, RegionClearedException {
@@ -794,7 +799,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     ReferenceCountHelper.skipRefCountTracking();
     @Retained
     @Released
-    Object curValue = _getValueRetain(region, true);
+    Object curValue = getValueRetain(region, true);
     ReferenceCountHelper.unskipRefCountTracking();
     boolean proceed;
     try {
@@ -927,13 +932,13 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   public static boolean checkExpectedOldValue(@Unretained Object expectedOldValue,
-      @Unretained Object actualValue, LocalRegion lr) {
+      @Unretained Object actualValue, InternalRegion region) {
 
     if (Token.isInvalid(expectedOldValue)) {
       return actualValue == null || Token.isInvalid(actualValue);
     } else {
       boolean isCompressedOffHeap =
-          lr.getAttributes().getOffHeap() && lr.getAttributes().getCompressor() != null;
+          region.getAttributes().getOffHeap() && region.getAttributes().getCompressor() != null;
       return checkEquals(expectedOldValue, actualValue, isCompressedOffHeap);
     }
   }
@@ -1404,7 +1409,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   @Override
   @Unretained
-  public Object _getValue() {
+  public Object getValue() {
     return getValueField();
   }
 
@@ -1457,7 +1462,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public synchronized void decRefCount(NewLRUClockHand lruList, LocalRegion lr) {
+  public synchronized void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
     if (TXManagerImpl.decRefCount(this)) {
       if (isInUseByTransaction()) {
         setInUseByTransaction(false);
@@ -1465,8 +1470,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
           // No more transactions, place in lru list
           lruList.appendEntry((LRUClockNode) this);
         }
-        if (lr != null && lr.isEntryExpiryPossible()) {
-          lr.addExpiryTaskIfAbsent(this);
+        if (region != null && region.isEntryExpiryPossible()) {
+          region.addExpiryTaskIfAbsent(this);
         }
       }
     }
@@ -1514,7 +1519,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   @Override
   @Retained
   public Object getTransformedValue() {
-    return _getValueRetain(null, false);
+    return getValueRetain(null, false);
   }
 
   @Override
@@ -1567,7 +1572,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   protected StringBuilder appendFieldsToString(final StringBuilder sb) {
     // OFFHEAP _getValue ok: the current toString on ObjectChunk is safe to use without incing
     // refcount.
-    sb.append("key=").append(getKey()).append("; rawValue=").append(_getValue());
+    sb.append("key=").append(getKey()).append("; rawValue=").append(getValue());
     VersionStamp stamp = getVersionStamp();
     if (stamp != null) {
       sb.append("; version=").append(stamp.asVersionTag()).append(";member=")
@@ -1581,8 +1586,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
    * versioning. It also sets the entry's version stamp to the tag's values.
    */
   @Override
-  public VersionTag generateVersionTag(VersionSource member, boolean withDelta, LocalRegion region,
-      EntryEventImpl event) {
+  public VersionTag generateVersionTag(VersionSource member, boolean withDelta,
+      InternalRegion region, EntryEventImpl event) {
     VersionStamp stamp = this.getVersionStamp();
     if (stamp != null && region.getServerProxy() == null) {
       // clients do not generate versions
@@ -1710,7 +1715,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       final InternalDistributedMember originator =
           (InternalDistributedMember) event.getDistributedMember();
       final VersionSource dmId = event.getRegion().getVersionMember();
-      LocalRegion r = event.getLocalRegion();
+      InternalRegion r = event.getLocalRegion();
       boolean eventHasDelta = event.getDeltaBytes() != null && event.getRawNewValue() == null;
 
       VersionStamp stamp = getVersionStamp();
@@ -1791,7 +1796,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     }
   }
 
-  protected void basicProcessVersionTag(LocalRegion region, VersionTag tag,
+  protected void basicProcessVersionTag(InternalRegion region, VersionTag tag,
       boolean isTombstoneFromGII, boolean deltaCheck, VersionSource dmId,
       InternalDistributedMember sender, boolean checkForConflict) {
 
@@ -1849,7 +1854,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     }
   }
 
-  private void applyVersionTag(LocalRegion region, VersionStamp stamp, VersionTag tag,
+  private void applyVersionTag(InternalRegion region, VersionStamp stamp, VersionTag tag,
       InternalDistributedMember sender) {
     VersionSource mbr = tag.getMemberID();
     if (mbr == null) {
@@ -1869,7 +1874,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   /** perform conflict checking for a stamp/tag */
-  private boolean checkForConflict(LocalRegion region, VersionStamp stamp, VersionTag tag,
+  private boolean checkForConflict(InternalRegion region, VersionStamp stamp, VersionTag tag,
       boolean isTombstoneFromGII, boolean deltaCheck, VersionSource dmId,
       InternalDistributedMember sender, StringBuilder verbose) {
 
@@ -1977,12 +1982,12 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     return apply;
   }
 
-  private boolean isExpiredTombstone(LocalRegion region, long timestamp, boolean isTombstone) {
+  private boolean isExpiredTombstone(InternalRegion region, long timestamp, boolean isTombstone) {
     return isTombstone
         && timestamp + TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT <= region.cacheTimeMillis();
   }
 
-  private boolean overwritingOldTombstone(LocalRegion region, VersionStamp stamp, VersionTag tag,
+  private boolean overwritingOldTombstone(InternalRegion region, VersionStamp stamp, VersionTag tag,
       StringBuilder verbose) {
     // Tombstone GC does not use locking to stop operations when old tombstones
     // are being removed. Because of this we might get an operation that was applied
@@ -2002,7 +2007,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     }
   }
 
-  protected void persistConflictingTag(LocalRegion region, VersionTag tag) {
+  protected void persistConflictingTag(InternalRegion region, VersionTag tag) {
     // only persist region needs to persist conflict tag
   }
 
@@ -2011,7 +2016,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
    * stamp's member id and ensure that the version is only incremented by 1. Otherwise the delta is
    * being applied to a value that does not match the source of the delta.
    */
-  private void checkForDeltaConflict(LocalRegion region, long stampVersion, long tagVersion,
+  private void checkForDeltaConflict(InternalRegion region, long stampVersion, long tagVersion,
       VersionStamp stamp, VersionTag tag, VersionSource dmId, InternalDistributedMember sender,
       StringBuilder verbose) {
 
@@ -2045,7 +2050,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   private boolean processGatewayTag(EntryEvent cacheEvent) {
-    // Gateway tags are installed in the server-side LocalRegion cache
+    // Gateway tags are installed in the server-side InternalRegion cache
     // modification methods. They do not have version numbers or distributed
     // member IDs. Instead they only have timestamps and distributed system IDs.
 
@@ -2212,11 +2217,11 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
    */
   @Override
   @Retained
-  public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
+  public Object getValueRetain(RegionEntryContext context, boolean decompress) {
     if (decompress) {
-      return decompress(context, _getValue());
+      return decompress(context, getValue());
     } else {
-      return _getValue();
+      return getValue();
     }
   }
 

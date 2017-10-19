@@ -60,7 +60,7 @@ public abstract class AbstractDiskRegionEntry extends AbstractRegionEntry implem
   public void handleValueOverflow(RegionEntryContext context) {
     if (context instanceof BucketRegionQueue
         || context instanceof SerialGatewaySenderQueue.SerialGatewaySenderQueueMetaRegion) {
-      GatewaySenderEventImpl.release(this._getValue()); // OFFHEAP _getValue ok
+      GatewaySenderEventImpl.release(this.getValue()); // OFFHEAP _getValue ok
     }
   }
 }

@@ -682,7 +682,7 @@ public class DiskStoreImpl implements DiskStore {
    *         completed successfully, resulting in the put operation to abort.
    * @throws IllegalArgumentException If {@code id} is less than zero
    */
-  void put(LocalRegion region, DiskEntry entry, ValueWrapper value, boolean async)
+  void put(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async)
       throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
@@ -750,7 +750,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  public void putVersionTagOnly(LocalRegion region, VersionTag tag, boolean async) {
+  public void putVersionTagOnly(InternalRegion region, VersionTag tag, boolean async) {
     DiskRegion dr = region.getDiskRegion();
     // this method will only be called by backup oplog
     assert dr.isBackup();
@@ -1051,7 +1051,7 @@ public class DiskStoreImpl implements DiskStore {
    * @throws IllegalArgumentException If {@code id} is {@linkplain #INVALID_ID invalid}or is less
    *         than zero, no action is taken.
    */
-  void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
+  void remove(InternalRegion region, DiskEntry entry, boolean async, boolean isClear)
       throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     if (!async) {
@@ -1240,7 +1240,7 @@ public class DiskStoreImpl implements DiskStore {
 
   private void handleFullAsyncQueue(Object o) {
     AsyncDiskEntry ade = (AsyncDiskEntry) o;
-    LocalRegion region = ade.region;
+    InternalRegion region = ade.region;
     try {
       VersionTag tag = ade.tag;
       if (ade.versionOnly) {
@@ -1275,7 +1275,7 @@ public class DiskStoreImpl implements DiskStore {
         if (dr.didClearCountChange() && !ade.versionOnly) {
           return;
         }
-        if (ade.region.isDestroyed) {
+        if (ade.region.isDestroyed()) {
           throw new RegionDestroyedException(ade.region.toString(), ade.region.getFullPath());
         }
       }
@@ -1708,7 +1708,7 @@ public class DiskStoreImpl implements DiskStore {
                     lr.getDiskRegion().writeRVVGC(lr);
                   } else {
                     AsyncDiskEntry ade = (AsyncDiskEntry) o;
-                    LocalRegion region = ade.region;
+                    InternalRegion region = ade.region;
                     VersionTag tag = ade.tag;
                     if (ade.versionOnly) {
                       DiskEntry.Helper.doAsyncFlush(tag, region);
@@ -3380,31 +3380,20 @@ public class DiskStoreImpl implements DiskStore {
     this.criticalPercent = criticalPercent;
   }
 
-  // public String toString() {
-  // StringBuffer sb = new StringBuffer();
-  // sb.append("<");
-  // sb.append(getName());
-  // if (getOwnedByRegion()) {
-  // sb.append(" OWNED_BY_REGION");
-  // }
-  // sb.append(">");
-  // return sb.toString();
-  // }
-
   public static class AsyncDiskEntry {
-    public final LocalRegion region;
+    public final InternalRegion region;
     public final DiskEntry de;
     public final boolean versionOnly;
     public final VersionTag tag;
 
-    public AsyncDiskEntry(LocalRegion region, DiskEntry de, VersionTag tag) {
+    public AsyncDiskEntry(InternalRegion region, DiskEntry de, VersionTag tag) {
       this.region = region;
       this.de = de;
       this.tag = tag;
       this.versionOnly = false;
     }
 
-    public AsyncDiskEntry(LocalRegion region, VersionTag tag) {
+    public AsyncDiskEntry(InternalRegion region, VersionTag tag) {
       this.region = region;
       this.de = null;
       this.tag = tag;
@@ -3623,7 +3612,7 @@ public class DiskStoreImpl implements DiskStore {
     ArrayList<Object> result = new ArrayList<>();
     Pattern pattern = createPdxRenamePattern(oldBase);
     for (RegionEntry re : foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueRetain(foundPdx, true);
+      Object value = re.getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }
@@ -3700,7 +3689,7 @@ public class DiskStoreImpl implements DiskStore {
     PersistentOplogSet oplogSet = (PersistentOplogSet) getOplogSet(foundPdx);
     ArrayList<PdxType> result = new ArrayList<PdxType>();
     for (RegionEntry re : foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueRetain(foundPdx, true);
+      Object value = re.getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }
@@ -3747,7 +3736,7 @@ public class DiskStoreImpl implements DiskStore {
     recoverRegionsThatAreReady();
     ArrayList<PdxType> result = new ArrayList<PdxType>();
     for (RegionEntry re : foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueRetain(foundPdx, true);
+      Object value = re.getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }
@@ -3789,7 +3778,7 @@ public class DiskStoreImpl implements DiskStore {
     recoverRegionsThatAreReady();
     ArrayList<Object> result = new ArrayList<Object>();
     for (RegionEntry re : foundPdx.getRecoveredEntryMap().regionEntries()) {
-      Object value = re._getValueRetain(foundPdx, true);
+      Object value = re.getValueRetain(foundPdx, true);
       if (Token.isRemoved(value)) {
         continue;
       }

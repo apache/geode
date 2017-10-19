@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-public interface HasCachePerfStats {
+public interface HasDiskRegion {
 
-  CachePerfStats getCachePerfStats();
+  DiskRegion getDiskRegion();
 }

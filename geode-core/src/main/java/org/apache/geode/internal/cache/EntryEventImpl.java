@@ -1501,10 +1501,10 @@ public class EntryEventImpl
           Object ov;
           if (ReferenceCountHelper.trackReferenceCounts()) {
             ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-            ov = reentry._getValueRetain(owner, true);
+            ov = reentry.getValueRetain(owner, true);
             ReferenceCountHelper.setReferenceCountOwner(null);
           } else {
-            ov = reentry._getValueRetain(owner, true);
+            ov = reentry.getValueRetain(owner, true);
           }
           if (ov == null)
             ov = Token.NOT_AVAILABLE;
@@ -1803,7 +1803,7 @@ public class EntryEventImpl
       if (re == null)
         return false;
       ReferenceCountHelper.skipRefCountTracking();
-      Object v = re._getValueRetain(this.region, true);
+      Object v = re.getValueRetain(this.region, true);
       ReferenceCountHelper.unskipRefCountTracking();
       try {
         return setOldValue(v);
@@ -2292,7 +2292,7 @@ public class EntryEventImpl
    * 
    * @param notifyGateways pass the event on to WAN queues
    */
-  public void invokeCallbacks(LocalRegion rgn, boolean skipListeners, boolean notifyGateways) {
+  public void invokeCallbacks(InternalRegion rgn, boolean skipListeners, boolean notifyGateways) {
     if (!callbacksInvoked()) {
       callbacksInvoked(true);
       if (this.op.isUpdate()) {
