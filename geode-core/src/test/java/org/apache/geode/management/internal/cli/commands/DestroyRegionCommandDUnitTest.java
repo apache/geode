@@ -89,7 +89,7 @@ public class DestroyRegionCommandDUnitTest {
 
     // Test unable to destroy with co-location
     gfsh.executeAndVerifyCommandError("destroy region --name=/Customer",
-        "The parent region [/Customer] in colocation chain cannot be destroyed");
+        "The parent region \\[/Customer\\] in colocation chain cannot be destroyed");
 
     // Test success
     gfsh.executeAndVerifyCommand("destroy region --name=/Order", "destroyed successfully");

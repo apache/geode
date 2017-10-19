@@ -111,7 +111,6 @@ public class RegionCreateFunction implements Function, InternalEntity {
               regionCreateArgs.getRegionPath(), memberNameOrId);
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
     } catch (Exception e) {
-      logger.error(e.getMessage(), e);
       String exceptionMsg = e.getMessage();
       if (exceptionMsg == null) {
         exceptionMsg = CliUtil.stackTraceAsString(e);
