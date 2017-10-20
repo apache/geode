@@ -19,6 +19,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryHeap;
+import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryHeapObjectKey;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;

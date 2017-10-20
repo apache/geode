@@ -7794,7 +7794,7 @@ public class PartitionedRegion extends LocalRegion
    * @see BucketRegion#cacheWriteBeforeDestroy(EntryEventImpl, Object)
    */
   @Override
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     // return if notifications are inhibited
     if (event.inhibitAllNotifications()) {

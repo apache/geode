@@ -24,8 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.DiskEntry.Helper.Flushable;
-import org.apache.geode.internal.cache.DiskEntry.Helper.OffHeapValueWrapper;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.OffHeapValueWrapper;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.NullOffHeapMemoryStats;
 import org.apache.geode.internal.offheap.NullOutOfOffHeapMemoryListener;

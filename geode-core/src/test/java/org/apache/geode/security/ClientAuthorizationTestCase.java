@@ -53,7 +53,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.internal.AvailablePort.*;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.AbstractRegionEntry;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;

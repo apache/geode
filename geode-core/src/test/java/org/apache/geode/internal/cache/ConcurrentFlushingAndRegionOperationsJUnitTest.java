@@ -21,6 +21,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

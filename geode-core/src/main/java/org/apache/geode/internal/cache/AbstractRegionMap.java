@@ -23,6 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.internal.cache.entries.AbstractOplogDiskRegionEntry;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.logging.log4j.Logger;
 
@@ -3489,7 +3493,6 @@ public abstract class AbstractRegionMap implements RegionMap {
    * Removing the existing indexed value requires the current value in the cache, that is the one
    * prior to applying the operation.
    * 
-   * @param op
    * @param entry the RegionEntry that contains the value prior to applying the op
    */
   private void txRemoveOldIndexEntry(Operation op, RegionEntry entry) {

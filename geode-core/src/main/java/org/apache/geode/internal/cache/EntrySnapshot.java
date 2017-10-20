@@ -25,6 +25,7 @@ import org.apache.geode.cache.CacheStatistics;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.StatisticsDisabledException;
+import org.apache.geode.internal.cache.entries.NonLocalRegionEntry;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;

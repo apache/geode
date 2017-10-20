@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.cache.entries.NonLocalRegionEntry;
 
 public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
   private long hitCount;
