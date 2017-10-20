@@ -19,9 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +35,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class LogLevelInterceptorTest {
   private List<AbstractCliAroundInterceptor> interceptors = new ArrayList<>();
   private GfshParseResult parseResult;
-  private Map<String, String> arguments;
   private Result result;
 
   @Before
@@ -45,16 +42,13 @@ public class LogLevelInterceptorTest {
     interceptors.add(new ExportLogsInterceptor());
     interceptors.add(new AlterRuntimeConfigCommand.AlterRuntimeInterceptor());
     interceptors.add(new ChangeLogLevelCommand.ChangeLogLevelCommandInterceptor());
-
     parseResult = Mockito.mock(GfshParseResult.class);
-    arguments = new HashMap<>();
-    when(parseResult.getParamValueStrings()).thenReturn(arguments);
   }
 
   @Test
   public void testInvalidLogLevel() {
-    arguments.put("log-level", "test");
-    arguments.put("loglevel", "test");
+    when(parseResult.getParamValueAsString("log-level")).thenReturn("test");
+    when(parseResult.getParamValueAsString("loglevel")).thenReturn("test");
     for (AbstractCliAroundInterceptor interceptor : interceptors) {
       result = interceptor.preExecution(parseResult);
       assertThat(result.nextLine()).contains("Invalid log level: test");
@@ -63,8 +57,8 @@ public class LogLevelInterceptorTest {
 
   @Test
   public void testGeodeLogLevel() {
-    arguments.put("log-level", "fine");
-    arguments.put("loglevel", "fine");
+    when(parseResult.getParamValueAsString("log-level")).thenReturn("fine");
+    when(parseResult.getParamValueAsString("loglevel")).thenReturn("fine");
     for (AbstractCliAroundInterceptor interceptor : interceptors) {
       result = interceptor.preExecution(parseResult);
       assertThat(result.nextLine()).isEmpty();
@@ -73,8 +67,8 @@ public class LogLevelInterceptorTest {
 
   @Test
   public void testLog4JLevel() {
-    arguments.put("log-level", "trace");
-    arguments.put("loglevel", "trace");
+    when(parseResult.getParamValueAsString("log-level")).thenReturn("trace");
+    when(parseResult.getParamValueAsString("loglevel")).thenReturn("trace");
     for (AbstractCliAroundInterceptor interceptor : interceptors) {
       result = interceptor.preExecution(parseResult);
       assertThat(result.nextLine()).isEmpty();

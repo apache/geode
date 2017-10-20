@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -139,24 +138,22 @@ public class DestroyFunctionCommand implements GfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-      paramValueMap.entrySet();
-      String onGroup = paramValueMap.get(CliStrings.GROUP);
-      String onMember = paramValueMap.get(CliStrings.MEMBER);
+      String onGroup = parseResult.getParamValueAsString(CliStrings.GROUP);
+      String onMember = parseResult.getParamValueAsString(CliStrings.MEMBER);
+
+      String functionId = parseResult.getParamValueAsString(CliStrings.DESTROY_FUNCTION__ID);
 
       if ((onGroup == null && onMember == null)) {
-        Response response = readYesNo("Do you really want to destroy "
-            + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID) + " on entire DS?", Response.NO);
+        Response response = readYesNo(
+            "Do you really want to destroy " + functionId + " on entire DS?", Response.NO);
         if (response == Response.NO) {
-          return ResultBuilder.createShellClientAbortOperationResult(
-              "Aborted destroy of " + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID));
-        } else {
           return ResultBuilder
-              .createInfoResult("Destroying " + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID));
+              .createShellClientAbortOperationResult("Aborted destroy of " + functionId);
+        } else {
+          return ResultBuilder.createInfoResult("Destroying " + functionId);
         }
       } else {
-        return ResultBuilder
-            .createInfoResult("Destroying " + paramValueMap.get(CliStrings.DESTROY_FUNCTION__ID));
+        return ResultBuilder.createInfoResult("Destroying " + functionId);
       }
     }
   }

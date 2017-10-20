@@ -94,10 +94,10 @@ public class ExecuteFunctionCommand implements GfshCommand {
   public static class ExecuteFunctionCommandInterceptor implements CliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      String onRegion = parseResult.getParamValue(CliStrings.EXECUTE_FUNCTION__ONREGION);
-      String onMember = parseResult.getParamValue(CliStrings.MEMBER);
-      String onGroup = parseResult.getParamValue(CliStrings.GROUP);
-      String filter = parseResult.getParamValue(CliStrings.EXECUTE_FUNCTION__FILTER);
+      String onRegion = parseResult.getParamValueAsString(CliStrings.EXECUTE_FUNCTION__ONREGION);
+      String onMember = parseResult.getParamValueAsString(CliStrings.MEMBER);
+      String onGroup = parseResult.getParamValueAsString(CliStrings.GROUP);
+      String filter = parseResult.getParamValueAsString(CliStrings.EXECUTE_FUNCTION__FILTER);
 
       boolean moreThanOne =
           Stream.of(onRegion, onMember, onGroup).filter(Objects::nonNull).count() > 1;

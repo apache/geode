@@ -32,8 +32,8 @@ import org.apache.geode.management.internal.cli.converters.DiskStoreNameConverte
 import org.apache.geode.management.internal.cli.converters.FilePathConverter;
 import org.apache.geode.management.internal.cli.converters.FilePathStringConverter;
 import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
-import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(IntegrationTest.class)
 public class GfshParserConverterTest {
@@ -48,7 +48,7 @@ public class GfshParserConverterTest {
     String command = "create disk-store --name=foo --dir=bar";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNotNull();
-    assertThat(result.getParamValue("dir")).isEqualTo("bar");
+    assertThat(result.getParamValueAsString("dir")).isEqualTo("bar");
   }
 
   @Test
@@ -56,7 +56,7 @@ public class GfshParserConverterTest {
     String command = "compact offline-disk-store --name=foo --disk-dirs=bar";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNotNull();
-    assertThat(result.getParamValue("disk-dirs")).isEqualTo("bar");
+    assertThat(result.getParamValueAsString("disk-dirs")).isEqualTo("bar");
   }
 
   @Test
@@ -77,7 +77,7 @@ public class GfshParserConverterTest {
         + "--dir=/testCreateDiskStore1.1#1452637463,/testCreateDiskStore1.2";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNotNull();
-    assertThat(result.getParamValue("dir"))
+    assertThat(result.getParamValueAsString("dir"))
         .isEqualTo("/testCreateDiskStore1.1#1452637463,/testCreateDiskStore1.2");
   }
 
@@ -86,7 +86,7 @@ public class GfshParserConverterTest {
     String command = "remove  --key=\"\" --region=/GemfireDataCommandsTestRegion";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNotNull();
-    assertThat(result.getParamValue("key")).isEqualTo("");
+    assertThat(result.getParamValueAsString("key")).isEqualTo("");
   }
 
   @Test
