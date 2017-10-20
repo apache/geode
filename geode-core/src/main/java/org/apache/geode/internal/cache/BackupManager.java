@@ -587,7 +587,7 @@ public class BackupManager implements MembershipListener {
       try {
         Files.createLink(targetDir.toPath().resolve(file.getName()), file.toPath());
       } catch (IOException | UnsupportedOperationException e) {
-        logger.warn("Unable to create hard link for + " + targetDir + ". Reverting to file copy");
+        logger.warn("Unable to create hard link for + {}. Reverting to file copy", targetDir);
         FileUtils.copyFileToDirectory(file, targetDir);
       }
   }
