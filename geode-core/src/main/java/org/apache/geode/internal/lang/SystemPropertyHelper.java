@@ -44,8 +44,8 @@ public class SystemPropertyHelper {
    * As of Geode 1.4.0, a region set operation will be in a transaction even if it is the first
    * operation in the transaction.
    *
-   * In previous releases, a region operation is not in a transaction if it is the first operation
-   * of the transaction.
+   * In previous releases, a region set operation is not in a transaction if it is the first
+   * operation of the transaction.
    *
    * Setting this system property to true will restore the previous behavior.
    *
