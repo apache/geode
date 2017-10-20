@@ -41,6 +41,13 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
 
   @Override
   public Result preExecution(GfshParseResult parseResult) {
+
+    // validates groupId and memberIds not both set
+    if (parseResult.getParamValueAsString("group") != null
+        && parseResult.getParamValueAsString("member") != null) {
+      return ResultBuilder.createUserErrorResult("Can't specify both group and member.");
+    }
+
     // validate log level
     String logLevel = parseResult.getParamValueAsString("log-level");
     if (StringUtils.isBlank(logLevel) || LogLevel.getLevel(logLevel) == null) {

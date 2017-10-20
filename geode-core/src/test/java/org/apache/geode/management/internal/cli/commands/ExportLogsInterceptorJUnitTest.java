@@ -43,6 +43,15 @@ public class ExportLogsInterceptorJUnitTest {
   }
 
   @Test
+  public void testGroupAndMember() {
+    when(parseResult.getParamValueAsString("group")).thenReturn("group");
+    when(parseResult.getParamValueAsString("member")).thenReturn("group");
+    result = interceptor.preExecution(parseResult);
+    assertThat(result.nextLine()).contains("Can't specify both group and member");
+  }
+
+
+  @Test
   public void testStartEnd() {
     when(parseResult.getParamValueAsString("start-time")).thenReturn("2000/01/01");
     when(parseResult.getParamValueAsString("end-time")).thenReturn("2000/01/02");
