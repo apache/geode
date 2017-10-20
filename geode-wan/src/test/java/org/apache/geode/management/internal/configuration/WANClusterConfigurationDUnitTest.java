@@ -18,8 +18,8 @@ import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
 import java.util.Set;
 
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -88,6 +88,7 @@ public class WANClusterConfigurationDUnitTest {
     csb.addOption(CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT, "10000");
     csb.addOption(CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT, "20000");
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS, "20");
+    csb.addOption(CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS, "myLocalHost");
     gfsh.executeAndVerifyCommand(csb.getCommandString());
 
     // create GatewaySender
@@ -125,6 +126,13 @@ public class WANClusterConfigurationDUnitTest {
       assertNotNull(gatewayReceivers);
       assertFalse(gatewayReceivers.isEmpty());
       assertTrue(gatewayReceivers.size() == 1);
+      for (GatewayReceiver gr : gatewayReceivers) {
+        assertThat(gr.isManualStart()).isTrue();
+        assertThat(gr.getStartPort()).isEqualTo(10000);
+        assertThat(gr.getEndPort()).isEqualTo(20000);
+        assertThat(gr.getMaximumTimeBetweenPings()).isEqualTo(20);
+        assertThat(gr.getHostnameForSenders()).isEqualTo("myLocalHost");
+      }
     });
 
     // verify GatewaySender attributes saved in cluster config
