@@ -43,6 +43,9 @@ public class LogLevelInterceptorTest {
     interceptors.add(new AlterRuntimeConfigCommand.AlterRuntimeInterceptor());
     interceptors.add(new ChangeLogLevelCommand.ChangeLogLevelCommandInterceptor());
     parseResult = Mockito.mock(GfshParseResult.class);
+    when(parseResult.getParamValue("logs-only")).thenReturn(true);
+    when(parseResult.getParamValue("stats-only")).thenReturn(false);
+
   }
 
   @Test
