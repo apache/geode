@@ -91,8 +91,25 @@ public class ShutdownCommandDUnitTest {
 
   @Test
   public void testShutdownServers() {
-    String command = "shutdown";
+    executeShutdownServers("shutdown");
+  }
 
+  @Test
+  public void testShutdownServersWithSpecifiedOptionValue() {
+    executeShutdownServers("shutdown --include-locators=false");
+  }
+
+  @Test
+  public void testShutdownAll() {
+    executeShutdownAllCommand("shutdown --include-locators=true");
+  }
+
+  @Test
+  public void testShutdownAllUnspecifiedOptionValue() {
+    executeShutdownAllCommand("shutdown --include-locators");
+  }
+
+  private void executeShutdownServers(String command) {
     gfsh.executeAndVerifyCommand(command);
     assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
 
@@ -103,10 +120,7 @@ public class ShutdownCommandDUnitTest {
     assertThat(gfsh.getGfshOutput()).contains(MANAGER_NAME);
   }
 
-  @Test
-  public void testShutdownAll() {
-    String command = "shutdown --include-locators=true";
-
+  private void executeShutdownAllCommand(String command) {
     gfsh.executeAndVerifyCommand(command);
     assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
 

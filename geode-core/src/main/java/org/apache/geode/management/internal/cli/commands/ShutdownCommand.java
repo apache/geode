@@ -60,6 +60,7 @@ public class ShutdownCommand implements GfshCommand {
       @CliOption(key = CliStrings.SHUTDOWN__TIMEOUT, unspecifiedDefaultValue = DEFAULT_TIME_OUT,
           help = CliStrings.SHUTDOWN__TIMEOUT__HELP) int userSpecifiedTimeout,
       @CliOption(key = CliStrings.INCLUDE_LOCATORS, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
           help = CliStrings.INCLUDE_LOCATORS_HELP) boolean shutdownLocators) {
     try {
 
