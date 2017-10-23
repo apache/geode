@@ -529,41 +529,37 @@ public class CreateRegionCommand implements GfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      String localMaxMemory =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
+      Integer localMaxMemory =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
       if (localMaxMemory != null) {
-        int prLocalMaxMemory = Integer.parseInt(localMaxMemory);
-        if (prLocalMaxMemory < 0) {
+        if (localMaxMemory < 0) {
           return ResultBuilder.createUserErrorResult(
               LocalizedStrings.AttributesFactory_PARTITIONATTRIBUTES_LOCALMAXMEMORY_MUST_NOT_BE_NEGATIVE
                   .toLocalizedString());
         }
       }
-      String totalMaxMemory =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
+      Integer totalMaxMemory =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
       if (totalMaxMemory != null) {
-        long prTotalMaxMemory = Integer.parseInt(totalMaxMemory);
-        if (prTotalMaxMemory <= 0) {
+        if (totalMaxMemory <= 0) {
           return ResultBuilder.createUserErrorResult(
               LocalizedStrings.AttributesFactory_TOTAL_SIZE_OF_PARTITION_REGION_MUST_BE_0
                   .toLocalizedString());
         }
       }
-      String redundantCopies =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
+      Integer redundantCopies =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
       if (redundantCopies != null) {
-        int prRedundantCopies = Integer.parseInt(redundantCopies);
-        if (prRedundantCopies < 0 || prRedundantCopies > 3) {
+        if (redundantCopies < 0 || redundantCopies > 3) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__REDUNDANT_COPIES_SHOULD_BE_ONE_OF_0123,
-              new Object[] {prRedundantCopies}));
+              new Object[] {redundantCopies}));
         }
       }
 
-      String concurrencyL =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CONCURRENCYLEVEL);
-      if (concurrencyL != null) {
-        int concurrencyLevel = Integer.parseInt(concurrencyL);
+      Integer concurrencyLevel =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__CONCURRENCYLEVEL);
+      if (concurrencyLevel != null) {
         if (concurrencyLevel < 0) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_CONCURRENCYLEVEL_0_IS_NOT_VALID,
