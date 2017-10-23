@@ -25,6 +25,7 @@ import "google/protobuf/any.proto";
 import "region_API.proto";
 import "server_API.proto";
 import "basicTypes.proto";
+import "authentication_API.proto";
 
 message Message {
     oneof messageType {
@@ -46,6 +47,8 @@ message Request {
         GetAvailableServersRequest getAvailableServersRequest = 42;
         GetRegionNamesRequest getRegionNamesRequest = 43;
         GetRegionRequest getRegionRequest = 44;
+
+        AuthenticationRequest simpleAuthenticationRequest = 100;
     }
 }
 
@@ -63,6 +66,8 @@ message Response {
         GetAvailableServersResponse getAvailableServersResponse = 42;
         GetRegionNamesResponse getRegionNamesResponse = 43;
         GetRegionResponse getRegionResponse = 44;
+
+        AuthenticationResponse simpleAuthenticationResponse = 100;
     }
 }
 

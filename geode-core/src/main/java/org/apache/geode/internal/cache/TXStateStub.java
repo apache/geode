@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.TXRegionStub;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * TXStateStub lives on the accessor node when we are remoting a transaction. It is a stub for
@@ -485,7 +486,11 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   public Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
-    return keyInfo.getKey();
+    Object key = keyInfo.getKey();
+    if (key instanceof RegionEntry) {
+      return ((RegionEntry) key).getKey();
+    }
+    return key;
   }
 
   /*

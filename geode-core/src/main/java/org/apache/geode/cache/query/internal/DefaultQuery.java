@@ -538,7 +538,7 @@ public class DefaultQuery implements Query {
     QueryObserver observer = QueryObserverHolder.getInstance();
 
     long startTime = CachePerfStats.getStatTime();
-    TXStateProxy tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).internalSuspend();
+    TXStateProxy tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
     try {
       observer.startQuery(this);
       observer.beforeQueryEvaluation(this.compiledQuery, context);
@@ -575,7 +575,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
-      ((TXManagerImpl) this.cache.getCacheTransactionManager()).internalResume(tx);
+      ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
 

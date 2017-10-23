@@ -38,10 +38,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.admin.AdminDistributedSystemFactory;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.BackupStatus;
-import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -52,11 +48,14 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.TransformUtils;
+import org.apache.geode.management.BackupStatus;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -200,7 +199,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link AdminDistributedSystem#backupAllMembers(File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
    * 
    * @param vm a member of the distributed system
    * @return the status of the backup.
@@ -209,28 +208,20 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
       @Override
       public Object call() {
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
         try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          return adminDS.backupAllMembers(getBaselineDir());
+          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), getBaselineDir(),
+              null);
 
-        } catch (AdminException e) {
+        } catch (ManagementException e) {
           throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
         }
       }
     });
   }
 
   /**
-   * Invokes {@link AdminDistributedSystem#backupAllMembers(File, File)} on a member.
-   * 
+   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.
    */
@@ -238,28 +229,20 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
       @Override
       public Object call() {
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
         try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          return adminDS.backupAllMembers(getIncrementalDir(), getBaselineBackupDir());
+          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+              getIncrementalDir(), getBaselineBackupDir());
 
-        } catch (AdminException e) {
+        } catch (ManagementException e) {
           throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
         }
       }
     });
   }
 
   /**
-   * Invokes {@link AdminDistributedSystem#backupAllMembers(File, File)} on a member.
-   * 
+   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.
    */
@@ -267,20 +250,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
       @Override
       public Object call() {
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
         try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          return adminDS.backupAllMembers(getIncremental2Dir(), getIncrementalBackupDir());
+          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+              getIncremental2Dir(), getIncrementalBackupDir());
 
-        } catch (AdminException e) {
+        } catch (ManagementException e) {
           throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
         }
       }
     });
@@ -995,20 +970,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public Object call() {
-        AdminDistributedSystem adminDS = null;
         try {
-          DistributedSystemConfig config =
-              AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          return adminDS.backupAllMembers(getIncrementalDir(), this.baselineDir);
+          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+              getIncrementalDir(), this.baselineDir);
 
-        } catch (AdminException e) {
+        } catch (ManagementException e) {
           throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
         }
       }
     };

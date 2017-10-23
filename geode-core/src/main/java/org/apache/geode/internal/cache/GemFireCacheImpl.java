@@ -2155,7 +2155,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       try {
 
         if (this.transactionManager != null) {
-          tx = this.transactionManager.internalSuspend();
+          tx = this.transactionManager.pauseTransaction();
         }
 
         // do this before closing regions
@@ -2394,7 +2394,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
         ((DynamicRegionFactoryImpl) DynamicRegionFactory.get()).close();
         if (this.transactionManager != null) {
-          this.transactionManager.internalResume(tx);
+          this.transactionManager.unpauseTransaction(tx);
         }
         TXCommitMessage.getTracker().clearForCacheClose();
       }
@@ -3175,6 +3175,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  public void invokeBeforeDestroyed(LocalRegion region) {
+    for (RegionListener listener : this.regionListeners) {
+      listener.beforeDestroyed(region);
+    }
+  }
+
+  @Override
+  public void invokeCleanupFailedInitialization(LocalRegion region) {
+    for (RegionListener listener : this.regionListeners) {
+      listener.cleanupFailedInitialization(region);
+    }
+  }
+
+  @Override
   public Region getRegion(String path) {
     return getRegion(path, false);
   }
@@ -3950,7 +3964,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public Set<AsyncEventQueue> getAsyncEventQueues() {
-    return this.allVisibleAsyncEventQueues;
+    return getAsyncEventQueues(true);
+  }
+
+  @Override
+  public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
+    return visibleOnly ? this.allVisibleAsyncEventQueues : this.allAsyncEventQueues;
   }
 
   @Override

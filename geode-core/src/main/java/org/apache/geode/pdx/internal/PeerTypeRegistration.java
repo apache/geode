@@ -618,13 +618,13 @@ public class PeerTypeRegistration implements TypeRegistration {
   private TXStateProxy suspendTX() {
     InternalCache cache = (InternalCache) getIdToType().getRegionService();
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
-    return txManager.internalSuspend();
+    return txManager.pauseTransaction();
   }
 
   private void resumeTX(TXStateProxy state) {
     if (state != null) {
       TXManagerImpl txManager = state.getTxMgr();
-      txManager.internalResume(state);
+      txManager.unpauseTransaction(state);
     }
   }
 

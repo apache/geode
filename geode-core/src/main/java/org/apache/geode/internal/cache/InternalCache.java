@@ -131,6 +131,10 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   void invokeRegionAfter(LocalRegion region);
 
+  void invokeBeforeDestroyed(LocalRegion region);
+
+  void invokeCleanupFailedInitialization(LocalRegion region);
+
   TXManagerImpl getTXMgr();
 
   boolean forcedDisconnect();
@@ -323,4 +327,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
       List<InitialImageOperation.Entry> entriesToSynchronize);
 
   InternalQueryService getQueryService();
+
+  Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly);
 }

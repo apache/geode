@@ -18,9 +18,12 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.junit.Assert.assertEquals;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -30,6 +33,10 @@ import org.apache.geode.cache.lucene.test.Customer;
 import org.apache.geode.cache.lucene.test.Page;
 import org.apache.geode.cache.lucene.test.Person;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.junit.Test;
@@ -40,8 +47,8 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
   private static int WAIT_FOR_FLUSH_TIME = 10000;
   private static final Logger logger = LogService.getLogger();
-  LuceneQuery<Integer, Customer> query;
-  PageableLuceneQueryResults<Integer, Customer> results;
+  LuceneQuery<Integer, Object> query;
+  PageableLuceneQueryResults<Integer, Object> results;
 
   private Region createRegionAndIndex() {
     luceneService.createIndexFactory().setLuceneSerializer(new FlatFormatSerializer())
@@ -120,7 +127,6 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     region.put("key-3", "region value 3");
     region.put("key-4", "region value 4");
 
-    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
     luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
         TimeUnit.MILLISECONDS);
   }
@@ -337,7 +343,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
         "Jackson2*", "name");
-    PageableLuceneQueryResults<Integer, Customer> results = query.findPages();
+    PageableLuceneQueryResults<Integer, Object> results = query.findPages();
     assertEquals(2, results.size());
     printResults(results);
   }
@@ -427,14 +433,343 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     assertEquals(0, results.size());
   }
 
-  private void printResults(PageableLuceneQueryResults<Integer, Customer> results) {
+  private void printResults(PageableLuceneQueryResults<Integer, Object> results) {
     if (results.size() > 0) {
       while (results.hasNext()) {
         results.next().stream().forEach(struct -> {
-          logger.info("Result is:" + struct.getValue());
+          if (logger.isDebugEnabled()) {
+            logger.debug("Result is:" + struct.getValue());
+          }
         });
       }
     }
   }
 
+  private Region createRegionAndIndexForPdxObject() {
+    luceneService.createIndexFactory().setLuceneSerializer(new FlatFormatSerializer())
+        .addField("ID").addField("description").addField("status").addField("names")
+        .addField("position1.country").addField("position1.secId").addField("positions.secId")
+        .addField("positions.country").create(INDEX_NAME, REGION_NAME);
+
+    Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
+    return region;
+  }
+
+  private void feedSomePdxObjects(Region region) throws InterruptedException {
+    SimplePortfolioPdx.resetCounter();
+    SimplePositionPdx.resetCounter();
+    for (int i = 1; i < 10; i++) {
+      SimplePortfolioPdx pdx = new SimplePortfolioPdx(i);
+      region.put("object-" + i, pdx);
+    }
+
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+  }
+
+  @Test
+  public void queryOnTopLevelPdxField() throws InterruptedException, LuceneQueryException {
+    Region region = createRegionAndIndexForPdxObject();
+    feedSomePdxObjects(region);
+
+    query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "active",
+        "status");
+    results = query.findPages();
+    // even id number: active status; odd id number: inactive status
+    assertEquals(4, results.size());
+    printResults(results);
+  }
+
+  @Test
+  public void queryOnTopLevelPdxArrayField() throws InterruptedException, LuceneQueryException {
+    Region region = createRegionAndIndexForPdxObject();
+    feedSomePdxObjects(region);
+
+    query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "bbb AND ccc",
+        "names");
+    results = query.findPages();
+    // all the entries should be found
+    assertEquals(9, results.size());
+    printResults(results);
+  }
+
+  @Test
+  public void queryOnSecondLevelPdxCollectionField()
+      throws InterruptedException, LuceneQueryException {
+    Region region = createRegionAndIndexForPdxObject();
+    feedSomePdxObjects(region);
+
+    query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "NOVL",
+        "positions.secId");
+    results = query.findPages();
+    assertEquals(1, results.size());
+    printResults(results);
+  }
+
+  @Test
+  public void queryOnSecondLevelPdxField() throws InterruptedException, LuceneQueryException {
+    Region region = createRegionAndIndexForPdxObject();
+    feedSomePdxObjects(region);
+
+    query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "DELL",
+        "position1.secId");
+    results = query.findPages();
+    assertEquals(1, results.size());
+    printResults(results);
+  }
+
+  @Test
+  public void insertAndQueryJSONObject() throws InterruptedException, LuceneQueryException {
+    SimplePortfolioPdx.resetCounter();
+    SimplePositionPdx.resetCounter();
+    Region region = createRegionAndIndexForPdxObject();
+
+    String jsonCustomer = "{" + "\"ID\" : 3," + "\"position1\" : {" + "\"country\" : \"USA\","
+        + "\"secId\" : \"DELL\"," + "\"sharesOutstanding\" : 9000.0," + "\"pid\" : 9,"
+        + "\"portfolioId\" : 0" + "}," + "\"positions\" : [ {" + "\"country\" : \"USA\","
+        + "\"secId\" : \"NOVL\"," + "\"sharesOutstanding\" : 11000.0," + "\"pid\" : 11,"
+        + "\"portfolioId\" : 0" + "}," + "{" + "\"country\" : \"USA\"," + "\"secId\" : \"RHAT\","
+        + "\"sharesOutstanding\" : 10000.0," + "\"pid\" : 10," + "\"portfolioId\" : 0" + "} ],"
+        + "\"status\" : \"inactive\"," + "\"names\" : [ \"aaa\", \"bbb\", \"ccc\", \"ddd\" ],"
+        + "\"description\" : \"XXXX\"," + "\"createTime\" : 0" + "}";
+    region.put("jsondoc1", JSONFormatter.fromJSON(jsonCustomer));
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
+        TimeUnit.MILLISECONDS);
+    query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "NOVL",
+        "positions.secId");
+    results = query.findPages();
+    assertEquals(1, results.size());
+    printResults(results);
+  }
+
+  public static class SimplePortfolioPdx implements Serializable, PdxSerializable {
+    private int ID;
+    public String description;
+    public long createTime;
+    public String status;
+    public String[] names = {"aaa", "bbb", "ccc", "ddd"};
+    public int[] intArr = {2001, 2017};
+
+    public SimplePositionPdx position1;
+    public HashSet positions = new HashSet();
+
+    public static int numInstance = 0;
+
+    /*
+     * public String getStatus(){ return status;
+     */
+    public int getID() {
+      return ID;
+    }
+
+    public long getCreateTime() {
+      return this.createTime;
+    }
+
+    public void setCreateTime(long time) {
+      this.createTime = time;
+    }
+
+    public HashSet getPositions() {
+      return positions;
+    }
+
+    public SimplePositionPdx getP1() {
+      return position1;
+    }
+
+    public boolean isActive() {
+      return status.equals("active");
+    }
+
+    public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+        "SAP", "DELL", "RHAT", "NOVL", "HP"};
+
+    /* public no-arg constructor required for Deserializable */
+    public SimplePortfolioPdx() {
+      this.numInstance++;
+    }
+
+    public SimplePortfolioPdx(int i) {
+      this.numInstance++;
+      ID = i;
+      if (i % 2 == 0) {
+        description = "YYYY";
+      } else {
+        description = "XXXX";
+      }
+      status = i % 2 == 0 ? "active" : "inactive";
+      position1 = new SimplePositionPdx(secIds[SimplePositionPdx.cnt % secIds.length],
+          SimplePositionPdx.cnt * 1000);
+
+      positions.add(new SimplePositionPdx(secIds[SimplePositionPdx.cnt % secIds.length],
+          SimplePositionPdx.cnt * 1000));
+      positions.add(new SimplePositionPdx(secIds[SimplePositionPdx.cnt % secIds.length],
+          SimplePositionPdx.cnt * 1000));
+    }
+
+    public SimplePortfolioPdx(int i, int j) {
+      this(i);
+      this.position1.portfolioId = j;
+    }
+
+    public static void resetCounter() {
+      numInstance = 0;
+    }
+
+    private boolean eq(Object o1, Object o2) {
+      return o1 == null ? o2 == null : o1.equals(o2);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof SimplePortfolioPdx)) {
+        return false;
+      }
+      SimplePortfolioPdx p2 = (SimplePortfolioPdx) o;
+      return this.ID == p2.getID();
+    }
+
+    @Override
+    public int hashCode() {
+      return this.ID;
+    }
+
+
+    public String toString() {
+      String out = "SimplePortfolioPdx [ID=" + ID + " status=" + status + "\n ";
+      Iterator iter = positions.iterator();
+      while (iter.hasNext()) {
+        out += (SimplePositionPdx) (iter.next()) + ", ";
+      }
+      out += "\n P1:" + position1;
+      return out + "\n]";
+    }
+
+    /**
+     * Getter for property type.S
+     * 
+     * @return Value of property type.
+     */
+    public boolean boolFunction(String strArg) {
+      return "active".equals(strArg);
+    }
+
+    public int intFunction(int j) {
+      return j;
+    }
+
+    public String funcReturnSecId(Object o) {
+      return ((SimplePositionPdx) o).getSecId();
+    }
+
+    public long longFunction(long j) {
+      return j;
+    }
+
+    public void fromData(PdxReader in) {
+      this.ID = in.readInt("ID");
+      this.position1 = (SimplePositionPdx) in.readObject("position1");
+      this.positions = (HashSet) in.readObject("positions");
+      this.status = in.readString("status");
+      this.names = in.readStringArray("names");
+      this.description = in.readString("description");
+      this.createTime = in.readLong("createTime");
+      this.intArr = in.readIntArray("intArr");
+    }
+
+    public void toData(PdxWriter out) {
+      out.writeInt("ID", this.ID);
+      out.writeObject("position1", this.position1);
+      out.writeObject("positions", this.positions);
+      out.writeString("status", this.status);
+      out.writeStringArray("names", this.names);
+      out.writeString("description", this.description);
+      out.writeLong("createTime", this.createTime);
+      out.writeIntArray("intArr", this.intArr);
+      // Identity Field.
+      out.markIdentityField("ID");
+    }
+
+  }
+
+  public static class SimplePositionPdx implements Serializable, PdxSerializable, Comparable {
+    public String secId;
+    private String country = "USA";
+    private int pid;
+    private double sharesOutstanding;
+    public int portfolioId = 0;
+    public static int cnt = 0;
+
+    public static int numInstance = 0;
+
+    public SimplePositionPdx() {
+      this.numInstance++;
+    }
+
+    public SimplePositionPdx(String id, double out) {
+      secId = id;
+      sharesOutstanding = out;
+      pid = cnt++;
+
+      this.numInstance++;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof SimplePositionPdx))
+        return false;
+      return this.secId.equals(((SimplePositionPdx) o).secId);
+    }
+
+    @Override
+    public int hashCode() {
+      return this.secId.hashCode();
+    }
+
+    public String getSecId() {
+      return secId;
+    }
+
+    public static void resetCounter() {
+      cnt = 0;
+    }
+
+    public double getSharesOutstanding() {
+      return sharesOutstanding;
+    }
+
+    public String toString() {
+      return "SimplePositionPdx [secId=" + this.secId + " pid=" + this.pid + " out="
+          + this.sharesOutstanding + "]";
+    }
+
+    public void fromData(PdxReader in) {
+      this.country = in.readString("country");
+      this.secId = in.readString("secId");
+      this.sharesOutstanding = in.readDouble("sharesOutstanding");
+      this.pid = in.readInt("pid");
+      this.portfolioId = in.readInt("portfolioId");
+    }
+
+    public void toData(PdxWriter out) {
+      out.writeString("country", this.country);
+      out.writeString("secId", this.secId);
+      out.writeDouble("sharesOutstanding", this.sharesOutstanding);
+      out.writeInt("pid", this.pid);
+      out.writeInt("portfolioId", this.portfolioId);
+      // Identity Field.
+      out.markIdentityField("secId");
+    }
+
+
+    public int compareTo(Object o) {
+      if (o == this || ((SimplePositionPdx) o).secId.equals(this.secId)) {
+        return 0;
+      } else {
+        return this.pid < ((SimplePositionPdx) o).pid ? -1 : 1;
+      }
+
+    }
+  }
 }

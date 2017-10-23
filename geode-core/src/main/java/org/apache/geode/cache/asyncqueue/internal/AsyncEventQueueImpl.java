@@ -220,4 +220,10 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
     return ((AbstractGatewaySender) this.sender).waitUntilFlushed(timeout, unit);
   }
+
+  @Override
+  public String toString() {
+    return new StringBuffer().append(getClass().getSimpleName()).append("{").append("id=" + getId())
+        .append(",isRunning=" + this.sender.isRunning()).append("}").toString();
+  }
 }

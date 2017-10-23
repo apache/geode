@@ -14,7 +14,6 @@
  */
 package org.apache.geode.admin;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;

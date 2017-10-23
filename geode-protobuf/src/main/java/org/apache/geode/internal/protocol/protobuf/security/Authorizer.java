@@ -12,19 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.protocol.protobuf.security;
 
-import org.apache.geode.cache.Region;
+import org.apache.geode.security.ResourcePermission;
 
-/**
- * Interface for a service that is linked to a region.
- */
-public interface RegionService extends CacheService {
-
-  /**
-   * Called before a region is destroyed.
-   *
-   * @param region The region being destroyed
-   */
-  public void beforeRegionDestroyed(Region region);
+public interface Authorizer {
+  boolean authorize(Object authenticatedSubject, ResourcePermission permissionRequested);
 }

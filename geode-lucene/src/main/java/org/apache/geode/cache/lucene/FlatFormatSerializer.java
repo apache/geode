@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
@@ -97,8 +99,8 @@ public class FlatFormatSerializer implements LuceneSerializer {
     }
 
     if (fieldValue.getClass().isArray()) {
-      Object[] array = (Object[]) fieldValue;
-      for (Object item : array) {
+      for (int i = 0; i < Array.getLength(fieldValue); i++) {
+        Object item = Array.get(fieldValue, i);
         addFieldValueForNonCollectionObject(doc, indexedFieldName, item, tokenizedFields);
       }
     } else if (fieldValue instanceof Collection) {
@@ -122,17 +124,26 @@ public class FlatFormatSerializer implements LuceneSerializer {
   }
 
   private Object getFieldValue(Object value, String fieldName) {
-    Class<?> clazz = value.getClass();
-    if (fieldName.equals(LuceneService.REGION_VALUE_FIELD)
-        && SerializerUtil.supportedPrimitiveTypes().contains(clazz)) {
-      return value;
-    }
-    try {
-      Field field = clazz.getDeclaredField(fieldName);
-      field.setAccessible(true);
-      return field.get(value);
-    } catch (Exception e) {
-      return null;
+    if (value instanceof PdxInstance) {
+      PdxInstance pdx = (PdxInstance) value;
+      Object fieldValue = null;
+      if (pdx.hasField(fieldName)) {
+        fieldValue = pdx.getField(fieldName);
+      }
+      return fieldValue;
+    } else {
+      Class<?> clazz = value.getClass();
+      if (fieldName.equals(LuceneService.REGION_VALUE_FIELD)
+          && SerializerUtil.supportedPrimitiveTypes().contains(clazz)) {
+        return value;
+      }
+      try {
+        Field field = clazz.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(value);
+      } catch (Exception e) {
+        return null;
+      }
     }
   }
 }

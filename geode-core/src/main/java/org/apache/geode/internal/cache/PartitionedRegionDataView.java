@@ -53,12 +53,12 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
 
   @Override
   public Entry getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones) {
-    TXStateProxy tx = localRegion.cache.getTXMgr().internalSuspend();
+    TXStateProxy tx = localRegion.cache.getTXMgr().pauseTransaction();
     try {
       PartitionedRegion pr = (PartitionedRegion) localRegion;
       return pr.nonTXGetEntry(keyInfo, false, allowTombstones);
     } finally {
-      localRegion.cache.getTXMgr().internalResume(tx);
+      localRegion.cache.getTXMgr().unpauseTransaction(tx);
     }
   }
 
@@ -67,12 +67,12 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
       Object value, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) {
-    TXStateProxy tx = r.cache.getTXMgr().internalSuspend();
+    TXStateProxy tx = r.cache.getTXMgr().pauseTransaction();
     try {
       return r.findObjectInSystem(key, isCreate, tx, generateCallbacks, value, disableCopyOnRead,
           preferCD, requestingClient, clientEvent, returnTombstones);
     } finally {
-      r.cache.getTXMgr().internalResume(tx);
+      r.cache.getTXMgr().unpauseTransaction(tx);
     }
   }
 

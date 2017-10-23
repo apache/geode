@@ -12,16 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.internal.server;
+package org.apache.geode.internal.protocol.protobuf;
 
-import org.apache.geode.security.ResourcePermission;
+import com.google.protobuf.GeneratedMessageV3;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.security.NoOpAuthorizer;
+import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 
-/**
- * An implementation of {@link Authorizer} that doesn't use its parameters and always returns true.
- */
-public class NoOpAuthorizer implements Authorizer {
-  @Override
-  public boolean authorize(ResourcePermission permissionRequested) {
-    return true;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+public class ProtobufTestExecutionContext {
+  public static MessageExecutionContext getNoAuthExecutionContext(Cache cache) {
+    return new MessageExecutionContext(cache, new NoOpAuthorizer(), new Object(),
+        new NoOpStatistics());
   }
 }

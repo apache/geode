@@ -13,9 +13,6 @@
 # ~~~~~~~~~~~~~~~~~~~ DataSerializables ~~~~~~~~~~~~~~~~~~~~~~~~~
 # these are failures from testDataSerializables
 
-50197,org/apache/geode/management/internal/cli/domain/DataCommandRequest
-
-
 # ~~~~~~~~~~~~~~~~~~~ Serializables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # these are failures from testSerializables
 

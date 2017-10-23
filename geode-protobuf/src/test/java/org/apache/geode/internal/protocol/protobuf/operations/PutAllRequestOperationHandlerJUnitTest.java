@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.operations;
 
+import static org.apache.geode.internal.protocol.protobuf.ProtobufTestExecutionContext.getNoAuthExecutionContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
@@ -30,17 +31,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.Success;
-import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.security.internal.server.NoOpAuthorizer;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -73,8 +71,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, true),
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+        generateTestRequest(false, true), getNoAuthExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -88,8 +85,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true, true),
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+        generateTestRequest(true, true), getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
@@ -108,8 +104,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
     Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, false),
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+        generateTestRequest(false, false), getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 

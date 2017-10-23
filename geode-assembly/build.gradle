@@ -394,6 +394,10 @@ distributions {
         }
       }
 
+      into('tools/ClientProtocol') {
+        from {project(":geode-protobuf").zip.outputs.files}
+      }
+
       into ('javadoc') {
         from docs
       }

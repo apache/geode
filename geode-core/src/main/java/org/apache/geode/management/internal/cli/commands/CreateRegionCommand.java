@@ -529,7 +529,7 @@ public class CreateRegionCommand implements GfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      String localMaxMemory = parseResult.getParamValue(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
+      String localMaxMemory = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
       if (localMaxMemory != null) {
         int prLocalMaxMemory = Integer.parseInt(localMaxMemory);
         if (prLocalMaxMemory < 0) {
@@ -538,7 +538,7 @@ public class CreateRegionCommand implements GfshCommand {
                   .toLocalizedString());
         }
       }
-      String totalMaxMemory = parseResult.getParamValue(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
+      String totalMaxMemory = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
       if (totalMaxMemory != null) {
         long prTotalMaxMemory = Integer.parseInt(totalMaxMemory);
         if (prTotalMaxMemory <= 0) {
@@ -547,7 +547,7 @@ public class CreateRegionCommand implements GfshCommand {
                   .toLocalizedString());
         }
       }
-      String redundantCopies = parseResult.getParamValue(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
+      String redundantCopies = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
       if (redundantCopies != null) {
         int prRedundantCopies = Integer.parseInt(redundantCopies);
         if (prRedundantCopies < 0 || prRedundantCopies > 3) {
@@ -557,7 +557,7 @@ public class CreateRegionCommand implements GfshCommand {
         }
       }
 
-      String concurrencyL = parseResult.getParamValue(CliStrings.CREATE_REGION__CONCURRENCYLEVEL);
+      String concurrencyL = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CONCURRENCYLEVEL);
       if (concurrencyL != null) {
         int concurrencyLevel = Integer.parseInt(concurrencyL);
         if (concurrencyLevel < 0) {
@@ -567,21 +567,21 @@ public class CreateRegionCommand implements GfshCommand {
         }
       }
 
-      String keyConstraint = parseResult.getParamValue(CliStrings.CREATE_REGION__KEYCONSTRAINT);
+      String keyConstraint = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__KEYCONSTRAINT);
       if (keyConstraint != null && !RegionCommandsUtils.isClassNameValid(keyConstraint)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
             new Object[] {keyConstraint}));
       }
 
-      String valueConstraint = parseResult.getParamValue(CliStrings.CREATE_REGION__VALUECONSTRAINT);
+      String valueConstraint = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__VALUECONSTRAINT);
       if (valueConstraint != null && !RegionCommandsUtils.isClassNameValid(valueConstraint)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
             new Object[] {valueConstraint}));
       }
 
-      String cacheListenerList = parseResult.getParamValue(CliStrings.CREATE_REGION__CACHELISTENER);
+      String cacheListenerList = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHELISTENER);
       if (cacheListenerList != null) {
         String[] cacheListeners = cacheListenerList.split(",");
         for (String cacheListener : cacheListeners) {
@@ -593,29 +593,29 @@ public class CreateRegionCommand implements GfshCommand {
         }
       }
 
-      String cacheLoader = parseResult.getParamValue(CliStrings.CREATE_REGION__CACHELOADER);
+      String cacheLoader = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHELOADER);
       if (cacheLoader != null && !RegionCommandsUtils.isClassNameValid(cacheLoader)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID,
             new Object[] {cacheLoader}));
       }
 
-      String cacheWriter = parseResult.getParamValue(CliStrings.CREATE_REGION__CACHEWRITER);
+      String cacheWriter = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHEWRITER);
       if (cacheWriter != null && !RegionCommandsUtils.isClassNameValid(cacheWriter)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID,
             new Object[] {cacheWriter}));
       }
 
-      String compressor = parseResult.getParamValue(CliStrings.CREATE_REGION__COMPRESSOR);
+      String compressor = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__COMPRESSOR);
       if (compressor != null && !RegionCommandsUtils.isClassNameValid(compressor)) {
         return ResultBuilder.createUserErrorResult(CliStrings
             .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
       }
 
-      String diskStore = parseResult.getParamValue(CliStrings.CREATE_REGION__DISKSTORE);
+      String diskStore = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__DISKSTORE);
       if (diskStore != null) {
-        String regionShortcut = parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONSHORTCUT);
+        String regionShortcut = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONSHORTCUT);
         if (regionShortcut != null && !RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS
             .contains(RegionShortcut.valueOf(regionShortcut))) {
           String subMessage =
@@ -629,15 +629,15 @@ public class CreateRegionCommand implements GfshCommand {
       }
 
       String statisticsEnabled =
-          parseResult.getParamValue(CliStrings.CREATE_REGION__STATISTICSENABLED);
+          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__STATISTICSENABLED);
       if (!Boolean.parseBoolean(statisticsEnabled)) {
         String entryIdle =
-            parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME);
+            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME);
         String entryTtl =
-            parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE);
+            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE);
         String regionIdle =
-            parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME);
-        String regionTtl = parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL);
+            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME);
+        String regionTtl = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL);
         if (entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null) {
           String message =
               LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION

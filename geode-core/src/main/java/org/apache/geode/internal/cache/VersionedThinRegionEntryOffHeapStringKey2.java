@@ -15,62 +15,40 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.cache.EntryEvent;
-
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
 // disk: DISK
 // lru: LRU
 // stats: STATS
-// versioned: 1
-// offheap: 1
+// versioned: VERSIONED
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
-// key string2: 1
-
+// key string2: KEY_STRING2
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegionEntryOffHeap {
   public VersionedThinRegionEntryOffHeapStringKey2(RegionEntryContext context, String key,
-
-      @Retained
-
-      Object value
-
-      , boolean byteEncode
-
-  ) {
-    super(context,
-
-
-
-        value
-
-    );
+      @Retained Object value, boolean byteEncode) {
+    super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
     long tmpBits1 = 0L;
     long tmpBits2 = 0L;
@@ -101,11 +79,9 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
     tmpBits1 |= key.length();
     this.bits1 = tmpBits1;
     this.bits2 = tmpBits2;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -114,7 +90,6 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
   private static final AtomicLongFieldUpdater<VersionedThinRegionEntryOffHeapStringKey2> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VersionedThinRegionEntryOffHeapStringKey2.class,
           "lastModified");
-
   /**
    * All access done using ohAddrUpdater so it is used even though the compiler can not tell it is.
    */
@@ -146,19 +121,13 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
-
   @Unretained
   protected void setValueField(@Unretained Object v) {
-
-
-
     OffHeapRegionEntryHelper.setValue(this, v);
   }
 
   @Override
-
   @Retained
-
   public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
     return OffHeapRegionEntryHelper._getValueRetain(this, decompress, context);
   }
@@ -174,9 +143,7 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
   }
 
   @Override
-
   @Released
-
   public void release() {
     OffHeapRegionEntryHelper.releaseEntry(this);
   }
@@ -184,9 +151,6 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
   @Override
   public void returnToPool() {
     // Deadcoded for now; never was working
-    // if (this instanceof VMThinRegionEntryLongKey) {
-    // factory.returnToPool((VMThinRegionEntryLongKey)this);
-    // }
   }
 
   protected long getLastModifiedField() {
@@ -222,10 +186,7 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
     this.next = n;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // versioned code
   private VersionSource memberID;
   private short entryVersionLowBytes;
@@ -241,7 +202,6 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
-
 
   public long getVersionTimeStamp() {
     return getLastModified();
@@ -260,7 +220,6 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public void setVersions(VersionTag tag) {
     this.memberID = tag.getMemberID();
     int eVersion = tag.getEntryVersion();
@@ -290,7 +249,6 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberID);
     tag.setEntryVersion(getEntryVersion());
@@ -323,11 +281,8 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
     return this.regionVersionLowBytes;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   // strlen is encoded in lowest 6 bits (max strlen is 63)
   // character encoding info is in bits 7 and 8
   // The other bits are used to encoded character data.
@@ -376,7 +331,6 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public boolean isKeyEqual(Object k) {
     if (k instanceof String) {
@@ -419,7 +373,5 @@ public class VersionedThinRegionEntryOffHeapStringKey2 extends VersionedThinRegi
     }
     return false;
   }
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-
