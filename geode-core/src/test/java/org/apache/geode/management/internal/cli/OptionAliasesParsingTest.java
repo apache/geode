@@ -20,8 +20,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(IntegrationTest.class)
 public class OptionAliasesParsingTest {
@@ -283,10 +283,10 @@ public class OptionAliasesParsingTest {
   private void validateParsedResults(boolean canHaveMembers, boolean canHaveGroups) {
     GfshParseResult result = parser.parse(buffer);
     if (canHaveMembers) {
-      assertThat(result.getParamValue("member")).isEqualTo("m1,m2");
+      assertThat(result.getParamValueAsString("member")).isEqualTo("m1,m2");
     }
     if (canHaveGroups) {
-      assertThat(result.getParamValue("group")).isEqualTo("g1,g2");
+      assertThat(result.getParamValueAsString("group")).isEqualTo("g1,g2");
     }
   }
 
@@ -295,7 +295,7 @@ public class OptionAliasesParsingTest {
     GfshParseResult result = parser.parse(buffer);
     validateParsedResults(canHaveMembers, canHaveGroups);
     if (canHaveJars) {
-      assertThat(result.getParamValue("jar")).isEqualTo("j1,j2");
+      assertThat(result.getParamValueAsString("jar")).isEqualTo("j1,j2");
     }
   }
 
@@ -306,7 +306,7 @@ public class OptionAliasesParsingTest {
   public void gc_memberWithCommas() {
     buffer = "gc --member=m1,m2";
     GfshParseResult result = parser.parse(buffer);
-    assertThat(result.getParamValue("member")).isEqualTo("m1,m2");
+    assertThat(result.getParamValueAsString("member")).isEqualTo("m1,m2");
   }
 
   @Test
@@ -319,7 +319,7 @@ public class OptionAliasesParsingTest {
   public void destroyFunction_memberWithCommas() {
     buffer = "destroy function --id=function1 --member=m1,m2";
     GfshParseResult result = parser.parse(buffer);
-    assertThat(result.getParamValue("member")).isEqualTo("m1,m2");
+    assertThat(result.getParamValueAsString("member")).isEqualTo("m1,m2");
   }
 
   @Test

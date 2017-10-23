@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -103,8 +102,7 @@ public class ExportConfigCommand implements GfshCommand {
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-      String dir = paramValueMap.get("dir");
+      String dir = parseResult.getParamValueAsString("dir");
       if (StringUtils.isBlank(dir)) {
         saveDirString = new File(".").getAbsolutePath();
         return ResultBuilder.createInfoResult("OK");
