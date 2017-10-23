@@ -127,7 +127,7 @@ import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
 @SuppressWarnings("deprecation")
-public class DistributedRegion extends LocalRegion implements CacheDistributionAdvisee {
+public class DistributedRegion extends LocalRegion implements InternalDistributedRegion {
   private static final Logger logger = LogService.getLogger();
 
   /** causes cache profile to be added to afterRemoteRegionCreate notification for testing */
@@ -3869,4 +3869,11 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   public boolean hasNetLoader() {
     return this.hasNetLoader(getCacheDistributionAdvisor());
   }
+
+  @Override
+  public long getLatestLastAccessTimeFromOthers(Object key) {
+    LatestLastAccessTimeOperation op = new LatestLastAccessTimeOperation(this, key);
+    return op.getLatestLastAccessTime();
+  }
+
 }

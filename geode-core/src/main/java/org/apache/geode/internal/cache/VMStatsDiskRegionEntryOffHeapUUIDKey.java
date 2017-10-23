@@ -227,7 +227,8 @@ public class VMStatsDiskRegionEntryOffHeapUUIDKey extends VMStatsDiskRegionEntry
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  @Override
+  public void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 

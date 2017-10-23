@@ -337,7 +337,8 @@ public class VersionedStatsDiskLRURegionEntryOffHeapObjectKey
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  @Override
+  public void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 

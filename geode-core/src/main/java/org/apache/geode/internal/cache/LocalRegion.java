@@ -12026,4 +12026,13 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     return result;
   }
 
+  /**
+   * Send a message to all other members that can have this same region entry and return the latest
+   * last access time.
+   */
+  public long getLatestLastAccessTimeFromOthers(Object key) {
+    // local regions have no other members so return 0.
+    return 0L;
+  }
+
 }

@@ -130,7 +130,8 @@ public class VMStatsRegionEntryHeapObjectKey extends VMStatsRegionEntryHeap {
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  @Override
+  public void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 
