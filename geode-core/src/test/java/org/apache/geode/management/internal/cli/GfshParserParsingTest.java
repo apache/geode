@@ -362,4 +362,11 @@ public class GfshParserParsingTest {
     assertThat(result.getParamValue("name")).isEqualTo("test");
     assertThat(result.getCommandName()).isEqualTo("start server");
   }
+
+  @Test
+  public void testShutdownWithOption() throws Exception {
+    String command = "shutdown --include-locators";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("include-locators")).isEqualTo("true");
+  }
 }
