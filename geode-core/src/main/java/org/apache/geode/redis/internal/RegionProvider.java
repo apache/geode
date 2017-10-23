@@ -14,6 +14,19 @@
  */
 package org.apache.geode.redis.internal;
 
+import java.io.Closeable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
@@ -35,19 +48,6 @@ import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
-
-import java.io.Closeable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This class stands between {@link Executor} and {@link Cache#getRegion(String)}. This is needed
@@ -399,8 +399,6 @@ public class RegionProvider implements Closeable {
     if (r != null)
       return r;
     do {
-      // String command = "create region --name="+key+" --type="+defaultRegionType;
-      // Result result = CommandService.getUsableLocalCommandService().processCommand(command);
       Result result = createRegionCmd.createRegion(key, defaultRegionType, null, null, true, null,
           null, null, null, null, null, null, null, false, false, true, false, false, false, true,
           null, null, null, null, null, null, null, false, null, null, null, null, null, null, null,

@@ -24,6 +24,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -34,13 +43,6 @@ import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-
-import java.util.Collections;
 
 @Category(UnitTest.class)
 public class CreateRegionCommandTest {
@@ -59,7 +61,6 @@ public class CreateRegionCommandTest {
 
   @Test
   public void testRegionExistsReturnsCorrectValue() throws Exception {
-    InternalCache cache = mock(InternalCache.class);
     assertThat(command.regionExists(cache, null)).isFalse();
   }
 
@@ -88,7 +89,33 @@ public class CreateRegionCommandTest {
         .contains("Only one of type & template-region can be specified.");
   }
 
-  // test that --template-region's attributes is null
+  @Ignore("Eviction is not configurable yet")
+  @Test
+  public void invalidEvictionAction() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --eviction-action=invalidAction");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString()).contains("Invalid command");
+  }
+
+  @Ignore("Eviction is not configurable yet")
+  @Test
+  public void invalidEvictionAttributes() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --eviction-max-memory=1000 --eviction-entry-count=200");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString())
+        .contains("eviction-max-memory and eviction-entry-count cannot both be specified.");
+  }
+
+  @Ignore("Eviction is not configurable yet")
+  @Test
+  public void missingEvictionAction() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --eviction-max-memory=1000");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString()).contains("eviction-action must be specified.");
+  }
 
   @Test
   public void templateRegionAttributesNotAvailable() throws Exception {
@@ -132,7 +159,7 @@ public class CreateRegionCommandTest {
     assertThat(args.getEntryExpirationTTL()).isNull();
     assertThat(args.getRegionExpirationIdleTime()).isNull();
     assertThat(args.getRegionExpirationTTL()).isNull();
-    //
+
     assertThat(args.getDiskStore()).isNull();
     assertThat(args.isDiskSynchronous()).isNull();
     assertThat(args.isEnableAsyncConflation()).isNull();
@@ -151,5 +178,56 @@ public class CreateRegionCommandTest {
     assertThat(args.getCompressor()).isNull();
     assertThat(args.isOffHeap()).isNull();
     assertThat(args.getRegionAttributes()).isNull();
+  }
+
+  @Test
+  public void invalidCacheListener() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --cache-listener=abc-def");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString())
+        .contains("Specify a valid class name for cache-listener.");
+  }
+
+  @Test
+  public void invalidCacheLoader() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --cache-loader=abc-def");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString())
+        .contains("Specify a valid class name for cache-loader.");
+  }
+
+  @Test
+  public void invalidCacheWriter() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --cache-writer=abc-def");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString())
+        .contains("Specify a valid class name for cache-writer.");
+  }
+
+  @Test
+  public void invalidCompressor() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --compressor=abc-def");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString()).contains("abc-def is an invalid Compressor.");
+  }
+
+  @Test
+  public void invalidKeyType() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --key-type=abc-def");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString()).contains("Invalid command");
+  }
+
+  @Test
+  public void invalidValueType() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --value-type=abc-def");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString()).contains("Invalid command");
   }
 }

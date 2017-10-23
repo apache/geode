@@ -14,7 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -31,12 +37,6 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class AlterRegionCommand implements GfshCommand {
   @CliCommand(value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
@@ -92,9 +92,6 @@ public class AlterRegionCommand implements GfshCommand {
     if (groups != null) {
       RegionCommandsUtils.validateGroups(cache, groups);
     }
-
-    cacheLoader = convertDefaultValue(cacheLoader, StringUtils.EMPTY);
-    cacheWriter = convertDefaultValue(cacheWriter, StringUtils.EMPTY);
 
     RegionFunctionArgs regionFunctionArgs = new RegionFunctionArgs();
     regionFunctionArgs.setRegionPath(regionPath);

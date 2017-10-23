@@ -15,18 +15,18 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.ExpirationAttributes;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * Used to carry arguments between gfsh region command implementations and the functions that do the
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * @since GemFire 7.0
  */
 public class RegionFunctionArgs implements Serializable {
-  private static final long serialVersionUID = -5158224572470173267L;
+  private static final long serialVersionUID = 2204943186081037301L;
 
   private String regionPath;
   private RegionShortcut regionShortcut;

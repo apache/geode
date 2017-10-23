@@ -15,13 +15,13 @@
 
 package org.apache.geode.cache;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * Immutable parameter object for accessing and setting the attributes associated with
@@ -73,10 +73,10 @@ public class ExpirationAttributes implements DataSerializable {
   /**
    * Constructs an <code>ExpirationAttributes</code> with the specified expiration time and
    * expiration action.
-   * 
-   * @param expirationTime The number of seconds for a value to live before it expires
+   *
+   * @param expirationTime The number of seconds for a value to live before it expires. If this
+   *        parameter is negative, the expiration time will be set to 0, indicating no expiration.
    * @param expirationAction the action to take when the value expires
-   * @throws IllegalArgumentException if expirationTime is nonpositive
    */
   public ExpirationAttributes(int expirationTime, ExpirationAction expirationAction) {
     if (expirationTime < 0) {

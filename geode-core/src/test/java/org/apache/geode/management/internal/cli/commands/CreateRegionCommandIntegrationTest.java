@@ -17,6 +17,15 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
@@ -26,14 +35,6 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Category(IntegrationTest.class)
 public class CreateRegionCommandIntegrationTest {
@@ -168,7 +169,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void invlaidCacheLoader() throws Exception {
+  public void invalidCacheLoader() throws Exception {
     gfsh.executeAndVerifyCommandError(
         "create region --name=/FOO --type=REPLICATE --cache-loader=abc-def",
         "Specify a valid class name for cache-loader");

@@ -43,6 +43,8 @@ public class CommandExecutor {
     } catch (NotAuthorizedException e) {
       logger.error("Not authorized to execute \"" + parseResult + "\".", e);
       throw e;
+    } catch (IllegalArgumentException e) {
+      return ResultBuilder.createUserErrorResult(e.getMessage());
     } catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
       return ResultBuilder.createGemFireErrorResult("Error while processing command <" + parseResult
