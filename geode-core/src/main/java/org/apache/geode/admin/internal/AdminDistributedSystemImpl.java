@@ -2312,8 +2312,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public static BackupStatus backupAllMembers(DM dm, File targetDir, File baselineDir)
       throws AdminException {
-    return (org.apache.geode.admin.BackupStatus) BackupUtil.backupAllMembers(dm, targetDir,
-        baselineDir);
+    return new BackupStatusImpl(BackupUtil.backupAllMembers(dm, targetDir, baselineDir));
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {
