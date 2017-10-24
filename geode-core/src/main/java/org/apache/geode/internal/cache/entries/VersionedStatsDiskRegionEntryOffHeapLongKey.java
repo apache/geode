@@ -15,55 +15,42 @@
 package org.apache.geode.internal.cache.entries;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.internal.cache.LocalRegion;
-
 import org.apache.geode.internal.cache.RegionEntryContext;
-
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: 1
+// disk: DISK
 // lru: LRU
-// stats: 1
-// versioned: 1
-// offheap: 1
+// stats: STATS
+// versioned: VERSIONED
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
-// key long: 1
+// key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
 // key string2: KEY_STRING2
-
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
@@ -71,33 +58,14 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 public class VersionedStatsDiskRegionEntryOffHeapLongKey
     extends VersionedStatsDiskRegionEntryOffHeap {
   public VersionedStatsDiskRegionEntryOffHeapLongKey(RegionEntryContext context, long key,
-
-      @Retained
-
-      Object value
-
-
-
-  ) {
-    super(context,
-
-        (value instanceof RecoveredEntry ? null : value)
-
-
-
-    );
+      @Retained Object value) {
+    super(context, (value instanceof RecoveredEntry ? null : value));
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     initialize(context, value);
-
-
-
     this.key = key;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -106,7 +74,6 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
   private static final AtomicLongFieldUpdater<VersionedStatsDiskRegionEntryOffHeapLongKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VersionedStatsDiskRegionEntryOffHeapLongKey.class,
           "lastModified");
-
   /**
    * All access done using ohAddrUpdater so it is used even though the compiler can not tell it is.
    */
@@ -138,19 +105,13 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
-
   @Unretained
   protected void setValueField(@Unretained Object v) {
-
-
-
     OffHeapRegionEntryHelper.setValue(this, v);
   }
 
   @Override
-
   @Retained
-
   public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
     return OffHeapRegionEntryHelper._getValueRetain(this, decompress, context);
   }
@@ -166,9 +127,7 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
   }
 
   @Override
-
   @Released
-
   public void release() {
     OffHeapRegionEntryHelper.releaseEntry(this);
   }
@@ -211,11 +170,8 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
     this.next = n;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // disk code
-
   protected void initialize(RegionEntryContext context, Object value) {
     diskInitialize(context, value);
   }
@@ -225,9 +181,7 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
     throw new IllegalStateException("should never be called");
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -253,10 +207,7 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // stats code
   @Override
   public void updateStatsForGet(boolean hit, long time) {
@@ -279,7 +230,6 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
   private volatile long lastAccessed;
   private volatile int hitCount;
   private volatile int missCount;
-
   private static final AtomicIntegerFieldUpdater<VersionedStatsDiskRegionEntryOffHeapLongKey> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VersionedStatsDiskRegionEntryOffHeapLongKey.class,
           "hitCount");
@@ -322,7 +272,6 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public void txDidDestroy(long currTime) {
     setLastModified(currTime);
@@ -336,10 +285,7 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
     return true;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // versioned code
   private VersionSource memberID;
   private short entryVersionLowBytes;
@@ -355,7 +301,6 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
-
 
   public long getVersionTimeStamp() {
     return getLastModified();
@@ -374,7 +319,6 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public void setVersions(VersionTag tag) {
     this.memberID = tag.getMemberID();
     int eVersion = tag.getEntryVersion();
@@ -404,7 +348,6 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberID);
     tag.setEntryVersion(getEntryVersion());
@@ -437,11 +380,8 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
     return this.regionVersionLowBytes;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   private final long key;
 
   @Override
@@ -456,8 +396,5 @@ public class VersionedStatsDiskRegionEntryOffHeapLongKey
     }
     return false;
   }
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-

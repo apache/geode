@@ -15,66 +15,43 @@
 package org.apache.geode.internal.cache.entries;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.internal.cache.LocalRegion;
-
 import org.apache.geode.internal.cache.RegionEntryContext;
-
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
 // disk: DISK
 // lru: LRU
 // stats: STATS
-// versioned: 1
-// offheap: 1
+// versioned: VERSIONED
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
 // key long: KEY_LONG
 // key uuid: KEY_UUID
-// key string1: 1
+// key string1: KEY_STRING1
 // key string2: KEY_STRING2
-
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegionEntryOffHeap {
   public VersionedThinRegionEntryOffHeapStringKey1(RegionEntryContext context, String key,
-
-      @Retained
-
-      Object value
-
-      , boolean byteEncode
-
-  ) {
-    super(context,
-
-
-
-        value
-
-    );
+      @Retained Object value, boolean byteEncode) {
+    super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
     long tmpBits1 = 0L;
     if (byteEncode) {
@@ -93,11 +70,9 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
     }
     tmpBits1 |= key.length();
     this.bits1 = tmpBits1;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -106,7 +81,6 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
   private static final AtomicLongFieldUpdater<VersionedThinRegionEntryOffHeapStringKey1> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VersionedThinRegionEntryOffHeapStringKey1.class,
           "lastModified");
-
   /**
    * All access done using ohAddrUpdater so it is used even though the compiler can not tell it is.
    */
@@ -138,19 +112,13 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
-
   @Unretained
   protected void setValueField(@Unretained Object v) {
-
-
-
     OffHeapRegionEntryHelper.setValue(this, v);
   }
 
   @Override
-
   @Retained
-
   public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
     return OffHeapRegionEntryHelper._getValueRetain(this, decompress, context);
   }
@@ -166,9 +134,7 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
   }
 
   @Override
-
   @Released
-
   public void release() {
     OffHeapRegionEntryHelper.releaseEntry(this);
   }
@@ -211,10 +177,7 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
     this.next = n;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // versioned code
   private VersionSource memberID;
   private short entryVersionLowBytes;
@@ -230,7 +193,6 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
-
 
   public long getVersionTimeStamp() {
     return getLastModified();
@@ -249,7 +211,6 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public void setVersions(VersionTag tag) {
     this.memberID = tag.getMemberID();
     int eVersion = tag.getEntryVersion();
@@ -279,7 +240,6 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberID);
     tag.setEntryVersion(getEntryVersion());
@@ -312,11 +272,8 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
     return this.regionVersionLowBytes;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   private final long bits1;
 
   private int getKeyLength() {
@@ -349,7 +306,6 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public boolean isKeyEqual(Object k) {
     if (k instanceof String) {
@@ -379,8 +335,5 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
     }
     return false;
   }
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-

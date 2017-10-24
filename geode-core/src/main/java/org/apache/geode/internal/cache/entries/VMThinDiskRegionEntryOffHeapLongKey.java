@@ -15,76 +15,48 @@
 package org.apache.geode.internal.cache.entries;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.internal.cache.RegionEntryContext;
-
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: 1
+// disk: DISK
 // lru: LRU
 // stats: STATS
 // versioned: VERSIONED
-// offheap: 1
+// offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
-// key long: 1
+// key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
 // key string2: KEY_STRING2
-
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOffHeap {
   public VMThinDiskRegionEntryOffHeapLongKey(RegionEntryContext context, long key,
-
-      @Retained
-
-      Object value
-
-
-
-  ) {
-    super(context,
-
-        (value instanceof RecoveredEntry ? null : value)
-
-
-
-    );
+      @Retained Object value) {
+    super(context, (value instanceof RecoveredEntry ? null : value));
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     initialize(context, value);
-
-
-
     this.key = key;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -92,7 +64,6 @@ public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOf
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMThinDiskRegionEntryOffHeapLongKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMThinDiskRegionEntryOffHeapLongKey.class, "lastModified");
-
   /**
    * All access done using ohAddrUpdater so it is used even though the compiler can not tell it is.
    */
@@ -123,19 +94,13 @@ public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOf
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
-
   @Unretained
   protected void setValueField(@Unretained Object v) {
-
-
-
     OffHeapRegionEntryHelper.setValue(this, v);
   }
 
   @Override
-
   @Retained
-
   public Object _getValueRetain(RegionEntryContext context, boolean decompress) {
     return OffHeapRegionEntryHelper._getValueRetain(this, decompress, context);
   }
@@ -151,9 +116,7 @@ public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOf
   }
 
   @Override
-
   @Released
-
   public void release() {
     OffHeapRegionEntryHelper.releaseEntry(this);
   }
@@ -196,11 +159,8 @@ public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOf
     this.next = n;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // disk code
-
   protected void initialize(RegionEntryContext context, Object value) {
     diskInitialize(context, value);
   }
@@ -210,9 +170,7 @@ public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOf
     throw new IllegalStateException("should never be called");
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -238,12 +196,8 @@ public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOf
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   private final long key;
 
   @Override
@@ -258,8 +212,5 @@ public class VMThinDiskRegionEntryOffHeapLongKey extends VMThinDiskRegionEntryOf
     }
     return false;
   }
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-

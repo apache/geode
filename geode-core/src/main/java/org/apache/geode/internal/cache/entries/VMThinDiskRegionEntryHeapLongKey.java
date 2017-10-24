@@ -15,25 +15,18 @@
 package org.apache.geode.internal.cache.entries;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.internal.cache.RegionEntryContext;
-
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: 1
+// disk: DISK
 // lru: LRU
 // stats: STATS
 // versioned: VERSIONED
@@ -41,44 +34,23 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
 // key int: KEY_INT
-// key long: 1
+// key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
 // key string2: KEY_STRING2
-
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMThinDiskRegionEntryHeapLongKey extends VMThinDiskRegionEntryHeap {
-  public VMThinDiskRegionEntryHeapLongKey(RegionEntryContext context, long key,
-
-
-
-      Object value
-
-
-
-  ) {
-    super(context,
-
-        (value instanceof RecoveredEntry ? null : value)
-
-
-
-    );
+  public VMThinDiskRegionEntryHeapLongKey(RegionEntryContext context, long key, Object value) {
+    super(context, (value instanceof RecoveredEntry ? null : value));
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     initialize(context, value);
-
-
-
     this.key = key;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -86,7 +58,6 @@ public class VMThinDiskRegionEntryHeapLongKey extends VMThinDiskRegionEntryHeap 
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMThinDiskRegionEntryHeapLongKey> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMThinDiskRegionEntryHeapLongKey.class, "lastModified");
-
   private volatile Object value;
 
   @Override
@@ -132,11 +103,8 @@ public class VMThinDiskRegionEntryHeapLongKey extends VMThinDiskRegionEntryHeap 
     this.next = n;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // disk code
-
   protected void initialize(RegionEntryContext context, Object value) {
     diskInitialize(context, value);
   }
@@ -146,9 +114,7 @@ public class VMThinDiskRegionEntryHeapLongKey extends VMThinDiskRegionEntryHeap 
     throw new IllegalStateException("should never be called");
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -174,12 +140,8 @@ public class VMThinDiskRegionEntryHeapLongKey extends VMThinDiskRegionEntryHeap 
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   private final long key;
 
   @Override
@@ -194,8 +156,5 @@ public class VMThinDiskRegionEntryHeapLongKey extends VMThinDiskRegionEntryHeap 
     }
     return false;
   }
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-
