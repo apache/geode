@@ -60,6 +60,7 @@ import java.util.concurrent.TimeoutException;
 public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
   private static final SimpleClass ANOBJECT = new SimpleClass(57, (byte) 3);
+  private static final String TEST_REGION_NAME = "testSimplePdx";
 
   @Test
   public void testSimplePut() {
@@ -94,8 +95,6 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private static String TEST_REGION_NAME = "testSimplePdx";;
-
   private void createPR() {
     getCache().createRegionFactory(RegionShortcut.PARTITION)
         .setPartitionAttributes(new PartitionAttributesFactory<Integer, Object>().create())
@@ -103,7 +102,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testSimplePutOnPRWitTx() {
+  public void testSimplePutOnPRWithTx() {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
     VM vm2 = host.getVM(1);
