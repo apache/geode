@@ -2356,7 +2356,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * @return true if cacheWrite was performed
    */
   @Override
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
     boolean result = false;
@@ -2874,7 +2874,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
     DiskPosition() {}
 
-    void setPosition(long oplogId, long offset) {
+    public void setPosition(long oplogId, long offset) {
       this.oplogId = oplogId;
       this.offset = offset;
     }

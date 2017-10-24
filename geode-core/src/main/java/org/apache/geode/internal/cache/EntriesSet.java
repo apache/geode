@@ -24,9 +24,9 @@ import java.util.NoSuchElementException;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /** Set view of entries */

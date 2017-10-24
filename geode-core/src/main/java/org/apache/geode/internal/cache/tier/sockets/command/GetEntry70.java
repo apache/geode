@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.NonLocalRegionEntry;

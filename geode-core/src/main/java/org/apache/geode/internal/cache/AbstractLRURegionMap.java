@@ -26,6 +26,7 @@ import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.HeapEvictor;
 import org.apache.geode.internal.cache.lru.HeapLRUCapacityController;

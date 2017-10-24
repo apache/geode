@@ -35,14 +35,14 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.cache.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.OffHeapRegionEntry;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
-import org.apache.geode.internal.cache.VersionedStatsDiskRegionEntryOffHeap;
+import org.apache.geode.internal.cache.entries.VersionedStatsDiskRegionEntryOffHeap;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

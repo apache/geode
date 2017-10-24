@@ -35,6 +35,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

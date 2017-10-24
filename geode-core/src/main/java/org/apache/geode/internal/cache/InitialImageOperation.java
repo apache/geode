@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 
 import org.apache.geode.*;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
@@ -29,6 +28,7 @@ import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.*;
 import org.apache.geode.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
@@ -44,7 +44,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.util.ObjectIntProcedure;
@@ -2906,7 +2905,7 @@ public class InitialImageOperation {
     private VersionTag versionTag;
 
     /** Given local milliseconds, store as cache milliseconds */
-    void setLastModified(DM dm, long localMillis) {
+    public void setLastModified(DM dm, long localMillis) {
       this.lastModified = localMillis;
     }
 
@@ -2919,7 +2918,7 @@ public class InitialImageOperation {
       return EntryBits.isSerialized(this.entryBits);
     }
 
-    void setSerialized(boolean isSerialized) {
+    public void setSerialized(boolean isSerialized) {
       this.entryBits = EntryBits.setSerialized(this.entryBits, isSerialized);
     }
 
@@ -2927,7 +2926,7 @@ public class InitialImageOperation {
       return (this.value == null) && !EntryBits.isLocalInvalid(this.entryBits);
     }
 
-    void setInvalid() {
+    public void setInvalid() {
       this.entryBits = EntryBits.setLocalInvalid(this.entryBits, false);
       this.value = null;
     }
@@ -2936,12 +2935,12 @@ public class InitialImageOperation {
       return EntryBits.isLocalInvalid(this.entryBits);
     }
 
-    void setLocalInvalid() {
+    public void setLocalInvalid() {
       this.entryBits = EntryBits.setLocalInvalid(this.entryBits, true);
       this.value = null;
     }
 
-    void setTombstone() {
+    public void setTombstone() {
       this.entryBits = EntryBits.setTombstone(this.entryBits, true);
     }
 
@@ -3018,6 +3017,14 @@ public class InitialImageOperation {
     @Override
     public Version[] getSerializationVersions() {
       return null;
+    }
+
+    public Object getValue() {
+      return value;
+    }
+
+    public void setValue(Object value) {
+      this.value = value;
     }
   }
 

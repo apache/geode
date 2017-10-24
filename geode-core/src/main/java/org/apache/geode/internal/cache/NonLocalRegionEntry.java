@@ -31,7 +31,17 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionClearedException;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -213,7 +223,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   /** update the value held in this non-local region entry */
-  void setCachedValue(Object newValue) {
+  public void setCachedValue(Object newValue) {
     this.value = newValue;
   }
 

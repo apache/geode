@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
@@ -35,7 +35,6 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;

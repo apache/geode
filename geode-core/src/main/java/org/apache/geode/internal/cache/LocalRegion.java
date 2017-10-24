@@ -168,6 +168,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.control.ResourceListener;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
@@ -1796,7 +1797,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * {@link #isDestroyed()} this method will not return true if the cache is closing but has not yet
    * started closing this region.
    */
-  boolean isThisRegionBeingClosedOrDestroyed() {
+  public boolean isThisRegionBeingClosedOrDestroyed() {
     return this.isDestroyed;
   }
 
@@ -2899,7 +2900,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * @return true if cacheWrite was performed
    * @see DistributedRegion#cacheWriteBeforeDestroy(EntryEventImpl, Object)
    */
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     boolean result = false;
     // copy into local var to prevent race condition
@@ -3190,7 +3191,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   }
 
   /** regions track the number of tombstones their map holds for size calculations */
-  void incTombstoneCount(int delta) {
+  public void incTombstoneCount(int delta) {
     this.tombstoneCount.addAndGet(delta);
     this.cachePerfStats.incTombstoneCount(delta);
 
@@ -3203,7 +3204,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     return this.tombstoneCount.get();
   }
 
-  void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion) {
+  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion) {
     scheduleTombstone(entry, destroyedVersion, false);
   }
 
@@ -3236,7 +3237,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     scheduleTombstone(entry, version, true);
   }
 
-  void unscheduleTombstone(RegionEntry entry) {
+  public void unscheduleTombstone(RegionEntry entry) {
     unscheduleTombstone(entry, true);
   }
 
@@ -5929,7 +5930,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * generate version tag if it does not exist and set it into the event.
    */
-  void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry) {
+  public void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry) {
     if (entry != null && event.getOperation().isEntry()) {
       EntryEventImpl entryEvent = (EntryEventImpl) event;
       if (!entryEvent.isOriginRemote() && shouldGenerateVersionTag(entry, entryEvent)) {
@@ -7064,7 +7065,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    *
    * @return the actual lastModifiedTime used.
    */
-  long updateStatsForPut(RegionEntry entry, long lastModified, boolean lruRecentUse) {
+  public long updateStatsForPut(RegionEntry entry, long lastModified, boolean lruRecentUse) {
     long lastAccessed = cacheTimeMillis();
     if (lruRecentUse) {
       // fix for bug 31102
@@ -7774,7 +7775,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     }
   }
 
-  void addExpiryTaskIfAbsent(RegionEntry re) {
+  public void addExpiryTaskIfAbsent(RegionEntry re) {
     addExpiryTask(re, true);
   }
 
@@ -8142,7 +8143,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * get the ImageState for this region
    */
-  ImageState getImageState() {
+  public ImageState getImageState() {
     return this.imageState;
   }
 
@@ -10224,7 +10225,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * @return Returns the isUsedForPartitionedRegionAdmin.
    */
-  boolean isUsedForPartitionedRegionAdmin() {
+  public boolean isUsedForPartitionedRegionAdmin() {
     return this.isUsedForPartitionedRegionAdmin;
   }
 
@@ -10696,7 +10697,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   }
 
   // TODO: return value is never used
-  int updateSizeOnEvict(Object key, int oldSize) {
+  public int updateSizeOnEvict(Object key, int oldSize) {
     // Only needed by BucketRegion
     return 0;
   }

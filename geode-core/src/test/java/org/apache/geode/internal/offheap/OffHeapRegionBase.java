@@ -24,6 +24,7 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;

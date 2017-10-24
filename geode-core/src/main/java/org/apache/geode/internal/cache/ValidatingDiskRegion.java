@@ -30,6 +30,7 @@ import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
