@@ -22,10 +22,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
@@ -48,6 +51,7 @@ public class RegionFunctionArgs implements Serializable {
   private RegionFunctionArgs.ExpirationAttrs entryExpirationTTL;
   private RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime;
   private RegionFunctionArgs.ExpirationAttrs regionExpirationTTL;
+  private EvictionAttributes evictionAttributes;
   private String diskStore;
   private Boolean diskSynchronous;
   private Boolean enableAsyncConflation;
@@ -125,6 +129,24 @@ public class RegionFunctionArgs implements Serializable {
     if (timeout != null) {
       this.regionExpirationTTL = new ExpirationAttrs(
           RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL, timeout, action);
+    }
+  }
+
+  public void setEvictionAttributes(String action, Integer maxMemory, Integer maxEntryCount) {
+    if (action == null) {
+      return;
+    }
+
+    EvictionAction evictionAction = EvictionAction.parseAction(action);
+    if (maxMemory == null && maxEntryCount == null) {
+      evictionAttributes =
+          EvictionAttributes.createLRUHeapAttributes(ObjectSizer.DEFAULT, evictionAction);
+    } else if (maxMemory != null) {
+      evictionAttributes = EvictionAttributes.createLRUMemoryAttributes(maxMemory,
+          ObjectSizer.DEFAULT, evictionAction);
+    } else {
+      evictionAttributes =
+          EvictionAttributes.createLRUEntryAttributes(maxEntryCount, evictionAction);
     }
   }
 
@@ -427,6 +449,10 @@ public class RegionFunctionArgs implements Serializable {
    */
   public String getCompressor() {
     return this.compressor;
+  }
+
+  public EvictionAttributes getEvictionAttributes() {
+    return evictionAttributes;
   }
 
   /**

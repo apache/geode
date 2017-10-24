@@ -200,6 +200,10 @@ public class RegionCreateFunction implements Function, InternalEntity {
       factory.setRegionTimeToLive(regionExpirationTTL.convertToExpirationAttributes());
     }
 
+    if (regionCreateArgs.getEvictionAttributes() != null) {
+      factory.setEvictionAttributes(regionCreateArgs.getEvictionAttributes());
+    }
+
     // Associate a Disk Store
     final String diskStore = regionCreateArgs.getDiskStore();
     if (diskStore != null && !diskStore.isEmpty()) {

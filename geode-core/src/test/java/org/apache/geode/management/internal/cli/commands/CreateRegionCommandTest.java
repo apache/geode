@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -89,16 +88,15 @@ public class CreateRegionCommandTest {
         .contains("Only one of type & template-region can be specified.");
   }
 
-  @Ignore("Eviction is not configurable yet")
   @Test
   public void invalidEvictionAction() throws Exception {
     CommandResult result = parser.executeCommandWithInstance(command,
         "create region --name=region --type=REPLICATE --eviction-action=invalidAction");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("Invalid command");
+    assertThat(result.getContent().toString())
+        .contains("eviction-action must be 'destroy' or 'overflow-to-disk'");
   }
 
-  @Ignore("Eviction is not configurable yet")
   @Test
   public void invalidEvictionAttributes() throws Exception {
     CommandResult result = parser.executeCommandWithInstance(command,
@@ -108,7 +106,6 @@ public class CreateRegionCommandTest {
         .contains("eviction-max-memory and eviction-entry-count cannot both be specified.");
   }
 
-  @Ignore("Eviction is not configurable yet")
   @Test
   public void missingEvictionAction() throws Exception {
     CommandResult result = parser.executeCommandWithInstance(command,
