@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.statistics;
 
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolStatistics;
-
-public interface ProtobufClientStatistics extends ClientProtocolStatistics {
+public interface ProtobufClientStatistics {
   String PROTOBUF_STATS_NAME = "ProtobufStats";
 
   void clientConnected();

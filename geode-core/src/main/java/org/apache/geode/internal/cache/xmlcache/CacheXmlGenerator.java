@@ -1536,6 +1536,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     for (GatewayReceiver receiver : receiverList) {
       AttributesImpl atts = new AttributesImpl();
       try {
+        // hostnameForSenders
+        if (generateDefaults() || receiver.getHostnameForSenders() != null)
+          atts.addAttribute("", "", HOSTNAME_FOR_SENDERS, "", receiver.getHostnameForSenders());
         // start port
         if (generateDefaults() || receiver.getStartPort() != GatewayReceiver.DEFAULT_START_PORT)
           atts.addAttribute("", "", START_PORT, "", String.valueOf(receiver.getStartPort()));

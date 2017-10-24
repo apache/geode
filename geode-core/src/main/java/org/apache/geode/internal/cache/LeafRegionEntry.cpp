@@ -239,9 +239,6 @@ public class LEAF_CLASS extends PARENT_CLASS {
   @Override
   public void returnToPool() {
     // Deadcoded for now; never was working
-//    if (this instanceof VMThinRegionEntryLongKey) {
-//      factory.returnToPool((VMThinRegionEntryLongKey)this);
-//    }
   }
 #else    
   private volatile Object value;
@@ -343,45 +340,6 @@ public class LEAF_CLASS extends PARENT_CLASS {
   void setDiskId(RegionEntry old) {
     this.id = ((AbstractDiskRegionEntry)old).getDiskId();
   }
-//  // inlining DiskId
-//  // always have these fields
-//  /**
-//   * id consists of
-//   * most significant
-//   * 1 byte = users bits
-//   * 2-8 bytes = oplog id
-//   * least significant.
-//   * 
-//   * The highest bit in the oplog id part is set to 1 if the oplog id
-//   * is negative.
-//   * @todo this field could be an int for an overflow only region
-//   */
-//  private long id;
-//  /**
-//   * Length of the bytes on disk.
-//   * This is always set. If the value is invalid then it will be set to 0.
-//   * The most significant bit is used by overflow to mark it as needing to be written.
-//   */
-//  protected int valueLength = 0;
-//  // have intOffset or longOffset
-//  // intOffset
-//  /**
-//   * The position in the oplog (the oplog offset) where this entry's value is
-//   * stored
-//   */
-//  private volatile int offsetInOplog;
-//  // longOffset
-//  /**
-//   * The position in the oplog (the oplog offset) where this entry's value is
-//   * stored
-//   */
-//  private volatile long offsetInOplog;
-//  // have overflowOnly or persistence
-//  // overflowOnly
-//  // no fields
-//  // persistent
-//  /** unique entry identifier * */
-//  private long keyId;
 #endif
   
 #ifdef LRU
@@ -395,7 +353,7 @@ public class LEAF_CLASS extends PARENT_CLASS {
     long maxOplogSize = ds.getMaxOplogSize();
     this.id = DiskId.createDiskId(maxOplogSize, false /* over flow only */, ds.needsLinkedList());
 #else
-  // nothing needed for LRUs with no disk
+    // nothing needed for LRUs with no disk
 #endif
   }
   public synchronized int updateEntrySize(EnableLRU capacityController) {
@@ -503,7 +461,8 @@ public class LEAF_CLASS extends PARENT_CLASS {
   public long getLastAccessed() throws InternalStatisticsDisabledException {
     return this.lastAccessed;
   }
-  private void setLastAccessed(long lastAccessed) {
+  @Override
+  public void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
   @Override

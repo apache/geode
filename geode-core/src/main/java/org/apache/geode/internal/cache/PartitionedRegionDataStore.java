@@ -2212,7 +2212,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     invokeBucketReadHook();
     try {
       if (r != null) {
-        Set keys = r.keySet(allowTombstones);
         // A copy is made so that the bucket is free to move
         ret = new HashSet(r.keySet(allowTombstones));
         checkIfBucketMoved(r);

@@ -4827,6 +4827,11 @@ public class PartitionedRegion extends LocalRegion
     return this.dataStore;
   }
 
+  @Override
+  public boolean canStoreDataLocally() {
+    return getDataStore() != null;
+  }
+
   /**
    * Grab the PartitionedRegionID Lock, this MUST be done in a try block since it may throw an
    * exception
@@ -5886,6 +5891,9 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public Set entrySet(boolean recursive) {
     checkReadiness();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return Collections.unmodifiableSet(new PREntriesSet());
   }
 
@@ -5949,6 +5957,9 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public Set keys() {
     checkReadiness();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return Collections.unmodifiableSet(new KeysSet());
   }
 
@@ -6135,6 +6146,9 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public Collection values() {
     checkReadiness();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return Collections.unmodifiableSet(new ValuesSet());
   }
 
@@ -7061,7 +7075,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public void destroyRegion(Object aCallbackArgument)
       throws CacheWriterException, TimeoutException {
-    invokeBeforeRegionDestroyInServices();
+    this.cache.invokeBeforeDestroyed(this);
     checkForColocatedChildren();
     getDataView().checkSupportsRegionDestroy();
     checkForLimitedOrNoAccess();

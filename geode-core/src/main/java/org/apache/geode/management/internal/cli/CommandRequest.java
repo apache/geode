@@ -88,9 +88,4 @@ public class CommandRequest {
   public String getUserInput() {
     return getParseResult().getUserInput();
   }
-
-  @TestingOnly
-  public Map<String, String> getParameters() {
-    return getParseResult().getParamValueStrings();
-  }
 }

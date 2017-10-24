@@ -12,37 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.security.internal.server;
+package org.apache.geode.test.junit.rules.gfsh.internal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+public class OutputLine {
+  private final String line;
+  private final OutputSource source;
 
-import org.apache.geode.security.SecurityManager;
-
-/**
- * An implementation of {@link Authenticator} that doesn't use its parameters and always returns
- * true.
- */
-public class NoOpAuthenticator implements Authenticator {
-  @Override
-  public void authenticate(InputStream inputStream, OutputStream outputStream,
-      SecurityManager securityManager) throws IOException {
-    // this method needs to do nothing as it is a pass-through implementation
+  private OutputLine(String line, OutputSource source) {
+    this.line = line;
+    this.source = source;
   }
 
-  @Override
-  public boolean isAuthenticated() {
-    return true;
+  public static OutputLine fromStdErr(String line) {
+    return new OutputLine(line, OutputSource.STD_ERR);
   }
 
-  @Override
-  public Authorizer getAuthorizer() {
-    return new NoOpAuthorizer();
+  public static OutputLine fromStdOut(String line) {
+    return new OutputLine(line, OutputSource.STD_OUT);
   }
 
-  @Override
-  public String implementationID() {
-    return "NOOP";
+  public String getLine() {
+    return line;
+  }
+
+  public OutputSource getSource() {
+    return source;
+  }
+
+  public static enum OutputSource {
+    STD_ERR, STD_OUT;
   }
 }

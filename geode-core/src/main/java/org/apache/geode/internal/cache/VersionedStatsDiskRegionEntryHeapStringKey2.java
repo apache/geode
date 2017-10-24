@@ -15,33 +15,23 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.cache.EntryEvent;
-
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
-// disk: 1
+// disk: DISK
 // lru: LRU
-// stats: 1
-// versioned: 1
+// stats: STATS
+// versioned: VERSIONED
 // offheap: OFFHEAP
 // One of the following key macros must be defined:
 // key object: KEY_OBJECT
@@ -49,33 +39,17 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
-// key string2: 1
-
+// key string2: KEY_STRING2
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsDiskRegionEntryHeap {
   public VersionedStatsDiskRegionEntryHeapStringKey2(RegionEntryContext context, String key,
-
-
-
-      Object value
-
-      , boolean byteEncode
-
-  ) {
-    super(context,
-
-        (value instanceof RecoveredEntry ? null : value)
-
-
-
-    );
+      Object value, boolean byteEncode) {
+    super(context, (value instanceof RecoveredEntry ? null : value));
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     initialize(context, value);
-
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
     long tmpBits1 = 0L;
     long tmpBits2 = 0L;
@@ -106,11 +80,9 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
     tmpBits1 |= key.length();
     this.bits1 = tmpBits1;
     this.bits2 = tmpBits2;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -119,7 +91,6 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   private static final AtomicLongFieldUpdater<VersionedStatsDiskRegionEntryHeapStringKey2> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VersionedStatsDiskRegionEntryHeapStringKey2.class,
           "lastModified");
-
   private volatile Object value;
 
   @Override
@@ -165,11 +136,8 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
     this.next = n;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // disk code
-
   protected void initialize(RegionEntryContext context, Object value) {
     diskInitialize(context, value);
   }
@@ -179,9 +147,7 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
     throw new IllegalStateException("should never be called");
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   private void diskInitialize(RegionEntryContext context, Object value) {
     DiskRecoveryStore drs = (DiskRecoveryStore) context;
     DiskStoreImpl ds = drs.getDiskStore();
@@ -206,50 +172,8 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   void setDiskId(RegionEntry old) {
     this.id = ((AbstractDiskRegionEntry) old).getDiskId();
   }
-  // // inlining DiskId
-  // // always have these fields
-  // /**
-  // * id consists of
-  // * most significant
-  // * 1 byte = users bits
-  // * 2-8 bytes = oplog id
-  // * least significant.
-  // *
-  // * The highest bit in the oplog id part is set to 1 if the oplog id
-  // * is negative.
-  // * @todo this field could be an int for an overflow only region
-  // */
-  // private long id;
-  // /**
-  // * Length of the bytes on disk.
-  // * This is always set. If the value is invalid then it will be set to 0.
-  // * The most significant bit is used by overflow to mark it as needing to be written.
-  // */
-  // protected int valueLength = 0;
-  // // have intOffset or longOffset
-  // // intOffset
-  // /**
-  // * The position in the oplog (the oplog offset) where this entry's value is
-  // * stored
-  // */
-  // private volatile int offsetInOplog;
-  // // longOffset
-  // /**
-  // * The position in the oplog (the oplog offset) where this entry's value is
-  // * stored
-  // */
-  // private volatile long offsetInOplog;
-  // // have overflowOnly or persistence
-  // // overflowOnly
-  // // no fields
-  // // persistent
-  // /** unique entry identifier * */
-  // private long keyId;
-
-
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // stats code
   @Override
   public void updateStatsForGet(boolean hit, long time) {
@@ -272,7 +196,6 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   private volatile long lastAccessed;
   private volatile int hitCount;
   private volatile int missCount;
-
   private static final AtomicIntegerFieldUpdater<VersionedStatsDiskRegionEntryHeapStringKey2> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VersionedStatsDiskRegionEntryHeapStringKey2.class,
           "hitCount");
@@ -285,7 +208,8 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  @Override
+  public void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 
@@ -314,7 +238,6 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public void txDidDestroy(long currTime) {
     setLastModified(currTime);
@@ -328,10 +251,7 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
     return true;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // versioned code
   private VersionSource memberID;
   private short entryVersionLowBytes;
@@ -347,7 +267,6 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
-
 
   public long getVersionTimeStamp() {
     return getLastModified();
@@ -366,7 +285,6 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public void setVersions(VersionTag tag) {
     this.memberID = tag.getMemberID();
     int eVersion = tag.getEntryVersion();
@@ -396,7 +314,6 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberID);
     tag.setEntryVersion(getEntryVersion());
@@ -429,11 +346,8 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
     return this.regionVersionLowBytes;
   }
 
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   // strlen is encoded in lowest 6 bits (max strlen is 63)
   // character encoding info is in bits 7 and 8
   // The other bits are used to encoded character data.
@@ -482,7 +396,6 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public boolean isKeyEqual(Object k) {
     if (k instanceof String) {
@@ -525,7 +438,5 @@ public class VersionedStatsDiskRegionEntryHeapStringKey2 extends VersionedStatsD
     }
     return false;
   }
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-

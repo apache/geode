@@ -22,7 +22,6 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -37,6 +36,7 @@ import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.BackupUtil;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -46,6 +46,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceO
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.management.BackupStatus;
+import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Invoke;
@@ -56,7 +58,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.awaitility.Awaitility;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -837,21 +838,11 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
     return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members") {
 
       public Object call() {
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
         try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          adminDS.waitToBeConnected(MAX_WAIT);
-          return adminDS.backupAllMembers(getBackupDir());
-
-        } catch (Exception e) {
+          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), getBackupDir(),
+              null);
+        } catch (ManagementException e) {
           throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
         }
       }
     });

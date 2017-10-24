@@ -110,14 +110,14 @@ public class ShowMetricsCommand implements GfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      String export_to_report_to = parseResult.getParamValue(CliStrings.SHOW_METRICS__FILE);
+      String export_to_report_to = parseResult.getParamValueAsString(CliStrings.SHOW_METRICS__FILE);
       if (export_to_report_to != null && !export_to_report_to.endsWith(".csv")) {
         return ResultBuilder
             .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".csv"));
       }
 
-      String regionName = parseResult.getParamValue(CliStrings.SHOW_METRICS__REGION);
-      String port = parseResult.getParamValue(CliStrings.SHOW_METRICS__CACHESERVER__PORT);
+      String regionName = parseResult.getParamValueAsString(CliStrings.SHOW_METRICS__REGION);
+      String port = parseResult.getParamValueAsString(CliStrings.SHOW_METRICS__CACHESERVER__PORT);
 
       if (port != null) {
         try {
@@ -132,7 +132,7 @@ public class ShowMetricsCommand implements GfshCommand {
             CliStrings.SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT);
       }
 
-      String member = parseResult.getParamValue(CliStrings.MEMBER);
+      String member = parseResult.getParamValueAsString(CliStrings.MEMBER);
       if (port != null && member == null) {
         return ResultBuilder
             .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);

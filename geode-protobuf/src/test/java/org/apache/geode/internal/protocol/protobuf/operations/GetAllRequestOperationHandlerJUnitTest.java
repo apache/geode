@@ -33,18 +33,16 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.ProtobufTestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.Result;
 import org.apache.geode.internal.protocol.protobuf.Success;
-import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
-import org.apache.geode.security.internal.server.NoOpAuthorizer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -78,9 +76,9 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Test
   public void processReturnsExpectedValuesForValidKeys() throws Exception {
-    Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true, false),
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+    Result<RegionAPI.GetAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(true, false),
+            ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 
@@ -99,9 +97,9 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsNoEntriesForNoKeysRequested() throws UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
-    Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, false),
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+    Result<RegionAPI.GetAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(false, false),
+            ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 
@@ -118,8 +116,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     RegionAPI.GetAllRequest getAllRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, testKeys);
     Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
-        getAllRequest,
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+        getAllRequest, ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     RegionAPI.GetAllResponse message = result.getMessage();
@@ -133,9 +130,9 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void multipleKeysWhereOneThrows() throws UnsupportedEncodingTypeException,
       CodecNotRegisteredForTypeException, InvalidExecutionContextException {
-    Result<RegionAPI.GetAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true, true),
-        new MessageExecutionContext(cacheStub, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+    Result<RegionAPI.GetAllResponse> result =
+        operationHandler.process(serializationServiceStub, generateTestRequest(true, true),
+            ProtobufTestExecutionContext.getNoAuthExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 

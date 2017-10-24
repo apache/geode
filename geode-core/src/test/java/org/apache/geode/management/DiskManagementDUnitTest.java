@@ -293,7 +293,7 @@ public class DiskManagementDUnitTest implements Serializable {
       DiskBackupStatus status = bean.backupAllMembers(backupDir.getAbsolutePath(), null);
 
       assertThat(status.getBackedUpDiskStores().keySet().size()).isEqualTo(memberCount);
-      assertThat(status.getOfflineDiskStores()).isEqualTo(null); // TODO: fix GEODE-1946
+      assertThat(status.getOfflineDiskStores()).isEmpty(); // TODO: fix GEODE-1946
     });
   }
 

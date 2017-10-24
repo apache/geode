@@ -60,3 +60,11 @@ idea {
         sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
     }
 }
+
+task zip(type: Zip) {
+    from 'src/main/proto'
+    baseName = "${project.name}-definitions"
+    destinationDir = file("$buildDir/libs")
+}
+
+assemble.dependsOn 'zip'

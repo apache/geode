@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -229,8 +228,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-      String zip = paramValueMap.get(CliStrings.EXPORT_SHARED_CONFIG__FILE);
+      String zip = parseResult.getParamValueAsString(CliStrings.EXPORT_SHARED_CONFIG__FILE);
 
       if (!zip.endsWith(".zip")) {
         return ResultBuilder
@@ -259,9 +257,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
   public static class ImportInterceptor extends AbstractCliAroundInterceptor {
 
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-
-      String zip = paramValueMap.get(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
+      String zip = parseResult.getParamValueAsString(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
 
       zip = StringUtils.trim(zip);
 

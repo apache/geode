@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.DM;
 
 /**
  * Interface to be used instead of type-casting to LocalRegion.
@@ -32,9 +33,12 @@ import org.apache.geode.cache.Region;
  * </pre>
  * </ul>
  */
-public interface InternalRegion extends Region, HasCachePerfStats {
+public interface InternalRegion<K, V> extends Region<K, V>, HasCachePerfStats {
 
   CachePerfStats getCachePerfStats();
 
   DiskRegion getDiskRegion();
+
+  RegionEntry getRegionEntry(K key);
+
 }

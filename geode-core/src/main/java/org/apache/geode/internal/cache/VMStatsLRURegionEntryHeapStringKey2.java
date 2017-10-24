@@ -15,26 +15,18 @@
 package org.apache.geode.internal.cache;
 
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
-
-
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-
 import org.apache.geode.internal.cache.lru.EnableLRU;
-
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
-
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
 // macros whose definition changes this class:
 // disk: DISK
-// lru: 1
-// stats: 1
+// lru: LRU
+// stats: STATS
 // versioned: VERSIONED
 // offheap: OFFHEAP
 // One of the following key macros must be defined:
@@ -43,31 +35,16 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Ha
 // key long: KEY_LONG
 // key uuid: KEY_UUID
 // key string1: KEY_STRING1
-// key string2: 1
-
+// key string2: KEY_STRING2
 /**
  * Do not modify this class. It was generated. Instead modify LeafRegionEntry.cpp and then run
  * ./dev-tools/generateRegionEntryClasses.sh (it must be run from the top level directory).
  */
 public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHeap {
-  public VMStatsLRURegionEntryHeapStringKey2(RegionEntryContext context, String key,
-
-
-
-      Object value
-
-      , boolean byteEncode
-
-  ) {
-    super(context,
-
-
-
-        value
-
-    );
+  public VMStatsLRURegionEntryHeapStringKey2(RegionEntryContext context, String key, Object value,
+      boolean byteEncode) {
+    super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
     // caller has already confirmed that key.length <= MAX_INLINE_STRING_KEY
     long tmpBits1 = 0L;
     long tmpBits2 = 0L;
@@ -98,11 +75,9 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
     tmpBits1 |= key.length();
     this.bits1 = tmpBits1;
     this.bits2 = tmpBits2;
-
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // common code
   protected int hash;
   private HashEntry<Object, Object> next;
@@ -110,7 +85,6 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
   private volatile long lastModified;
   private static final AtomicLongFieldUpdater<VMStatsLRURegionEntryHeapStringKey2> lastModifiedUpdater =
       AtomicLongFieldUpdater.newUpdater(VMStatsLRURegionEntryHeapStringKey2.class, "lastModified");
-
   private volatile Object value;
 
   @Override
@@ -156,18 +130,11 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
     this.next = n;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // lru code
   @Override
   public void setDelayedDiskId(LocalRegion r) {
-
-
-
     // nothing needed for LRUs with no disk
-
   }
 
   public synchronized int updateEntrySize(EnableLRU capacityController) {
@@ -177,7 +144,6 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   public synchronized int updateEntrySize(EnableLRU capacityController, Object value) {
     int oldSize = getEntrySize();
     int newSize = capacityController.entrySize(getKeyForSizing(), value);
@@ -212,7 +178,6 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   private LRUClockNode nextLRU;
   private LRUClockNode prevLRU;
   private int size;
@@ -242,21 +207,13 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public Object getKeyForSizing() {
-
-
-
     // inline keys always report null for sizing since the size comes from the entry size
     return null;
-
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // stats code
   @Override
   public void updateStatsForGet(boolean hit, long time) {
@@ -279,7 +236,6 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
   private volatile long lastAccessed;
   private volatile int hitCount;
   private volatile int missCount;
-
   private static final AtomicIntegerFieldUpdater<VMStatsLRURegionEntryHeapStringKey2> hitCountUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsLRURegionEntryHeapStringKey2.class, "hitCount");
   private static final AtomicIntegerFieldUpdater<VMStatsLRURegionEntryHeapStringKey2> missCountUpdater =
@@ -290,7 +246,8 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
     return this.lastAccessed;
   }
 
-  private void setLastAccessed(long lastAccessed) {
+  @Override
+  public void setLastAccessed(long lastAccessed) {
     this.lastAccessed = lastAccessed;
   }
 
@@ -319,7 +276,6 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public void txDidDestroy(long currTime) {
     setLastModified(currTime);
@@ -333,12 +289,8 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
     return true;
   }
 
-
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   // key code
-
   // strlen is encoded in lowest 6 bits (max strlen is 63)
   // character encoding info is in bits 7 and 8
   // The other bits are used to encoded character data.
@@ -387,7 +339,6 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-
   @Override
   public boolean isKeyEqual(Object k) {
     if (k instanceof String) {
@@ -430,7 +381,5 @@ public class VMStatsLRURegionEntryHeapStringKey2 extends VMStatsLRURegionEntryHe
     }
     return false;
   }
-
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }
-

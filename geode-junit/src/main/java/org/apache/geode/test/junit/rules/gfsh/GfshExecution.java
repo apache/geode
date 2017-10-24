@@ -14,12 +14,23 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static java.util.stream.Collectors.joining;
-
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.commons.lang.SystemUtils;
+import com.google.common.base.Charsets;
+import org.apache.commons.lang.exception.ExceptionUtils;
+
+import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
 public class GfshExecution {
   private final Process process;
@@ -32,16 +43,8 @@ public class GfshExecution {
     this.processLogger = new ProcessLogger(process, workingDir.getName());
   }
 
-  public List<String> getStdOutLines() {
-    return processLogger.getStdOutLines();
-  }
-
-  public List<String> getStdErrLines() {
-    return processLogger.getStdErrLines();
-  }
-
-  public String getStdErrText() {
-    return getStdErrLines().stream().collect(joining(SystemUtils.LINE_SEPARATOR));
+  public String getOutputText() {
+    return processLogger.getOutputText();
   }
 
   /**
@@ -54,5 +57,57 @@ public class GfshExecution {
 
   public Process getProcess() {
     return this.process;
+  }
+
+  public List<File> getServerDirs() {
+    File[] potentialMemberDirectories = workingDir.listFiles(File::isDirectory);
+
+    Predicate<File> isServerDir = (File directory) -> Arrays.stream(directory.list())
+        .anyMatch(filename -> filename.endsWith("server.pid"));
+
+    return Arrays.stream(potentialMemberDirectories).filter(isServerDir)
+        .collect(Collectors.toList());
+  }
+
+  public List<File> getLocatorDirs() {
+    File[] potentialMemberDirectories = workingDir.listFiles(File::isDirectory);
+
+    Predicate<File> isLocatorDir = (File directory) -> Arrays.stream(directory.list())
+        .anyMatch(filename -> filename.endsWith("locator.pid"));
+
+    return Arrays.stream(potentialMemberDirectories).filter(isLocatorDir)
+        .collect(Collectors.toList());
+  }
+
+  public void printLogFiles() {
+    System.out
+        .println("Printing contents of all log files found in " + workingDir.getAbsolutePath());
+    List<File> logFiles = findLogFiles();
+
+    for (File logFile : logFiles) {
+      System.out.println("Contents of " + logFile.getAbsolutePath());
+      try (BufferedReader br =
+          new BufferedReader(new InputStreamReader(new FileInputStream(logFile), Charsets.UTF_8))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+          System.out.println(line);
+        }
+      } catch (IOException ignored) {
+        System.out.println("Unable to print log due to: " + ExceptionUtils.getStackTrace(ignored));
+      }
+    }
+  }
+
+  private List<File> findLogFiles() {
+    List<File> servers = getServerDirs();
+    List<File> locators = getLocatorDirs();
+
+    return Stream.concat(servers.stream(), locators.stream()).flatMap(this::findLogFiles)
+        .collect(Collectors.toList());
+  }
+
+  private Stream<File> findLogFiles(File memberDir) {
+    return Arrays.stream(memberDir.listFiles()).filter(File::isFile)
+        .filter(file -> file.getName().toLowerCase().endsWith(".log"));
   }
 }

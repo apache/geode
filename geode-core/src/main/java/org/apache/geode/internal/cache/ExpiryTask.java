@@ -121,15 +121,21 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   /** Return the absolute time when idle expiration occurs, or 0 if not used */
   public long getIdleExpirationTime() throws EntryNotFoundException {
+    long idle = getIdleTimeoutInMillis();
+    if (idle > 0) {
+      return getLastAccessedTime() + idle;
+    }
+    return 0L;
+  }
+
+  protected long getIdleTimeoutInMillis() {
     long idle = getIdleAttributes().getTimeout();
-    long tilt = 0;
     if (idle > 0) {
       if (getLocalRegion() != null && !getLocalRegion().EXPIRY_UNITS_MS) {
         idle *= 1000;
       }
-      tilt = getLastAccessedTime() + idle;
     }
-    return tilt;
+    return idle;
   }
 
   /**
@@ -149,10 +155,31 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    */
   protected boolean isExpirationPossible() throws EntryNotFoundException {
     long expTime = getExpirationTime();
-    if (expTime > 0L && getNow() >= expTime) {
-      return true;
+    if (expTime > 0L) {
+      long now = getNow();
+      if (now >= expTime) {
+        if (isIdleExpiredOnOthers()) {
+          return true;
+        } else {
+          // our last access time was reset so recheck
+          expTime = getExpirationTime();
+          if (expTime > 0L && now >= expTime) {
+            return true;
+          }
+        }
+      }
     }
     return false;
+  }
+
+  /**
+   * Added for GEODE-3764.
+   * 
+   * @return true if other members last access time indicates we have expired
+   */
+  protected boolean isIdleExpiredOnOthers() throws EntryNotFoundException {
+    // by default return true since we don't need to check with others
+    return true;
   }
 
   /**

@@ -36,12 +36,14 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
@@ -132,6 +134,7 @@ public class TXStateProxyImpl implements TXStateProxy {
           // wait for the region to be initialized fixes bug 44652
           r.waitOnInitialization(r.initializationLatchBeforeGetInitialImage);
           target = r.getOwnerForKey(key);
+
           if (target == null || target.equals(this.txMgr.getDM().getId())) {
             this.realDeal = new TXState(this, false);
           } else {
@@ -463,7 +466,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     TXStateProxy txp = null;
     boolean txUnlocked = false;
     if (resetTXState) {
-      txp = getTxMgr().internalSuspend();
+      txp = getTxMgr().pauseTransaction();
     } else {
       if (getLock().isHeldByCurrentThread()) {
         txUnlocked = true; // bug #42945 - hang trying to compute size for PR
@@ -477,7 +480,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       return getRealDeal(null, localRegion).entryCount(localRegion);
     } finally {
       if (resetTXState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().unpauseTransaction(txp);
       } else if (txUnlocked) {
         getLock().lock();
       }
@@ -506,12 +509,15 @@ public class TXStateProxyImpl implements TXStateProxy {
     return getRealDeal(null, currRgn).getAdditionalKeysForIterator(currRgn);
   }
 
+  protected final boolean restoreSetOperationTransactionBehavior =
+      SystemPropertyHelper.restoreSetOperationTransactionBehavior();
+
   public Object getEntryForIterator(KeyInfo key, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
-    boolean resetTxState = this.realDeal == null;
+    boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
-      txp = getTxMgr().internalSuspend();
+      txp = getTxMgr().pauseTransaction();
     }
     try {
       if (resetTxState) {
@@ -521,17 +527,23 @@ public class TXStateProxyImpl implements TXStateProxy {
           allowTombstones);
     } finally {
       if (resetTxState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().unpauseTransaction(txp);
       }
     }
   }
 
+  private boolean isTransactionInternalSuspendNeeded(LocalRegion region) {
+    boolean resetTxState = this.realDeal == null
+        && (!region.canStoreDataLocally() || restoreSetOperationTransactionBehavior);
+    return resetTxState;
+  }
+
   public Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
-    boolean resetTxState = this.realDeal == null;
+    boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
-      txp = getTxMgr().internalSuspend();
+      txp = getTxMgr().pauseTransaction();
     }
     try {
       if (resetTxState) {
@@ -542,7 +554,7 @@ public class TXStateProxyImpl implements TXStateProxy {
           allowTombstones);
     } finally {
       if (resetTxState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().unpauseTransaction(txp);
       }
     }
   }
@@ -635,11 +647,10 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
-    // if this the first operation in a transaction, reset txState
-    boolean resetTxState = this.realDeal == null;
+    boolean resetTxState = isTransactionInternalSuspendNeeded(localRegion);
     TXStateProxy txp = null;
     if (resetTxState) {
-      txp = getTxMgr().internalSuspend();
+      txp = getTxMgr().pauseTransaction();
     }
     try {
       if (resetTxState) {
@@ -648,7 +659,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       return getRealDeal(null, localRegion).getBucketKeys(localRegion, bucketId, false);
     } finally {
       if (resetTxState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().unpauseTransaction(txp);
       }
     }
   }
@@ -678,7 +689,21 @@ public class TXStateProxyImpl implements TXStateProxy {
     if (currRegion.isUsedForPartitionedRegionBucket()) {
       return currRegion.getRegionKeysForIteration();
     } else {
-      return getRealDeal(null, currRegion).getRegionKeysForIteration(currRegion);
+      boolean resetTxState = isTransactionInternalSuspendNeeded(currRegion);
+      TXStateProxy txp = null;
+      if (resetTxState) {
+        txp = getTxMgr().pauseTransaction();
+      }
+      try {
+        if (resetTxState) {
+          return currRegion.getSharedDataView().getRegionKeysForIteration(currRegion);
+        }
+        return getRealDeal(null, currRegion).getRegionKeysForIteration(currRegion);
+      } finally {
+        if (resetTxState) {
+          getTxMgr().unpauseTransaction(txp);
+        }
+      }
     }
   }
 
@@ -707,6 +732,10 @@ public class TXStateProxyImpl implements TXStateProxy {
       }
     }
     return null;
+  }
+
+  public boolean hasRealDeal() {
+    return this.realDeal != null;
   }
 
   @Override
