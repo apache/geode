@@ -17,14 +17,32 @@ package org.apache.geode.internal.protocol;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 
 @Experimental
-public interface Result<SuccessType> {
-  <T> T map(Function<SuccessType, T> successFunction,
-      Function<ClientProtocol.ErrorResponse, T> errorFunction);
+public class Failure<SuccessType, FailureType> implements Result<SuccessType, FailureType> {
+  private final FailureType failureType;
 
-  SuccessType getMessage();
+  private Failure(FailureType failureType) {
+    this.failureType = failureType;
+  }
 
-  ClientProtocol.ErrorResponse getErrorMessage();
+  public static <T, V> Failure<T, V> of(V errorResponse) {
+    return new Failure<>(errorResponse);
+  }
+
+  @Override
+  public <T> T map(Function<SuccessType, T> successFunction,
+      Function<FailureType, T> errorFunction) {
+    return errorFunction.apply(failureType);
+  }
+
+  @Override
+  public SuccessType getMessage() {
+    throw new RuntimeException("This is not a Success result");
+  }
+
+  @Override
+  public FailureType getErrorMessage() {
+    return failureType;
+  }
 }

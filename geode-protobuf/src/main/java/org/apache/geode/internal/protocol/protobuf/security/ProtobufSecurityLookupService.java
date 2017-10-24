@@ -12,21 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.security;
+package org.apache.geode.internal.protocol.protobuf.security;
 
-import org.apache.geode.internal.protocol.protobuf.security.InvalidConfigAuthenticator;
-import org.apache.geode.internal.protocol.protobuf.security.ProtobufShiroAuthenticator;
-import org.apache.geode.internal.protocol.protobuf.security.ProtobufShiroAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.security.processors.AuthenticationSecurityProcessor;
+import org.apache.geode.internal.protocol.security.Authenticator;
+import org.apache.geode.internal.protocol.security.Authorizer;
+import org.apache.geode.internal.protocol.security.InvalidConfigAuthenticator;
+import org.apache.geode.internal.protocol.security.NoOpAuthenticator;
+import org.apache.geode.internal.protocol.security.NoOpAuthorizer;
+import org.apache.geode.internal.protocol.security.SecurityProcessor;
 import org.apache.geode.internal.protocol.security.processors.NoAuthenticationSecurityProcessor;
 import org.apache.geode.internal.security.SecurityService;
 
-public class SecurityLookupService {
+public class ProtobufSecurityLookupService {
   private final Authenticator[] authenticators = new Authenticator[3];
   private final Authorizer[] authorizers = new Authorizer[2];
   private final SecurityProcessor[] securityProcessors = new SecurityProcessor[2];
 
-  public SecurityLookupService() {
+  public ProtobufSecurityLookupService() {
     initializeAuthenticators();
     initializeAuthortizers();
     initializeSecurityProcessors();

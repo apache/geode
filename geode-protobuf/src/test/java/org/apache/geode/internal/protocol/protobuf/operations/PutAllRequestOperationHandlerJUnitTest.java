@@ -70,7 +70,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processInsertsMultipleValidEntriesInCache() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
+    Result result = operationHandler.process(serializationServiceStub,
         generateTestRequest(false, true), getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
@@ -84,7 +84,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithInvalidEntrySucceedsAndReturnsFailedKey() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
+    Result result = operationHandler.process(serializationServiceStub,
         generateTestRequest(true, true), getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
@@ -92,7 +92,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     verify(regionMock).put(TEST_KEY2, TEST_VALUE2);
     verify(regionMock).put(TEST_KEY3, TEST_VALUE3);
 
-    RegionAPI.PutAllResponse putAllResponse = result.getMessage();
+    RegionAPI.PutAllResponse putAllResponse = (RegionAPI.PutAllResponse) result.getMessage();
     assertEquals(1, putAllResponse.getFailedKeysCount());
     BasicTypes.KeyedError error = putAllResponse.getFailedKeys(0);
     assertEquals(TEST_INVALID_KEY,
@@ -103,7 +103,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithNoEntriesPasses() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
+    Result result = operationHandler.process(serializationServiceStub,
         generateTestRequest(false, false), getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);

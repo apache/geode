@@ -28,6 +28,7 @@ import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
@@ -40,14 +41,14 @@ import org.apache.geode.internal.serialization.registry.exception.CodecNotRegist
 import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
 
 @Experimental
-public class PutAllRequestOperationHandler
-    implements OperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse> {
+public class PutAllRequestOperationHandler implements
+    OperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse, ClientProtocol.ErrorResponse> {
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<RegionAPI.PutAllResponse> process(SerializationService serializationService,
-      RegionAPI.PutAllRequest putAllRequest, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException {
+  public Result<RegionAPI.PutAllResponse, ClientProtocol.ErrorResponse> process(
+      SerializationService serializationService, RegionAPI.PutAllRequest putAllRequest,
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = putAllRequest.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
 

@@ -29,18 +29,18 @@ import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.security.exception.IncompatibleAuthenticationMechanismsException;
+import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
 import org.apache.geode.internal.protocol.security.processors.AuthorizationSecurityProcessor;
 import org.apache.geode.internal.protocol.security.Authenticator;
 import org.apache.geode.internal.serialization.SerializationService;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class AuthenticationRequestOperationHandler implements
-    OperationHandler<AuthenticationAPI.AuthenticationRequest, AuthenticationAPI.AuthenticationResponse> {
+    OperationHandler<AuthenticationAPI.AuthenticationRequest, AuthenticationAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> {
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<AuthenticationAPI.AuthenticationResponse> process(
+  public Result<AuthenticationAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> process(
       SerializationService serializationService, AuthenticationAPI.AuthenticationRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 

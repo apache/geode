@@ -18,7 +18,6 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.internal.protocol.security.Authorizer;
 
