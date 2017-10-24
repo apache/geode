@@ -24,6 +24,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
@@ -58,6 +59,9 @@ import java.util.concurrent.TimeoutException;
 @Category({DistributedTest.class, SerializationTest.class})
 public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
+  private static final SimpleClass ANOBJECT = new SimpleClass(57, (byte) 3);
+  private static final String TEST_REGION_NAME = "testSimplePdx";
+
   @Test
   public void testSimplePut() {
     Host host = Host.getHost(0);
@@ -70,7 +74,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.REPLICATE);
-        createRootRegion("testSimplePdx", af.create());
+        createRootRegion(TEST_REGION_NAME, af.create());
         return null;
       }
     };
@@ -78,25 +82,9 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(createRegion);
     vm2.invoke(createRegion);
     vm3.invoke(createRegion);
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        // Check to make sure the type region is not yet created
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, new SimpleClass(57, (byte) 3));
-        // Ok, now the type registry should exist
-        assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
-        return null;
-      }
-    });
-    vm2.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        // Ok, now the type registry should exist
-        assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
-        Region r = getRootRegion("testSimplePdx");
-        assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
-        return null;
-      }
-    });
+
+    vm1.invoke(() -> doSimplePut(false));
+    vm2.invoke(() -> verifySimplePut());
 
     vm3.invoke(new SerializableCallable("check for PDX") {
 
@@ -104,6 +92,31 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
         assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
         return null;
       }
+    });
+  }
+
+  private void createPR() {
+    getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .setPartitionAttributes(new PartitionAttributesFactory<Integer, Object>().create())
+        .create(TEST_REGION_NAME);
+  }
+
+  @Test
+  public void testSimplePutOnPRWithTx() {
+    Host host = Host.getHost(0);
+    VM vm1 = host.getVM(0);
+    VM vm2 = host.getVM(1);
+    VM vm3 = host.getVM(2);
+
+    vm1.invoke(() -> createPR());
+    vm2.invoke(() -> createPR());
+    vm3.invoke(() -> createPR());
+    vm1.invoke(() -> doSimplePut(true));
+
+    vm2.invoke(() -> verifySimplePut());
+
+    vm3.invoke(() -> {
+      assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
     });
   }
 
@@ -118,7 +131,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.REPLICATE);
-        createRootRegion("testSimplePdx", af.create());
+        createRootRegion(TEST_REGION_NAME, af.create());
         addPoisonedTransactionListeners();
         return null;
       }
@@ -126,28 +139,8 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(createRegionAndAddPoisonedListener);
     vm2.invoke(createRegionAndAddPoisonedListener);
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        // Check to make sure the type region is not yet created
-        Region r = getRootRegion("testSimplePdx");
-        Cache mycache = getCache();
-        mycache.getCacheTransactionManager().begin();
-        r.put(1, new SimpleClass(57, (byte) 3));
-        mycache.getCacheTransactionManager().commit();
-        // Ok, now the type registry should exist
-        assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
-        return null;
-      }
-    });
-    vm2.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        // Ok, now the type registry should exist
-        assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
-        Region r = getRootRegion("testSimplePdx");
-        assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
-        return null;
-      }
-    });
+    vm1.invoke(() -> doSimplePut(true));
+    vm2.invoke(() -> verifySimplePut());
   }
 
   @Test
@@ -162,7 +155,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-        createRootRegion("testSimplePdx", af.create());
+        createRootRegion(TEST_REGION_NAME, af.create());
         return null;
       }
     };
@@ -185,7 +178,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
         af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
         af.setDiskStoreName("store1");
-        createRootRegion("testSimplePdx", af.create());
+        createRootRegion(TEST_REGION_NAME, af.create());
         return null;
       }
     };
@@ -201,21 +194,12 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(createRegion);
     vm2.invoke(createRegion);
 
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        // Check to make sure the type region is not yet created
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, new SimpleClass(57, (byte) 3));
-        // Ok, now the type registry should exist
-        assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
-        return null;
-      }
-    });
+    vm1.invoke(() -> doSimplePut(false));
 
     final SerializableCallable checkForObject = new SerializableCallable() {
       public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
+        Region r = getRootRegion(TEST_REGION_NAME);
+        assertEquals(ANOBJECT, r.get(1));
         // Ok, now the type registry should exist
         assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
         return null;
@@ -439,6 +423,30 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     getCache().getCacheTransactionManager().setWriter(listener);
   }
 
+
+  private void doSimplePut(boolean useTransaction) {
+    // Check to make sure the type region is not yet created
+    Region r = getRootRegion(TEST_REGION_NAME);
+    if (useTransaction) {
+      getCache().getCacheTransactionManager().begin();
+    }
+    try {
+      r.put(1, ANOBJECT);
+    } finally {
+      if (useTransaction) {
+        getCache().getCacheTransactionManager().commit();
+      }
+    }
+    // Ok, now the type registry should exist
+    assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
+  }
+
+  private void verifySimplePut() {
+    // Ok, now the type registry should exist
+    assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
+    Region r = getRootRegion(TEST_REGION_NAME);
+    assertEquals(ANOBJECT, r.get(1));
+  }
 
   static private class MyTestTransactionListener implements TransactionWriter, TransactionListener {
     private MyTestTransactionListener() {
