@@ -214,7 +214,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   // newOplog = dr.getChild();
   // assertIndexDetailsEquals(null, region.get(new Integer(1)));
   // try {
-  // dr.addToOplogSet(id, new File(oplog.getOplogFile()
+  // dr.addToOplogSet(id, new File(oplog.getOplogFileForTest()
   // .getPath()), dr.getNextDir());
   // }
   // catch (Exception e) {
