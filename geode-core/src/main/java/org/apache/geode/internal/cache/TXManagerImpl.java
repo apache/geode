@@ -307,6 +307,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * current thread using a {@link ThreadLocal}.
    */
   public void begin() {
+    // logger.info("begin stack", new Exception());
     checkClosed();
     {
       TransactionId tid = getTransactionId();
@@ -685,25 +686,25 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * If the current thread is in a transaction then pause will cause it to no longer be in a
-   * transaction. The same thread is expected to unpause/resume the transaction later.
+   * transaction. The same thread is expected to unpause/resume the transaction later. The thread
+   * should not start a new transaction after it paused a transaction.
    *
    * @return the state of the transaction or null. Pass this value to
    *         {@link TXManagerImpl#unpauseTransaction} to reactivate the puased/suspended
    *         transaction.
    */
   public TXStateProxy pauseTransaction() {
+    // logger.info("pause stack", new Exception());
     return internalSuspend(true);
   }
 
   /**
-   * If the current thread is in a transaction then suspend will cause it to no longer be in a
-   * transaction. Currently only used in testing.
+   * If the current thread is in a transaction then internal suspend will cause it to no longer be
+   * in a transaction. The thread can start a new transaction after it internal suspended a
+   * transaction.
    * 
    * @return the state of the transaction or null. to reactivate the suspended transaction.
-   * @deprecated use {@link TXManagerImpl#pauseTransaction} or
-   *             {@link CacheTransactionManager#suspend} instead
    */
-  @Deprecated
   public TXStateProxy internalSuspend() {
     return internalSuspend(false);
   }
@@ -740,20 +741,17 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    *         did not pause the transaction.
    */
   public void unpauseTransaction(TXStateProxy tx) {
+    // logger.info("unpasue stack", new Exception());
     internalResume(tx, true);
   }
 
   /**
    * Activates the specified transaction on the calling thread. Does not require the same thread to
-   * resume it. Currently only used in testing.
+   * resume it.
    *
    * @param tx the transaction to activate.
    * @throws IllegalStateException if this thread already has an active transaction
-   * 
-   * @deprecated use {@link TXManagerImpl#unpauseTransaction} or
-   *             {@link CacheTransactionManager#resume} instead
    */
-  @Deprecated
   public void internalResume(TXStateProxy tx) {
     internalResume(tx, false);
   }
