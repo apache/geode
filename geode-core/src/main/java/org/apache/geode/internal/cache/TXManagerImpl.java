@@ -307,7 +307,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * current thread using a {@link ThreadLocal}.
    */
   public void begin() {
-    // logger.info("begin stack", new Exception());
     checkClosed();
     {
       TransactionId tid = getTransactionId();
@@ -694,7 +693,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    *         transaction.
    */
   public TXStateProxy pauseTransaction() {
-    // logger.info("pause stack", new Exception());
     return internalSuspend(true);
   }
 
@@ -741,7 +739,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    *         did not pause the transaction.
    */
   public void unpauseTransaction(TXStateProxy tx) {
-    // logger.info("unpasue stack", new Exception());
     internalResume(tx, true);
   }
 
