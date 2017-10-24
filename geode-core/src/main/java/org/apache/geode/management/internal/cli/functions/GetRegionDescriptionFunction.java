@@ -43,8 +43,6 @@ public class GetRegionDescriptionFunction extends FunctionAdapter implements Int
       } else {
         context.getResultSender().lastResult(null);
       }
-    } catch (CacheClosedException e) {
-      context.getResultSender().sendException(e);
     } catch (Exception e) {
       context.getResultSender().sendException(e);
     }
