@@ -696,6 +696,13 @@ public class GatewaySenderStats {
   }
 
   /**
+   * Gets the value of the "conflationIndexesMapSize" stat
+   */
+  public int getConflationIndexesMapSize() {
+    return this.stats.getInt(conflationIndexesMapSizeId);
+  }
+
+  /**
    * Returns the current time (ns).
    * 
    * @return the current time (ns)
