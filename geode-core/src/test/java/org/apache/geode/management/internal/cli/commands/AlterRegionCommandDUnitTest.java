@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,10 +25,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -201,12 +204,11 @@ public class AlterRegionCommandDUnitTest extends CliCommandTestBase {
     this.alterVm1.invoke(() -> {
       RegionAttributes attributes = getCache().getRegion(alterRegionName).getAttributes();
       assertEquals(3, attributes.getCacheListeners().length);
-      assertEquals("com.cadrdunit.RegionAlterCacheListenerA",
-          attributes.getCacheListeners()[0].getClass().getName());
-      assertEquals("com.cadrdunit.RegionAlterCacheListenerB",
-          attributes.getCacheListeners()[1].getClass().getName());
-      assertEquals("com.cadrdunit.RegionAlterCacheListenerC",
-          attributes.getCacheListeners()[2].getClass().getName());
+
+      assertThat(Arrays.stream(attributes.getCacheListeners()).map(c -> c.getClass().getName())
+          .collect(Collectors.toSet())).containsExactlyInAnyOrder(
+              "com.cadrdunit.RegionAlterCacheListenerA", "com.cadrdunit.RegionAlterCacheListenerB",
+              "com.cadrdunit.RegionAlterCacheListenerC");
     });
 
     // Add 1 back to each of the sets

@@ -24,7 +24,9 @@ import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -152,6 +154,11 @@ public interface GfshCommand extends CommandMarker {
 
   default Set<DistributedMember> findMembersForRegion(InternalCache cache, String regionPath) {
     return CliUtil.getRegionAssociatedMembers(regionPath, cache);
+  }
+
+  default ResultCollector<?, ?> executeFunction(final Function function, Object args,
+      final Set<DistributedMember> targetMembers) {
+    return CliUtil.executeFunction(function, args, targetMembers);
   }
 
 }

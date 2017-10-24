@@ -254,7 +254,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     }
     assertThat(result.getStatus()).describedAs(getGfshOutput()).isEqualTo(Result.Status.OK);
     for (String expectedOutput : expectedOutputs) {
-      assertThat(getGfshOutput()).contains(expectedOutput);
+      assertThat(getGfshOutput()).containsPattern(expectedOutput);
     }
     return result;
   }
@@ -268,7 +268,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     }
     assertThat(result.getStatus()).describedAs(getGfshOutput()).isEqualTo(Result.Status.ERROR);
     for (String expectedOutput : expectedOutputs) {
-      assertThat(getGfshOutput()).contains(expectedOutput);
+      assertThat(getGfshOutput()).containsPattern(expectedOutput);
     }
     return result;
   }

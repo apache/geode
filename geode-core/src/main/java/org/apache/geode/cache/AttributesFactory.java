@@ -331,6 +331,11 @@ public class AttributesFactory<K, V> {
   public static final boolean DEFAULT_DISK_SYNCHRONOUS = true;
 
   /**
+   * The default concurrency level for updates to region values
+   */
+  public static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+
+  /**
    * Creates a new instance of AttributesFactory ready to create a {@code RegionAttributes} with
    * default settings.
    */
@@ -1559,7 +1564,7 @@ public class AttributesFactory<K, V> {
     Class<V> valueConstraint = null;
     int initialCapacity = 16;
     float loadFactor = 0.75f;
-    int concurrencyLevel = 16;
+    int concurrencyLevel = DEFAULT_CONCURRENCY_LEVEL;
     boolean concurrencyChecksEnabled = true;
     boolean earlyAck = false;
     boolean publisher = false;

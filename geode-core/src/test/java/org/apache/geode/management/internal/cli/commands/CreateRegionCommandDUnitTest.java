@@ -149,7 +149,7 @@ public class CreateRegionCommandDUnitTest {
         + " --type=REPLICATE --partition-resolver=InvalidPartitionResolver");
 
     assertThat(((String) ((JSONArray) result.getContent().get("message")).get(0)))
-        .contains("\"" + regionName + "\" is not a Partitioned Region");
+        .contains("\"/" + regionName + "\" is not a Partitioned Region");
   }
 
   private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {

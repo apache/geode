@@ -45,8 +45,8 @@ public class CommandExecutor {
       throw e;
     } catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
-      return ResultBuilder.createGemFireErrorResult("Error while processing command <" + parseResult
-          + "> Reason : " + ExceptionUtils.getStackTrace(e));
+      return ResultBuilder.createGemFireErrorResult(
+          "Error while processing command <" + parseResult + "> Reason : " + e.getMessage());
     }
   }
 
