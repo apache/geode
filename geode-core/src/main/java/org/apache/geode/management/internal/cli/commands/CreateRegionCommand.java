@@ -538,8 +538,8 @@ public class CreateRegionCommand implements GfshCommand {
                   .toLocalizedString());
         }
       }
-      Integer totalMaxMemory =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
+      Long totalMaxMemory =
+          (Long) parseResult.getParamValue(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
       if (totalMaxMemory != null) {
         if (totalMaxMemory <= 0) {
           return ResultBuilder.createUserErrorResult(
