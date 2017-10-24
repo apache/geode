@@ -12,12 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol;
+package org.apache.geode.internal.protocol.protobuf;
+
+import static org.apache.geode.internal.protocol.protobuf.BasicTypes.EncodingType.JSON;
 
 import java.util.HashMap;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.internal.serialization.SerializationType;
@@ -32,7 +33,7 @@ public abstract class EncodingTypeTranslator {
 
   private static HashMap<Class, BasicTypes.EncodingType> intializeTypeMap() {
     HashMap<Class, BasicTypes.EncodingType> result = new HashMap<>();
-    result.put(PdxInstance.class, BasicTypes.EncodingType.JSON);
+    result.put(PdxInstance.class, JSON);
     return result;
   }
 
@@ -52,7 +53,7 @@ public abstract class EncodingTypeTranslator {
     if (resultValue instanceof PdxInstance) {
       String pdxClassName = ((PdxInstance) resultValue).getClassName();
       if (pdxClassName.equals(JSONFormatter.JSON_CLASSNAME)) {
-        return BasicTypes.EncodingType.JSON;
+        return JSON;
       }
     }
 

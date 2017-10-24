@@ -19,14 +19,12 @@ import org.apache.geode.distributed.internal.LocatorLoadSnapshot;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.ProtobufTestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI.GetAvailableServersResponse;
 import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 

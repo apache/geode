@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.apache.geode.distributed.internal.SecurityConfig;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Assert;

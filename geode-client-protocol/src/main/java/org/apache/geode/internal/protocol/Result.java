@@ -12,23 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.security;
+package org.apache.geode.internal.protocol;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.function.Function;
 
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.annotations.Experimental;
 
-/**
- * An implementation of {@link Authenticator} that doesn't use its parameters and always returns
- * true.
- */
-public class NoOpAuthenticator implements Authenticator<Object, Object> {
+@Experimental
+public interface Result<SuccessType, FailureType> {
+  <T> T map(Function<SuccessType, T> successFunction, Function<FailureType, T> errorFunction);
 
-  @Override
-  public Object authenticate(Object inputObject) throws AuthenticationFailedException {
-    return null;
-  }
+  SuccessType getMessage();
+
+  FailureType getErrorMessage();
 }

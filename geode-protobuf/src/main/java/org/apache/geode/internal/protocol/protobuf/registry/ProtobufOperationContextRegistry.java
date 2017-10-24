@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol.Request.RequestAPICase;
-import org.apache.geode.internal.protocol.OperationContext;
+import org.apache.geode.internal.protocol.protobuf.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.operations.GetAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.GetAvailableServersOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.GetRegionNamesRequestOperationHandler;
@@ -35,75 +35,76 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ProtobufOperationContextRegistry {
-  private Map<RequestAPICase, OperationContext> operationContexts = new ConcurrentHashMap<>();
+  private Map<RequestAPICase, ProtobufOperationContext> operationContexts =
+      new ConcurrentHashMap<>();
 
   public ProtobufOperationContextRegistry() {
     addContexts();
   }
 
-  public OperationContext getOperationContext(RequestAPICase apiCase) {
+  public ProtobufOperationContext getOperationContext(RequestAPICase apiCase) {
     return operationContexts.get(apiCase);
   }
 
   private void addContexts() {
     operationContexts.put(RequestAPICase.AUTHENTICATIONREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getAuthenticationRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getAuthenticationRequest,
             new AuthenticationRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setAuthenticationResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.GETREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getGetRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getGetRequest,
             new GetRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.GETALLREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getGetAllRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getGetAllRequest,
             new GetAllRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetAllResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.PUTREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getPutRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getPutRequest,
             new PutRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setPutResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.WRITE)));
 
     operationContexts.put(RequestAPICase.PUTALLREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getPutAllRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getPutAllRequest,
             new PutAllRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setPutAllResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.WRITE)));
 
     operationContexts.put(RequestAPICase.REMOVEREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getRemoveRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getRemoveRequest,
             new RemoveRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setRemoveResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.WRITE)));
 
     operationContexts.put(RequestAPICase.GETREGIONNAMESREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getGetRegionNamesRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getGetRegionNamesRequest,
             new GetRegionNamesRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetRegionNamesResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.GETREGIONREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getGetRegionRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getGetRegionRequest,
             new GetRegionRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetRegionResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
 
     operationContexts.put(RequestAPICase.GETAVAILABLESERVERSREQUEST,
-        new OperationContext<>(ClientProtocol.Request::getGetAvailableServersRequest,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getGetAvailableServersRequest,
             new GetAvailableServersOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetAvailableServersResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.CLUSTER,

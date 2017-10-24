@@ -33,6 +33,7 @@ import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.ProtobufTestExecutionContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
@@ -62,9 +63,8 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void test_puttingTheEncodedEntryIntoRegion() throws Exception {
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result<RegionAPI.PutResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(),
-            ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationServiceStub, generateTestRequest(),
+        ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 
@@ -92,25 +92,28 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(encodedKey, testValue);
     RegionAPI.PutRequest putRequest =
         ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
-    Result<RegionAPI.PutResponse> result = operationHandler.process(serializationServiceStub,
-        putRequest, ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationServiceStub, putRequest,
+        ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
+    ClientProtocol.ErrorResponse errorMessage =
+        (ClientProtocol.ErrorResponse) result.getErrorMessage();
     assertEquals(ProtocolErrorCode.VALUE_ENCODING_ERROR.codeValue,
-        result.getErrorMessage().getError().getErrorCode());
+        errorMessage.getError().getErrorCode());
   }
 
   @Test
   public void test_RegionNotFound() throws Exception {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result<RegionAPI.PutResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(),
-            ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationServiceStub, generateTestRequest(),
+        ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
+    ClientProtocol.ErrorResponse errorMessage =
+        (ClientProtocol.ErrorResponse) result.getErrorMessage();
     assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
-        result.getErrorMessage().getError().getErrorCode());
+        errorMessage.getError().getErrorCode());
   }
 
   @Test
@@ -118,13 +121,14 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     when(regionMock.put(any(), any())).thenThrow(ClassCastException.class);
 
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result<RegionAPI.PutResponse> result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(),
-            ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationServiceStub, generateTestRequest(),
+        ProtobufTestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
+    ClientProtocol.ErrorResponse errorMessage =
+        (ClientProtocol.ErrorResponse) result.getErrorMessage();
     assertEquals(ProtocolErrorCode.CONSTRAINT_VIOLATION.codeValue,
-        result.getErrorMessage().getError().getErrorCode());
+        errorMessage.getError().getErrorCode());
   }
 
   private RegionAPI.PutRequest generateTestRequest()

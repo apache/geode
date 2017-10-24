@@ -24,6 +24,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.Failure;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
@@ -34,14 +35,14 @@ import org.apache.geode.internal.serialization.SerializationService;
 import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
 
 @Experimental
-public class GetRegionRequestOperationHandler
-    implements OperationHandler<RegionAPI.GetRegionRequest, RegionAPI.GetRegionResponse> {
+public class GetRegionRequestOperationHandler implements
+    OperationHandler<RegionAPI.GetRegionRequest, RegionAPI.GetRegionResponse, ClientProtocol.ErrorResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetRegionResponse> process(SerializationService serializationService,
-      RegionAPI.GetRegionRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException {
+  public Result<RegionAPI.GetRegionResponse, ClientProtocol.ErrorResponse> process(
+      SerializationService serializationService, RegionAPI.GetRegionRequest request,
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
 
     Region region = messageExecutionContext.getCache().getRegion(regionName);

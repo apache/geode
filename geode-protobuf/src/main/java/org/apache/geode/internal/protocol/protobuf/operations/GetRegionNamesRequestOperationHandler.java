@@ -21,6 +21,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
@@ -28,13 +29,13 @@ import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUti
 import org.apache.geode.internal.serialization.SerializationService;
 
 @Experimental
-public class GetRegionNamesRequestOperationHandler
-    implements OperationHandler<RegionAPI.GetRegionNamesRequest, RegionAPI.GetRegionNamesResponse> {
+public class GetRegionNamesRequestOperationHandler implements
+    OperationHandler<RegionAPI.GetRegionNamesRequest, RegionAPI.GetRegionNamesResponse, ClientProtocol.ErrorResponse> {
 
   @Override
-  public Result<RegionAPI.GetRegionNamesResponse> process(SerializationService serializationService,
-      RegionAPI.GetRegionNamesRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException {
+  public Result<RegionAPI.GetRegionNamesResponse, ClientProtocol.ErrorResponse> process(
+      SerializationService serializationService, RegionAPI.GetRegionNamesRequest request,
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     Set<Region<?, ?>> regions = messageExecutionContext.getCache().rootRegions();
     return Success.of(ProtobufResponseUtilities.createGetRegionNamesResponse(regions));
   }

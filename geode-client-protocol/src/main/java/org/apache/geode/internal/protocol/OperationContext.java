@@ -19,20 +19,19 @@ import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class OperationContext<OperationRequest, OperationResponse> {
-  private final OperationHandler<OperationRequest, OperationResponse> operationHandler;
-  private final Function<ClientProtocol.Request, OperationRequest> fromRequest;
-  private final Function<OperationResponse, ClientProtocol.Response.Builder> toResponse;
-  private final Function<ClientProtocol.ErrorResponse, ClientProtocol.Response.Builder> toErrorResponse;
+public abstract class OperationContext<OperationRequest, OperationResponse, ErrorResponse, ProtocolRequest, ProtocolResponse> {
+  private final OperationHandler<OperationRequest, OperationResponse, ErrorResponse> operationHandler;
+  private final Function<ProtocolRequest, OperationRequest> fromRequest;
+  private final Function<OperationResponse, ProtocolResponse> toResponse;
+  private final Function<ErrorResponse, ProtocolResponse> toErrorResponse;
   private final ResourcePermission accessPermissionRequired;
 
-  public OperationContext(Function<ClientProtocol.Request, OperationRequest> fromRequest,
-      OperationHandler<OperationRequest, OperationResponse> operationHandler,
-      Function<OperationResponse, ClientProtocol.Response.Builder> toResponse,
+  public OperationContext(Function<ProtocolRequest, OperationRequest> fromRequest,
+      OperationHandler<OperationRequest, OperationResponse, ErrorResponse> operationHandler,
+      Function<OperationResponse, ProtocolResponse> toResponse,
       ResourcePermission permissionRequired) {
     this.operationHandler = operationHandler;
     this.fromRequest = fromRequest;
@@ -41,24 +40,21 @@ public class OperationContext<OperationRequest, OperationResponse> {
     accessPermissionRequired = permissionRequired;
   }
 
-  private ClientProtocol.Response.Builder makeErrorBuilder(
-      ClientProtocol.ErrorResponse errorResponse) {
-    return ClientProtocol.Response.newBuilder().setErrorResponse(errorResponse);
-  }
+  protected abstract ProtocolResponse makeErrorBuilder(ErrorResponse errorResponse);
 
-  public OperationHandler<OperationRequest, OperationResponse> getOperationHandler() {
+  public OperationHandler<OperationRequest, OperationResponse, ErrorResponse> getOperationHandler() {
     return operationHandler;
   }
 
-  public Function<ClientProtocol.Request, OperationRequest> getFromRequest() {
+  public Function<ProtocolRequest, OperationRequest> getFromRequest() {
     return fromRequest;
   }
 
-  public Function<OperationResponse, ClientProtocol.Response.Builder> getToResponse() {
+  public Function<OperationResponse, ProtocolResponse> getToResponse() {
     return toResponse;
   }
 
-  public Function<ClientProtocol.ErrorResponse, ClientProtocol.Response.Builder> getToErrorResponse() {
+  public Function<ErrorResponse, ProtocolResponse> getToErrorResponse() {
     return toErrorResponse;
   }
 

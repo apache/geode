@@ -32,9 +32,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
 import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
@@ -63,14 +63,14 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   }
 
   @Test
-  public void processReturnsCacheRegions() throws UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
-    Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
-        serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
+  public void processReturnsCacheRegions() throws InvalidExecutionContextException {
+    Result result = operationHandler.process(serializationServiceStub,
+        ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(cacheStub));
     Assert.assertTrue(result instanceof Success);
 
-    RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
+    RegionAPI.GetRegionNamesResponse getRegionsResponse =
+        (RegionAPI.GetRegionNamesResponse) result.getMessage();
     Assert.assertEquals(3, getRegionsResponse.getRegionsCount());
 
     // There's no guarantee for what order we receive the regions in from the response
@@ -94,12 +94,13 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    Result<RegionAPI.GetRegionNamesResponse> result = operationHandler.process(
-        serializationServiceStub, ProtobufRequestUtilities.createGetRegionNamesRequest(),
+    Result result = operationHandler.process(serializationServiceStub,
+        ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(emptyCache));
     Assert.assertTrue(result instanceof Success);
 
-    RegionAPI.GetRegionNamesResponse getRegionsResponse = result.getMessage();
+    RegionAPI.GetRegionNamesResponse getRegionsResponse =
+        (RegionAPI.GetRegionNamesResponse) result.getMessage();
     Assert.assertEquals(0, getRegionsResponse.getRegionsCount());
   }
 }

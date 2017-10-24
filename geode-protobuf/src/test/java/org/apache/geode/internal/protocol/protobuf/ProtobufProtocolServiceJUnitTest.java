@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.protocol.protobuf.ProtobufProtocolService;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.junit.categories.UnitTest;

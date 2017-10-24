@@ -23,6 +23,7 @@ import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.Failure;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
@@ -35,14 +36,14 @@ import org.apache.geode.internal.serialization.registry.exception.CodecNotRegist
 import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
 
 @Experimental
-public class RemoveRequestOperationHandler
-    implements OperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse> {
+public class RemoveRequestOperationHandler implements
+    OperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse, ClientProtocol.ErrorResponse> {
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<RegionAPI.RemoveResponse> process(SerializationService serializationService,
-      RegionAPI.RemoveRequest request, MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException {
+  public Result<RegionAPI.RemoveResponse, ClientProtocol.ErrorResponse> process(
+      SerializationService serializationService, RegionAPI.RemoveRequest request,
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);

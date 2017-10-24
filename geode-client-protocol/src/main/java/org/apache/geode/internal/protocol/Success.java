@@ -17,23 +17,22 @@ package org.apache.geode.internal.protocol;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 
 @Experimental
-public class Success<SuccessType> implements Result<SuccessType> {
+public class Success<SuccessType, FailureType> implements Result<SuccessType, FailureType> {
   private final SuccessType successResponse;
 
-  public Success(SuccessType successResponse) {
+  private Success(SuccessType successResponse) {
     this.successResponse = successResponse;
   }
 
-  public static <T> Success<T> of(T result) {
-    return new Success<>(result);
+  public static <T, V> Success<T, V> of(T successResponse) {
+    return new Success<>(successResponse);
   }
 
   @Override
   public <T> T map(Function<SuccessType, T> successFunction,
-      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
+      Function<FailureType, T> errorFunction) {
     return successFunction.apply(successResponse);
   }
 
@@ -43,7 +42,7 @@ public class Success<SuccessType> implements Result<SuccessType> {
   }
 
   @Override
-  public ClientProtocol.ErrorResponse getErrorMessage() {
+  public FailureType getErrorMessage() {
     throw new RuntimeException("This is a not Failure result");
   }
 }

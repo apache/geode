@@ -13,21 +13,12 @@
  * the License.
  */
 
-package org.apache.geode.internal.protocol.protobuf.security;
+package org.apache.geode.internal.protocol.security;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.apache.geode.internal.protocol.protobuf.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.protobuf.security.exception.IncompatibleAuthenticationMechanismsException;
-import org.apache.geode.internal.protocol.security.Authenticator;
-import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class InvalidConfigAuthenticator implements Authenticator<Object, Object> {
