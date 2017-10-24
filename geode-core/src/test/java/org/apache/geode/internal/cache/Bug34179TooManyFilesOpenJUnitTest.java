@@ -84,7 +84,7 @@ public class Bug34179TooManyFilesOpenJUnitTest extends DiskRegionTestingBase {
   /**
    * cleans all the directory of all the files present in them
    */
-  protected static void deleteFiles() {
+  protected void deleteFiles() {
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
       for (int j = 0; j < files.length; j++) {
