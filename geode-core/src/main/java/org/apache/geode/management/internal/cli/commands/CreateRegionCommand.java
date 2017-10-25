@@ -126,6 +126,14 @@ public class CreateRegionCommand implements GfshCommand {
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
+          help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
+          help = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT__HELP) Integer evictionEntryCount,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY,
+          help = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY__HELP) Integer evictionMaxMemory,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER,
+          help = CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER__HELP) String evictionObjectSizer,
       @CliOption(key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
           help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP) String[] gatewaySenderIds,
       @CliOption(key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
@@ -155,13 +163,7 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
           help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP) Integer prTotalNumBuckets,
       @CliOption(key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
-          help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint,
-      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
-          help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
-      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY,
-          help = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY__HELP) Integer evictionMaxMemory,
-      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
-          help = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT__HELP) Integer evictionEntryCount
+          help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
     Result result;
@@ -202,7 +204,8 @@ public class CreateRegionCommand implements GfshCommand {
     functionArgs.setRegionExpirationIdleTime(regionExpirationIdleTime,
         regionExpirationIdleTimeAction);
     functionArgs.setRegionExpirationTTL(regionExpirationTTL, regionExpirationTTLAction);
-    functionArgs.setEvictionAttributes(evictionAction, evictionMaxMemory, evictionEntryCount);
+    functionArgs.setEvictionAttributes(evictionAction, evictionMaxMemory, evictionEntryCount,
+        evictionObjectSizer);
     functionArgs.setDiskStore(diskStore);
     functionArgs.setDiskSynchronous(diskSynchronous);
     functionArgs.setEnableAsyncConflation(enableAsyncConflation);
@@ -665,6 +668,8 @@ public class CreateRegionCommand implements GfshCommand {
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT);
       String evictionAction =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_ACTION);
+      String evictionSizer =
+          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER);
       if (maxEntry != null && maxMemory != null) {
         return ResultBuilder
             .createUserErrorResult(CliStrings.CREATE_REGION__MSG__BOTH_EVICTION_VALUES);
@@ -673,6 +678,17 @@ public class CreateRegionCommand implements GfshCommand {
       if ((maxEntry != null || maxMemory != null) && evictionAction == null) {
         return ResultBuilder
             .createUserErrorResult(CliStrings.CREATE_REGION__MSG__MISSING_EVICTION_ACTION);
+      }
+
+      if (evictionSizer != null) {
+        if (maxEntry != null) {
+          return ResultBuilder.createUserErrorResult(
+              CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT);
+        }
+        if (maxMemory == null) {
+          return ResultBuilder.createUserErrorResult(
+              CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_WITHOUT_MAX_MEMORY);
+        }
       }
 
       if (evictionAction != null

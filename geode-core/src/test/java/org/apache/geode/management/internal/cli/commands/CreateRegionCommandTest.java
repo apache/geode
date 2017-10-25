@@ -94,7 +94,7 @@ public class CreateRegionCommandTest {
         "create region --name=region --type=REPLICATE --eviction-action=invalidAction");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString())
-        .contains("eviction-action must be 'destroy' or 'overflow-to-disk'");
+        .contains("eviction-action must be 'local-destroy' or 'overflow-to-disk'");
   }
 
   @Test
@@ -112,6 +112,24 @@ public class CreateRegionCommandTest {
         "create region --name=region --type=REPLICATE --eviction-max-memory=1000");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString()).contains("eviction-action must be specified.");
+  }
+
+  @Test
+  public void invalidEvictionSizerAndCount() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --eviction-entry-count=1 --eviction-object-sizer=abc --eviction-action=local-destroy");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString())
+        .contains("eviction-object-sizer cannot be specified with eviction-entry-count");
+  }
+
+  @Test
+  public void invalidEvictionSizerWithoutMemory() throws Exception {
+    CommandResult result = parser.executeCommandWithInstance(command,
+        "create region --name=region --type=REPLICATE --eviction-object-sizer=abc --eviction-action=local-destroy");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString())
+        .contains("eviction-object-sizer cannot be specified without eviction-max-memory");
   }
 
   @Test
