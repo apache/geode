@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
@@ -65,8 +64,6 @@ public class ShowMissingDiskStoresFunction extends FunctionAdapter implements In
           }
         }
       }
-    } catch (CacheClosedException ignored) {
-      // return empty results
     } catch (Exception e) {
       context.getResultSender().sendException(e);
     }

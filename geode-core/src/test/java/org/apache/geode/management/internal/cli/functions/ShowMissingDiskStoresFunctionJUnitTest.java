@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
@@ -42,7 +41,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -98,18 +96,13 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   }
 
   @Test
-  public void testExecute() {
+  public void testExecute() throws Exception {
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
 
     smdsFunc.execute(context);
-    try {
-      results = resultSender.getResults();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Unexpected exception");
-    }
+    results = resultSender.getResults();
     assertNotNull(results);
   }
 
@@ -118,7 +111,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     expectedException.expect(RuntimeException.class);
 
     smdsFunc.execute(null);
-    fail("Missing expected RuntimeException");
   }
 
   /**
@@ -126,15 +118,13 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
-  public void testExecuteWithNullCacheInstanceHasEmptyResults() throws Throwable {
+  public void testExecuteWithNullCacheInstanceThrowsCacheClosedException() throws Throwable {
+    expectedException.expect(CacheClosedException.class);
     context = new FunctionContextImpl(null, "testFunction", null, resultSender);
     List<?> results = null;
 
     smdsFunc.execute(context);
     results = resultSender.getResults();
-    assertNotNull(results);
-    assertEquals(1, results.size());
-    assertNull(results.get(0));
   }
 
   @Test
@@ -195,8 +185,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
         .equals("/diskStore2")) {
       assertEquals("/diskStore1",
           ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
-    } else {
-      fail("Incorrect missing colocated region results");
     }
   }
 
@@ -229,8 +217,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
       assertEquals("child2", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
     } else if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child2")) {
       assertEquals("child1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
-    } else {
-      fail("Incorrect missing colocated region results");
     }
   }
 
@@ -277,8 +263,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
             .equals("/diskStore2")) {
           assertEquals("/diskStore1",
               ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
-        } else {
-          fail("Incorrect missing colocated region results");
         }
       } else if (detailSet.toArray()[0] instanceof ColocatedRegionDetails) {
         assertEquals(2, detailSet.toArray().length);
@@ -293,8 +277,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
         } else {
           fail("Incorrect missing colocated region results");
         }
-      } else {
-        fail("Unexpected result type: " + detailSet.toArray()[0].getClass());
       }
     }
   }
@@ -307,7 +289,6 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
 
     smdsFunc.execute(context);
     List<?> results = resultSender.getResults();
-    fail("Failed to catch expected RuntimeException");
   }
 
   @Test
