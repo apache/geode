@@ -14,16 +14,17 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,10 +40,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
@@ -234,7 +232,6 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
   }
 
-  @Category(FlakyTest.class) // GEODE-1920
   @Test
   public void test_NY_Recognises_TK_AND_HK_Simultaneously() {
     Map<Integer, Set<InetSocketAddress>> dsVsPort = new HashMap<>();
@@ -261,32 +258,65 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     dsVsPort.put(4, locatorPortshk);
     async[1] = vm3.invokeAsync(() -> WANTestBase.createFirstRemoteLocator(4, nyLocPort1));
 
-    ArrayList<Integer> locatorPortsln2 = new ArrayList<Integer>();
     async[2] = vm4.invokeAsync(() -> WANTestBase.createSecondLocator(1, lnLocPort1));
 
-    ArrayList<Integer> locatorPortsny2 = new ArrayList<Integer>();
     async[3] = vm5.invokeAsync(() -> WANTestBase.createSecondLocator(2, nyLocPort1));
 
+    waitForAsyncInvokesToComplete(async);
 
-    try {
-      async[0].join();
-      async[1].join();
-      async[2].join();
-      async[3].join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
-    }
-
-    locatorPortstk.add(new InetSocketAddress("localhost", (Integer) async[0].getReturnValue()));
-    locatorPortshk.add(new InetSocketAddress("localhost", (Integer) async[1].getReturnValue()));
-    locatorPortsln.add(new InetSocketAddress("localhost", (Integer) async[2].getReturnValue()));
-    locatorPortsny.add(new InetSocketAddress("localhost", (Integer) async[3].getReturnValue()));
+    addPortNumbersToDSPortNumCollection(locatorPortsln, locatorPortsny, async, locatorPortstk,
+        locatorPortshk);
 
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
     vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
+  }
+
+  private void addPortNumbersToDSPortNumCollection(Set<InetSocketAddress> locatorPortsln,
+      Set<InetSocketAddress> locatorPortsny, AsyncInvocation[] async,
+      Set<InetSocketAddress> locatorPortstk, Set<InetSocketAddress> locatorPortshk) {
+    IntStream.range(0, 4).forEach(i -> {
+      Integer portNumber = null;
+      try {
+        portNumber = (Integer) async[i].get();
+        switch (i) {
+          case 0:
+            locatorPortstk.add(new InetSocketAddress("localhost", portNumber));
+            break;
+          case 1:
+            locatorPortshk.add(new InetSocketAddress("localhost", portNumber));
+            break;
+          case 2:
+            locatorPortsln.add(new InetSocketAddress("localhost", portNumber));
+            break;
+          case 3:
+            locatorPortsny.add(new InetSocketAddress("localhost", portNumber));
+            break;
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+        if (portNumber == null) {
+          fail("No port number was returned for async invocation #" + i);
+        }
+        fail();
+      }
+    });
+  }
+
+  private void waitForAsyncInvokesToComplete(AsyncInvocation[] async) {
+    IntStream.range(0, 4).forEach(i -> {
+      try {
+        async[i].join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        if (async[i].getException() != null) {
+          fail(
+              "Failed in async invocation : " + i + " with Exception : " + async[i].getException());
+        }
+        fail();
+      }
+    });
   }
 
 
