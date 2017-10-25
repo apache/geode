@@ -88,7 +88,7 @@ public class ShowDeadlockDUnitTest {
 
   @Test
   public void testNoDeadlock() throws Exception {
-    gfsh.executeAndVerifyCommand(showDeadlockCommand);
+    gfsh.executeAndAssertThat(showDeadlockCommand).statusIsSuccess();
     String commandOutput = gfsh.getGfshOutput();
 
     assertThat(commandOutput).startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK);
@@ -105,7 +105,7 @@ public class ShowDeadlockDUnitTest {
     lockTheLocks(server2, server1, countDownLatch);
 
     Awaitility.await().atMost(5, TimeUnit.MINUTES).pollDelay(5, TimeUnit.SECONDS).until(() -> {
-      gfsh.executeAndVerifyCommand(showDeadlockCommand);
+      gfsh.executeAndAssertThat(showDeadlockCommand).statusIsSuccess();
       String commandOutput = gfsh.getGfshOutput();
       assertThat(commandOutput).startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
       assertThat(outputFile).exists();

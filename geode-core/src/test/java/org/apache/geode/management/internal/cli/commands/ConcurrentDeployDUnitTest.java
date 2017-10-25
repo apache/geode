@@ -88,13 +88,13 @@ public class ConcurrentDeployDUnitTest {
 
     for (int i = 1; i <= numTimesToExecute; i++) {
       command = "deploy --jar=" + jar1.getAbsolutePath();
-      gfsh.executeAndVerifyCommand(command);
+      gfsh.executeAndAssertThat(command).statusIsSuccess();
 
       command = "list deployed";
-      gfsh.executeAndVerifyCommand(command);
+      gfsh.executeAndAssertThat(command).statusIsSuccess();
 
       command = "undeploy --jar=" + jar1.getName();
-      gfsh.executeAndVerifyCommand(command);
+      gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     }
   }

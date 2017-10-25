@@ -39,20 +39,20 @@ public class ConnectCommandWithSecurityTest {
   public void connectToLocator() throws Exception {
     gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
         "clusterRead", "clusterRead");
-    gfsh.executeAndVerifyCommand("list members");
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
   }
 
   @Test
   public void connectOverJmx() throws Exception {
     gfsh.secureConnectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
         "clusterRead", "clusterRead");
-    gfsh.executeAndVerifyCommand("list members");
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
   }
 
   @Test
   public void connectOverHttp() throws Exception {
     gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
         "clusterRead", "clusterRead");
-    gfsh.executeAndVerifyCommand("list members");
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
   }
 }

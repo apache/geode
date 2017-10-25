@@ -94,7 +94,7 @@ public class ExportLogsStatsDUnitTest {
   @Test
   public void testExportLogsAndStats() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs");
+    connector.executeAndAssertThat("export logs").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
@@ -106,7 +106,7 @@ public class ExportLogsStatsDUnitTest {
   @Test
   public void testExportLogsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --logs-only");
+    connector.executeAndAssertThat("export logs --logs-only").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
@@ -117,7 +117,7 @@ public class ExportLogsStatsDUnitTest {
   @Test
   public void testExportStatsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --stats-only");
+    connector.executeAndAssertThat("export logs --stats-only").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
@@ -137,8 +137,8 @@ public class ExportLogsStatsDUnitTest {
     commandStringBuilder.addOption("start-time", dateTimeFormatter.format(tomorrow));
     commandStringBuilder.addOption("log-level", "debug");
 
-    String output = connector.execute(commandStringBuilder.toString());
-    assertThat(output).contains("No files to be exported");
+    connector.executeAndAssertThat(commandStringBuilder.toString()).statusIsError()
+        .containsOutput("No files to be exported");
   }
 
   @Test

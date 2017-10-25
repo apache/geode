@@ -76,40 +76,40 @@ public class NetstatDUnitTest {
   @Test
   public void testConnectToLocator() throws Exception {
     gfshConnector.connect(ports[0], GfshShellConnectionRule.PortType.locator);
-    gfshConnector.executeAndVerifyCommand(netStatCommand);
+    gfshConnector.executeAndAssertThat(netStatCommand).statusIsSuccess();
   }
 
   @Test
   public void testConnectToJmxManagerOne() throws Exception {
     gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatCommand);
+    gfshConnector.executeAndAssertThat(netStatCommand).statusIsSuccess();
   }
 
   @Test
   public void testConnectToJmxManagerTwo() throws Exception {
     gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatCommand);
+    gfshConnector.executeAndAssertThat(netStatCommand).statusIsSuccess();
   }
 
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToLocatorWithLargeCommandResponse() throws Exception {
     gfshConnector.connect(ports[0], GfshShellConnectionRule.PortType.locator);
-    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+    gfshConnector.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
   }
 
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerOneWithLargeCommandResponse() throws Exception {
     gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+    gfshConnector.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
   }
 
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerTwoWithLargeCommandResponse() throws Exception {
     gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+    gfshConnector.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
   }
 
   @After

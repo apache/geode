@@ -69,7 +69,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
     command.addOption(CliStrings.START_SERVER__J, "-Dgemfire.member-timeout=60000");
 
     // Start server
-    gfsh.executeAndVerifyCommand(command.toString());
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
   /**
@@ -79,6 +79,6 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   public void stopServer() throws Exception {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);
     command.addOption(CliStrings.STOP_SERVER__DIR, serverName);
-    gfsh.executeAndVerifyCommand(command.toString());
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 }

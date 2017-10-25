@@ -197,10 +197,10 @@ public class LuceneCommandsSecurityDUnitTest {
         GfshShellConnectionRule.PortType.locator, "cluster,data", "cluster,data");
 
     // Create lucene index
-    this.gfshShell.executeAndVerifyCommand(getCreateIndexCommand());
+    this.gfshShell.executeAndAssertThat(getCreateIndexCommand()).statusIsSuccess();
 
     // Create region
-    this.gfshShell.executeAndVerifyCommand(getCreateRegionCommand());
+    this.gfshShell.executeAndAssertThat(getCreateRegionCommand()).statusIsSuccess();
 
     // Disconnect gfsh
     this.gfshShell.disconnect();

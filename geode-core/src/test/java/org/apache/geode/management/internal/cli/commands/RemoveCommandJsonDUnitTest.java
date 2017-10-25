@@ -98,7 +98,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
     String keyJson = "('id':'key1','name':'name1')";
 
     String command = removeCommand(keyJson);
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsRemoved(1));
     server2.invoke(() -> verifyKeyIsRemoved(1));
@@ -112,7 +112,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
     String keyJson = "('id':'key1')";
 
     String command = removeCommand(keyJson);
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsRemoved(1));
     server2.invoke(() -> verifyKeyIsRemoved(1));
@@ -126,7 +126,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
     String keyJson = "('foo':'bar')";
 
     String command = removeCommand(keyJson);
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsPresent(1));
     server2.invoke(() -> verifyKeyIsPresent(1));

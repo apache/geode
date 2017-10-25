@@ -97,7 +97,7 @@ public class TomcatSessionBackwardsCompatibilityTest {
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
     command.addOption(CliStrings.START_SERVER__CLASSPATH, classPath);
     command.addOption(CliStrings.START_SERVER__LOCATORS, "localhost[" + locatorPort + "]");
-    gfsh.executeAndVerifyCommand(command.toString());
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
   protected void startLocator(String name, String classPath, int port) throws Exception {
@@ -105,7 +105,7 @@ public class TomcatSessionBackwardsCompatibilityTest {
     locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
     locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
-    gfsh.executeAndVerifyCommand(locStarter.toString());
+    gfsh.executeAndAssertThat(locStarter.toString()).statusIsSuccess();
 
   }
 
@@ -165,11 +165,11 @@ public class TomcatSessionBackwardsCompatibilityTest {
 
     CommandStringBuilder locStop = new CommandStringBuilder(CliStrings.STOP_LOCATOR);
     locStop.addOption(CliStrings.STOP_LOCATOR__DIR, "loc");
-    gfsh.executeAndVerifyCommand(locStop.toString());
+    gfsh.executeAndAssertThat(locStop.toString()).statusIsSuccess();
 
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);
     command.addOption(CliStrings.STOP_SERVER__DIR, "server");
-    gfsh.executeAndVerifyCommand(command.toString());
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
   private void doPutAndGetSessionOnAllClients() throws IOException, URISyntaxException {

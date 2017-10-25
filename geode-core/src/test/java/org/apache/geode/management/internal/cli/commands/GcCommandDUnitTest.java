@@ -82,7 +82,7 @@ public class GcCommandDUnitTest {
   @Test
   public void testGCForGroup() {
     String gcCommand = "gc --group=" + GROUP0;
-    gfsh.executeAndVerifyCommand(gcCommand);
+    gfsh.executeAndAssertThat(gcCommand).statusIsSuccess();
 
     assertThat(gfsh.getGfshOutput()).contains(MANAGER_NAME);
   }
@@ -91,14 +91,14 @@ public class GcCommandDUnitTest {
   public void testGCForMemberID() {
     String gcCommand = "gc --member=" + MANAGER_NAME;
 
-    gfsh.executeAndVerifyCommand(gcCommand);
+    gfsh.executeAndAssertThat(gcCommand).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(MANAGER_NAME);
   }
 
   @Test
   public void testGCForEntireCluster() {
     String command = "gc";
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
     assertThat(output).contains(SERVER1_NAME);

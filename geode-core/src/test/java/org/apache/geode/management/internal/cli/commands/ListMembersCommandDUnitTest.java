@@ -50,14 +50,14 @@ public class ListMembersCommandDUnitTest {
 
   @Test
   public void listMembersWithoutConnection() throws Exception {
-    String result = gfsh.execute(LIST_MEMBER);
-    assertThat(result).contains("Command 'list members' was found but is not currently available");
+    gfsh.executeAndAssertThat(LIST_MEMBER).statusIsError()
+        .containsOutput("Command 'list members' was found but is not currently available");
   }
 
   @Test
   public void listAllMembers() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(LIST_MEMBER);
+    gfsh.executeAndAssertThat(LIST_MEMBER).statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
     assertThat(output).contains("locator-0");
@@ -69,7 +69,7 @@ public class ListMembersCommandDUnitTest {
   @Test
   public void listMembersInLocatorGroup() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(LIST_MEMBER + " --group=locatorGroup");
+    gfsh.executeAndAssertThat(LIST_MEMBER + " --group=locatorGroup").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
     assertThat(output).contains("locator-0");
@@ -81,7 +81,7 @@ public class ListMembersCommandDUnitTest {
   @Test
   public void listMembersInServerGroupOne() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(LIST_MEMBER + " --group=serverGroup1");
+    gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup1").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
     assertThat(output).doesNotContain("locator-0");
@@ -93,7 +93,7 @@ public class ListMembersCommandDUnitTest {
   @Test
   public void listMembersInServerGroupTwo() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(LIST_MEMBER + " --group=serverGroup2");
+    gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup2").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
     assertThat(output).doesNotContain("locator-0");
@@ -105,7 +105,7 @@ public class ListMembersCommandDUnitTest {
   @Test
   public void listMembersInNonExistentGroup() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(LIST_MEMBER + " --group=foo");
+    gfsh.executeAndAssertThat(LIST_MEMBER + " --group=foo").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
     assertThat(output).doesNotContain("locator-0");

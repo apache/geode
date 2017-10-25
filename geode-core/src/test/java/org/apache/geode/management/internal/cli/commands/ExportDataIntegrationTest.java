@@ -75,7 +75,7 @@ public class ExportDataIntegrationTest {
   public void testExport() throws Exception {
     String exportCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
+    gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Data successfully exported ");
   }
 
@@ -84,7 +84,7 @@ public class ExportDataIntegrationTest {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString())
             .addOption(CliStrings.EXPORT_DATA__PARALLEL, "true").getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
+    gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Data successfully exported ");
   }
 

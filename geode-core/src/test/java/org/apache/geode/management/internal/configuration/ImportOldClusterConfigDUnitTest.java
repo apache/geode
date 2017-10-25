@@ -69,14 +69,14 @@ public class ImportOldClusterConfigDUnitTest {
 
     gfsh.connectAndVerify(locator);
 
-    gfsh.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + zipFile.toString());
+    gfsh.executeAndAssertThat("import cluster-configuration --zip-file-name=" + zipFile.toString())
+        .statusIsSuccess();
 
     server = lsRule.startServerVM(1, locator.getPort());
 
     server.invoke(ImportOldClusterConfigDUnitTest::regionOneExists);
 
-    gfsh.executeAndVerifyCommand("create region --name=two --type=REPLICATE");
+    gfsh.executeAndAssertThat("create region --name=two --type=REPLICATE").statusIsSuccess();
     server.invoke(ImportOldClusterConfigDUnitTest::regionOneExists);
     server.invoke(ImportOldClusterConfigDUnitTest::regionTwoExists);
 

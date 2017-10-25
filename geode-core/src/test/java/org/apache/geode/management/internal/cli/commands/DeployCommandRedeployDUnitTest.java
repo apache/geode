@@ -91,23 +91,27 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
 
   @Test
   public void redeployJarsWithNewVersionsOfFunctions() throws Exception {
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion1.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarBVersion1.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarBVersion1.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION1));
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarBVersion2.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarBVersion2.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion2.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion2.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
@@ -116,14 +120,16 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
 
   @Test
   public void hotDeployShouldNotResultInAnyFailedFunctionExecutions() throws Exception {
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion1.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
     server.invoke(() -> LoopingFunctionExecutor.startExecuting(FUNCTION_A));
     server.invoke(() -> LoopingFunctionExecutor.waitForExecutions(100));
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion2.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion2.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 

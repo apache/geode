@@ -36,14 +36,12 @@ public class GfshCommandIntegrationTest {
 
   @Test
   public void invalidCommandWhenNotConnected() throws Exception {
-    String result = gfsh.execute("abc");
-    assertThat(result).contains("Command 'abc' not found");
+    gfsh.executeAndAssertThat("abc").statusIsError().containsOutput("Command 'abc' not found");
   }
 
   @Test
   public void invalidCommandWhenConnected() throws Exception {
     gfsh.connectAndVerify(locator);
-    String result = gfsh.execute("abc");
-    assertThat(result).contains("Command 'abc' not found");
+    gfsh.executeAndAssertThat("abc").statusIsError().containsOutput("Command 'abc' not found");
   }
 }

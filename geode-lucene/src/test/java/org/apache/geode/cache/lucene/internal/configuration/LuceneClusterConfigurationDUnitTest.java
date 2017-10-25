@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -43,8 +42,6 @@ import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -209,26 +206,24 @@ public class LuceneClusterConfigurationDUnitTest {
     createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
 
     // Alter region in group
-    CommandResult alterRegionResult = alterRegionUsingGfsh(group);
-    TabularResultData alterRegionResultData = (TabularResultData) alterRegionResult.getResultData();
-    List<String> alterRegionResultDataStatus = alterRegionResultData.retrieveAllValues("Status");
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, REGION_NAME);
+    csb.addOption(CliStrings.GROUP, group);
+    csb.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "5764");
 
-    // Verify region is altered on only one server
-    assertEquals(1, alterRegionResultDataStatus.size());
-    assertEquals("Region \"/" + REGION_NAME + "\" altered on \"" + vm2.getName() + "\"",
-        alterRegionResultDataStatus.get(0));
+    String expectedStatusOutput =
+        "Region \"/" + REGION_NAME + "\" altered on \"" + vm2.getName() + "\"";
+    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .tableHasColumnWithExactValuesInExactOrder("Status", expectedStatusOutput);
 
     // Start another member with group
     ls.startServerVM(3, properties, locator.getPort());
 
     // Verify all members have indexes
-    CommandResult listIndexesResult = listIndexesUsingGfsh();
-    TabularResultData listIndexesResultData = (TabularResultData) listIndexesResult.getResultData();
-    List<String> listIndexesResultDataStatus = listIndexesResultData.retrieveAllValues("Status");
-    assertEquals(3, listIndexesResultDataStatus.size());
-    for (String status : listIndexesResultDataStatus) {
-      assertEquals("Initialized", status);
-    }
+    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .tableHasColumnWithExactValuesInExactOrder("Status", "Initialized", "Initialized",
+            "Initialized");
   }
 
   private void createAndAddIndexes() throws Exception {
@@ -278,7 +273,7 @@ public class LuceneClusterConfigurationDUnitTest {
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, indexName);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "'field1, field2, field3'");
-    gfshConnector.executeAndVerifyCommand(csb.toString());
+    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void createLuceneIndexWithAnalyzerUsingGfsh() throws Exception {
@@ -293,7 +288,7 @@ public class LuceneClusterConfigurationDUnitTest {
             + "org.apache.lucene.analysis.standard.StandardAnalyzer");
 
     // Execute Gfsh command.
-    gfshConnector.executeAndVerifyCommand(csb.toString());
+    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void createLuceneIndexWithSerializerUsingGfsh(boolean addGroup) throws Exception {
@@ -306,7 +301,7 @@ public class LuceneClusterConfigurationDUnitTest {
         PrimitiveSerializer.class.getCanonicalName());
 
     // Execute Gfsh command.
-    gfshConnector.executeAndVerifyCommand(csb.toString());
+    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void destroyLuceneIndexUsingGfsh(String indexName) throws Exception {
@@ -316,7 +311,7 @@ public class LuceneClusterConfigurationDUnitTest {
       csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, indexName);
     }
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    gfshConnector.executeAndVerifyCommand(csb.toString());
+    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void createRegionUsingGfsh(String regionName, RegionShortcut regionShortCut, String group)
@@ -325,20 +320,7 @@ public class LuceneClusterConfigurationDUnitTest {
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
     csb.addOptionWithValueCheck(CliStrings.GROUP, group);
-    gfshConnector.executeAndVerifyCommand(csb.toString());
-  }
-
-  private CommandResult alterRegionUsingGfsh(String group) throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
-    csb.addOption(CliStrings.ALTER_REGION__REGION, REGION_NAME);
-    csb.addOption(CliStrings.GROUP, group);
-    csb.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "5764");
-    return gfshConnector.executeAndVerifyCommand(csb.toString());
-  }
-
-  private CommandResult listIndexesUsingGfsh() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
-    return gfshConnector.executeAndVerifyCommand(csb.toString());
+    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private static void validateIndexFields(String[] indexFields, LuceneIndex index) {

@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
-import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.commandResultToString;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION__NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
@@ -49,7 +48,6 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.test.dunit.Host;
@@ -134,82 +132,57 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
 
   @Test
   public void listAllRegions() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(PR1);
-    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
-    assertThat(commandResultString).contains(REGION1);
-    assertThat(commandResultString).contains(REGION2);
-    assertThat(commandResultString).contains(REGION3);
+    String listRegions = new CommandStringBuilder(LIST_REGION).toString();
+    gfshShellConnectionRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
+        LOCALREGIONONMANAGER, REGION1, REGION2, REGION3);
   }
 
   @Test
   public void listRegionsOnManager() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
-    csb.addOption(MEMBER, "Manager");
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(PR1);
-    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
+    String listRegions =
+        new CommandStringBuilder(LIST_REGION).addOption(MEMBER, "Manager").toString();
+    gfshShellConnectionRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
+        LOCALREGIONONMANAGER);
   }
 
   @Test
   public void listRegionsOnServer() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(MEMBER, "Server");
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(PR1);
-    assertThat(commandResultString).contains(REGION1);
-    assertThat(commandResultString).contains(REGION2);
-    assertThat(commandResultString).contains(REGION3);
-    assertThat(commandResultString).contains(SUBREGION1A);
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput(PR1, REGION1, REGION2, REGION3, SUBREGION1A);
   }
 
   @Test
   public void listRegionsInGroup1() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, "G1");
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(PR1);
-    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput(PR1, LOCALREGIONONMANAGER);
   }
 
   @Test
   public void listRegionsInGroup2() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, "G2");
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(PR1);
-    assertThat(commandResultString).contains(REGION1);
-    assertThat(commandResultString).contains(REGION2);
-    assertThat(commandResultString).contains(REGION3);
-    assertThat(commandResultString).contains(SUBREGION1A);
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput(PR1, REGION1, REGION2, REGION3, SUBREGION1A);
   }
 
   @Test
   public void describeRegionsOnManager() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, PR1);
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(PR1);
-    assertThat(commandResultString).contains("Server");
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput(PR1, "Server");
   }
 
   @Test
   public void describeRegionsOnServer() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, LOCALREGIONONMANAGER);
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
-
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
-    assertThat(commandResultString).contains("Manager");
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput(LOCALREGIONONMANAGER, "Manager");
   }
 
   /**
@@ -231,11 +204,9 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, regionName);
     String commandString = csb.toString();
-    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(commandString);
-    String commandResultString = commandResultToString(commandResult);
-    assertThat(commandResultString).contains(regionName);
-    assertThat(commandResultString).contains(RegionAttributesNames.COMPRESSOR);
-    assertThat(commandResultString).contains(RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(
+        regionName, RegionAttributesNames.COMPRESSOR,
+        RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
 
     // Destroy compressed region
     vm.invoke(() -> {
@@ -266,7 +237,7 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
 
   /**
    * Creates a region that uses compression on region entry values.
-   * 
+   *
    * @param regionName a unique region name.
    */
   private static void createCompressedRegion(final String regionName) {

@@ -67,8 +67,8 @@ public class CommandOverHttpTest {
 
   @Test
   public void exportLogs() throws Exception {
-    CommandResult result = gfshRule.executeAndVerifyCommand("export logs");
-    assertThat(result.getContent().toString()).contains("Logs exported to:");
+    gfshRule.executeAndAssertThat("export logs").statusIsSuccess()
+        .containsOutput("Logs exported to:");
   }
 
   @Test
@@ -77,15 +77,14 @@ public class CommandOverHttpTest {
     String jarName = "deployCommand.jar";
     File jar = temporaryFolder.newFile(jarName);
     new ClassBuilder().writeJarFromName(className, jar);
-    gfshRule.executeAndVerifyCommand("deploy --jar=" + jar);
+    gfshRule.executeAndAssertThat("deploy --jar=" + jar).statusIsSuccess();
   }
 
   @Test
   public void exportConfig() throws Exception {
     String dir = temporaryFolder.getRoot().getAbsolutePath();
-    gfshRule.executeAndVerifyCommand("export config --dir=" + dir);
-    String result = gfshRule.getGfshOutput();
-    assertThat(result).contains("Downloading Cache XML file: " + dir + "/server-cache.xml");
-    assertThat(result).contains("Downloading properties file: " + dir + "/server-gf.properties");
+    gfshRule.executeAndAssertThat("export config --dir=" + dir).statusIsSuccess()
+        .containsOutput("Downloading Cache XML file: " + dir + "/server-cache.xml")
+        .containsOutput("Downloading properties file: " + dir + "/server-gf.properties");
   }
 }

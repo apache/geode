@@ -94,27 +94,23 @@ public class RemoveCommandDUnitTest implements Serializable {
   public void removeFromInvalidRegion() throws Exception {
     String command = "remove --all --region=NotAValidRegion";
 
-    gfsh.executeAndVerifyCommandError(command, String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
   }
 
   @Test
   public void removeWithNoKeyOrAllSpecified() throws Exception {
     String command = "remove --region=" + REPLICATE_REGION_NAME;
 
-    gfsh.executeAndVerifyCommandError(command);
-    assertThat(gfsh.getGfshOutput()).contains("Key is Null");
+    gfsh.executeAndAssertThat(command).statusIsError().containsOutput("Key is Null");
   }
 
   @Test
   public void removeKeyFromReplicateRegion() {
     String command = "remove --key=key1 --region=" + REPLICATE_REGION_NAME;
 
-    gfsh.executeAndVerifyCommand(command);
-
-    String output = gfsh.getGfshOutput();
-    assertThat(output).containsPattern("Result\\s+:\\s+true");
-    assertThat(output).containsPattern("Key Class\\s+:\\s+java.lang.String");
-    assertThat(output).containsPattern("Key\\s+:\\s+key1");
+    gfsh.executeAndAssertThat(command).statusIsSuccess().containsKeyValuePair("Result", "true")
+        .containsKeyValuePair("Key Class", "java.lang.String").containsKeyValuePair("Key", "key1");
 
     server1.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, "key1"));
     server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, "key1"));
@@ -127,7 +123,7 @@ public class RemoveCommandDUnitTest implements Serializable {
   public void removeKeyFromPartitionedRegion() {
     String command = "remove --key=key1 --region=" + PARTITIONED_REGION_NAME;
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
     assertThat(output).containsPattern("Result\\s+:\\s+true");
@@ -145,8 +141,8 @@ public class RemoveCommandDUnitTest implements Serializable {
   public void removeAllFromReplicateRegion() {
     String command = "remove --all --region=" + REPLICATE_REGION_NAME;
 
-    gfsh.executeAndVerifyCommand("list regions");
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat("list regions").statusIsSuccess();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
 
@@ -160,7 +156,7 @@ public class RemoveCommandDUnitTest implements Serializable {
     String command = "remove --all --region=" + PARTITIONED_REGION_NAME;
 
     // Maybe this should return an "error" status, but the current behavior is status "OK"
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertThat(gfsh.getGfshOutput())
         .contains("Option --all is not supported on partitioned region");
@@ -175,7 +171,7 @@ public class RemoveCommandDUnitTest implements Serializable {
     server2.invoke(() -> verifyKeyIsPresent(REPLICATE_REGION_NAME, EMPTY_STRING));
 
     String command = "remove --key=\"\" --region=" + REPLICATE_REGION_NAME;
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
     server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
