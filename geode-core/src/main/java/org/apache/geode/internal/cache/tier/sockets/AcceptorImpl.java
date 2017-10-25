@@ -336,24 +336,72 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     this.isGatewayReceiver = isGatewayReceiver;
     this.gatewayTransportFilters = transportFilter;
     this.serverConnectionFactory = serverConnectionFactory;
-
-    this.maxConnections = Math.min(maxConnections, MINIMUM_MAX_CONNECTIONS);
-    this.maxThreads = calculateMaxThreads(maxThreads);
-
-    if (isSelector()) {
-      this.selector = Selector.open();
-      this.selectorQueue = new LinkedBlockingQueue();
-      this.commBufferQueue = new LinkedBlockingQueue();
-      this.selectorRegistrations = new HashSet(512);
-      this.hsTimer = new SystemTimer(internalCache.getDistributedSystem(), true);
-    } else {
-      this.selector = null;
-      this.selectorQueue = null;
-      this.commBufferQueue = null;
-      this.selectorRegistrations = null;
-      this.hsTimer = null;
+    {
+      int tmp_maxConnections = maxConnections;
+      if (tmp_maxConnections < MINIMUM_MAX_CONNECTIONS) {
+        tmp_maxConnections = MINIMUM_MAX_CONNECTIONS;
+      }
+      this.maxConnections = tmp_maxConnections;
     }
-    this.tcpNoDelay = tcpNoDelay;
+    {
+      int tmp_maxThreads = maxThreads;
+      if (maxThreads == CacheServer.DEFAULT_MAX_THREADS) {
+        // consult system properties for 5.0.2 backwards compatibility
+        if (DEPRECATED_SELECTOR) {
+          tmp_maxThreads = DEPRECATED_SELECTOR_POOL_SIZE;
+        }
+      }
+      if (tmp_maxThreads < 0) {
+        tmp_maxThreads = 0;
+      } else if (tmp_maxThreads > this.maxConnections) {
+        tmp_maxThreads = this.maxConnections;
+      }
+      boolean isWindows = false;
+      String os = System.getProperty("os.name");
+      if (os != null) {
+        if (os.indexOf("Windows") != -1) {
+          isWindows = true;
+        }
+      }
+      if (tmp_maxThreads > 0 && isWindows) {
+        // bug #40472 and JDK bug 6230761 - NIO can't be used with IPv6 on Windows
+        if (getBindAddress() instanceof Inet6Address) {
+          logger.warn(LocalizedMessage
+              .create(LocalizedStrings.AcceptorImpl_IGNORING_MAX_THREADS_DUE_TO_JROCKIT_NIO_BUG));
+          tmp_maxThreads = 0;
+        }
+        // bug #40198 - Selector.wakeup() hangs if VM starts to exit
+        if (isJRockit) {
+          logger.warn(LocalizedMessage
+              .create(LocalizedStrings.AcceptorImpl_IGNORING_MAX_THREADS_DUE_TO_WINDOWS_IPV6_BUG));
+          tmp_maxThreads = 0;
+        }
+      }
+      this.maxThreads = tmp_maxThreads;
+    }
+    {
+      Selector tmp_s = null;
+      // Selector tmp2_s = null;
+      LinkedBlockingQueue tmp_q = null;
+      LinkedBlockingQueue tmp_commQ = null;
+      HashSet tmp_hs = null;
+      SystemTimer tmp_timer = null;
+      if (isSelector()) {
+        tmp_s = Selector.open(); // no longer catch ex to fix bug 36907
+        // tmp2_s = Selector.open(); // workaround for bug 39624
+        tmp_q = new LinkedBlockingQueue();
+        tmp_commQ = new LinkedBlockingQueue();
+        tmp_hs = new HashSet(512);
+        tmp_timer = new SystemTimer(internalCache.getDistributedSystem(), true);
+      }
+      this.selector = tmp_s;
+      // this.tmpSel = tmp2_s;
+      this.selectorQueue = tmp_q;
+      this.commBufferQueue = tmp_commQ;
+      this.selectorRegistrations = tmp_hs;
+      this.hsTimer = tmp_timer;
+      this.tcpNoDelay = tcpNoDelay;
+    }
 
     {
       if (!isGatewayReceiver) {
@@ -583,43 +631,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     isPostAuthzCallbackPresent =
         (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) ? true : false;
-  }
-
-  private int calculateMaxThreads(int maxThreads) throws IOException {
-    int tmp_maxThreads = maxThreads;
-    if (maxThreads == CacheServer.DEFAULT_MAX_THREADS) {
-      // consult system properties for 5.0.2 backwards compatibility
-      if (DEPRECATED_SELECTOR) {
-        tmp_maxThreads = DEPRECATED_SELECTOR_POOL_SIZE;
-      }
-    }
-    if (tmp_maxThreads < 0) {
-      tmp_maxThreads = 0;
-    } else if (tmp_maxThreads > this.maxConnections) {
-      tmp_maxThreads = this.maxConnections;
-    }
-    boolean isWindows = false;
-    String os = System.getProperty("os.name");
-    if (os != null) {
-      if (os.indexOf("Windows") != -1) {
-        isWindows = true;
-      }
-    }
-    if (tmp_maxThreads > 0 && isWindows) {
-      // bug #40472 and JDK bug 6230761 - NIO can't be used with IPv6 on Windows
-      if (getBindAddress() instanceof Inet6Address) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.AcceptorImpl_IGNORING_MAX_THREADS_DUE_TO_JROCKIT_NIO_BUG));
-        tmp_maxThreads = 0;
-      }
-      // bug #40198 - Selector.wakeup() hangs if VM starts to exit
-      if (isJRockit) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.AcceptorImpl_IGNORING_MAX_THREADS_DUE_TO_WINDOWS_IPV6_BUG));
-        tmp_maxThreads = 0;
-      }
-    }
-    return tmp_maxThreads;
   }
 
   public long getAcceptorId() {
