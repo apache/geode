@@ -376,7 +376,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * Search the CM for keys. If found any, return the first found one Otherwise, save the keys into
    * the CM, and return null The thread will acquire the lock before searching.
    * 
-   * @param keys
    * @return first key found in CM null means not found
    */
   private LockObject searchAndLock(Object keys[]) {
@@ -416,8 +415,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   /**
    * After processed the keys, this method will remove them from CM. And notifyAll for each key. The
    * thread needs to acquire lock of CM first.
-   * 
-   * @param keys
    */
   public void removeAndNotifyKeys(Object keys[]) {
     final boolean isTraceEnabled = logger.isTraceEnabled();
@@ -431,7 +428,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
             lockValue.setRemoved();
             if (isTraceEnabled) {
               long waitTime = System.currentTimeMillis() - lockValue.lockedTimeStamp;
-              logger.trace("LockKeys: remove key {}, notifyAll for {}. It waited", keys[i],
+              logger.trace("LockKeys: remove key {}, notifyAll for {}. It waited {}", keys[i],
                   lockValue, waitTime);
             }
             if (lockValue.isSomeoneWaiting()) {
@@ -447,8 +444,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * Keep checking if CM has contained any key in keys. If yes, wait for notify, then retry again.
    * This method will block current thread for long time. It only exits when current thread
    * successfully save its keys into CM.
-   * 
-   * @param keys
    */
   public void waitUntilLocked(Object keys[]) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -469,12 +464,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           } catch (InterruptedException e) {
             // TODO this isn't a localizable string and it's being logged at info level
             if (isDebugEnabled) {
-              logger.debug("{} interrupted while waiting for {}", title, foundLock, e.getMessage());
+              logger.debug("{} interrupted while waiting for {}", title, foundLock);
             }
           }
           if (isDebugEnabled) {
             long waitTime = System.currentTimeMillis() - foundLock.lockedTimeStamp;
-            logger.debug("{} waited {} ms to lock", title, waitTime, foundLock);
+            logger.debug("{} waited {} ms to lock {}", title, waitTime, foundLock);
           }
         }
       } else {
@@ -587,10 +582,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   /**
    * Fix for Bug#45917 We are updating the seqNumber so that new seqNumbers are generated starting
    * from the latest in the system.
-   * 
-   * @param l
    */
-
   public void updateEventSeqNum(long l) {
     Atomics.setIfGreater(this.eventSeqNum, l);
     if (logger.isDebugEnabled()) {
@@ -720,8 +712,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * Checks to make sure that this node is primary, and locks the bucket to make sure the bucket
    * stays the primary bucket while the write is in progress. Any call to this method must be
    * followed with a call to endLocalWrite().
-   * 
-   * @param event
    */
   private boolean beginLocalWrite(EntryEventImpl event) {
     if (!needWriteLock(event)) {
@@ -1433,8 +1423,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   /**
    * Horribly plagiarized from the similar method in LocalRegion
    * 
-   * @param key
-   * @param updateStats
    * @param clientEvent holder for client version tag
    * @param returnTombstones whether Token.TOMBSTONE should be returned for destroyed entries
    * @return serialized form if present, null if the entry is not in the cache, or INVALID or
@@ -1489,8 +1477,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * <p>
    * Horribly plagiarized from the similar method in LocalRegion
    * 
-   * @param keyInfo
-   * @param generateCallbacks
    * @param clientEvent holder for the entry's version information
    * @param returnTombstones TODO
    * @return serialized (byte) form
@@ -1763,7 +1749,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       Set adjunctRecipients, FilterRoutingInfo filterRoutingInfo, DirectReplyProcessor processor,
       boolean calculateDelta, boolean sendDeltaWithFullValue) {
 
-    Set failures = Collections.EMPTY_SET;
+    Set failures = Collections.emptySet();
     PartitionMessage msg = event.getPartitionMessage();
     if (calculateDelta) {
       setDeltaIfNeeded(event);
@@ -1967,7 +1953,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
       return r;
     } else {
-      return Collections.EMPTY_SET;
+      return Collections.emptySet();
     }
   }
 
@@ -1998,7 +1984,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
     boolean origRemoteState = false;
@@ -2155,7 +2141,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  int updateSizeOnEvict(Object key, int oldSize) {
+  public int updateSizeOnEvict(Object key, int oldSize) {
     int newDiskSize = oldSize;
     updateBucket2Size(oldSize, newDiskSize, SizeOp.EVICT);
     return newDiskSize;
@@ -2267,7 +2253,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           throw new AssertionError("unhandled sizeOp: " + this);
       }
     }
-  };
+  }
 
   /**
    * Updates the bucket size.
@@ -2324,11 +2310,11 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * Increments the current number of entries whose value has been overflowed to disk by this
    * bucket, by a given amount.
    */
-  void incNumOverflowOnDisk(long delta) {
+  public void incNumOverflowOnDisk(long delta) {
     this.numOverflowOnDisk.addAndGet(delta);
   }
 
-  void incNumOverflowBytesOnDisk(long delta) {
+  public void incNumOverflowBytesOnDisk(long delta) {
     if (delta == 0)
       return;
     this.numOverflowBytesOnDisk.addAndGet(delta);
@@ -2347,7 +2333,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * Increments the current number of entries whose value has been overflowed to disk by this
    * bucket,by a given amount.
    */
-  void incNumEntriesInVM(long delta) {
+  public void incNumEntriesInVM(long delta) {
     this.numEntriesInVM.addAndGet(delta);
   }
 

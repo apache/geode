@@ -845,7 +845,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   // block
   // in case the value of the entry is "REMOVED" token. This prevents dead lock
   // caused by the Bug # 33336
-  boolean isIndexCreationThread() {
+  public boolean isIndexCreationThread() {
     Boolean value = isIndexCreator.get();
     return value != null ? value : false;
   }
@@ -1473,7 +1473,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
    *
    * @since GemFire 5.0
    */
-  protected boolean isProxy() {
+  public boolean isProxy() {
     return getDataPolicy().isEmpty();
   }
 
@@ -1515,7 +1515,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Returns true if this region could expire an entry
    */
-  boolean isEntryExpiryPossible() {
+  public boolean isEntryExpiryPossible() {
     return this.entryExpiryPossible;
   }
 
@@ -1830,5 +1830,9 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   @Override
   public boolean getOffHeap() {
     return this.offHeap;
+  }
+
+  public boolean isConcurrencyChecksEnabled() {
+    return this.concurrencyChecksEnabled;
   }
 }

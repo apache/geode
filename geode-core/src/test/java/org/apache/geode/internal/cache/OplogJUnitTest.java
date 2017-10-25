@@ -48,6 +48,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;

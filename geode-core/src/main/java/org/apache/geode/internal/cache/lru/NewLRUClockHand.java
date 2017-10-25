@@ -19,6 +19,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;

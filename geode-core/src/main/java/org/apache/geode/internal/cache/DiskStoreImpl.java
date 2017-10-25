@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.cache.entries.DiskEntry.Helper.readRawValue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -78,8 +79,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
-import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.lru.LRUAlgorithm;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
@@ -748,7 +750,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  void putVersionTagOnly(LocalRegion region, VersionTag tag, boolean async) {
+  public void putVersionTagOnly(LocalRegion region, VersionTag tag, boolean async) {
     DiskRegion dr = region.getDiskRegion();
     // this method will only be called by backup oplog
     assert dr.isBackup();
@@ -881,7 +883,7 @@ public class DiskStoreImpl implements DiskStore {
     } else if (EntryBits.isTombstone(bb.getBits())) {
       value = Token.TOMBSTONE;
     } else {
-      value = DiskEntry.Helper.readRawValue(bytes, bb.getVersion(), null);
+      value = readRawValue(bytes, bb.getVersion(), null);
     }
     return value;
   }
@@ -903,7 +905,7 @@ public class DiskStoreImpl implements DiskStore {
     } else if (EntryBits.isTombstone(bb.getBits())) {
       value = Token.TOMBSTONE;
     } else {
-      value = DiskEntry.Helper.readRawValue(bytes, bb.getVersion(), null);
+      value = readRawValue(bytes, bb.getVersion(), null);
     }
     return value;
   }

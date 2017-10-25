@@ -51,6 +51,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.PutMessage;
@@ -2291,7 +2292,7 @@ public class EntryEventImpl
    * 
    * @param notifyGateways pass the event on to WAN queues
    */
-  void invokeCallbacks(LocalRegion rgn, boolean skipListeners, boolean notifyGateways) {
+  public void invokeCallbacks(LocalRegion rgn, boolean skipListeners, boolean notifyGateways) {
     if (!callbacksInvoked()) {
       callbacksInvoked(true);
       if (this.op.isUpdate()) {

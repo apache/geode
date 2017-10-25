@@ -16,7 +16,8 @@ package org.apache.geode.internal.cache;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;

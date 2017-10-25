@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
@@ -345,7 +346,7 @@ public class DiskRegion extends AbstractDiskRegion {
    *         completed successfully, resulting in the put operation to abort.
    * @throws IllegalArgumentException If <code>id</code> is less than zero
    */
-  void put(DiskEntry entry, LocalRegion region, ValueWrapper value, boolean async)
+  public void put(DiskEntry entry, LocalRegion region, ValueWrapper value, boolean async)
       throws RegionClearedException {
     getDiskStore().put(region, entry, value, async);
   }
@@ -379,7 +380,7 @@ public class DiskRegion extends AbstractDiskRegion {
     return getBytesAndBits(id, true);
   }
 
-  BytesAndBits getBytesAndBits(DiskId id, boolean faultingIn) {
+  public BytesAndBits getBytesAndBits(DiskId id, boolean faultingIn) {
     return getDiskStore().getBytesAndBits(this, id, faultingIn);
   }
 
@@ -417,7 +418,7 @@ public class DiskRegion extends AbstractDiskRegion {
     getDiskStore().remove(region, entry, false, false);
   }
 
-  void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
+  public void remove(LocalRegion region, DiskEntry entry, boolean async, boolean isClear)
       throws RegionClearedException {
     getDiskStore().remove(region, entry, async, isClear);
   }
@@ -623,13 +624,13 @@ public class DiskRegion extends AbstractDiskRegion {
     return result;
   }
 
-  void removeClearCountReference() {
+  public void removeClearCountReference() {
     // releaseReadLock();
     // TODO: After Java 1.5 transition use .remove
     childReference.set(null);
   }
 
-  void setClearCountReference() {
+  public void setClearCountReference() {
     // acquireReadLock();
     if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
       CacheObserverHolder.getInstance().beforeSettingDiskRef();

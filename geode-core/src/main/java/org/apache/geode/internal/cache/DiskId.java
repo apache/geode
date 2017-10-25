@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -51,10 +52,10 @@ public abstract class DiskId {
   // userBits of the value on disk
   // private byte userBits = -1;
 
-  abstract long getKeyId();
+  public abstract long getKeyId();
 
   /** Returns the offset in oplog where the entry is stored */
-  abstract long getOffsetInOplog();
+  public abstract long getOffsetInOplog();
 
 
   /**
@@ -71,7 +72,7 @@ public abstract class DiskId {
   /**
    * @return Returns the oplog id.
    */
-  synchronized long getOplogId() {
+  public synchronized long getOplogId() {
     // mask the first byte to get the oplogId
     long oplogId = this.id & MAX_OPLOG_ID;
 
@@ -83,25 +84,25 @@ public abstract class DiskId {
     return oplogId;
   }
 
-  abstract void setKeyId(long keyId);
+  public abstract void setKeyId(long keyId);
 
   /**
    * Setter for oplog offset of an entry
    * 
    * @param offsetInOplog - offset in oplog where the entry is stored.
    */
-  abstract void setOffsetInOplog(long offsetInOplog);
+  public abstract void setOffsetInOplog(long offsetInOplog);
 
-  abstract void markForWriting();
+  public abstract void markForWriting();
 
-  abstract void unmarkForWriting();
+  public abstract void unmarkForWriting();
 
-  abstract boolean needsToBeWritten();
+  public abstract boolean needsToBeWritten();
 
   /**
    * Returns previous oplog id
    */
-  synchronized long setOplogId(long oplogId) {
+  public synchronized long setOplogId(long oplogId) {
     long result = getOplogId();
     long oldUserBits = this.id & USER_BITS_MASK;// only get the most significant byte containing
     // sign bit + toggle flag + user bits
@@ -117,47 +118,17 @@ public abstract class DiskId {
     return result;
   }
 
-  // /**
-  // * Setter for the flush buffer toggle flag
-  // *
-  // * @param flag -
-  // * The flush buffer toggle flag which identifies whether the latest
-  // * value is present in the pendingflushes buffer or the pending
-  // * writes buffer
-  // */
-  // void setFlushBufferToggleFlag(boolean flag) {
-  // if (flag) {
-  // this.id = this.id | IS_FLUSH_BUFFER_TOGGLE_BIT;// set the toggle flag bit
-  // //Assert.assertTrue(getFlushBufferToggleFlag());
-  // }
-  // else {
-  // this.id = this.id & 0x5FFFFFFF;// reset the toggle flag bit
-  // //Assert.assertTrue(!getFlushBufferToggleFlag());
-  // }
-
-  // }
-
-  // /**
-  // * @return Returns the flush buffer toggle flag.
-  // */
-  // boolean getFlushBufferToggleFlag() {
-  // return (this.id & IS_FLUSH_BUFFER_TOGGLE_BIT) != 0; //return true if toggle
-  // // flag bit is 1 else
-  // // return false.
-  // //return this.flushBufferToggleFlag;
-  // }
-
   /**
    * @return Returns the userBits.
    */
-  synchronized byte getUserBits() {
+  public synchronized byte getUserBits() {
     return (byte) (this.id >> USER_BITS_SHIFT); // shift to right to get the user bits
   }
 
   /**
    * @param userBits The userBit to set.
    */
-  synchronized void setUserBits(byte userBits) {
+  public synchronized void setUserBits(byte userBits) {
     long userLong = ((long) userBits) << USER_BITS_SHIFT;// set it as most signifcant byte.
 
     this.id &= OPLOG_ID_MASK; // mask the most significant byte in id.
@@ -198,14 +169,14 @@ public abstract class DiskId {
   /**
    * @return Returns the valueLength.
    */
-  int getValueLength() {
+  public int getValueLength() {
     return valueLength & 0x7fffffff;
   }
 
   /**
    * @param valueLength The valueLength to set.
    */
-  void setValueLength(int valueLength) {
+  public void setValueLength(int valueLength) {
     if (valueLength < 0) {
       throw new IllegalStateException(
           "Expected DiskId valueLength " + valueLength + " to be >= 0.");
@@ -234,7 +205,7 @@ public abstract class DiskId {
     /*
      * StringBuffer temp = new StringBuffer("Oplog Key ID = "); temp.append(this.keyId);
      */
-    StringBuffer temp = new StringBuffer("Oplog ID = ");
+    StringBuilder temp = new StringBuilder("Oplog ID = ");
     temp.append(this.getOplogId());
     temp.append("; Offset in Oplog = ");
     temp.append(getOffsetInOplog());
@@ -250,10 +221,9 @@ public abstract class DiskId {
    * maxOplogSize (in bytes) is greater than Integer.MAX_VALUE, LongOplogOffsetDiskId will be
    * created and for maxOplogSize lesser than that, IntOplogOffsetDiskId will be created.
    * 
-   * @param maxOplogSize
    * @return the disk-id instance created.
    */
-  static DiskId createDiskId(long maxOplogSize, boolean isPersistenceType,
+  public static DiskId createDiskId(long maxOplogSize, boolean isPersistenceType,
       boolean needsLinkedList) {
     long bytes = maxOplogSize * 1024 * 1024;
     if (bytes > Integer.MAX_VALUE) {
@@ -332,7 +302,7 @@ public abstract class DiskId {
    * 
    * 
    */
-  protected static abstract class IntOplogOffsetDiskId extends DiskId {
+  protected abstract static class IntOplogOffsetDiskId extends DiskId {
     /**
      * The position in the oplog (the oplog offset) where this entry's value is stored
      */
@@ -342,7 +312,7 @@ public abstract class DiskId {
      * @return the offset in oplog where the entry is stored (returned as long)
      */
     @Override
-    long getOffsetInOplog() {
+    public long getOffsetInOplog() {
       return offsetInOplog;
     }
 
@@ -352,7 +322,7 @@ public abstract class DiskId {
      * @param offsetInOplog - offset in oplog where the entry is stored.
      */
     @Override
-    void setOffsetInOplog(long offsetInOplog) {
+    public void setOffsetInOplog(long offsetInOplog) {
       this.offsetInOplog = (int) offsetInOplog;
     }
   }
@@ -362,7 +332,7 @@ public abstract class DiskId {
    * 
    * 
    */
-  protected static abstract class LongOplogOffsetDiskId extends DiskId {
+  protected abstract static class LongOplogOffsetDiskId extends DiskId {
     /**
      * The position in the oplog (the oplog offset) where this entry's value is stored
      */
@@ -372,7 +342,7 @@ public abstract class DiskId {
      * @return the offset in oplog where the entry is stored.
      */
     @Override
-    long getOffsetInOplog() {
+    public long getOffsetInOplog() {
       return offsetInOplog;
     }
 
@@ -382,7 +352,7 @@ public abstract class DiskId {
      * @param offsetInOplog - offset in oplog where the entry is stored.
      */
     @Override
-    void setOffsetInOplog(long offsetInOplog) {
+    public void setOffsetInOplog(long offsetInOplog) {
       this.offsetInOplog = offsetInOplog;
     }
   }
@@ -393,35 +363,35 @@ public abstract class DiskId {
     }
 
     @Override
-    long getKeyId() {
+    public long getKeyId() {
       throw new UnsupportedOperationException(
           LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_QUERIED
               .toLocalizedString());
     }
 
     @Override
-    void setKeyId(long keyId) {
+    public void setKeyId(long keyId) {
       throw new UnsupportedOperationException(
           LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_SET
               .toLocalizedString());
     }
 
     @Override
-    void markForWriting() {
+    public void markForWriting() {
       this.valueLength |= 0x80000000;
     }
 
     @Override
-    void unmarkForWriting() {
+    public void unmarkForWriting() {
       this.valueLength &= 0x7fffffff;
     }
 
     @Override
-    boolean needsToBeWritten() {
+    public boolean needsToBeWritten() {
       return (this.valueLength & 0x80000000) != 0;
     }
   }
-  final protected static class OverflowOnlyWithIntOffset extends OverflowOnlyWithIntOffsetNoLL {
+  protected static final class OverflowOnlyWithIntOffset extends OverflowOnlyWithIntOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
      * 
@@ -462,35 +432,35 @@ public abstract class DiskId {
     }
 
     @Override
-    long getKeyId() {
+    public long getKeyId() {
       throw new UnsupportedOperationException(
           LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_QUERIED
               .toLocalizedString());
     }
 
     @Override
-    void setKeyId(long keyId) {
+    public void setKeyId(long keyId) {
       throw new UnsupportedOperationException(
           LocalizedStrings.DiskId_FOR_OVERFLOW_ONLY_MODE_THE_KEYID_SHOULD_NOT_BE_SET
               .toLocalizedString());
     }
 
     @Override
-    void markForWriting() {
+    public void markForWriting() {
       this.valueLength |= 0x80000000;
     }
 
     @Override
-    void unmarkForWriting() {
+    public void unmarkForWriting() {
       this.valueLength &= 0x7fffffff;
     }
 
     @Override
-    boolean needsToBeWritten() {
+    public boolean needsToBeWritten() {
       return (this.valueLength & 0x80000000) != 0;
     }
   }
-  final protected static class OverflowOnlyWithLongOffset extends OverflowOnlyWithLongOffsetNoLL {
+  protected static final class OverflowOnlyWithLongOffset extends OverflowOnlyWithLongOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
      * 
@@ -530,40 +500,40 @@ public abstract class DiskId {
     private long keyId;
 
     @Override
-    long getKeyId() {
+    public long getKeyId() {
       return keyId;
     }
 
     @Override
-    void setKeyId(long keyId) {
+    public void setKeyId(long keyId) {
       this.keyId = keyId;
     }
 
     @Override
-    void markForWriting() {
+    public void markForWriting() {
       throw new IllegalStateException("Should not be used for persistent region");
     }
 
     @Override
-    void unmarkForWriting() {
+    public void unmarkForWriting() {
       // Do nothing
     }
 
     @Override
-    boolean needsToBeWritten() {
+    public boolean needsToBeWritten() {
       return false;
     }
 
     @Override
     public String toString() {
-      StringBuffer temp = new StringBuffer("Oplog Key ID = ");
+      StringBuilder temp = new StringBuilder("Oplog Key ID = ");
       temp.append(this.keyId);
       temp.append("; ");
       temp.append(super.toString());
       return temp.toString();
     }
   }
-  final protected static class PersistenceWithIntOffset extends PersistenceWithIntOffsetNoLL {
+  protected static final class PersistenceWithIntOffset extends PersistenceWithIntOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
      * 
@@ -603,28 +573,28 @@ public abstract class DiskId {
     private long keyId;
 
     @Override
-    long getKeyId() {
+    public long getKeyId() {
       return keyId;
     }
 
     @Override
-    void setKeyId(long keyId) {
+    public void setKeyId(long keyId) {
       this.keyId = keyId;
     }
 
     @Override
-    void markForWriting() {
+    public void markForWriting() {
       throw new IllegalStateException("Should not be used for persistent region");
     }
 
     @Override
-    void unmarkForWriting() {
+    public void unmarkForWriting() {
       // Do nothing
     }
 
     @Override
     public String toString() {
-      StringBuffer temp = new StringBuffer("Oplog Key ID = ");
+      StringBuilder temp = new StringBuilder("Oplog Key ID = ");
       temp.append(this.keyId);
       temp.append("; ");
       temp.append(super.toString());
@@ -633,11 +603,11 @@ public abstract class DiskId {
     }
 
     @Override
-    boolean needsToBeWritten() {
+    public boolean needsToBeWritten() {
       return false;
     }
   }
-  final protected static class PersistenceWithLongOffset extends PersistenceWithLongOffsetNoLL {
+  protected static final class PersistenceWithLongOffset extends PersistenceWithLongOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
      * 
