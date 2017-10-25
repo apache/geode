@@ -63,9 +63,9 @@ public class PersistentMemberManager {
   }
 
   /**
-   * Add a new revokation listener
+   * Add a new revocation listener
    * 
-   * @param listener The revokocation listener
+   * @param listener The revocation listener
    * @param recoveredRevokedMembers a set of members which the listener knows have been revoked
    */
   public HashSet<PersistentMemberPattern> addRevocationListener(MemberRevocationListener listener,
