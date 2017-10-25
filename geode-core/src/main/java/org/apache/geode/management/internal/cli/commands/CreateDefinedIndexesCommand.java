@@ -15,13 +15,13 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.domain.IndexInfo;
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -61,7 +61,7 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
     Result result;
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
+    List<XmlEntity> xmlEntities = Collections.synchronizedList(new ArrayList<>());
 
     if (IndexDefinition.indexDefinitions.isEmpty()) {
       final InfoResultData infoResult = ResultBuilder.createInfoResultData();
@@ -70,14 +70,13 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
     }
 
     try {
-      final Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
+      final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      final ResultCollector<?, ?> rc = CliUtil.executeFunction(createDefinedIndexesFunction,
-          IndexDefinition.indexDefinitions, targetMembers);
+      final ResultCollector<?, ?> rc = createIndexesOnMembers(targetMembers);
 
       final List<Object> funcResults = (List<Object>) rc.getResult();
       final Set<String> successfulMembers = new TreeSet<>();
@@ -89,10 +88,7 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
 
           if (cliFunctionResult.isSuccessful()) {
             successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-
-            if (xmlEntity.get() == null) {
-              xmlEntity.set(cliFunctionResult.getXmlEntity());
-            }
+            xmlEntities.add(cliFunctionResult.getXmlEntity());
           } else {
             final String exceptionMessage = cliFunctionResult.getMessage();
             Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
@@ -100,12 +96,17 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
             if (failedMembers == null) {
               failedMembers = new TreeSet<>();
             }
+
             failedMembers.add(cliFunctionResult.getMemberIdOrName());
             indexOpFailMap.put(exceptionMessage, failedMembers);
           }
         }
       }
 
+      // TODO:
+      // with the current logic some indexes might be correctly created in some members and
+      // fail in others; but the user is never notified about these failures if there's at least one
+      // successful creation...
       if (!successfulMembers.isEmpty()) {
         final InfoResultData infoResult = ResultBuilder.createInfoResultData();
         infoResult.addLine(CliStrings.CREATE_DEFINED_INDEXES__SUCCESS__MSG);
@@ -143,10 +144,18 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
 
-    if (xmlEntity.get() != null) {
-      persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), group));
+    if (!xmlEntities.isEmpty()) {
+      for (XmlEntity xmlEntity : xmlEntities) {
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
+      }
     }
+
     return result;
+  }
+
+  ResultCollector<?, ?> createIndexesOnMembers(Set<DistributedMember> targetMembers) {
+    return CliUtil.executeFunction(createDefinedIndexesFunction, IndexDefinition.indexDefinitions,
+        targetMembers);
   }
 }
