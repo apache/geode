@@ -56,7 +56,8 @@ dependencies {
   provided project(':geode-core')
 
   archives project(':geode-common')  
-  archives project(':geode-json')  
+  archives project(':geode-client-protocol')
+  archives project(':geode-json')
   archives project(':geode-core')
   archives project(':geode-lucene')
   archives project(':geode-old-client-support')
