@@ -26,7 +26,7 @@ import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.security.SecurityProcessor;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.NotAuthorizedException;
 

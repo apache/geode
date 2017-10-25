@@ -29,7 +29,7 @@ import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
 
 @Experimental
 public class GetAvailableServersOperationHandler implements

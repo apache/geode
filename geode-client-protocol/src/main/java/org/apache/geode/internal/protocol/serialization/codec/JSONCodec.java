@@ -12,17 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization.registry.exception;
+package org.apache.geode.internal.protocol.serialization.codec;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.internal.protocol.serialization.SerializationType;
+import org.apache.geode.internal.protocol.serialization.TypeCodec;
 
-/**
- * This indicates that we're attempting to register a codec for a type which we already have a
- * handler for.
- */
 @Experimental
-public class CodecAlreadyRegisteredForTypeException extends RuntimeException {
-  public CodecAlreadyRegisteredForTypeException(String message) {
-    super(message);
+public class JSONCodec implements TypeCodec<PdxInstance> {
+  @Override
+  public PdxInstance decode(byte[] incoming) {
+    return JSONFormatter.fromJSON(incoming);
+  }
+
+  @Override
+  public byte[] encode(PdxInstance incoming) {
+    return JSONFormatter.toJSONByteArray(incoming);
+  }
+
+  @Override
+  public SerializationType getSerializationType() {
+    return SerializationType.JSON;
   }
 }

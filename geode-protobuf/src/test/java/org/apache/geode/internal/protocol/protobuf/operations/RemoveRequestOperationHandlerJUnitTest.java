@@ -37,8 +37,8 @@ import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

@@ -32,7 +32,7 @@ import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
 import org.apache.geode.internal.protocol.security.processors.AuthorizationSecurityProcessor;
 import org.apache.geode.internal.protocol.security.Authenticator;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class AuthenticationRequestOperationHandler implements

@@ -30,7 +30,7 @@ import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
 
 import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
 

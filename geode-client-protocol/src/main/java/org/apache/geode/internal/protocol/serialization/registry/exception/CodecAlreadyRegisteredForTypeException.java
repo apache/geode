@@ -12,21 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.internal.protocol.serialization.registry.exception;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.pdx.PdxInstance;
 
 /**
- * Enumerates the serialization types currently available to wire protocols.
+ * This indicates that we're attempting to register a codec for a type which we already have a
+ * handler for.
  */
 @Experimental
-public enum SerializationType {
-  JSON(PdxInstance.class);
-
-  public final Class klass;
-
-  SerializationType(Class klass) {
-    this.klass = klass;
+public class CodecAlreadyRegisteredForTypeException extends RuntimeException {
+  public CodecAlreadyRegisteredForTypeException(String message) {
+    super(message);
   }
 }

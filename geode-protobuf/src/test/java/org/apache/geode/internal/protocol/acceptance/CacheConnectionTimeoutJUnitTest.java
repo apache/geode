@@ -47,7 +47,7 @@ import org.apache.geode.internal.protocol.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

@@ -12,28 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization.codec;
+package org.apache.geode.internal.protocol.serialization;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.internal.serialization.SerializationType;
-import org.apache.geode.internal.serialization.TypeCodec;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
+/**
+ * This interface takes an protocol specific encodingTypeValue enum and converts between objects and
+ * bytes using the encodingTypeValue to decide what encoding type to use.
+ *
+ * @param <T> the enumeration of types known to a particular protocol
+ */
 @Experimental
-public class JSONCodec implements TypeCodec<PdxInstance> {
-  @Override
-  public PdxInstance decode(byte[] incoming) {
-    return JSONFormatter.fromJSON(incoming);
-  }
+public interface SerializationService<T> {
+  Object decode(T encodingTypeValue, byte[] value)
+      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException;
 
-  @Override
-  public byte[] encode(PdxInstance incoming) {
-    return JSONFormatter.toJSONByteArray(incoming);
-  }
-
-  @Override
-  public SerializationType getSerializationType() {
-    return SerializationType.JSON;
-  }
+  byte[] encode(T encodingTypeValue, Object value)
+      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException;
 }
