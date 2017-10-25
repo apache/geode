@@ -21,8 +21,8 @@ import java.util.HashMap;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.internal.serialization.SerializationType;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.SerializationType;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
 
 /**
  * This class maps protobuf specific encoding types and the corresponding serialization types.

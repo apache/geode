@@ -12,16 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization.registry.exception;
+package org.apache.geode.internal.protocol.serialization.exception;
 
 import org.apache.geode.annotations.Experimental;
 
 /**
- * This indicates we're attempting to handle a type for which we don't have a registered codec.
+ * This indicates an encoding type that we don't know how to handle.
  */
 @Experimental
-public class CodecNotRegisteredForTypeException extends Exception {
-  public CodecNotRegisteredForTypeException(String message) {
+public class UnsupportedEncodingTypeException extends Exception {
+  public UnsupportedEncodingTypeException(String message) {
     super(message);
+  }
+
+  public UnsupportedEncodingTypeException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

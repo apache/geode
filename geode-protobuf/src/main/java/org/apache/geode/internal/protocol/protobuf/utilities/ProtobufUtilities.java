@@ -25,9 +25,9 @@ import org.apache.geode.internal.protocol.protobuf.EncodingTypeTranslator;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.utilities.exception.UnknownProtobufPrimitiveType;
-import org.apache.geode.internal.serialization.SerializationService;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 /**
  * This class contains helper functions for assistance in creating protobuf objects. This class is

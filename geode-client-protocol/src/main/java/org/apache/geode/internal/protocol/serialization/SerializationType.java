@@ -12,20 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization.exception;
+package org.apache.geode.internal.protocol.serialization;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.pdx.PdxInstance;
 
 /**
- * This indicates an encoding type that we don't know how to handle.
+ * Enumerates the serialization types currently available to wire protocols.
  */
 @Experimental
-public class UnsupportedEncodingTypeException extends Exception {
-  public UnsupportedEncodingTypeException(String message) {
-    super(message);
-  }
+public enum SerializationType {
+  JSON(PdxInstance.class);
 
-  public UnsupportedEncodingTypeException(String message, Throwable cause) {
-    super(message, cause);
+  public final Class klass;
+
+  SerializationType(Class klass) {
+    this.klass = klass;
   }
 }

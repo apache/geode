@@ -12,23 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.internal.protocol.serialization;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 /**
- * This interface takes an protocol specific encodingTypeValue enum and converts between objects and
- * bytes using the encodingTypeValue to decide what encoding type to use.
+ * This interface converts a particular type to and from its binary representation.
  *
- * @param <T> the enumeration of types known to a particular protocol
+ * NOTE: it is expected that T will be one of the serialization types in @{@link SerializationType}.
+ *
+ * @param <T> the type this codec knows how to convert
  */
 @Experimental
-public interface SerializationService<T> {
-  Object decode(T encodingTypeValue, byte[] value)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException;
+public interface TypeCodec<T> {
+  T decode(byte[] incoming);
 
-  byte[] encode(T encodingTypeValue, Object value)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException;
+  byte[] encode(T incoming);
+
+  /**
+   * @return the SerializationType corresponding to T
+   */
+  SerializationType getSerializationType();
 }

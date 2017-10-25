@@ -12,17 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization.registry;
+package org.apache.geode.internal.protocol.serialization.registry;
 
 import java.util.HashMap;
 import java.util.ServiceLoader;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.serialization.SerializationType;
-import org.apache.geode.internal.serialization.TypeCodec;
-import org.apache.geode.internal.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.SerializationType;
+import org.apache.geode.internal.protocol.serialization.TypeCodec;
 
 @Experimental
 public class SerializationCodecRegistry {
