@@ -28,7 +28,6 @@ import org.apache.geode.test.junit.runners.SuiteRunner;
 @RunWith(SuiteRunner.class)
 @Suite.SuiteClasses({ChangeLogLevelCommandDUnitTest.class, DeployWithGroupsDUnitTest.class,
     DiskStoreCommandsDUnitTest.class, GcCommandDUnitTest.class, GemfireDataCommandsDUnitTest.class,
-    GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class,
     ListAndDescribeDiskStoreCommandsDUnitTest.class, ShutdownCommandDUnitTest.class,
     QueueCommandsDUnitTest.class, ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class,
     ShowLogCommandDUnitTest.class, ShowMetricsDUnitTest.class, ShowStackTraceDUnitTest.class})
