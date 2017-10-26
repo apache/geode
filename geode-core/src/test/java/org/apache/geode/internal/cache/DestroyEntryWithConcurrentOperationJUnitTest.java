@@ -30,12 +30,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * TestCase that emulates the conditions that produce defect 48182 and ensures that the fix works
- * under those conditions. 48182: Unexpected EntryNotFoundException while shutting down members with
- * off-heap https://svn.gemstone.com/trac/gemfire/ticket/48182
+ * TestCase that emulates the conditions that entry destroy with concurrent destroy region or cache
+ * close event will get expected Exception.
  */
 @Category(IntegrationTest.class)
-public class Bug48182JUnitTest {
+public class DestroyEntryWithConcurrentOperationJUnitTest {
   /**
    * A region entry key.
    */
@@ -105,8 +104,8 @@ public class Bug48182JUnitTest {
   /**
    * Creates and returns the test region with concurrency checks enabled.
    */
-  protected Region<Object, Object> createRegion() {
-    return createRegion(true);
+  protected Region<Object, Object> createRegion(boolean isOffHeap) {
+    return createRegion(true, isOffHeap);
   }
 
   /**
@@ -114,8 +113,9 @@ public class Bug48182JUnitTest {
    * 
    * @param concurrencyChecksEnabled concurrency checks will be enabled if true.
    */
-  protected Region<Object, Object> createRegion(boolean concurrencyChecksEnabled) {
-    return getCache().createRegionFactory(getRegionShortcut()).setOffHeap(true)
+  protected Region<Object, Object> createRegion(boolean concurrencyChecksEnabled,
+      boolean isOffHeap) {
+    return getCache().createRegionFactory(getRegionShortcut()).setOffHeap(isOffHeap)
         .setConcurrencyChecksEnabled(concurrencyChecksEnabled).create(getRegionName());
   }
 
@@ -131,15 +131,24 @@ public class Bug48182JUnitTest {
     return result;
   }
 
-  /**
-   * Simulates the conditions for 48182 by setting a test hook boolean in {@link AbstractRegionMap}.
-   * This test hook forces a cache close during a destroy in an off-heap region. This test asserts
-   * that a CacheClosedException is thrown rather than an EntryNotFoundException (or any other
-   * exception type for that matter).
-   */
   @Test
-  public void test48182WithCacheClose() throws Exception {
-    AbstractRegionMap.testHookRunnableFor48182 = new Runnable() {
+  public void testEntryDestroyWithCacheClose() throws Exception {
+    testEntryDestroyWithCacheClose(false);
+  }
+
+  @Test
+  public void testOffHeapRegionEntryDestroyWithCacheClose() throws Exception {
+    testEntryDestroyWithCacheClose(true);
+  }
+
+  /**
+   * Simulates the conditions setting a test hook boolean in {@link AbstractRegionMap}. This test
+   * hook forces a cache close during a destroy in a region. This test asserts that a
+   * CacheClosedException is thrown rather than an EntryNotFoundException (or any other exception
+   * type for that matter).
+   */
+  private void testEntryDestroyWithCacheClose(boolean isOffHeap) {
+    AbstractRegionMap.testHookRunnableForConcurrentOperation = new Runnable() {
       @Override
       public void run() {
         getCache().close();
@@ -149,7 +158,7 @@ public class Bug48182JUnitTest {
     // True when the correct exception has been triggered.
     boolean correctException = false;
 
-    Region<Object, Object> region = createRegion();
+    Region<Object, Object> region = createRegion(isOffHeap);
     region.put(KEY, VALUE);
 
     try {
@@ -162,30 +171,35 @@ public class Bug48182JUnitTest {
       fail("Did not receive a CacheClosedException.  Received a " + e.getClass().getName()
           + " instead.");
     } finally {
-      AbstractRegionMap.testHookRunnableFor48182 = null;
+      AbstractRegionMap.testHookRunnableForConcurrentOperation = null;
     }
 
     assertTrue("A CacheClosedException was not triggered", correctException);
   }
 
-  /**
-   * Simulates the conditions similar to 48182 by setting a test hook boolean in
-   * {@link AbstractRegionMap}. This test hook forces a region destroy during a destroy operation in
-   * an off-heap region. This test asserts that a RegionDestroyedException is thrown rather than an
-   * EntryNotFoundException (or any other exception type for that matter).
-   */
   @Test
-  public void test48182WithRegionDestroy() throws Exception {
-    AbstractRegionMap.testHookRunnableFor48182 = new Runnable() {
+  public void testEntryDestroyWithRegionDestroy() throws Exception {
+    verifyConcurrentRegionDestroyWithEntryDestroy(false);
+  }
+
+  @Test
+  public void testEntryDestroyWithOffHeapRegionDestroy() throws Exception {
+    verifyConcurrentRegionDestroyWithEntryDestroy(true);
+  }
+
+  /**
+   * Simulates the conditions by setting a test hook boolean in {@link AbstractRegionMap}. This test
+   * hook forces a region destroy during a destroy operation in a region. This test asserts that a
+   * RegionDestroyedException is thrown rather than an EntryNotFoundException (or any other
+   * exception type for that matter).
+   */
+  private void verifyConcurrentRegionDestroyWithEntryDestroy(boolean isOffHeap) {
+    AbstractRegionMap.testHookRunnableForConcurrentOperation = new Runnable() {
       @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(getRegionName());
         region.destroyRegion();
-        if (cache.getLogger() != null) {
-          cache.getLogger()
-              .info("Region " + getRegionName() + " is destroyed : " + region.isDestroyed());
-        }
         assertTrue("Region " + getRegionName() + " is not destroyed.", region.isDestroyed());
       }
     };
@@ -193,7 +207,7 @@ public class Bug48182JUnitTest {
     // True when the correct exception has been triggered.
     boolean correctException = false;
 
-    Region<Object, Object> region = createRegion();
+    Region<Object, Object> region = createRegion(isOffHeap);
     region.put(KEY, VALUE);
 
     try {
@@ -206,7 +220,7 @@ public class Bug48182JUnitTest {
       fail("Did not receive a RegionDestroyedException.  Received a " + e.getClass().getName()
           + " instead.");
     } finally {
-      AbstractRegionMap.testHookRunnableFor48182 = null;
+      AbstractRegionMap.testHookRunnableForConcurrentOperation = null;
     }
 
     assertTrue("A RegionDestroyedException was not triggered", correctException);
