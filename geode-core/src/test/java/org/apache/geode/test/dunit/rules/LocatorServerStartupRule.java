@@ -23,6 +23,7 @@ import static org.apache.geode.test.dunit.Host.getHost;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
@@ -62,7 +63,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       new DistributedRestoreSystemProperties();
 
   private TemporaryFolder tempWorkingDir;
-  private MemberVM[] members;
+  private ArrayList<MemberVM> members;
 
   private boolean logFile = false;
 
@@ -102,7 +103,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     if (useTempWorkingDir()) {
       tempWorkingDir.create();
     }
-    members = new MemberVM[DUnitLauncher.NUM_VMS];
+    members = new ArrayList<>();
   }
 
   @Override
@@ -111,7 +112,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       DUnitLauncher.closeAndCheckForSuspects();
     } finally {
       MemberStarterRule.disconnectDSIfAny();
-      IntStream.range(0, DUnitLauncher.NUM_VMS).forEach(this::stopVM);
+      IntStream.range(0, members.size()).forEach(this::stopVM);
 
       if (useTempWorkingDir()) {
         tempWorkingDir.delete();
@@ -152,8 +153,16 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       locatorStarter.before();
       return locatorStarter;
     });
-    members[index] = new MemberVM(locator, locatorVM, useTempWorkingDir());
-    return members[index];
+
+    return setMember(index, new MemberVM(locator, locatorVM, useTempWorkingDir()));
+  }
+
+  private MemberVM setMember(int index, MemberVM element) {
+    while (members.size() <= index) {
+      members.add(null);
+    }
+    members.set(index, element);
+    return members.get(index);
   }
 
   public MemberVM startServerVM(int index) throws IOException {
@@ -194,8 +203,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       serverStarter.before();
       return serverStarter;
     });
-    members[index] = new MemberVM(server, serverVM, useTempWorkingDir());
-    return members[index];
+    return setMember(index, new MemberVM(server, serverVM, useTempWorkingDir()));
   }
 
   public MemberVM startServerAsJmxManager(int index) throws IOException {
@@ -235,12 +243,11 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       serverStarter.before();
       return serverStarter;
     });
-    members[index] = new MemberVM(server, serverVM, useTempWorkingDir());
-    return members[index];
+    return setMember(index, new MemberVM(server, serverVM, useTempWorkingDir()));
   }
 
   public void stopVM(int index) {
-    MemberVM member = members[index];
+    MemberVM member = members.get(index);
     // user has started a server/locator in this VM
     if (member != null) {
       member.stopMember();
@@ -255,7 +262,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * Returns the {@link Member} running inside the VM with the specified {@code index}
    */
   public MemberVM getMember(int index) {
-    return members[index];
+    return members.get(index);
   }
 
   public VM getVM(int index) {
