@@ -21,22 +21,23 @@ import java.util.Arrays;
 import org.apache.commons.io.FileUtils;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.Member;
 import org.apache.geode.test.junit.rules.Server;
 
-public class MemberVM<T extends Member> implements Member {
-  private T member;
+public class MemberVM implements Member {
+  private Member member;
   private VM vm;
   private boolean tempWorkingDir;
 
-  public MemberVM(T member, VM vm) {
+  public MemberVM(Member member, VM vm) {
     this(member, vm, false);
   }
 
-  public MemberVM(T member, VM vm, boolean tempWorkingDir) {
+  public MemberVM(Member member, VM vm, boolean tempWorkingDir) {
     this.member = member;
     this.vm = vm;
     this.tempWorkingDir = tempWorkingDir;
@@ -54,11 +55,15 @@ public class MemberVM<T extends Member> implements Member {
     vm.invoke(runnable);
   }
 
+  public <T> T invoke(final SerializableCallableIF<T> callable) {
+    return vm.invoke(callable);
+  }
+
   public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {
     return vm.invokeAsync(runnable);
   }
 
-  public T getMember() {
+  public Member getMember() {
     return member;
   }
 

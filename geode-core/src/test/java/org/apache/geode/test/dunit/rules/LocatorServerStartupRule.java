@@ -120,7 +120,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     }
   }
 
-  public MemberVM<Locator> startLocatorVM(int index) throws Exception {
+  public MemberVM startLocatorVM(int index) throws Exception {
     return startLocatorVM(index, new Properties());
   }
 
@@ -130,8 +130,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * 
    * @return VM locator vm
    */
-  public MemberVM<Locator> startLocatorVM(int index, Properties specifiedProperties)
-      throws Exception {
+  public MemberVM startLocatorVM(int index, Properties specifiedProperties) throws Exception {
     Properties properties = new Properties();
     properties.putAll(specifiedProperties);
 

@@ -18,26 +18,26 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.test.junit.rules.Locator;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import java.util.Properties;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class StartServerAuthorizationTest {
 
   @ClassRule
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
-  private static MemberVM<Locator> locator = null;
+  private static MemberVM locator = null;
 
   @Rule
   public ServerStarterRule serverStarter = new ServerStarterRule();
