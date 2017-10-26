@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +34,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -178,7 +178,7 @@ public class RemoveCommandDUnitTest implements Serializable {
   }
 
   private boolean regionMBeansAreInitialized() {
-    Set<DistributedMember> members = getRegionAssociatedMembers(REPLICATE_REGION_NAME,
+    Set<DistributedMember> members = CliUtil.getRegionAssociatedMembers(REPLICATE_REGION_NAME,
         (InternalCache) CacheFactory.getAnyInstance(), false);
 
     return CollectionUtils.isNotEmpty(members);

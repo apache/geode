@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -34,6 +33,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.dto.Key1;
 import org.apache.geode.management.internal.cli.dto.Value2;
 import org.apache.geode.test.dunit.SerializableCallableIF;
@@ -149,7 +149,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
   }
 
   private boolean regionMBeansAreInitialized() {
-    Set<DistributedMember> members = getRegionAssociatedMembers(JSON_REGION_NAME,
+    Set<DistributedMember> members = CliUtil.getRegionAssociatedMembers(JSON_REGION_NAME,
         (InternalCache) CacheFactory.getAnyInstance(), false);
 
     return CollectionUtils.isNotEmpty(members);

@@ -64,7 +64,7 @@ public class DescribeConfigCommand implements GfshCommand {
       }
       if (targetMember != null) {
         ResultCollector<?, ?> rc =
-            CliUtil.executeFunction(getMemberConfigFunction, hideDefaults, targetMember);
+            executeFunction(getMemberConfigFunction, hideDefaults, targetMember);
         ArrayList<?> output = (ArrayList<?>) rc.getResult();
         Object obj = output.get(0);
 

@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -153,7 +154,7 @@ public interface GfshCommand extends CommandMarker {
   }
 
   default Set<DistributedMember> findMembersForRegion(InternalCache cache, String regionPath) {
-    return CliUtil.getRegionAssociatedMembers(regionPath, cache);
+    return CliUtil.getRegionAssociatedMembers(regionPath, cache, true);
   }
 
   default ResultCollector<?, ?> executeFunction(final Function function, Object args,
@@ -161,4 +162,12 @@ public interface GfshCommand extends CommandMarker {
     return CliUtil.executeFunction(function, args, targetMembers);
   }
 
+  default ResultCollector<?, ?> executeFunction(final Function function, Object args,
+      final DistributedMember targetMember) {
+    return executeFunction(function, args, Collections.singleton(targetMember));
+  }
+
+  default Set<DistributedMember> findAnyMembersForRegion(InternalCache cache, String regionPath) {
+    return CliUtil.getRegionAssociatedMembers(regionPath, cache, false);
+  }
 }

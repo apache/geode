@@ -444,7 +444,7 @@ public class LuceneIndexCommandsJUnitTest {
     }
 
     doReturn(mockResultCollector).when(commands).executeFunction(
-        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any());
+        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
     doReturn(Collections.emptySet()).when(commands).getNormalMembers(any());
@@ -481,7 +481,7 @@ public class LuceneIndexCommandsJUnitTest {
     }
 
     doReturn(mockResultCollector).when(commands).executeFunction(
-        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any());
+        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
     doReturn(members).when(commands).getNormalMembers(any());
@@ -513,7 +513,7 @@ public class LuceneIndexCommandsJUnitTest {
     }
 
     doReturn(mockResultCollector).when(commands).executeFunction(
-        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any());
+        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
     doReturn(Collections.emptySet()).when(commands).getNormalMembers(any());
@@ -550,7 +550,7 @@ public class LuceneIndexCommandsJUnitTest {
     }
 
     doReturn(mockResultCollector).when(commands).executeFunction(
-        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any());
+        isA(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), any(Set.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
     doReturn(Collections.emptySet()).when(commands).getNormalMembers(any());

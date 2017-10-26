@@ -56,8 +56,7 @@ public class DescribeMemberCommand implements GfshCommand {
           CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
 
       if (memberToBeDescribed != null) {
-        ResultCollector<?, ?> rc =
-            CliUtil.executeFunction(getMemberInformation, null, memberToBeDescribed);
+        ResultCollector<?, ?> rc = executeFunction(getMemberInformation, null, memberToBeDescribed);
 
         ArrayList<?> output = (ArrayList<?>) rc.getResult();
         Object obj = output.get(0);

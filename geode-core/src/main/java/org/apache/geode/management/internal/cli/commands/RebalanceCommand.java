@@ -15,11 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.checkResultList;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.toCompositeResultData;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.tokenize;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -104,8 +102,117 @@ public class RebalanceCommand implements GfshCommand {
     return result;
   }
 
+  private boolean checkResultList(CompositeResultData rebalanceResultData, List resultList,
+      DistributedMember member) {
+    boolean toContinueForOtherMembers = false;
+    if (CollectionUtils.isNotEmpty(resultList)) {
+      for (Object object : resultList) {
+        if (object instanceof Exception) {
+          rebalanceResultData.addSection().addData(
+              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
+              ((Exception) object).getMessage());
+
+          LogWrapper.getInstance().info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId()
+              + " exception=" + ((Throwable) object).getMessage(), ((Throwable) object));
+
+          toContinueForOtherMembers = true;
+          break;
+        } else if (object instanceof Throwable) {
+          rebalanceResultData.addSection().addData(
+              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
+              ((Throwable) object).getMessage());
+
+          LogWrapper.getInstance().info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId()
+              + " exception=" + ((Throwable) object).getMessage(), ((Throwable) object));
+
+          toContinueForOtherMembers = true;
+          break;
+        }
+      }
+    } else {
+      LogWrapper.getInstance().info(
+          "Rebalancing for member=" + member.getId() + ", resultList is either null or empty");
+      rebalanceResultData.addSection().addData("Rebalancing for member=" + member.getId(),
+          ", resultList is either null or empty");
+      toContinueForOtherMembers = true;
+    }
+    return toContinueForOtherMembers;
+  }
+
+  private CompositeResultData toCompositeResultData(CompositeResultData rebalanceResultData,
+      ArrayList<String> rstlist, int index, boolean simulate, InternalCache cache) {
+    int resultItemCount = 9;
+    // add only if there are any valid regions in results
+    if (rstlist.size() > resultItemCount && StringUtils.isNotEmpty(rstlist.get(resultItemCount))) {
+      TabularResultData table1 = rebalanceResultData.addSection().addTable("Table" + index);
+      String newLine = System.getProperty("line.separator");
+      StringBuilder resultStr = new StringBuilder();
+      resultStr.append(newLine);
+      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);
+      table1.accumulate("Value", rstlist.get(0));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).append(" = ")
+          .append(rstlist.get(0)).append(newLine);
+      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM);
+      table1.accumulate("Value", rstlist.get(1));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM).append(" = ")
+          .append(rstlist.get(1)).append(newLine);
+
+      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED);
+      table1.accumulate("Value", rstlist.get(2));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED).append(" = ")
+          .append(rstlist.get(2)).append(newLine);
+
+      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES);
+      table1.accumulate("Value", rstlist.get(3));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES).append(" = ")
+          .append(rstlist.get(3)).append(newLine);
+
+      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME);
+      table1.accumulate("Value", rstlist.get(4));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME).append(" = ")
+          .append(rstlist.get(4)).append(newLine);
+
+      table1.accumulate("Rebalanced Stats",
+          CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED);
+      table1.accumulate("Value", rstlist.get(5));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED).append(" = ")
+          .append(rstlist.get(5)).append(newLine);
+
+      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME);
+      table1.accumulate("Value", rstlist.get(6));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME).append(" = ")
+          .append(rstlist.get(6)).append(newLine);
+
+      table1.accumulate("Rebalanced Stats",
+          CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
+      table1.accumulate("Value", rstlist.get(7));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED).append(" = ")
+          .append(rstlist.get(7)).append(newLine);
+
+      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALTIME);
+      table1.accumulate("Value", rstlist.get(8));
+      resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ").append(rstlist.get(8))
+          .append(newLine);
+
+      String headerText;
+      if (simulate) {
+        headerText = "Simulated partition regions ";
+      } else {
+        headerText = "Rebalanced partition regions ";
+      }
+      for (int i = resultItemCount; i < rstlist.size(); i++) {
+        headerText = headerText + " " + rstlist.get(i);
+      }
+      table1.setHeader(headerText);
+      cache.getLogger().info(headerText + resultStr);
+    }
+    return rebalanceResultData;
+  }
+
+
   // TODO EY Move this to its own class
   private class ExecuteRebalanceWithTimeout implements Callable<Result> {
+
     String[] includeRegions = null;
     String[] excludeRegions = null;
     boolean simulate;
@@ -165,8 +272,8 @@ public class RebalanceCommand implements GfshCommand {
               if (simulate) {
                 List resultList;
                 try {
-                  resultList = (ArrayList) CliUtil
-                      .executeFunction(rebalanceFunction, functionArgs, member).getResult();
+                  resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
+                      .getResult();
                 } catch (Exception ex) {
                   LogWrapper.getInstance()
                       .info(CliStrings.format(
@@ -184,15 +291,15 @@ public class RebalanceCommand implements GfshCommand {
                   result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
-                List<String> rstList = tokenize((String) resultList.get(0), ",");
+                List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
 
                 result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
                     (ArrayList) rstList, index, true, cache));
               } else {
                 List resultList;
                 try {
-                  resultList = (ArrayList) CliUtil
-                      .executeFunction(rebalanceFunction, functionArgs, member).getResult();
+                  resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
+                      .getResult();
                 } catch (Exception ex) {
                   LogWrapper.getInstance()
                       .info(CliStrings.format(
@@ -210,7 +317,7 @@ public class RebalanceCommand implements GfshCommand {
                   result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
-                List<String> rstList = tokenize((String) resultList.get(0), ",");
+                List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
 
                 result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
                     (ArrayList) rstList, index, false, cache));
@@ -426,15 +533,15 @@ public class RebalanceCommand implements GfshCommand {
 
             try {
               if (checkMemberPresence(dsMember, cache)) {
-                resultList = (ArrayList) CliUtil
-                    .executeFunction(rebalanceFunction, functionArgs, dsMember).getResult();
+                resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, dsMember)
+                    .getResult();
 
                 if (checkResultList(rebalanceResultData, resultList, dsMember)) {
                   result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
 
-                List<String> rstList = tokenize((String) resultList.get(0), ",");
+                List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
                 result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
                     (ArrayList) rstList, index, simulate.equals("true"), cache));
                 index++;
@@ -471,7 +578,7 @@ public class RebalanceCommand implements GfshCommand {
               continue;
             }
 
-            List<String> rstList = tokenize((String) resultList.get(0), ",");
+            List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
             result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
                 (ArrayList) rstList, index, simulate.equals("true"), cache));
             index++;

@@ -73,8 +73,8 @@ public class ExportDataCommand implements GfshCommand {
       String path = dirPath != null ? defaultFileName(dirPath, regionName) : filePath;
       final String args[] = {regionName, path, Boolean.toString(parallel)};
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(exportDataFunction, args, targetMember);
-      result = DataCommandUtil.getFunctionResult(rc, CliStrings.EXPORT_DATA);
+      ResultCollector<?, ?> rc = executeFunction(exportDataFunction, args, targetMember);
+      result = getFunctionResult(rc, CliStrings.EXPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
@@ -106,5 +106,25 @@ public class ExportDataCommand implements GfshCommand {
           .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION)));
     }
     return Optional.empty();
+  }
+
+  static Result getFunctionResult(ResultCollector<?, ?> rc, String commandName) {
+    Result result;
+    List<Object> results = (List<Object>) rc.getResult();
+    if (results != null) {
+      Object resultObj = results.get(0);
+      if (resultObj instanceof String) {
+        result = ResultBuilder.createInfoResult((String) resultObj);
+      } else if (resultObj instanceof Exception) {
+        result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
+      } else {
+        result = ResultBuilder.createGemFireErrorResult(
+            CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
+      }
+    } else {
+      result = ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
+    }
+    return result;
   }
 }

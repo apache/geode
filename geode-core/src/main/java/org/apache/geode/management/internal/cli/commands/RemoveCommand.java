@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
 import static org.apache.geode.management.internal.cli.result.ResultBuilder.createUserErrorResult;
 
@@ -70,7 +69,7 @@ public class RemoveCommand implements GfshCommand {
     DataCommandFunction removefn = new DataCommandFunction();
     DataCommandResult dataResult;
     if (region == null) {
-      Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
+      Set<DistributedMember> memberList = findAnyMembersForRegion(getCache(), regionPath);
 
       if (CollectionUtils.isEmpty(memberList)) {
         return createUserErrorResult(String.format(REGION_NOT_FOUND, regionPath));

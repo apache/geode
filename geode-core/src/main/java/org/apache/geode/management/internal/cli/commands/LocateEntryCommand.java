@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
 
 import java.util.Set;
@@ -58,7 +57,7 @@ public class LocateEntryCommand implements GfshCommand {
     DataCommandResult dataResult;
 
     DataCommandFunction locateEntry = new DataCommandFunction();
-    Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), true);
+    Set<DistributedMember> memberList = findMembersForRegion(getCache(), regionPath);
     if (CollectionUtils.isNotEmpty(memberList)) {
       DataCommandRequest request = new DataCommandRequest();
       request.setCommand(CliStrings.LOCATE_ENTRY);

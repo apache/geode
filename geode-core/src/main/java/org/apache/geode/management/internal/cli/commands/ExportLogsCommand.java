@@ -157,7 +157,7 @@ public class ExportLogsCommand implements GfshCommand {
 
         cacheWriter.startFile(server.getName());
 
-        CliUtil.executeFunction(new ExportLogsFunction(),
+        executeFunction(new ExportLogsFunction(),
             new ExportLogsFunction.Args(start, end, logLevel, onlyLogLevel, logsOnly, statsOnly),
             server).getResult();
         Path zipFile = cacheWriter.endFile();
@@ -224,7 +224,7 @@ public class ExportLogsCommand implements GfshCommand {
    * Wrapper to enable stubbing of static method call for unit testing
    */
   ResultCollector estimateLogSize(SizeExportLogsFunction.Args args, DistributedMember member) {
-    return CliUtil.executeFunction(new SizeExportLogsFunction(), args, member);
+    return executeFunction(new SizeExportLogsFunction(), args, member);
   }
 
   /**

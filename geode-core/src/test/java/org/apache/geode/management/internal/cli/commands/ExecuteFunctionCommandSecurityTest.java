@@ -41,10 +41,10 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(DistributedTest.class)
 public class ExecuteFunctionCommandSecurityTest implements Serializable {
@@ -152,7 +152,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   private static void waitUntilRegionMBeansAreRegistered() {
     Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
       Set<DistributedMember> regionMembers = CliUtil.getRegionAssociatedMembers(REPLICATED_REGION,
-          (InternalCache) CacheFactory.getAnyInstance());
+          (InternalCache) CacheFactory.getAnyInstance(), true);
       assertThat(regionMembers).hasSize(2);
     });
   }

@@ -331,7 +331,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
 
     InternalCache cache = getCache();
 
-    Set<DistributedMember> set = CliUtil.getRegionAssociatedMembers(region1, cache);
+    Set<DistributedMember> set = CliUtil.getRegionAssociatedMembers(region1, cache, true);
     assertNotNull(set);
     assertEquals(4, set.size());
     assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
@@ -345,13 +345,13 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
      * assertIndexDetailsEquals(1, set.size());
      */
 
-    set = CliUtil.getRegionAssociatedMembers(region_group1, cache);
+    set = CliUtil.getRegionAssociatedMembers(region_group1, cache, true);
     assertNotNull(set);
     assertEquals(2, set.size());
     assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
     assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
 
-    set = CliUtil.getRegionAssociatedMembers(region_member2_group1, cache);
+    set = CliUtil.getRegionAssociatedMembers(region_member2_group1, cache, true);
     assertNotNull(set);
     assertEquals(1, set.size());
     assertEquals(true, containsMember(set, MEMBER_2_GROUP1));

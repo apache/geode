@@ -56,10 +56,6 @@ public class DataCommandResult implements Serializable {
   private List<SelectResultRow> selectResult;
   private String queryTraceString;
 
-  public static final String QUERY_PAGE_START = "startCount";
-  public static final String QUERY_PAGE_END = "endCount";
-  public static final String QUERY_TRACE = "Query Trace";
-
   public static final String RESULT_FLAG = "Result";
   public static final String NUM_ROWS = "Rows";
 
