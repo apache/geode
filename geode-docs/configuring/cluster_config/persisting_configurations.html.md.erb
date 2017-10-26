@@ -146,17 +146,17 @@ This section provides a walk-through example of configuring a simple <%=vars.pro
 
     Note that `region1` is created on all cache servers that specified the group named `group1` when starting the cache server (`server1` and `server2`, in this example). `region2` is created on all members because no group was specified.
 
-6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mx4j-3.0.1.jar` and `mx4j.jar` files from the distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
+6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mx4j-3.0.1.jar` and `ra.jar` files from the distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
 
     ``` pre
-    gfsh>deploy --groups=group1 --jars=/lib/mail.jar
+    gfsh>deploy --groups=group1 --jars=/lib/mx4j-3.0.1.jar
     Post substitution: deploy --groups=group1 --jars=/Users/username/Apache_Geode_1.0.0_Linux/lib/mx4j-3.0.1.jar
     Member  |    Deployed JAR    | Deployed JAR Location
     ------- | ------------------ | -------------------------------------------------------
     server1 | mx4j-3.0.1.jar     | /Users/username/my_geode/server1/vf.gf#mx4j-3.0.1.jar#1
     server2 | mx4j-3.0.1.jar     | /Users/username/my_geode/server2/vf.gf#mx4j-3.0.1.jar#1
 
-    gfsh>deploy --jars=/lib/mx4j.jar
+    gfsh>deploy --jars=/lib/ra.jar
     Post substitution: deploy --jar=/Users/username/Apache_Geode_1.0.0_Linux/lib/ra.jar
     Member  | Deployed JAR | Deployed JAR Location
     ------- | ------------ | -----------------------------------------------
