@@ -28,7 +28,6 @@ import org.apache.geode.annotations.Experimental;
  * 
  * @param <T> The type of object supported by this lucene serializer
  */
-@Experimental
 public interface LuceneSerializer<T> extends Declarable {
 
   /**
