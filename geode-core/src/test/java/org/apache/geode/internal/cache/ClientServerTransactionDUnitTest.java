@@ -1658,30 +1658,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(server1, true);
     createRegionOnServer(server2);
 
-    client.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        ClientCacheFactory ccf = new ClientCacheFactory();
-        setCCF(port1, ccf);
-        ClientCache cCache = getClientCache(ccf);
-        ClientRegionFactory<CustId, Customer> custrf =
-            cCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-        ClientRegionFactory<Integer, String> refrf =
-            cCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-        Region<Integer, String> r = refrf.create(D_REFERENCE);
-        Region<CustId, Customer> pr = custrf.create(CUSTOMER);
-        // Region<Integer, String> order = refrf.create(ORDER);
-
-        TXManagerImpl mgr = getGemfireCache().getTxManager();
-        mgr.begin();
-        for (int i = 0; i < 10; i++) {
-          CustId custId = new CustId(i);
-          Customer cust = new Customer("name" + i, "address" + i);
-          pr.put(custId, cust);
-          r.put(i, "value" + i);
-        }
-        return null;
-      }
-    });
+    TransactionId txId = client.invoke(() -> doTransactionPut(port1));
 
     SerializableCallable countActiveTx = new SerializableCallable() {
       public Object call() throws Exception {
@@ -1695,27 +1672,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     assertEquals(2, serv1TxCount + serv2TxCount);
 
-    client.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        TXManagerImpl mgr = getGemfireCache().getTxManager();
-        Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
-        Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
-        if (commit) {
-          mgr.commit();
-          for (int i = 0; i < 10; i++) {
-            assertEquals(new Customer("name" + i, "address" + i), pr.get(new CustId(i)));
-            assertEquals("value" + i, r.get(i));
-          }
-        } else {
-          mgr.rollback();
-          for (int i = 0; i < 10; i++) {
-            assertNull(pr.get(new CustId(i)));
-            assertNull(r.get(i));
-          }
-        }
-        return null;
-      }
-    });
+    client.invoke(() -> finishTransaction(commit, txId));
 
     serv1TxCount = (Integer) server1.invoke(countActiveTx);
     serv2TxCount = (Integer) server2.invoke(countActiveTx);
@@ -4233,5 +4190,48 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   private void createReplicateRegion(String regionName) {
     RegionFactory rf = getCache().createRegionFactory(RegionShortcut.REPLICATE);
     Region<Integer, String> region = rf.create(regionName);
+  }
+
+  private TransactionId doTransactionPut(final int port1) {
+    ClientCacheFactory ccf = new ClientCacheFactory();
+    setCCF(port1, ccf);
+    ClientCache cCache = getClientCache(ccf);
+    ClientRegionFactory<CustId, Customer> custrf =
+        cCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+    ClientRegionFactory<Integer, String> refrf =
+        cCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+    Region<Integer, String> r = refrf.create(D_REFERENCE);
+    Region<CustId, Customer> pr = custrf.create(CUSTOMER);
+    // Region<Integer, String> order = refrf.create(ORDER);
+
+    TXManagerImpl mgr = getCache().getTxManager();
+    mgr.begin();
+    for (int i = 0; i < 10; i++) {
+      CustId custId = new CustId(i);
+      Customer cust = new Customer("name" + i, "address" + i);
+      pr.put(custId, cust);
+      r.put(i, "value" + i);
+    }
+    return mgr.suspend();
+  }
+
+  private void finishTransaction(final boolean commit, TransactionId txId) {
+    TXManagerImpl mgr = getCache().getTxManager();
+    Region<Integer, String> r = getCache().getRegion(D_REFERENCE);
+    Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
+    mgr.resume(txId);
+    if (commit) {
+      mgr.commit();
+      for (int i = 0; i < 10; i++) {
+        assertEquals(new Customer("name" + i, "address" + i), pr.get(new CustId(i)));
+        assertEquals("value" + i, r.get(i));
+      }
+    } else {
+      mgr.rollback();
+      for (int i = 0; i < 10; i++) {
+        assertNull(pr.get(new CustId(i)));
+        assertNull(r.get(i));
+      }
+    }
   }
 }
