@@ -12,23 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.protocol.state;
 
-package org.apache.geode.internal.protocol.security;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
+import org.apache.geode.internal.protocol.OperationContext;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
-import org.apache.geode.security.AuthenticationFailedException;
-
-public class InvalidConfigAuthenticator implements Authenticator<Object, Object> {
-  private static final Logger logger = LogService.getLogger(InvalidConfigAuthenticator.class);
+public class LegacySecurityConnectionStateProcessor implements ConnectionStateProcessor {
+  @Override
+  public void validateOperation(MessageExecutionContext messageContext,
+      OperationContext operationContext) throws ConnectionStateException {
+    throw new ConnectionStateException(ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE,
+        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
+  }
 
   @Override
-  public Object authenticate(Object object) throws AuthenticationFailedException {
-    logger.warn(
-        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
-    throw new IncompatibleAuthenticationMechanismsException(
+  public ConnectionAuthenticatingStateProcessor allowAuthentication()
+      throws ConnectionStateException {
+    throw new ConnectionStateException(ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE,
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 }

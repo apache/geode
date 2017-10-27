@@ -14,19 +14,21 @@
  */
 package org.apache.geode.internal.protocol;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.AUTHENTICATION_FAILED;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ConnectionAPI;
+import org.apache.geode.internal.protocol.protobuf.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -35,21 +37,18 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.SecurityManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.AUTHENTICATION_FAILED;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Security seems to have a few possible setups: * Manual SecurityManager set: integrated security *
@@ -78,7 +77,7 @@ public class AuthenticationIntegrationTest {
     System.setProperty("geode.feature-protobuf-protocol", "true");
   }
 
-  public void setupCacheServerAndSocket() throws IOException {
+  public void setupCacheServerAndSocket() throws Exception {
     CacheServer cacheServer = cache.addCacheServer();
     int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
@@ -92,6 +91,15 @@ public class AuthenticationIntegrationTest {
     outputStream.write(110);
 
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
+
+    ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
+                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
+        .build().writeDelimitedTo(outputStream);
+    ClientProtocol.Message handshakeResponse = protobufProtocolSerializer.deserialize(inputStream);
+    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
   }
 
   private static class SimpleSecurityManager implements SecurityManager {
@@ -201,13 +209,13 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
                 .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.AuthenticationResponse authenticationResponse =
+    ConnectionAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertTrue(authenticationResponse.getAuthenticated());
 
@@ -227,14 +235,15 @@ public class AuthenticationIntegrationTest {
     cache = createCacheWithSecurityManagerTakingExpectedCreds();
     setupCacheServerAndSocket();
 
-    ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
-        .build();
+    ClientProtocol.Message authenticationRequest =
+        ClientProtocol.Message.newBuilder()
+            .setRequest(ClientProtocol.Request.newBuilder()
+                .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()))
+            .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.AuthenticationResponse authenticationResponse =
+    ConnectionAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
   }
@@ -246,20 +255,20 @@ public class AuthenticationIntegrationTest {
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
                 .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, "wrong password")))
         .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
-    AuthenticationAPI.AuthenticationResponse authenticationResponse =
+    ConnectionAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
   }
 
   @Test
-  public void noAuthenticatorSet() throws IOException {
+  public void noAuthenticatorSet() throws Exception {
     cache = createNoSecurityCache();
     setupCacheServerAndSocket();
 
@@ -274,10 +283,11 @@ public class AuthenticationIntegrationTest {
     createLegacyAuthCache("security-client-authenticator");
     setupCacheServerAndSocket();
 
-    ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
-        .build();
+    ClientProtocol.Message authenticationRequest =
+        ClientProtocol.Message.newBuilder()
+            .setRequest(ClientProtocol.Request.newBuilder()
+                .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()))
+            .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
@@ -293,10 +303,11 @@ public class AuthenticationIntegrationTest {
     createLegacyAuthCache("security-peer-authenticator");
     setupCacheServerAndSocket();
 
-    ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()))
-        .build();
+    ClientProtocol.Message authenticationRequest =
+        ClientProtocol.Message.newBuilder()
+            .setRequest(ClientProtocol.Request.newBuilder()
+                .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()))
+            .build();
 
     authenticationRequest.writeDelimitedTo(outputStream);
 
@@ -323,7 +334,7 @@ public class AuthenticationIntegrationTest {
     cache = cacheFactory.create();
   }
 
-  private AuthenticationAPI.AuthenticationResponse parseSimpleAuthenticationResponseFromInput()
+  private ConnectionAPI.AuthenticationResponse parseSimpleAuthenticationResponseFromInput()
       throws IOException {
     ClientProtocol.Message authenticationResponseMessage =
         ClientProtocol.Message.parseDelimitedFrom(inputStream);

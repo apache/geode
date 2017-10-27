@@ -23,7 +23,9 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
+import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 
 @Experimental
@@ -31,6 +33,7 @@ public final class ProtobufLocatorPipeline implements ClientProtocolProcessor {
   private final ProtocolClientStatistics statistics;
   private final InternalLocator locator;
   private final ProtobufStreamProcessor streamProcessor;
+  private final ConnectionStateProcessor locatorConnectionState;
 
   ProtobufLocatorPipeline(ProtobufStreamProcessor protobufStreamProcessor,
       ProtocolClientStatistics statistics, InternalLocator locator) {
@@ -38,13 +41,14 @@ public final class ProtobufLocatorPipeline implements ClientProtocolProcessor {
     this.statistics = statistics;
     this.locator = locator;
     this.statistics.clientConnected();
+    this.locatorConnectionState = new NoSecurityConnectionStateProcessor();
   }
 
   @Override
   public void processMessage(InputStream inputStream, OutputStream outputStream)
       throws IOException, IncompatibleVersionException {
     streamProcessor.receiveMessage(inputStream, outputStream,
-        new MessageExecutionContext(locator, statistics));
+        new MessageExecutionContext(locator, statistics, locatorConnectionState));
   }
 
   @Override

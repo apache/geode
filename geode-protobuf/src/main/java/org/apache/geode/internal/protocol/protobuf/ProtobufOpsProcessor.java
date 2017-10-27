@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf;
 
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -25,10 +26,7 @@ import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.security.SecurityProcessor;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.security.AuthenticationRequiredException;
-import org.apache.geode.security.NotAuthorizedException;
 
 import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
 
@@ -57,19 +55,13 @@ public class ProtobufOpsProcessor {
         protobufOperationContextRegistry.getOperationContext(requestType);
     Result result;
 
-    SecurityProcessor securityProcessor = messageExecutionContext.getSecurityProcessor();
     try {
-      securityProcessor.validateOperation(request, messageExecutionContext, operationContext);
+      messageExecutionContext.getConnectionStateProcessor()
+          .validateOperation(messageExecutionContext, operationContext);
       result = processOperation(request, messageExecutionContext, requestType, operationContext);
-    } catch (AuthenticationRequiredException e) {
-      logger.warn(e);
-      result = Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(AUTHENTICATION_FAILED, e.getMessage()));
-    } catch (NotAuthorizedException e) {
-      logger.warn(e);
-      messageExecutionContext.getStatistics().incAuthorizationViolations();
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(AUTHORIZATION_FAILED,
-          "The user is not authorized to complete this operation"));
+    } catch (ConnectionStateException e) {
+      logger.warn(e.getMessage());
+      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
     }
 
     return ((ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
