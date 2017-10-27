@@ -103,6 +103,7 @@ public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestC
     });
 
     ai1.await();
+    ai2.await();
   }
 
 }
