@@ -78,10 +78,10 @@ public class IndexCommandsIntegrationTest {
     // destroy all existing indexes
     Collection<Index> indices = server.getCache().getQueryService().getIndexes();
     indices.stream().map(Index::getName).forEach(indexName -> {
-      gfsh.executeAndVerifyCommand("destroy index --name=" + indexName);
+      gfsh.executeAndAssertThat("destroy index --name=" + indexName).statusIsSuccess();
     });
 
-    gfsh.executeAndVerifyCommand("list index");
+    gfsh.executeAndAssertThat("list index").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("No Indexes Found");
   }
 
@@ -102,10 +102,10 @@ public class IndexCommandsIntegrationTest {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
         "\"/" + regionName + " s, s.history h\"");
 
-    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+    gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
 
-    gfsh.executeAndVerifyCommand("list index");
+    gfsh.executeAndAssertThat("list index").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("indexA");
   }
 
@@ -117,10 +117,10 @@ public class IndexCommandsIntegrationTest {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION,
         "\"/" + regionName + " s, s.history h\"");
 
-    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+    gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
 
-    gfsh.executeAndVerifyCommand("list index");
+    gfsh.executeAndAssertThat("list index").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("indexA");
   }
 
@@ -145,10 +145,10 @@ public class IndexCommandsIntegrationTest {
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     csb.addOption(CliStrings.CREATE_INDEX__REGION, regionName);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Index successfully created");
 
-    gfsh.executeAndVerifyCommand("list index");
+    gfsh.executeAndAssertThat("list index").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("indexA");
   }
 
@@ -169,9 +169,9 @@ public class IndexCommandsIntegrationTest {
   @Test
   public void cannotCreateWithTheSameName() throws Exception {
     createSimpleIndexA();
-    gfsh.execute("create index --name=indexA --expression=key --region=/regionA");
-    assertThat(gfsh.getGfshOutput())
-        .contains("Index \"indexA\" already exists.  Create failed due to duplicate name");
+    gfsh.executeAndAssertThat("create index --name=indexA --expression=key --region=/regionA")
+        .statusIsError()
+        .containsOutput("Index \"indexA\" already exists.  Create failed due to duplicate name");
   }
 
   @Test
@@ -236,8 +236,8 @@ public class IndexCommandsIntegrationTest {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, regionName);
-    gfsh.executeAndVerifyCommand(csb.toString(),
-        "Indexes on region : /regionA successfully destroyed");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Indexes on region : /regionA successfully destroyed");
   }
 
   @Test
@@ -246,7 +246,8 @@ public class IndexCommandsIntegrationTest {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.GROUP, groupName);
-    gfsh.executeAndVerifyCommand(csb.toString(), "Indexes successfully destroyed");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Indexes successfully destroyed");
   }
 
   private void createSimpleIndexA() throws Exception {
@@ -254,7 +255,8 @@ public class IndexCommandsIntegrationTest {
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
-    gfsh.executeAndVerifyCommand(csb.toString(), "Index successfully created");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Index successfully created");
   }
 
   private static Region<?, ?> createPartitionedRegion(String regionName, Cache cache,

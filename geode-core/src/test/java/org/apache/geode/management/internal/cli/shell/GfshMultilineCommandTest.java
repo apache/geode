@@ -44,12 +44,12 @@ public class GfshMultilineCommandTest {
     // Execute a command
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MEMBER);
     csb.addOption(GROUP, "nogroup");
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput().trim()).isEqualTo(NO_MEMBERS_FOUND_MESSAGE);
 
     // Now execute same command with a new Continuation on new line
     csb = new CommandStringBuilder(LIST_MEMBER).addNewLine().addOption(GROUP, "nogroup");
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput().trim()).isEqualTo(NO_MEMBERS_FOUND_MESSAGE);
   }
 

@@ -73,7 +73,7 @@ public class ExportConfigCommandDUnitTest {
 
     // export all members' config into a folder
     File tempDir = temporaryFolder.newFolder("all-members");
-    gfsh.executeAndVerifyCommand("export config --dir=" + tempDir.getAbsolutePath());
+    gfsh.executeAndAssertThat("export config --dir=" + tempDir.getAbsolutePath()).statusIsSuccess();
 
     List<String> expectedFiles = Arrays.asList("server-0-cache.xml", "server-1-cache.xml",
         "server-2-cache.xml", "server-3-cache.xml", "server-0-gf.properties",
@@ -86,8 +86,8 @@ public class ExportConfigCommandDUnitTest {
 
     // export just one member's config
     tempDir = temporaryFolder.newFolder("member0");
-    gfsh.executeAndVerifyCommand(
-        "export config --member=server-0 --dir=" + tempDir.getAbsolutePath());
+    gfsh.executeAndAssertThat("export config --member=server-0 --dir=" + tempDir.getAbsolutePath())
+        .statusIsSuccess();
 
     expectedFiles = Arrays.asList("server-0-cache.xml", "server-0-gf.properties");
 
@@ -98,7 +98,8 @@ public class ExportConfigCommandDUnitTest {
 
     // export group2 config into a folder
     tempDir = temporaryFolder.newFolder("group2");
-    gfsh.executeAndVerifyCommand("export config --group=Group2 --dir=" + tempDir.getAbsolutePath());
+    gfsh.executeAndAssertThat("export config --group=Group2 --dir=" + tempDir.getAbsolutePath())
+        .statusIsSuccess();
 
     expectedFiles = Arrays.asList("server-1-cache.xml", "server-2-cache.xml",
         "server-1-gf.properties", "server-2-gf.properties");

@@ -76,26 +76,28 @@ public class GetCommandIntegrationTest {
 
   @Test
   public void get() throws Exception {
-    gfsh.executeAndVerifyCommand("get --region=Users --key=jonbloom");
+    gfsh.executeAndAssertThat("get --region=Users --key=jonbloom").statusIsSuccess();
   }
 
   @Test
   public void getWithSlashedRegionName() throws Exception {
-    gfsh.executeAndVerifyCommand("get --region=/Users --key=jonbloom");
+    gfsh.executeAndAssertThat("get --region=/Users --key=jonbloom").statusIsSuccess();
   }
 
   @Test
   public void getOnCacheMiss() throws Exception {
-    gfsh.executeAndVerifyCommand("get --region=Users --key=jonbloom");
+    gfsh.executeAndAssertThat("get --region=Users --key=jonbloom").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Result      : true");
-    gfsh.executeAndVerifyCommand("get --region=Users --key=jondoe --load-on-cache-miss=false");
+    gfsh.executeAndAssertThat("get --region=Users --key=jondoe --load-on-cache-miss=false")
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Result      : false");
 
-    gfsh.executeAndVerifyCommand("get --region=Users --key=jondoe");
+    gfsh.executeAndAssertThat("get --region=Users --key=jondoe").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Result      : true");
 
     // get something that does not exist
-    gfsh.executeAndVerifyCommand("get --region=Users --key=missingUser --load-on-cache-miss");
+    gfsh.executeAndAssertThat("get --region=Users --key=missingUser --load-on-cache-miss")
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Result      : false");
   }
 

@@ -101,8 +101,10 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
 
   @Test
   public void testImportClusterConfig() throws Exception {
-    gfshConnector.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsSuccess();
 
     // Make sure that a backup of the old clusterConfig was created
     assertThat(locatorVM.getWorkingDir().listFiles())
@@ -134,8 +136,10 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
         "localhost[" + locatorVM.getPort() + "],localhost[" + locator1.getPort() + "]");
     MemberVM locator2 = lsRule.startLocatorVM(2, locatorProps);
 
-    gfshConnector.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsSuccess();
 
     CONFIG_FROM_ZIP.verify(locatorVM);
     REPLICATED_CONFIG_FROM_ZIP.verify(locator1);
@@ -159,7 +163,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   public void testExportClusterConfig(String zipFilePath) throws Exception {
     MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
-    gfshConnector.executeAndVerifyCommand("create region --name=myRegion --type=REPLICATE");
+    gfshConnector.executeAndAssertThat("create region --name=myRegion --type=REPLICATE")
+        .statusIsSuccess();
 
     ConfigGroup cluster = new ConfigGroup("cluster").regions("myRegion");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
@@ -167,7 +172,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(locatorVM);
 
     gfshConnector
-        .executeAndVerifyCommand("export cluster-configuration --zip-file-name=" + zipFilePath);
+        .executeAndAssertThat("export cluster-configuration --zip-file-name=" + zipFilePath)
+        .statusIsSuccess();
 
     File exportedZip = new File(zipFilePath);
     assertThat(exportedZip).exists();

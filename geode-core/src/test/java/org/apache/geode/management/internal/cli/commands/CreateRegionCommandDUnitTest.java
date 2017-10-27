@@ -30,6 +30,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+
 import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,8 +73,9 @@ public class CreateRegionCommandDUnitTest {
   @Test
   public void testCreateRegionWithGoodCompressor() throws Exception {
     String regionName = testName.getMethodName();
-    gfsh.executeAndVerifyCommand("create region --name=" + regionName
-        + " --type=REPLICATE --compressor=" + RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
+    gfsh.executeAndAssertThat("create region --name=" + regionName
+        + " --type=REPLICATE --compressor=" + RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER)
+        .statusIsSuccess();
 
     server.invoke(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -87,8 +89,9 @@ public class CreateRegionCommandDUnitTest {
   @Test
   public void testCreateRegionWithBadCompressor() throws Exception {
     String regionName = testName.getMethodName();
-    gfsh.executeAndVerifyCommandError(
-        "create region --name=" + regionName + " --type=REPLICATE --compressor=BAD_COMPRESSOR");
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --type=REPLICATE --compressor=BAD_COMPRESSOR")
+        .statusIsError();
 
     server.invoke(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -100,7 +103,8 @@ public class CreateRegionCommandDUnitTest {
   @Test
   public void testCreateRegionWithNoCompressor() throws Exception {
     String regionName = testName.getMethodName();
-    gfsh.executeAndVerifyCommand("create region --name=" + regionName + " --type=REPLICATE");
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
     server.invoke(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -122,10 +126,11 @@ public class CreateRegionCommandDUnitTest {
     final File prJarFile = new File(tmpDir.getRoot(), "myPartitionResolver.jar");
     new JarBuilder().buildJar(prJarFile, PR_STRING);
 
-    gfsh.executeAndVerifyCommand("deploy --jar=" + prJarFile.getAbsolutePath());
+    gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
 
-    gfsh.executeAndVerifyCommand("create region --name=" + regionName
-        + " --type=PARTITION --partition-resolver=io.pivotal.TestPartitionResolver");
+    gfsh.executeAndAssertThat("create region --name=" + regionName
+        + " --type=PARTITION --partition-resolver=io.pivotal.TestPartitionResolver")
+        .statusIsSuccess();
 
     server.invoke(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -138,23 +143,15 @@ public class CreateRegionCommandDUnitTest {
 
   @Test
   public void testCreateRegionWithInvalidPartitionResolver() throws Exception {
-    gfsh.executeAndVerifyCommandError("create region --name=" + testName.getMethodName()
-        + " --type=PARTITION --partition-resolver=InvalidPartitionResolver");
+    gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
+        + " --type=PARTITION --partition-resolver=InvalidPartitionResolver").statusIsError();
   }
 
   @Test
   public void testCreateRegionForReplicatedRegionWithPartitionResolver() {
     String regionName = testName.getMethodName();
-    CommandResult result = gfsh.executeAndVerifyCommandError("create region --name=" + regionName
-        + " --type=REPLICATE --partition-resolver=InvalidPartitionResolver");
-
-    assertThat(((String) ((JSONArray) result.getContent().get("message")).get(0)))
-        .contains("\"/" + regionName + "\" is not a Partitioned Region");
-  }
-
-  private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
-    try (OutputStream os = new FileOutputStream(jarFile)) {
-      os.write(jarBytes);
-    }
+    gfsh.executeAndAssertThat("create region --name=" + regionName
+        + " --type=REPLICATE --partition-resolver=InvalidPartitionResolver")
+        .containsOutput("\"/" + regionName + "\" is not a Partitioned Region").statusIsError();
   }
 }

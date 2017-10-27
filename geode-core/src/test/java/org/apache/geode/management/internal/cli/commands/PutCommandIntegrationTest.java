@@ -41,12 +41,14 @@ public class PutCommandIntegrationTest {
 
   @Test
   public void putWithoutSlash() throws Exception {
-    gfsh.executeAndVerifyCommand("put --region=testRegion --key=key1 --value=value1");
+    gfsh.executeAndAssertThat("put --region=testRegion --key=key1 --value=value1")
+        .statusIsSuccess();
   }
 
 
   @Test
   public void putWithSlash() throws Exception {
-    gfsh.executeAndVerifyCommand("put --region=/testRegion --key=key1 --value=value1");
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value1")
+        .statusIsSuccess();
   }
 }

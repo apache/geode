@@ -88,16 +88,19 @@ public class DestroyRegionCommandDUnitTest {
     locator.invoke(() -> waitForRegionMBeanCreation("/Order", 2));
 
     // Test unable to destroy with co-location
-    gfsh.executeAndVerifyCommandError("destroy region --name=/Customer",
-        "The parent region \\[/Customer\\] in colocation chain cannot be destroyed");
+    gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
+        .containsOutput("The parent region [/Customer] in colocation chain cannot be destroyed");
 
     // Test success
-    gfsh.executeAndVerifyCommand("destroy region --name=/Order", "destroyed successfully");
-    gfsh.executeAndVerifyCommand("destroy region --name=/Customer", "destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=/Order").statusIsSuccess()
+        .containsOutput("destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsSuccess()
+        .containsOutput("destroyed successfully");
 
     // destroy something that's not exist anymore
-    gfsh.executeAndVerifyCommandError("destroy region --name=/Customer", "Could not find a Region");
-    gfsh.executeAndVerifyCommand("destroy region --name=/Customer --if-exists");
+    gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
+        .containsOutput("Could not find a Region");
+    gfsh.executeAndAssertThat("destroy region --name=/Customer --if-exists").statusIsSuccess();
   }
 
   @Test
@@ -111,7 +114,8 @@ public class DestroyRegionCommandDUnitTest {
 
     locator.invoke(() -> waitForRegionMBeanCreation("/Customer", 3));
 
-    gfsh.executeAndVerifyCommand("destroy region --name=Customer", "destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()
+        .containsOutput("destroyed successfully");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -142,9 +146,12 @@ public class DestroyRegionCommandDUnitTest {
     locator.invoke(() -> waitForRegionMBeanCreation("/Customer_2", 3));
     locator.invoke(() -> waitForRegionMBeanCreation("/Customer_3", 3));
 
-    gfsh.executeAndVerifyCommand("destroy region --name=Customer", "destroyed successfully");
-    gfsh.executeAndVerifyCommand("destroy region --name=Customer_2", "destroyed successfully");
-    gfsh.executeAndVerifyCommand("destroy region --name=Customer_3", "destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()
+        .containsOutput("destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=Customer_2").statusIsSuccess()
+        .containsOutput("destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=Customer_3").statusIsSuccess()
+        .containsOutput("destroyed successfully");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -156,7 +163,7 @@ public class DestroyRegionCommandDUnitTest {
 
   @Test
   public void testDestroyRegionWithSharedConfig() throws IOException {
-    gfsh.executeAndVerifyCommand("create region --name=Customer --type=REPLICATE");
+    gfsh.executeAndAssertThat("create region --name=Customer --type=REPLICATE").statusIsSuccess();
 
     locator.invoke(() -> {
       // Make sure the region exists in the cluster config
@@ -173,7 +180,8 @@ public class DestroyRegionCommandDUnitTest {
     }, server1, server2, server3);
 
     // destroy the region
-    gfsh.executeAndVerifyCommand("destroy region --name=Customer", "destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()
+        .containsOutput("destroyed successfully");
 
     // make sure the region was removed from cluster config
     locator.invoke(() -> {

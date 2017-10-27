@@ -89,7 +89,7 @@ public class WANClusterConfigurationDUnitTest {
     csb.addOption(CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT, "20000");
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS, "20");
     csb.addOption(CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS, "myLocalHost");
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     // create GatewaySender
     csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
@@ -112,7 +112,7 @@ public class WANClusterConfigurationDUnitTest {
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
         socketReadTimeout);
 
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     // Start a new member which receives the shared configuration
     // Verify the config creation on this member

@@ -71,7 +71,8 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + outputJar.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + outputJar.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(
         "org.apache.geode.management.internal.deployment.ImplementsFunction"));
     server.invoke(() -> assertThatFunctionHasVersion(
@@ -88,7 +89,8 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + outputJar.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + outputJar.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(
         "org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter"));
     server.invoke(() -> assertThatFunctionHasVersion(

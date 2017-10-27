@@ -106,7 +106,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
     createStringBuilder.addOption(CliStrings.GROUP, groupName);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__REGION, "/" + partitionedRegionName);
-    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+    gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
     assertTrue(indexIsListed());
 
@@ -126,7 +126,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     createStringBuilder.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.GROUP, groupName);
     createStringBuilder.addOption(CliStrings.DESTROY_INDEX__REGION, "/" + partitionedRegionName);
-    gfsh.executeAndVerifyCommand(createStringBuilder.toString());
+    gfsh.executeAndAssertThat(createStringBuilder.toString()).statusIsSuccess();
 
     locator.invoke(() -> {
       ClusterConfigurationService sharedConfig =
@@ -167,7 +167,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
   }
 
   private boolean indexIsListed() throws Exception {
-    gfsh.executeAndVerifyCommand(CliStrings.LIST_INDEX);
+    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess();
     return gfsh.getGfshOutput().contains(indexName);
   }
 }

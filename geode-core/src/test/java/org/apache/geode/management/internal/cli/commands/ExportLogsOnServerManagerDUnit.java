@@ -47,7 +47,7 @@ public class ExportLogsOnServerManagerDUnit {
   public void testExportWithOneServer() throws Exception {
     MemberVM server0 = lsRule.startServerAsJmxManager(0);
     gfshConnector.connect(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand("export logs");
+    gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();
 
     String message = gfshConnector.getGfshOutput();
     assertThat(message).contains(server0.getWorkingDir().getAbsolutePath());
@@ -66,7 +66,7 @@ public class ExportLogsOnServerManagerDUnit {
     lsRule.startServerVM(1, server0.getEmbeddedLocatorPort());
     gfshConnector.connect(server0.getEmbeddedLocatorPort(),
         GfshShellConnectionRule.PortType.locator);
-    gfshConnector.executeAndVerifyCommand("export logs");
+    gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();
 
     String message = gfshConnector.getGfshOutput();
     assertThat(message).contains(server0.getWorkingDir().getAbsolutePath());

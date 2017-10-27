@@ -70,7 +70,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     createIndexUsingGfsh("\"" + REGION_NAME + ".entrySet() z\"", "z.key", INDEX_NAME);
     String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
-    gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
     lsRule.stopVM(1);
     lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
@@ -78,7 +78,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
 
   private void verifyIndexRecreated(String indexName) throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
     String resultAsString = gfshShellConnectionRule.getGfshOutput();
     assertTrue(resultAsString.contains(indexName));
   }
@@ -89,7 +89,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, expression);
     csb.addOption(CliStrings.CREATE_INDEX__REGION, regionName);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void createRegionUsingGfsh(String regionName, RegionShortcut regionShortCut, String group)
@@ -98,6 +98,6 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
     csb.addOptionWithValueCheck(CliStrings.GROUP, group);
-    gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 }

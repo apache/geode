@@ -111,7 +111,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     writeLogMessages();
     String command = "show log --member=" + MANAGER_NAME;
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(MESSAGE_ON_MANAGER);
     assertThat(gfsh.getGfshOutput()).doesNotContain(MESSAGE_ON_SERVER1);
     assertThat(gfsh.getGfshOutput()).doesNotContain(MESSAGE_ON_SERVER2);
@@ -123,7 +123,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
 
     String command = "show log --member=" + SERVER1_NAME + " --lines=50";
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
     assertThat(output).contains(MESSAGE_ON_SERVER1);
