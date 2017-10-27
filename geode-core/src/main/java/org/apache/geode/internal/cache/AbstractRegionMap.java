@@ -94,8 +94,8 @@ public abstract class AbstractRegionMap implements RegionMap {
   protected CustomEntryConcurrentHashMap<Object, Object> map;
 
   /**
-   * This test hook is used to force the conditions for defect 48182. This hook is used by
-   * Bug48182JUnitTest.
+   * This test hook is used to force the conditions during entry destroy. This hook is used by
+   * DestroyEntryWithConcurrentOperationJUnitTest.
    */
   static Runnable testHookRunnableForConcurrentOperation = null;
 

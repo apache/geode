@@ -133,12 +133,12 @@ public class DestroyEntryWithConcurrentOperationJUnitTest {
 
   @Test
   public void testEntryDestroyWithCacheClose() throws Exception {
-    testEntryDestroyWithCacheClose(false);
+    verifyEntryDestroyWithCacheClose(false);
   }
 
   @Test
   public void testOffHeapRegionEntryDestroyWithCacheClose() throws Exception {
-    testEntryDestroyWithCacheClose(true);
+    verifyEntryDestroyWithCacheClose(true);
   }
 
   /**
@@ -147,7 +147,7 @@ public class DestroyEntryWithConcurrentOperationJUnitTest {
    * CacheClosedException is thrown rather than an EntryNotFoundException (or any other exception
    * type for that matter).
    */
-  private void testEntryDestroyWithCacheClose(boolean isOffHeap) {
+  private void verifyEntryDestroyWithCacheClose(boolean isOffHeap) {
     AbstractRegionMap.testHookRunnableForConcurrentOperation = new Runnable() {
       @Override
       public void run() {
