@@ -42,7 +42,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -217,17 +216,17 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
           GfshShellConnectionRule.PortType.jmxManager, "dataUser", "1234567");
 
       // get command
-      CommandResult result = gfsh.executeAndVerifyCommand("get --key=key1 --region=AuthRegion");
+      gfsh.executeAndAssertThat("get --key=key1 --region=AuthRegion").statusIsSuccess();
       if (this.pdxPersistent) {
         assertThat(gfsh.getGfshOutput().contains("org.apache.geode.pdx.internal.PdxInstanceImpl"));
       } else {
         assertThat(gfsh.getGfshOutput()).contains("SimpleClass");
       }
 
-      result = gfsh.executeAndVerifyCommand("get --key=key2 --region=AuthRegion");
-      assertThat(result.getContent().toString()).contains("byte[]");
+      gfsh.executeAndAssertThat("get --key=key2 --region=AuthRegion").statusIsSuccess()
+          .containsOutput("byte[]");
 
-      gfsh.executeAndVerifyCommand("query --query=\"select * from /AuthRegion\"");
+      gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
       gfsh.close();
     });
 

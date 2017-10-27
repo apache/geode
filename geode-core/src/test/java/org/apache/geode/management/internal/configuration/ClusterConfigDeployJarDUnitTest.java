@@ -54,7 +54,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJarPath);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJarPath).statusIsSuccess();
     ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
 
@@ -80,7 +80,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
@@ -106,7 +106,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
@@ -115,7 +115,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(server2);
     expectedClusterConfig.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group1Jar + " --group=group1");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1")
+        .statusIsSuccess();
 
     ConfigGroup group1 = new ConfigGroup("group1").jars("group1.jar");
     ClusterConfig expectedGroup1Config = new ClusterConfig(cluster, group1);
@@ -124,7 +125,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedGroup1Config.verify(server2);
     expectedGroup1Config.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group2Jar + " --group=group2");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group2Jar + " --group=group2")
+        .statusIsSuccess();
 
     ConfigGroup group2 = new ConfigGroup("group2").jars("group2.jar");
     ClusterConfig expectedGroup1and2Config = new ClusterConfig(cluster, group1, group2);
@@ -158,7 +160,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     // deploy cluster.jar to the cluster
     cluster.addJar("cluster.jar");
@@ -168,7 +170,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(server3);
 
     // deploy group1.jar to both group1 and group2
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group1Jar + " --group=group1,group2");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1,group2")
+        .statusIsSuccess();
 
     group1.addJar("group1.jar");
     group2.addJar("group1.jar");
@@ -178,7 +181,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server3Config.verify(server3);
 
     // test undeploy cluster
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
+    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar").statusIsSuccess();
 
     cluster = cluster.removeJar("cluster.jar");
     server3Config.verify(locator);
@@ -186,7 +189,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server2Config.verify(server2);
     server3Config.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=group1.jar --group=group1");
+    gfshConnector.executeAndAssertThat("undeploy --jar=group1.jar --group=group1")
+        .statusIsSuccess();
 
     group1 = group1.removeJar("group1.jar");
     /*
@@ -227,7 +231,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     // deploy cluster.jar to the cluster
     cluster.addJar("cluster.jar");
@@ -237,7 +241,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(server3);
 
     // deploy group1.jar to both group1 and group2
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group1Jar + " --group=group1,group2");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1,group2")
+        .statusIsSuccess();
 
     group1.addJar("group1.jar");
     group2.addJar("group1.jar");
@@ -249,7 +254,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server3.getVM().bounce();
 
     // test undeploy cluster
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
+    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar").statusIsSuccess();
     server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
 
     cluster = cluster.removeJar("cluster.jar");
@@ -258,7 +263,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server2Config.verify(server2);
     server3Config.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=group1.jar --group=group1");
+    gfshConnector.executeAndAssertThat("undeploy --jar=group1.jar --group=group1")
+        .statusIsSuccess();
 
     group1 = group1.removeJar("group1.jar");
     /*

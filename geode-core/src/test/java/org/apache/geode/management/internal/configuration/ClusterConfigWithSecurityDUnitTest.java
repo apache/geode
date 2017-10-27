@@ -93,8 +93,10 @@ public class ClusterConfigWithSecurityDUnitTest {
     connector.connect(locator0, CliStrings.CONNECT__USERNAME, "cluster",
         CliStrings.CONNECT__PASSWORD, "cluster");
 
-    connector.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
+    connector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsSuccess();
 
     locator0.invoke(() -> {
       InternalLocator locator = LocatorServerStartupRule.locatorStarter.getLocator();

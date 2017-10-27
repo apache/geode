@@ -59,8 +59,10 @@ public class ImportClusterConfigDistributedTest {
 
     gfsh.connectAndVerify(locator);
 
-    gfsh.executeAndVerifyCommand("create region --name=replicateRegion --type=REPLICATE");
-    gfsh.executeAndVerifyCommand("create region --name=partitionRegion --type=PARTITION");
+    gfsh.executeAndAssertThat("create region --name=replicateRegion --type=REPLICATE")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --name=partitionRegion --type=PARTITION")
+        .statusIsSuccess();
 
 
     server.invoke(ImportClusterConfigDistributedTest::validateServerIsUsingClusterConfig);
@@ -68,8 +70,9 @@ public class ImportClusterConfigDistributedTest {
     // do not create the file yet
     this.exportedClusterConfig = new File(tempFolder.getRoot(), EXPORTED_CLUSTER_CONFIG_ZIP_NAME);
 
-    gfsh.executeAndVerifyCommand(
-        "export cluster-configuration --zip-file-name=" + exportedClusterConfig.getCanonicalPath());
+    gfsh.executeAndAssertThat(
+        "export cluster-configuration --zip-file-name=" + exportedClusterConfig.getCanonicalPath())
+        .statusIsSuccess();
 
     gfsh.disconnect();
     locator.stopMember();
@@ -103,8 +106,8 @@ public class ImportClusterConfigDistributedTest {
     locator = lsRule.startLocatorVM(0);
 
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand("import cluster-configuration --zip-file-name="
-        + this.exportedClusterConfig.getCanonicalPath());
+    gfsh.executeAndAssertThat("import cluster-configuration --zip-file-name="
+        + this.exportedClusterConfig.getCanonicalPath()).statusIsSuccess();
 
     server = lsRule.startServerVM(1, locator.getPort());
 

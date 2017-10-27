@@ -91,7 +91,7 @@ public class ExportLogsWithMemberGroupDUnitTest {
   @Test
   public void testExportLogsWithMemberName() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --member=server-1");
+    connector.executeAndAssertThat("export logs --member=server-1").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
@@ -102,14 +102,14 @@ public class ExportLogsWithMemberGroupDUnitTest {
   @Test
   public void testExportLogsWithGroupName() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --group=group1");
+    connector.executeAndAssertThat("export logs --group=group1").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
     Set<String> expectedFiles = Sets.newHashSet("server-1/server-1.log", "server-2/server-2.log");
     assertThat(actualZipEntries).isEqualTo(expectedFiles);
 
-    connector.executeAndVerifyCommand("export logs --group=group2");
+    connector.executeAndAssertThat("export logs --group=group2").statusIsSuccess();
     zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     actualZipEntries = getZipEntries(zipPath);
 

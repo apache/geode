@@ -94,12 +94,14 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
   }
 
   private void executeReadFunctionIsSuccessful() {
-    gfsh.executeAndVerifyCommand("execute function --id=" + new ReadFunction().getId());
+    gfsh.executeAndAssertThat("execute function --id=" + new ReadFunction().getId())
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(ReadFunction.SUCCESS_OUTPUT);
   }
 
   private void executeWriteFunctionThrowsError() {
-    gfsh.executeAndVerifyCommand("execute function --id=" + new WriteFunction().getId());
+    gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("dataRead not authorized for DATA:WRITE");
   }
 

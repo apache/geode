@@ -12,19 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.test.junit.assertions;
 
-package org.apache.geode.management.internal.cli.commands;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
-@Category(DistributedTest.class)
-public class FunctionCommandsOverHttpDUnitTest extends FunctionCommandsDUnitTest {
-  @Override
-  public void connectGfsh(MemberVM vm) throws Exception {
-    gfsh.connectAndVerify(vm.getHttpPort(), GfshShellConnectionRule.PortType.http);
+public class GfshShellConnectionRuleExecution {
+  private GfshShellConnectionRule gfsh;
+  private CommandResult commandResult;
+
+  public GfshShellConnectionRuleExecution(GfshShellConnectionRule gfsh,
+      CommandResult commandResult) {
+
+    this.gfsh = gfsh;
+    this.commandResult = commandResult;
+  }
+
+  public GfshShellConnectionRule getGfsh() {
+    return gfsh;
+  }
+
+  public CommandResult getCommandResult() {
+    return commandResult;
+  }
+
+  public String getGfshOutput() {
+    return gfsh.getGfshOutput();
   }
 }

@@ -41,31 +41,31 @@ public class AlterRegionCommandIntegrationTest {
 
   @Test
   public void validateGroup() throws Exception {
-    gfsh.executeAndVerifyCommandError("alter region --name=/REPLICATED --group=unknown",
-        "Group\\(s\\) \"\\[unknown\\]\" are invalid.");
+    gfsh.executeAndAssertThat("alter region --name=/REPLICATED --group=unknown").statusIsError()
+        .containsOutput("Group(s) \"[unknown]\" are invalid.");
   }
 
   @Test
   public void invalidCacheListener() throws Exception {
-    gfsh.executeAndVerifyCommandError("alter region --name=/REPLICATED --cache-listener=abc-def",
-        "Specify a valid class name for cache-listener");
+    gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-listener=abc-def")
+        .statusIsError().containsOutput("Specify a valid class name for cache-listener");
   }
 
   @Test
   public void invalidCacheLoader() throws Exception {
-    gfsh.executeAndVerifyCommandError("alter region --name=/REPLICATED --cache-loader=abc-def",
-        "Specify a valid class name for cache-loader");
+    gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-loader=abc-def")
+        .statusIsError().containsOutput("Specify a valid class name for cache-loader");
   }
 
   @Test
   public void invalidCacheWriter() throws Exception {
-    gfsh.executeAndVerifyCommandError("alter region --name=/REPLICATED --cache-writer=abc-def",
-        "Specify a valid class name for cache-writer");
+    gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-writer=abc-def")
+        .statusIsError().containsOutput("Specify a valid class name for cache-writer");
   }
 
   @Test
   public void invalidEvictionMax() throws Exception {
-    gfsh.executeAndVerifyCommandError("alter region --name=/REPLICATED --eviction-max=-1",
-        "Specify 0 or a positive integer value for eviction-max");
+    gfsh.executeAndAssertThat("alter region --name=/REPLICATED --eviction-max=-1").statusIsError()
+        .containsOutput("Specify 0 or a positive integer value for eviction-max");
   }
 }

@@ -35,7 +35,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -102,10 +101,10 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
         CliStrings.CONNECT__USERNAME, "dataUser", CliStrings.CONNECT__PASSWORD, "1234567");
 
     // get command
-    CommandResult result = gfsh.executeAndVerifyCommand("get --key=key1 --region=AuthRegion");
-    assertTrue(result.getContent().toString().contains(SimpleClass.class.getName()));
+    gfsh.executeAndAssertThat("get --key=key1 --region=AuthRegion").statusIsSuccess()
+        .containsOutput(SimpleClass.class.getName());
 
-    gfsh.executeAndVerifyCommand("query --query=\"select * from /AuthRegion\"");
+    gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
 
     serverVM.invoke(() -> {
       PDXPostProcessor pp = (PDXPostProcessor) LocatorServerStartupRule.serverStarter.getCache()
