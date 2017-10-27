@@ -293,43 +293,50 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
   @Test
   public void test_LN_Sender_recognises_ALL_NY_Locators() {
+    IgnoredException ie = IgnoredException
+        .addIgnoredException("could not get remote locator information for remote site");
+    try {
+      Integer lnLocPort1 = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer lnLocPort1 = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer lnLocPort2 =
+          (Integer) vm5.invoke(() -> WANTestBase.createSecondLocator(1, lnLocPort1));
 
-    Integer lnLocPort2 = (Integer) vm5.invoke(() -> WANTestBase.createSecondLocator(1, lnLocPort1));
+      vm2.invoke(() -> WANTestBase.createCache(lnLocPort1, lnLocPort2));
 
-    vm2.invoke(() -> WANTestBase.createCache(lnLocPort1, lnLocPort2));
+      vm2.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
 
-    vm2.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
+      Integer nyLocPort1 =
+          (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnLocPort1));
 
-    Integer nyLocPort1 =
-        (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnLocPort1));
+      vm2.invoke(() -> WANTestBase.startSender("ln"));
 
-    vm2.invoke(() -> WANTestBase.startSender("ln"));
+      // Since to fix Bug#46289, we have moved call to initProxy in getConnection which will be
+      // called
+      // only when batch is getting dispatched.
+      // So for locator discovery callback to work, its now expected that atleast try to send a
+      // batch
+      // so that proxy will be initialized
+      vm2.invoke(
+          () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
 
-    // Since to fix Bug#46289, we have moved call to initProxy in getConnection which will be called
-    // only when batch is getting dispatched.
-    // So for locator discovery callback to work, its now expected that atleast try to send a batch
-    // so that proxy will be initialized
-    vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+      vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10));
 
-    vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10));
+      Integer nyLocPort2 = (Integer) vm3
+          .invoke(() -> WANTestBase.createSecondRemoteLocator(2, nyLocPort1, lnLocPort1));
 
-    Integer nyLocPort2 = (Integer) vm3
-        .invoke(() -> WANTestBase.createSecondRemoteLocator(2, nyLocPort1, lnLocPort1));
+      InetSocketAddress locatorToWaitFor = new InetSocketAddress("localhost", nyLocPort2);
 
-    InetSocketAddress locatorToWaitFor = new InetSocketAddress("localhost", nyLocPort2);
+      vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor));
 
-    vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor));
+      Integer nyLocPort3 = (Integer) vm4
+          .invoke(() -> WANTestBase.createSecondRemoteLocator(2, nyLocPort1, lnLocPort1));
 
-    Integer nyLocPort3 = (Integer) vm4
-        .invoke(() -> WANTestBase.createSecondRemoteLocator(2, nyLocPort1, lnLocPort1));
+      InetSocketAddress locatorToWaitFor2 = new InetSocketAddress("localhost", nyLocPort3);
 
-    InetSocketAddress locatorToWaitFor2 = new InetSocketAddress("localhost", nyLocPort3);
-
-    vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor2));
-
+      vm2.invoke(() -> WANTestBase.checkLocatorsinSender("ln", locatorToWaitFor2));
+    } finally {
+      ie.remove();
+    }
   }
 
   @Test
