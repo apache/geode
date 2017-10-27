@@ -16,18 +16,17 @@ package org.apache.geode.internal.protocol;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.protocol.security.NoOpAuthenticator;
-import org.apache.geode.internal.protocol.security.NoOpAuthorizer;
-import org.apache.geode.internal.protocol.security.processors.NoAuthenticationSecurityProcessor;
+import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
 import org.apache.geode.internal.protocol.statistics.NoOpStatistics;
 
 public class ProtobufTestExecutionContext {
   public static MessageExecutionContext getNoAuthCacheExecutionContext(Cache cache) {
-    return new MessageExecutionContext(cache, new NoOpAuthenticator(), new NoOpAuthorizer(),
-        new Object(), new NoOpStatistics(), new NoAuthenticationSecurityProcessor());
+    return new MessageExecutionContext(cache, new NoOpStatistics(),
+        new NoSecurityConnectionStateProcessor());
   }
 
   public static MessageExecutionContext getLocatorExecutionContext(InternalLocator locator) {
-    return new MessageExecutionContext(locator, new NoOpStatistics());
+    return new MessageExecutionContext(locator, new NoOpStatistics(),
+        new NoSecurityConnectionStateProcessor());
   }
 }

@@ -12,23 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.security;
+package org.apache.geode.internal.protocol.state.exception;
 
-import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 
-/**
- * Implementers of this interface do some message passing over a socket to authenticate a client,
- * then hand off the connection to the protocol that will talk on the socket.
- *
- * If authentication fails, an implementor may continue to wait for another valid authentication
- * exchange.
- */
-public interface Authenticator<SecurityProperties, AuthenticationToken> {
-  /**
-   * @param securityProperties a generic object that is required for authentication dependent on
-   *        implementation
-   * @return authenticated principal
-   */
-  AuthenticationToken authenticate(SecurityProperties securityProperties)
-      throws AuthenticationFailedException;
+public class ConnectionStateException extends Exception {
+  private final ProtocolErrorCode errorCode;
+
+  public ConnectionStateException(ProtocolErrorCode errorCode, String errorMessage) {
+    super(errorMessage);
+    this.errorCode = errorCode;
+  }
+
+  public ProtocolErrorCode getErrorCode() {
+    return errorCode;
+  }
 }

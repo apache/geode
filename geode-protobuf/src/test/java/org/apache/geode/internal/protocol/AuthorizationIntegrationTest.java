@@ -14,34 +14,13 @@
  */
 package org.apache.geode.internal.protocol;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
+import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
@@ -50,6 +29,27 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Category(IntegrationTest.class)
 public class AuthorizationIntegrationTest {
@@ -77,7 +77,7 @@ public class AuthorizationIntegrationTest {
       new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.WRITE);
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws IOException, InvalidProtocolMessageException {
     Properties expectedAuthProperties = new Properties();
     expectedAuthProperties.setProperty(ResourceConstants.USER_NAME, TEST_USERNAME);
     expectedAuthProperties.setProperty(ResourceConstants.PASSWORD, TEST_PASSWORD);
@@ -113,9 +113,20 @@ public class AuthorizationIntegrationTest {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
     when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(false);
+
+    ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
+                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
+        .build().writeDelimitedTo(outputStream);
+    ClientProtocol.Message handshakeResponse =
+        ClientProtocol.Message.parseDelimitedFrom(inputStream);;
+    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(AuthenticationAPI.AuthenticationRequest.newBuilder()
+            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
                 .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
                 .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
         .build();
@@ -126,7 +137,7 @@ public class AuthorizationIntegrationTest {
         responseMessage.getMessageTypeCase().getNumber());
     assertEquals(ClientProtocol.Response.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
         responseMessage.getResponse().getResponseAPICase().getNumber());
-    AuthenticationAPI.AuthenticationResponse authenticationResponse =
+    ConnectionAPI.AuthenticationResponse authenticationResponse =
         responseMessage.getResponse().getAuthenticationResponse();
     assertTrue(authenticationResponse.getAuthenticated());
   }

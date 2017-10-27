@@ -16,6 +16,11 @@ package org.apache.geode.internal.protocol.protobuf.operations.security;
 
 import java.util.Properties;
 
+import org.apache.geode.internal.protocol.state.ConnectionAuthenticatingStateProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.ConnectionAPI;
+import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,49 +31,42 @@ import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
-import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
-import org.apache.geode.internal.protocol.security.processors.AuthorizationSecurityProcessor;
-import org.apache.geode.internal.protocol.security.Authenticator;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class AuthenticationRequestOperationHandler implements
-    OperationHandler<AuthenticationAPI.AuthenticationRequest, AuthenticationAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> {
+    OperationHandler<ConnectionAPI.AuthenticationRequest, ConnectionAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> {
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<AuthenticationAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, AuthenticationAPI.AuthenticationRequest request,
+  public Result<ConnectionAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> process(
+      SerializationService serializationService, ConnectionAPI.AuthenticationRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+    ConnectionAuthenticatingStateProcessor stateProcessor;
 
-    if (messageExecutionContext.getAuthenticationToken() != null) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(buildAndLogError(ProtocolErrorCode.ALREADY_AUTHENTICATED,
-              "The user has already been authenticated for this connection. Re-authentication is not supported at this time.",
-              null))
-          .build());
+    try {
+      stateProcessor = messageExecutionContext.getConnectionStateProcessor().allowAuthentication();
+    } catch (ConnectionStateException e) {
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
     }
 
-    Authenticator authenticator = messageExecutionContext.getAuthenticator();
     Properties properties = new Properties();
     properties.putAll(request.getCredentialsMap());
 
     try {
-      Object authenticationToken = authenticator.authenticate(properties);
-      messageExecutionContext.setSecurityProcessor(new AuthorizationSecurityProcessor());
-      messageExecutionContext.setAuthenticationToken(authenticationToken);
+      messageExecutionContext.setConnectionStateProcessor(stateProcessor.authenticate(properties));
       return Success
-          .of(AuthenticationAPI.AuthenticationResponse.newBuilder().setAuthenticated(true).build());
+          .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(true).build());
     } catch (IncompatibleAuthenticationMechanismsException e) {
       return Failure.of(ClientProtocol.ErrorResponse.newBuilder().setError(
           buildAndLogError(ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE, e.getMessage(), e))
           .build());
     } catch (AuthenticationFailedException e) {
-      return Success.of(
-          AuthenticationAPI.AuthenticationResponse.newBuilder().setAuthenticated(false).build());
+      return Success
+          .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(false).build());
     }
   }
 

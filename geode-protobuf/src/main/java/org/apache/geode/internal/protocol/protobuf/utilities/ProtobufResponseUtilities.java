@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
@@ -55,5 +56,9 @@ public abstract class ProtobufResponseUtilities {
         .setError(
             BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message))
         .build();
+  }
+
+  public static ClientProtocol.ErrorResponse makeErrorResponse(ConnectionStateException exception) {
+    return makeErrorResponse(exception.getErrorCode(), exception.getMessage());
   }
 }

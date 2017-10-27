@@ -25,7 +25,7 @@ import "google/protobuf/any.proto";
 import "region_API.proto";
 import "server_API.proto";
 import "basicTypes.proto";
-import "authentication_API.proto";
+import "connection_API.proto";
 
 message Message {
     oneof messageType {
@@ -49,6 +49,7 @@ message Request {
         GetRegionRequest getRegionRequest = 44;
 
         AuthenticationRequest authenticationRequest = 100;
+        HandshakeRequest handshakeRequest = 101;
     }
 }
 
@@ -68,6 +69,7 @@ message Response {
         GetRegionResponse getRegionResponse = 44;
 
         AuthenticationResponse authenticationResponse = 100;
+        HandshakeResponse handshakeResponse = 101;
     }
 }
 

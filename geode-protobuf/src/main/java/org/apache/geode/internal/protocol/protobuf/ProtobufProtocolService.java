@@ -20,9 +20,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
-import org.apache.geode.internal.protocol.security.Authenticator;
-import org.apache.geode.internal.protocol.security.Authorizer;
-import org.apache.geode.internal.protocol.protobuf.security.ProtobufSecurityLookupService;
 import org.apache.geode.internal.protocol.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 import org.apache.geode.internal.security.SecurityService;
@@ -30,8 +27,6 @@ import org.apache.geode.internal.security.SecurityService;
 public class ProtobufProtocolService implements ClientProtocolService {
   private volatile ProtocolClientStatistics statistics;
   private final ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
-  private final ProtobufSecurityLookupService protobufSecurityLookupService =
-      new ProtobufSecurityLookupService();
 
   @Override
   public synchronized void initializeStatistics(String statisticsName, StatisticsFactory factory) {
@@ -45,12 +40,8 @@ public class ProtobufProtocolService implements ClientProtocolService {
       SecurityService securityService) {
     assert (statistics != null);
 
-    Authenticator authenticator =
-        protobufSecurityLookupService.lookupAuthenticator(securityService);
-    Authorizer authorizer = protobufSecurityLookupService.lookupAuthorizer(securityService);
-
-    return new ProtobufCachePipeline(protobufStreamProcessor, getStatistics(), cache, authenticator,
-        authorizer, protobufSecurityLookupService.lookupProcessor(securityService));
+    return new ProtobufCachePipeline(protobufStreamProcessor, getStatistics(), cache,
+        securityService);
   }
 
   /**

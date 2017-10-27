@@ -12,10 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.security;
+package org.apache.geode.internal.protocol.state;
 
-import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
-public interface Authorizer {
-  boolean authorize(Object authenticatedToken, ResourcePermission permissionRequested);
+public interface ConnectionHandshakingStateProcessor extends ConnectionStateProcessor {
+  @Override
+  default ConnectionHandshakingStateProcessor allowHandshake() throws ConnectionStateException {
+    return this;
+  }
+
+  // This is called when a handshake operation succeeds to get the processor for the next connection
+  // state.
+  ConnectionStateProcessor handshakeSucceeded();
 }

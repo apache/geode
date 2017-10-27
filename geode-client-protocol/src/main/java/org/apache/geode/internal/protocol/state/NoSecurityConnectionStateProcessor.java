@@ -12,23 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.security.processors;
+package org.apache.geode.internal.protocol.state;
 
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
-import org.apache.geode.internal.protocol.protobuf.AuthenticationAPI;
-import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
-import org.apache.geode.internal.protocol.security.SecurityProcessor;
-import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
-public class AuthenticationSecurityProcessor implements SecurityProcessor<ClientProtocol.Request> {
+public class NoSecurityConnectionStateProcessor implements ConnectionStateProcessor {
   @Override
-  public void validateOperation(ClientProtocol.Request request,
-      MessageExecutionContext messageExecutionContext, OperationContext operationContext) {
-    Object fromRequest = operationContext.getFromRequest().apply(request);
-    if (!(fromRequest instanceof AuthenticationAPI.AuthenticationRequest)) {
-      throw new AuthenticationRequiredException(
-          "Expecting an authentication message. Received a " + fromRequest.getClass() + " message");
-    }
+  public void validateOperation(MessageExecutionContext messageContext,
+      OperationContext operationContext) throws ConnectionStateException {}
+
+  public ConnectionAuthenticatingStateProcessor allowAuthentication()
+      throws ConnectionStateException {
+    throw new ConnectionStateException(ProtocolErrorCode.AUTHENTICATION_NOT_SUPPORTED,
+        "This machine is not set to require user authentication.");
   }
 }

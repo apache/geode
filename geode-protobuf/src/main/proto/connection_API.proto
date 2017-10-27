@@ -16,6 +16,26 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf;
 
+enum MajorVersions {
+    INVALID_MAJOR_VERSION = 0;  // Protobuf requires 0 based enum
+    CURRENT_MAJOR_VERSION = 1;  // Initial message structure and handshake protocol
+}
+enum MinorVersions {
+    INVALID_MINOR_VERSION = 0;  // Protobuf requires 0 based enum
+    CURRENT_MINOR_VERSION = 1;  // Protobuf implementation at initial release
+}
+
+message HandshakeRequest {
+    int32 majorVersion = 1;
+    int32 minorVersion = 2;
+}
+
+message HandshakeResponse {
+    int32 serverMajorVersion = 1;
+    int32 serverMinorVersion = 2;
+    bool handshakePassed = 3;
+}
+
 message AuthenticationRequest {
     map<string,string> credentials = 1;
 }

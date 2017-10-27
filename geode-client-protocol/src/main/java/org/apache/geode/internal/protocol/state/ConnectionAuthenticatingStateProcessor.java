@@ -12,17 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.security.processors;
+package org.apache.geode.internal.protocol.state;
 
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.OperationContext;
-import org.apache.geode.internal.protocol.security.SecurityProcessor;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
-public class NoAuthenticationSecurityProcessor implements SecurityProcessor<Object> {
+import java.util.Properties;
 
+public interface ConnectionAuthenticatingStateProcessor extends ConnectionStateProcessor {
   @Override
-  public void validateOperation(Object request, MessageExecutionContext messageExecutionContext,
-      OperationContext operationContext) {
-    // A truly "no-op" operation :)
+  default ConnectionAuthenticatingStateProcessor allowAuthentication()
+      throws ConnectionStateException {
+    return this;
   }
+
+  // Handle authentication properties, this function should return a new ConnectionStateProcessor
+  // based on the result of this operation.
+  ConnectionStateProcessor authenticate(Properties properties);
 }

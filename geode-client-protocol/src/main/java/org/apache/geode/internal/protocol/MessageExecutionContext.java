@@ -21,47 +21,34 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.security.processors.AuthorizationSecurityProcessor;
-import org.apache.geode.internal.protocol.security.processors.NoAuthenticationSecurityProcessor;
-import org.apache.geode.internal.protocol.security.Authenticator;
-import org.apache.geode.internal.protocol.security.NoOpAuthenticator;
-import org.apache.geode.internal.protocol.security.SecurityProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
-import org.apache.geode.internal.protocol.security.Authorizer;
-import org.apache.geode.internal.protocol.security.NoOpAuthorizer;
 
 @Experimental
 public class MessageExecutionContext {
   private final Cache cache;
   private final Locator locator;
-  private final Authorizer authorizer;
-  private Object authenticatedToken;
   private final ProtocolClientStatistics statistics;
-  private SecurityProcessor securityProcessor;
-  private final Authenticator authenticator;
+  private ConnectionStateProcessor connectionStateProcessor;
 
-
-  public MessageExecutionContext(Cache cache, Authenticator authenticator,
-      Authorizer streamAuthorizer, Object authenticatedToken, ProtocolClientStatistics statistics,
-      SecurityProcessor securityProcessor) {
+  public MessageExecutionContext(Cache cache, ProtocolClientStatistics statistics,
+      ConnectionStateProcessor initialConnectionStateProcessor) {
     this.cache = cache;
     this.locator = null;
-    this.authorizer = streamAuthorizer;
-    this.authenticatedToken = authenticatedToken;
     this.statistics = statistics;
-    this.securityProcessor = securityProcessor;
-    this.authenticator = authenticator;
+    this.connectionStateProcessor = initialConnectionStateProcessor;
   }
 
-  public MessageExecutionContext(InternalLocator locator, ProtocolClientStatistics statistics) {
+  public MessageExecutionContext(InternalLocator locator, ProtocolClientStatistics statistics,
+      ConnectionStateProcessor initialConnectionStateProcessor) {
     this.locator = locator;
     this.cache = null;
-    // set a no-op authorizer until such time as locators implement authentication
-    // and authorization checks
-    this.authorizer = new NoOpAuthorizer();
-    this.authenticator = new NoOpAuthenticator();
     this.statistics = statistics;
-    this.securityProcessor = new NoAuthenticationSecurityProcessor();
+    connectionStateProcessor = initialConnectionStateProcessor;
+  }
+
+  public ConnectionStateProcessor getConnectionStateProcessor() {
+    return connectionStateProcessor;
   }
 
   /**
@@ -93,21 +80,6 @@ public class MessageExecutionContext {
   }
 
   /**
-   * Return the authorizer associated with this execution
-   */
-  public Authorizer getAuthorizer() {
-    return authorizer;
-  }
-
-  /**
-   * Returns the authentication token associated with this execution
-   */
-  public Object getAuthenticationToken() {
-    return authenticatedToken;
-  }
-
-
-  /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not
    * be a protocol-specific statistics implementation.
    */
@@ -115,19 +87,7 @@ public class MessageExecutionContext {
     return statistics;
   }
 
-  public Authenticator getAuthenticator() {
-    return authenticator;
-  }
-
-  public SecurityProcessor getSecurityProcessor() {
-    return securityProcessor;
-  }
-
-  public void setSecurityProcessor(AuthorizationSecurityProcessor securityProcessor) {
-    this.securityProcessor = securityProcessor;
-  }
-
-  public void setAuthenticationToken(Object authenticationToken) {
-    this.authenticatedToken = authenticationToken;
+  public void setConnectionStateProcessor(ConnectionStateProcessor connectionStateProcessor) {
+    this.connectionStateProcessor = connectionStateProcessor;
   }
 }

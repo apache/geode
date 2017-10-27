@@ -21,12 +21,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol.Request.RequestAPICase;
+import org.apache.geode.internal.protocol.protobuf.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.operations.GetAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.GetAvailableServersOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.GetRegionNamesRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.GetRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.operations.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.PutRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.operations.RemoveRequestOperationHandler;
@@ -108,6 +110,13 @@ public class ProtobufOperationContextRegistry {
             new GetAvailableServersOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetAvailableServersResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.CLUSTER,
+                ResourcePermission.Operation.READ)));
+
+    operationContexts.put(RequestAPICase.HANDSHAKEREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getHandshakeRequest,
+            new HandshakeRequestOperationHandler(),
+            opsResp -> ClientProtocol.Response.newBuilder().setHandshakeResponse(opsResp),
+            new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
   }
 }
