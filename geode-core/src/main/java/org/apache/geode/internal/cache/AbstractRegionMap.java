@@ -94,10 +94,10 @@ public abstract class AbstractRegionMap implements RegionMap {
   protected CustomEntryConcurrentHashMap<Object, Object> map;
 
   /**
-   * This test hook is used to force the conditions for defect 48182. This hook is used by
-   * Bug48182JUnitTest.
+   * This test hook is used to force the conditions during entry destroy. This hook is used by
+   * DestroyEntryWithConcurrentOperationJUnitTest.
    */
-  static Runnable testHookRunnableFor48182 = null;
+  static Runnable testHookRunnableForConcurrentOperation = null;
 
   private RegionEntryFactory entryFactory;
 
@@ -1070,8 +1070,8 @@ public abstract class AbstractRegionMap implements RegionMap {
         /*
          * Execute the test hook runnable inline (not threaded) if it is not null.
          */
-        if (null != testHookRunnableFor48182) {
-          testHookRunnableFor48182.run();
+        if (null != testHookRunnableForConcurrentOperation) {
+          testHookRunnableForConcurrentOperation.run();
         }
 
         try {
@@ -1388,6 +1388,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             }
             try {
               synchronized (re) {
+                owner.checkReadiness();
                 // if the entry is a tombstone and the event is from a peer or a client
                 // then we allow the operation to be performed so that we can update the
                 // version stamp. Otherwise we would retain an old version stamp and may allow
@@ -1489,6 +1490,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                         duringRI, true);
                     doPart3 = true;
                   } finally {
+                    owner.checkReadiness();
                     if (re.isRemoved() && !re.isTombstone()) {
                       if (!removed) {
                         removeEntry(event.getKey(), re, true, event, owner);
