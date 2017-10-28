@@ -15,13 +15,14 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
-import org.apache.geode.cache.query.IndexType;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -61,7 +62,7 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
     Result result;
-    List<XmlEntity> xmlEntities = Collections.synchronizedList(new ArrayList<>());
+    List<XmlEntity> xmlEntities = Collections.synchronizedList(new ArrayList<XmlEntity>());
 
     if (IndexDefinition.indexDefinitions.isEmpty()) {
       final InfoResultData infoResult = ResultBuilder.createInfoResultData();
@@ -103,10 +104,11 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
         }
       }
 
-      // TODO:
-      // with the current logic some indexes might be correctly created in some members and
-      // fail in others; but the user is never notified about these failures if there's at least one
-      // successful creation...
+      // TODO: GEODE-3916.
+      // The index creation might succeed in some members and fail in others, the current logic only
+      // reports to the user the members on which the operation was successful, giving no details
+      // about the failures. We should report the exact details of what failed/succeeded, and
+      // where/why.
       if (!successfulMembers.isEmpty()) {
         final InfoResultData infoResult = ResultBuilder.createInfoResultData();
         infoResult.addLine(CliStrings.CREATE_DEFINED_INDEXES__SUCCESS__MSG);

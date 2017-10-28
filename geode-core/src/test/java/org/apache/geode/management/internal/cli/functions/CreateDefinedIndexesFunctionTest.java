@@ -15,10 +15,15 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexCreationException;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.index.CompactMapRangeIndex;
 import org.apache.geode.cache.query.internal.index.HashIndex;
@@ -28,13 +33,21 @@ import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.*;
-import org.junit.experimental.categories.Category;
 
-import java.util.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 @Category(UnitTest.class)
 public class CreateDefinedIndexesFunctionTest {
@@ -174,7 +187,7 @@ public class CreateDefinedIndexesFunctionTest {
 
   private static class TestResultSender implements ResultSender {
 
-    private final List<Object> results = new LinkedList<Object>();
+    private final List<Object> results = new LinkedList<>();
 
     private Exception t;
 
