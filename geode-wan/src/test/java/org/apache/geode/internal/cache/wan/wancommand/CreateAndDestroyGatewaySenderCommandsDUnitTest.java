@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMemberIdCallable;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderAttributes;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderDestroyed;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
@@ -22,73 +29,107 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTestBase {
+public class CreateAndDestroyGatewaySenderCommandsDUnitTest {
+
+  @Rule
+  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+
+  @Rule
+  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+
+  private MemberVM locatorSite1;
+  private MemberVM locatorSite2;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
+
+  @Before
+  public void before() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
+    locatorSite2 = locatorServerStartupRule.startLocatorVM(2, props);
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locatorSite1);
+
+  }
+
   /**
    * GatewaySender with all default attributes
    */
   @Test
-  public void testCreateDestroyGatewaySenderWithDefault() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyGatewaySenderWithDefault() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    Integer locator1Port = locatorSite1.getPort();
 
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+
+    // create gateway senders to Site #2
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
         + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info(
           "testCreateDestroyGatewaySenderWithDefault stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
 
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
+      assertEquals(3, status.size());
       for (String stat : status) {
         assertTrue("GatewaySender creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateDestroyGatewaySenderWithDefault failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
-    vm4.invoke(() -> verifySenderState("ln", true, false));
-    vm5.invoke(() -> verifySenderState("ln", true, false));
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
+
+    // destroy gateway sender and verify AEQs cleaned up
     doDestroyAndVerifyGatewaySender("ln", null, null, "testCreateDestroyGatewaySenderWithDefault",
-        Arrays.asList(vm3, vm4, vm5), 5, false);
+        Arrays.asList(server1, server2, server3), 3, false);
   }
 
   /**
    * + * GatewaySender with given attribute values +
    */
   @Test
-  public void testCreateDestroyGatewaySender() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyGatewaySender() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
@@ -108,44 +149,45 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testCreateDestroyGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
+      assertEquals(3, status.size());
       for (String stat : status) {
         assertTrue("GatewaySender creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateDestroyGatewaySender failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm4.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
-    vm3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null));
-    vm4.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null));
-    vm5.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null));
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+
+    server1.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null));
+    server2.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null));
+    server3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null));
+
     doDestroyAndVerifyGatewaySender("ln", null, null, "testCreateDestroyGatewaySender",
-        Arrays.asList(vm3, vm4, vm5), 5, false);
+        Arrays.asList(server1, server2, server3), 3, false);
   }
 
   /**
    * GatewaySender with given attribute values and event filters.
    */
   @Test
-  public void testCreateDestroyGatewaySenderWithGatewayEventFilters() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyGatewaySenderWithGatewayEventFilters() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
@@ -167,13 +209,13 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
         + "=org.apache.geode.cache30.MyGatewayEventFilter1,org.apache.geode.cache30.MyGatewayEventFilter2";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testCreateDestroyGatewaySenderWithGatewayEventFilters stringResult : "
           + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
+      assertEquals(3, status.size());
       for (String stat : status) {
         assertTrue("GatewaySender creation failed with: " + stat, !stat.contains("ERROR:"));
       }
@@ -181,35 +223,42 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
       fail(
           "testCreateDestroyGatewaySenderWithGatewayEventFilters failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm4.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+
     List<String> eventFilters = new ArrayList<String>();
     eventFilters.add("org.apache.geode.cache30.MyGatewayEventFilter1");
     eventFilters.add("org.apache.geode.cache30.MyGatewayEventFilter2");
-    vm3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, eventFilters, null));
-    vm4.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, eventFilters, null));
-    vm5.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, eventFilters, null));
+
+    server1.invoke(
+        () -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000,
+            5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, eventFilters, null));
+    server2.invoke(
+        () -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000,
+            5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, eventFilters, null));
+    server3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, eventFilters,
+        null));
+
     doDestroyAndVerifyGatewaySender("ln", null, null,
-        "testCreateDestroyGatewaySenderWithGatewayEventFilters", Arrays.asList(vm3, vm4, vm5), 5,
-        false);
+        "testCreateDestroyGatewaySenderWithGatewayEventFilters",
+        Arrays.asList(server1, server2, server3), 3, false);
   }
 
   /**
    * GatewaySender with given attribute values and transport filters.
    */
   @Test
-  public void testCreateDestroyGatewaySenderWithGatewayTransportFilters() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyGatewaySenderWithGatewayTransportFilters() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
@@ -231,14 +280,14 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter()
           .info("testCreateDestroyGatewaySenderWithGatewayTransportFilters stringResult : "
               + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
+      assertEquals(3, status.size());
       for (String stat : status) {
         assertTrue("GatewaySender creation failed with: " + stat, !stat.contains("ERROR:"));
       }
@@ -246,39 +295,44 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
       fail(
           "testCreateDestroyGatewaySenderWithGatewayTransportFilters failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm4.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+
     List<String> transportFilters = new ArrayList<String>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
-    vm3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, transportFilters));
-    vm4.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, transportFilters));
-    vm5.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, transportFilters));
+    server1.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null,
+        transportFilters));
+    server2.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null,
+        transportFilters));
+    server3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null,
+        transportFilters));
+
     doDestroyAndVerifyGatewaySender("ln", null, null,
-        "testCreateDestroyGatewaySenderWithGatewayTransportFilters", Arrays.asList(vm3, vm4, vm5),
-        5, false);
+        "testCreateDestroyGatewaySenderWithGatewayTransportFilters",
+        Arrays.asList(server1, server2, server3), 3, false);
   }
 
   /**
    * GatewaySender with given attribute values on given member.
    */
   @Test
-  public void testCreateDestroyGatewaySender_OnMember() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyGatewaySender_OnMember() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
-    final DistributedMember vm3Member = vm3.invoke(this::getMember);
+    final DistributedMember server1DM = (DistributedMember) server1.invoke(getMemberIdCallable());
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
-        + "=ln" + " --" + CliStrings.MEMBER + "=" + vm3Member.getId() + " --"
+        + "=ln" + " --" + CliStrings.MEMBER + "=" + server1DM.getId() + " --"
         + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=false" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
@@ -295,7 +349,7 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter()
           .info("testCreateDestroyGatewaySender_OnMember stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -308,25 +362,26 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
     } else {
       fail("testCreateDestroyGatewaySender_OnMember failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm3.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
-        1000, 5000, true, false, 1000, 100, 2, OrderPolicy.THREAD, null, null));
-    doDestroyAndVerifyGatewaySender("ln", null, vm3Member,
-        "testCreateDestroyGatewaySender_OnMember", Arrays.asList(vm3), 1, false);
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server1.invoke(() -> verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true,
+        1000, 5000, true, false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null));
+
+    doDestroyAndVerifyGatewaySender("ln", null, server1DM.getId(),
+        "testCreateDestroyGatewaySender_OnMember", Arrays.asList(server1), 1, false);
   }
 
   /**
    * GatewaySender with given attribute values on given group
    */
   @Test
-  public void testCreateDestroyGatewaySender_Group() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyGatewaySender_Group() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
+    // setup servers in Site #1
+    server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
+    server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
+    server3 = startServerWithGroups(5, "SenderGroup1", locator1Port);
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
@@ -347,7 +402,7 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter()
           .info("testCreateDestroyGatewaySender_Group stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -361,11 +416,13 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
     } else {
       fail("testCreateDestroyGatewaySender_Group failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
-    vm4.invoke(() -> verifySenderState("ln", true, false));
-    vm5.invoke(() -> verifySenderState("ln", true, false));
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
+
     doDestroyAndVerifyGatewaySender("ln", "SenderGroup1", null,
-        "testCreateDestroyGatewaySender_Group", Arrays.asList(vm3, vm4, vm5), 3, false);
+        "testCreateDestroyGatewaySender_Group", Arrays.asList(server1, server2, server3), 3, false);
   }
 
   /**
@@ -373,14 +430,13 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
    * group.
    */
   @Test
-  public void testCreateDestroyGatewaySender_Group_Scenario2() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyGatewaySender_Group_Scenario2() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup2"));
+    // setup servers in Site #1
+    server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
+    server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
+    server3 = startServerWithGroups(5, "SenderGroup2", locator1Port);
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
@@ -401,7 +457,7 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info(
           "testCreateDestroyGatewaySender_Group_Scenario2 stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -414,24 +470,26 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
     } else {
       fail("testCreateDestroyGatewaySender_Group_Scenario2 failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
-    vm4.invoke(() -> verifySenderState("ln", true, false));
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+
     doDestroyAndVerifyGatewaySender("ln", "SenderGroup1", null,
-        "testCreateDestroyGatewaySender_Group_Scenario2", Arrays.asList(vm3, vm4), 2, false);
+        "testCreateDestroyGatewaySender_Group_Scenario2", Arrays.asList(server1, server2), 2,
+        false);
   }
 
   /**
    * + * Parallel GatewaySender with given attribute values +
    */
   @Test
-  public void testCreateDestroyParallelGatewaySender() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testCreateDestroyParallelGatewaySender() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
     String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
@@ -449,63 +507,65 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
         + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100";
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter()
           .info("testCreateDestroyParallelGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
+      assertEquals(3, status.size());
       for (String stat : status) {
         assertTrue("GatewaySender creation failed with: " + stat, !stat.contains("ERROR:"));
       }
     } else {
       fail("testCreateDestroyParallelGatewaySender failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm4.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
-    vm3.invoke(
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+
+    server1.invoke(
         () -> verifySenderAttributes("ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, GatewaySender.DEFAULT_DISPATCHER_THREADS, null, null, null));
-    vm4.invoke(
+    server2.invoke(
         () -> verifySenderAttributes("ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, GatewaySender.DEFAULT_DISPATCHER_THREADS, null, null, null));
-    vm5.invoke(
+    server3.invoke(
         () -> verifySenderAttributes("ln", 2, true, true, 1000, socketReadTimeout, true, 1000, 5000,
             true, false, 1000, 100, GatewaySender.DEFAULT_DISPATCHER_THREADS, null, null, null));
+
     doDestroyAndVerifyGatewaySender("ln", null, null, "testCreateDestroyParallelGatewaySender",
-        Arrays.asList(vm3, vm4), 5, true);
+        Arrays.asList(server1, server2), 3, true);
   }
 
   /**
    * doDestroyAndVerifyGatewaySender helper command.
    *
-   * @param id if of the Gateway Sender
+   * @param id id of the Gateway Sender
    * @param group Group for the GatewaySender
-   * @param member Distributed Member for memeber id.
+   * @param DMId String representing DistributedMember id
    * @param testName testName for the logging
    * @param vms list of vms where to verify the destroyed gateway sender
    * @param size command result.
    * @param isParallel true if parallel , false otherwise.
    */
   private void doDestroyAndVerifyGatewaySender(final String id, final String group,
-      final DistributedMember member, final String testName, final List<VM> vms, final int size,
-      final boolean isParallel) {
+      final String DMId, final String testName, final List<MemberVM> vms, final int size,
+      final boolean isParallel) throws Exception {
     String command =
         CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=" + id;
     if (group != null) {
       command += " --" + CliStrings.GROUP + "=" + group;
     }
-    if (member != null) {
-      command += " --" + CliStrings.MEMBER + "=" + member.getId();
+    if (DMId != null) {
+      command += " --" + CliStrings.MEMBER + "=" + DMId;
     }
     final CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info(testName + " stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
 
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Status");
@@ -516,17 +576,23 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest extends WANCommandTe
     } else {
       fail(testName + " failed as did not get CommandResult");
     }
-    for (VM vm : vms) {
+    for (MemberVM vm : vms) {
       vm.invoke(() -> verifySenderDestroyed(id, isParallel));
     }
   }
 
-  private CommandResult executeCommandWithIgnoredExceptions(String command) {
+  private CommandResult executeCommandWithIgnoredExceptions(String command) throws Exception {
     final IgnoredException ignored = IgnoredException.addIgnoredException("Could not connect");
     try {
-      return executeCommand(command);
+      return gfsh.executeCommand(command);
     } finally {
       ignored.remove();
     }
+  }
+
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(GROUPS, groups);
+    return locatorServerStartupRule.startServerVM(index, props, locPort);
   }
 }

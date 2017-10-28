@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createAndStartReceiver;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createReceiver;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMemberIdCallable;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyReceiverState;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
@@ -22,7 +29,13 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.Wait.pause;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -31,32 +44,59 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
-public class StopGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
+public class StopGatewayReceiverCommandDUnitTest {
+
+  @Rule
+  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+
+  @Rule
+  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+
+  private MemberVM locatorSite1;
+  private MemberVM locatorSite2;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
+  private MemberVM server4;
+  private MemberVM server5;
+
+  @Before
+  public void before() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
+    locatorSite2 = locatorServerStartupRule.startLocatorVM(2, props);
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locatorSite1);
+  }
+
   /**
    * Test wan commands for error in input 1> start gateway-sender command needs only one of member
    * or group.
    */
   @Test
-  public void testStopGatewayReceiver_ErrorConditions() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
+  public void testStopGatewayReceiver_ErrorConditions() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createReceiver(dsIdPort));
+    Integer locator1Port = locatorSite1.getPort();
 
-    final DistributedMember vm1Member = vm3.invoke(this::getMember);
+    // setup servers in Site #1 (London)
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+
+    server1.invoke(() -> createReceiver(locator1Port));
+
+    final DistributedMember server1DM = (DistributedMember) server1.invoke(getMemberIdCallable());
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "="
-        + vm1Member.getId() + " --" + CliStrings.GROUP + "=RG1";
-    CommandResult cmdResult = executeCommand(command);
+        + server1DM.getId() + " --" + CliStrings.GROUP + "=RG1";
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter()
           .info("testStopGatewayReceiver_ErrorConditions stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
@@ -66,64 +106,71 @@ public class StopGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1418
   @Test
-  public void testStopGatewayReceiver() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
+  public void testStopGatewayReceiver() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createAndStartReceiver(dsIdPort));
-    vm4.invoke(() -> createAndStartReceiver(dsIdPort));
-    vm5.invoke(() -> createAndStartReceiver(dsIdPort));
-    vm3.invoke(() -> verifyReceiverState(true));
-    vm4.invoke(() -> verifyReceiverState(true));
-    vm5.invoke(() -> verifyReceiverState(true));
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+
+    server1.invoke(() -> createAndStartReceiver(locator1Port));
+    server2.invoke(() -> createAndStartReceiver(locator1Port));
+    server3.invoke(() -> createAndStartReceiver(locator1Port));
+
+    server1.invoke(() -> verifyReceiverState(true));
+    server2.invoke(() -> verifyReceiverState(true));
+    server3.invoke(() -> verifyReceiverState(true));
 
     pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER;
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testStopGatewayReceiver stringResult : " + strCmdResult + ">>>>");
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Result");
-      assertEquals(4, status.size());
-      assertTrue(status.contains("Error"));
+      assertEquals(3, status.size());
       assertTrue(status.contains("OK"));
     } else {
       fail("testStopGatewayReceiver failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifyReceiverState(false));
-    vm4.invoke(() -> verifyReceiverState(false));
-    vm5.invoke(() -> verifyReceiverState(false));
+
+    server1.invoke(() -> verifyReceiverState(false));
+    server2.invoke(() -> verifyReceiverState(false));
+    server3.invoke(() -> verifyReceiverState(false));
   }
 
   /**
    * test to validate that the start gateway sender starts the gateway sender on a member
    */
   @Test
-  public void testStopGatewayReceiver_onMember() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
+  public void testStopGatewayReceiver_onMember() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createAndStartReceiver(dsIdPort));
-    vm4.invoke(() -> createAndStartReceiver(dsIdPort));
-    vm5.invoke(() -> createAndStartReceiver(dsIdPort));
-    vm3.invoke(() -> verifyReceiverState(true));
-    vm4.invoke(() -> verifyReceiverState(true));
-    vm5.invoke(() -> verifyReceiverState(true));
+    Integer locator1Port = locatorSite1.getPort();
 
-    final DistributedMember vm1Member = vm3.invoke(this::getMember);
+    // setup servers in Site #1 (London)
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+
+    server1.invoke(() -> createAndStartReceiver(locator1Port));
+    server2.invoke(() -> createAndStartReceiver(locator1Port));
+    server3.invoke(() -> createAndStartReceiver(locator1Port));
+
+    server1.invoke(() -> verifyReceiverState(true));
+    server2.invoke(() -> verifyReceiverState(true));
+    server3.invoke(() -> verifyReceiverState(true));
+
+    final DistributedMember server1DM = (DistributedMember) server1.invoke(getMemberIdCallable());
     pause(10000);
     String command =
-        CliStrings.STOP_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "=" + vm1Member.getId();
-    CommandResult cmdResult = executeCommand(command);
+        CliStrings.STOP_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "=" + server1DM.getId();
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter()
           .info("testStopGatewayReceiver_onMember stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -131,33 +178,38 @@ public class StopGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testStopGatewayReceiver failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifyReceiverState(false));
-    vm4.invoke(() -> verifyReceiverState(true));
-    vm5.invoke(() -> verifyReceiverState(true));
+
+    server1.invoke(() -> verifyReceiverState(false));
+    server2.invoke(() -> verifyReceiverState(true));
+    server3.invoke(() -> verifyReceiverState(true));
   }
 
   /**
    * test to validate that the start gateway sender starts the gateway sender on a group of members
    */
   @Test
-  public void testStopGatewayReceiver_Group() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
+  public void testStopGatewayReceiver_Group() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG1"));
-    vm4.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG1"));
-    vm5.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG1"));
-    vm3.invoke(() -> verifyReceiverState(true));
-    vm4.invoke(() -> verifyReceiverState(true));
-    vm5.invoke(() -> verifyReceiverState(true));
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = startServerWithGroups(3, "RG1", locator1Port);
+    server2 = startServerWithGroups(4, "RG1", locator1Port);
+    server3 = startServerWithGroups(5, "RG1", locator1Port);
+
+    server1.invoke(() -> createAndStartReceiver(locator1Port));
+    server2.invoke(() -> createAndStartReceiver(locator1Port));
+    server3.invoke(() -> createAndStartReceiver(locator1Port));
+
+    server1.invoke(() -> verifyReceiverState(true));
+    server2.invoke(() -> verifyReceiverState(true));
+    server3.invoke(() -> verifyReceiverState(true));
 
     pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=RG1";
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testStopGatewayReceiver_Group stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -169,9 +221,10 @@ public class StopGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testStopGatewayReceiver_Group failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifyReceiverState(false));
-    vm4.invoke(() -> verifyReceiverState(false));
-    vm5.invoke(() -> verifyReceiverState(false));
+
+    server1.invoke(() -> verifyReceiverState(false));
+    server2.invoke(() -> verifyReceiverState(false));
+    server3.invoke(() -> verifyReceiverState(false));
   }
 
   /**
@@ -180,28 +233,34 @@ public class StopGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
    * 
    */
   @Test
-  public void testStopGatewayReceiver_MultipleGroup() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
+  public void testStopGatewayReceiver_MultipleGroup() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG1"));
-    vm4.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG1"));
-    vm5.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG1"));
-    vm6.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG1, RG2"));
-    vm7.invoke(() -> createAndStartReceiverWithGroup(dsIdPort, "RG3"));
-    vm3.invoke(() -> verifyReceiverState(true));
-    vm4.invoke(() -> verifyReceiverState(true));
-    vm5.invoke(() -> verifyReceiverState(true));
-    vm6.invoke(() -> verifyReceiverState(true));
-    vm7.invoke(() -> verifyReceiverState(true));
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = startServerWithGroups(3, "RG1", locator1Port);
+    server2 = startServerWithGroups(4, "RG1", locator1Port);
+    server3 = startServerWithGroups(5, "RG1", locator1Port);
+    server4 = startServerWithGroups(6, "RG1, RG2", locator1Port);
+    server5 = startServerWithGroups(7, "RG3", locator1Port);
+
+    server1.invoke(() -> createAndStartReceiver(locator1Port));
+    server2.invoke(() -> createAndStartReceiver(locator1Port));
+    server3.invoke(() -> createAndStartReceiver(locator1Port));
+    server4.invoke(() -> createAndStartReceiver(locator1Port));
+    server5.invoke(() -> createAndStartReceiver(locator1Port));
+
+    server1.invoke(() -> verifyReceiverState(true));
+    server2.invoke(() -> verifyReceiverState(true));
+    server3.invoke(() -> verifyReceiverState(true));
+    server4.invoke(() -> verifyReceiverState(true));
+    server5.invoke(() -> verifyReceiverState(true));
 
     pause(10000);
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=RG1,RG2";
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testStopGatewayReceiver_Group stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
@@ -212,10 +271,17 @@ public class StopGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testStopGatewayReceiver failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifyReceiverState(false));
-    vm4.invoke(() -> verifyReceiverState(false));
-    vm5.invoke(() -> verifyReceiverState(false));
-    vm6.invoke(() -> verifyReceiverState(false));
-    vm7.invoke(() -> verifyReceiverState(true));
+
+    server1.invoke(() -> verifyReceiverState(false));
+    server2.invoke(() -> verifyReceiverState(false));
+    server3.invoke(() -> verifyReceiverState(false));
+    server4.invoke(() -> verifyReceiverState(false));
+    server5.invoke(() -> verifyReceiverState(true));
+  }
+
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(GROUPS, groups);
+    return locatorServerStartupRule.startServerVM(index, props, locPort);
   }
 }
