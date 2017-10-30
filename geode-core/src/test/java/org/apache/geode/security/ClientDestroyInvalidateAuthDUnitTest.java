@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestCase {
-  private static String REGION_NAME = "testRegion";
+  private static String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
   final VM client1 = host.getVM(1);
