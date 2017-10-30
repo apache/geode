@@ -496,8 +496,9 @@ public class CreateRegionCommandIntegrationTest {
 
   @Test
   public void testEvictionAttributesForLRUHeap() throws Exception {
-    gfsh.executeAndVerifyCommand(
-        "create region --name=FOO --type=REPLICATE --eviction-action=local-destroy");
+    gfsh.executeAndAssertThat(
+        "create region --name=FOO --type=REPLICATE --eviction-action=local-destroy")
+        .statusIsSuccess();
 
     Region foo = server.getCache().getRegion("/FOO");
     assertThat(foo.getAttributes().getEvictionAttributes().getAction())
@@ -505,13 +506,14 @@ public class CreateRegionCommandIntegrationTest {
     assertThat(foo.getAttributes().getEvictionAttributes().getAlgorithm())
         .isEqualTo(EvictionAlgorithm.LRU_HEAP);
 
-    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
+    gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
   }
 
   @Test
   public void testEvictionAttributesForLRUEntry() throws Exception {
-    gfsh.executeAndVerifyCommand(
-        "create region --name=FOO --type=REPLICATE --eviction-entry-count=1001 --eviction-action=overflow-to-disk");
+    gfsh.executeAndAssertThat(
+        "create region --name=FOO --type=REPLICATE --eviction-entry-count=1001 --eviction-action=overflow-to-disk")
+        .statusIsSuccess();
 
     Region foo = server.getCache().getRegion("/FOO");
     assertThat(foo.getAttributes().getEvictionAttributes().getAction())
@@ -520,13 +522,14 @@ public class CreateRegionCommandIntegrationTest {
         .isEqualTo(EvictionAlgorithm.LRU_ENTRY);
     assertThat(foo.getAttributes().getEvictionAttributes().getMaximum()).isEqualTo(1001);
 
-    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
+    gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
   }
 
   @Test
   public void testEvictionAttributesForLRUMemory() throws Exception {
-    gfsh.executeAndVerifyCommand(
-        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk");
+    gfsh.executeAndAssertThat(
+        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk")
+        .statusIsSuccess();
 
     Region foo = server.getCache().getRegion("/FOO");
     assertThat(foo.getAttributes().getEvictionAttributes().getAction())
@@ -535,14 +538,15 @@ public class CreateRegionCommandIntegrationTest {
         .isEqualTo(EvictionAlgorithm.LRU_MEMORY);
     assertThat(foo.getAttributes().getEvictionAttributes().getMaximum()).isEqualTo(1001);
 
-    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
+    gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
   }
 
   @Test
   public void testEvictionAttributesForSizer() throws Exception {
-    gfsh.executeAndVerifyCommand(
+    gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
-            + TestObjectSizer.class.getName());
+            + TestObjectSizer.class.getName())
+        .statusIsSuccess();
 
     Region foo = server.getCache().getRegion("/FOO");
     EvictionAttributes attrs = foo.getAttributes().getEvictionAttributes();
@@ -552,6 +556,6 @@ public class CreateRegionCommandIntegrationTest {
     assertThat(attrs.getObjectSizer().getClass().getName())
         .isEqualTo(TestObjectSizer.class.getName());
 
-    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
+    gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
   }
 }
