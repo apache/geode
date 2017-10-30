@@ -588,14 +588,14 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   public void testSelectCommand() {
     setupForSelect();
     doTestGetRegionAssociatedMembersForSelect();
-    // doTestSelectWithGfshEnvVariables(true);
-    // doTestSelectWithGfshEnvVariables(false);
-    // doTestSelectProjection();
-    // doTestBug48013();
-    // doTestSelectProjectionProcessCommand();
-    // doTestSelectProjectionWithNestedField();
-    // doTestSelectBeansAsResult();
-    // doTestSelectBeansWithNestedFieldAsResult();
+    doTestSelectWithGfshEnvVariables(true);
+    doTestSelectWithGfshEnvVariables(false);
+    doTestSelectProjection();
+    doTestBug48013();
+    doTestSelectProjectionProcessCommand();
+    doTestSelectProjectionWithNestedField();
+    doTestSelectBeansAsResult();
+    doTestSelectBeansWithNestedFieldAsResult();
   }
 
   @Test

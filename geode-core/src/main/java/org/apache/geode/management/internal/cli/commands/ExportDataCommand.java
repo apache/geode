@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -74,7 +73,7 @@ public class ExportDataCommand implements GfshCommand {
       final String args[] = {regionName, path, Boolean.toString(parallel)};
 
       ResultCollector<?, ?> rc = executeFunction(exportDataFunction, args, targetMember);
-      result = getFunctionResult(rc, CliStrings.EXPORT_DATA);
+      result = CliUtil.getFunctionResult(rc, CliStrings.EXPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
@@ -106,25 +105,5 @@ public class ExportDataCommand implements GfshCommand {
           .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION)));
     }
     return Optional.empty();
-  }
-
-  static Result getFunctionResult(ResultCollector<?, ?> rc, String commandName) {
-    Result result;
-    List<Object> results = (List<Object>) rc.getResult();
-    if (results != null) {
-      Object resultObj = results.get(0);
-      if (resultObj instanceof String) {
-        result = ResultBuilder.createInfoResult((String) resultObj);
-      } else if (resultObj instanceof Exception) {
-        result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
-      } else {
-        result = ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
-      }
-    } else {
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
-    }
-    return result;
   }
 }

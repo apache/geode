@@ -74,7 +74,7 @@ public class ImportDataCommand implements GfshCommand {
       final Object args[] = {regionName, path, invokeCallbacks, parallel};
 
       ResultCollector<?, ?> rc = executeFunction(importDataFunction, args, targetMember);
-      result = ExportDataCommand.getFunctionResult(rc, CliStrings.IMPORT_DATA);
+      result = CliUtil.getFunctionResult(rc, CliStrings.IMPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {
