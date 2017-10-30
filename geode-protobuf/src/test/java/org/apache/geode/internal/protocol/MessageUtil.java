@@ -19,9 +19,9 @@ import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.internal.serialization.SerializationService;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 public class MessageUtil {
 

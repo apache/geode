@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -99,7 +100,10 @@ public class FunctionContextImpl implements FunctionContext {
   }
 
   @Override
-  public Cache getCache() {
+  public Cache getCache() throws CacheClosedException {
+    if (cache == null) {
+      throw new CacheClosedException("FunctionContext does not have a valid Cache");
+    }
     return cache;
   }
 

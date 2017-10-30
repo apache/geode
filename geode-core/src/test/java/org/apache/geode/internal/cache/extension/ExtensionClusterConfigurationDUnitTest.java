@@ -169,7 +169,7 @@ public class ExtensionClusterConfigurationDUnitTest {
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
     csb.addOptionWithValueCheck(CliStrings.GROUP, group);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void createMockRegionExtension(final String regionName, final String value) {
@@ -177,7 +177,7 @@ public class ExtensionClusterConfigurationDUnitTest {
         new CommandStringBuilder(MockExtensionCommands.CREATE_MOCK_REGION_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_REGION_NAME, regionName);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void alterMockRegionExtension(final String regionName, final String value) {
@@ -185,33 +185,33 @@ public class ExtensionClusterConfigurationDUnitTest {
         new CommandStringBuilder(MockExtensionCommands.ALTER_MOCK_REGION_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_REGION_NAME, regionName);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void destroyMockRegionExtension(final String regionName) {
     CommandStringBuilder csb =
         new CommandStringBuilder(MockExtensionCommands.DESTROY_MOCK_REGION_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_REGION_NAME, regionName);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void createMockCacheExtension(final String value) {
     CommandStringBuilder csb =
         new CommandStringBuilder(MockExtensionCommands.CREATE_MOCK_CACHE_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void alterMockCacheExtension(final String value) {
     CommandStringBuilder csb =
         new CommandStringBuilder(MockExtensionCommands.ALTER_MOCK_CACHE_EXTENSION);
     csb.addOption(MockExtensionCommands.OPTION_VALUE, value);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void destroyMockCacheExtension() {
     CommandStringBuilder csb =
         new CommandStringBuilder(MockExtensionCommands.DESTROY_MOCK_CACHE_EXTENSION);
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 }

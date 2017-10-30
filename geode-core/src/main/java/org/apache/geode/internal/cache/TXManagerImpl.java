@@ -58,6 +58,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -685,7 +686,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * If the current thread is in a transaction then pause will cause it to no longer be in a
-   * transaction. The same thread is expected to unpause/resume the transaction later.
+   * transaction. The same thread is expected to unpause/resume the transaction later. The thread
+   * should not start a new transaction after it paused a transaction.
    *
    * @return the state of the transaction or null. Pass this value to
    *         {@link TXManagerImpl#unpauseTransaction} to reactivate the puased/suspended
@@ -696,14 +698,12 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   /**
-   * If the current thread is in a transaction then suspend will cause it to no longer be in a
-   * transaction. Currently only used in testing.
+   * If the current thread is in a transaction then internal suspend will cause it to no longer be
+   * in a transaction. The thread can start a new transaction after it internal suspended a
+   * transaction.
    * 
    * @return the state of the transaction or null. to reactivate the suspended transaction.
-   * @deprecated use {@link TXManagerImpl#pauseTransaction} or
-   *             {@link CacheTransactionManager#suspend} instead
    */
-  @Deprecated
   public TXStateProxy internalSuspend() {
     return internalSuspend(false);
   }
@@ -745,15 +745,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   /**
    * Activates the specified transaction on the calling thread. Does not require the same thread to
-   * resume it. Currently only used in testing.
+   * resume it.
    *
    * @param tx the transaction to activate.
    * @throws IllegalStateException if this thread already has an active transaction
-   * 
-   * @deprecated use {@link TXManagerImpl#unpauseTransaction} or
-   *             {@link CacheTransactionManager#resume} instead
    */
-  @Deprecated
   public void internalResume(TXStateProxy tx) {
     internalResume(tx, false);
   }

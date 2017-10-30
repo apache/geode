@@ -19,15 +19,15 @@ import org.apache.geode.distributed.internal.LocatorLoadSnapshot;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.protocol.ProtobufTestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.Result;
+import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI;
 import org.apache.geode.internal.protocol.protobuf.ServerAPI.GetAvailableServersResponse;
-import org.apache.geode.internal.protocol.protobuf.Success;
-import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
+import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -61,7 +61,6 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
     ServerLocator serverLocatorAdviseeMock = mock(ServerLocator.class);
     locatorLoadSnapshot = mock(LocatorLoadSnapshot.class);
 
-
     when(internalLocatorMock.getServerLocatorAdvisee()).thenReturn(serverLocatorAdviseeMock);
     when(serverLocatorAdviseeMock.getLoadSnapshot()).thenReturn(locatorLoadSnapshot);
   }
@@ -75,9 +74,7 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
 
     ServerAPI.GetAvailableServersRequest getAvailableServersRequest =
         ProtobufRequestUtilities.createGetAvailableServersRequest();
-    Result operationHandlerResult =
-        operationHandler.process(serializationServiceStub, getAvailableServersRequest,
-            new MessageExecutionContext(internalLocatorMock, new NoOpStatistics()));
+    Result operationHandlerResult = getOperationHandlerResult(getAvailableServersRequest);
     assertTrue(operationHandlerResult instanceof Success);
     ValidateGetAvailableServersResponse(
         (GetAvailableServersResponse) operationHandlerResult.getMessage());
@@ -90,13 +87,18 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
 
     ServerAPI.GetAvailableServersRequest getAvailableServersRequest =
         ProtobufRequestUtilities.createGetAvailableServersRequest();
-    Result operationHandlerResult =
-        operationHandler.process(serializationServiceStub, getAvailableServersRequest,
-            new MessageExecutionContext(internalLocatorMock, new NoOpStatistics()));
+    Result operationHandlerResult = getOperationHandlerResult(getAvailableServersRequest);
     assertTrue(operationHandlerResult instanceof Success);
     GetAvailableServersResponse availableServersResponse =
         (GetAvailableServersResponse) operationHandlerResult.getMessage();
     assertEquals(0, availableServersResponse.getServersCount());
+  }
+
+  private Result getOperationHandlerResult(
+      ServerAPI.GetAvailableServersRequest getAvailableServersRequest)
+      throws InvalidExecutionContextException {
+    return operationHandler.process(serializationServiceStub, getAvailableServersRequest,
+        ProtobufTestExecutionContext.getLocatorExecutionContext(internalLocatorMock));
   }
 
   private void ValidateGetAvailableServersResponse(

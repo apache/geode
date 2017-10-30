@@ -35,7 +35,7 @@ configurations.all {
 gradle.taskGraph.whenReady( { graph ->
   tasks.withType(Tar).each { tar ->
     tar.compression = Compression.GZIP
-    tar.extension = 'tar.gz'
+    tar.extension = 'tgz'
   }
   tasks.srcDistZip {
     classifier 'src'
@@ -56,7 +56,8 @@ dependencies {
   provided project(':geode-core')
 
   archives project(':geode-common')  
-  archives project(':geode-json')  
+  archives project(':geode-client-protocol')
+  archives project(':geode-json')
   archives project(':geode-core')
   archives project(':geode-lucene')
   archives project(':geode-old-client-support')
@@ -367,6 +368,9 @@ distributions {
 
         from project(":geode-protobuf").configurations.runtime
         from project(":geode-protobuf").configurations.archives.allArtifacts.files
+
+        from project(":geode-client-protocol").configurations.runtime
+        from project(":geode-client-protocol").configurations.archives.allArtifacts.files
 
         from project(":geode-rebalancer").configurations.runtime
         from project(":geode-rebalancer").configurations.archives.allArtifacts.files

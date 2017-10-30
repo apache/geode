@@ -15,12 +15,12 @@
 package org.apache.geode.internal.protocol.protobuf;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.serialization.SerializationService;
-import org.apache.geode.internal.serialization.SerializationType;
-import org.apache.geode.internal.serialization.TypeCodec;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.SerializationCodecRegistry;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.SerializationType;
+import org.apache.geode.internal.protocol.serialization.TypeCodec;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.SerializationCodecRegistry;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 @Experimental
 public class ProtobufSerializationService implements SerializationService<BasicTypes.EncodingType> {

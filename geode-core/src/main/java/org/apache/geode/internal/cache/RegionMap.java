@@ -26,6 +26,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.lru.LRUMapCallbacks;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;

@@ -26,7 +26,6 @@ import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.distributed.internal.SecurityConfig;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -48,7 +47,7 @@ import org.apache.geode.internal.protocol.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

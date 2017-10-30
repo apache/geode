@@ -28,15 +28,14 @@ import org.apache.geode.annotations.Experimental;
  * 
  * @param <T> The type of object supported by this lucene serializer
  */
-@Experimental
 public interface LuceneSerializer<T> extends Declarable {
 
   /**
    * Add the fields of the given value to a set of documents
    *
-   * Added fields should be marked with {@link Field.Store#NO}. These fields are only used for
-   * searches. When doing a query, geode will return the value from the region, not any fields that
-   * are stored on the returned Documents.
+   * Added fields should be marked with {@link org.apache.lucene.document.Field.Store#NO}. These
+   * fields are only used for searches. When doing a query, geode will return the value from the
+   * region, not any fields that are stored on the returned Documents.
    * 
    * @param index lucene index
    * @param value user object to be serialized into index

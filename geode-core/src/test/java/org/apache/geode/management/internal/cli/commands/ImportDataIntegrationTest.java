@@ -75,13 +75,13 @@ public class ImportDataIntegrationTest {
   public void testExportImport() throws Exception {
     String exportCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
+    gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
 
     loadRegion("");
 
     String importCommand = buildBaseImportCommand()
         .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeAndVerifyCommand(importCommand);
+    gfsh.executeAndAssertThat(importCommand).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Data imported from file");
     validateImport("value");
   }
@@ -90,13 +90,13 @@ public class ImportDataIntegrationTest {
   public void testExportImportRelativePath() throws Exception {
     String exportCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, SNAPSHOT_FILE).getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
+    gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
 
     loadRegion("");
 
     String importCommand = buildBaseImportCommand()
         .addOption(CliStrings.IMPORT_DATA__FILE, SNAPSHOT_FILE).getCommandString();
-    gfsh.executeAndVerifyCommand(importCommand);
+    gfsh.executeAndAssertThat(importCommand).statusIsSuccess();
     Files.deleteIfExists(Paths.get(SNAPSHOT_FILE));
     assertThat(gfsh.getGfshOutput()).contains("Data imported from file");
     validateImport("value");
@@ -107,14 +107,14 @@ public class ImportDataIntegrationTest {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString())
             .addOption(CliStrings.EXPORT_DATA__PARALLEL, "true").getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
+    gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
 
     loadRegion("");
 
     String importCommand =
         buildBaseImportCommand().addOption(CliStrings.IMPORT_DATA__DIR, snapshotDir.toString())
             .addOption(CliStrings.IMPORT_DATA__PARALLEL, "true").getCommandString();
-    gfsh.executeAndVerifyCommand(importCommand);
+    gfsh.executeAndAssertThat(importCommand).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Data imported from file");
 
     validateImport("value");

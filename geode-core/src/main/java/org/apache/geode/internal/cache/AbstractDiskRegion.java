@@ -20,6 +20,7 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;

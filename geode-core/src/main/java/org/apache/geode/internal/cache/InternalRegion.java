@@ -35,5 +35,10 @@ import org.apache.geode.distributed.internal.DM;
  */
 public interface InternalRegion<K, V> extends Region<K, V>, HasCachePerfStats {
 
+  CachePerfStats getCachePerfStats();
+
+  DiskRegion getDiskRegion();
+
   RegionEntry getRegionEntry(K key);
+
 }

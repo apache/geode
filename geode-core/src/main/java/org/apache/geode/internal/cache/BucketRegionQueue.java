@@ -337,13 +337,17 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         Object key = object.getKeyToConflate();
         Map latestIndexesForRegion = (Map) this.indexes.get(rName);
         if (latestIndexesForRegion != null) {
-          // Remove the index.
-          Long index = (Long) latestIndexesForRegion.remove(key);
-          if (index != null) {
-            this.getPartitionedRegion().getParallelGatewaySender().getStatistics()
-                .decConflationIndexesMapSize();
-            if (logger.isDebugEnabled()) {
-              logger.debug("{}: Removed index {} for {}", this, index, object);
+          // Remove the index if appropriate. Verify the qKey is actually the one being referenced
+          // in the index. If it isn't, then another event has been received for the real key. In
+          // that case, don't remove the index since it has already been overwritten.
+          if (latestIndexesForRegion.get(key) == qkey) {
+            Long index = (Long) latestIndexesForRegion.remove(key);
+            if (index != null) {
+              this.getPartitionedRegion().getParallelGatewaySender().getStatistics()
+                  .decConflationIndexesMapSize();
+              if (logger.isDebugEnabled()) {
+                logger.debug("{}: Removed index {} for {}", this, index, object);
+              }
             }
           }
         }

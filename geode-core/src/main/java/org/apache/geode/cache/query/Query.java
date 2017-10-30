@@ -125,7 +125,7 @@ public interface Query {
    *         region referred to in the query.
    * 
    */
-  public Object execute(Object[] params) throws FunctionDomainException, TypeMismatchException,
+  public Object execute(Object... params) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException;
 
   /**

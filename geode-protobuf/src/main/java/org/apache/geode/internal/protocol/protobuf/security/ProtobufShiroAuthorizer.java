@@ -18,9 +18,8 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.internal.protocol.protobuf.security.Authorizer;
+import org.apache.geode.internal.protocol.security.Authorizer;
 
 public class ProtobufShiroAuthorizer implements Authorizer {
   private final SecurityService securityService;
@@ -30,14 +29,12 @@ public class ProtobufShiroAuthorizer implements Authorizer {
   }
 
   @Override
-  public boolean authorize(Object authenticatedSubject, ResourcePermission permissionRequested) {
-    ThreadState threadState = securityService.bindSubject((Subject) authenticatedSubject);
+  public boolean authorize(Object authenticatedToken, ResourcePermission permissionRequested) {
+    ThreadState threadState = securityService.bindSubject((Subject) authenticatedToken);
 
     try {
       securityService.authorize(permissionRequested);
       return true;
-    } catch (NotAuthorizedException ex) {
-      return false;
     } finally {
       threadState.restore();
     }

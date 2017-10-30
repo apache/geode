@@ -81,7 +81,7 @@ public class ChangeLogLevelCommandDUnitTest {
   public void testChangeLogLevelForGroups() {
     String commandString = "change loglevel --loglevel=finer --groups=" + GROUP1 + "," + GROUP2;
 
-    gfsh.executeAndVerifyCommand(commandString);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
 
@@ -94,7 +94,7 @@ public class ChangeLogLevelCommandDUnitTest {
   public void testChangeLogLevelForGroup() {
     String commandString = "change loglevel --loglevel=finer --groups=" + GROUP1;
 
-    gfsh.executeAndVerifyCommand(commandString);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
 
@@ -108,7 +108,7 @@ public class ChangeLogLevelCommandDUnitTest {
     String commandString =
         "change loglevel --loglevel=finer --members=" + SERVER1_NAME + "," + SERVER2_NAME;
 
-    gfsh.executeAndVerifyCommand(commandString);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
 
@@ -121,7 +121,7 @@ public class ChangeLogLevelCommandDUnitTest {
   public void testChangeLogLevelForMember() {
     String commandString = "change loglevel --loglevel=finer --members=" + SERVER1_NAME;
 
-    gfsh.executeAndVerifyCommand(commandString);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
 

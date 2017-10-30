@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.distributed.internal.SecurityConfig;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -67,8 +66,8 @@ import org.apache.geode.internal.protocol.protobuf.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -170,7 +169,7 @@ public class CacheConnectionJUnitTest {
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) cache.getDistributedSystem();
     Statistics[] protobufStats = distributedSystem.findStatisticsByType(
-        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_STATS_NAME));
+        distributedSystem.findType(ProtobufClientStatisticsImpl.PROTOBUF_CLIENT_STATISTICS));
     assertEquals(1, protobufStats.length);
     Statistics statistics = protobufStats[0];
     assertEquals(1, statistics.get("currentClientConnections"));

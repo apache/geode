@@ -28,6 +28,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -38,7 +39,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class GenericProtocolServerConnection extends ServerConnection {
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
-  private final ClientProtocolProcessor protocolPipeline;
+  private final ClientProtocolProcessor protocolProcessor;
   private boolean cleanedUp;
   private ClientProxyMembershipID clientProxyMembershipID;
 
@@ -52,7 +53,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
       SecurityService securityService) {
     super(socket, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
         communicationMode, acceptor, securityService);
-    this.protocolPipeline = clientProtocolProcessor;
+    this.protocolProcessor = clientProtocolProcessor;
 
     setClientProxyMembershipId();
 
@@ -66,7 +67,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
 
-      protocolPipeline.processMessage(inputStream, outputStream);
+      protocolProcessor.processMessage(inputStream, outputStream);
     } catch (EOFException e) {
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
@@ -94,7 +95,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
     synchronized (this) {
       if (!cleanedUp) {
         cleanedUp = true;
-        protocolPipeline.close();
+        protocolProcessor.close();
       }
     }
     return super.cleanup();

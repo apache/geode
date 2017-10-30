@@ -34,6 +34,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.junit.assertions.GfshShellConnectionRuleAssert;
 
 /**
  * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
@@ -208,10 +209,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     gfsh = null;
   }
 
-  public HeadlessGfsh getHeadlessGfsh() {
-    return gfsh;
-  }
-
   public Gfsh getGfsh() {
     return gfsh.getGfsh();
   }
@@ -241,11 +238,18 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return result;
   }
 
+  public GfshShellConnectionRuleAssert executeAndAssertThat(String command) {
+    CommandResult commandResult = executeCommand(command);
+    return new GfshShellConnectionRuleAssert(this, commandResult);
+  }
+
+
   public String getGfshOutput() {
     return gfsh.outputString;
   }
 
-  public CommandResult executeAndVerifyCommand(String command, String... expectedOutputs) {
+  @Deprecated
+  public void executeAndVerifyCommand(String command, String... expectedOutputs) {
     CommandResult result = null;
     try {
       result = executeCommand(command);
@@ -256,22 +260,8 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     for (String expectedOutput : expectedOutputs) {
       assertThat(getGfshOutput()).containsPattern(expectedOutput);
     }
-    return result;
   }
 
-  public CommandResult executeAndVerifyCommandError(String command, String... expectedOutputs) {
-    CommandResult result = null;
-    try {
-      result = executeCommand(command);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    assertThat(result.getStatus()).describedAs(getGfshOutput()).isEqualTo(Result.Status.ERROR);
-    for (String expectedOutput : expectedOutputs) {
-      assertThat(getGfshOutput()).containsPattern(expectedOutput);
-    }
-    return result;
-  }
 
   public String execute(String command) throws Exception {
     executeCommand(command);

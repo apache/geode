@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.protocol;
 
-import org.apache.geode.internal.serialization.registry.SerializationCodecRegistry;
+import org.apache.geode.internal.protocol.serialization.registry.SerializationCodecRegistry;
 
 public interface OpsHandler<Req, Resp> {
   Resp process(SerializationCodecRegistry serializationCodecRegistry, Req request);

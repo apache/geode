@@ -340,8 +340,7 @@ public class CreateRegionCommand implements GfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       } else {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
-                new Object[] {String.valueOf(groups)}));
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID, groups));
       }
     }
 

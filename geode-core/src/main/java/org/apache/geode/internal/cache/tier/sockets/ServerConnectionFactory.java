@@ -22,6 +22,9 @@ import java.net.Socket;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;

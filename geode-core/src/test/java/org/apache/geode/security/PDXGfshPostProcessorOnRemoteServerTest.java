@@ -20,6 +20,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -27,22 +35,12 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.awaitility.Awaitility;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class PDXGfshPostProcessorOnRemoteServerTest {
@@ -63,7 +61,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     locatorProps.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
     locatorProps.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
 
-    MemberVM<Locator> locatorVM = lsRule.startLocatorVM(0, locatorProps);
+    MemberVM locatorVM = lsRule.startLocatorVM(0, locatorProps);
 
     Properties serverProps = new Properties(locatorProps);
     serverProps.setProperty(TestSecurityManager.SECURITY_JSON,
@@ -73,7 +71,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     serverProps.setProperty("security-username", "super-user");
     serverProps.setProperty("security-password", "1234567");
 
-    MemberVM<Server> serverVM = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
+    MemberVM serverVM = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
     serverVM.invoke(() -> {
       InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -103,10 +101,10 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
         CliStrings.CONNECT__USERNAME, "dataUser", CliStrings.CONNECT__PASSWORD, "1234567");
 
     // get command
-    CommandResult result = gfsh.executeAndVerifyCommand("get --key=key1 --region=AuthRegion");
-    assertTrue(result.getContent().toString().contains(SimpleClass.class.getName()));
+    gfsh.executeAndAssertThat("get --key=key1 --region=AuthRegion").statusIsSuccess()
+        .containsOutput(SimpleClass.class.getName());
 
-    gfsh.executeAndVerifyCommand("query --query=\"select * from /AuthRegion\"");
+    gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
 
     serverVM.invoke(() -> {
       PDXPostProcessor pp = (PDXPostProcessor) LocatorServerStartupRule.serverStarter.getCache()

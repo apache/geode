@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.ProtobufTestExecutionContext.getNoAuthExecutionContext;
+import static org.apache.geode.internal.protocol.ProtobufTestExecutionContext.getNoAuthCacheExecutionContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
@@ -33,12 +33,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.protobuf.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.Result;
-import org.apache.geode.internal.protocol.protobuf.Success;
+import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -70,8 +70,8 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processInsertsMultipleValidEntriesInCache() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, true), getNoAuthExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(false, true), getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
 
@@ -84,15 +84,15 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithInvalidEntrySucceedsAndReturnsFailedKey() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(true, true), getNoAuthExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(true, true), getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
     verify(regionMock).put(TEST_KEY2, TEST_VALUE2);
     verify(regionMock).put(TEST_KEY3, TEST_VALUE3);
 
-    RegionAPI.PutAllResponse putAllResponse = result.getMessage();
+    RegionAPI.PutAllResponse putAllResponse = (RegionAPI.PutAllResponse) result.getMessage();
     assertEquals(1, putAllResponse.getFailedKeysCount());
     BasicTypes.KeyedError error = putAllResponse.getFailedKeys(0);
     assertEquals(TEST_INVALID_KEY,
@@ -103,8 +103,8 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   public void processWithNoEntriesPasses() throws Exception {
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
 
-    Result<RegionAPI.PutAllResponse> result = operationHandler.process(serializationServiceStub,
-        generateTestRequest(false, false), getNoAuthExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationServiceStub,
+        generateTestRequest(false, false), getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 

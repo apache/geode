@@ -20,10 +20,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.powermock.api.mockito.PowerMockito;
 
-import org.apache.geode.internal.serialization.SerializationType;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.SerializationType;
+import org.apache.geode.internal.protocol.serialization.registry.SerializationCodecRegistry;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

@@ -20,7 +20,8 @@ import java.util.Map;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 /**

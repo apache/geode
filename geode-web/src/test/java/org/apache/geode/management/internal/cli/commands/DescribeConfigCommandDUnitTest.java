@@ -73,7 +73,7 @@ public class DescribeConfigCommandDUnitTest {
       config.setArchiveFileSizeLimit(1000);
     });
 
-    gfsh.executeAndVerifyCommand("describe config --member=" + server0.getName());
+    gfsh.executeAndAssertThat("describe config --member=" + server0.getName()).statusIsSuccess();
     String result = gfsh.getGfshOutput();
 
     assertThat(result).containsPattern("enable-time-statistics\\s+: true");
@@ -83,9 +83,8 @@ public class DescribeConfigCommandDUnitTest {
     assertThat(result).containsPattern("is-server\\s+: true");
     assertThat(result).doesNotContain("copy-on-read");
 
-    gfsh.executeAndVerifyCommand(
-        "describe config --member=" + server0.getName() + " --hide-defaults=false");
-    result = gfsh.getGfshOutput();
-    assertThat(result).contains("copy-on-read");
+    gfsh.executeAndAssertThat(
+        "describe config --member=" + server0.getName() + " --hide-defaults=false")
+        .statusIsSuccess().containsOutput("copy-on-read");
   }
 }

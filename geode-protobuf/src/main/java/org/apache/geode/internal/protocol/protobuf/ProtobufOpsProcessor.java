@@ -17,15 +17,20 @@ package org.apache.geode.internal.protocol.protobuf;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.protobuf.registry.OperationContextRegistry;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
+import org.apache.geode.internal.protocol.Failure;
+import org.apache.geode.internal.protocol.OperationContext;
+import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.protobuf.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.serialization.SerializationService;
+import org.apache.geode.internal.protocol.security.SecurityProcessor;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.NotAuthorizedException;
 
-import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -34,47 +39,52 @@ import static org.apache.geode.internal.protocol.protobuf.ProtocolErrorCode.*;
 @Experimental
 public class ProtobufOpsProcessor {
 
-  private final OperationContextRegistry operationContextRegistry;
+  private final ProtobufOperationContextRegistry protobufOperationContextRegistry;
   private final SerializationService serializationService;
   private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
 
   public ProtobufOpsProcessor(SerializationService serializationService,
-      OperationContextRegistry operationContextRegistry) {
+      ProtobufOperationContextRegistry protobufOperationContextRegistry) {
     this.serializationService = serializationService;
-    this.operationContextRegistry = operationContextRegistry;
+    this.protobufOperationContextRegistry = protobufOperationContextRegistry;
   }
 
   public ClientProtocol.Response process(ClientProtocol.Request request,
-      MessageExecutionContext context) {
+      MessageExecutionContext messageExecutionContext) {
     ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
     logger.debug("Processing request of type {}", requestType);
-    OperationContext operationContext = operationContextRegistry.getOperationContext(requestType);
-    ClientProtocol.Response.Builder builder;
+    OperationContext operationContext =
+        protobufOperationContextRegistry.getOperationContext(requestType);
     Result result;
+
+    SecurityProcessor securityProcessor = messageExecutionContext.getSecurityProcessor();
     try {
-      if (context.getAuthorizer().authorize(context.getSubject(),
-          operationContext.getAccessPermissionRequired())) {
-        result = operationContext.getOperationHandler().process(serializationService,
-            operationContext.getFromRequest().apply(request), context);
-      } else {
-        logger.warn("Received unauthorized request");
-        recordAuthorizationViolation(context);
-        result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(AUTHORIZATION_FAILED,
-            "User isn't authorized for this operation."));
-      }
-    } catch (InvalidExecutionContextException exception) {
-      logger.error("Invalid execution context found for operation {}", requestType);
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(UNSUPPORTED_OPERATION,
-          "Invalid execution context found for operation."));
+      securityProcessor.validateOperation(request, messageExecutionContext, operationContext);
+      result = processOperation(request, messageExecutionContext, requestType, operationContext);
+    } catch (AuthenticationRequiredException e) {
+      logger.warn(e);
+      result = Failure
+          .of(ProtobufResponseUtilities.makeErrorResponse(AUTHENTICATION_FAILED, e.getMessage()));
+    } catch (NotAuthorizedException e) {
+      logger.warn(e);
+      messageExecutionContext.getStatistics().incAuthorizationViolations();
+      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(AUTHORIZATION_FAILED,
+          "The user is not authorized to complete this operation"));
     }
 
-    builder = (ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
-        operationContext.getToErrorResponse());
-    return builder.build();
+    return ((ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
+        operationContext.getToErrorResponse())).build();
   }
 
-  private void recordAuthorizationViolation(MessageExecutionContext context) {
-    ProtobufClientStatistics statistics = context.getStatistics();
-    statistics.incAuthorizationViolations();
+  private Result processOperation(ClientProtocol.Request request, MessageExecutionContext context,
+      ClientProtocol.Request.RequestAPICase requestType, OperationContext operationContext) {
+    try {
+      return operationContext.getOperationHandler().process(serializationService,
+          operationContext.getFromRequest().apply(request), context);
+    } catch (InvalidExecutionContextException exception) {
+      logger.error("Invalid execution context found for operation {}", requestType);
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(UNSUPPORTED_OPERATION,
+          "Invalid execution context found for operation."));
+    }
   }
 }

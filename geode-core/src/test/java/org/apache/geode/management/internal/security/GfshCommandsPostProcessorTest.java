@@ -58,13 +58,13 @@ public class GfshCommandsPostProcessorTest {
     gfshConnection.executeCommand("put --region=region1 --key=key3 --value=value3");
 
     // for get command, assert the return value is processed
-    String result = gfshConnection.execute("get --region=region1 --key=key1");
-    assertThat(result).contains("dataWrite,dataRead/region1/key1/value1");
+    gfshConnection.executeAndAssertThat("get --region=region1 --key=key1")
+        .containsOutput("dataWrite,dataRead/region1/key1/value1");
 
     // for query command, assert the return values are processed
-    result = gfshConnection.execute("query --query=\"select * from /region1\"");
-    assertThat(result).contains("dataWrite,dataRead/null/null/value1");
-    assertThat(result).contains("dataWrite,dataRead/null/null/value2");
-    assertThat(result).contains("dataWrite,dataRead/null/null/value3");
+    gfshConnection.executeAndAssertThat("query --query=\"select * from /region1\"")
+        .containsOutput("dataWrite,dataRead/null/null/value1")
+        .containsOutput("dataWrite,dataRead/null/null/value2")
+        .containsOutput("dataWrite,dataRead/null/null/value3");
   }
 }

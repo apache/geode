@@ -21,19 +21,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.test.junit.rules.Locator;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.Server;
-
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
@@ -47,6 +34,18 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class ClusterConfig implements Serializable {
   private List<ConfigGroup> groups;
@@ -87,7 +86,7 @@ public class ClusterConfig implements Serializable {
       verifyServer(memberVM);
   }
 
-  public void verifyLocator(MemberVM<Locator> locatorVM) {
+  public void verifyLocator(MemberVM locatorVM) {
     Set<String> expectedGroupConfigs =
         this.getGroups().stream().map(ConfigGroup::getName).collect(toSet());
 
@@ -133,7 +132,7 @@ public class ClusterConfig implements Serializable {
     }
   }
 
-  public void verifyServer(MemberVM<Server> serverVM) {
+  public void verifyServer(MemberVM serverVM) {
     // verify files exist in filesystem
     Set<String> expectedJarNames = this.getJarNames().stream().collect(toSet());
 

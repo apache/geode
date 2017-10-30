@@ -44,29 +44,22 @@ public class DescribeConfigCommandJUnitTest {
   @Test
   public void describeConfig() throws Exception {
     gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
-    String result = gfsh.execute("describe config --member=" + server.getName());
-    for (String datum : EXPECTED_BASE_CONFIGURATION_DATA) {
-      assertThat(result).contains(datum);
-    }
+    gfsh.executeAndAssertThat("describe config --member=" + server.getName()).statusIsSuccess()
+        .containsOutput(EXPECTED_BASE_CONFIGURATION_DATA);
   }
 
   @Test
   public void describeConfigAndShowDefaults() throws Exception {
     gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
-    String result =
-        gfsh.execute("describe config --hide-defaults=false --member=" + server.getName());
-    for (String datum : EXPECTED_BASE_CONFIGURATION_DATA) {
-      assertThat(result).contains(datum);
-    }
-    for (String datum : EXPECTED_EXPANDED_CONFIGURATION_DATA) {
-      assertThat(result).contains(datum);
-    }
+    gfsh.executeAndAssertThat("describe config --hide-defaults=false --member=" + server.getName())
+        .statusIsSuccess().containsOutput(EXPECTED_BASE_CONFIGURATION_DATA)
+        .containsOutput(EXPECTED_EXPANDED_CONFIGURATION_DATA);
   }
 
   @Test
   public void describeConfigWhenNotConnected() throws Exception {
-    String result = gfsh.execute("describe config --member=" + server.getName());
-    assertThat(result).contains("was found but is not currently available");
+    gfsh.executeAndAssertThat("describe config --member=" + server.getName()).statusIsError()
+        .containsOutput("was found but is not currently available");
   }
 
   @Test
@@ -75,16 +68,16 @@ public class DescribeConfigCommandJUnitTest {
     String expectedErrorString = String.format("Member \"%s\" not found", invalidMemberName);
 
     gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
-    String result = gfsh.execute("describe config --member=" + invalidMemberName);
-    assertThat(result).contains(expectedErrorString);
+    gfsh.executeAndAssertThat("describe config --member=" + invalidMemberName).statusIsError()
+        .containsOutput(expectedErrorString);
   }
 
   @Test
   public void describeConfigWithoutMemberName() throws Exception {
-    String expectedErrorString = String.format("You should specify option ");
+    String expectedErrorString = "You should specify option ";
 
     gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
-    String result = gfsh.execute("describe config");
-    assertThat(result).contains(expectedErrorString);
+    gfsh.executeAndAssertThat("describe config").statusIsError()
+        .containsOutput(expectedErrorString);
   }
 }

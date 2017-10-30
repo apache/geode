@@ -53,7 +53,7 @@ public class LogNoPasswordTest {
     MemberVM locator = lsRule.startLocatorVM(0, properties);
     gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http, "any",
         PASSWORD);
-    gfsh.executeAndVerifyCommand("list members");
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
 
     // scan all locator log files to find any occurrences of password
     File[] serverLogFiles =

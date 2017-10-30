@@ -93,13 +93,13 @@ public class ShutdownCommandDUnitTest {
   public void testShutdownServers() {
     String command = "shutdown";
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
 
     verifyShutDown(server1, server2);
 
     // Make sure the locator is still running
-    gfsh.executeAndVerifyCommand("list members");
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(MANAGER_NAME);
   }
 
@@ -107,7 +107,7 @@ public class ShutdownCommandDUnitTest {
   public void testShutdownAll() {
     String command = "shutdown --include-locators=true";
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
 
     verifyShutDown(server1, server2, manager);

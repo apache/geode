@@ -18,8 +18,10 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 
-public class ProtobufClientStatisticsImpl implements ProtobufClientStatistics {
+public class ProtobufClientStatisticsImpl implements ProtocolClientStatistics {
+  public static final String PROTOBUF_CLIENT_STATISTICS = "ProtobufProtocolStats";
   private final StatisticsType statType;
   private final Statistics stats;
   private final int currentClientConnectionsId;
@@ -32,8 +34,7 @@ public class ProtobufClientStatisticsImpl implements ProtobufClientStatistics {
   private final int authorizationViolationsId;
   private final int authenticationFailuresId;
 
-  public ProtobufClientStatisticsImpl(StatisticsFactory statisticsFactory, String statisticsName,
-      String typeName) {
+  public ProtobufClientStatisticsImpl(StatisticsFactory statisticsFactory, String statisticsName) {
     StatisticDescriptor[] serverStatDescriptors = new StatisticDescriptor[] {
         statisticsFactory.createIntGauge("currentClientConnections",
             "Number of sockets accepted and used for client to server messaging.", "sockets"),
@@ -53,7 +54,7 @@ public class ProtobufClientStatisticsImpl implements ProtobufClientStatistics {
             "messages"),
         statisticsFactory.createLongCounter("messagesSent", "Messages sent to clients.",
             "messages")};
-    statType = statisticsFactory.createType(typeName, "Protobuf client/server statistics",
+    statType = statisticsFactory.createType(getStatsName(), "Protobuf client/server statistics",
         serverStatDescriptors);
     this.stats = statisticsFactory.createAtomicStatistics(statType, statisticsName);
     currentClientConnectionsId = this.stats.nameToId("currentClientConnections");
@@ -65,6 +66,12 @@ public class ProtobufClientStatisticsImpl implements ProtobufClientStatistics {
     bytesSentId = this.stats.nameToId("bytesSent");
     messagesReceivedId = this.stats.nameToId("messagesReceived");
     messagesSentId = this.stats.nameToId("messagesSent");
+  }
+
+
+  @Override
+  public String getStatsName() {
+    return PROTOBUF_CLIENT_STATISTICS;
   }
 
   @Override

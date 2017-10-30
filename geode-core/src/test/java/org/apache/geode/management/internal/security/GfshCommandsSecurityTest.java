@@ -185,8 +185,8 @@ public class GfshCommandsSecurityTest {
   @ConnectionConfiguration(user = "dataManage,clusterWriteDisk",
       password = "dataManage,clusterWriteDisk")
   public void createPartitionedPersistentRegionWithCorrectPermissions() throws Exception {
-    gfshConnection
-        .executeAndVerifyCommand("create region --name=region2 --type=PARTITION_PERSISTENT");
+    gfshConnection.executeAndAssertThat("create region --name=region2 --type=PARTITION_PERSISTENT")
+        .statusIsSuccess();
   }
 
   @Test

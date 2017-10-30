@@ -22,13 +22,12 @@ package org.apache.geode.internal.cache;
 
 import java.util.Collection;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
 
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

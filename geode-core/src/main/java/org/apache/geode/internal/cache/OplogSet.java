@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 
 public interface OplogSet {
 

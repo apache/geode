@@ -28,6 +28,7 @@ buildscript {
 }
 
 dependencies {
+    provided project(':geode-client-protocol')
     provided project(':geode-core')
     testCompile project(':geode-junit')
     testCompile files(project(':geode-core').sourceSets.test.output)

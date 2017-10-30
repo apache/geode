@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.apache.geode.distributed.internal.SecurityConfig;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Assert;
@@ -68,9 +67,9 @@ import org.apache.geode.internal.protocol.protobuf.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.utilities.ProtobufUtilities;
-import org.apache.geode.internal.serialization.SerializationService;
-import org.apache.geode.internal.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -251,8 +250,9 @@ public class CacheOperationsJUnitTest {
     RegionAPI.GetRegionNamesRequest getRegionNamesRequest =
         ProtobufRequestUtilities.createGetRegionNamesRequest();
 
-    ClientProtocol.Message getRegionsMessage = ProtobufUtilities.createProtobufMessage(
-        ProtobufUtilities.createProtobufRequestWithGetRegionNamesRequest(getRegionNamesRequest));
+    ClientProtocol.Message getRegionsMessage =
+        ProtobufUtilities.createProtobufMessage(ClientProtocol.Request.newBuilder()
+            .setGetRegionNamesRequest(getRegionNamesRequest).build());
     protobufProtocolSerializer.serialize(getRegionsMessage, outputStream);
     validateGetRegionNamesResponse(socket, protobufProtocolSerializer);
   }

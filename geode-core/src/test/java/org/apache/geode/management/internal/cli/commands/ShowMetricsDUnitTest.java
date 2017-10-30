@@ -32,6 +32,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +40,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+
 import javax.management.ObjectName;
 
 @Category(DistributedTest.class)
@@ -116,21 +118,20 @@ public class ShowMetricsDUnitTest {
 
   @Test
   public void testShowMetricsDefault() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics");
+    gfsh.executeAndAssertThat("show metrics").statusIsSuccess();
   }
 
   @Test
   public void testShowMetricsRegion() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics --region=REGION1");
+    gfsh.executeAndAssertThat("show metrics --region=REGION1").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Cluster-wide Region Metrics");
   }
 
   @Test
   public void testShowMetricsMember() throws Exception {
-    gfsh.executeAndVerifyCommand(
-        "show metrics --member=" + server.getName() + " --port=" + server.getPort());
-    assertThat(gfsh.getGfshOutput()).contains("Member Metrics");
-    assertThat(gfsh.getGfshOutput()).contains("cache-server");
+    gfsh.executeAndAssertThat(
+        "show metrics --member=" + server.getName() + " --port=" + server.getPort())
+        .statusIsSuccess().containsOutput("Member Metrics").containsOutput("cache-server");
   }
 
   @Test
@@ -138,18 +139,18 @@ public class ShowMetricsDUnitTest {
     File output = tempFolder.newFile("memberMetricReport.csv");
     output.delete();
 
-    gfsh.executeAndVerifyCommand("show metrics --member=" + server.getName() + " --port="
-        + server.getPort() + " --file=" + output.getAbsolutePath());
-    assertThat(gfsh.getGfshOutput()).contains("Member Metrics");
-    assertThat(gfsh.getGfshOutput()).contains("cache-server");
-    assertThat(gfsh.getGfshOutput())
-        .contains("Member metrics exported to " + output.getAbsolutePath());
+    gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --port="
+        + server.getPort() + " --file=" + output.getAbsolutePath()).statusIsSuccess()
+        .containsOutput("Member Metrics").containsOutput("cache-server")
+        .containsOutput("Member metrics exported to " + output.getAbsolutePath());
+
     assertThat(output).exists();
   }
 
   @Test
   public void testShowMetricsRegionFromMember() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics --member=" + server.getName() + " --region=REGION1");
+    gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --region=REGION1")
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Metrics for region:/REGION1 On Member server-1");
   }
 }

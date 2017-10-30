@@ -78,7 +78,7 @@ public class ShowMissingDiskStoresDUnitTest {
     csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
         .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore")
         .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
-    gfshConnector.executeAndVerifyCommand(csb.getCommandString());
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     Awaitility.await().until(() -> {
       return new File(server1.getWorkingDir(), "diskStoreDir").exists()
@@ -90,7 +90,7 @@ public class ShowMissingDiskStoresDUnitTest {
         .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore")
         .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
             RegionShortcut.REPLICATE_PERSISTENT.toString());
-    gfshConnector.executeAndVerifyCommand(csb.getCommandString());
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     // Add data to the region
     putUsingGfsh(gfshConnector, testRegionName, 1, "A");
@@ -147,6 +147,6 @@ public class ShowMissingDiskStoresDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.PUT)
         .addOption(CliStrings.PUT__KEY, Integer.toString(key)).addOption(CliStrings.PUT__VALUE, val)
         .addOption(CliStrings.PUT__REGIONNAME, regionName);
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
   }
 }
