@@ -24,6 +24,7 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
@@ -198,6 +199,11 @@ public class RegionCreateFunction implements Function, InternalEntity {
         regionCreateArgs.getRegionExpirationTTL();
     if (regionExpirationTTL != null) {
       factory.setRegionTimeToLive(regionExpirationTTL.convertToExpirationAttributes());
+    }
+
+    EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();
+    if (evictionAttributes != null) {
+      factory.setEvictionAttributes(evictionAttributes);
     }
 
     // Associate a Disk Store

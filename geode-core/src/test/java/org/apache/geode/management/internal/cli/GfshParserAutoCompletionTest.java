@@ -246,7 +246,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompletWithRegionTypeWithSpace() throws Exception {
     buffer = "create region --name=test --type=REPLICATE ";
     candidate = parser.complete(buffer);
-    assertThat(candidate.size()).isEqualTo(38);
+    assertThat(candidate.size()).isEqualTo(42);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--async-event-queue-id");
   }
 

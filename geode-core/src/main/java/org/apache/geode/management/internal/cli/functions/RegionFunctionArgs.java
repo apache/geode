@@ -22,10 +22,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
@@ -48,6 +52,7 @@ public class RegionFunctionArgs implements Serializable {
   private RegionFunctionArgs.ExpirationAttrs entryExpirationTTL;
   private RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime;
   private RegionFunctionArgs.ExpirationAttrs regionExpirationTTL;
+  private RegionFunctionArgs.EvictionAttrs evictionAttributes;
   private String diskStore;
   private Boolean diskSynchronous;
   private Boolean enableAsyncConflation;
@@ -126,6 +131,15 @@ public class RegionFunctionArgs implements Serializable {
       this.regionExpirationTTL = new ExpirationAttrs(
           RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL, timeout, action);
     }
+  }
+
+  public void setEvictionAttributes(String action, Integer maxMemory, Integer maxEntryCount,
+      String objectSizer) {
+    if (action == null) {
+      return;
+    }
+
+    this.evictionAttributes = new EvictionAttrs(action, maxEntryCount, maxMemory, objectSizer);
   }
 
   public void setDiskStore(String diskStore) {
@@ -429,6 +443,10 @@ public class RegionFunctionArgs implements Serializable {
     return this.compressor;
   }
 
+  public EvictionAttributes getEvictionAttributes() {
+    return evictionAttributes != null ? evictionAttributes.convertToEvictionAttributes() : null;
+  }
+
   /**
    * @return the regionAttributes
    */
@@ -514,6 +532,66 @@ public class RegionFunctionArgs implements Serializable {
       REGION_IDLE, REGION_TTL, ENTRY_IDLE, ENTRY_TTL
     }
   }
+
+  public static class EvictionAttrs implements Serializable {
+    private static final long serialVersionUID = 9015454906371076014L;
+
+    private String evictionAction;
+    private Integer maxEntryCount;
+    private Integer maxMemory;
+    private String objectSizer;
+
+    public EvictionAttrs(String evictionAction, Integer maxEntryCount, Integer maxMemory,
+        String objectSizer) {
+      this.evictionAction = evictionAction;
+      this.maxEntryCount = maxEntryCount;
+      this.maxMemory = maxMemory;
+      this.objectSizer = objectSizer;
+    }
+
+    public String getEvictionAction() {
+      return evictionAction;
+    }
+
+    public Integer getMaxEntryCount() {
+      return maxEntryCount;
+    }
+
+    public Integer getMaxMemory() {
+      return maxMemory;
+    }
+
+    public String getObjectSizer() {
+      return objectSizer;
+    }
+
+    public EvictionAttributes convertToEvictionAttributes() {
+      EvictionAction action = EvictionAction.parseAction(evictionAction);
+
+      ObjectSizer sizer;
+      if (objectSizer != null) {
+        try {
+          Class<ObjectSizer> sizerClass =
+              (Class<ObjectSizer>) ClassPathLoader.getLatest().forName(objectSizer);
+          sizer = sizerClass.newInstance();
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+          throw new IllegalArgumentException(
+              "Unable to instantiate class " + objectSizer + " - " + e.toString());
+        }
+      } else {
+        sizer = ObjectSizer.DEFAULT;
+      }
+
+      if (maxMemory == null && maxEntryCount == null) {
+        return EvictionAttributes.createLRUHeapAttributes(sizer, action);
+      } else if (maxMemory != null) {
+        return EvictionAttributes.createLRUMemoryAttributes(maxMemory, sizer, action);
+      } else {
+        return EvictionAttributes.createLRUEntryAttributes(maxEntryCount, action);
+      }
+    }
+  }
+
 
   public static class PartitionArgs implements Serializable {
     private static final long serialVersionUID = 5907052187323280919L;

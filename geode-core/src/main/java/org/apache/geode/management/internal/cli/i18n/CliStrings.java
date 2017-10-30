@@ -861,6 +861,18 @@ public class CliStrings {
       "region-time-to-live-expiration-action";
   public static final String CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP =
       "Action to be taken on a region that has exceeded the TTL expiration.";
+  public static final String CREATE_REGION__EVICTION_ACTION = "eviction-action";
+  public static final String CREATE_REGION__EVICTION_ACTION__HELP =
+      "The eviction action to apply. Must be either 'local-destroy' or 'overflow-to-disk'";
+  public static final String CREATE_REGION__EVICTION_MAX_MEMORY = "eviction-max-memory";
+  public static final String CREATE_REGION__EVICTION_MAX_MEMORY__HELP =
+      "Activates LRU eviction based on the region's memory usage specified by this value.";
+  public static final String CREATE_REGION__EVICTION_ENTRY_COUNT = "eviction-entry-count";
+  public static final String CREATE_REGION__EVICTION_ENTRY_COUNT__HELP =
+      "Activates LRU eviction based on the region's entry count specified by this value.";
+  public static final String CREATE_REGION__EVICTION_OBJECT_SIZER = "eviction-object-sizer";
+  public static final String CREATE_REGION__EVICTION_OBJECT_SIZER__HELP =
+      "A custom class which implements ObjectSizer in order to perform max memory eviction.";
   public static final String CREATE_REGION__DISKSTORE = "disk-store";
   public static final String CREATE_REGION__DISKSTORE__HELP =
       "Disk Store to be used by this region. \"list disk-store\" can be used to display existing disk stores.";
@@ -1040,6 +1052,21 @@ public class CliStrings {
 
   public static final String CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER =
       "{0} is an invalid Partition Resolver.";
+
+  public static final String CREATE_REGION__MSG__BOTH_EVICTION_VALUES =
+      "eviction-max-memory and eviction-entry-count cannot both be specified.";
+
+  public static final String CREATE_REGION__MSG__MISSING_EVICTION_ACTION =
+      "eviction-action must be specified.";
+
+  public static final String CREATE_REGION__MSG__INVALID_EVICTION_ACTION =
+      "eviction-action must be 'local-destroy' or 'overflow-to-disk'";
+
+  public static final String CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT =
+      "eviction-object-sizer cannot be specified with eviction-entry-count";
+
+  public static final String CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_WITHOUT_MAX_MEMORY =
+      "eviction-object-sizer cannot be specified without eviction-max-memory";
 
   /* debug command */
   public static final String DEBUG = "debug";

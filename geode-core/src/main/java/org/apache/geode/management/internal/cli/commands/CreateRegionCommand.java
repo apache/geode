@@ -27,6 +27,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -125,6 +126,14 @@ public class CreateRegionCommand implements GfshCommand {
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
+          help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
+          help = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT__HELP) Integer evictionEntryCount,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY,
+          help = CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY__HELP) Integer evictionMaxMemory,
+      @CliOption(key = CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER,
+          help = CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER__HELP) String evictionObjectSizer,
       @CliOption(key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
           help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP) String[] gatewaySenderIds,
       @CliOption(key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
@@ -195,6 +204,8 @@ public class CreateRegionCommand implements GfshCommand {
     functionArgs.setRegionExpirationIdleTime(regionExpirationIdleTime,
         regionExpirationIdleTimeAction);
     functionArgs.setRegionExpirationTTL(regionExpirationTTL, regionExpirationTTLAction);
+    functionArgs.setEvictionAttributes(evictionAction, evictionMaxMemory, evictionEntryCount,
+        evictionObjectSizer);
     functionArgs.setDiskStore(diskStore);
     functionArgs.setDiskSynchronous(diskSynchronous);
     functionArgs.setEnableAsyncConflation(enableAsyncConflation);
@@ -649,6 +660,42 @@ public class CreateRegionCommand implements GfshCommand {
           return ResultBuilder.createUserErrorResult(message + ".");
         }
       }
+
+      String maxMemory =
+          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY);
+      String maxEntry =
+          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT);
+      String evictionAction =
+          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_ACTION);
+      String evictionSizer =
+          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER);
+      if (maxEntry != null && maxMemory != null) {
+        return ResultBuilder
+            .createUserErrorResult(CliStrings.CREATE_REGION__MSG__BOTH_EVICTION_VALUES);
+      }
+
+      if ((maxEntry != null || maxMemory != null) && evictionAction == null) {
+        return ResultBuilder
+            .createUserErrorResult(CliStrings.CREATE_REGION__MSG__MISSING_EVICTION_ACTION);
+      }
+
+      if (evictionSizer != null) {
+        if (maxEntry != null) {
+          return ResultBuilder.createUserErrorResult(
+              CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT);
+        }
+        if (maxMemory == null) {
+          return ResultBuilder.createUserErrorResult(
+              CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_WITHOUT_MAX_MEMORY);
+        }
+      }
+
+      if (evictionAction != null
+          && EvictionAction.parseAction(evictionAction) == EvictionAction.NONE) {
+        return ResultBuilder
+            .createUserErrorResult(CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_ACTION);
+      }
+
       return ResultBuilder.createInfoResult("");
     }
   }

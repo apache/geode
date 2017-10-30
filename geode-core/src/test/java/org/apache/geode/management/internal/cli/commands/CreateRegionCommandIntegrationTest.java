@@ -26,6 +26,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
@@ -489,5 +492,66 @@ public class CreateRegionCommandIntegrationTest {
 
     gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+  }
+
+  @Test
+  public void testEvictionAttributesForLRUHeap() throws Exception {
+    gfsh.executeAndVerifyCommand(
+        "create region --name=FOO --type=REPLICATE --eviction-action=local-destroy");
+
+    Region foo = server.getCache().getRegion("/FOO");
+    assertThat(foo.getAttributes().getEvictionAttributes().getAction())
+        .isEqualTo(EvictionAction.LOCAL_DESTROY);
+    assertThat(foo.getAttributes().getEvictionAttributes().getAlgorithm())
+        .isEqualTo(EvictionAlgorithm.LRU_HEAP);
+
+    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
+  }
+
+  @Test
+  public void testEvictionAttributesForLRUEntry() throws Exception {
+    gfsh.executeAndVerifyCommand(
+        "create region --name=FOO --type=REPLICATE --eviction-entry-count=1001 --eviction-action=overflow-to-disk");
+
+    Region foo = server.getCache().getRegion("/FOO");
+    assertThat(foo.getAttributes().getEvictionAttributes().getAction())
+        .isEqualTo(EvictionAction.OVERFLOW_TO_DISK);
+    assertThat(foo.getAttributes().getEvictionAttributes().getAlgorithm())
+        .isEqualTo(EvictionAlgorithm.LRU_ENTRY);
+    assertThat(foo.getAttributes().getEvictionAttributes().getMaximum()).isEqualTo(1001);
+
+    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
+  }
+
+  @Test
+  public void testEvictionAttributesForLRUMemory() throws Exception {
+    gfsh.executeAndVerifyCommand(
+        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk");
+
+    Region foo = server.getCache().getRegion("/FOO");
+    assertThat(foo.getAttributes().getEvictionAttributes().getAction())
+        .isEqualTo(EvictionAction.OVERFLOW_TO_DISK);
+    assertThat(foo.getAttributes().getEvictionAttributes().getAlgorithm())
+        .isEqualTo(EvictionAlgorithm.LRU_MEMORY);
+    assertThat(foo.getAttributes().getEvictionAttributes().getMaximum()).isEqualTo(1001);
+
+    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
+  }
+
+  @Test
+  public void testEvictionAttributesForSizer() throws Exception {
+    gfsh.executeAndVerifyCommand(
+        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
+            + TestObjectSizer.class.getName());
+
+    Region foo = server.getCache().getRegion("/FOO");
+    EvictionAttributes attrs = foo.getAttributes().getEvictionAttributes();
+    assertThat(attrs.getAction()).isEqualTo(EvictionAction.OVERFLOW_TO_DISK);
+    assertThat(attrs.getAlgorithm()).isEqualTo(EvictionAlgorithm.LRU_MEMORY);
+    assertThat(attrs.getMaximum()).isEqualTo(1001);
+    assertThat(attrs.getObjectSizer().getClass().getName())
+        .isEqualTo(TestObjectSizer.class.getName());
+
+    gfsh.executeAndVerifyCommand("destroy region --name=/FOO");
   }
 }
