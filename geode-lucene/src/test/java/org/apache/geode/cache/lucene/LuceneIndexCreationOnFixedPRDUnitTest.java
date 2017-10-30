@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.experimental.categories.Category;

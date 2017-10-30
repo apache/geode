@@ -22,18 +22,16 @@ import org.junit.runners.Suite;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runner.SuiteRunner;
+import org.apache.geode.test.junit.runners.SuiteRunner;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(SuiteRunner.class)
-@Suite.SuiteClasses({ConfigCommandsDUnitTest.class, DeployCommandsDUnitTest.class,
-    DiskStoreCommandsDUnitTest.class, FunctionCommandsDUnitTest.class,
-    GemfireDataCommandsDUnitTest.class,
-    GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class, IndexCommandsDUnitTest.class,
-    ListAndDescribeDiskStoreCommandsDUnitTest.class, ListIndexCommandDUnitTest.class,
-    MiscellaneousCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
-    ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class, ShowMetricsDUnitTest.class,
-    ShowStackTraceDUnitTest.class})
+@Suite.SuiteClasses({ChangeLogLevelCommandDUnitTest.class, DeployWithGroupsDUnitTest.class,
+    DiskStoreCommandsDUnitTest.class, GcCommandDUnitTest.class, GemfireDataCommandsDUnitTest.class,
+    GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest.class,
+    ListAndDescribeDiskStoreCommandsDUnitTest.class, ShutdownCommandDUnitTest.class,
+    QueueCommandsDUnitTest.class, ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class,
+    ShowLogCommandDUnitTest.class, ShowMetricsDUnitTest.class, ShowStackTraceDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =

@@ -161,7 +161,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     File pwd = new File(".");
     for (File entry : pwd.listFiles()) {
       try {
-        FileUtils.deleteDirectory(entry);
+        if (entry.isDirectory()) {
+          FileUtils.deleteDirectory(entry);
+        } else {
+          entry.delete();
+        }
       } catch (Exception e) {
         System.out.println("Could not delete " + entry + ": " + e.getMessage());
       }
@@ -564,7 +568,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     String regionName = "aRegion";
     RegionShortcut shortcut = RegionShortcut.REPLICATE_PERSISTENT;
     for (int i = 0; i < testingDirs.length; i++) {
-      testingDirs[i] = new File(diskDir, "diskStoreVM_" + String.valueOf(host.getVM(i).getPid()))
+      testingDirs[i] = new File(diskDir, "diskStoreVM_" + String.valueOf(host.getVM(i).getId()))
           .getAbsoluteFile();
       if (!testingDirs[i].exists()) {
         System.out.println(" Creating diskdir for server: " + i);
@@ -1261,7 +1265,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) throws Exception {
     // Roll the server
     oldServer.invoke(invokeCloseCache());
-    VM rollServer = Host.getHost(0).getVM(oldServer.getPid());
+    VM rollServer = Host.getHost(0).getVM(oldServer.getId());
     rollServer.invoke(invokeCreateCache(locatorPorts == null ? getSystemPropertiesPost71()
         : getSystemPropertiesPost71(locatorPorts)));
     rollServer.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
@@ -1271,7 +1275,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   private VM rollClientToCurrent(VM oldClient, String[] hostNames, int[] locatorPorts,
       boolean subscriptionEnabled) throws Exception {
     oldClient.invoke(invokeCloseCache());
-    VM rollClient = Host.getHost(0).getVM(oldClient.getPid());
+    VM rollClient = Host.getHost(0).getVM(oldClient.getId());
     rollClient.invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts,
         subscriptionEnabled));
     rollClient.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
@@ -1337,7 +1341,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       final String testName, final String locatorString) throws Exception {
     // Roll the locator
     rollLocator.invoke(invokeStopLocator());
-    VM newLocator = Host.getHost(0).getVM(rollLocator.getPid());
+    VM newLocator = Host.getHost(0).getVM(rollLocator.getId());
     newLocator.invoke(invokeStartLocator(serverHostName, port, testName,
         getLocatorProperties91AndAfter(locatorString)));
     return newLocator;

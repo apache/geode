@@ -784,6 +784,10 @@ public class InitialImageOperation {
         keys = new HashSet();
       }
       final ByteArrayDataInput in = new ByteArrayDataInput();
+      List<Entry> entriesToSynchronize = null;
+      if (this.isSynchronizing) {
+        entriesToSynchronize = new ArrayList<>();
+      }
       for (int i = 0; i < entryCount; i++) {
         // stream is null-terminated
         if (internalDuringApplyDelta != null && !internalDuringApplyDelta.isRunning
@@ -884,6 +888,9 @@ public class InitialImageOperation {
                   if (record) {
                     this.entries.initialImagePut(entry.key, lastModified, tmpValue, wasRecovered,
                         true, tag, sender, this.isSynchronizing);
+                    if (this.isSynchronizing) {
+                      entriesToSynchronize.add(entry);
+                    }
                   }
                 } catch (RegionDestroyedException e) {
                   return false;
@@ -927,6 +934,9 @@ public class InitialImageOperation {
             }
             this.entries.initialImagePut(entry.key, lastModified, tmpValue, wasRecovered, false,
                 tag, sender, this.isSynchronizing);
+            if (this.isSynchronizing) {
+              entriesToSynchronize.add(entry);
+            }
           } catch (RegionDestroyedException e) {
             return false;
           } catch (CancelException e) {
@@ -934,6 +944,12 @@ public class InitialImageOperation {
           }
           didIIP = true;
         }
+      }
+      if (this.isSynchronizing && !entriesToSynchronize.isEmpty()) {
+        LocalRegion owner = ((AbstractRegionMap) this.entries)._getOwner();
+        LocalRegion region = owner instanceof BucketRegion ? owner.getPartitionedRegion() : owner;
+        owner.getCache().invokeRegionEntrySynchronizationListenersAfterSynchronization(sender,
+            region, entriesToSynchronize);
       }
       if (keys != null) {
         if (isDebugEnabled) {
@@ -2927,6 +2943,10 @@ public class InitialImageOperation {
 
     void setTombstone() {
       this.entryBits = EntryBits.setTombstone(this.entryBits, true);
+    }
+
+    public Object getKey() {
+      return key;
     }
 
     public VersionTag getVersionTag() {

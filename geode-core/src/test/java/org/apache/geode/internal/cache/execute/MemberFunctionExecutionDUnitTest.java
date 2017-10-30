@@ -47,7 +47,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;

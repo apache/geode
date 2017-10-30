@@ -42,7 +42,7 @@ For best performance, the producer and the consumers should run on different mac
 -   Monitor the members that receive data for signs of data loss. A few data loss messages can happen normally during region creation. Multicast retransmit requests and unicast retransmits can also be monitored to detect data loss. Even when you see data loss, the cause of the problem may have nothing to do with the network. However, if it happens constantly then you should try testing the flow control rate again
 -   If necessary, reconfigure all the `gemfire.properties` files and repeat with lower flow control maximum credits until you find the maximum useful rate for your installation.
 -   Slow system performance might be helped by reducing how far your multicast messaging goes in your network.
--   Reduce multicast latency by disabling batching. By default, Geode uses batching for operations when the region’s scope is distributed-no-ack. Set the `disableBatching` property to true on the application or when starting a cache server process through the `gfsh` command line:
+-   Reduce multicast latency by disabling batching. By default, <%=vars.product_name%> uses batching for operations when the region’s scope is distributed-no-ack. Set the `disableBatching` property to true on the application or when starting a cache server process through the `gfsh` command line:
 
     ``` pre
     gfsh>start server --name=server_name --J=-Dp2p.disableBatching=true

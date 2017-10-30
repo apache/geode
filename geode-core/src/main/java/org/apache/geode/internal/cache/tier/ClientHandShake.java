@@ -40,5 +40,5 @@ public interface ClientHandShake {
   public Version getVersion();
 
   public void accept(OutputStream out, InputStream in, byte epType, int qSize,
-      byte communicationMode, Principal principal) throws IOException;
+      CommunicationMode communicationMode, Principal principal) throws IOException;
 }

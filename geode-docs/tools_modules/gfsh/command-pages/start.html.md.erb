@@ -45,11 +45,11 @@ Start servers, locators, gateway senders and gateway receivers, and monitoring t
 
 -   **[start pulse](#topic_E906BA7D9E7F4C5890FEFA7ECD40DD77)**
 
-    Launch the Geode Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
+    Launch the <%=vars.product_name%> Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
 
 -   **[start server](#topic_3764EE2DB18B4AE4A625E0354471738A)**
 
-    Start a Geode cache server process.
+    Start a <%=vars.product_name%> cache server process.
 
 ## <a id="topic_67738A5B68E84DEE95D1C92DAB2E26E5" class="no-quick-link"></a>start gateway-receiver
 
@@ -62,15 +62,13 @@ Note that you can only have one gateway receiver on each member, and unlike a ga
 **Syntax:**
 
 ``` pre
-start gateway-receiver [--group=value(,value)*] [--member=value]
+start gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 ```
-
-<a id="topic_67738A5B68E84DEE95D1C92DAB2E26E5__table_eyh_3vg_2w"></a>
 
 | Name                                           | Description                                                      |
 |------------------------------------------------|------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-member</span> | Name or ID of the member on which to start the Gateway Receiver. |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to start the Gateway Receiver.      |
+| <span class="keyword parmname">\\-\\-members</span> | Name or ID of the member(s) on which to start the Gateway Receiver. |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Receiver.      |
 
 <span class="tablecap">Table 1. Start Gateway-Receiver Parameters</span>
 
@@ -78,7 +76,7 @@ start gateway-receiver [--group=value(,value)*] [--member=value]
 
 ``` pre
 start gateway-receiver
-start gateway-receiver --member=member1
+start gateway-receiver --members=member1
 ```
 
 **Sample Output:**
@@ -92,7 +90,7 @@ pc13(Manager:2242)<v5>:57631| Error  | GatewayReceiver is not available on membe
 pc13(2275)<v7>:47480        | OK     | GatewayReceiver is started on member pc13(2275)<v7>:47480
 pc13(2293)<v8>:55472        | OK     | GatewayReceiver is started on member pc13(2293)<v8>:55472
 
-gfsh>start gateway-receiver --member=pc13(2266)<v14>:36579
+gfsh>start gateway-receiver --members=pc13(2266)<v14>:36579
 GatewayReceiver is started on member pc13(2266)<v14>:36579
 
 gfsh>start gateway-receiver --group=RG1
@@ -114,16 +112,14 @@ For information on how to configure a gateway sender, see [Configure Gateway Sen
 **Syntax:**
 
 ``` pre
-start gateway-sender --id=value [--group=value(,value)*] [--member=value]
+start gateway-sender --id=value [--groups=value(,value)*] [--members=value(,value)*]
 ```
-
-<a id="topic_AB8BA3F42B9645A8BE9BD97CE2F839A8__table_gxc_lvg_2w"></a>
 
 | Name                                           | Description                                               |
 |------------------------------------------------|-----------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the GatewaySender.                      |
-| <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members on which to start the Gateway Sender. |
-| <span class="keyword parmname">\\-\\-member</span> | Member used to start the Gateway Sender                   |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Sender. |
+| <span class="keyword parmname">\\-\\-members</span> | Member(s) on which to start the Gateway Sender                   |
 
 <span class="tablecap">Table 2. Start Gateway-Sender Parameters</span>
 
@@ -131,8 +127,8 @@ start gateway-sender --id=value [--group=value(,value)*] [--member=value]
 
 ``` pre
 start gateway-sender --id=sender1-NY
-start gateway-sender --id=sender1-NY --member=server1
-start gateway-sender --id=sender1-NY --group=MemberGroup1,MemberGroup2
+start gateway-sender --id=sender1-NY --members=server1
+start gateway-sender --id=sender1-NY --groups=MemberGroup1,MemberGroup2
 ```
 
 **Sample Output:**
@@ -146,9 +142,9 @@ pc13(30621)<v7>:36015         | OK      | GatewaySender ln is started on member 
 pc13(30633)<v8>:13633         | OK      | GatewaySender ln is started on member pc13(30633)<v8>:13633
 pc13(Manager:30588)<v5>:42792 | Error   | GatewaySender ln is not available on member pc13(Manager:30588)<v5>:42792
 
-gfsh>start gateway-sender --id=ln --member=pc13(30614)<v14>:44519
+gfsh>start gateway-sender --id=ln --members=pc13(30614)<v14>:44519
 GatewaySender ln is started on member pc13(30614)<v14>:44519
-gfsh>start gateway-sender --id=ln --group=SenderGroup1
+gfsh>start gateway-sender --id=ln --groups=SenderGroup1
 Member                 | Result| Message
 ---------------------- | ------| ------------------------------------------------------------
 pc13(30614)<v18>:15201 | OK    | GatewaySender ln is started on member pc13(30614)<v18>:15201
@@ -164,7 +160,7 @@ JConsole automatically connects to a running JMX Manager node if one is availabl
 
 Note that you must have a JDK installed (not just a JRE) and the correct PATH and JAVA\_HOME environment variables set.
 
-See [Browsing Geode MBeans through JConsole](../../../managing/management/mbeans_jconsole.html) for an example of using JConsole with the Geode management and monitoring system.
+See [Browsing <%=vars.product_name%> MBeans through JConsole](../../../managing/management/mbeans_jconsole.html) for an example of using JConsole with the <%=vars.product_name%> management and monitoring system.
 
 **Availability:** Online or offline.
 
@@ -174,8 +170,6 @@ See [Browsing Geode MBeans through JConsole](../../../managing/management/mbeans
 start jconsole [--interval=<seconds>] [--notile] [--version]
 [--J<jconsole JVM options>]
 ```
-
-<a id="topic_D00507416F3944DFAB48D2FA2B9E4A31__table_uck_4vg_2w"></a>
 
 | Name                                               | Description                                                                                                                                                                                                                                                                                                                                                                                                | Default Value |
 |----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
@@ -215,7 +209,7 @@ The JConsole application appears and auto-connects to a JMX Manager node if one 
 ``` pre
 An error occurred while launching JConsole = %1$s
 
-Connecting by the Geode member's name or ID is not currently supported.
+Connecting by the <%=vars.product_name%> member's name or ID is not currently supported.
 Please specify the member as '<hostname|IP>[PORT].
 
 An IO error occurred while launching JConsole.
@@ -238,10 +232,8 @@ Start the JDK's Java VisualVM monitoring application in a separate process.
 start jvisualvm [--J=value(,value)*]
 ```
 
-<a id="topic_5B5BF8BEE905463D8B7762B89E2D65E7__table_ssp_svg_2w"></a>
-
-| Name                                      | Description                                                                                                    |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| Name                                      | Description |
+|-------------------------------------------|------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-J</span> | VM-option passed to the spawned CacheServer VM. For example: `-J-Dfoo.bar=true` for setting foo.bar to 'true'. |
 
 <span class="tablecap">Table 4. Start JVisalVM Parameters</span>
@@ -264,14 +256,15 @@ The command creates a subdirectory and log file named after the locator. If the 
 
 In addition, if gfsh is not already connected to a JMX Manager, the gfsh console will automatically connect to the new embedded JMX Manager started by the new locator.
 
-**Note:** When both `--max-heap` and `--initial-heap` are specified during locator startup, additional GC parameters are specified internally by Geode's Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the`-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+**Note:** When both `--max-heap` and `--initial-heap` are specified during locator startup, additional GC parameters are specified internally by <%=vars.product_name%>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the`-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
 **Availability:** Online or offline.
 
 **Syntax:**
 
 ``` pre
-start locator --name=value [--bind-address=value] [--force(=value)] [--group=value] [--hostname-for-clients=value]
+start locator --name=value [--bind-address=value] [--force(=value)]
+ [--groups=value(,value)*] [--hostname-for-clients=value]
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-from-cluster-configuration-dir(=value)]
@@ -280,10 +273,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
  [--J=value(,value)*]
 ```
 
-<a id="topic_591260CF25D64562A0EDD7260D2AC6D4__table_hly_vvg_2w"></a>
-
 <table>
-<caption><span class="tablecap">Table 5. Parameters</span></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -299,7 +289,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <tbody>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-name</span></td>
-<td>Name to be used for this Geode locator service. If not specified, gfsh generates a random name.</td>
+<td>Name to be used for this <%=vars.product_name%> locator service. If not specified, gfsh generates a random name.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -313,7 +303,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td>false</td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
+<td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) the locator will be a part of.</td>
 <td> </td>
 </tr>
@@ -324,7 +314,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-locators</span></td>
-<td>List of locators used by this locator to join the appropriate Geode cluster.</td>
+<td>List of locators used by this locator to join the appropriate <%=vars.product_name%> cluster.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -334,12 +324,12 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-mcast-address </span></td>
-<td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the Geode cluster. If mcast-port is zero, then mcast-address is ignored.</td>
+<td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-mcast-port</span></td>
-<td>Port used for multi-cast networking so the locator can locate other members of the Geode cluster. A zero value disables mcast.</td>
+<td>Port used for multi-cast networking so the locator can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -366,7 +356,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td><span class="keyword parmname">\-\-initial-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options.
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then Geode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -374,7 +364,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then Geode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -432,33 +422,11 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 start locator --name=locator1
 ```
 
-**Sample Output:**
-
-``` pre
-gfsh>start locator --name=locator3
-Starting a GemFire Locator in /home/user/locator3...
-................................
-Locator in /home/user/locator3 on ubuntu.local[10334] as locator3 is currently online.
-Process ID: 1898
-Uptime: 19 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/locator3/locator3.log
-JVM Arguments: -Dgemfire.default.locators=192.0.2.3[40402]
--Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
--Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
--Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48258_Linux/lib/locator-dependencies.jar:
-/usr/local/java/lib/tools.jar
-
-Cluster configuration service is up and running.
-```
-
 ## <a id="topic_E906BA7D9E7F4C5890FEFA7ECD40DD77" class="no-quick-link"></a>start pulse
 
-Launch the Geode Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
+Launch the <%=vars.product_name%> Pulse monitoring dashboard tool in the user's default system browser and navigates the user to the landing page (login page).
 
-For more information on Geode Pulse, see [Geode Pulse](../../pulse/pulse-overview.html).
+For more information on <%=vars.product_name%> Pulse, see [<%=vars.product_name%> Pulse](../../pulse/pulse-overview.html).
 
 **Availability:** Online or offline.
 
@@ -467,8 +435,6 @@ For more information on Geode Pulse, see [Geode Pulse](../../pulse/pulse-overvie
 ``` pre
 start pulse [--url=value]
 ```
-
-<a id="topic_E906BA7D9E7F4C5890FEFA7ECD40DD77__table_cv3_w54_k4eee"></a>
 
 | Name                                        | Description                      | Default                       |
 |---------------------------------------------|----------------------------------|-------------------------------|
@@ -483,13 +449,13 @@ start pulse
 start pulse --url=http://gemfire.example.com:7070/pulse
 ```
 
-**Sample Output:** See [Geode Pulse](../../pulse/pulse-overview.html) for examples of Pulse.
+**Sample Output:** See [<%=vars.product_name%> Pulse](../../pulse/pulse-overview.html) for examples of Pulse.
 
 ## <a id="topic_3764EE2DB18B4AE4A625E0354471738A" class="no-quick-link"></a>start server
 
-Start a Geode cache server process.
+Start a <%=vars.product_name%> cache server process.
 
-**Note:** When both <span class="keyword parmname">\\-\\-max-heap</span> and <span class="keyword parmname">\\-\\-initial-heap</span> are specified during locator startup, additional GC parameters are specified internally by Geode's Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+**Note:** When both <span class="keyword parmname">\\-\\-max-heap</span> and <span class="keyword parmname">\\-\\-initial-heap</span> are specified during locator startup, additional GC parameters are specified internally by <%=vars.product_name%>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
 **Availability:** Online or offline.
 
@@ -500,8 +466,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--cache-xml-file=value] [--classpath=value] [--disable-default-server(=value)]
     [--disable-exit-when-out-of-memory(=value)] [--enable-time-statistics(=value)]
     [--force(=value)] [--include-system-classpath(=value)] [--properties-file=value]
-    [--security-properties-file=value]
-    [--group=value] [--locators=value] [--locator-wait-time=value] [--log-level=value]
+    [--security-properties-file=value] [--groups=value(,value)*]
+    [--locators=value] [--locator-wait-time=value] [--log-level=value]
     [--mcast-address=value] [--mcast-port=value] [--memcached-port=value]
     [--memcached-protocol=value] [--rebalance(=value)] [--server-bind-address=value]
     [--server-port=value] [--spring-xml-location=value]
@@ -520,7 +486,6 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <a id="topic_3764EE2DB18B4AE4A625E0354471738A__table_at5_bwg_2w"></a>
 
 <table>
-<caption><span class="tablecap">Table 7. Parameters</span></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -536,7 +501,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <tbody>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-name</span></td>
-<td>Member name for this Geode Cache Server service. If not specified, gfsh generates a random name.</td>
+<td>Member name for this <%=vars.product_name%> Cache Server service. If not specified, gfsh generates a random name.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -576,7 +541,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-enable-time-statistics</span></td>
-<td>Causes additional time-based statistics to be gathered for Geode operations.</td>
+<td>Causes additional time-based statistics to be gathered for <%=vars.product_name%> operations.</td>
 <td>true</td>
 </tr>
 <tr class="even">
@@ -590,7 +555,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td> </td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-group</span></td>
+<td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) the Cache Server will be a part of.</td>
 <td> </td>
 </tr>
@@ -601,7 +566,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-locators </span></td>
-<td>Sets the list of locators used by the Cache Server to join the appropriate Geode cluster.</td>
+<td>Sets the list of locators used by the Cache Server to join the appropriate <%=vars.product_name%> cluster.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -616,12 +581,12 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-mcast-address</span></td>
-<td>The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the Geode cluster. If mcast-port is zero, then mcast-address is ignored.</td>
+<td>The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-mcast-port</span></td>
-<td>Sets the port used for multi-cast networking so the Cache Server can locate other members of the Geode cluster. A zero value disables mcast.</td>
+<td>Sets the port used for multi-cast networking so the Cache Server can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -646,13 +611,13 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-spring-xml-location</span></td>
-<td>Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a Geode Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc). ResourceLoader is described in the 
+<td>Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <%=vars.product_name%> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc). ResourceLoader is described in the 
 <a href="http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader">Spring documentation</a>.</td>
 <td> </td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-rebalance</span></td>
-<td>Whether to initiate rebalancing across the Geode cluster.</td>
+<td>Whether to initiate rebalancing across the <%=vars.product_name%> cluster.</td>
 <td>false</td>
 </tr>
 <tr class="odd">
@@ -669,7 +634,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td><span class="keyword parmname">\-\-initial-heap</span></td>
 <td>Initial size of the heap in the same format as the JVM -Xms parameter.
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then Geode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -677,7 +642,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Maximum size of the heap in the same format as the JVM -Xmx parameter.
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then Geode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -795,27 +760,12 @@ the cluster.
 </tbody>
 </table>
 
+<span class="tablecap">Table 7. Start Server Parameters</span>
+
+
 ### <a id="topic_3764EE2DB18B4AE4A625E0354471738A__section_A50120613D3C4A848463236C4EFF18C7" class="no-quick-link"></a>Examples
 
 ``` pre
 gfsh>start server --name=server1
 gfsh>start server --name=server2 --server-port=40405
-```
-
-**Sample Output:**
-
-``` pre
-gfsh>start server --name=server1 --server-port=40406
-Starting a GemFire Server in /home/user/server1...
-....................................................
-Server in /home/user/server1 on ubuntu.local[40406] as server1 is currently online.
-Process ID: 32209
-Uptime: 47 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/server1/server1.log
-JVM Arguments: -Dgemfire.default.locators=192.0.2.4[40402] -Dgemfire.use-cluster-configuration=true
--XX:OnOutOfMemoryError="kill -9 %p" -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
--Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48258_Linux/lib/server-dependencies.jar:/usr/local/java/lib/tools.jar
 ```

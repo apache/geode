@@ -14,973 +14,326 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.AbstractLauncher.Status;
-import org.apache.geode.distributed.ServerLauncher.Builder;
-import org.apache.geode.distributed.ServerLauncher.ServerState;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.AbstractCacheServer;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.process.ProcessControllerFactory;
-import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.AbstractLauncher.Status.NOT_RESPONDING;
+import static org.apache.geode.distributed.AbstractLauncher.Status.ONLINE;
+import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
 import java.net.BindException;
 import java.net.InetAddress;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.ServerLauncher.Builder;
+import org.apache.geode.distributed.ServerLauncher.ServerState;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.process.ProcessControllerFactory;
+import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Integration tests for ServerLauncher as a local API in the local JVM.
+ * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
  *
- * @see org.apache.geode.distributed.AbstractLauncher
- * @see org.apache.geode.distributed.ServerLauncher
- * @see org.apache.geode.distributed.ServerLauncher.Builder
- * @see org.apache.geode.distributed.ServerLauncher.ServerState
- * @see org.apache.geode.internal.AvailablePortHelper
  * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)
-public class ServerLauncherLocalIntegrationTest extends AbstractServerLauncherIntegrationTestCase {
+public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalIntegrationTestCase {
 
   @Before
-  public final void setUpServerLauncherLocalTest() throws Exception {
+  public void setUpServerLauncherLocalIntegrationTest() throws Exception {
     disconnectFromDS();
-    System.setProperty(ProcessType.TEST_PREFIX_PROPERTY, getUniqueName() + "-");
+    System.setProperty(ProcessType.PROPERTY_TEST_PREFIX, getUniqueName() + "-");
+    assertThat(new ProcessControllerFactory().isAttachAPIFound()).isTrue();
   }
 
   @After
-  public final void tearDownServerLauncherLocalTest() throws Exception {
+  public void tearDownServerLauncherLocalIntegrationTest() throws Exception {
     disconnectFromDS();
   }
 
-  protected Status getExpectedStopStatusForNotRunning() {
-    return Status.NOT_RESPONDING;
+  @Test
+  public void usesLocatorPortAsDefaultPort() throws Exception {
+    launcher = givenServerLauncher();
+
+    assertThat(launcher.getServerPort()).isEqualTo(defaultServerPort);
   }
 
   @Test
-  public void testBuilderSetProperties() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void startReturnsOnline() throws Exception {
+    launcher = givenServerLauncher();
 
-    this.launcher = new Builder().setDisableDefaultServer(true).setForce(true)
-        .setMemberName(getUniqueName()).setWorkingDirectory(rootFolder)
-        .set(DISABLE_AUTO_RECONNECT, "true").set(LOG_LEVEL, "config").set(MCAST_PORT, "0").build();
-
-    assertNotNull(this.launcher);
-
-    try {
-      assertEquals(Status.ONLINE, this.launcher.start().getStatus());
-      waitForServerToStart(this.launcher);
-
-      final Cache cache = this.launcher.getCache();
-
-      assertNotNull(cache);
-
-      final DistributedSystem distributedSystem = cache.getDistributedSystem();
-
-      assertNotNull(distributedSystem);
-      assertEquals("true", distributedSystem.getProperties().getProperty(DISABLE_AUTO_RECONNECT));
-      assertEquals("config", distributedSystem.getProperties().getProperty(LOG_LEVEL));
-      assertEquals("0", distributedSystem.getProperties().getProperty(MCAST_PORT));
-      assertEquals(getUniqueName(), distributedSystem.getProperties().getProperty(NAME));
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      assertNull(this.launcher.getCache());
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    assertThat(launcher.start().getStatus()).isEqualTo(ONLINE);
   }
 
   @Test
-  public void testIsAttachAPIFound() throws Exception {
-    final ProcessControllerFactory factory = new ProcessControllerFactory();
-    assertTrue(factory.isAttachAPIFound());
+  public void startWithPortUsesPort() throws Exception {
+    ServerLauncher launcher =
+        startServer(newBuilder().setDisableDefaultServer(false).setServerPort(defaultServerPort));
+
+    assertThat(launcher.getCache().getCacheServers().get(0).getPort()).isEqualTo(defaultServerPort);
   }
 
   @Test
-  public void testStartCreatesPidFile() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void startWithPortZeroUsesAnEphemeralPort() throws Exception {
+    ServerLauncher launcher =
+        startServer(newBuilder().setDisableDefaultServer(false).setServerPort(0));
 
-    // build and start the Server locally
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    this.launcher = builder.build();
-    assertNotNull(this.launcher);
-
-    try {
-      this.launcher.start();
-      waitForServerToStart(this.launcher);
-      assertEquals(Status.ONLINE, this.launcher.status().getStatus());
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      final int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
-
-      assertEquals(Status.ONLINE, this.launcher.status().getStatus());
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    assertThat(launcher.getCache().getCacheServers().get(0).getPort()).isGreaterThan(0);
   }
 
   @Test
-  public void testStartDeletesStaleControlFiles() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void startUsesBuilderValues() throws Exception {
+    ServerLauncher launcher = startServer(newBuilder().set(DISABLE_AUTO_RECONNECT, "true"));
 
-    // create existing control files
-    this.stopRequestFile =
-        new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getStopRequestFileName());
-    this.stopRequestFile.createNewFile();
-    assertTrue(this.stopRequestFile.exists());
+    Cache cache = launcher.getCache();
+    assertThat(cache).isNotNull();
 
-    this.statusRequestFile =
-        new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getStatusRequestFileName());
-    this.statusRequestFile.createNewFile();
-    assertTrue(this.statusRequestFile.exists());
-
-    this.statusFile =
-        new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getStatusFileName());
-    this.statusFile.createNewFile();
-    assertTrue(this.statusFile.exists());
-
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    assertFalse(builder.getForce());
-    this.launcher = builder.build();
-    assertFalse(this.launcher.isForcing());
-    this.launcher.start();
-
-    try {
-      waitForServerToStart(this.launcher);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      final int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
-
-      // validate stale control files were deleted
-      assertFalse(this.stopRequestFile.exists());
-      assertFalse(this.statusRequestFile.exists());
-      assertFalse(this.statusFile.exists());
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    DistributedSystem system = cache.getDistributedSystem();
+    assertThat(system).isNotNull();
+    assertThat(system.getProperties().getProperty(DISABLE_AUTO_RECONNECT)).isEqualTo("true");
+    assertThat(system.getProperties().getProperty(LOG_LEVEL)).isEqualTo("config");
+    assertThat(system.getProperties().getProperty(MCAST_PORT)).isEqualTo("0");
+    assertThat(system.getProperties().getProperty(NAME)).isEqualTo(getUniqueName());
   }
 
   @Test
-  public void testStartOverwritesStalePidFile() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void startCreatesPidFile() throws Exception {
+    startServer();
 
-    // create existing pid file
-    this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-    assertFalse("Integer.MAX_VALUE shouldn't be the same as local pid " + Integer.MAX_VALUE,
-        Integer.MAX_VALUE == ProcessUtils.identifyPid());
-    writePid(this.pidFile, Integer.MAX_VALUE);
-
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    assertFalse(builder.getForce());
-    this.launcher = builder.build();
-    assertFalse(this.launcher.isForcing());
-    this.launcher.start();
-
-    try {
-      waitForServerToStart(this.launcher);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      // validate the pid file and its contents
-      assertTrue(this.pidFile.exists());
-      final int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    assertThat(getPidFile()).exists();
   }
 
-  /**
-   * Confirms fix for #47778.
-   */
   @Test
-  public void testStartUsingDisableDefaultServerLeavesPortFree() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void pidFileContainsServerPid() throws Exception {
+    startServer();
 
-    // build and start the server
-    assertTrue(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
+    assertThat(getServerPid()).isEqualTo(localPid);
+  }
 
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
+  @Test
+  public void startDeletesStaleControlFiles() throws Exception {
+    File stopRequestFile = givenControlFile(getProcessType().getStopRequestFileName());
+    File statusRequestFile = givenControlFile(getProcessType().getStatusRequestFileName());
+    File statusFile = givenControlFile(getProcessType().getStatusFileName());
 
-    this.launcher = builder.build();
+    startServer();
 
-    // wait for server to start
-    try {
-      // if start succeeds without throwing exception then #47778 is fixed
-      this.launcher.start();
-      waitForServerToStart(this.launcher);
+    assertDeletionOf(stopRequestFile);
+    assertDeletionOf(statusRequestFile);
+    assertDeletionOf(statusFile);
+  }
 
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
+  @Test
+  public void startOverwritesStalePidFile() throws Exception {
+    givenPidFile(fakePid);
 
-      // verify server did not a port
-      assertTrue(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
+    startServer();
 
-      final ServerState status = this.launcher.status();
-      final String portString = status.getPort();
-      assertEquals("Port should be \"\" instead of " + portString, "", portString);
+    assertThat(getServerPid()).isNotEqualTo(fakePid);
+  }
 
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+  @Test
+  public void startWithDisableDefaultServerDoesNotUseDefaultPort() throws Exception {
+    givenServerPortIsFree(defaultServerPort);
 
-    // stop the server
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    startServer(withDisableDefaultServer());
+
+    assertThatServerPortIsFree(defaultServerPort);
+  }
+
+  @Test
+  public void startWithDisableDefaultServerSucceedsWhenDefaultPortInUse() throws Exception {
+    givenServerPortInUse(defaultServerPort);
+
+    startServer(withDisableDefaultServer());
+
+    assertThatServerPortIsInUseBySocket(defaultServerPort);
+  }
+
+  @Test
+  public void startWithServerPortOverridesPortInCacheXml() throws Exception {
+    int[] freePorts = getRandomAvailableTCPPorts(2);
+    int cacheXmlPort = freePorts[0];
+    int startPort = freePorts[1];
+    givenCacheXmlFileWithServerPort(cacheXmlPort);
+
+    launcher = startServer(new Builder().setServerPort(startPort));
+
+    // server should use --server-port instead of port in cache.xml
+    assertThatServerPortIsInUse(startPort);
+    assertThatServerPortIsFree(cacheXmlPort);
+    assertThat(Integer.valueOf(launcher.status().getPort())).isEqualTo(startPort);
+  }
+
+  @Test
+  public void startWithServerPortOverridesDefaultWithCacheXml() throws Exception {
+    givenCacheXmlFile();
+
+    launcher = awaitStart(new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
+        .setServerPort(defaultServerPort).setWorkingDirectory(getWorkingDirectoryPath())
+        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0"));
+
+    // verify server used --server-port instead of default
+    assertThatServerPortIsInUse(defaultServerPort);
+    assertThat(Integer.valueOf(launcher.status().getPort())).isEqualTo(defaultServerPort);
+  }
+
+  @Test
+  public void startWithDefaultPortInUseFailsWithBindException() throws Exception {
+    givenServerPortInUse(defaultServerPort);
+
+    launcher = new Builder().build();
+
+    assertThatThrownBy(() -> launcher.start()).isInstanceOf(RuntimeException.class)
+        .hasCauseInstanceOf(BindException.class);
+  }
+
+  @Test
+  public void startWithServerPortInUseFailsWithBindException() throws Exception {
+    givenServerPortInUse(nonDefaultServerPort);
+
+    launcher = new Builder().setServerPort(nonDefaultServerPort).build();
+
+    assertThatThrownBy(() -> launcher.start()).isInstanceOf(RuntimeException.class)
+        .hasCauseInstanceOf(BindException.class);
+  }
+
+  @Test
+  public void statusForDisableDefaultServerHasEmptyPort() throws Exception {
+    givenServerPortIsFree(defaultServerPort);
+
+    ServerState serverState = startServer(newBuilder().setDisableDefaultServer(true)).status();
+
+    assertThat(serverState.getPort()).isEqualTo("");
+  }
+
+  @Test
+  public void statusWithPidReturnsOnlineWithDetails() throws Exception {
+    givenRunningServer();
+
+    ServerState serverState = new Builder().setPid(localPid).build().status();
+
+    assertThat(serverState.getStatus()).isEqualTo(ONLINE);
+    assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
+    assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
+    assertThat(serverState.getLogFile()).isEqualTo(getLogFilePath());
+    assertThat(serverState.getMemberName()).isEqualTo(getUniqueName());
+    assertThat(serverState.getPid().intValue()).isEqualTo(localPid);
+    assertThat(serverState.getUptime()).isGreaterThan(0);
+    assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+  }
+
+  @Test
+  public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws Exception {
+    givenRunningServer();
+
+    ServerState serverState =
+        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+
+    assertThat(serverState.getStatus()).isEqualTo(ONLINE);
+    assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
+    assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
+    assertThat(serverState.getLogFile()).isEqualTo(getLogFilePath());
+    assertThat(serverState.getMemberName()).isEqualTo(getUniqueName());
+    assertThat(serverState.getPid().intValue()).isEqualTo(readPidFile());
+    assertThat(serverState.getUptime()).isGreaterThan(0);
+    assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+  }
+
+  @Test
+  public void statusWithEmptyPidFileThrowsIllegalArgumentException() throws Exception {
+    givenEmptyPidFile();
+
+    ServerLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
+
+    assertThatThrownBy(() -> launcher.status()).isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Invalid pid 'null' found in");
+  }
+
+  @Test
+  public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws Exception {
+    givenEmptyWorkingDirectory();
+
+    ServerState serverState =
+        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+
+    assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
+    assertThat(serverState.getClasspath()).isNull();
+    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
+    assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
+    assertThat(serverState.getLogFile()).isNull();
+    assertThat(serverState.getMemberName()).isNull();
+    assertThat(serverState.getPid()).isNull();
+    assertThat(serverState.getUptime().intValue()).isEqualTo(0);
+    assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
   }
 
   /**
-   * Confirms fix for #47778.
+   * This test takes > 1 minute to run in {@link ServerLauncherLocalFileIntegrationTest}.
    */
   @Test
-  public void testStartUsingDisableDefaultServerSkipsPortCheck() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void statusWithStalePidFileReturnsNotResponding() throws Exception {
+    givenPidFile(fakePid);
 
-    // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
-    this.socket = SocketCreatorFactory
-        .createNonDefaultInstance(false, false, null, null, System.getProperties())
-        .createServerSocket(this.serverPort, 50, null, -1);
-    assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
+    ServerState serverState =
+        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
 
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    this.launcher = builder.build();
-
-    // wait for server to start
-    try {
-      // if start succeeds without throwing exception then #47778 is fixed
-      this.launcher.start();
-      waitForServerToStart(this.launcher);
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
-
-      final ServerState status = this.launcher.status();
-      final String portString = status.getPort();
-      assertEquals("Port should be \"\" instead of " + portString, "", portString);
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    // stop the server
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    // verify port is still in use
-    this.errorCollector.checkThat(
-        AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET), is(equalTo(false)));
+    assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
   }
 
   @Test
-  @Ignore("Need to rewrite this without using dunit.Host")
-  public void testStartUsingForceOverwritesExistingPidFile()
-      throws Throwable {}/*
-                          * assertTrue(getUniqueName() + " is broken if PID == Integer.MAX_VALUE",
-                          * ProcessUtils.identifyPid() != Integer.MAX_VALUE);
-                          * 
-                          * // create existing pid file this.pidFile = new
-                          * File(ProcessType.SERVER.getPidFileName()); final int realPid =
-                          * Host.getHost(0).getVM(3).invoke(() -> ProcessUtils.identifyPid());
-                          * assertFalse(realPid == ProcessUtils.identifyPid());
-                          * writePid(this.pidFile, realPid);
-                          * 
-                          * // build and start the server final Builder builder = new Builder()
-                          * .setDisableDefaultServer(true) .setForce(true)
-                          * .setMemberName(getUniqueName()) .setRedirectOutput(true)
-                          * .set(DistributionConfig.ConfigurationProperties.MCAST_PORT, "0");
-                          * 
-                          * assertTrue(builder.getForce()); this.launcher = builder.build();
-                          * assertTrue(this.launcher.isForcing()); this.launcher.start();
-                          * 
-                          * // collect and throw the FIRST failure Throwable failure = null;
-                          * 
-                          * try { waitForServerToStart(this.launcher);
-                          * 
-                          * // validate the pid file and its contents
-                          * assertTrue(this.pidFile.exists()); final int pid =
-                          * readPid(this.pidFile); assertTrue(pid > 0);
-                          * assertTrue(ProcessUtils.isProcessAlive(pid));
-                          * assertIndexDetailsEquals(getPid(), pid);
-                          * 
-                          * // validate log file was created final String logFileName =
-                          * getUniqueName()+".log"; assertTrue("Log file should exist: " +
-                          * logFileName, new File(logFileName).exists());
-                          * 
-                          * } catch (Throwable e) { logger.error(e); if (failure == null) { failure
-                          * = e; } }
-                          * 
-                          * try { assertIndexDetailsEquals(Status.STOPPED,
-                          * this.launcher.stop().getStatus()); waitForFileToDelete(this.pidFile); }
-                          * catch (Throwable e) { logger.error(e); if (failure == null) { failure =
-                          * e; } }
-                          * 
-                          * if (failure != null) { throw failure; } } //
-                          * testStartUsingForceOverwritesExistingPidFile
-                          */
+  public void stopWithPidReturnsStopped() throws Exception {
+    givenRunningServer();
 
-  /**
-   * Confirms part of fix for #47664
-   */
-  @Test
-  public void testStartUsingServerPortOverridesCacheXml() throws Throwable {
-    // verifies part of the fix for #47664
+    ServerState serverState = new Builder().setPid(localPid).build().stop();
 
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
-
-    // generate two free ports
-    final int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    assertTrue(AvailablePort.isPortAvailable(freeTCPPorts[0], AvailablePort.SOCKET));
-    assertTrue(AvailablePort.isPortAvailable(freeTCPPorts[1], AvailablePort.SOCKET));
-
-    // write out cache.xml with one port
-    final CacheCreation creation = new CacheCreation();
-    final RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
-    attrs.setScope(Scope.DISTRIBUTED_ACK);
-    attrs.setDataPolicy(DataPolicy.REPLICATE);
-    creation.createRegion(getUniqueName(), attrs);
-    creation.addCacheServer().setPort(freeTCPPorts[0]);
-
-    File cacheXmlFile = this.temporaryFolder.newFile(getUniqueName() + ".xml");
-    final PrintWriter pw = new PrintWriter(new FileWriter(cacheXmlFile), true);
-    CacheXmlGenerator.generate(creation, pw);
-    pw.close();
-
-    System.setProperty(CACHE_XML_FILE, cacheXmlFile.getCanonicalPath());
-
-    // start server
-    final Builder builder = new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
-        .setServerPort(freeTCPPorts[1]).setWorkingDirectory(rootFolder).set(LOG_LEVEL, "config")
-        .set(MCAST_PORT, "0");
-
-    this.launcher = builder.build();
-    this.launcher.start();
-
-    // wait for server to start up
-    try {
-      waitForServerToStart(this.launcher);
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
-
-      // verify server used --server-port instead of default or port in cache.xml
-      assertTrue(AvailablePort.isPortAvailable(freeTCPPorts[0], AvailablePort.SOCKET));
-      assertFalse(AvailablePort.isPortAvailable(freeTCPPorts[1], AvailablePort.SOCKET));
-
-      final ServerState status = this.launcher.status();
-      final String portString = status.getPort();
-      final int port = Integer.valueOf(portString);
-      assertEquals("Port should be " + freeTCPPorts[1] + " instead of " + port, freeTCPPorts[1],
-          port);
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    // stop the server
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForFileToDelete(this.pidFile);
-      assertFalse("PID file still exists!", pidFile.exists());
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-  }
-
-  /**
-   * Confirms part of fix for #47664
-   */
-  @Test
-  public void testStartUsingServerPortUsedInsteadOfDefaultCacheXml() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
-
-    // write out cache.xml with one port
-    final CacheCreation creation = new CacheCreation();
-    final RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
-    attrs.setScope(Scope.DISTRIBUTED_ACK);
-    attrs.setDataPolicy(DataPolicy.REPLICATE);
-    creation.createRegion(getUniqueName(), attrs);
-    creation.addCacheServer();
-
-    File cacheXmlFile = this.temporaryFolder.newFile(getUniqueName() + ".xml");
-    final PrintWriter pw = new PrintWriter(new FileWriter(cacheXmlFile), true);
-    CacheXmlGenerator.generate(creation, pw);
-    pw.close();
-
-    System.setProperty(CACHE_XML_FILE, cacheXmlFile.getCanonicalPath());
-
-    // start server
-    final Builder builder = new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
-        .setServerPort(this.serverPort).setWorkingDirectory(rootFolder).set(LOG_LEVEL, "config")
-        .set(MCAST_PORT, "0");
-
-    this.launcher = builder.build();
-    this.launcher.start();
-
-    // wait for server to start up
-    try {
-      waitForServerToStart(this.launcher);
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertTrue(ProcessUtils.isProcessAlive(pid));
-      assertEquals(getPid(), pid);
-
-      // verify server used --server-port instead of default
-      assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
-
-      final int port = Integer.valueOf(this.launcher.status().getPort());
-      assertEquals("Port should be " + this.serverPort + " instead of " + port, this.serverPort,
-          port);
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    // stop the server
-    try {
-      assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }
 
   @Test
-  public void testStartWithDefaultPortInUseFails() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void stopWithPidDeletesPidFile() throws Exception {
+    givenRunningServer(newBuilder().setDeletePidFileOnStop(true));
 
-    // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
-    this.socket =
-        SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
-            .createServerSocket(this.serverPort, 50, null, -1);
-    assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
+    new Builder().setPid(localPid).build().stop();
 
-    // build and start the server
-    final Builder builder = new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
-        .setWorkingDirectory(rootFolder).set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    this.launcher = builder.build();
-
-    RuntimeException expected = null;
-    try {
-      this.launcher.start();
-
-      // why did it not fail like it's supposed to?
-      final String property =
-          System.getProperty(AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY);
-      assertNotNull(property);
-      assertEquals(this.serverPort, Integer.valueOf(property).intValue());
-      assertFalse(AvailablePort.isPortAvailable(this.serverPort, AvailablePort.SOCKET));
-
-      fail("Server port is " + this.launcher.getCache().getCacheServers().get(0).getPort());
-      fail("ServerLauncher start should have thrown RuntimeException caused by BindException");
-    } catch (RuntimeException e) {
-      expected = e;
-      assertNotNull(expected.getMessage());
-      // BindException text varies by platform
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      assertNotNull(expected);
-      final Throwable cause = expected.getCause();
-      assertNotNull(cause);
-      assertTrue(cause instanceof BindException);
-      // BindException string varies by platform
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertFalse("Pid file should not exist: " + this.pidFile, this.pidFile.exists());
-
-      // creation of log file seems to be random -- look into why sometime
-      final String logFileName = getUniqueName() + ".log";
-      assertFalse("Log file should not exist: " + logFileName,
-          new File(this.temporaryFolder.getRoot(), logFileName).exists());
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    // just in case the launcher started...
-    ServerState status = null;
-    try {
-      status = this.launcher.stop();
-    } catch (Throwable t) {
-      // ignore
-    }
-
-    try {
-      waitForFileToDelete(this.pidFile);
-      assertEquals(getExpectedStopStatusForNotRunning(), status.getStatus());
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    assertDeletionOf(getPidFile());
   }
 
   @Test
-  @Ignore("Need to rewrite this without using dunit.Host")
-  public void testStartWithExistingPidFileFails()
-      throws Throwable {}/*
-                          * // create existing pid file final int realPid =
-                          * Host.getHost(0).getVM(3).invoke(() -> ProcessUtils.identifyPid());
-                          * assertFalse("Remote pid shouldn't be the same as local pid " + realPid,
-                          * realPid == ProcessUtils.identifyPid());
-                          * 
-                          * this.pidFile = new File(ProcessType.SERVER.getPidFileName());
-                          * writePid(this.pidFile, realPid);
-                          * 
-                          * // build and start the server final Builder builder = new Builder()
-                          * .setDisableDefaultServer(true) .setMemberName(getUniqueName())
-                          * .setRedirectOutput(true) .set(logLevel, "config")
-                          * .set(DistributionConfig.ConfigurationProperties.MCAST_PORT, "0");
-                          * 
-                          * assertFalse(builder.getForce()); this.launcher = builder.build();
-                          * assertFalse(this.launcher.isForcing());
-                          * 
-                          * // collect and throw the FIRST failure Throwable failure = null;
-                          * RuntimeException expected = null;
-                          * 
-                          * try { this.launcher.start();
-                          * fail("ServerLauncher start should have thrown RuntimeException caused by FileAlreadyExistsException"
-                          * ); } catch (RuntimeException e) { expected = e;
-                          * assertNotNull(expected.getMessage()); assertTrue(expected.getMessage().
-                          * contains("A PID file already exists and a Server may be running in")); }
-                          * catch (Throwable e) { logger.error(e); if (failure == null) { failure =
-                          * e; } }
-                          * 
-                          * // just in case the launcher started... ServerState status = null; try {
-                          * status = this.launcher.stop(); } catch (Throwable t) { // ignore }
-                          * 
-                          * try { assertNotNull(expected); final Throwable cause =
-                          * expected.getCause(); assertNotNull(cause); assertTrue(cause instanceof
-                          * FileAlreadyExistsException);
-                          * assertTrue(cause.getMessage().contains("Pid file already exists: "));
-                          * assertTrue(cause.getMessage().contains("vf.gf.server.pid for process " +
-                          * realPid)); } catch (Throwable e) { logger.error(e); if (failure == null)
-                          * { failure = e; } }
-                          * 
-                          * try { delete(this.pidFile); final Status theStatus = status.getStatus();
-                          * assertFalse(theStatus == Status.STARTING); assertFalse(theStatus ==
-                          * Status.ONLINE); } catch (Throwable e) { logger.error(e); if (failure ==
-                          * null) { failure = e; } }
-                          * 
-                          * if (failure != null) { throw failure; } } //
-                          * testStartWithExistingPidFileFails
-                          */
+  public void stopWithWorkingDirectoryReturnsStopped() throws Exception {
+    givenRunningServer();
 
-  /**
-   * Confirms fix for #47665.
-   */
-  @Test
-  public void testStartUsingServerPortInUseFails() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+    ServerState serverState =
+        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
 
-    // generate one free port and then use TEST_OVERRIDE_DEFAULT_PORT_PROPERTY
-    final int freeTCPPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    this.socket =
-        SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
-            .createServerSocket(freeTCPPort, 50, null, -1);
-
-    // build and start the server
-    final Builder builder = new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
-        .setServerPort(freeTCPPort).setWorkingDirectory(rootFolder).set(LOG_LEVEL, "config")
-        .set(MCAST_PORT, "0");
-
-    this.launcher = builder.build();
-
-    RuntimeException expected = null;
-    try {
-      this.launcher.start();
-      fail("ServerLauncher start should have thrown RuntimeException caused by BindException");
-    } catch (RuntimeException e) {
-      expected = e;
-      assertNotNull(expected.getMessage());
-      // BindException string varies by platform
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      assertNotNull(expected);
-      final Throwable cause = expected.getCause();
-      assertNotNull(cause);
-      assertTrue(cause instanceof BindException);
-      // BindException string varies by platform
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertFalse("Pid file should not exist: " + this.pidFile, this.pidFile.exists());
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    // just in case the launcher started...
-    ServerState status = null;
-    try {
-      status = this.launcher.stop();
-    } catch (Throwable t) {
-      // ignore
-    }
-
-    try {
-      waitForFileToDelete(this.pidFile);
-      assertEquals(getExpectedStopStatusForNotRunning(), status.getStatus());
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }
 
   @Test
-  public void testStatusUsingPid() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
+  public void stopWithWorkingDirectoryDeletesPidFile() throws Exception {
+    givenRunningServer(newBuilder().setDeletePidFileOnStop(true));
 
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
+    new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
 
-    assertFalse(builder.getForce());
-    this.launcher = builder.build();
-    assertFalse(this.launcher.isForcing());
-
-    ServerLauncher pidLauncher = null;
-    try {
-      this.launcher.start();
-      waitForServerToStart(this.launcher);
-
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      final int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertEquals(ProcessUtils.identifyPid(), pid);
-
-      pidLauncher = new Builder().setPid(pid).build();
-      assertNotNull(pidLauncher);
-      assertFalse(pidLauncher.isRunning());
-
-      final ServerState actualStatus = pidLauncher.status();
-      assertNotNull(actualStatus);
-      assertEquals(Status.ONLINE, actualStatus.getStatus());
-      assertEquals(pid, actualStatus.getPid().intValue());
-      assertTrue(actualStatus.getUptime() > 0);
-      // getWorkingDirectory returns user.dir instead of rootFolder because test is starting Server
-      // in this process (to move logFile and pidFile into temp dir)
-      assertEquals(ManagementFactory.getRuntimeMXBean().getClassPath(),
-          actualStatus.getClasspath());
-      assertEquals(GemFireVersion.getGemFireVersion(), actualStatus.getGemFireVersion());
-      assertEquals(System.getProperty("java.version"), actualStatus.getJavaVersion());
-      assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
-      assertEquals(getUniqueName(), actualStatus.getMemberName());
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    if (pidLauncher == null) {
-      try {
-        assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-        waitForFileToDelete(this.pidFile);
-      } catch (Throwable e) {
-        this.errorCollector.addError(e);
-      }
-
-    } else {
-      try {
-        assertEquals(Status.STOPPED, pidLauncher.stop().getStatus());
-        waitForFileToDelete(this.pidFile);
-      } catch (Throwable e) {
-        this.errorCollector.addError(e);
-      }
-    }
-  }
-
-  @Test
-  public void testStatusUsingWorkingDirectory() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
-
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    assertFalse(builder.getForce());
-    this.launcher = builder.build();
-    assertFalse(this.launcher.isForcing());
-
-    ServerLauncher dirLauncher = null;
-    try {
-      this.launcher.start();
-      waitForServerToStart(this.launcher);
-
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      final int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertEquals(ProcessUtils.identifyPid(), pid);
-
-      dirLauncher = new Builder().setWorkingDirectory(rootFolder).build();
-      assertNotNull(dirLauncher);
-      assertFalse(dirLauncher.isRunning());
-
-      final ServerState actualStatus = dirLauncher.status();
-      assertNotNull(actualStatus);
-      assertEquals(Status.ONLINE, actualStatus.getStatus());
-      assertEquals(pid, actualStatus.getPid().intValue());
-      assertTrue(actualStatus.getUptime() > 0);
-      // getWorkingDirectory returns user.dir instead of rootFolder because test is starting Server
-      // in this process (to move logFile and pidFile into temp dir)
-      assertEquals(ManagementFactory.getRuntimeMXBean().getClassPath(),
-          actualStatus.getClasspath());
-      assertEquals(GemFireVersion.getGemFireVersion(), actualStatus.getGemFireVersion());
-      assertEquals(System.getProperty("java.version"), actualStatus.getJavaVersion());
-      assertEquals(InetAddress.getLocalHost().getCanonicalHostName(), actualStatus.getHost());
-      assertEquals(getUniqueName(), actualStatus.getMemberName());
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    if (dirLauncher == null) {
-      try {
-        assertEquals(Status.STOPPED, this.launcher.stop().getStatus());
-        waitForFileToDelete(this.pidFile);
-      } catch (Throwable e) {
-        this.errorCollector.addError(e);
-      }
-
-    } else {
-      try {
-        assertEquals(Status.STOPPED, dirLauncher.stop().getStatus());
-        waitForFileToDelete(this.pidFile);
-      } catch (Throwable e) {
-        this.errorCollector.addError(e);
-      }
-    }
-  }
-
-  @Test
-  public void testStopUsingPid() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
-
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    assertFalse(builder.getForce());
-    this.launcher = builder.build();
-    assertFalse(this.launcher.isForcing());
-
-    ServerLauncher pidLauncher = null;
-
-    try {
-      this.launcher.start();
-      waitForServerToStart(this.launcher);
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      final int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertEquals(ProcessUtils.identifyPid(), pid);
-
-      pidLauncher = new Builder().setPid(pid).build();
-      assertNotNull(pidLauncher);
-      assertFalse(pidLauncher.isRunning());
-
-      // stop the server
-      final ServerState serverState = pidLauncher.stop();
-      assertNotNull(serverState);
-      assertEquals(Status.STOPPED, serverState.getStatus());
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      this.launcher.stop();
-    } catch (Throwable e) {
-      // ignore
-    }
-
-    try {
-      // verify the PID file was deleted
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-  }
-
-  @Test
-  public void testStopUsingWorkingDirectory() throws Throwable {
-    String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
-
-    // build and start the server
-    final Builder builder = new Builder().setDisableDefaultServer(true)
-        .setMemberName(getUniqueName()).setRedirectOutput(true).setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
-
-    assertFalse(builder.getForce());
-    this.launcher = builder.build();
-    assertFalse(this.launcher.isForcing());
-
-    ServerLauncher dirLauncher = null;
-    try {
-      this.launcher.start();
-      waitForServerToStart(this.launcher);
-
-      // validate the pid file and its contents
-      this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.SERVER.getPidFileName());
-      assertTrue(this.pidFile.exists());
-      final int pid = readPid(this.pidFile);
-      assertTrue(pid > 0);
-      assertEquals(ProcessUtils.identifyPid(), pid);
-
-      dirLauncher = new Builder().setWorkingDirectory(rootFolder).build();
-      assertNotNull(dirLauncher);
-      assertFalse(dirLauncher.isRunning());
-
-      // stop the server
-      final ServerState serverState = dirLauncher.stop();
-      assertNotNull(serverState);
-      assertEquals(Status.STOPPED, serverState.getStatus());
-
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
-
-    try {
-      this.launcher.stop();
-    } catch (Throwable e) {
-      // ignore
-    }
-
-    try {
-      // verify the PID file was deleted
-      waitForFileToDelete(this.pidFile);
-    } catch (Throwable e) {
-      this.errorCollector.addError(e);
-    }
+    assertDeletionOf(getPidFile());
   }
 }

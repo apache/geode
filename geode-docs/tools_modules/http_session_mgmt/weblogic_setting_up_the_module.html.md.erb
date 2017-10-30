@@ -31,7 +31,7 @@ $ modify_war -h
 
 To modify your war or ear file manually, make the following updates:
 
--   **web.xml** needs a filter and listener added as follows. If you have your own filters, the Geode Module filter **must** be the first one.
+-   **web.xml** needs a filter added as follows. If you have your own filters, the <%=vars.product_name%> Module filter **must** be the first one.
 
     ``` pre
     <filter>
@@ -52,9 +52,6 @@ To modify your war or ear file manually, make the following updates:
         <filter-name>gemfire-session-filter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    <listener>
-        <listener-class>org.apache.geode.modules.session.filter.SessionListener</listener-class>
-    </listener>
     ```
 
 -   Add the following jar files from the AppServer.zip to the `WEB-INF/lib` directory of the war:
@@ -63,7 +60,7 @@ To modify your war or ear file manually, make the following updates:
     -   geode-modules-session jar
     -   slf4j-api jar
     -   slf4j-jdk14 jar
--   Add the following jar files from the `$GEODE/lib` directory to the `WEB-INF/lib` directory of the war, where `$GEODE` is set to the Geode product installation:
+-   Add the following jar files from the `$GEODE/lib` directory to the `WEB-INF/lib` directory of the war, where `$GEODE` is set to the <%=vars.product_name%> product installation:
     -   antlr jar
     -   fastutil jar
     -   geode-core jar
@@ -105,7 +102,7 @@ If you are deploying an ear file:
 
 <img src="../../images_svg/http_module_p2p_with_locator.svg" id="weblogic_setting_up_the_module__image_86E949E0F1AD4E9EB67605EFA4E97E13" class="image" />
 
-To run Geode in a peer-to-peer configuration, use the `modify_war` script with options
+To run <%=vars.product_name%> in a peer-to-peer configuration, use the `modify_war` script with options
 `-t peer-to-peer`,  `-p gemfire.property.locators=localhost[10334]`, and `-p gemfire.propery.cache-xml-file=<moduleDir>/conf/cache-peer.xml`
 to result in the following `web.xml` content:
 
@@ -130,9 +127,9 @@ to result in the following `web.xml` content:
 
 <img src="../../images_svg/http_module_cs_with_locator.svg" id="weblogic_setting_up_the_module__image_BDF2273487EA4FEB9895D02A6F6FD445" class="image" />
 
-To run Geode in a client/server configuration, you make the application server operate as a Geode client. Use the `-t client-server` option to the `modify_war` script. This adds the following filter to application server's `web.xml` file:
+To run <%=vars.product_name%> in a client/server configuration, you make the application server operate as a <%=vars.product_name%> client. Use the `-t client-server` option to the `modify_war` script. This adds the following filter to application server's `web.xml` file:
 
-To run Geode in a client/server configuration, you make the application server operate as a Geode client. Use the `modify_war` script with options
+To run <%=vars.product_name%> in a client/server configuration, you make the application server operate as a <%=vars.product_name%> client. Use the `modify_war` script with options
 `-t client-server` and `-p gemfire.property.cache-xml-file=<module dir>/conf/cache-client.xml`
 to result in the following `web.xml` content:
 
@@ -174,15 +171,15 @@ $ gfsh start server \
 <moduleDir>/lib/geode-modules-session-internal-1.0.0.jar
 ```
 
-Once the application server is started, the Geode client will automatically launch within the application server process.
+Once the application server is started, the <%=vars.product_name%> client will automatically launch within the application server process.
 
-## <a id="weblogic_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B" class="no-quick-link"></a>Verifying that Geode Started
+## <a id="weblogic_setting_up_the_module__section_3E186713737E4D5383E23B41CDFED59B" class="no-quick-link"></a>Verifying that <%=vars.product_name%> Started
 
-You can verify that Geode has successfully started by inspecting the application server log file. For example:
+You can verify that <%=vars.product_name%> has successfully started by inspecting the application server log file. For example:
 
 ``` pre
 info 2016/04/18 10:04:18.685 PDT <localhost-startStop-2> tid=0x1a]
-Initializing Geode Modules
+Initializing <%=vars.product_name%> Modules
 Java version:   1.0.0 user1 041816 2016-11-18 08:46:17 -0700
 javac 1.8.0_92
 Native version: native code unavailable
@@ -191,7 +188,7 @@ Source repository: develop
 Running on: /192.0.2.0, 8 cpu(s), x86_64 Mac OS X 10.11.4
 ```
 
-Information is also logged within the Geode log file, which by default is named `gemfire_modules.<date>.log`.
+Information is also logged within the <%=vars.product_name%> log file, which by default is named `gemfire_modules.<date>.log`.
 
 ## <a id="weblogic_setting_up_the_module__section_E0E0E5A1C9484D4AA13878273F16A920" class="no-quick-link"></a>Configuring Non-Sticky Session Replication
 

@@ -44,7 +44,7 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   protected void process(DistributionManager dm) {
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       // will be null if not initialized
       if (cache != null && !cache.isClosed()) {
         operateOnCache(cache);

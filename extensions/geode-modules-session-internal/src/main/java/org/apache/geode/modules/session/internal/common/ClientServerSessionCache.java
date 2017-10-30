@@ -28,6 +28,7 @@ import org.apache.geode.modules.util.BootstrappingFunction;
 import org.apache.geode.modules.util.CreateRegionFunction;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionStatus;
+import org.apache.geode.modules.util.SessionCustomExpiry;
 
 import java.util.List;
 import java.util.Map;
@@ -156,12 +157,14 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     String regionName = (String) properties.get(CacheProperty.REGION_NAME);
     if (enableLocalCache) {
       // Create the region factory with caching and heap LRU enabled
-      factory = ((ClientCache) this.cache)
-          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
+      factory = this.cache
+          .<String, HttpSession>createClientRegionFactory(
+              ClientRegionShortcut.CACHING_PROXY_HEAP_LRU)
+          .setCustomEntryIdleTimeout(new SessionCustomExpiry());
       LOG.info("Created new local client session region: {}", regionName);
     } else {
       // Create the region factory without caching enabled
-      factory = ((ClientCache) this.cache).createClientRegionFactory(ClientRegionShortcut.PROXY);
+      factory = this.cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       LOG.info("Created new local client (uncached) session region: {} without any session expiry",
           regionName);
     }

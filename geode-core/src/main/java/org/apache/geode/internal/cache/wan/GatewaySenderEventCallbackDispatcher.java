@@ -183,4 +183,9 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
     // no op
 
   }
+
+  @Override
+  public void shutDownAckReaderConnection() {
+    // no op
+  }
 }

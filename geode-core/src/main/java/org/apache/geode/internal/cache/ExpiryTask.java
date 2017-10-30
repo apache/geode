@@ -144,7 +144,6 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       return extm;
   }
 
-
   /**
    * Return true if current task could have expired. Return false if expiration is impossible.
    */
@@ -457,41 +456,25 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   private static final ThreadLocal<Long> now = new ThreadLocal<Long>();
 
   /**
-   * To reduce the number of times we need to call System.currentTimeMillis you can call this method
-   * to set a thread local. Make sure and call {@link #clearNow()} in a finally block after calling
-   * this method.
+   * To reduce the number of times we need to call calculateNow, you can call this method to set now
+   * in a thread local. When the run returns the thread local is cleared.
    */
-  public static void setNow() {
-    now.set(calculateNow());
-  }
-
-  private static long calculateNow() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      // Use cache.cacheTimeMillis here. See bug 52267.
-      InternalDistributedSystem ids = cache.getInternalDistributedSystem();
-      if (ids != null) {
-        return ids.getClock().cacheTimeMillis();
-      }
+  static void doWithNowSet(LocalRegion lr, Runnable runnable) {
+    now.set(calculateNow(lr.getCache()));
+    try {
+      runnable.run();
+    } finally {
+      now.remove();
     }
-    return 0L;
   }
 
   /**
-   * Call this method after a thread has called {@link #setNow()} once you are done calling code
-   * that may call {@link #getNow()}.
-   */
-  public static void clearNow() {
-    now.remove();
-  }
-
-  /**
-   * Returns the current time in milliseconds. If the current thread has called {@link #setNow()}
-   * then that time is return.
+   * Returns the current time in milliseconds. If the current thread has set the now thread local
+   * then that time is return. Otherwise now is calculated and returned.
    * 
    * @return the current time in milliseconds
    */
-  public static long getNow() {
+  protected long getNow() {
     long result;
     Long tl = now.get();
     if (tl != null) {
@@ -500,6 +483,21 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       result = calculateNow();
     }
     return result;
+  }
+
+  public long calculateNow() {
+    return calculateNow(getLocalRegion().getCache());
+  }
+
+  public static long calculateNow(InternalCache cache) {
+    if (cache != null) {
+      // Use cache.cacheTimeMillis here. See bug 52267.
+      InternalDistributedSystem ids = cache.getInternalDistributedSystem();
+      if (ids != null) {
+        return ids.getClock().cacheTimeMillis();
+      }
+    }
+    return 0L;
   }
 
   // Should only be set by unit tests

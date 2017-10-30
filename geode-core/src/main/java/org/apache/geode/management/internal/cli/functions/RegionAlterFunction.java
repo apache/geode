@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
@@ -60,7 +59,7 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
   public void execute(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
@@ -102,8 +101,8 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
     RegionPath regionPath = new RegionPath(regionPathString);
     AbstractRegion region = (AbstractRegion) cache.getRegion(regionPathString);
     if (region == null) {
-      throw new IllegalArgumentException(CliStrings
-          .format(CliStrings.ALTER_REGION__MSG__REGION_DOESNT_EXIST_0, new Object[] {regionPath}));
+      throw new IllegalArgumentException(CliStrings.format(
+          CliStrings.ALTER_REGION__MSG__REGION_DOES_NOT_EXIST_0, new Object[] {regionPath}));
     }
 
     AttributesMutator mutator = region.getAttributesMutator();
@@ -324,13 +323,13 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
       }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-              new Object[] {classToLoadName, neededFor}),
+          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+              classToLoadName, neededFor),
           e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
           CliStrings.ALTER_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          new Object[] {classToLoadName, neededFor}), e);
+          classToLoadName, neededFor), e);
     }
 
     return loadedClass;
@@ -342,12 +341,12 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
       instance = klass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.ALTER_REGION__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.ALTER_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
+          neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-              new Object[] {klass, neededFor}),
+          CliStrings.format(CliStrings.ALTER_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
+              klass, neededFor),
           e);
     }
 

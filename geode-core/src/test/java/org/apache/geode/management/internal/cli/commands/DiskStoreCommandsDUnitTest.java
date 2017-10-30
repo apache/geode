@@ -36,7 +36,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -58,7 +74,6 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -77,40 +92,37 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The DiskStoreCommandsDUnitTest class is a distributed test suite of test cases for testing the
  * disk store commands that are part of Gfsh.
  * </p>
  *
- * @see org.apache.geode.management.internal.cli.commands.DiskStoreCommands
+ * @see org.apache.geode.management.internal.cli.commands.AlterOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.BackupDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.CompactDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.CompactOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.CreateDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.DescribeDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.DescribeOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.DestroyDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.ExportOfflineDiskStoreCommand
+ * @see ListDiskStoresCommand
+ * @see org.apache.geode.management.internal.cli.commands.RevokeMissingDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.ShowMissingDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.UpgradeOfflineDiskStoreCommand
+ * @see org.apache.geode.management.internal.cli.commands.ValidateDiskStoreCommand
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1206 GEODE-1406 GEODE-2102 GEODE-3530
 @SuppressWarnings("serial")
 public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
-  final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
-  @Category(FlakyTest.class) // GEODE-2102
-  @Test
+  @Test // FlakyTest: GEODE-2102
   public void testMissingDiskStore() {
     final String regionName = "testShowMissingDiskStoreRegion";
 
@@ -118,7 +130,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final String diskStoreName = "DiskStoreCommandsDUnitTest";
 
     // Default setup creates a cache in the Manager, now create a cache in VM1
@@ -133,12 +145,12 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Create a disk store and region in the Manager (VM0) and VM1 VMs
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           Cache cache = getCache();
 
-          File diskStoreDirFile = new File(diskStoreName + vm.getPid());
+          File diskStoreDirFile = new File(diskStoreName + vm.getId());
           diskStoreDirFile.mkdirs();
 
           DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
@@ -236,7 +248,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     System.out.println("command result=" + stringResult);
     assertEquals(5, countLinesInString(stringResult, false));
     assertTrue(stringContainsLine(stringResult, "Disk Store ID.*Host.*Directory"));
-    assertTrue(stringContainsLine(stringResult, ".*" + diskStoreName + vm1.getPid()));
+    assertTrue(stringContainsLine(stringResult, ".*" + diskStoreName + vm1.getId()));
 
     // Extract the id from the returned missing disk store
     String line = getLineFromString(stringResult, 4);
@@ -254,11 +266,11 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Do our own cleanup so that the disk store directories can be removed
     super.destroyDefaultSetup();
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           try {
-            FileUtils.deleteDirectory((new File(diskStoreName + vm.getPid())));
+            FileUtils.deleteDirectory((new File(diskStoreName + vm.getId())));
           } catch (IOException iex) {
             // There's nothing else we can do
           }
@@ -276,7 +288,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     final VM vm0 = Host.getHost(0).getVM(0);
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final String diskStoreName = "DiskStoreCommandsDUnitTest";
 
     // Default setup creates a cache in the Manager, now create a cache in VM1
@@ -291,12 +303,12 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Create a disk store and region in the Manager (VM0) and VM1 VMs
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           Cache cache = getCache();
 
-          File diskStoreDirFile = new File(diskStoreName + vm.getPid());
+          File diskStoreDirFile = new File(diskStoreName + vm.getId());
           diskStoreDirFile.mkdirs();
 
           DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
@@ -495,11 +507,11 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Do our own cleanup so that the disk store directories can be removed
     super.destroyDefaultSetup();
     for (final VM vm : (new VM[] {vm0, vm1})) {
-      final String vmName = "VM" + vm.getPid();
+      final String vmName = "VM" + vm.getId();
       vm.invoke(new SerializableRunnable() {
         public void run() {
           try {
-            FileUtils.deleteDirectory((new File(diskStoreName + vm.getPid())));
+            FileUtils.deleteDirectory((new File(diskStoreName + vm.getId())));
           } catch (IOException iex) {
             // There's nothing else we can do
           }
@@ -679,7 +691,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     final String diskStoreName1 = "DiskStore1";
     final String region1 = "Region1";
     final String region2 = "Region2";
-    final Map<String, String> entries = new HashMap<String, String>();
+    final Map<String, String> entries = new HashMap<>();
     entries.put("key1", "value1");
     entries.put("key2", "value2");
 
@@ -725,8 +737,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying disk stores correctly updates the shared configuration.
    */
-  @Category(FlakyTest.class) // GEODE-1406
-  @Test
+  @Test // FlakyTest: GEODE-1406
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -804,7 +815,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStoreName);
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
         diskStoreDir.getAbsolutePath());
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
@@ -858,7 +869,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     // Test destroying the disk store
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStoreName);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, groupName);
+    commandStringBuilder.addOption(CliStrings.GROUP, groupName);
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -1130,8 +1141,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(true, resultAsString.contains(vm1Name));
   }
 
-  @Category(FlakyTest.class) // GEODE-1206: random ports, BindException
-  @Test
+  @Test // FlakyTest: GEODE-1206
   public void testCreateDiskStore() {
     final String diskStore1Name = "testCreateDiskStore1";
     final String diskStore2Name = "testCreateDiskStore2";
@@ -1145,7 +1155,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultToString(cmdResult).contains("No Disk Stores Found"));
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final File diskStore1Dir1 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".1");
     this.filesToBeDeleted.add(diskStore1Dir1.getAbsolutePath());
     final File diskStore1Dir2 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".2");
@@ -1164,7 +1174,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     });
 
     final VM vm2 = Host.getHost(0).getVM(2);
-    final String vm2Name = "VM" + vm2.getPid();
+    final String vm2Name = "VM" + vm2.getId();
     final File diskStore2Dir = new File(new File(".").getAbsolutePath(), diskStore2Name);
     this.filesToBeDeleted.add(diskStore2Dir.getAbsolutePath());
     vm2.invoke(new SerializableRunnable() {
@@ -1182,7 +1192,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStore1Name);
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__ALLOW_FORCE_COMPACTION, "true");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__AUTO_COMPACT, "false");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__COMPACTION_THRESHOLD, "67");
@@ -1212,7 +1222,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     // Verify that all of the attributes of the disk store were set correctly.
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESCRIBE_DISK_STORE);
-    commandStringBuilder.addOption(CliStrings.DESCRIBE_DISK_STORE__MEMBER, vm1Name);
+    commandStringBuilder.addOption(CliStrings.MEMBER, vm1Name);
     commandStringBuilder.addOption(CliStrings.DESCRIBE_DISK_STORE__NAME, diskStore1Name);
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -1230,7 +1240,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__NAME, diskStore2Name);
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__GROUP, "Group2");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group2");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
         diskStore2Dir.getAbsolutePath());
     cmdResult = executeCommand(commandStringBuilder.toString());
@@ -1266,7 +1276,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResultToString(cmdResult).contains("No Disk Stores Found"));
 
     final VM vm1 = Host.getHost(0).getVM(1);
-    final String vm1Name = "VM" + vm1.getPid();
+    final String vm1Name = "VM" + vm1.getId();
     final File diskStore1Dir1 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".1");
     this.filesToBeDeleted.add(diskStore1Dir1.getAbsolutePath());
     final File diskStore2Dir1 = new File(new File(".").getAbsolutePath(), diskStore2Name + ".1");
@@ -1292,7 +1302,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     });
 
     final VM vm2 = Host.getHost(0).getVM(2);
-    final String vm2Name = "VM" + vm2.getPid();
+    final String vm2Name = "VM" + vm2.getId();
     final File diskStore1Dir2 = new File(new File(".").getAbsolutePath(), diskStore1Name + ".2");
     this.filesToBeDeleted.add(diskStore1Dir2.getAbsolutePath());
     final File diskStore2Dir2 = new File(new File(".").getAbsolutePath(), diskStore2Name + ".2");
@@ -1328,7 +1338,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     CommandStringBuilder commandStringBuilder =
         new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStore1Name);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, "Group1");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group1");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     String stringResult = commandResultToString(cmdResult);
@@ -1352,7 +1362,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStore2Name);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, "Group2");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group2");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     stringResult = commandResultToString(cmdResult);
@@ -1377,7 +1387,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
     commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_DISK_STORE);
     commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__NAME, diskStore1Name);
-    commandStringBuilder.addOption(CliStrings.DESTROY_DISK_STORE__GROUP, "Group2");
+    commandStringBuilder.addOption(CliStrings.GROUP, "Group2");
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     stringResult = commandResultToString(cmdResult);
@@ -1437,7 +1447,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     diskStoreFactory.setAutoCompact(false);
     diskStoreFactory.create(diskStoreName);
 
-    /****
+    /*
      * Eviction Attributes
      */
     EvictionAttributes ea =

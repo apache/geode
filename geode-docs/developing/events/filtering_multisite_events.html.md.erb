@@ -19,21 +19,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between Geode sites.
+You can optionally create gateway sender and/or gateway receiver filters to control which events are queued and distributed to a remote site, or to modify the data stream that is transmitted between <%=vars.product_name%> sites.
 
 You can implement and deploy two different types of filter for multi-site events:
 
 -   `GatewayEventFilter`. A `GatewayEventFilter` implementation determines whether a region event is placed in a gateway sender queue and/or whether an event in a gateway queue is distributed to a remote site. You can optionally add one or more `GatewayEventFilter` implementations to a gateway sender, etiher in the `cache.xml` configuration file or using the Java API.
 
-    Geode makes a synchronous call to the filter's `beforeEnqueue` method before it places a region event in the gateway sender queue. The filter returns a boolean value that specifies whether the event should be added to the queue.
+    <%=vars.product_name%> makes a synchronous call to the filter's `beforeEnqueue` method before it places a region event in the gateway sender queue. The filter returns a boolean value that specifies whether the event should be added to the queue.
 
-    Geode asynchronously calls the filter's `beforeTransmit` method to determine whether the gateway sender dispatcher thread should distribute the event to a remote gateway receiver.
+    <%=vars.product_name%> asynchronously calls the filter's `beforeTransmit` method to determine whether the gateway sender dispatcher thread should distribute the event to a remote gateway receiver.
 
-    For events that are distributed to another site, Geode calls the listener's `afterAcknowledgement` method to indicate that is has received an ack from the remote site after the event was received.
+    For events that are distributed to another site, <%=vars.product_name%> calls the listener's `afterAcknowledgement` method to indicate that is has received an ack from the remote site after the event was received.
 
--   GatewayTransportFilter. Use a `GatewayTransportFilter` implementation to process the TCP stream that sends a batch of events that is distributed from one Geode cluster to another over a WAN. A `GatewayTransportFilter` is typically used to perform encryption or compression on the data that distributed. You install the same `GatewayTransportFilter` implementation on both a gateway sender and gateway receiver.
+-   GatewayTransportFilter. Use a `GatewayTransportFilter` implementation to process the TCP stream that sends a batch of events that is distributed from one <%=vars.product_name%> cluster to another over a WAN. A `GatewayTransportFilter` is typically used to perform encryption or compression on the data that distributed. You install the same `GatewayTransportFilter` implementation on both a gateway sender and gateway receiver.
 
-    When a gateway sender processes a batch of events for distribution, Geode delivers the stream to the `getInputStream` method of a configured `GatewayTransportFilter` implementation. The filter processes and returns the stream, which is then transmitted to the gateway receiver. When the gateway receiver receives the batch, Geode calls the `getOutputStream` method of a configured filter, which again processes and returns the stream so that the events can be applied in the local cluster.
+    When a gateway sender processes a batch of events for distribution, <%=vars.product_name%> delivers the stream to the `getInputStream` method of a configured `GatewayTransportFilter` implementation. The filter processes and returns the stream, which is then transmitted to the gateway receiver. When the gateway receiver receives the batch, <%=vars.product_name%> calls the `getOutputStream` method of a configured filter, which again processes and returns the stream so that the events can be applied in the local cluster.
 
 ## <a id="topic_E97BB68748F14987916CD1A50E4B4542__section_E20B4A8A98FD4EDAAA8C14B8059AA7F7" class="no-quick-link"></a>Configuring Multi-Site Event Filters
 

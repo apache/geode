@@ -64,7 +64,7 @@ public interface GatewayReceiver {
   public static final String DEFAULT_HOSTNAME_FOR_SENDERS = "";
 
   /**
-   * The default value (true) for manually starting a <code>GatewayReceiver</code>.
+   * The default value for manually starting a <code>GatewayReceiver</code>.
    * 
    * @since GemFire 8.1
    */
@@ -135,6 +135,11 @@ public interface GatewayReceiver {
    * @return the ip address or host name to give to clients so they can connect to this receiver
    */
   public String getHost();
+
+  /**
+   * Returns the hostname configured by {@link GatewayReceiverFactory#setHostnameForSenders(String)}
+   */
+  public String getHostnameForSenders();
 
   /**
    * Returns the configured buffer size of the socket connection for this

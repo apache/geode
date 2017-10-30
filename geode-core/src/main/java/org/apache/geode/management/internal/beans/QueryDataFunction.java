@@ -46,7 +46,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.commands.DataCommands;
+import org.apache.geode.management.internal.cli.commands.DataCommandsUtils;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.json.TypedJson;
@@ -168,7 +168,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
             }
             LocalDataSet lds = new LocalDataSet(parRegion, localPrimaryBucketSet);
             DefaultQuery query = (DefaultQuery) cache.getQueryService().newQuery(queryString);
-            results = (SelectResults) lds.executeQuery(query, null, localPrimaryBucketSet);
+            results = lds.executeQuery(query, null, localPrimaryBucketSet);
           }
         } else {
           rcollector = FunctionService.onRegion(cache.getRegion(regionName))
@@ -365,7 +365,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
                     .toString();
           } else {
             Set<DistributedMember> associatedMembers =
-                DataCommands.getRegionAssociatedMembers(regionPath, cache, true);
+                DataCommandsUtils.getRegionAssociatedMembers(regionPath, cache, true);
 
             if (inputMembers != null && inputMembers.size() > 0) {
               if (!associatedMembers.containsAll(inputMembers)) {
@@ -397,9 +397,9 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
       String randomRegion = regionsInQuery.iterator().next();
 
       Set<DistributedMember> associatedMembers =
-          DataCommands.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);// First
-                                                                                      // available
-                                                                                      // member
+          DataCommandsUtils.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);// First
+      // available
+      // member
 
       if (associatedMembers != null && associatedMembers.size() > 0) {
         Object[] functionArgs = new Object[6];

@@ -73,7 +73,7 @@ public abstract class TXMessage extends SerialDistributionMessage
       if (logger.isDebugEnabled()) {
         logger.debug("processing {}", this);
       }
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (checkCacheClosing(cache) || checkDSClosing(cache.getInternalDistributedSystem())) {
         thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
             .toLocalizedString(dm.getId()));

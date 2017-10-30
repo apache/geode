@@ -21,8 +21,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +40,7 @@ public class ClientAuthDUnitTest extends JUnit4DistributedTestCase {
   public ServerStarterRule server = new ServerStarterRule()
       .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
+  @Category(FlakyTest.class) // GEODE-3692 - Intermittent test failure on nightly builds
   @Test
   public void authWithCorrectPasswordShouldPass() {
     client1.invoke("logging in super-user with correct password", () -> {

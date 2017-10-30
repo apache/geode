@@ -51,20 +51,16 @@ import org.apache.geode.internal.InternalEntity;
 @SuppressWarnings("unused")
 public class LuceneSearchIndexFunction<K, V> extends FunctionAdapter implements InternalEntity {
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   public String getId() {
     return LuceneSearchIndexFunction.class.getName();
   }
 
   public void execute(final FunctionContext context) {
     Set<LuceneSearchResults> result = new HashSet<>();
-    final Cache cache = getCache();
+    final Cache cache = context.getCache();
     final LuceneQueryInfo queryInfo = (LuceneQueryInfo) context.getArguments();
 
-    LuceneService luceneService = LuceneServiceProvider.get(getCache());
+    LuceneService luceneService = LuceneServiceProvider.get(context.getCache());
     try {
       if (luceneService.getIndex(queryInfo.getIndexName(), queryInfo.getRegionPath()) == null) {
         throw new Exception("Index " + queryInfo.getIndexName() + " not found on region "

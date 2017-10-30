@@ -165,6 +165,10 @@ public class NetView implements DataSerializableFixedID {
     }
   }
 
+  public void setViewId(int viewId) {
+    this.viewId = viewId;
+  }
+
 
 
   public int[] getFailureDetectionPorts() {

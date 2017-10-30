@@ -50,7 +50,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 public class GeodeRestClient {
-  public final static String CONTEXT = "/geode/v1";
+  public static final String CONTEXT = "/geode/v1";
 
   private int restPort = 0;
   private String bindAddress = null;

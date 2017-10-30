@@ -19,24 +19,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-When you use the cluster configuration service in Geode, you can examine the generated configuration files in the `cluster_config` directory on the locator. `gfsh` saves configuration files at the cluster-level and at the individual group-level.
+When you use the cluster configuration service in <%=vars.product_name%>, you can examine the generated configuration files in the `cluster_config` directory on the locator. `gfsh` saves configuration files at the cluster-level and at the individual group-level.
 
 The following directories and configuration files are available on the locator running the cluster configuration service:
 
 **Cluster-level configuration**  
 For configurations that apply to all members of a cluster, the locator creates a `cluster` subdirectory within the `cluster_config` directory (or in the cluster configuration directory when starting up the locator with the `--cluster-config-dir=value` parameter) specified. All servers receive this configuration when they are started using `gfsh`. This directory contains:
 
--   `cluster.xml` -- A Geode `cache.xml` file containing configuration common to all members
--   `cluster.properties` -- a Geode ` gemfire.properties` file containing properties common to all members
+-   `cluster.xml` -- A <%=vars.product_name%> `cache.xml` file containing configuration common to all members
+-   `cluster.properties` -- a <%=vars.product_name%> ` gemfire.properties` file containing properties common to all members
 -   Jar files that are intended for deployment to all members
 
 <!-- -->
 
 **Group-level configuration**  
-When you specify the `--group` parameter in a `gfsh` command, (for example, `start server` or `create region`) the locator writes the configurations for each group in a subdirectory with the same name as the group. When you start a server that specifies one or more group names, the server receives both the cluster-level configurations and the configurations from all groups specified. This subdirectory contains:
+When you specify the `--groups` parameter in a `gfsh` command, (for example, `start server` or `create region`) the locator writes the configurations for each group in a subdirectory with the same name as the group. When you start a server that specifies one or more group names, the server receives both the cluster-level configurations and the configurations from all groups specified. This subdirectory contains:
 
--   `<group-name>.xml` -- A Geode `cache.xml` file containing configurations common to all members of the group
--   `<group-name>.properties` -- A Geode `gemfire.properties` file containing properties common to all members of the group
+-   `<group-name>.xml` -- A <%=vars.product_name%> `cache.xml` file containing configurations common to all members of the group
+-   `<group-name>.properties` -- A <%=vars.product_name%> `gemfire.properties` file containing properties common to all members of the group
 -   Jar files that are intended for deployment to all members of the group
 
 <img src="../../images_svg/cluster-group-config.svg" id="concept_ylt_2cb_y4__image_bs1_mcb_y4" class="image" />
@@ -45,7 +45,7 @@ You can export a zip file that contains all artifacts of a cluster configuration
 
 ## Individual Configuration Files and Cluster Configuration Files
 
-Geode applies the cluster-wide configuration files first and then group-level configurations next. If a member has its own configuration files defined (cache.xml and gemfire.properties files), those configurations are applied last. Whenever possible, use the member group-level configuration files in the cluster-configuration service to apply non-cluster-wide configurations on individual members.
+<%=vars.product_name%> applies the cluster-wide configuration files first and then group-level configurations next. If a member has its own configuration files defined (cache.xml and gemfire.properties files), those configurations are applied last. Whenever possible, use the member group-level configuration files in the cluster-configuration service to apply non-cluster-wide configurations on individual members.
 
 ## Troubleshooting Tips
 

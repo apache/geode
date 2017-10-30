@@ -20,7 +20,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * Distributed version of SerializableExternalResource which affects all remote DUnit JVMs including
  * the Locator JVM.
  */
-public class DistributedExternalResource extends SerializableExternalResource {
+public abstract class DistributedExternalResource extends SerializableExternalResource {
 
   private final RemoteInvoker invoker;
 

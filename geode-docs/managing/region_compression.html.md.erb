@@ -1,0 +1,226 @@
+---
+title: Region Compression
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<a id="topic_r43_wgc_gl"></a>
+
+
+This section describes region compression, its benefits and usage.
+
+One way to reduce memory consumption by <%=vars.product_name%> is to enable compression in your regions. <%=vars.product_name%> allows you to compress in-memory region values using pluggable compressors (compression codecs). <%=vars.product_name%> includes the [Snappy](http://google.github.io/snappy/) compressor as the built-in compression codec; however, you can implement and specify a different compressor for each compressed region.
+
+## What Gets Compressed
+
+When you enable compression in a region, all values stored in the region are compressed while in memory. Keys and indexes are not compressed. New values are compressed when put into the in-memory cache and all values are decompressed when being read from the cache. Values are not compressed when persisted to disk. Values are decompressed before being sent over the wire to other peer members or clients.
+
+When compression is enabled, each value in the region is compressed, and each region entry is compressed as a single unit. It is not possible to compress individual fields of an entry.
+
+You can have a mix of compressed and non-compressed regions in the same cache.
+
+-   **[Guidelines on Using Compression](#concept_a2c_rhc_gl)**
+
+    This topic describes factors to consider when deciding on whether to use compression.
+
+-   **[How to Enable Compression in a Region](#topic_inm_whc_gl)**
+
+    This topic describes how to enable compression on your region.
+
+-   **[Working with Compressors](#topic_hqf_syj_g4)**
+
+    When using region compression, you can use the default Snappy compressor included with <%=vars.product_name%> or you can specify your own compressor.
+
+-   **[Comparing Performance of Compressed and Non-Compressed Regions](#topic_omw_j3c_gl)**
+
+    The comparative performance of compressed regions versus non-compressed regions can vary depending on how the region is being used and whether the region is hosted in a memory-bound JVM.
+
+## <a id="concept_a2c_rhc_gl" class="no-quick-link"></a>Guidelines on Using Compression
+
+This topic describes factors to consider when deciding on whether to use compression.
+
+Review the following guidelines when deciding on whether or not to enable compression in your region:
+
+-   **Use compression when JVM memory usage is too high.** Compression allows you to store more region data in-memory and to reduce the number of expensive garbage collection cycles that prevent JVMs from running out of memory when memory usage is high.
+
+    To determine if JVM memory usage is high, examine the the following statistics:
+
+    -   vmStats&gt;freeMemory
+    -   vmStats-&gt;maxMemory
+    -   ConcurrentMarkSweep-&gt;collectionTime
+
+    If the amount of free memory regularly drops below 20% - 25% or the duration of the garbage collection cycles is generally on the high side, then the regions hosted on that JVM are good candidates for having compression enabled.
+
+-   **Consider the types and lengths of the fields in the region's entries.** Since compression is performed on each entry separately (and not on the region as a whole), consider the potential for duplicate data across a single entry. Duplicate bytes are compressed more easily. Also, since region entries are first serialized into a byte area before being compressed, how well the data might compress is determined by the number and length of duplicate bytes across the entire entry and not just a single field. Finally, the larger the entry the more likely compression will achieve good results as the potential for duplicate bytes, and a series of duplicate bytes, increases.
+-   **Consider the type of data you wish to compress.** The type of data stored has a significant impact on how well the data may compress. String data will generally compress better than numeric data simply because string bytes are far more likely to repeat; however, that may not always be the case. For example, a region entry that holds a couple of short, unique strings may not provide as much memory savings when compressed as another region entry that holds a large number of integer values. In short, when evaluating the potential gains of compressing a region, consider the likelihood of having duplicate bytes, and more importantly the length of a series of duplicate bytes, for a single, serialized region entry. In addition, data that has already been compressed, such as JPEG format files, can actually cause more memory to be used.
+-   **Compress if you are storing large text values.** Compression is beneficial if you are storing large text values (such as JSON or XML) or blobs in <%=vars.product_name%> that would benefit from compression.
+-   **Consider whether fields being queried against are indexed.** You can query against compressed regions; however, if the fields you are querying against have not been indexed, then the fields must be decompressed before they can be used for comparison. In short, you may incur some query performance costs when querying against non-indexed fields.
+-   **Objects stored in the compression region must be serializable.** Compression only operates on byte arrays, therefore objects being stored in a compressed region must be serializable and deserializable. The objects can either implement the Serializable interface or use one of the other <%=vars.product_name%> serialization mechanisms (such as PdxSerializable). Implementers should always be aware that when compression is enabled the instance of an object put into a region will not be the same instance when taken out. Therefore, transient attributes will lose their value when the containing object is put into and then taken out of a region.
+
+-   **Compressed regions will enable cloning by default.** Setting a compressor and then disabling cloning results in an exception. The options are incompatible because the process of compressing/serializing and then decompressing/deserializing will result in a different instance of the object being created and that may be interpreted as cloning the object.
+
+<a id="topic_inm_whc_gl"></a>
+
+## <a id="topic_inm_whc_gl" class="no-quick-link"></a>How to Enable Compression in a Region
+
+This topic describes how to enable compression on your region.
+
+To enable compression on your region, set the following region attribute in your cache.xml:
+
+``` pre
+<?xml version="1.0" encoding= "UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0” lock-lease="120"  lock-timeout= "60" search-timeout= "300"  is-server= "true"  copy-on-read= "false" > 
+   <region name="compressedRegion" > 
+      <region-attributes data-policy="replicate" ... /> 
+         <compressor>
+             <class-name>org.apache.geode.compression.SnappyCompressor</class-name>
+         </compressor>
+        ...
+      </region-attributes>
+   </region> 
+</cache>
+```
+
+In the Compressor element, specify the class-name for your compressor implementation. This example specifies the Snappy compressor, which is bundled with <%=vars.product_name%> . You can also specify a custom compressor. See [Working with Compressors](#topic_hqf_syj_g4) for an example.
+
+Compression can be enabled during region creation using gfsh or programmatically as well.
+
+Using gfsh:
+
+``` pre
+gfsh>create-region --name=”CompressedRegion” --compressor=”org.apache.geode.compression.SnappyCompressor”;
+```
+
+API:
+
+``` pre
+regionFactory.setCompressor(new SnappyCompressor());
+```
+
+or
+
+``` pre
+regionFactory.setCompressor(SnappyCompressor.getDefaultInstance());
+```
+
+## How to Check Whether Compression is Enabled
+
+You can also check whether a region has compression enabled by querying which codec is being used. A null codec indicates that no compression is enabled for the region.
+
+``` pre
+Region myRegion = cache.getRegion("myRegion");
+Compressor compressor = myRegion.getAttributes().getCompressor();
+```
+
+## <a id="topic_hqf_syj_g4" class="no-quick-link"></a>Working with Compressors
+
+When using region compression, you can use the default Snappy compressor included with <%=vars.product_name%> or you can specify your own compressor.
+
+The compression API consists of a single interface that compression providers must implement. The default compressor (SnappyCompressor) is the single compression implementation that comes bundled with the product. Note that since the Compressor is stateless, there only needs to be a single instance in any JVM; however, multiple instances may be used without issue. The single, default instance of the SnappyCompressor may be retrieved with the `SnappyCompressor.getDefaultInstance()` static method.
+
+**Note:**
+The Snappy codec included with <%=vars.product_name%> cannot be used with Solaris deployments. Snappy is only supported on Linux, Windows, and macOS deployments of <%=vars.product_name%>.
+
+This example provides a custom Compressor implementation:
+
+``` pre
+package com.mybiz.myproduct.compression;
+
+import org.apache.geode.compression.Compressor;
+
+public class LZWCompressor implements Compressor {
+  private final LZWCodec lzwCodec = new LZWCodec(); 
+  
+  @Override
+  public byte[] compress(byte[] input) {
+         return lzwCodec.compress(input);
+  }
+
+  @Override
+  public byte[] decompress(byte[] input) {
+         return lzwCodec.decompress(input);
+  }
+}
+```
+
+To use the new custom compressor on a region:
+
+1.  Make sure that the new compressor package is available in the classpath of all JVMs that will host the region.
+2.  Configure the custom compressor for the region using any of the following mechanisms:
+
+    Using gfsh:
+
+    ``` pre
+    gfsh>create-region --name=”CompressedRegion” \
+    --compressor=”com.mybiz.myproduct.compression.LZWCompressor”
+    ```
+
+    Using API:
+
+    For example:
+
+    ``` pre
+    regionFactory.setCompressor(new LZWCompressor());
+    ```
+
+    cache.xml:
+
+    ``` pre
+    <region-attributes>
+     <Compressor>
+         <class-name>com.mybiz.myproduct.compression.LZWCompressor</class-name>
+      </Compressor>
+    </region-attributes>
+    ```
+
+## Changing the Compressor for an Already Compressed Region
+
+You typically enable compression on a region at the time of region creation. You cannot modify the Compressor or disable compression for the region while the region is online.
+
+However, if you need to change the compressor or disable compression, you can do so by performing the following steps:
+
+1.  Shut down the members hosting the region you wish to modify.
+2.  Modify the cache.xml file for the member either specifying a new compressor or removing the compressor attribute from the region.
+3.  Restart the member.
+
+## <a id="topic_omw_j3c_gl" class="no-quick-link"></a>Comparing Performance of Compressed and Non-Compressed Regions
+
+The comparative performance of compressed regions versus non-compressed regions can vary depending on how the region is being used and whether the region is hosted in a memory-bound JVM.
+
+When considering the cost of enabling compression, you should consider the relative cost of reading and writing compressed data as well as the cost of compression as a percentage of the total time spent managing entries in a region. As a general rule, enabling compression on a region will add 30% - 60% more overhead for region create and update operations than for region get operations. Because of this, enabling compression will create more overhead on regions that are write heavy than on regions that are read heavy.
+
+However, when attempting to evaluate the performance cost of enabling compression you should also consider the cost of compression relative to the overall cost of managing entries in a region. A region may be tuned in such a way that it is highly optimized for read and/or write performance. For example, a replicated region that does not save to disk will have much better read and write performance than a partitioned region that does save to disk. Enabling compression on a region that has been optimized for read and write performance will provide more noticeable results than using compression on regions that have not been optimized this way. More concretely, performance may degrade by several hundred percent on a read/write optimized region whereas it may only degrade by 5 to 10 percent on a non-optimized region.
+
+A final note on performance relates to the cost when enabling compression on regions in a memory bound JVM. Enabling compression generally assumes that the enclosing JVM is memory bound and therefore spends a lot of time for garbage collection. In that case performance may improve by as much as several hundred percent as the JVM will be running far fewer garbage collection cycles and spending less time when running a cycle.
+
+## Monitoring Compression Performance
+
+The following statistics provide monitoring for cache compression:
+
+-   `compressTime`
+-   `decompressTime`
+-   `compressions`
+-   `decompressions`
+-   `preCompressedBytes`
+-   `postCompressedBytes`
+
+See [Cache Performance (CachePerfStats)](../reference/statistics_list.html#section_DEF8D3644D3246AB8F06FE09A37DC5C8) for statistic descriptions.
+
+

@@ -15,15 +15,10 @@
 
 package org.apache.geode.modules.session.installer;
 
-import org.apache.geode.modules.session.installer.args.Argument;
-import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
-import org.apache.geode.modules.session.installer.args.ArgumentValues;
-import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
-import org.apache.geode.modules.session.installer.args.UsageException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,10 +27,18 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import org.apache.geode.internal.ExitCode;
+import org.apache.geode.modules.session.installer.args.Argument;
+import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
+import org.apache.geode.modules.session.installer.args.ArgumentValues;
+import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
+import org.apache.geode.modules.session.installer.args.UsageException;
 
 /**
  *
@@ -44,9 +47,6 @@ public class Installer {
 
   private static final String GEMFIRE_FILTER_CLASS =
       "org.apache.geode.modules.session.filter.SessionCachingFilter";
-
-  private static final String GEMFIRE_LISTENER_CLASS =
-      "org.apache.geode.modules.session.filter.SessionListener";
 
   private ArgumentValues argValues;
 
@@ -116,7 +116,7 @@ public class Installer {
         error.append(ux.getUsage());
       }
       log(error.toString());
-      System.exit(2);
+      ExitCode.INSTALL_FAILURE.doSystemExit();
     }
 
   }
@@ -217,10 +217,7 @@ public class Installer {
     final Element filterMapping = doc.createElement("filter-mapping");
     append(doc, filterMapping, "filter-name", "gemfire-session-filter");
     append(doc, filterMapping, "url-pattern", "/*");
-    final Element contextListener = doc.createElement("listener");
-    append(doc, contextListener, "listener-class", GEMFIRE_LISTENER_CLASS);
     docElement.insertBefore(filterMapping, after(docElement, "filter"));
-    docElement.insertBefore(contextListener, after(docElement, "filter-mapping"));
     return doc;
   }
 

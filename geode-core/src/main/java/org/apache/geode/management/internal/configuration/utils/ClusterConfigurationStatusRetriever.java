@@ -14,6 +14,11 @@
  */
 package org.apache.geode.management.internal.configuration.utils;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -21,22 +26,17 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.Set;
-
 public class ClusterConfigurationStatusRetriever {
   private static final int NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS = 3;
 
-  public static String fromLocator(String locatorHostName, int locatorPort)
+  public static String fromLocator(String locatorHostName, int locatorPort, Properties configProps)
       throws ClassNotFoundException, IOException {
     final StringBuilder buffer = new StringBuilder();
 
     try {
       final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
 
-      TcpClient client = new TcpClient();
+      TcpClient client = new TcpClient(configProps);
       SharedConfigurationStatusResponse statusResponse =
           (SharedConfigurationStatusResponse) client.requestToServer(networkAddress, locatorPort,
               new SharedConfigurationStatusRequest(), 10000, true);
@@ -114,6 +114,7 @@ public class ClusterConfigurationStatusRetriever {
 
   public static String fromLocator(LocatorLauncher.LocatorState locatorState)
       throws ClassNotFoundException, IOException {
-    return fromLocator(locatorState.getHost(), Integer.parseInt(locatorState.getPort()));
+    return fromLocator(locatorState.getHost(), Integer.parseInt(locatorState.getPort()),
+        new Properties());
   }
 }

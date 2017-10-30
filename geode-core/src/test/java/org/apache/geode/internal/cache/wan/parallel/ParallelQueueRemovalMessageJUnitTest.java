@@ -28,7 +28,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
@@ -45,11 +44,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.BucketRegionQueueHelper;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -156,10 +155,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     when(pa.getColocatedWith()).thenReturn(null);
 
-    // classes cannot be mocked
-    ProxyBucketRegion pbr = new ProxyBucketRegion(BUCKET_ID, this.queueRegion, pbrIra);
-
-    when(ba.getProxyBucketRegion()).thenReturn(pbr);
+    when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
 
     // Create RegionAttributes
     AttributesFactory factory = new AttributesFactory();
@@ -175,7 +171,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     this.bucketRegionQueue = spy(realBucketRegionQueue);
     // (this.queueRegion.getBucketName(BUCKET_ID), attributes, this.rootRegion, this.cache, ira);
     EntryEventImpl entryEvent = EntryEventImpl.create(this.bucketRegionQueue, Operation.DESTROY,
-        mock(EventID.class), "value", null, false, mock(DistributedMember.class));
+        KEY, "value", null, false, mock(DistributedMember.class));
     doReturn(entryEvent).when(this.bucketRegionQueue).newDestroyEntryEvent(any(), any());
     // when(this.bucketRegionQueue.newDestroyEntryEvent(any(), any())).thenReturn();
 
@@ -203,7 +199,6 @@ public class ParallelQueueRemovalMessageJUnitTest {
     assertEquals(1, this.bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
   }
 
-  @Ignore
   @Test
   public void validateDestroyKeyFromBucketQueueInUninitializedBucketRegionQueue() throws Exception {
     // Validate initial BucketRegionQueue state
@@ -245,7 +240,6 @@ public class ParallelQueueRemovalMessageJUnitTest {
     assertEquals(0, tempQueue.size());
   }
 
-  @Ignore
   @Test
   public void validateDestroyFromBucketQueueAndTempQueueInUninitializedBucketRegionQueue() {
     // Validate initial BucketRegionQueue state
@@ -281,7 +275,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private void createAndProcessParallelQueueRemovalMessage() {
     ParallelQueueRemovalMessage message =
         new ParallelQueueRemovalMessage(createRegionToDispatchedKeysMap());
-    message.process(null);
+    message.process((DistributionManager) this.cache.getDistributionManager());
   }
 
   private HashMap<String, Map<Integer, List<Long>>> createRegionToDispatchedKeysMap() {

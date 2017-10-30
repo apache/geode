@@ -21,7 +21,7 @@ import java.util.List;
 import javax.transaction.Status;
 
 import org.apache.logging.log4j.Logger;
-
+import org.apache.geode.GemFireException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
@@ -237,7 +237,13 @@ public class ClientTXStateStub extends TXStateStub {
   @Override
   public void beforeCompletion() {
     obtainLocalLocks();
-    this.firstProxy.beforeCompletion(proxy.getTxId().getUniqId());
+    try {
+      this.firstProxy.beforeCompletion(proxy.getTxId().getUniqId());
+    } catch (GemFireException e) {
+      this.lockReq.releaseLocal();
+      this.firstProxy.getPool().releaseServerAffinity();
+      throw e;
+    }
   }
 
   public InternalDistributedMember getOriginatingMember() {

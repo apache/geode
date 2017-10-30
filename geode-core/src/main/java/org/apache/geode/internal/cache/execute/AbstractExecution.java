@@ -293,7 +293,7 @@ public abstract class AbstractExecution implements InternalExecution {
   // Bug41118 : in case of lonerDistribuedSystem do local execution through
   // main thread otherwise give execution to FunctionExecutor from
   // DistributionManager
-  public void executeFunctionOnLocalNode(final Function fn, final FunctionContext cx,
+  public void executeFunctionOnLocalNode(final Function<?> fn, final FunctionContext cx,
       final ResultSender sender, DM dm, final boolean isTx) {
     if (dm instanceof DistributionManager && !isTx) {
       final DistributionManager newDM = (DistributionManager) dm;
@@ -317,7 +317,7 @@ public abstract class AbstractExecution implements InternalExecution {
     }
   }
 
-  public void executeFunctionLocally(final Function fn, final FunctionContext cx,
+  public void executeFunctionLocally(final Function<?> fn, final FunctionContext cx,
       final ResultSender sender, DM dm) {
 
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
@@ -329,6 +329,7 @@ public abstract class AbstractExecution implements InternalExecution {
         logger.debug("Executing Function: {} on local node with context: {}", fn.getId(),
             cx.toString());
       }
+
       fn.execute(cx);
       stats.endFunctionExecution(start, fn.hasResult());
     } catch (FunctionInvocationTargetException fite) {
@@ -469,97 +470,6 @@ public abstract class AbstractExecution implements InternalExecution {
 
   public void addFunctionAttributes(String functionId, byte[] functionAttributes) {
     idToFunctionAttributes.put(functionId, functionAttributes);
-  }
-
-  public ResultCollector execute(String functionName, boolean hasResult) throws FunctionException {
-    if (functionName == null) {
-      throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
-    }
-    Function functionObject = FunctionService.getFunction(functionName);
-    if (functionObject == null) {
-      throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(functionObject));
-    }
-
-    byte registeredFunctionState = AbstractExecution.getFunctionState(functionObject.isHA(),
-        functionObject.hasResult(), functionObject.optimizeForWrite());
-
-    byte functionState = AbstractExecution.getFunctionState(hasResult, hasResult, false);
-    if (registeredFunctionState != functionState) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER
-              .toLocalizedString(functionName));
-    }
-
-    this.isFnSerializationReqd = false;
-    // If hasResult is true, isHA will also be true and hasResult is false then isHA will be false
-    // For other combination use next API
-    return executeFunction(functionObject);
-  }
-
-  public ResultCollector execute(String functionName, boolean hasResult, boolean isHA)
-      throws FunctionException {
-    if (functionName == null) {
-      throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
-    }
-    if (isHA && !hasResult) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH.toLocalizedString());
-    }
-    Function functionObject = FunctionService.getFunction(functionName);
-    if (functionObject == null) {
-      throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(functionObject));
-    }
-    byte registeredFunctionState = AbstractExecution.getFunctionState(functionObject.isHA(),
-        functionObject.hasResult(), functionObject.optimizeForWrite());
-
-    byte functionState = AbstractExecution.getFunctionState(isHA, hasResult, false);
-    if (registeredFunctionState != functionState) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER
-              .toLocalizedString(functionName));
-    }
-
-    this.isFnSerializationReqd = false;
-    return executeFunction(functionObject);
-  }
-
-  public ResultCollector execute(String functionName, boolean hasResult, boolean isHA,
-      boolean isOptimizeForWrite) throws FunctionException {
-    if (functionName == null) {
-      throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
-    }
-    if (isHA && !hasResult) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH.toLocalizedString());
-    }
-    Function functionObject = FunctionService.getFunction(functionName);
-    if (functionObject == null) {
-      throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(functionObject));
-    }
-    byte registeredFunctionState = AbstractExecution.getFunctionState(functionObject.isHA(),
-        functionObject.hasResult(), functionObject.optimizeForWrite());
-
-    byte functionState = AbstractExecution.getFunctionState(isHA, hasResult, isOptimizeForWrite);
-    if (registeredFunctionState != functionState) {
-      throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH_CLIENT_SERVER
-              .toLocalizedString(functionName));
-    }
-
-    this.isFnSerializationReqd = false;
-    return executeFunction(functionObject);
   }
 
   private void handleException(Throwable functionException, final Function fn,

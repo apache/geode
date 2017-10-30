@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
@@ -133,8 +132,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
     Mockito.doReturn(mockCollector).when(mockManager)
         .reduce(Mockito.argThat(new ArgumentMatcher<Collection<TopEntriesCollector>>() {
           @Override
-          public boolean matches(Object argument) {
-            Collection<TopEntriesCollector> collectors = (Collection<TopEntriesCollector>) argument;
+          public boolean matches(Collection<TopEntriesCollector> argument) {
+            Collection<TopEntriesCollector> collectors = argument;
             return collectors.contains(result1) && collectors.contains(result2);
           }
         }));

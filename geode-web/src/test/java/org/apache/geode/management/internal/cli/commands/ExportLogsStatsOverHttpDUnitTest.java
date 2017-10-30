@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Rule;
 import org.junit.Test;

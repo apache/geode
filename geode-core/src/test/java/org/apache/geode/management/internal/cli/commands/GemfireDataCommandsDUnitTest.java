@@ -12,13 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
-import static org.apache.geode.test.dunit.Wait.*;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotEquals;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNotSame;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,7 +97,9 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 /**
  * Dunit class for testing gemfire data commands : get, put, remove, select, rebalance
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1182 GEODE-1249 GEODE-1404 GEODE-1430
+                                                    // GEODE-1487 GEODE-1496 GEODE-1561 GEODE-1822
+                                                    // GEODE-2006 GEODE-3530
 @SuppressWarnings("serial")
 public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
@@ -412,7 +421,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       getLogWriter().info("Region in query : " + regionsInQuery);
       if (regionsInQuery.size() > 0) {
         Set<DistributedMember> members =
-            DataCommands.getQueryRegionsAssociatedMembers(regionsInQuery, cache, returnAll);
+            DataCommandsUtils.getQueryRegionsAssociatedMembers(regionsInQuery, cache, returnAll);
         getLogWriter().info("Members for Region in query : " + members);
         if (expectedMembers != -1) {
           assertNotNull(members);
@@ -434,34 +443,32 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     manager.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true,
-            new String[] {DATA_REGION_NAME_VM1_PATH, DATA_REGION_NAME_VM2_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 2, true,
-            new String[] {DATA_REGION_NAME_PATH, DATA_REGION_NAME_CHILD_1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false,
-            new String[] {DATA_REGION_NAME_PATH, DATA_REGION_NAME_CHILD_1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true,
-            new String[] {DATA_REGION_NAME_VM1_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false,
-            new String[] {DATA_REGION_NAME_VM1_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true,
-            new String[] {DATA_REGION_NAME_VM2_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false,
-            new String[] {DATA_REGION_NAME_VM2_PATH, DATA_REGION_NAME_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, DATA_PAR_REGION_NAME_VM1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, 0, false,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, DATA_PAR_REGION_NAME_VM1_PATH});
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, "/jfgkdfjgkd"}); // one wrong region
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false,
-            new String[] {DATA_PAR_REGION_NAME_VM2_PATH, "/jfgkdfjgkd"}); // one wrong region
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true,
-            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both
+        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true, DATA_REGION_NAME_VM1_PATH,
+            DATA_REGION_NAME_VM2_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 2, true, DATA_REGION_NAME_PATH,
+            DATA_REGION_NAME_CHILD_1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false, DATA_REGION_NAME_PATH,
+            DATA_REGION_NAME_CHILD_1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true, DATA_REGION_NAME_VM1_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false, DATA_REGION_NAME_VM1_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, true, DATA_REGION_NAME_VM2_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 1, false, DATA_REGION_NAME_VM2_PATH,
+            DATA_REGION_NAME_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 0, true, DATA_PAR_REGION_NAME_VM2_PATH,
+            DATA_PAR_REGION_NAME_VM1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, 0, false, DATA_PAR_REGION_NAME_VM2_PATH,
+            DATA_PAR_REGION_NAME_VM1_PATH);
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true, DATA_PAR_REGION_NAME_VM2_PATH,
+            "/jfgkdfjgkd"); // one wrong region
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false, DATA_PAR_REGION_NAME_VM2_PATH,
+            "/jfgkdfjgkd"); // one wrong region
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, true, "/dhgfdhgf", "/dhgddhd"); // both
         // regions
         // wrong
-        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false,
-            new String[] {"/dhgfdhgf", "/dhgddhd"}); // both
+        doQueryRegionsAssociatedMembers(queryTemplate1, -1, false, "/dhgfdhgf", "/dhgddhd"); // both
         // regions
         // wrong
       }
@@ -549,7 +556,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     int randomInteger = random.nextInt(COUNT);
     String query =
         "query --query=\"select ID , status , createTime , pk, floatMinValue from ${DATA_REGION} where ID <= ${PORTFOLIO_ID}"
-            + " and status='${STATUS}'" + "\" --interactive=false";
+            + " and status=${STATUS}" + "\" --interactive=false";
     executeCommand("set variable --name=DATA_REGION --value=" + DATA_REGION_NAME_PATH);
     executeCommand("set variable --name=PORTFOLIO_ID --value=" + randomInteger);
     executeCommand("set variable --name=STATUS --value=" + (statusActive ? "active" : "inactive"));
@@ -561,7 +568,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     try {
       query =
           "query --query=\"select ID , status , createTime , pk, floatMinValue from ${DATA_REGION2} where ID <= ${PORTFOLIO_ID2}"
-              + " and status='${STATUS2}'" + "\" --interactive=false";
+              + " and status=${STATUS2}" + "\" --interactive=false";
       cmdResult = executeCommand(query);
       printCommandOutput(cmdResult);
       validateSelectResult(cmdResult, false, 0, null);
@@ -578,8 +585,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     validateResult(cmdResult, true);
   }
 
-  @Category(FlakyTest.class) // GEODE-2006
-  @Test
+  @Test // FlakyTest: GEODE-2006
   public void testSelectCommand() {
     setupForSelect();
     doTestGetRegionAssociatedMembersForSelect();
@@ -747,87 +753,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  /**
-   * Test remove an a region with a zero length string GEODE-2269
-   * 
-   * @author Gregory Green
-   */
-  @Test
-  public void testRemoveEmptyKey() {
-    // set the test region/data
-    setupForGetPutRemoveLocateEntry("testRemoveEmptyKey");
-
-    // Test across two virtual machines
-    final VM vm1 = Host.getHost(0).getVM(1);
-    final VM vm2 = Host.getHost(0).getVM(2);
-
-    // Initial empty key/value
-    String key = "";
-    String value = "";
-
-    // Get empty key in region
-    SerializableRunnable checkPutKeys = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region<Object, Object> region = cache.getRegion(DATA_REGION_NAME_PATH);
-        assertNotNull(region);
-        region.put(key, value);
-      }
-    };
-
-    vm1.invoke(checkPutKeys);
-    vm2.invoke(checkPutKeys);
-
-    // Check if keys were put correctly
-    SerializableRunnable checkPutKeysExists = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region<Object, Object> region = cache.getRegion(DATA_REGION_NAME_PATH);
-        assertNotNull(region);
-        assertEquals(value, region.get(key));
-      }
-    };
-
-    vm1.invoke(checkPutKeysExists);
-    vm2.invoke(checkPutKeysExists);
-
-    // Remove empty key entry using gfsh remove command
-    String command = "remove ";
-
-    command = command + " " + "--key=\"" + key + "\" --region=" + DATA_REGION_NAME_PATH;
-    CommandResult cmdResult = executeCommand(command);
-    printCommandOutput(cmdResult);
-
-    assertNotNull(cmdResult);
-    assertNotNull(cmdResult.getResultData());
-    assertNotNull(cmdResult.getResultData().getGfJsonObject());
-    assertTrue(
-        cmdResult.getResultData().getGfJsonObject() + " not contains message:"
-            + CliStrings.REMOVE__MSG__KEY_EMPTY,
-        !cmdResult.getResultData().getGfJsonObject().toString()
-            .contains(CliStrings.REMOVE__MSG__KEY_EMPTY));
-
-    validateResult(cmdResult, true);
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    // Check that key were removed
-    SerializableRunnable checkPutKeysDoesNotExists = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region<Object, Object> region = cache.getRegion(DATA_REGION_NAME_PATH);
-        assertNotNull(region);
-        assertFalse(value, region.containsKey(key));
-      }
-    };
-
-    vm1.invoke(checkPutKeysDoesNotExists);
-    vm2.invoke(checkPutKeysDoesNotExists);
-  }
-
-
   @Test
   public void testSimplePutCommand() {
     final String keyPrefix = "testKey";
@@ -985,8 +910,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
   }
 
-  @Test
-  @Category(FlakyTest.class) // GEODE-1249
+  @Test // FlakyTest: GEODE-1249
   public void testSimplePutIfAbsentCommand() {
     final String keyPrefix = "testKey";
     final String valuePrefix = "testValue";
@@ -1046,64 +970,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
     vm1.invoke(checkPutIfAbsentKeys);
     vm2.invoke(checkPutIfAbsentKeys);
-  }
-
-  @Category(FlakyTest.class) // GEODE-1496 (http)
-  @Test
-  public void testSimpleRemoveCommand() {
-    final String keyPrefix = "testKey";
-    final String valuePrefix = "testValue";
-
-    setupForGetPutRemoveLocateEntry("testSimpleRemove");
-
-    final VM vm1 = Host.getHost(0).getVM(1);
-    final VM vm2 = Host.getHost(0).getVM(2);
-
-
-    SerializableRunnable putKeys = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-        assertNotNull(region);
-        region.clear();
-        for (int i = 0; i < COUNT; i++) {
-          String key = keyPrefix + i;
-          String value = valuePrefix + i;
-          region.put(key, value);
-        }
-        assertEquals(COUNT, region.size());
-      }
-    };
-    vm1.invoke(putKeys);
-
-    for (int i = 0; i < COUNT; i++) {
-      String command = "remove";
-      String key = keyPrefix + i;
-      String value = valuePrefix + i;
-      command = command + " " + "--key=" + key + " --region=" + DATA_REGION_NAME_PATH;
-      CommandResult cmdResult = executeCommand(command);
-      printCommandOutput(cmdResult);
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-      validateResult(cmdResult, true);
-    }
-
-    SerializableRunnable checkRemoveKeys = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-        assertNotNull(region);
-        for (int i = 0; i < COUNT; i++) {
-          String key = keyPrefix + i;
-          assertEquals(false, region.containsKey(key));
-        }
-        assertEquals(0, region.size());
-      }
-    };
-
-    vm1.invoke(checkRemoveKeys);
-    vm2.invoke(checkRemoveKeys);
   }
 
   @Test
@@ -1284,8 +1150,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1822
-  @Test
+  @Test // FlakyTest: GEODE-1822
   public void testGetLocateEntryLocationsForPR() {
     final String keyPrefix = "testKey";
     final String valuePrefix = "testValue";
@@ -1381,9 +1246,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     vm2.invoke(checkPutKeysInVM2);
   }
 
-  @Category(FlakyTest.class) // GEODE-1182: random ports, BindException, HeadlessGFSH,
-                             // waitForCriterion, time sensitive
-  @Test
+  @Test // FlakyTest: GEODE-1182
   public void testGetLocateEntryJsonKeys() {
     final String keyPrefix = "testKey";
 
@@ -1508,8 +1371,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1430
-  @Test
+  @Test // FlakyTest: GEODE-1430
   public void testPutJsonKeys() {
     final String keyPrefix = "testKey";
 
@@ -1640,73 +1502,6 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     validateResult(cmdResult, false);
   }
 
-  @Test
-  public void testRemoveJsonCommand() {
-    final String keyPrefix = "testKey";
-
-    setupForGetPutRemoveLocateEntry("testRemoveJsonCommand");
-
-    final VM vm1 = Host.getHost(0).getVM(1);
-    final VM vm2 = Host.getHost(0).getVM(2);
-
-    SerializableRunnable putKeys = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-        assertNotNull(region);
-        region.clear();
-        for (int i = 0; i < COUNT; i++) {
-          String keyString = keyPrefix + i;
-          Key1 key = new Key1();
-          key.setId(keyString);
-          key.setName("name" + keyString);
-          Value2 value2 = new Value2();
-          value2.setStateName("State" + keyString);
-          value2.setCapitalCity("capital" + keyString);
-          value2.setPopulation(i * 100);
-          value2.setAreaInSqKm(i * 100.4365);
-          region.put(key, value2);
-        }
-      }
-    };
-
-    vm1.invoke(putKeys);
-
-    for (int i = 0; i < COUNT; i++) {
-      String command = "remove";
-      String keyString = keyPrefix + i;
-      String keyJson = keyTemplate.replaceAll("\\?", keyString);
-      getLogWriter().info("Removing key with json key : " + keyJson);
-      command = command + " " + "--key=" + keyJson + " --region=" + DATA_REGION_NAME_PATH
-          + " --key-class=" + Key1.class.getCanonicalName();
-      CommandResult cmdResult = executeCommand(command);
-      printCommandOutput(cmdResult);
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-      validateResult(cmdResult, true);
-    }
-
-    SerializableRunnable checkRemoveKeys = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-        assertNotNull(region);
-        for (int i = 0; i < COUNT; i++) {
-          String keyString = keyPrefix + i;
-          Key1 key = new Key1();
-          key.setId(keyString);
-          key.setName("name" + keyString);
-          assertEquals(false, region.containsKey(key));
-        }
-        assertEquals(0, region.size());
-      }
-    };
-
-    vm1.invoke(checkRemoveKeys);
-    vm2.invoke(checkRemoveKeys);
-  }
-
   private Region<?, ?> createParReg(String regionName, Cache cache) {
     RegionFactory regionFactory = cache.createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
@@ -1719,8 +1514,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
-  @Category(FlakyTest.class) // GEODE-1404
-  @Test
+  @Test // FlakyTest: GEODE-1404
   public void testImportExportData() throws InterruptedException, IOException {
     final String regionName = "Region1";
     final String exportFileName = "export.gfd";
@@ -1755,7 +1549,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
       CommandStringBuilder csb = new CommandStringBuilder(CliStrings.EXPORT_DATA);
       csb.addOption(CliStrings.EXPORT_DATA__REGION, regionName);
-      csb.addOption(CliStrings.EXPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       csb.addOption(CliStrings.EXPORT_DATA__FILE, filePath);
       String commandString = csb.toString();
 
@@ -1788,7 +1582,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.IMPORT_DATA);
       csb.addOption(CliStrings.IMPORT_DATA__REGION, regionName);
       csb.addOption(CliStrings.IMPORT_DATA__FILE, filePath);
-      csb.addOption(CliStrings.IMPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
 
       commandString = csb.toString();
       cmdResult = executeCommand(commandString);
@@ -1834,7 +1628,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.IMPORT_DATA);
       csb.addOption(CliStrings.IMPORT_DATA__REGION, regionName);
       csb.addOption(CliStrings.IMPORT_DATA__FILE, filePath);
-      csb.addOption(CliStrings.IMPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       csb.addOption(CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, "true");
       commandString = csb.toString();
       cmdResult = executeCommand(commandString);
@@ -1852,7 +1646,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.EXPORT_DATA);
       csb.addOption(CliStrings.EXPORT_DATA__REGION, "FDSERW");
       csb.addOption(CliStrings.EXPORT_DATA__FILE, filePath);
-      csb.addOption(CliStrings.EXPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       commandString = csb.getCommandString();
 
       cmdResult = executeCommand(commandString);
@@ -1864,7 +1658,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       csb = new CommandStringBuilder(CliStrings.IMPORT_DATA);
       csb.addOption(CliStrings.IMPORT_DATA__REGION, regionName);
       csb.addOption(CliStrings.IMPORT_DATA__FILE, "#WEQW");
-      csb.addOption(CliStrings.IMPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.MEMBER, "Manager");
       commandString = csb.getCommandString();
 
       cmdResult = executeCommand(commandString);
@@ -2100,8 +1894,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1561
-  @Test
+  @Test // FlakyTest: GEODE-1561
   public void testSimulateForEntireDS() {
     setupTestRebalanceForEntireDS();
     // check if DistributedRegionMXBean is available so that command will not fail
@@ -2149,8 +1942,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1487
-  @Test
+  @Test // FlakyTest: GEODE-1487
   public void testRebalanceForEntireDS() {
     setupTestRebalanceForEntireDS();
     // check if DistributedRegionMXBean is available so that command will not fail

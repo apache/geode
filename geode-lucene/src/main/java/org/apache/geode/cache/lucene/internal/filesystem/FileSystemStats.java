@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal.filesystem;
 
-import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
 import org.apache.geode.StatisticDescriptor;

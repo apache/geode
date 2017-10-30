@@ -121,7 +121,7 @@ public class FindVersionTagOperation {
     protected void process(DistributionManager dm) {
       VersionTag result = null;
       try {
-        LocalRegion r = findRegion();
+        LocalRegion r = findRegion(dm);
         if (r == null) {
           if (logger.isDebugEnabled()) {
             logger.debug("Region not found, so ignoring version tag request: {}", this);
@@ -132,7 +132,7 @@ public class FindVersionTagOperation {
           result = r.findVersionTagForClientBulkOp(eventId);
 
         } else {
-          result = r.findVersionTagForClientEvent(eventId);
+          result = r.findVersionTagForEvent(eventId);
         }
         if (result != null) {
           result.replaceNullIDs(r.getVersionMember());
@@ -155,10 +155,9 @@ public class FindVersionTagOperation {
       }
     }
 
-    private LocalRegion findRegion() {
-      InternalCache cache;
+    private LocalRegion findRegion(DistributionManager dm) {
       try {
-        cache = GemFireCacheImpl.getInstance();
+        InternalCache cache = dm.getCache();
         if (cache != null) {
           return cache.getRegionByPathForProcessing(regionName);
         }

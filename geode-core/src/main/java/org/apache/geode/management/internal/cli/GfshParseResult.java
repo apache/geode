@@ -14,19 +14,20 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
-import org.apache.geode.management.internal.cli.shell.OperationInvoker;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-import org.springframework.shell.event.ParseResult;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+import org.springframework.shell.event.ParseResult;
+
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
 /**
  * Immutable representation of the outcome of parsing a given shell line. * Extends
@@ -81,12 +82,9 @@ public class GfshParseResult extends ParseResult {
       } else {
         argumentAsString = argument.toString();
       }
-      // need to quote the argument with single quote if it contains white space.
-      // these will be used for the http request parameters, when turned into the
-      // commands again, the options will be quoted.
-      if (argumentAsString.contains(" ")) {
-        argumentAsString = "'" + argumentAsString + "'";
-      }
+
+      // this maps are used for easy access of option values in String form.
+      // It's used in tests and validation of option values in pre-execution
       paramValueStringMap.put(cliOption.key()[0], argumentAsString);
     }
   }
@@ -98,11 +96,16 @@ public class GfshParseResult extends ParseResult {
     return userInput;
   }
 
+  /**
+   * Used only in tests and command pre-execution for validating arguments
+   */
   public String getParamValue(String param) {
     return paramValueStringMap.get(param);
   }
 
   /**
+   * Used only in tests and command pre-execution for validating arguments
+   * 
    * @return the unmodifiable paramValueStringMap
    */
   public Map<String, String> getParamValueStrings() {

@@ -14,17 +14,17 @@
  */
 package org.apache.geode.management.internal.security;
 
+import org.apache.geode.security.ResourcePermission.Target;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import javax.management.DescriptorKey;
 
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-
-@Target({ElementType.METHOD, ElementType.TYPE})
+@java.lang.annotation.Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface ResourceOperation {
@@ -33,4 +33,8 @@ public @interface ResourceOperation {
 
   @DescriptorKey("operation")
   Operation operation() default Operation.NULL;
+
+  @DescriptorKey("target")
+  Target target() default Target.ALL;
+
 }

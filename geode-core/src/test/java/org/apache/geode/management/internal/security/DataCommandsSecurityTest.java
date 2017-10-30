@@ -17,21 +17,22 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class DataCommandsSecurityTest {
@@ -85,7 +86,7 @@ public class DataCommandsSecurityTest {
   public void testRegionAccess() {
     assertThatThrownBy(() -> bean.processCommand("rebalance --include-region=region2"))
         .isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
 
     assertThatThrownBy(
         () -> bean.processCommand("export data --region=region2 --file=foo.txt --member=value"))

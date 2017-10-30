@@ -429,6 +429,11 @@ public class CompactRangeIndex extends AbstractIndex {
           }
           break;
       }
+    } catch (ClassCastException e) {
+      // no values will match in this index because the key types are not the same
+      // This means that there will be 0 results and it will be fast to use this index
+      // because it has filtered everything out
+      return 0;
     } catch (EntryDestroyedException ignore) {
       return Integer.MAX_VALUE;
     } finally {

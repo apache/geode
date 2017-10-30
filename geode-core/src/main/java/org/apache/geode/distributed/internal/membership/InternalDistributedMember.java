@@ -117,7 +117,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * member for use in the P2P cache. Use of other constructors can break
    * network-partition-detection.
    *
-   * @param i
+   * @param i the inet address
    * @param p the membership port
    * @param splitBrainEnabled whether this feature is enabled for the member
    * @param canBeCoordinator whether the member is eligible to be the membership coordinator
@@ -163,6 +163,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       this.versionObj = Version.CURRENT;
     }
     cachedToString = null;
+    this.isPartial = true;
   }
 
   /**
@@ -558,16 +559,18 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     String myName = getName();
     String otherName = other.getName();
-    if (myName == null && otherName == null) {
-      // do nothing
-    } else if (myName == null) {
-      return -1;
-    } else if (otherName == null) {
-      return 1;
-    } else {
-      int i = myName.compareTo(otherName);
-      if (i != 0) {
-        return i;
+    if (!(other.isPartial || this.isPartial)) {
+      if (myName == null && otherName == null) {
+        // do nothing
+      } else if (myName == null) {
+        return -1;
+      } else if (otherName == null) {
+        return 1;
+      } else {
+        int i = myName.compareTo(otherName);
+        if (i != 0) {
+          return i;
+        }
       }
     }
 
@@ -603,6 +606,16 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     // purposely avoid comparing roles
     // @todo Add durableClientAttributes to compare
+  }
+
+  /**
+   * An InternalDistributedMember created for a test or via readEssentialData will be a Partial ID,
+   * possibly not having ancillary info like "name".
+   * 
+   * @return true if this is a partial ID
+   */
+  public boolean isPartial() {
+    return isPartial;
   }
 
   @Override

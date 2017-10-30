@@ -14,26 +14,18 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.wan.*;
-import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
-import org.apache.geode.test.dunit.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.junit.Assert.assertNull;
 
-import javax.management.remote.JMXConnectorServer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,10 +33,43 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.junit.Assert.assertNull;
+import javax.management.remote.JMXConnectorServer;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ConnectionSource;
+import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.CacheServerAdvisor;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
 
 public abstract class WANCommandTestBase extends CliCommandTestBase {
 
@@ -120,6 +145,38 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     cache = CacheFactory.create(ds);
   }
 
+  public void createCacheWithBindAddress(Integer locPort, String bindAddress, String groups) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(BIND_ADDRESS, bindAddress);
+    props.setProperty(GROUPS, groups);
+    InternalDistributedSystem ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+  }
+
+  public void createCacheWithServerBindAddress(Integer locPort, String bindAddress, String groups) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(SERVER_BIND_ADDRESS, bindAddress);
+    props.setProperty(GROUPS, groups);
+    InternalDistributedSystem ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+  }
+
+  public void createCacheWithMultipleBindAddressProperties(Integer locPort, String bindAddress,
+      String serverBindAddress, String groups) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + locPort + "]");
+    props.setProperty(BIND_ADDRESS, bindAddress);
+    props.setProperty(SERVER_BIND_ADDRESS, serverBindAddress);
+    props.setProperty(GROUPS, groups);
+    InternalDistributedSystem ds = getSystem(props);
+    cache = CacheFactory.create(ds);
+  }
+
   public void createSender(String dsName, int remoteDsId, boolean isParallel, Integer maxMemory,
       Integer batchSize, boolean isConflation, boolean isPersistent, GatewayEventFilter filter,
       boolean isManualStart) {
@@ -171,13 +228,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      GatewaySender sender = null;
-      for (GatewaySender s : senders) {
-        if (s.getId().equals(senderId)) {
-          sender = s;
-          break;
-        }
-      }
+      AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+          .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
       sender.start();
     } finally {
       exln.remove();
@@ -188,13 +240,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      GatewaySender sender = null;
-      for (GatewaySender s : senders) {
-        if (s.getId().equals(senderId)) {
-          sender = s;
-          break;
-        }
-      }
+      AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+          .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
       sender.pause();
     } finally {
       exln.remove();
@@ -322,14 +369,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      AbstractGatewaySender sender = null;
-      for (GatewaySender s : senders) {
-        if (s.getId().equals(senderId)) {
-          sender = (AbstractGatewaySender) s;
-          break;
-        }
-      }
-
+      AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+          .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
       assertEquals(isRunning, sender.isRunning());
       assertEquals(isPaused, sender.isPaused());
     } finally {
@@ -345,13 +386,8 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       List<String> expectedGatewayTransportFilters) {
 
     Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
+    AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+        .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
     assertEquals("remoteDistributedSystemId", remoteDsID, sender.getRemoteDSId());
     assertEquals("isParallel", isParallel, sender.isParallel());
     assertEquals("manualStart", manualStart, sender.isManualStart());
@@ -415,9 +451,31 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
     }
   }
 
+  protected void verifyGatewayReceiverServerLocations(int locatorPort, String expected) {
+    PoolFactory pf = PoolManager.createFactory();
+    pf.setServerGroup(GatewayReceiver.RECEIVER_GROUP);
+    pf.addLocator("localhost", locatorPort);
+    PoolImpl pool = (PoolImpl) pf.create("gateway-receiver-pool");
+    ConnectionSource connectionSource = pool.getConnectionSource();
+    List<ServerLocation> serverLocations = connectionSource.getAllServers();
+    for (ServerLocation serverLocation : serverLocations) {
+      assertEquals(expected, serverLocation.getHostName());
+    }
+  }
+
+  protected void verifyGatewayReceiverProfile(String expected) {
+    Set<GatewayReceiver> receivers = ((Cache) this.cache).getGatewayReceivers();
+    for (GatewayReceiver receiver : receivers) {
+      CacheServerImpl server = (CacheServerImpl) receiver.getServer();
+      CacheServerAdvisor.CacheServerProfile profile =
+          (CacheServerAdvisor.CacheServerProfile) server.getProfile();
+      assertEquals(expected, profile.getHost());
+    }
+  }
+
   public void verifyReceiverCreationWithAttributes(boolean isRunning, int startPort, int endPort,
       String bindAddress, int maxTimeBetweenPings, int socketBufferSize,
-      List<String> expectedGatewayTransportFilters) {
+      List<String> expectedGatewayTransportFilters, String hostnameForSenders) {
 
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     assertEquals("Number of receivers is incorrect", 1, receivers.size());
@@ -429,6 +487,7 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
       assertEquals("maximumTimeBetweenPings", maxTimeBetweenPings,
           receiver.getMaximumTimeBetweenPings());
       assertEquals("socketBufferSize", socketBufferSize, receiver.getSocketBufferSize());
+      assertEquals("hostnameForSenders", hostnameForSenders, receiver.getHostnameForSenders());
 
       // verify GatewayTransportFilters
       if (expectedGatewayTransportFilters != null) {
@@ -454,44 +513,41 @@ public abstract class WANCommandTestBase extends CliCommandTestBase {
 
   public static void verifySenderDestroyed(String senderId, boolean isParallel) {
     Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
+    AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
+        .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
     assertNull(sender);
-
     String queueRegionNameSuffix = null;
     if (isParallel) {
       queueRegionNameSuffix = ParallelGatewaySenderQueue.QSTRING;
     } else {
       queueRegionNameSuffix = "_SERIAL_GATEWAY_SENDER_QUEUE";
     }
-
-
     Set<LocalRegion> allRegions = ((GemFireCacheImpl) cache).getAllRegions();
     for (LocalRegion region : allRegions) {
-      if (region.getName().indexOf(senderId + queueRegionNameSuffix) != -1) {
+      if (region.getName().contains(senderId + queueRegionNameSuffix)) {
         fail("Region underlying the sender is not destroyed.");
       }
     }
   }
 
-
+  public void propsSetUp(Integer lnPort) {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
+    setUpJmxManagerOnVm0ThenConnect(props);
+  }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     closeCacheAndDisconnect();
-    vm0.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm1.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm2.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm3.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm4.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm5.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm6.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
-    vm7.invoke(() -> WANCommandTestBase.closeCacheAndDisconnect());
+    vm0.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm1.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm2.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm3.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm4.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm5.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm6.invoke(WANCommandTestBase::closeCacheAndDisconnect);
+    vm7.invoke(WANCommandTestBase::closeCacheAndDisconnect);
   }
 
   public static void closeCacheAndDisconnect() {

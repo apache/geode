@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.mockito.Matchers.any;
-
 import java.util.function.Consumer;
 
 import org.mockito.Mockito;
@@ -49,7 +47,8 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
     this.getRepositoryConsumer = getRepositoryConsumer;
   }
 
-  private class ExtendedLuceneIndexForPartitionedRegion extends LuceneIndexForPartitionedRegion {
+  private static class ExtendedLuceneIndexForPartitionedRegion
+      extends LuceneIndexForPartitionedRegion {
     public ExtendedLuceneIndexForPartitionedRegion(final String indexName, final String regionPath,
         final InternalCache cache) {
       super(indexName, regionPath, cache);

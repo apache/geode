@@ -1,6 +1,4 @@
----
-title:  Executing a Function in Apache Geode
----
+<% set_title("Executing a Function in", product_name_long) %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -31,24 +29,27 @@ Main tasks:
 
 ## <a id="function_execution__section_7D43B0C628D54F579D5C434D3DF69B3C" class="no-quick-link"></a>Write the Function Code
 
-To write the function code, you implement the `Function` interface or extend the `FunctionAdapter` class. Both are in the `org.apache.geode.cache.execute` package. The adapter class provides some default implementations for methods, which you can override.
+To write the function code, you implement the `Function` interface in the `org.apache.geode.cache.execute` package.
 
 Code the methods you need for the function. These steps do not have to be done in this order.
 
-1.  Code `getId` to return a unique name for your function. You can use this name to access the function through the `FunctionService` API.
-2.  For high availability:
-    1.  Code `isHa` to return true to indicate to Geode that it can re-execute your function after one or more members fails
+- Implement `getId` to return a unique name for your function. You can use this name to access the function through the `FunctionService` API.
+- For high availability:
+    1.  Code `isHa` to return true to indicate to <%=vars.product_name%> that it can re-execute your function after one or more members fails
     2.  Code your function to return a result
     3.  Code `hasResult` to return true
 
-3.  Code `hasResult` to return true if your function returns results to be processed and false if your function does not return any data - the fire and forget function. `FunctionAdapter` `hasResult` returns true by default.
-4.  If the function will be executed on a region, code `optimizeForWrite` to return false if your function only reads from the cache, and true if your function updates the cache. The method only works if, when you are running the function, the `Execution` object is obtained through a `FunctionService` `onRegion` call. `FunctionAdapter` `optimizeForWrite` returns false by default.
-5.  Code the `execute` method to perform the work of the function.
+- Code `hasResult` to return true if your function returns results to be processed and false if your function does not return any data - the fire and forget function.
+- If the function will be executed on a region, implement `optimizeForWrite` to return false if your function only reads from the cache, and true if your function updates the cache. The method only works if, when you are running the function, the `Execution` object is obtained through a `FunctionService` `onRegion` call. `optimizeForWrite` returns false by default.
+- If the function should be run with an authorization level other than
+the default of `DATA:WRITE`,
+implement an override of the `Function.getRequiredPermissions()` method.
+See [Authorization of Function Execution](../../managing/security/implementing_authorization.html#AuthorizeFcnExecution) for details on this method.
+- Code the `execute` method to perform the work of the function.
     1.  Make `execute` thread safe to accommodate simultaneous invocations.
     2.  For high availability, code `execute` to accommodate multiple identical calls to the function. Use the `RegionFunctionContext` `isPossibleDuplicate` to determine whether the call may be a high-availability re-execution. This boolean is set to true on execution failure and is false otherwise.
         **Note:**
         The `isPossibleDuplicate` boolean can be set following a failure from another member’s execution of the function, so it only indicates that the execution might be a repeat run in the current member.
-
     3.  Use the function context to get information about the execution and the data:
         -   The context holds the function ID, the `ResultSender` object for passing results back to the originator, and function arguments provided by the member where the function originated.
         -   The context provided to the function is the `FunctionContext`, which is automatically extended to `RegionFunctionContext` if you get the `Execution` object through a `FunctionService` `onRegion` call.
@@ -56,34 +57,32 @@ Code the methods you need for the function. These steps do not have to be done i
         -   For partitioned regions, the `PartitionRegionHelper` provides access to additional information and data for the region. For single regions, use `getLocalDataForContext`. For colocated regions, use `getLocalColocatedRegions`.
             **Note:**
             When you use `PartitionRegionHelper.getLocalDataForContext`, `putIfAbsent` may not return expected results if you are working on local data set instead of the region.
-
-    4.  To propagate an error condition or exception back to the caller of the function, throw a FunctionException from the `execute` method. Geode transmits the exception back to the caller as if it had been thrown on the calling side. See the Java API documentation for [FunctionException](/releases/latest/javadoc/org/apache/geode/cache/execute/FunctionException.html) for more information.
+    4.  To propagate an error condition or exception back to the caller of the function, throw a FunctionException from the `execute` method. <%=vars.product_name%> transmits the exception back to the caller as if it had been thrown on the calling side. See the Java API documentation for [FunctionException](/releases/latest/javadoc/org/apache/geode/cache/execute/FunctionException.html) for more information.
 
 Example function code:
 
 ``` pre
-package quickstart;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 
-public class MultiGetFunction extends FunctionAdapter {
+public class MultiGetFunction implements Function {
 
-  public void execute(FunctionContext fc) { 
+  public void execute(FunctionContext fc) {
     if(! (fc instanceof RegionFunctionContext)){
-       throw new FunctionException("This is a data aware function, and has 
-to be called using FunctionService.onRegion.");
+      throw new FunctionException("This is a data aware function, and has
+ to be called using FunctionService.onRegion.");
     }
     RegionFunctionContext context = (RegionFunctionContext)fc;
     Set keys = context.getFilter();
-    Set keysTillSecondLast = new HashSet(); 
+    Set keysTillSecondLast = new HashSet();
     int setSize = keys.size();
     Iterator keysIterator = keys.iterator();
     for(int i = 0; i < (setSize -1); i++)
@@ -114,7 +113,7 @@ When you deploy a JAR file that contains a Function (in other words, contains a 
 To register a function by using `gfsh`:
 
 1.  Package your class files into a JAR file.
-2.  Start a `gfsh` prompt. If necessary, start a Locator and connect to the Geode distributed system where you want to run the function.
+2.  Start a `gfsh` prompt. If necessary, start a Locator and connect to the <%=vars.product_name%> distributed system where you want to run the function.
 3.  At the gfsh prompt, type the following command:
 
     ``` pre
@@ -125,7 +124,7 @@ To register a function by using `gfsh`:
 
 If another JAR file is deployed (either with the same JAR filename or another filename) with the same Function, the new implementation of the Function will be registered, overwriting the old one. If a JAR file is undeployed, any Functions that were auto-registered at the time of deployment will be unregistered. Since deploying a JAR file that has the same name multiple times results in the JAR being un-deployed and re-deployed, Functions in the JAR will be unregistered and re-registered each time this occurs. If a Function with the same ID is registered from multiple differently named JAR files, the Function will be unregistered if either of those JAR files is re-deployed or un-deployed.
 
-See [Deploying Application JARs to Apache Geode Members](../../configuring/cluster_config/deploying_application_jars.html#concept_4436C021FB934EC4A330D27BD026602C) for more details on deploying JAR files.
+See [Deploying Application JARs to <%=vars.product_name_long%> Members](../../configuring/cluster_config/deploying_application_jars.html#concept_4436C021FB934EC4A330D27BD026602C) for more details on deploying JAR files.
 
 ## <a id="function_execution__section_1D1056F843044F368FB76F47061FCD50" class="no-quick-link"></a>Register the Function Programmatically
 
@@ -169,7 +168,7 @@ In every member where you want to explicitly execute the function and process th
 **Running the Function Using gfsh**
 
 1.  Start a gfsh prompt.
-2.  If necessary, start a Locator and connect to the Geode distributed system where you want to run the function.
+2.  If necessary, start a Locator and connect to the <%=vars.product_name%> distributed system where you want to run the function.
 3.  At the gfsh prompt, type the following command:
 
     ``` pre
@@ -228,12 +227,12 @@ ResultCollector rc = execution.execute(function);
 List result = (List)rc.getResult();
 ```
 
-Geode’s default `ResultCollector` collects all results into an `ArrayList`. Its `getResult` methods block until all results are received. Then they return the full result set.
+<%=vars.product_name%>’s default `ResultCollector` collects all results into an `ArrayList`. Its `getResult` methods block until all results are received. Then they return the full result set.
 
 To customize results collecting:
 
 1.  Write a class that extends `ResultCollector` and code the methods to store and retrieve the results as you need. Note that the methods are of two types:
-    1.  `addResult` and `endResults` are called by Geode when results arrive from the `Function` instance `SendResults` methods
+    1.  `addResult` and `endResults` are called by <%=vars.product_name%> when results arrive from the `Function` instance `SendResults` methods
     2.  `getResult` is available to your executing application (the one that calls `Execution.execute`) to retrieve the results
 
 2.  Use high availability for `onRegion` functions that have been coded for it:

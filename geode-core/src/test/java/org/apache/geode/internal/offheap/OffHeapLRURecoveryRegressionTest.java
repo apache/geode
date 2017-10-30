@@ -77,18 +77,18 @@ public class OffHeapLRURecoveryRegressionTest {
             fail("expected at least 10 offheap values to be recovered but only did "
                 + offHeapObjects);
           }
-          if (offHeapObjects > 15) {
-            // Why "> 15" instead of "== 10"?
+          if (offHeapObjects == ENTRY_COUNT) {
+            // Why "== ENTRY_COUNT" instead of "== 10"?
             // As we recover values we asynchronously notify the resource manager
             // of how much off-heap memory was consumed. Once it sees we are over
             // the LRU limit then recovery of values will stop happening.
             // Since it is async it can allow us to exceed the LRU limit.
             // So far this test usually sees 10 but sometimes sees 11.
-            // I allow up to 15 just to prevent intermittent test failures.
+            // I allow up to ENTRY_COUNT-1 just to prevent intermittent test failures.
             // We should consider changing this async notification to be sync so
             // that the limit can not be exceeded.
-            fail("expected at most 15 offheap values to be recovered but actually did "
-                + offHeapObjects);
+            fail("expected at most " + (ENTRY_COUNT - 1)
+                + " offheap values to be recovered but actually did " + offHeapObjects);
           }
         } finally {
           DiskStore ds = gfc.findDiskStore(DS_NAME);

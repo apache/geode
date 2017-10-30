@@ -93,13 +93,13 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     HashSet<PersistentID> persistentIds;
     if (cache == null || cache.getBackupManager() == null) {
       persistentIds = new HashSet<PersistentID>();
     } else {
       try {
-        persistentIds = cache.getBackupManager().finishBackup(targetDir, baselineDir, abort);
+        persistentIds = cache.getBackupManager().doBackup(targetDir, baselineDir, abort);
       } catch (IOException e) {
         logger.error(
             LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), e);

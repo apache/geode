@@ -56,7 +56,7 @@ public class JtaBeforeCompletionMessage extends TXMessage {
 
   @Override
   protected boolean operateOnTx(TXId txId, DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     TXManagerImpl txMgr = cache.getTXMgr();
     if (logger.isDebugEnabled()) {
       logger.debug("JTA: Calling beforeCompletion for :{}", txId);

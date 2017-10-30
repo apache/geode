@@ -75,9 +75,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   private static final int NESTED_JSON_LENGTH = 20;
 
-  // this needs to be static so that it won't get serialized
-  private static SecurityService securityService = SecurityService.getSecurityService();
-
   @Override
   public String getId() {
     return DataCommandFunction.class.getName();
@@ -117,7 +114,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       }
       DataCommandResult result = null;
       if (request.isGet()) {
-        result = get(request);
+        result = get(request, cache.getSecurityService());
       } else if (request.isLocateEntry()) {
         result = locateEntry(request);
       } else if (request.isPut()) {
@@ -150,13 +147,14 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     return remove(key, keyClass, regionName, removeAllKeys);
   }
 
-  public DataCommandResult get(DataCommandRequest request) {
+  public DataCommandResult get(DataCommandRequest request, SecurityService securityService) {
     String key = request.getKey();
     String keyClass = request.getKeyClass();
     String valueClass = request.getValueClass();
     String regionName = request.getRegionName();
     Boolean loadOnCacheMiss = request.isLoadOnCacheMiss();
-    return get(request.getPrincipal(), key, keyClass, valueClass, regionName, loadOnCacheMiss);
+    return get(request.getPrincipal(), key, keyClass, valueClass, regionName, loadOnCacheMiss,
+        securityService);
   }
 
   public DataCommandResult locateEntry(DataCommandRequest request) {
@@ -210,8 +208,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
     QueryService qs = cache.getQueryService();
 
-    // TODO : Find out if is this optimised use. Can you have something equivalent of parsed
-    // queries with names where name can be retrieved to avoid parsing every-time
     Query query = qs.newQuery(queryString);
     DefaultQuery tracedQuery = (DefaultQuery) query;
     WrappedIndexTrackingQueryObserver queryObserver = null;
@@ -277,7 +273,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
       List<SelectResultRow> list, AtomicInteger nestedObjectCount) throws GfJsonException {
     for (Object object : selectResults) {
       // Post processing
-      object = securityService.postProcess(principal, null, null, object, false);
+      object = getCache().getSecurityService().postProcess(principal, null, null, object, false);
 
       if (object instanceof Struct) {
         StructImpl impl = (StructImpl) object;
@@ -384,7 +380,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           if (logger.isDebugEnabled()) {
             logger.debug("Removed key {} successfully", key);
           }
-          // return DataCommandResult.createRemoveResult(key, value, null, null);
           Object array[] = getJSONForNonPrimitiveObject(value);
           DataCommandResult result =
               DataCommandResult.createRemoveResult(key, array[1], null, null, true);
@@ -407,7 +402,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
               CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
         } else {
           return DataCommandResult.createRemoveInfoResult(key, null, null,
-              CliStrings.REMOVE__MSG__CLEAREALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
+              CliStrings.REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
         }
       }
     }
@@ -415,7 +410,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
 
   @SuppressWarnings({"rawtypes"})
   public DataCommandResult get(Object principal, String key, String keyClass, String valueClass,
-      String regionName, Boolean loadOnCacheMiss) {
+      String regionName, Boolean loadOnCacheMiss, SecurityService securityService) {
 
     InternalCache cache = getCache();
 
@@ -449,8 +444,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
             "Error in converting JSON " + e.getMessage(), false);
       }
 
-      // TODO determine whether the following conditional logic (assigned to 'doGet') is safer or
-      // necessary
       boolean doGet = Boolean.TRUE.equals(loadOnCacheMiss);
 
       if (doGet || region.containsKey(keyObject)) {
@@ -464,7 +457,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
         if (logger.isDebugEnabled()) {
           logger.debug("Get for key {} value {}", key, value);
         }
-        // return DataCommandResult.createGetResult(key, value, null, null);
         Object array[] = getJSONForNonPrimitiveObject(value);
         if (value != null) {
           DataCommandResult result =
@@ -722,7 +714,6 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
           Object value = object.get(key);
           if (GfJsonObject.isJSONKind(value)) {
             GfJsonObject jsonVal = new GfJsonObject(value);
-            // System.out.println("Re-wrote inner object");
             try {
               if (jsonVal.has("type-class")) {
                 object.put(key, jsonVal.get("type-class"));

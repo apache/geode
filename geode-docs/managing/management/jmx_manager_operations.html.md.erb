@@ -22,14 +22,14 @@ limitations under the License.
 <a id="topic_686158E9AFBD47518BE1B4BEB232C190"></a>
 
 
-JMX Manager nodes are members that manage other Geode members (as well as themselves). A JMX Manager node can manage all other members in the distributed system. Typically a locator will function as the JMX Manager, but you can also turn any other distributed system member such as a server into a JMX Manager node as well.
+JMX Manager nodes are members that manage other <%=vars.product_name%> members (as well as themselves). A JMX Manager node can manage all other members in the distributed system. Typically a locator will function as the JMX Manager, but you can also turn any other distributed system member such as a server into a JMX Manager node as well.
 
-To allow a server to become a JMX Manager you configure Geode property `jmx-manager=true`, in the server's`gemfire.properties` file. This property configures the node to become a JMX Manager node passively; if gfsh cannot locate a JMX Manager when connecting to the distributed system, the server node will be started as a JMX Manager node.
+To allow a server to become a JMX Manager you configure <%=vars.product_name%> property `jmx-manager=true`, in the server's`gemfire.properties` file. This property configures the node to become a JMX Manager node passively; if gfsh cannot locate a JMX Manager when connecting to the distributed system, the server node will be started as a JMX Manager node.
 
 **Note:**
 The default property setting for all locators is `gemfire.jmx-manager=true`. For other members, the default property setting is `gemfire.jmx-manager=false`.
 
-To force a server to become a JMX Manager node whenever it is started, set the Geode properties `jmx-manager-start=true` and `jmx-manager=true` in the server's gemfire.properties file. Note that both of these properties must be set to true for the node.
+To force a server to become a JMX Manager node whenever it is started, set the <%=vars.product_name%> properties `jmx-manager-start=true` and `jmx-manager=true` in the server's gemfire.properties file. Note that both of these properties must be set to true for the node.
 
 To start the member as a JMX Manager node on the command line, provide`                     --J=-Dgemfire.jmx-manager-start=true and --J=-Dgemfire.jmx-manager=true` as arguments to either the `start server` or `start                     locator` command.
 
@@ -50,39 +50,23 @@ The following is an example of starting a new locator that also starts an embedd
 
 ``` pre
 gfsh>start locator --name=locator1
-Starting a GemFire Locator in /home/user/test2/locator1...
-............................................
-Locator in /home/user/test2/locator1 on ubuntu.local[10334] as locator1 is currently online.
-Process ID: 2081
-Uptime: 30 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/test2/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
--Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
+Starting a <%=vars.product_name%> Locator in /Users/username/apache-geode/locator1...
+....
+Locator in /Users/username/apache-geode/locator1 on 192.0.2.0[10334] as locator1
+is currently online.
+Process ID: 27144
+Uptime: 5 seconds
+<%=vars.product_name%> Version: <%=vars.product_version%>
+Java Version: 1.8.0_111
+Log File: /Users/username/apache-geode/locator1/locator1.log
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true 
+-Dgemfire.load-cluster-configuration-from-dir=false 
+-Dgemfire.launcher.registerSignalHandlers=true 
+-Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /Users/username/apache-geode/lib/geode-core-1.2.0.jar
+:/Users/username/apache-geode/lib/geode-dependencies.jar
 
-Successfully connected to: [host=ubuntu.local, port=1099]
-
-Cluster configuration service is up and running.
-```
-
-Or you can enter the command directly in your terminal:
-
-``` pre
-$ gfsh start locator --name=locator1
-....................................
-Locator in /home/user/locator1 on ubuntu.local[10334] as locator1 is currently online.
-Process ID: 2359
-Uptime: 21 seconds
-GemFire Version: 8.0.0
-Java Version: 1.7.0_65
-Log File: /home/user/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
- -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-Class-Path: /home/user/Pivotal_GemFire_800_b48319_Linux/lib/locator-dependencies.jar:/usr/local/java/lib/tools.jar
-
-Successfully connected to: [host=ubuntu.local, port=1099]
+Successfully connected to: JMX Manager [host=192.0.2.0, port=1099]
 
 Cluster configuration service is up and running.
 ```
@@ -96,7 +80,7 @@ At any point, you can determine whether a node is a JMX Manager by using the Mem
 Using the Java API, any managed node that has been configured with `jmx-manager=true` can also be turned into a JMX Manager Node by invoking the ManagementService startManager() method.
 
 **Note:**
-If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in `$GEMFIRE/lib` of your Geode installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH because this library refers to other dependencies in `$GEMFIRE/lib` by a relative path.
+If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in the `lib` directory of your installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH, because this library refers to other dependencies in `lib` by a relative path.
 
 ## <a id="topic_263072624B8D4CDBAD18B82E07AA44B6" class="no-quick-link"></a>Configuring a JMX Manager
 
@@ -118,12 +102,12 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 <tbody>
 <tr class="odd">
 <td>http-service-port</td>
-<td>If non-zero, then Geode starts an embedded HTTP service that listens on this port. The HTTP service is used to host the Geode Pulse Web application. If you are hosting the Pulse web app on your own Web server, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
+<td>If non-zero, then <%=vars.product_name%> starts an embedded HTTP service that listens on this port. The HTTP service is used to host the <%=vars.product_name%> Pulse Web application. If you are hosting the Pulse web app on your own Web server, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>7070</td>
 </tr>
 <tr class="even">
 <td>http-service-bind-address</td>
-<td>If set, then the Geode member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then Geode binds the HTTP service to the member's local address.</td>
+<td>If set, then the <%=vars.product_name%> member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then <%=vars.product_name%> binds the HTTP service to the member's local address.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -139,7 +123,7 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="odd">
 <td>jmx-manager-bind-address</td>
-<td>By default, the JMX Manager when configured with a port listens on all the local host's addresses. You can use this property to configure which particular IP address or host name the JMX Manager will listen on. This property is ignored if <code class="ph codeph">jmx-manager</code> is false or <code class="ph codeph">jmx-manager-port</code> is zero. This address also applies to the Geode Pulse server if you are hosting a Pulse web application.</td>
+<td>By default, the JMX Manager when configured with a port listens on all the local host's addresses. You can use this property to configure which particular IP address or host name the JMX Manager will listen on. This property is ignored if <code class="ph codeph">jmx-manager</code> is false or <code class="ph codeph">jmx-manager-port</code> is zero. This address also applies to the <%=vars.product_name%> Pulse server if you are hosting a Pulse web application.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -154,12 +138,12 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="even">
 <td>jmx-manager-port</td>
-<td>Port on which this JMX Manager listens for client connections. If this property is set to zero, Geode does not allow remote client connections. Alternatively, use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if jmx-manager is false. The Default RMI port is 1099.</td>
+<td>Port on which this JMX Manager listens for client connections. If this property is set to zero, <%=vars.product_name%> does not allow remote client connections. Alternatively, use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if jmx-manager is false. The Default RMI port is 1099.</td>
 <td>1099</td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-ssl</td>
-<td>If true and <code class="ph codeph">jmx-manager-port</code> is not zero, the JMX Manager accepts only SSL connections. The ssl-enabled property does not apply to the JMX Manager, but the other SSL properties do. This allows SSL to be configured for just the JMX Manager without needing to configure it for the other Geode connections. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
+<td>If true and <code class="ph codeph">jmx-manager-port</code> is not zero, the JMX Manager accepts only SSL connections. The ssl-enabled property does not apply to the JMX Manager, but the other SSL properties do. This allows SSL to be configured for just the JMX Manager without needing to configure it for the other <%=vars.product_name%> connections. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>false</td>
 </tr>
 <tr class="even">
@@ -169,7 +153,7 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 <tr class="odd">
 <td>jmx-manager-update-rate</td>
-<td>The rate, in milliseconds, at which this member pushes updates to any JMX Managers. Currently this value should be greater than or equal to the <code class="ph codeph">statistic-sample-rate</code>. Setting this value too high causes <code class="ph codeph">gfsh</code> and Geode Pulse to see stale values.</td>
+<td>The rate, in milliseconds, at which this member pushes updates to any JMX Managers. Currently this value should be greater than or equal to the <code class="ph codeph">statistic-sample-rate</code>. Setting this value too high causes <code class="ph codeph">gfsh</code> and <%=vars.product_name%> Pulse to see stale values.</td>
 <td>2000</td>
 </tr>
 </tbody>

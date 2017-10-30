@@ -63,7 +63,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "list all resources (Regions)",
-      notes = "List all available resources (Regions) in the Geode cluster", response = void.class)
+      notes = "List all available resources (Regions) in the Geode cluster")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -86,7 +86,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/keys",
       produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-  @ApiOperation(value = "list all keys", notes = "List all keys in region", response = void.class)
+  @ApiOperation(value = "list all keys", notes = "List all keys in region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -116,7 +116,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}/{keys}",
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "delete data for key(s)",
-      notes = "Delete data for single key or specific keys in region", response = void.class)
+      notes = "Delete data for single key or specific keys in region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -141,8 +141,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{region}")
-  @ApiOperation(value = "delete all data", notes = "Delete all data in the region",
-      response = void.class)
+  @ApiOperation(value = "delete all data", notes = "Delete all data in the region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -163,7 +162,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    */
   @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD}, value = "/ping")
   @ApiOperation(value = "Check Rest service status ",
-      notes = "Check whether gemfire REST service is up and running!", response = void.class)
+      notes = "Check whether gemfire REST service is up and running!")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 500, message = "if GemFire throws an error or exception")})
   public ResponseEntity<?> ping() {
@@ -173,8 +172,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
   @RequestMapping(method = {RequestMethod.GET}, value = "/servers",
       produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "fetch all REST enabled servers in the DS",
-      notes = "Find all gemfire node where developer REST service is up and running!",
-      response = void.class)
+      notes = "Find all gemfire node where developer REST service is up and running!")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),

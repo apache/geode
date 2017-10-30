@@ -112,8 +112,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /** a flag to prevent accidental serialization of a live member */
   private transient boolean isLiveVector;
 
-  /** for debugging we keep a reference to the region for use in log messages */
-  private transient String regionName;
+  private transient LocalRegion region;
 
   private ConcurrentHashMap<T, Long> memberToGCVersion;
 
@@ -153,7 +152,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   public RegionVersionVector(T ownerId, LocalRegion owner) {
     this.myId = ownerId;
     this.isLiveVector = true;
-    this.regionName = owner == null ? "" : "region " + owner.getFullPath();
+    this.region = owner;
 
     this.localExceptions = new RegionVersionHolder<T>(0);
     this.memberToVersion = new ConcurrentHashMap<T, RegionVersionHolder<T>>(INITIAL_CAPACITY,
@@ -606,10 +605,11 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       // recovers. So we can only assert that the local member has already seen
       // the replayed event.
       synchronized (localExceptions) {
-        if (this.localVersion.get() < tag.getRegionVersion()) {
+        if (this.localVersion.get() < tag.getRegionVersion() && region != null
+            && region.isInitialized()) {
           Assert.fail(
               "recordVersion invoked for a local version tag that is higher than our local version. rvv="
-                  + this + ", tag=" + tag + " " + regionName);
+                  + this + ", tag=" + tag + " " + region.getName());
         }
       }
     }

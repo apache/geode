@@ -32,7 +32,7 @@ The JMX Manager node includes all local beans listed under [Managed Node MBeans]
 
 ## <a id="topic_14E3721DD0CF47D7AD8C742DFBE9FB9C__section_7B878B450B994514BDFE96571F0D3827" class="no-quick-link"></a>ManagerMXBean
 
-Represents the Geode Management layer for the hosting member. Controls the scope of management. This MBean provides `start` and `stop` methods to turn a managed node into a JMX Manager node or to stop a node from being a JMX Manager. For potential managers (`jmx-manager=true` and `jmx-manager-start=false`), this MBean is created when a Locator requests it.
+Represents the <%=vars.product_name%> Management layer for the hosting member. Controls the scope of management. This MBean provides `start` and `stop` methods to turn a managed node into a JMX Manager node or to stop a node from being a JMX Manager. For potential managers (`jmx-manager=true` and `jmx-manager-start=false`), this MBean is created when a Locator requests it.
 
 **Note:**
 You must configure the node to allow it to become a JMX Manager. See [Configuring a JMX Manager](jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6) for configuration information.
@@ -54,9 +54,9 @@ System-wide aggregate MBean that provides a high-level view of the entire distri
 
 The DistributedSystemMXBean provides APIs for performing distributed system-wide operations such as backing up all members, shutting down all members or showing various distributed system metrics.
 
-You can attach a standard JMX NotificationListener to this MBean to listen for notifications throughout the distributed system. See [Geode JMX MBean Notifications](mbean_notifications.html) for more information.
+You can attach a standard JMX NotificationListener to this MBean to listen for notifications throughout the distributed system. See [<%=vars.product_name%> JMX MBean Notifications](mbean_notifications.html) for more information.
 
-This MBean also provides some MBean model navigation APIS. These APIs should be used to navigate through all the MBeans exposed by a Geode System.
+This MBean also provides some MBean model navigation APIS. These APIs should be used to navigate through all the MBeans exposed by a <%=vars.product_name%> System.
 
 **MBean Details**
 
@@ -119,7 +119,7 @@ JMX Manager nodes will have managed node MBeans for themselves since they are al
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_796A989549304BF7A536A33A913322A4" class="no-quick-link"></a>MemberMXBean
 
-Member's local view of its connection and cache. It is the primary gateway to manage a particular member. It exposes member level attributes and statistics. Some operations like `createCacheServer()` and `createManager()` will help to create some Geode resources. Any JMX client can connect to the MBean server and start managing a Geode Member by using this MBean.
+Member's local view of its connection and cache. It is the primary gateway to manage a particular member. It exposes member level attributes and statistics. Some operations like `createCacheServer()` and `createManager()` will help to create some <%=vars.product_name%> resources. Any JMX client can connect to the MBean server and start managing a <%=vars.product_name%> Member by using this MBean.
 
 See [MemberMXBean Notifications](list_of_mbean_notifications.html#reference_czt_hq2_vj) for a list of notifications emitted by this MBean.
 
@@ -136,7 +136,7 @@ See the `org.apache.geode.management.MemberMXBean` JavaDocs for information on a
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_7287A7560650426E9B8249E2D87CE55F" class="no-quick-link"></a>CacheServerMXBean
 
-Represents the Geode CacheServer. Provides data and notifications about server, subscriptions, durable queues and indices.
+Represents the <%=vars.product_name%> CacheServer. Provides data and notifications about server, subscriptions, durable queues and indices.
 
 See [CacheServerMXBean Notifications](list_of_mbean_notifications.html#cacheservermxbean_notifications) for a list of notifications emitted by this MBean.
 

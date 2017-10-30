@@ -1,6 +1,4 @@
----
-title: How to Run a Geode Cache Transaction
----
+<% set_title("How to Run a", product_name, "Cache Transaction") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -21,9 +19,9 @@ limitations under the License.
 <a id="task_f15_mr3_5k"></a>
 
 
-This topic describes how to run a Geode cache transaction.
+This topic describes how to run a <%=vars.product_name%> cache transaction.
 
-Applications manage transactions on a per-cache basis. A Geode cache transaction starts with a `CacheTransactionManager.begin` method and continues with a series of operations, which are typically region operations such as region create, update, clear and destroy. The begin, commit, and rollback are directly controlled by the application. A commit, failed commit, or voluntary rollback by the transaction manager ends the transaction.
+Applications manage transactions on a per-cache basis. A <%=vars.product_name%> cache transaction starts with a `CacheTransactionManager.begin` method and continues with a series of operations, which are typically region operations such as region create, update, clear and destroy. The begin, commit, and rollback are directly controlled by the application. A commit, failed commit, or voluntary rollback by the transaction manager ends the transaction.
 
 You can run transactions on any type of cache region except regions with **global** scope. An operation attempted on a region with global scope throws an `UnsupportedOperationException` exception.
 
@@ -38,10 +36,10 @@ This discussion centers on transactions on replicated and partitioned regions. I
     |---------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
     | **replicated regions**                                                                      | Use `distributed-ack` scope. The region shortcuts specifying `REPLICATE` use `distributed-ack` scope. This is particularly important if you have more than one data producer. With one data producer, you can safely use `distributed-no-ack`.                                                                                                                                                                        |
     | **partitioned regions**                                                                     | Custom partition and colocate data among regions so all the data for any single transaction is hosted by a single member. If the transaction is run from a member other than the one hosting the data, the transaction will run by proxy in the member hosting the data. The partitioned region must be defined for the application that runs the transaction, but the data can be hosted in a remote member. |
-    | **persistent regions**                                                                      | Configure Geode to allow transactions on persistent regions. By default, the configuration does not allow transactions on persistent regions. Enable the use of transactions on persistent regions by setting the property `gemfire.ALLOW_PERSISTENT_TRANSACTIONS` to true.                                                                                              |
+    | **persistent regions**                                                                      | Configure <%=vars.product_name%> to allow transactions on persistent regions. By default, the configuration does not allow transactions on persistent regions. Enable the use of transactions on persistent regions by setting the property `gemfire.ALLOW_PERSISTENT_TRANSACTIONS` to true.                                                                                              |
     | **a mix of partitioned and replicated regions**                                             | Make sure any replicated region involved in the transaction is hosted on every member that hosts the partitioned region data. All data for a single transaction must reside within a single host.                                                                                                                                                                                                             |
-    | **delta propagation**                                                                       | Set the region attribute `cloning-enabled` to true. This lets Geode do conflict checks at commit time. Without this, the transaction will throw an `UnsupportedOperationInTransactionException ` exception.                                                                                                                                                                      |
-    | **global JTA transactions with only Geode cache transactions** | Set the region attribute `ignore-jta` to true for all regions that you do *not* want to participate in JTA global transactions. It is false by default. For instructions on how to run a JTA global transaction, see [JTA Global Transactions with Geode](JTA_transactions.html).   |
+    | **delta propagation**                                                                       | Set the region attribute `cloning-enabled` to true. This lets <%=vars.product_name%> do conflict checks at commit time. Without this, the transaction will throw an `UnsupportedOperationInTransactionException ` exception.                                                                                                                                                                      |
+    | **global JTA transactions with only <%=vars.product_name%> cache transactions** | Set the region attribute `ignore-jta` to true for all regions that you do *not* want to participate in JTA global transactions. It is false by default. For instructions on how to run a JTA global transaction, see [JTA Global Transactions with <%=vars.product_name%>](JTA_transactions.html).   |
 
 3. **Update your cache event handler and transaction event handler implementations to handle your transactions.** 
     Cache event handlers may be used with transactions. Cache listeners are called after the commit, instead of after each cache operation, and the cache listeners receive conflated transaction events. Cache writers and loaders are called as usual, at the time of the operation.
@@ -85,6 +83,6 @@ This discussion centers on transactions on replicated and partitioned regions. I
 5. **Review all of your code for compatibility with transactions.** 
     When you commit a transaction, while the commit is in process, the changes are visible in the distributed cache. This provides better performance than locking everything involved with the transaction updates, but it means that another process accessing data used in the transaction might get some data in the pre-transaction state and some in the post-transaction state.
 
-    For example, suppose keys 1 and 2 are modified within a transaction, such that both values change from A to B. In another thread, it is possible to read key 1 with value B and key 2 with value A, after the commit begins, but before the commit completes. This is possible due to the nature of Geode reads. This choice sacrifices atomic visibility in favor of performance; reads do not block writes, and writes do not block reads.
+    For example, suppose keys 1 and 2 are modified within a transaction, such that both values change from A to B. In another thread, it is possible to read key 1 with value B and key 2 with value A, after the commit begins, but before the commit completes. This is possible due to the nature of <%=vars.product_name%> reads. This choice sacrifices atomic visibility in favor of performance; reads do not block writes, and writes do not block reads.
 
 

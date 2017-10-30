@@ -14,8 +14,14 @@
  */
 package org.apache.geode.cache.execute;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Defines the interface a user defined function implements. {@link Function}s can be of different
@@ -28,12 +34,8 @@ import org.apache.geode.lang.Identifiable;
  * return a non-null identifier and register your function using
  * {@link FunctionService#registerFunction(Function)} or the cache.xml <code>function</code>
  * element.
+ * </p>
  * 
- * @see FunctionAdapter
- * @see FunctionService
- *
- * @param T type of FunctionContext's arguments of this Function
- *
  * @since GemFire 6.0
  */
 @FunctionalInterface
@@ -54,7 +56,7 @@ public interface Function<T> extends Identifiable<String> {
    * @return whether this function returns a Result back to the caller.
    * @since GemFire 6.0
    */
-  public default boolean hasResult() {
+  default boolean hasResult() {
     return true;
   }
 
@@ -68,7 +70,7 @@ public interface Function<T> extends Identifiable<String> {
    * @param context as created by {@link Execution}
    * @since GemFire 6.0
    */
-  public void execute(FunctionContext<T> context);
+  void execute(FunctionContext<T> context);
 
   /**
    * Return a unique function identifier, used to register the function with {@link FunctionService}
@@ -76,7 +78,7 @@ public interface Function<T> extends Identifiable<String> {
    * @return string identifying this function
    * @since GemFire 6.0
    */
-  public default String getId() {
+  default String getId() {
     return getClass().getCanonicalName();
   }
 
@@ -97,12 +99,12 @@ public interface Function<T> extends Identifiable<String> {
    * This method is only consulted when Region passed to
    * FunctionService#onRegion(org.apache.geode.cache.Region) is a partitioned region
    * </p>
-   *
+   * 
    * @return false if the function is read only, otherwise returns true
-   * @since GemFire 6.0
    * @see FunctionService
+   * @since GemFire 6.0
    */
-  public default boolean optimizeForWrite() {
+  default boolean optimizeForWrite() {
     return false;
   }
 
@@ -111,11 +113,37 @@ public interface Function<T> extends Identifiable<String> {
    * 
    * @return whether the function is eligible for re-execution.
    * @see RegionFunctionContext#isPossibleDuplicate()
-   * 
    * @since GemFire 6.5
    */
-  public default boolean isHA() {
+  default boolean isHA() {
     return true;
   }
 
+  /**
+   * Returns the list of ResourcePermission this function requires.
+   * <p>
+   * By default, functions require DATA:WRITE permission. If your function requires other
+   * permissions, you will need to override this method.
+   * </p>
+   * <p>
+   * Please be as specific as possible when you set the required permissions for your function e.g.
+   * if your function reads from a region, it would be good to include the region name in your
+   * permission. It's better to return "DATA:READ:regionName" as the required permission other than
+   * "DATA:READ", because the latter means only users with read permission on ALL regions can
+   * execute your function.
+   * </p>
+   * <p>
+   * All the permissions returned from this method will be ANDed together.
+   * </p>
+   *
+   * @param regionName the region this function will be executed on. The regionName is optional and
+   *        will only be present when the function is executed by an onRegion() executor. In other
+   *        cases, it will be null. This method returns permissions appropriate to the context,
+   *        independent of the presence of the regionName parameter.
+   * @return a collection of {@link ResourcePermission}s indicating the permissions required to
+   *         execute the function.
+   */
+  default Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.DATA_WRITE);
+  }
 }

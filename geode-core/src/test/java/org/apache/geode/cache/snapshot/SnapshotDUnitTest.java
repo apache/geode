@@ -20,6 +20,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+
 import org.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
@@ -119,7 +120,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     CacheSnapshotService service = getCache().getSnapshotService();
     service.save(dir, SnapshotFormat.GEMFIRE);
 
-    // update regions with data to be overwritten by import
+    // update regions with data to be overwritten by importdir
     updateRegions();
 
     SerializableCallable callbacks = new SerializableCallable() {

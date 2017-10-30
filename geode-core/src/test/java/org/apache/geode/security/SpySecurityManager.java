@@ -15,17 +15,16 @@
 package org.apache.geode.security;
 
 import java.util.Properties;
-
-import org.apache.geode.security.SecurityManager;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SpySecurityManager extends SimpleTestSecurityManager {
 
-  public int initInvoked = 0;
-  public int closeInvoked = 0;
+  private final AtomicInteger initInvoked = new AtomicInteger(0);
+  private final AtomicInteger closeInvoked = new AtomicInteger(0);
 
   @Override
   public void init(final Properties securityProps) {
-    initInvoked++;
+    this.initInvoked.incrementAndGet();
   }
 
   @Override
@@ -35,6 +34,14 @@ public class SpySecurityManager extends SimpleTestSecurityManager {
 
   @Override
   public void close() {
-    closeInvoked++;
+    this.closeInvoked.incrementAndGet();
+  }
+
+  public int getInitInvocationCount() {
+    return this.initInvoked.get();
+  }
+
+  public int getCloseInvocationCount() {
+    return this.closeInvoked.get();
   }
 }

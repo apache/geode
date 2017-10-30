@@ -43,10 +43,15 @@ subprojects {
     testCompile 'eu.codearte.catch-exception:catch-throwable:' + project.'catch-throwable.version'
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
-    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
     testCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
     testCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
+
+    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+    testCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
+
     testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
     testRuntime 'cglib:cglib:' + project.'cglib.version'
@@ -64,6 +69,7 @@ subprojects {
       excludeCategories 'org.apache.geode.test.junit.categories.HydraTest'
       excludeCategories 'org.apache.geode.test.junit.categories.ContainerTest'
       excludeCategories 'org.apache.geode.test.junit.categories.UITest'
+      excludeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
     }
 
     //Skip launching any DUnit VMs during this run. This will prevent
@@ -75,11 +81,9 @@ subprojects {
     }
   }
 
-
   test {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.UnitTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     
     doFirst {
@@ -118,8 +122,8 @@ subprojects {
     }
 
     reports.junitXml.destination = file "$buildDir/test-reports-flaky"
-    
   }
+
   task securityTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.SecurityTest'
@@ -131,9 +135,7 @@ subprojects {
     }
 
     reports.junitXml.destination = file "$buildDir/test-reports-security"
-
   }
-
 
   task clientServerTest(type:Test) {
     useJUnit {
@@ -145,6 +147,7 @@ subprojects {
     }
     reports.junitXml.destination = file "$buildDir/test-reports-security"
   }
+
   task dlockTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.DLockTest'
@@ -155,6 +158,18 @@ subprojects {
     }
     reports.junitXml.destination = file "$buildDir/test-reports-dlock"
   }
+
+  task backwardCompatibilityTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.BackwardCompatibilityTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
+    reports.junitXml.destination = file "$buildDir/test-reports-backwardcompatibility"
+  }
+
   task membershipTest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.MembershipTest'
@@ -165,6 +180,7 @@ subprojects {
     }
     reports.junitXml.destination = file "$buildDir/test-reports-membership"
   }
+
   task restAPITest(type:Test) {
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.RestAPITest'
@@ -176,9 +192,10 @@ subprojects {
     forkEvery 1
     reports.junitXml.destination = file "$buildDir/test-reports-restAPI"
   }
+
   task serializationTest(type:Test) {
     useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.serializationTest'
+      includeCategories 'org.apache.geode.test.junit.categories.SerializationTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     doFirst {
@@ -201,6 +218,13 @@ subprojects {
     }
 
     forkEvery 30
+  }
+
+  task acceptanceTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
+    }
+    forkEvery 1
   }
 
   // apply common test configuration
@@ -248,7 +272,7 @@ subprojects {
           def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
           progress << "$now Completed test $desc.className $desc.name with result: ${result.resultType}$eol"
         }
-        
+
         doFirst {
           resultsDir.deleteDir()
           resultsDir.mkdirs()
@@ -258,12 +282,12 @@ subprojects {
   })
 
   // Make precheckin task run all validation tests for checking in code.
-  task precheckin (dependsOn: [ build, integrationTest, distributedTest, flakyTest ]) {
+  task precheckin (dependsOn: [ build, ":geode-assembly:acceptanceTest", integrationTest, distributedTest, flakyTest ]) {
     description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
 
   check.dependsOn checkMissedTests
 
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests
-  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests].each {it.finalizedBy combineReports}
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest
+  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest].each {it.finalizedBy combineReports}
 }

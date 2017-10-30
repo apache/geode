@@ -16,7 +16,10 @@ package org.apache.geode.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -24,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
@@ -33,13 +37,6 @@ import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.junit.rules.RestoreTCCLRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +44,19 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
 /**
  * Integration tests for {@link ClassPathLoader}.
@@ -61,6 +70,7 @@ public class ClassPathLoaderIntegrationTest {
 
   private File tempFile;
   private File tempFile2;
+  private ClassBuilder classBuilder = new ClassBuilder();
 
   @Rule
   public RestoreTCCLRule restoreTCCLRule = new RestoreTCCLRule();
@@ -238,7 +248,8 @@ public class ClassPathLoaderIntegrationTest {
     outStream.write(jarBytes);
     outStream.close();
 
-    ServerStarterRule serverStarterRule = new ServerStarterRule(temporaryFolder.getRoot());
+    ServerStarterRule serverStarterRule =
+        new ServerStarterRule().withWorkingDir(temporaryFolder.getRoot());
     serverStarterRule.startServer();
 
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
@@ -257,7 +268,7 @@ public class ClassPathLoaderIntegrationTest {
     File jarVersion1 = createVersionOfJar("Version1", "MyFunction", "MyJar.jar");
     File jarVersion2 = createVersionOfJar("Version2", "MyFunction", "MyJar.jar");
 
-    ServerStarterRule serverStarterRule = new ServerStarterRule(temporaryFolder.getRoot());
+    ServerStarterRule serverStarterRule = new ServerStarterRule();
     serverStarterRule.startServer();
 
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
@@ -448,6 +459,145 @@ public class ClassPathLoaderIntegrationTest {
     }
   }
 
+  @Test
+  public void testDeclarableFunctionsWithNoCacheXml() throws Exception {
+    final String jarName = "JarClassLoaderJUnitNoXml.jar";
+
+    // Add a Declarable Function without parameters for the class to the Classpath
+    String functionString =
+        "import java.util.Properties;" + "import org.apache.geode.cache.Declarable;"
+            + "import org.apache.geode.cache.execute.Function;"
+            + "import org.apache.geode.cache.execute.FunctionContext;"
+            + "public class JarClassLoaderJUnitFunctionNoXml implements Function, Declarable {"
+            + "public String getId() {return \"JarClassLoaderJUnitFunctionNoXml\";}"
+            + "public void init(Properties props) {}"
+            + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\"NOPARMSv1\");}"
+            + "public boolean hasResult() {return true;}"
+            + "public boolean optimizeForWrite() {return false;}"
+            + "public boolean isHA() {return false;}}";
+
+    byte[] jarBytes = this.classBuilder
+        .createJarFromClassContent("JarClassLoaderJUnitFunctionNoXml", functionString);
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarBytes);
+
+    ClassPathLoader.getLatest().forName("JarClassLoaderJUnitFunctionNoXml");
+
+    // Check to see if the function without parameters executes correctly
+    Function function = FunctionService.getFunction("JarClassLoaderJUnitFunctionNoXml");
+    assertThat(function).isNotNull();
+    TestResultSender resultSender = new TestResultSender();
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
+    assertThat((String) resultSender.getResults()).isEqualTo("NOPARMSv1");
+  }
+
+  @Test
+  public void testDependencyBetweenJars() throws Exception {
+    final File parentJarFile = temporaryFolder.newFile("JarClassLoaderJUnitParent.jar");
+    final File usesJarFile = temporaryFolder.newFile("JarClassLoaderJUnitUses.jar");
+
+    // Write out a JAR files.
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("package jcljunit.parent;");
+    stringBuffer.append("public class JarClassLoaderJUnitParent {");
+    stringBuffer.append("public String getValueParent() {");
+    stringBuffer.append("return \"PARENT\";}}");
+
+    byte[] jarBytes = this.classBuilder.createJarFromClassContent(
+        "jcljunit/parent/JarClassLoaderJUnitParent", stringBuffer.toString());
+    writeJarBytesToFile(parentJarFile, jarBytes);
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitParent.jar", jarBytes);
+
+    stringBuffer = new StringBuffer();
+    stringBuffer.append("package jcljunit.uses;");
+    stringBuffer.append("public class JarClassLoaderJUnitUses {");
+    stringBuffer.append("public String getValueUses() {");
+    stringBuffer.append("return \"USES\";}}");
+
+    jarBytes = this.classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
+        stringBuffer.toString());
+    writeJarBytesToFile(usesJarFile, jarBytes);
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitUses.jar", jarBytes);
+
+    stringBuffer = new StringBuffer();
+    stringBuffer.append("package jcljunit.function;");
+    stringBuffer.append("import jcljunit.parent.JarClassLoaderJUnitParent;");
+    stringBuffer.append("import jcljunit.uses.JarClassLoaderJUnitUses;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
+    stringBuffer.append(
+        "public class JarClassLoaderJUnitFunction  extends JarClassLoaderJUnitParent implements Function {");
+    stringBuffer.append("private JarClassLoaderJUnitUses uses = new JarClassLoaderJUnitUses();");
+    stringBuffer.append("public boolean hasResult() {return true;}");
+    stringBuffer.append(
+        "public void execute(FunctionContext context) {context.getResultSender().lastResult(getValueParent() + \":\" + uses.getValueUses());}");
+    stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}");
+    stringBuffer.append("public boolean optimizeForWrite() {return false;}");
+    stringBuffer.append("public boolean isHA() {return false;}}");
+
+    ClassBuilder functionClassBuilder = new ClassBuilder();
+    functionClassBuilder.addToClassPath(parentJarFile.getAbsolutePath());
+    functionClassBuilder.addToClassPath(usesJarFile.getAbsolutePath());
+    jarBytes = functionClassBuilder.createJarFromClassContent(
+        "jcljunit/function/JarClassLoaderJUnitFunction", stringBuffer.toString());
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitFunction.jar",
+        jarBytes);
+
+    Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
+    assertThat(function).isNotNull();
+    TestResultSender resultSender = new TestResultSender();
+    FunctionContext functionContext =
+        new FunctionContextImpl(null, function.getId(), null, resultSender);
+    function.execute(functionContext);
+    assertThat((String) resultSender.getResults()).isEqualTo("PARENT:USES");
+  }
+
+  @Test
+  public void testFindResource() throws IOException, ClassNotFoundException {
+    final String fileName = "file.txt";
+    final String fileContent = "FILE CONTENT";
+
+    byte[] jarBytes = this.classBuilder.createJarFromFileContent(fileName, fileContent);
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitResource.jar",
+        jarBytes);
+
+    InputStream inputStream = ClassPathLoader.getLatest().getResourceAsStream(fileName);
+    assertThat(inputStream).isNotNull();
+
+    final byte[] fileBytes = new byte[fileContent.length()];
+    inputStream.read(fileBytes);
+    inputStream.close();
+    assertThat(fileContent).isEqualTo(new String(fileBytes));
+  }
+
+
+  @Test
+  public void testUpdateClassInJar() throws Exception {
+    // First use of the JAR file
+    byte[] jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
+        "public class JarClassLoaderJUnitTestClass { public Integer getValue5() { return new Integer(5); } }");
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitUpdate.jar", jarBytes);
+
+    Class<?> clazz = ClassPathLoader.getLatest().forName("JarClassLoaderJUnitTestClass");
+    Object object = clazz.newInstance();
+    Method getValue5Method = clazz.getMethod("getValue5");
+    Integer value = (Integer) getValue5Method.invoke(object);
+    assertThat(value).isEqualTo(5);
+
+    // Now create an updated JAR file and make sure that the method from the new
+    // class is available.
+    jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
+        "public class JarClassLoaderJUnitTestClass { public Integer getValue10() { return new Integer(10); } }");
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitUpdate.jar", jarBytes);
+
+    clazz = ClassPathLoader.getLatest().forName("JarClassLoaderJUnitTestClass");
+    object = clazz.newInstance();
+    Method getValue10Method = clazz.getMethod("getValue10");
+    value = (Integer) getValue10Method.invoke(object);
+    assertThat(value).isEqualTo(10);
+  }
+
   private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
     final OutputStream outStream = new FileOutputStream(jarFile);
     outStream.write(jarBytes);
@@ -533,5 +683,30 @@ public class ClassPathLoaderIntegrationTest {
 
     return new ClassBuilder().createJarFromClassContent("integration/parent/" + className,
         stringBuilder);
+  }
+
+  private static class TestResultSender implements ResultSender<Object> {
+    private Object result;
+
+    public TestResultSender() {}
+
+    protected Object getResults() {
+      return this.result;
+    }
+
+    @Override
+    public void lastResult(final Object lastResult) {
+      this.result = lastResult;
+    }
+
+    @Override
+    public void sendResult(final Object oneResult) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void sendException(final Throwable t) {
+      throw new UnsupportedOperationException();
+    }
   }
 }

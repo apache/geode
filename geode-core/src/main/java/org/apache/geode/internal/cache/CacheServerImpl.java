@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -72,6 +73,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
@@ -87,6 +89,15 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
+
+  private final SecurityService securityService;
+
+  /**
+   * The server connection factory, that provides either a
+   * {@link org.apache.geode.internal.cache.tier.sockets.LegacyServerConnection} or a new
+   * {@link org.apache.geode.internal.cache.tier.sockets.GenericProtocolServerConnection}
+   */
+  private final ServerConnectionFactory serverConnectionFactory = new ServerConnectionFactory();
 
   /** The acceptor that does the actual serving */
   private volatile AcceptorImpl acceptor;
@@ -135,6 +146,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public CacheServerImpl(InternalCache cache, boolean isGatewayReceiver) {
     super(cache);
     this.isGatewayReceiver = isGatewayReceiver;
+    this.securityService = cache.getSecurityService();
   }
 
   // //////////////////// Instance Methods ///////////////////
@@ -339,7 +351,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         getSocketBufferSize(), getMaximumTimeBetweenPings(), this.cache, getMaxConnections(),
         getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), this.loadMonitor,
         overflowAttributesList, this.isGatewayReceiver, this.gatewayTransportFilters,
-        this.tcpNoDelay);
+        this.tcpNoDelay, serverConnectionFactory);
 
     this.acceptor.start();
     this.advisor.handshake();

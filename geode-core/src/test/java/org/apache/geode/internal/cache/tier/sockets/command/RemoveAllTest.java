@@ -14,10 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +42,8 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -123,7 +128,7 @@ public class RemoveAllTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
@@ -133,10 +138,10 @@ public class RemoveAllTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
-      verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME));
+      verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME);
     }
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
@@ -148,14 +153,14 @@ public class RemoveAllTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.securityService)
-          .authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
+      doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+          Operation.READ, REGION_NAME, key.toString());
     }
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
-      verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME));
+      verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME);
     }
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
@@ -166,7 +171,7 @@ public class RemoveAllTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
       verify(this.authzRequest).removeAllAuthorize(eq(REGION_NAME), any(), any());
@@ -184,7 +189,7 @@ public class RemoveAllTest {
       doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
           eq(key.toString()), eq(null));
     }
-    this.removeAll.cmdExecute(this.message, this.serverConnection, 0);
+    this.removeAll.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
       verify(this.authzRequest).removeAllAuthorize(eq(REGION_NAME), any(), any());

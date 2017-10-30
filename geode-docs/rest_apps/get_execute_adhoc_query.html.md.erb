@@ -113,7 +113,7 @@ Content-Type: application/json
 </tr>
 <tr class="odd">
 <td>500 INTERNAL SERVER ERROR</td>
-<td>Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. Some possible exceptions include:
+<td>Error encountered at <%=vars.product_name%> server. Check the HTTP response body for a stack trace of the exception. Some possible exceptions include:
 <ul>
 <li>A function was applied to a parameter that is improper for that function!</li>
 <li>Bind parameter is not of the expected type!</li>
@@ -123,7 +123,7 @@ Content-Type: application/json
 <li>Query execution time is exceeded max query execution time (gemfire.Cache.MAX_QUERY_EXECUTION_TIME) configured!</li>
 <li>Data referenced in from clause is not available for querying!</li>
 <li>Query execution gets canceled due to low memory conditions and the resource manager critical heap percentage has been set!</li>
-<li>Server has encountered while executing Adhoc query!</li>
+<li>Server has encountered an error while executing Adhoc query!</li>
 </ul></td>
 </tr>
 </tbody>

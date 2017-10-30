@@ -14,6 +14,8 @@
  */
 package org.apache.geode.security;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.cache.Region;
 import org.apache.shiro.authz.permission.WildcardPermission;
 
 /**
@@ -25,7 +27,15 @@ import org.apache.shiro.authz.permission.WildcardPermission;
  */
 public class ResourcePermission extends WildcardPermission {
 
+  public static String ALL = "*";
+
+  /**
+   * @deprecated use ALL
+   */
   public static String ALL_REGIONS = "*";
+  /**
+   * @deprecated use All
+   */
   public static String ALL_KEYS = "*";
 
   public enum Resource {
@@ -36,49 +46,82 @@ public class ResourcePermission extends WildcardPermission {
     NULL, MANAGE, WRITE, READ
   }
 
+  // when ALL is specified, we need it to convert to string "*" instead of "ALL".
+  public enum Target {
+    ALL(ResourcePermission.ALL), DISK, GATEWAY, QUERY, DEPLOY;
+
+    private String name;
+
+    Target() {}
+
+    Target(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      if (name != null) {
+        return name;
+      }
+      return name();
+    }
+  }
+
   // these default values are used when creating a lock around an operation
   private Resource resource = Resource.NULL;
   private Operation operation = Operation.NULL;
-  private String regionName = ALL_REGIONS;
-  private String key = ALL_KEYS;
+  private String target = ALL;
+  private String key = ALL;
 
   public ResourcePermission() {
-    this(Resource.NULL, Operation.NULL);
+    this(Resource.NULL, Operation.NULL, ALL, ALL);
   }
 
   public ResourcePermission(String resource, String operation) {
-    this(resource, operation, ALL_REGIONS);
+    this(resource, operation, ALL, ALL);
   }
 
-  public ResourcePermission(String resource, String operation, String regionName) {
-    this(resource, operation, regionName, ALL_KEYS);
+  public ResourcePermission(String resource, String operation, String target) {
+    this(resource, operation, target, ALL);
   }
 
-  public ResourcePermission(String resource, String operation, String regionName, String key) {
+  public ResourcePermission(String resource, String operation, String target, String key) {
     this((resource == null) ? Resource.NULL : Resource.valueOf(resource.toUpperCase()),
-        (operation == null) ? Operation.NULL : Operation.valueOf(operation.toUpperCase()),
-        regionName, key);
+        (operation == null) ? Operation.NULL : Operation.valueOf(operation.toUpperCase()), target,
+        key);
   }
 
   public ResourcePermission(Resource resource, Operation operation) {
-    this(resource, operation, ALL_REGIONS);
+    this(resource, operation, ALL, ALL);
   }
 
-  public ResourcePermission(Resource resource, Operation operation, String regionName) {
-    this(resource, operation, regionName, ALL_KEYS);
+  public ResourcePermission(Resource resource, Operation operation, String target) {
+    this(resource, operation, target, ALL);
   }
 
-  public ResourcePermission(Resource resource, Operation operation, String regionName, String key) {
-    if (resource != null)
+  public ResourcePermission(Resource resource, Operation operation, Target target) {
+    this(resource, operation, target, ALL);
+  }
+
+  public ResourcePermission(Resource resource, Operation operation, Target target,
+      String targetKey) {
+    this(resource, operation, target.getName(), targetKey);
+  }
+
+  public ResourcePermission(Resource resource, Operation operation, String target, String key) {
+    if (resource != null) {
       this.resource = resource;
-    if (operation != null)
+    }
+    if (operation != null) {
       this.operation = operation;
-    if (regionName != null)
-      this.regionName = regionName;
-    if (key != null)
+    }
+    if (target != null) {
+      this.target = StringUtils.stripStart(target, Region.SEPARATOR);
+    }
+    if (key != null) {
       this.key = key;
+    }
 
-    setParts(this.resource + ":" + this.operation + ":" + this.regionName + ":" + this.key, true);
+    setParts(this.resource + ":" + this.operation + ":" + this.target + ":" + this.key, true);
   }
 
   /**
@@ -96,10 +139,17 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   /**
-   * returns the regionName, could be "*", meaning all regions
+   * returns the regionName, or cluster target, could be "*", meaning all regions or all targets
+   */
+  public String getTarget() {
+    return target;
+  }
+
+  /**
+   * @deprecated use getTarget()
    */
   public String getRegionName() {
-    return regionName;
+    return getTarget();
   }
 
   /**
@@ -111,12 +161,12 @@ public class ResourcePermission extends WildcardPermission {
 
   @Override
   public String toString() {
-    if (ALL_REGIONS.equals(regionName)) {
+    if (ALL.equals(target)) {
       return getResource() + ":" + getOperation();
-    } else if (ALL_KEYS.equals(key)) {
-      return resource + ":" + operation + ":" + regionName;
+    } else if (ALL.equals(key)) {
+      return resource + ":" + operation + ":" + target;
     } else {
-      return resource + ":" + operation + ":" + regionName + ":" + key;
+      return resource + ":" + operation + ":" + target + ":" + key;
     }
   }
 

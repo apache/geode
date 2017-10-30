@@ -34,46 +34,53 @@ import java.util.jar.JarOutputStream;
  * Example of usage:
  *
  * <pre>
- *  &#064;Rule
- *  public TemporaryFolder temporaryFolder= new TemporaryFolder();
+`` *
+ * &#064;Test
+ * public void buildJarUsingStrings() {
+ *   JarBuilder jarBuilder = new JarBuilder();
+ *   File outputJar = new File("output.jar");
  *
- *  &#064;Test
- *  public void buildJarUsingStrings() {
- *  File tempDir = temporaryFolder.getRoot()
- *  JarBuilder jarBuilder = new JarBuilder(tempDir);
- *  File outputJar = new File("output.jar");
+ *   String classInFooBarPackage = &quot;package foo.bar; public class ClassA {int n = 10;}&quot;;
+ *   String classInDefaultPackage = &quot;public class ClassB {}&quot;;
+ *   jarBuilder.buildJar(outputJar, classInFooBarPackage, classInDefaultPackage);
+ * }
  *
- *  String classInFooBarPackage = &quot;package foo.bar; public class ClassA {int n = 10;}&quot;;
- *  String classInDefaultPackage = &quot;public class ClassB {}&quot;;
- *  jarBuilder.buildJar(outputJar, classInFooBarPackage, classInDefaultPackage);
- *     }
+ * &#064;Test
+ * public void buildJarUsingFiles() {
+ *   JarBuilder jarBuilder = new JarBuilder();
+ *   File outputJar = new File("output.jar");
  *
- *  &#064;Test
- *  public void buildJarUsingFiles() {
- *  File tempDir = temporaryFolder.getRoot()
- *  JarBuilder jarBuilder = new JarBuilder(tempDir);
- *  File outputJar = new File("output.jar");
+ *   // The following two files are expected to contain valid Java source code
+ *   File sourceFileOne = new File("ClassA.java");
+ *   File sourceFileTwo = new File("ClassB.java");
+ *   jarBuilder.buildJar(outputJar, sourceFileOne, sourceFileTwo);
+ * }
  *
- *  File sourceFileOne = new File("ClassA.java");
- *  File sourceFileTwo = new File("ClassB.java");
- *  jarBuilder.buildJar(outputJar, sourceFileOne, sourceFileTwo);
- *     }
+ * &#064;Test
+ * public void buildJarUsingClassNames() {
+ *   JarBuilder jarBuilder = new JarBuilder();
+ *   File outputJar = new File("output.jar");
  *
- *  &#064;Test
- *  public void buildJarUsingClassNames() {
- *  File tempDir = temporaryFolder.getRoot()
- *  JarBuilder jarBuilder = new JarBuilder(tempDir);
- *  File outputJar = new File("output.jar");
- *
- *  String classInFooBarPackage = "foo.bar.ClassInFooBarPackage";
- *  String classInDefaultPackage = "ClassInDefaultPackage";
- *  jarBuilder.buildJar(outputJar, classInFooBarPackage, classInDefaultPackage);
- *     }
+ *   String classInFooBarPackage = "foo.bar.ClassInFooBarPackage";
+ *   String classInDefaultPackage = "ClassInDefaultPackage";
+ *   jarBuilder.buildJar(outputJar, classInFooBarPackage, classInDefaultPackage);
+ * }
  * </pre>
  **/
 public class JarBuilder {
   private final JavaCompiler javaCompiler = new JavaCompiler();
 
+  /**
+   * Adds the given jarFile to the classpath that will be used for compilation by the buildJar
+   * methods.
+   */
+  public void addToClasspath(File jarFile) {
+    javaCompiler.addToClasspath(jarFile);
+  }
+
+  /**
+   * Builds a jar file containing empty classes with the given classNames.
+   */
   public void buildJarFromClassNames(File outputJarFile, String... classNames) throws IOException {
     UncompiledSourceCode[] uncompiledSourceCodes = Arrays.stream(classNames)
         .map(UncompiledSourceCode::fromClassName).toArray(UncompiledSourceCode[]::new);

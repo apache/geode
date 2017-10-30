@@ -363,6 +363,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    * @throws GatewaySenderException
    */
   private void initializeConnection() throws GatewaySenderException, GemFireSecurityException {
+    if (ackReaderThread != null) {
+      ackReaderThread.shutDownAckReaderConnection();
+    }
     this.connectionLifeCycleLock.writeLock().lock();
     try {
       // Attempt to acquire a connection
@@ -619,36 +622,18 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               // to resend all the pdx events as well in the next batch.
               final GatewaySenderStats statistics = sender.getStatistics();
               statistics.incBatchesRedistributed();
-              // log batch exceptions and remove all the events if remove from
-              // exception is true
-              // do not remove if it is false
               if (sender.isRemoveFromQueueOnException()) {
                 // log the batchExceptions
                 logBatchExceptions(ack.getBatchException());
                 processor.handleSuccessBatchAck(batchId);
               } else {
-                // we assume that batch exception will not occur for PDX related
-                // events
-                List<GatewaySenderEventImpl> pdxEvents =
-                    processor.getBatchIdToPDXEventsMap().get(ack.getBatchException().getBatchId());
-                if (pdxEvents != null) {
-                  for (GatewaySenderEventImpl senderEvent : pdxEvents) {
-                    senderEvent.isAcked = true;
-                  }
-                }
-                // log the batchExceptions
+                // log the batchExceptions. These are exceptions that were not retried on the remote
+                // site (e.g. NotAuthorizedException)
+                // @TODO Shoud anything else be done here to warn that events are lost even though
+                // the boolean is false
                 logBatchExceptions(ack.getBatchException());
-                // remove the events that have been processed.
-                BatchException70 be = ack.getBatchException();
-                List<BatchException70> exceptions = be.getExceptions();
-
-                for (int i = 0; i < exceptions.get(0).getIndex(); i++) {
-                  processor.eventQueueRemove(1);
-                }
-                // reset the sender
-                processor.handleException();
+                processor.handleSuccessBatchAck(batchId);
               }
-
             } // unsuccessful batch
             else { // The batch was successful.
               if (logger.isDebugEnabled()) {
@@ -819,6 +804,12 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   @Override
   public boolean isConnectedToRemote() {
     return connection != null && !connection.isDestroyed();
+  }
+
+  public void shutDownAckReaderConnection() {
+    if (ackReaderThread != null) {
+      ackReaderThread.shutDownAckReaderConnection();
+    }
   }
 
   public void stop() {

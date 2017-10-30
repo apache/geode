@@ -15,12 +15,13 @@
 package org.apache.geode.cache.snapshot;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,7 +38,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class WanSnapshotJUnitTest extends SnapshotTestCase {
   private Region<Integer, MyObject> region;
   private WanListener wan;
-  private static final long MAX_WAIT = 5 * 60 * 1000; // 6 minutes
 
   @Test
   public void testWanCallback() throws Exception {
@@ -46,18 +46,12 @@ public class WanSnapshotJUnitTest extends SnapshotTestCase {
       region.put(i, new MyObject(i, "clienttest " + i));
     }
 
-    File snapshot = new File("wan.snapshot");
+    File snapshot = new File(getSnapshotDirectory(), "wan.snapshot.gfd");
     region.getSnapshotService().save(snapshot, SnapshotFormat.GEMFIRE);
     region.clear();
 
-    long start = System.currentTimeMillis();
-    // wait for the events to drain out
-    while (!wan.ticker.compareAndSet(count, 0)) {
-      Thread.sleep(100);
-      if (System.currentTimeMillis() - start > MAX_WAIT) {
-        fail("Event did not drain in 5 minutes");
-      }
-    }
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).pollInterval(100, TimeUnit.MILLISECONDS)
+        .until(() -> wan.ticker.compareAndSet(count, 0));
 
     region.getSnapshotService().load(snapshot, SnapshotFormat.GEMFIRE);
 
@@ -92,4 +86,3 @@ public class WanSnapshotJUnitTest extends SnapshotTestCase {
   }
 
 }
-

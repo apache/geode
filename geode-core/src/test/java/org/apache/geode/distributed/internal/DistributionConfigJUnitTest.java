@@ -42,17 +42,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.UnmodifiableException;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.security.TestPostProcessor;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -61,6 +50,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.security.TestPostProcessor;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class DistributionConfigJUnitTest {
@@ -99,7 +99,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertEquals(attNames.length, 156);
+    assertEquals(attNames.length, 157);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -135,7 +135,7 @@ public class DistributionConfigJUnitTest {
     // are.
     assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
-    assertEquals(85, stringList.size());
+    assertEquals(86, stringList.size());
     assertEquals(5, fileList.size());
     assertEquals(4, otherList.size());
   }
@@ -342,8 +342,8 @@ public class DistributionConfigJUnitTest {
     assertEquals(config.getStartLocator(), address);
   }
 
-  @Test(expected = InternalGemFireException.class)
-  public void testInvalidLocatorAddress() {
+  @Test
+  public void testInvalidLocatorAddressDoesntThrowException() {
     String address = "bad.bad[7056]";
     config.modifiable = true;
     // config.setStartLocator(address);

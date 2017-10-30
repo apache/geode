@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.Transition;
@@ -79,7 +79,7 @@ public class GemfireLogConverter {
 
     if (args.length == 0) {
       usage();
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
 
     File outputFile = new File(args[0]);

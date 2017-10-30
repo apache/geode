@@ -44,7 +44,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
@@ -261,7 +261,7 @@ public class JGroupsMessengerJUnitTest {
       } else {
         // for mcast we send a direct-ack message and expect the messenger
         // to register it
-        stub(msg.isDirectAck()).toReturn(true);
+        when(msg.isDirectAck()).thenReturn(true);
       }
       when(msg.getDSFID()).thenReturn((int) DataSerializableFixedID.PUT_ALL_MESSAGE);
 
@@ -414,7 +414,7 @@ public class JGroupsMessengerJUnitTest {
       } else {
         // for mcast we send a direct-ack message and expect the messenger
         // to register it
-        stub(msg.isDirectAck()).toReturn(true);
+        when(msg.isDirectAck()).thenReturn(true);
       }
       when(msg.getDSFID()).thenReturn((int) DataSerializableFixedID.PUT_ALL_MESSAGE);
       interceptor.collectMessages = true;

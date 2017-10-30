@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -53,10 +52,6 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
 
   private static final long serialVersionUID = 1L;
 
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
   @SuppressWarnings("deprecation")
   @Override
   public void execute(FunctionContext context) {
@@ -66,7 +61,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
     try {
       AsyncEventQueueFunctionArgs aeqArgs = (AsyncEventQueueFunctionArgs) context.getArguments();
 
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) context.getCache();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
@@ -156,12 +151,12 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       return ClassPathLoader.getLatest().forName(className);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {className, neededFor}), e);
+          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+          className, neededFor), e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
           CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          new Object[] {className, neededFor}), e);
+          className, neededFor), e);
     }
   }
 
@@ -170,12 +165,12 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       return klass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
+          klass, neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, klass,
+          neededFor), e);
     }
   }
 

@@ -24,20 +24,25 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetCQStats extends BaseCQCommand {
 
-  private final static GetCQStats singleton = new GetCQStats();
+  private static final GetCQStats singleton = new GetCQStats();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private GetCQStats() {}
+  private GetCQStats() {
+    // nothing
+  }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
 
     CacheServerStats stats = serverConnection.getCacheServerStats();
@@ -67,7 +72,7 @@ public class GetCQStats extends BaseCQCommand {
       return;
     }
 
-    this.securityService.authorizeClusterRead();
+    securityService.authorize(Resource.CLUSTER, Operation.READ);
     // Process the cq request
     try {
       // make sure the cqservice has been created
@@ -85,11 +90,9 @@ public class GetCQStats extends BaseCQCommand {
         clientMessage.getTransactionId(), null, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
 
-    {
-      long oldStart = start;
-      start = DistributionStats.getStatTime();
-      stats.incProcessGetCqStatsTime(start - oldStart);
-    }
+    long oldStart = start;
+    start = DistributionStats.getStatTime();
+    stats.incProcessGetCqStatsTime(start - oldStart);
   }
 
 }

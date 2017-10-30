@@ -18,12 +18,13 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management functionality for a {@link CacheServer}.
  * 
  * <p>
- * The will be one CacheServermBean per {@link CacheServer} started in GemFire node.
+ * The will be one CacheServerMBean per {@link CacheServer} started in GemFire node.
  * 
  * <p>
  * ObjectName for this MBean is GemFire:service=CacheServer,port={0},type=Member,member={1}
@@ -60,48 +61,48 @@ public interface CacheServerMXBean {
   /**
    * Returns the port on which this CacheServer listens for clients.
    */
-  public int getPort();
+  int getPort();
 
   /**
    * Returns a string representing the IP address or host name that this CacheServer will listen on.
    */
-  public String getBindAddress();
+  String getBindAddress();
 
   /**
    * Returns the configured buffer size of the socket connection for this CacheServer.
    */
-  public int getSocketBufferSize();
+  int getSocketBufferSize();
 
   /**
    * Returns the maximum amount of time between client pings. This value is used to determine the
    * health of client's attached to the server.
    */
-  public int getMaximumTimeBetweenPings();
+  int getMaximumTimeBetweenPings();
 
   /**
    * Returns the maximum allowed client connections.
    */
-  public int getMaxConnections();
+  int getMaxConnections();
 
   /**
-   * Returns the maxium number of threads allowed in this CacheServer to service client requests.
+   * Returns the maximum number of threads allowed in this CacheServer to service client requests.
    */
-  public int getMaxThreads();
+  int getMaxThreads();
 
   /**
    * Returns the maximum number of messages that can be enqueued in a client-queue.
    */
-  public int getMaximumMessageCount();
+  int getMaximumMessageCount();
 
   /**
    * Returns the time (in seconds) after which a message in the client queue will expire.
    */
-  public int getMessageTimeToLive();
+  int getMessageTimeToLive();
 
   /**
    * Returns the frequency (in milliseconds) to poll the load probe on this CacheServer.
    */
-  public long getLoadPollInterval();
+  long getLoadPollInterval();
 
   /**
    * Returns the name or IP address to pass to the client as the location where the server is
@@ -111,164 +112,164 @@ public interface CacheServerMXBean {
    * and won’t be able to find the server. For this situation, you must supply the server’s
    * alternate hostname for the locator to pass to the client.
    */
-  public String getHostNameForClients();
+  String getHostNameForClients();
 
   /**
    * Returns the load probe for this CacheServer.
    */
-  public ServerLoadData fetchLoadProbe();
+  ServerLoadData fetchLoadProbe();
 
   /**
    * Returns whether or not this CacheServer is running.
    * 
    * @return True of the server is running, false otherwise.
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Returns the capacity (in megabytes) of the client queue.
    */
-  public int getCapacity();
+  int getCapacity();
 
   /**
    * Returns the eviction policy that is executed when the capacity of the client queue is reached.
    */
-  public String getEvictionPolicy();
+  String getEvictionPolicy();
 
   /**
    * Returns the name of the disk store that is used for persistence.
    */
-  public String getDiskStoreName();
+  String getDiskStoreName();
 
   /**
    * Returns the number of sockets accepted and used for client to server messaging.
    */
-  public int getClientConnectionCount();
+  int getClientConnectionCount();
 
   /**
    * Returns the number of client virtual machines connected.
    */
-  public int getCurrentClients();
+  int getCurrentClients();
 
   /**
    * Returns the average get request latency.
    */
-  public long getGetRequestAvgLatency();
+  long getGetRequestAvgLatency();
 
   /**
    * Returns the average put request latency.
    */
-  public long getPutRequestAvgLatency();
+  long getPutRequestAvgLatency();
 
   /**
    * Returns the total number of client connections that timed out and were closed.
    */
-  public int getTotalConnectionsTimedOut();
+  int getTotalConnectionsTimedOut();
 
   /**
    * Returns the total number of client connection requests that failed.
    */
-  public int getTotalFailedConnectionAttempts();
+  int getTotalFailedConnectionAttempts();
 
   /**
    * Returns the current number of connections waiting for a thread to start processing their
    * message.
    */
-  public int getThreadQueueSize();
+  int getThreadQueueSize();
 
   /**
    * Returns the current number of threads handling a client connection.
    */
-  public int getConnectionThreads();
+  int getConnectionThreads();
 
   /**
    * Returns the load from client to server connections as reported by the load probe installed in
    * this server.
    */
-  public double getConnectionLoad();
+  double getConnectionLoad();
 
   /**
    * Returns the estimate of how much load is added for each new connection as reported by the load
    * probe installed in this server.
    */
-  public double getLoadPerConnection();
+  double getLoadPerConnection();
 
   /**
    * Returns the load from queues as reported by the load probe installed in this server.
    */
-  public double getQueueLoad();
+  double getQueueLoad();
 
   /**
    * Returns the estimate of how much load is added for each new queue as reported by the load probe
    * installed in this server.
    */
-  public double getLoadPerQueue();
+  double getLoadPerQueue();
 
 
   /**
    * Returns the rate of get requests.
    */
-  public float getGetRequestRate();
+  float getGetRequestRate();
 
   /**
    * Returns the rate of put requests.
    */
-  public float getPutRequestRate();
+  float getPutRequestRate();
 
   /**
    * Returns the total number of bytes sent to clients.
    */
-  public long getTotalSentBytes();
+  long getTotalSentBytes();
 
   /**
    * Returns the total number of bytes received from clients.
    */
-  public long getTotalReceivedBytes();
+  long getTotalReceivedBytes();
 
   /**
    * Returns the number of cache client notification requests.
    */
-  public int getNumClientNotificationRequests();
+  int getNumClientNotificationRequests();
 
   /**
    * Returns the average latency for processing client notifications.
    */
-  public long getClientNotificationAvgLatency();
+  long getClientNotificationAvgLatency();
 
   /**
    * Returns the rate of client notifications.
    */
-  public float getClientNotificationRate();
+  float getClientNotificationRate();
 
   /**
    * Returns the number of registered CQs.
    */
-  public long getRegisteredCQCount();
+  long getRegisteredCQCount();
 
   /**
    * Returns the number of active (currently executing) CQs.
    */
-  public long getActiveCQCount();
+  long getActiveCQCount();
 
   /**
    * Returns the rate of queries.
    */
-  public float getQueryRequestRate();
+  float getQueryRequestRate();
 
   /**
    * Returns the total number of indexes in use by the member.
    */
-  public int getIndexCount();
+  int getIndexCount();
 
   /**
    * Returns a list of names for all indexes.
    */
-  public String[] getIndexList();
+  String[] getIndexList();
 
   /**
    * Returns the total time spent updating indexes due to changes in the data.
    */
-  public long getTotalIndexMaintenanceTime();
+  long getTotalIndexMaintenanceTime();
 
   /**
    * Remove an index.
@@ -276,12 +277,12 @@ public interface CacheServerMXBean {
    * @param indexName Name of the index to be removed.
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void removeIndex(String indexName) throws Exception;
+  void removeIndex(String indexName) throws Exception;
 
   /**
    * Returns a list of names for all registered CQs.
    */
-  public String[] getContinuousQueryList();
+  String[] getContinuousQueryList();
 
   /**
    * Execute an ad-hoc CQ on the server
@@ -293,7 +294,7 @@ public interface CacheServerMXBean {
    */
   @Deprecated
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
-  public void executeContinuousQuery(String queryName) throws Exception;
+  void executeContinuousQuery(String queryName) throws Exception;
 
   /**
    * Stop (pause) a CQ from executing
@@ -305,8 +306,9 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void stopContinuousQuery(String queryName) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  void stopContinuousQuery(String queryName) throws Exception;
 
   /**
    * Unregister all CQs from a region
@@ -317,8 +319,9 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void closeAllContinuousQuery(String regionName) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  void closeAllContinuousQuery(String regionName) throws Exception;
 
 
   /**
@@ -330,8 +333,9 @@ public interface CacheServerMXBean {
    *             methods to modify a CQ.
    */
   @Deprecated
-  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public void closeContinuousQuery(String queryName) throws Exception;
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
+      target = Target.QUERY)
+  void closeContinuousQuery(String queryName) throws Exception;
 
 
   /**
@@ -339,7 +343,7 @@ public interface CacheServerMXBean {
    * 
    * @return A list of IDs or a length 0 array if no clients are registered.
    */
-  public String[] getClientIds() throws Exception;
+  String[] getClientIds() throws Exception;
 
   /**
    * Returns health and statistic information for the give client id. Some of the information (CPUs,
@@ -348,44 +352,44 @@ public interface CacheServerMXBean {
    * 
    * @param clientId ID of the client for which to retrieve information.
    */
-  public ClientHealthStatus showClientStats(String clientId) throws Exception;
+  ClientHealthStatus showClientStats(String clientId) throws Exception;
 
   /**
    * Returns the number of clients who have existing subscriptions.
    */
-  public int getNumSubscriptions();
+  int getNumSubscriptions();
 
   /**
    * Returns health and statistic information for all clients. Some of the information (CPUs,
    * NumOfCacheListenerCalls, NumOfGets,NumOfMisses, NumOfPuts,NumOfThreads, ProcessCpuTime) only
    * available for clients which have set a "StatisticsInterval".
    */
-  public ClientHealthStatus[] showAllClientStats() throws Exception;
+  ClientHealthStatus[] showAllClientStats() throws Exception;
 
   /**
    * Shows a list of client with their queue statistics. Client queue statistics shown in this
    * method are the following
    * 
-   * eventsEnqued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
+   * eventsEnqueued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
    * 
    * @return an array of ClientQueueDetail
    * @throws Exception
    */
-  public ClientQueueDetail[] showClientQueueDetails() throws Exception;
+  ClientQueueDetail[] showClientQueueDetails() throws Exception;
 
   /**
    * 
    * Shows queue statistics of the given client. Client queue statistics shown in this method are
    * the following
    * 
-   * eventsEnqued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
+   * eventsEnqueued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
    * 
    * @param clientId the ID of client which is returned by the attribute ClientIds
    * @return ClientQueueDetail
    * @throws Exception
    */
-  public ClientQueueDetail showClientQueueDetails(String clientId) throws Exception;
+  ClientQueueDetail showClientQueueDetails(String clientId) throws Exception;
 
 }

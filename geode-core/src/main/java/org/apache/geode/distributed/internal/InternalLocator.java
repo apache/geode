@@ -18,7 +18,24 @@ import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -45,6 +62,8 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
+import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -52,7 +71,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -65,22 +83,6 @@ import org.apache.geode.management.internal.configuration.handlers.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -315,7 +317,6 @@ public class InternalLocator extends Locator implements ConnectListener {
 
       // TODO:GEODE-1243: this.server is now a TcpServer and it should store or return its non-zero
       // port in a variable to use here
-
       try {
         newLocator.startPeerLocation(startDistributedSystem);
         if (startDistributedSystem) {
@@ -468,16 +469,13 @@ public class InternalLocator extends Locator implements ConnectListener {
         // if security-log-file then create securityLogWriterAppender
         LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.SECURITY, true, false,
             this.config, false);
-
-      } else {
-        // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
       }
+      // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
     }
 
     // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
     if (logWriter == null) {
-      logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config,
-          !startDistributedSystem);
+      logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config, false);
       if (logger.isDebugEnabled()) {
         logger.debug("LogWriter for locator is created.");
       }
@@ -502,8 +500,8 @@ public class InternalLocator extends Locator implements ConnectListener {
     ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
     this.stats = new LocatorStats();
 
-    this.server = new TcpServer(port, this.bindAddress, null, this.config, this.handler,
-        new DelayedPoolStatHelper(), group, this.toString());
+    this.server = new TcpServerFactory().makeTcpServer(port, this.bindAddress, null, this.config,
+        this.handler, new DelayedPoolStatHelper(), group, this.toString(), this);
   }
 
   // Reset the file names with the correct port number if startLocatorAndDS was called with port
@@ -525,6 +523,10 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   public DistributionConfigImpl getConfig() {
     return this.config;
+  }
+
+  public InternalCache getCache() {
+    return myCache;
   }
 
   /**
@@ -635,7 +637,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   private void startDistributedSystem() throws UnknownHostException {
     InternalDistributedSystem existing = InternalDistributedSystem.getConnectedInstance();
-
     if (existing != null) {
       // LOG: changed from config to info
       logger.info(LocalizedMessage
@@ -677,7 +678,6 @@ public class InternalLocator extends Locator implements ConnectListener {
             System.setProperty(propName, locatorsProp);
           }
         }
-
         // No longer default mcast-port to zero. See 46277.
       }
 
@@ -688,11 +688,6 @@ public class InternalLocator extends Locator implements ConnectListener {
 
       logger.info(
           LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_DISTRIBUTED_SYSTEM));
-      // LOG:CONFIG: changed from config to info
-      logger.info(LogMarker.CONFIG,
-          LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATIONN_0,
-              this.config.toLoggerString()));
 
       this.myDs = (InternalDistributedSystem) DistributedSystem.connect(connectEnv);
 
@@ -1340,6 +1335,11 @@ public class InternalLocator extends Locator implements ConnectListener {
     try {
       this.stats.hookupStats(sys,
           SocketCreator.getLocalHost().getCanonicalHostName() + '-' + this.server.getBindAddress());
+
+      ClientProtocolService clientProtocolService = this.server.getClientProtocolService();
+      if (clientProtocolService != null) {
+        clientProtocolService.initializeStatistics("LocatorStats", sys);
+      }
     } catch (UnknownHostException e) {
       logger.warn(e);
     }

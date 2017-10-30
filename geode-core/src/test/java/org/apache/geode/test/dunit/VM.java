@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.awaitility.Awaitility;
 import hydra.MethExecutorResult;
@@ -39,8 +40,8 @@ public class VM implements Serializable {
   /** The host on which this VM runs */
   private Host host;
 
-  /** The process id of this VM */
-  private int pid;
+  /** The sequential id of this VM */
+  private int id;
 
   /** The version of Geode used in this VM */
   private String version;
@@ -57,6 +58,16 @@ public class VM implements Serializable {
    */
   public static int getCurrentVMNum() {
     return DUnitEnv.get().getVMID();
+  }
+
+  /**
+   * restart an unavailable VM
+   */
+  public synchronized void makeAvailable() {
+    if (!this.available) {
+      this.available = true;
+      bounce();
+    }
   }
 
   /**
@@ -88,16 +99,14 @@ public class VM implements Serializable {
 
   /**
    * Creates a new {@code VM} that runs on a given host with a given process id.
-   *
-   * TODO: change pid to reflect value from {@link ProcessUtils#identifyPid()}
    */
-  public VM(final Host host, final int pid, final RemoteDUnitVMIF client) {
-    this(host, VersionManager.CURRENT_VERSION, pid, client);
+  public VM(final Host host, int id, final RemoteDUnitVMIF client) {
+    this(host, VersionManager.CURRENT_VERSION, id, client);
   }
 
-  public VM(final Host host, final String version, final int pid, final RemoteDUnitVMIF client) {
+  public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client) {
     this.host = host;
-    this.pid = pid;
+    this.id = id;
     this.version = version;
     this.client = client;
     this.available = true;
@@ -121,10 +130,17 @@ public class VM implements Serializable {
   }
 
   /**
+   * Returns the VM id of this {@code VM}.
+   */
+  public int getId() {
+    return this.id;
+  }
+
+  /**
    * Returns the process id of this {@code VM}.
    */
   public int getPid() {
-    return this.pid;
+    return invoke(() -> ProcessUtils.identifyPid());
   }
 
   /**
@@ -404,8 +420,8 @@ public class VM implements Serializable {
     this.available = false;
 
     try {
-      BounceResult result = DUnitEnv.get().bounce(targetVersion, this.pid);
-      this.pid = result.getNewPid();
+      BounceResult result = DUnitEnv.get().bounce(targetVersion, this.id);
+      this.id = result.getNewId();
       this.client = result.getNewClient();
       this.version = targetVersion;
       this.available = true;
@@ -424,12 +440,12 @@ public class VM implements Serializable {
   }
 
   public String toString() {
-    return "VM " + getPid() + " running on " + getHost()
+    return "VM " + getId() + " running on " + getHost()
         + (VersionManager.isCurrentVersion(version) ? "" : (" with version " + version));
   }
 
   public File getWorkingDirectory() {
-    return DUnitEnv.get().getWorkingDirectory(getVersion(), getPid());
+    return DUnitEnv.get().getWorkingDirectory(getVersion(), getId());
   }
 
   private MethExecutorResult execute(final Class targetClass, final String methodName,

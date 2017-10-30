@@ -410,7 +410,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    *
    * Invariant: the receiver is dependent on the current iterator.
    */
-  private SelectResults singleBaseCollectionFilterEvaluate(ExecutionContext context,
+  SelectResults singleBaseCollectionFilterEvaluate(ExecutionContext context,
       SelectResults intermediateResults, boolean completeExpansionNeeded,
       CompiledValue iterOperands, IndexInfo indexInfo, RuntimeIterator[] indpndntItr,
       boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
@@ -562,69 +562,16 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
           }
         }
       } else {
+
         if (!evalColln.getClass().isArray()) {
           throw new TypeMismatchException("Operand of IN cannot be interpreted as a Collection. "
               + "Is instance of " + evalColln.getClass().getName());
         }
-        if (evalColln instanceof Object[]) {
-          Object[] arr = (Object[]) evalColln;
-          for (int i = 0; i < arr.length; ++i) {
-            this.queryIndex(arr[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
 
-        } else if (evalColln instanceof long[]) {
-          long[] a = (long[]) evalColln;
-          for (int i = 0; i < a.length; i++) {
-            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
-
-        } else if (evalColln instanceof double[]) {
-          double[] a = (double[]) evalColln;
-          for (int i = 0; i < a.length; i++) {
-            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
-
-        } else if (evalColln instanceof float[]) {
-          float[] a = (float[]) evalColln;
-          for (int i = 0; i < a.length; i++) {
-            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
-
-        } else if (evalColln instanceof int[]) {
-          int[] a = (int[]) evalColln;
-          for (int i = 0; i < a.length; i++) {
-            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
-        } else if (evalColln instanceof short[]) {
-          short[] a = (short[]) evalColln;
-          for (int i = 0; i < a.length; i++) {
-            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
-
-        } else if (evalColln instanceof char[]) {
-          char[] a = (char[]) evalColln;
-          for (int i = 0; i < a.length; i++) {
-            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
-
-        } else if (evalColln instanceof byte[]) {
-          byte[] a = (byte[]) evalColln;
-          for (int i = 0; i < a.length; i++) {
-            this.queryIndex(a[i], indexInfo, results, iterOperands, indpndntItr, context,
-                projAttrib, conditioningNeeded);
-          }
-
-        } else {
-          throw new TypeMismatchException(
-              "Operand of IN cannot be interpreted as a Comparable Object. Operand is of type ="
-                  + evalColln.getClass());
+        int evalCollnLength = Array.getLength(evalColln);
+        for (int i = 0; i < evalCollnLength; ++i) {
+          this.queryIndex(Array.get(evalColln, i), indexInfo, results, iterOperands, indpndntItr,
+              context, projAttrib, conditioningNeeded);
         }
       }
 

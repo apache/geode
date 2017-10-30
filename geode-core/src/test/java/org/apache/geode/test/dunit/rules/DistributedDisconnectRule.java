@@ -14,12 +14,40 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-// TODO:uncomment: import static org.apache.geode.test.dunit.DistributedTestRule.*;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.google.common.base.Stopwatch;
+
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.SerializableRunnable;
 
 /**
- * Disconnects all remote DUnit JVMs including the Locator JVM.
+ * JUnit Rule that disconnects DistributedSystem in all VMs.
+ *
+ * <p>
+ * DistributedDisconnectRule can be used in DistributedTests to disconnect all VMs before or after
+ * each test:
+ *
+ * <pre>
+ * {@literal @}Rule
+ * public DistributedDisconnectRule distributedDisconnectRule = new DistributedDisconnectRule();
+ *
+ * {@literal @}Test
+ * public void createCacheInEveryDUnitVM() throws Exception {
+ *   cache = (InternalCache) new CacheFactory().create();
+ *   assertThat(cache.isClosed()).isFalse();
+ *   assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();
+ *
+ *   for (VM vm: Host.getHost(0).getAllVMs()) {
+ *     vm.invoke(() -> {
+ *       cache = (InternalCache) new CacheFactory().create();
+ *       assertThat(cache.isClosed()).isFalse();
+ *       assertThat(cache.getInternalDistributedSystem().isConnected()).isTrue();
+ *     });
+ *   }
+ * }
+ * </pre>
  */
 public class DistributedDisconnectRule extends DistributedExternalResource {
 
@@ -43,14 +71,14 @@ public class DistributedDisconnectRule extends DistributedExternalResource {
   @Override
   protected void before() throws Throwable {
     if (this.disconnectBefore) {
-      invoker().invokeInEveryVM(serializableRunnable());
+      invoker().invokeInEveryVMAndController(serializableRunnable());
     }
   }
 
   @Override
   protected void after() {
     if (this.disconnectAfter) {
-      invoker().invokeInEveryVM(serializableRunnable());
+      invoker().invokeInEveryVMAndController(serializableRunnable());
     }
   }
 
@@ -58,9 +86,28 @@ public class DistributedDisconnectRule extends DistributedExternalResource {
     return new SerializableRunnable() {
       @Override
       public void run() {
-        // TODO:uncomment: disconnectFromDS();
+        disconnect();
       }
     };
+  }
+
+  public static void disconnect() {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+
+    while (system != null && stopwatch.elapsed(MINUTES) < 10) {
+      system = InternalDistributedSystem.getConnectedInstance();
+      try {
+        system.disconnect();
+      } catch (Exception ignore) {
+        // ignored
+      }
+    }
+
+    AdminDistributedSystemImpl adminSystem = AdminDistributedSystemImpl.getConnectedInstance();
+    if (adminSystem != null) {
+      adminSystem.disconnect();
+    }
   }
 
   /**
@@ -70,7 +117,9 @@ public class DistributedDisconnectRule extends DistributedExternalResource {
     private boolean disconnectBefore;
     private boolean disconnectAfter;
 
-    public Builder() {}
+    public Builder() {
+      // nothing
+    }
 
     public Builder disconnectBefore(final boolean disconnectBefore) {
       this.disconnectBefore = disconnectBefore;

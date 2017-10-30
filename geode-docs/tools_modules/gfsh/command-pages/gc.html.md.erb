@@ -28,14 +28,14 @@ The default is for garbage collection to occur on all caching members.
 **Syntax:**
 
 ``` pre
-gc [--group=value(,value)*] [--member=value]
+gc [--groups=value(,value)*] [--member=value]
 ```
 
 <a id="concept_95E57FE81F5244FB810C58816212323E__table_dz5_bbh_2w"></a>
 
 | Name                                           | Description                                                                 |
 |------------------------------------------------|-----------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-group</span>  | One or more group(s) of members on which garbage collection will be forced. |
+| <span class="keyword parmname">\\-\\-groups</span>  | One or more group(s) of members on which garbage collection will be forced. |
 | <span class="keyword parmname">\\-\\-member</span> | Name/ID of the member on which garbage collection will be forced.           |
 
 <span class="tablecap">Table 1. GC Parameters</span>
@@ -44,7 +44,7 @@ gc [--group=value(,value)*] [--member=value]
 
 ``` pre
 gc --member=server1
-gc --group=Group1
+gc --groups=Group1
 gc
 ```
 

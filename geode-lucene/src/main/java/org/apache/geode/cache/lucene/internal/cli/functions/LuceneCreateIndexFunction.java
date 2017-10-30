@@ -19,6 +19,9 @@ import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateC
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -34,8 +37,6 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 
 /**
@@ -52,10 +53,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 @SuppressWarnings("unused")
 public class LuceneCreateIndexFunction extends FunctionAdapter implements InternalEntity {
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   public String getId() {
     return LuceneCreateIndexFunction.class.getName();
   }
@@ -64,7 +61,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
     String memberId = null;
     try {
       final LuceneIndexInfo indexInfo = (LuceneIndexInfo) context.getArguments();
-      final Cache cache = getCache();
+      final Cache cache = context.getCache();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       LuceneService service = LuceneServiceProvider.get(cache);
 
@@ -88,6 +85,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       }
 
       REGION_PATH.validateName(indexInfo.getRegionPath());
+
       indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
 
       // TODO - update cluster configuration by returning a valid XmlEntity

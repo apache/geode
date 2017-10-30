@@ -1,6 +1,4 @@
----
-title:  Deploying Application JARs to Apache Geode Members
----
+<% set_title("Deploying Application JARs to", product_name_long, "Members") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,20 +17,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. Geode automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
+You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. <%=vars.product_name%> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
 
-To deploy and undeploy application JAR files in Apache Geode, use the `gfsh` `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the distributed system where you want to deploy the JARs, you could type at the `gfsh` prompt:
+To deploy and undeploy application JAR files in <%=vars.product_name_long%>, use the `gfsh` `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the distributed system where you want to deploy the JARs, you could type at the `gfsh` prompt:
 
 ``` pre
-gfsh> deploy --jar=group1_functions.jar
+gfsh> deploy --jars=group1_functions.jar
 ```
 
 This command deploys the `group1_functions.jar` file to all members in the distributed system.
 
-To deploy the JAR file to a subset of members, use the `--group` argument. For example:
+To deploy the JAR file to a subset of members, use the `--groups` argument. For example:
 
 ``` pre
-gfsh> deploy --jar=group1_functions.jar --group=MemberGroup1
+gfsh> deploy --jars=group1_functions.jar --groups=MemberGroup1
 ```
 
 In the example it is assumed that you have already defined the member group that you want to use when starting up your members. See [Configuring and Running a Cluster](../chapter_overview.html#concept_lrh_gyq_s4) for more information on how to define member groups and add a member to a group.
@@ -54,13 +52,13 @@ gfsh> undeploy
 To undeploy a specific JAR file:
 
 ``` pre
-gfsh> undeploy --jar=group1_functions.jar
+gfsh> undeploy --jars=group1_functions.jar
 ```
 
 To target a specific member group when undeploying all JAR files:
 
 ``` pre
-gfsh> undeploy --group=MemberGroup1
+gfsh> undeploy --groups=MemberGroup1
 ```
 
 Only JAR files that have been previously deployed on members in the MemberGroup1 group will be undeployed.
@@ -74,7 +72,7 @@ gfsh> list deployed
 To see a list of all deployed JARs in a specific member group:
 
 ``` pre
-gfsh> list deployed --group=MemberGroup1
+gfsh> list deployed --groups=MemberGroup1
 ```
 
 Sample output:
@@ -91,7 +89,7 @@ For more information on `gfsh` usage, see [gfsh](../../tools_modules/gfsh/chapte
 
 ## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D36E345C6E254D27B0F4B0C8711F5E6A" class="no-quick-link"></a>Deployment Location for JAR Files
 
-The system location where JAR files are written on each member is determined by the `deploy-working-dir` Geode property configured for that member. For example, you could have the following configured in the `gemfire.properties` file for your member:
+The system location where JAR files are written on each member is determined by the `deploy-working-dir` <%=vars.product_name%> property configured for that member. For example, you could have the following configured in the `gemfire.properties` file for your member:
 
 ``` pre
 #gemfire.properties

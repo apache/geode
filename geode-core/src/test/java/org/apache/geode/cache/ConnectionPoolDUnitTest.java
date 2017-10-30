@@ -3462,7 +3462,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             null);
 
         region1 = createRegion(regionName1, regionFactory.create());
-        region1.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(
+        region1.getAttributesMutator().addCacheListener(new CertifiableTestCacheListener(
             org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
       }
     };
@@ -5310,7 +5310,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 .info("vm2 numberOfAfterInvalidates: " + numberOfAfterInvalidates);
           }
         };
-        region.getAttributesMutator().setCacheListener(listener);
+        region.getAttributesMutator().addCacheListener(listener);
         region.registerInterestRegex(".*", false, false);
       }
     });
@@ -5334,7 +5334,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             // getLogWriter().info("vm3 numberOfAfterInvalidates: " + numberOfAfterInvalidates);
           }
         };
-        region.getAttributesMutator().setCacheListener(listener);
+        region.getAttributesMutator().addCacheListener(listener);
         region.registerInterestRegex(".*", false, false);
       }
     });

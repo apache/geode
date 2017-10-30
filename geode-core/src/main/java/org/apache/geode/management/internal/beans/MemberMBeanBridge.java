@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
+import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
@@ -64,6 +63,7 @@ import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.cache.BackupManager;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskDirectoryStats;
@@ -77,7 +77,6 @@ import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -99,14 +98,11 @@ import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
 import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.management.DependenciesNotFoundException;
 import org.apache.geode.management.DiskBackupResult;
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.OSMetrics;
-import org.apache.geode.management.cli.CommandService;
-import org.apache.geode.management.cli.CommandServiceException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.ManagementStrings;
@@ -122,11 +118,8 @@ import org.apache.geode.management.internal.beans.stats.StatsLatency;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 import org.apache.geode.management.internal.beans.stats.VMStatsMonitor;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
-import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.remote.MemberCommandService;
+import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and Distributed System
@@ -169,7 +162,7 @@ public class MemberMBeanBridge {
   /**
    * Command Service
    */
-  private CommandService commandService;
+  private OnlineCommandProcessor commandProcessor;
 
   private String commandServiceInitError;
 
@@ -345,20 +338,12 @@ public class MemberMBeanBridge {
 
     this.config = system.getConfig();
     try {
-      this.commandService = CommandService.createLocalCommandService(cache);
-    } catch (CacheClosedException e) {
+      this.commandProcessor =
+          new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService());
+    } catch (Exception e) {
       commandServiceInitError = e.getMessage();
-      // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
-    } catch (CommandServiceException e) {
-      commandServiceInitError = e.getMessage();
-      // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
-    } catch (DependenciesNotFoundException e) {
-      commandServiceInitError = e.getMessage();
-      // log as error for dedicated cache server - launched through script
-      // LOG:CONFIG:
-      logger.info(LogMarker.CONFIG, "Command Service could not be initialized. {}", e.getMessage());
+      logger.info(LogMarker.CONFIG, "Command processor could not be initialized. {}",
+          e.getMessage());
     }
 
     intitGemfireProperties();
@@ -1037,10 +1022,10 @@ public class MemberMBeanBridge {
         Set<PersistentID> existingDataStores;
         Set<PersistentID> successfulDataStores;
         try {
-          existingDataStores = manager.prepareBackup();
+          existingDataStores = manager.prepareForBackup();
           abort = false;
         } finally {
-          successfulDataStores = manager.finishBackup(targetDir, null/* TODO rishi */, abort);
+          successfulDataStores = manager.doBackup(targetDir, null/* TODO rishi */, abort);
         }
         diskBackUpResult = new DiskBackupResult[existingDataStores.size()];
         int j = 0;
@@ -1341,7 +1326,7 @@ public class MemberMBeanBridge {
     return getMemberLevelStatistic(StatsKey.GET_INITIAL_IMAGE_TIME).longValue();
   }
 
-  public int getInitialImagesInProgres() {
+  public int getInitialImagesInProgress() {
     return getMemberLevelStatistic(StatsKey.GET_INITIAL_IMAGES_INPROGRESS).intValue();
   }
 
@@ -1582,39 +1567,15 @@ public class MemberMBeanBridge {
    * @param env environment information to be used for processing the command
    * @return result of the processing the given command string.
    */
-  public String processCommand(String commandString, Map<String, String> env) {
-    if (commandService == null) {
+  public String processCommand(String commandString, Map<String, String> env, byte[][] binaryData) {
+    if (commandProcessor == null) {
       throw new JMRuntimeException(
           "Command can not be processed as Command Service did not get initialized. Reason: "
               + commandServiceInitError);
     }
 
-    boolean isGfshRequest = isGfshRequest(env);
-    if (isGfshRequest) {
-      CommandExecutionContext.setShellRequest();
-    }
-
-    Result result = ((MemberCommandService) commandService).processCommand(commandString, env);
-    if (!(result instanceof CommandResult)) {// TODO - Abhishek - Shouldn't be needed
-      while (result.hasNextLine()) {
-        result = ResultBuilder.createInfoResult(result.nextLine());
-      }
-    }
-
-    if (isGfshRequest) {
-      return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
-    } else {
-      return ResultBuilder.resultAsString(result);
-    }
-  }
-
-  private boolean isGfshRequest(Map<String, String> env) {
-    String appName = null;
-    if (env != null) {
-      appName = env.get(Gfsh.ENV_APP_NAME);
-    }
-
-    return Gfsh.GFSH_APP_NAME.equals(appName);
+    Result result = commandProcessor.executeCommand(commandString, env, binaryData);
+    return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
   }
 
   public long getTotalDiskUsage() {

@@ -174,7 +174,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       Throwable thr = null;
       JmxManagerProfile p = null;
       try {
-        final InternalCache cache = GemFireCacheImpl.getInstance();
+        final InternalCache cache = dm.getCache();
         if (cache != null && !cache.isClosed()) {
           final JmxManagerAdvisor adv = cache.getJmxManagerAdvisor();
           p = this.profile;
@@ -327,7 +327,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     @Override
     public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
-      final InternalCache cache = GemFireCacheImpl.getInstance();
+      final InternalCache cache = dm.getCache();
       if (cache != null && !cache.isClosed()) {
         handleDistributionAdvisee(cache.getJmxManagerAdvisor().getAdvisee(), removeProfile,
             exchangeProfiles, replyProfiles);

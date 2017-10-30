@@ -49,6 +49,12 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  */
 public abstract class AbstractConfig implements Config {
 
+  public static final String GEM_FIRE_PROPERTIES_USING_DEFAULT_VALUES =
+      "### GemFire Properties using default values ###";
+  public static final String GEM_FIRE_PROPERTIES_DEFINED_WITH_PREFIX =
+      "### GemFire Properties defined with ";
+  public static final String GEM_FIRE_PROPERTIES_DEFINED_WITH_SUFFIX = " ###";
+
   /**
    * Returns the string to use as the exception message when an attempt is made to set an
    * unmodifiable attribute.
@@ -173,9 +179,10 @@ public abstract class AbstractConfig implements Config {
       if (!sourceFound) {
         sourceFound = true;
         if (source == null) {
-          pw.println("### GemFire Properties using default values ###");
+          pw.println(GEM_FIRE_PROPERTIES_USING_DEFAULT_VALUES);
         } else {
-          pw.println("### GemFire Properties defined with " + source.getDescription() + " ###");
+          pw.println(GEM_FIRE_PROPERTIES_DEFINED_WITH_PREFIX + source.getDescription()
+              + GEM_FIRE_PROPERTIES_DEFINED_WITH_SUFFIX);
         }
       }
       // hide the shiro-init configuration for now. Remove after we can allow customer to specify
@@ -205,10 +212,7 @@ public abstract class AbstractConfig implements Config {
     if (attName.startsWith(DistributionConfig.SYS_PROP_NAME)) {
       return false;
     }
-    if (attName.toLowerCase().contains("password") /* bug 45381 */) {
-      return false;
-    }
-    return true;
+    return !attName.toLowerCase().contains("password");
   }
 
   /**
@@ -388,7 +392,7 @@ public abstract class AbstractConfig implements Config {
           String trimAttName = trimAttributeName(attName);
           throw new UnmodifiableException(
               LocalizedStrings.AbstractConfig_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_SET_FROM_THE_COMMAND_LINE_SET_1_FOR_EACH_INDIVIDUAL_PARAMETER_INSTEAD
-                  .toLocalizedString(new Object[] {attName, trimAttName}));
+                  .toLocalizedString(attName, trimAttName));
         }
       } else if (valueType.equals(FlowControlParams.class)) {
         String values[] = attValue.split(",");

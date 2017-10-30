@@ -145,7 +145,9 @@ public interface GatewaySenderFactory {
    * i.e. the <code>GatewaySender</code> will automatically start once created.
    * 
    * @param start the manual start boolean property for this <code>GatewaySender</code>
+   * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
+  @Deprecated
   public GatewaySenderFactory setManualStart(boolean start);
 
   /**

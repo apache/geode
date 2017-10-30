@@ -19,15 +19,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-At creation, each operation log is initialized at the disk store's `max-oplog-size`, with the size divided between the `crf` and `drf` files. When the oplog is closed, Apache Geode shrinks the files to the space used in each file.
+At creation, each operation log is initialized at the disk store's `max-oplog-size`, with the size divided between the `crf` and `drf` files. When the oplog is closed, <%=vars.product_name_long%> shrinks the files to the space used in each file.
 
 <a id="operation_logs__section_C0B1391492394A908577C29772902A42"></a>
-After the oplog is closed, Geode also attempts to create a `krf` file, which contains the key names as well as the offset for the value within the `crf` file. Although this file is not required for startup, if it is available, it will improve startup performance by allowing Geode to load the entry values in the background after the entry keys are loaded.
+After the oplog is closed, <%=vars.product_name%> also attempts to create a `krf` file, which contains the key names as well as the offset for the value within the `crf` file. Although this file is not required for startup, if it is available, it will improve startup performance by allowing <%=vars.product_name%> to load the entry values in the background after the entry keys are loaded.
 
-When an operation log is full, Geode automatically closes it and creates a new log with the next sequence number. This is called *oplog rolling*. You can also request an oplog rolling through the API call `DiskStore.forceRoll`. You may want to do this immediately before compacting your disk stores, so the latest oplog is available for compaction.
+When an operation log is full, <%=vars.product_name%> automatically closes it and creates a new log with the next sequence number. This is called *oplog rolling*. You can also request an oplog rolling through the API call `DiskStore.forceRoll`. You may want to do this immediately before compacting your disk stores, so the latest oplog is available for compaction.
 
 **Note:**
-Log compaction can change the names of the disk store files. File number sequencing is usually altered, with some existing logs removed or replaced by newer logs with higher numbering. Geode always starts a new log at a number higher than any existing number.
+Log compaction can change the names of the disk store files. File number sequencing is usually altered, with some existing logs removed or replaced by newer logs with higher numbering. <%=vars.product_name%> always starts a new log at a number higher than any existing number.
 
 This example listing shows the logs in a system with only one disk directory specified for the store. The first log (`BACKUPCacheOverflow_1.crf` and `BACKUPCacheOverflow_1.drf`) has been closed and the system is writing to the second log.
 
@@ -47,9 +47,9 @@ The system rotates through all available disk directories to write its logs. The
 
 ## <a id="operation_logs__section_8431984F4E6644D79292850CCA60E6E3" class="no-quick-link"></a>When Disk Store Oplogs Reach the Configured Disk Capacity
 
-If no directory exists that is within its capacity limits, how Geode handles this depends on whether automatic compaction is enabled.
+If no directory exists that is within its capacity limits, how <%=vars.product_name%> handles this depends on whether automatic compaction is enabled.
 
--   If auto-compaction is enabled, Geode creates a new oplog in one of the directories, going over the limit, and logs a warning that reports:
+-   If auto-compaction is enabled, <%=vars.product_name%> creates a new oplog in one of the directories, going over the limit, and logs a warning that reports:
 
     ``` pre
     Even though the configured directory size limit has been exceeded a 
@@ -58,9 +58,9 @@ If no directory exists that is within its capacity limits, how Geode handles thi
     ```
 
     **Note:**
-    When auto-compaction is enabled, `dir-size` does not limit how much disk space is used. Geode will perform auto-compaction, which should free space, but the system may go over the configured disk limits.
+    When auto-compaction is enabled, `dir-size` does not limit how much disk space is used. <%=vars.product_name%> will perform auto-compaction, which should free space, but the system may go over the configured disk limits.
 
--   If auto-compaction is disabled, Geode does not create a new oplog, operations in the regions attached to the disk store block, and Geode logs this error:
+-   If auto-compaction is disabled, <%=vars.product_name%> does not create a new oplog, operations in the regions attached to the disk store block, and <%=vars.product_name%> logs this error:
 
     ``` pre
     Disk is full and rolling is disabled. No space can be created

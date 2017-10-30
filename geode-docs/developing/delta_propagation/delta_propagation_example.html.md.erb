@@ -28,9 +28,9 @@ In this example, the feeder client is connected to the first server, and the rec
 
 The example demonstrates the following operations:
 
-1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, Geode calls `hasDelta`, which returns true, so Geode calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, Geode would distribute the full entry value.
-2.  In Server1, Geode applies the delta to the cache, distributes the received delta to the server's peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example)
-3.  In Server2, Geode applies the delta to the cache and forwards it to its interested clients, which in this case is just the Receiver client.
+1.  In the Feeder client, the application updates the entry object and puts the entry. In response to the `put`, <%=vars.product_name%> calls `hasDelta`, which returns true, so <%=vars.product_name%> calls `toDelta` and forwards the extracted delta to the server. If `hasDelta` returned false, <%=vars.product_name%> would distribute the full entry value.
+2.  In Server1, <%=vars.product_name%> applies the delta to the cache, distributes the received delta to the server's peers, and forwards it to any other clients with interest in the entry (there are no other clients to Server1 in this example)
+3.  In Server2, <%=vars.product_name%> applies the delta to the cache and forwards it to its interested clients, which in this case is just the Receiver client.
 
 <a id="delta_propagation_example__section_185444FC51FB467587A62DFEC07C9C7D"></a>
 

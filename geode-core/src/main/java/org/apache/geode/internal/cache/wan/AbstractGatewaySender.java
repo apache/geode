@@ -188,7 +188,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000).intValue();
 
   public static int TOKEN_TIMEOUT =
-      Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 15000).intValue();
+      Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 120000).intValue();
 
   /**
    * The name of the DistributedLockService used when accessing the GatewaySender's meta data
@@ -602,6 +602,18 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       }
     }
     return enqueue;
+  }
+
+  protected void stopProcessing() {
+    // Stop the dispatcher
+    AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
+    if (ev != null && !ev.isStopped()) {
+      ev.stopProcessing();
+    }
+
+    if (ev != null && ev.getDispatcher() != null) {
+      ev.getDispatcher().shutDownAckReaderConnection();
+    }
   }
 
   protected void stompProxyDead() {
@@ -1336,6 +1348,44 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     @Override
     public void release() {
       this.event.release();
+    }
+  }
+
+  protected GatewayQueueEvent getSynchronizationEvent(Object key, long timestamp) {
+    GatewayQueueEvent event = null;
+    for (RegionQueue queue : getQueues()) {
+      Region region = queue.getRegion();
+      for (Iterator i = region.values().iterator(); i.hasNext();) {
+        GatewaySenderEventImpl gsei = (GatewaySenderEventImpl) i.next();
+        if (gsei.getKey().equals(key) && gsei.getVersionTimeStamp() == timestamp) {
+          event = gsei;
+          logger.info(LocalizedMessage.create(
+              LocalizedStrings.AbstractGatewaySender_PROVIDING_SYNCHRONIZATION_EVENT,
+              new Object[] {this, key, timestamp, event}));
+          this.statistics.incSynchronizationEventsProvided();
+          break;
+        }
+      }
+    }
+    return event;
+  }
+
+  protected void putSynchronizationEvent(GatewayQueueEvent event) {
+    if (this.eventProcessor != null) {
+      this.lifeCycleLock.readLock().lock();
+      try {
+        logger.info(LocalizedMessage.create(
+            LocalizedStrings.AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT,
+            new Object[] {this, event}));
+        this.eventProcessor.enqueueEvent(event);
+        this.statistics.incSynchronizationEventsEnqueued();
+      } catch (Throwable t) {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ENQUEUEING_SYNCHRONIZATION_EVENT,
+            new Object[] {this, event}), t);
+      } finally {
+        this.lifeCycleLock.readLock().unlock();
+      }
     }
   }
 }

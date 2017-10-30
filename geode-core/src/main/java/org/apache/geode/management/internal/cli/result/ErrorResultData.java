@@ -26,8 +26,12 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 public class ErrorResultData extends InfoResultData {
   private static final String ERROR_CODE = "errorCode";
 
-  /* package */ ErrorResultData() {
+  public ErrorResultData() {
     super();
+  }
+
+  public ErrorResultData(String message) {
+    super(message);
   }
 
   // Useful on client/gfsh side to reconstruct the object

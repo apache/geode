@@ -91,7 +91,7 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     if (cache != null && !cache.isClosed()) {
       PersistentMemberManager mm = cache.getPersistentMemberManager();
       if (this.cancel) {

@@ -15,8 +15,13 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +55,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -122,6 +128,7 @@ public class ExecuteFunction66Test {
     when(this.callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
     when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
+    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
 
     when(this.functionPart.getStringOrObject()).thenReturn(FUNCTION);
 
@@ -150,7 +157,7 @@ public class ExecuteFunction66Test {
   public void nonSecureShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     // verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none
     // of the reply message types get sent?
@@ -161,9 +168,9 @@ public class ExecuteFunction66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorizeDataWrite();
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
     // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
     // types get sent?
   }
@@ -172,13 +179,13 @@ public class ExecuteFunction66Test {
   public void withIntegratedSecurityShouldThrowIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataWrite();
+    doThrow(new NotAuthorizedException("")).when(this.securityService)
+        .authorize(ResourcePermissions.DATA_WRITE);
 
-    assertThatThrownBy(
-        () -> this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0))
-            .isExactlyInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> this.executeFunction66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0)).isExactlyInstanceOf(NullPointerException.class);
 
-    verify(this.securityService).authorizeDataWrite();
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
     // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
 
@@ -187,12 +194,10 @@ public class ExecuteFunction66Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
-    // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
-    // types get sent?
   }
 
   @Test
@@ -202,12 +207,10 @@ public class ExecuteFunction66Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
-    assertThatThrownBy(
-        () -> this.executeFunction66.cmdExecute(this.message, this.serverConnection, 0))
-            .isExactlyInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> this.executeFunction66.cmdExecute(this.message, this.serverConnection,
+        this.securityService, 0)).isExactlyInstanceOf(NullPointerException.class);
 
-    verify(this.securityService).authorizeDataWrite();
-    // verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
   }
 
 }

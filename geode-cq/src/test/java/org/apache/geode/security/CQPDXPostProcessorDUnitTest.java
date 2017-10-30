@@ -34,12 +34,11 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -128,7 +127,7 @@ public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
     // wait for events to fire
     Awaitility.await().atMost(1, TimeUnit.SECONDS);
     PDXPostProcessor pp =
-        (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
+        (PDXPostProcessor) server.getCache().getSecurityService().getPostProcessor();
     assertEquals(pp.getCount(), 2);
   }
 

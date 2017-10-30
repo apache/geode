@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,19 +34,19 @@ import org.mockito.MockitoAnnotations;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.operations.PutOperationContext;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -122,7 +125,7 @@ public class Put65Test {
     when(this.keyPart.getStringOrObject()).thenReturn(KEY);
 
     when(this.localRegion.basicBridgePut(eq(KEY), eq(VALUE), eq(null), eq(true), eq(CALLBACK_ARG),
-        any(ClientProxyMembershipID.class), eq(true), any(EntryEventImpl.class))).thenReturn(true);
+        any(), eq(true), any())).thenReturn(true);
 
     when(this.message.getNumberOfParts()).thenReturn(8);
     when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
@@ -160,7 +163,7 @@ public class Put65Test {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.replyMessage).send(this.serverConnection);
   }
@@ -170,9 +173,9 @@ public class Put65Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
+    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
     verify(this.replyMessage).send(this.serverConnection);
   }
 
@@ -180,12 +183,12 @@ public class Put65Test {
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService)
-        .authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
+    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+        Operation.WRITE, REGION_NAME, KEY);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorizeRegionWrite(eq(REGION_NAME), eq(KEY));
+    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY);
     verify(this.errorResponseMessage).send(this.serverConnection);
   }
 
@@ -194,7 +197,7 @@ public class Put65Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
     verify(this.replyMessage).addBytesPart(argument.capture());
@@ -213,7 +216,7 @@ public class Put65Test {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest).putAuthorize(eq(REGION_NAME),
         eq(KEY), eq(VALUE), eq(true), eq(CALLBACK_ARG));
 
-    this.put65.cmdExecute(this.message, this.serverConnection, 0);
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).putAuthorize(eq(REGION_NAME), eq(KEY), eq(VALUE), eq(true),
         eq(CALLBACK_ARG));

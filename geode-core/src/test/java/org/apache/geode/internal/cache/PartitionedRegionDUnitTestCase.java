@@ -192,9 +192,9 @@ public class PartitionedRegionDUnitTestCase extends JUnit4CacheTestCase {
       final long recoveryDelay) {
     return new CacheSerializableRunnable("getCreateMultiplePRregion") {
       public void run2() throws CacheException {
-        // final Random ra = new Random();
+        // final Random regionAttributes = new Random();
         for (int i = 0; i < maxIndex; i++) {
-          // final int rind = ra.nextInt(maxIndex);
+          // final int rind = regionAttributes.nextInt(maxIndex);
           try {
             getCache().createRegion(prPrefix + i, PartitionedRegionTestHelper
                 .createRegionAttrsForPR(redundancy, localmaxMemory, recoveryDelay));

@@ -17,7 +17,6 @@ package org.apache.geode.cache.snapshot;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.Map.Entry;
 
 import org.junit.Test;
@@ -36,14 +35,14 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
   public void testExportAndImport() throws Exception {
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
-        Region<Integer, MyObject> region =
-            rgen.createRegion(cache, ds.getName(), rt, "test-" + rt.name() + "-" + st.name());
+        Region<Integer, MyObject> region = regionGenerator.createRegion(cache, diskStore.getName(),
+            rt, "test-" + rt.name() + "-" + st.name());
         region.putAll(createExpected(st));
       }
     }
 
     // save all regions
-    cache.getSnapshotService().save(snaps, SnapshotFormat.GEMFIRE);
+    cache.getSnapshotService().save(getSnapshotDirectory(), SnapshotFormat.GEMFIRE);
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -52,12 +51,12 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
         Region<Integer, MyObject> region = cache.getRegion(name);
         region.destroyRegion();
 
-        rgen.createRegion(cache, ds.getName(), rt, name);
+        regionGenerator.createRegion(cache, diskStore.getName(), rt, name);
       }
     }
 
     // load all regions
-    cache.getSnapshotService().load(snaps, SnapshotFormat.GEMFIRE);
+    cache.getSnapshotService().load(getSnapshotDirectory(), SnapshotFormat.GEMFIRE);
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -74,46 +73,35 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
   public void testFilter() throws Exception {
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
-        Region<Integer, MyObject> region =
-            rgen.createRegion(cache, ds.getName(), rt, "test-" + rt.name() + "-" + st.name());
+        Region<Integer, MyObject> region = regionGenerator.createRegion(cache, diskStore.getName(),
+            rt, "test-" + rt.name() + "-" + st.name());
         region.putAll(createExpected(st));
       }
     }
 
-    SnapshotFilter<Object, Object> even = new SnapshotFilter<Object, Object>() {
-      @Override
-      public boolean accept(Entry<Object, Object> entry) {
-        return ((Integer) entry.getKey()) % 2 == 0;
-      }
-    };
+    SnapshotFilter<Object, Object> even =
+        (SnapshotFilter<Object, Object>) entry -> ((Integer) entry.getKey()) % 2 == 0;
 
-    SnapshotFilter<Object, Object> odd = new SnapshotFilter<Object, Object>() {
-      @Override
-      public boolean accept(Entry<Object, Object> entry) {
-        return ((Integer) entry.getKey()) % 2 == 1;
-      }
-    };
+    SnapshotFilter<Object, Object> odd =
+        (SnapshotFilter<Object, Object>) entry -> ((Integer) entry.getKey()) % 2 == 1;
 
     // save even entries
     CacheSnapshotService css = cache.getSnapshotService();
     SnapshotOptions<Object, Object> options = css.createOptions().setFilter(even);
-    cache.getSnapshotService().save(snaps, SnapshotFormat.GEMFIRE, options);
+    cache.getSnapshotService().save(getSnapshotDirectory(), SnapshotFormat.GEMFIRE, options);
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
         Region region = cache.getRegion("test-" + rt.name() + "-" + st.name());
         region.destroyRegion();
-        rgen.createRegion(cache, ds.getName(), rt, "test-" + rt.name() + "-" + st.name());
+        regionGenerator.createRegion(cache, diskStore.getName(), rt,
+            "test-" + rt.name() + "-" + st.name());
       }
     }
 
     // load odd entries
-    File[] snapshots = snaps.listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        return pathname.getName().startsWith("snapshot-");
-      }
-    });
+    File[] snapshots =
+        getSnapshotDirectory().listFiles(pathname -> pathname.getName().startsWith("snapshot-"));
 
     options = css.createOptions().setFilter(odd);
     css.load(snapshots, SnapshotFormat.GEMFIRE, options);

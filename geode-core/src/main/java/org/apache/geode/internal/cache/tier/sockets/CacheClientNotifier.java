@@ -17,9 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.BufferedOutputStream;
-import java.io.DataInput;
 import java.io.DataInputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -70,14 +68,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.MessageWithReply;
-import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -268,7 +262,8 @@ public class CacheClientNotifier {
           LocalizedMessage.create(
               LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_CAUGHT_EXCEPTION_ATTEMPTING_TO_CLIENT),
           uve);
-      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, uve, clientVersion);
+      writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), uve,
+          clientVersion);
       return;
     }
 
@@ -337,14 +332,16 @@ public class CacheClientNotifier {
       proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation, clientVersion,
           acceptorId, notifyBySubscription);
 
-      Properties credentials = HandShake.readCredentials(dis, dos, system);
+      Properties credentials =
+          HandShake.readCredentials(dis, dos, system, this.cache.getSecurityService());
       if (credentials != null && proxy != null) {
         if (securityLogWriter.fineEnabled()) {
           securityLogWriter
               .fine("CacheClientNotifier: verifying credentials for proxyID: " + proxyID);
         }
-        Object subject = HandShake.verifyCredentials(authenticator, credentials,
-            system.getSecurityProperties(), this.logWriter, this.securityLogWriter, member);
+        Object subject =
+            HandShake.verifyCredentials(authenticator, credentials, system.getSecurityProperties(),
+                this.logWriter, this.securityLogWriter, member, this.cache.getSecurityService());
         if (subject instanceof Principal) {
           Principal principal = (Principal) subject;
           if (securityLogWriter.fineEnabled()) {
@@ -398,7 +395,8 @@ public class CacheClientNotifier {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
           new Object[] {proxyID, ""}), ex);
-      writeException(dos, Acceptor.UNSUCCESSFUL_SERVER_TO_CLIENT, ex, clientVersion);
+      writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), ex,
+          clientVersion);
       return;
     }
 
@@ -431,7 +429,7 @@ public class CacheClientNotifier {
     }
 
     // Determine whether the client is durable or not.
-    byte responseByte = Acceptor.SUCCESSFUL_SERVER_TO_CLIENT;
+    byte responseByte = CommunicationMode.SuccessfulServerToClient.getModeNumber();
     String unsuccessfulMsg = null;
     boolean successful = true;
     boolean clientIsDurable = proxyId.isDurable();
@@ -460,7 +458,7 @@ public class CacheClientNotifier {
               proxyId.getDurableId());
         }
         l_proxy = new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation,
-            clientVersion, acceptorId, notifyBySubscription);
+            clientVersion, acceptorId, notifyBySubscription, this.cache.getSecurityService());
         successful = this.initializeProxy(l_proxy);
       } else {
         if (proxy.isPrimary()) {
@@ -538,7 +536,7 @@ public class CacheClientNotifier {
       if (toCreateNewProxy) {
         // Create the new proxy for this non-durable client
         l_proxy = new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation,
-            clientVersion, acceptorId, notifyBySubscription);
+            clientVersion, acceptorId, notifyBySubscription, this.cache.getSecurityService());
         successful = this.initializeProxy(l_proxy);
       }
     }
@@ -549,6 +547,7 @@ public class CacheClientNotifier {
       unsuccessfulMsg =
           LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_A_PREVIOUS_CONNECTION_ATTEMPT_FROM_THIS_CLIENT_IS_STILL_BEING_PROCESSED__0
               .toLocalizedString(new Object[] {proxyId});
+      logger.warn(unsuccessfulMsg);
     }
 
     // Tell the client that the proxy has been registered using the response
@@ -581,7 +580,7 @@ public class CacheClientNotifier {
     // the marker message. If the client is durable, the message processor
     // is not started until the clientReady message is received.
     if (!clientIsDurable && l_proxy != null
-        && responseByte == Acceptor.SUCCESSFUL_SERVER_TO_CLIENT) {
+        && responseByte == CommunicationMode.SuccessfulServerToClient.getModeNumber()) {
       // The startOrResumeMessageDispatcher tests if the proxy is a primary.
       // If this is a secondary proxy, the dispatcher is not started.
       // The false parameter signifies that a marker message has not already been
@@ -589,14 +588,14 @@ public class CacheClientNotifier {
       l_proxy.startOrResumeMessageDispatcher(false);
     }
 
-    if (responseByte == Acceptor.SUCCESSFUL_SERVER_TO_CLIENT) {
+    if (responseByte == CommunicationMode.SuccessfulServerToClient.getModeNumber()) {
       if (logger.isDebugEnabled()) {
         logger.debug("CacheClientNotifier: Successfully registered {}", l_proxy);
       }
     } else {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_UNSUCCESSFULLY_REGISTERED_CLIENT_WITH_IDENTIFIER__0,
-          proxyId));
+          new Object[] {proxyId, responseByte}));
     }
     return l_proxy;
   }
@@ -963,8 +962,8 @@ public class CacheClientNotifier {
   private void singletonRouteClientMessage(Conflatable conflatable,
       Collection<ClientProxyMembershipID> filterClients) {
 
-    this._cache.getCancelCriterion().checkCancelInProgress(null); // bug #43942 - client notified
-                                                                  // but no p2p distribution
+    this.cache.getCancelCriterion().checkCancelInProgress(null); // bug #43942 - client notified
+                                                                 // but no p2p distribution
 
     List<CacheClientProxy> deadProxies = null;
     for (ClientProxyMembershipID clientId : filterClients) {
@@ -1845,15 +1844,15 @@ public class CacheClientNotifier {
    * @return this <code>CacheClientNotifier</code>'s <code>InternalCache</code>
    */
   protected InternalCache getCache() { // TODO:SYNC: looks wrong
-    if (this._cache != null && this._cache.isClosed()) {
+    if (this.cache != null && this.cache.isClosed()) {
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
-        this._cache = cache;
+        this.cache = cache;
         this.logWriter = cache.getInternalLogWriter();
         this.securityLogWriter = cache.getSecurityInternalLogWriter();
       }
     }
-    return this._cache;
+    return this.cache;
   }
 
   /**
@@ -2016,7 +2015,7 @@ public class CacheClientNotifier {
       if (!isCompiledQueryCleanupThreadStarted) {
         long period = DefaultQuery.TEST_COMPILED_QUERY_CLEAR_TIME > 0
             ? DefaultQuery.TEST_COMPILED_QUERY_CLEAR_TIME : DefaultQuery.COMPILED_QUERY_CLEAR_TIME;
-        _cache.getCCPTimer().scheduleAtFixedRate(task, period, period);
+        cache.getCCPTimer().scheduleAtFixedRate(task, period, period);
       }
       isCompiledQueryCleanupThreadStarted = true;
     }
@@ -2063,7 +2062,7 @@ public class CacheClientNotifier {
     if (logger.isDebugEnabled()) {
       logger.debug("Scheduling client ping task with period={} ms", CLIENT_PING_TASK_PERIOD);
     }
-    CacheClientNotifier.this._cache.getCCPTimer().scheduleAtFixedRate(this.clientPingTask,
+    CacheClientNotifier.this.cache.getCCPTimer().scheduleAtFixedRate(this.clientPingTask,
         CLIENT_PING_TASK_PERIOD, CLIENT_PING_TASK_PERIOD);
   }
 
@@ -2098,10 +2097,10 @@ public class CacheClientNotifier {
 
   /**
    * The GemFire <code>InternalCache</code>. Note that since this is a singleton class you should
-   * not use a direct reference to _cache in CacheClientNotifier code. Instead, you should always
-   * use <code>getCache()</code>
+   * not use a direct reference to cache in CacheClientNotifier code. Instead, you should always use
+   * <code>getCache()</code>
    */
-  private InternalCache _cache;
+  private InternalCache cache;
 
   private InternalLogWriter logWriter;
 
@@ -2216,8 +2215,8 @@ public class CacheClientNotifier {
     // lazily initialize haContainer in case this CCN instance was created by a gateway receiver
     if (overflowAttributesList != null
         && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributesList.get(0))) {
-      haContainer = new HAContainerRegion(_cache.getRegion(Region.SEPARATOR
-          + CacheServerImpl.clientMessagesRegion(_cache, (String) overflowAttributesList.get(0),
+      haContainer = new HAContainerRegion(cache.getRegion(Region.SEPARATOR
+          + CacheServerImpl.clientMessagesRegion(cache, (String) overflowAttributesList.get(0),
               ((Integer) overflowAttributesList.get(1)).intValue(),
               ((Integer) overflowAttributesList.get(2)).intValue(),
               (String) overflowAttributesList.get(3), (Boolean) overflowAttributesList.get(4))));
@@ -2246,10 +2245,10 @@ public class CacheClientNotifier {
   }
 
   /**
-   * @param _cache the _cache to set
+   * @param _cache the cache to set
    */
   private void setCache(InternalCache _cache) {
-    this._cache = _cache;
+    this.cache = _cache;
   }
 
   private class ExpireBlackListTask extends PoolTask {

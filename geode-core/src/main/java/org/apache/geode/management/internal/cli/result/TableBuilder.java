@@ -53,11 +53,13 @@ package org.apache.geode.management.internal.cli.result;
  * 
  * @since GemFire 7.0
  */
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.management.internal.cli.GfshParser;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.management.internal.cli.GfshParser;
 
 public class TableBuilder {
 
@@ -351,7 +353,6 @@ public class TableBuilder {
           int maxNumCols = this.rowGroup.getNumCols();
 
           for (int i = 0; i < maxNumCols; i++) {
-            // int maxColLength = this.rowGroup.getMaxColLength(i);
             int maxColLength = this.rowGroup.getColSize(i);
             for (int j = 0; j < maxColLength; j++) {
               stringBuffer.append(this.rowSeparator);
@@ -382,7 +383,7 @@ public class TableBuilder {
     }
   }
 
-  private static enum Align {
+  private enum Align {
     LEFT, RIGHT, CENTER
   }
 

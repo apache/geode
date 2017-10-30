@@ -31,27 +31,30 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
-
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.security.ResourcePermission.Target;
 
 public class CloseCQ extends BaseCQCommand {
 
-  private final static CloseCQ singleton = new CloseCQ();
+  private static final CloseCQ singleton = new CloseCQ();
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private CloseCQ() {}
+  private CloseCQ() {
+    // nothing
+  }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException {
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     ClientProxyMembershipID id = serverConnection.getProxyID();
     CacheServerStats stats = serverConnection.getCacheServerStats();
 
-    // Based on MessageType.QUERY
-    // Added by Rao 2/1/2007
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
@@ -73,8 +76,6 @@ public class CloseCQ extends BaseCQCommand {
       return;
     }
 
-    this.securityService.authorizeDataManage();
-
     // Process CQ close request
     try {
       // Append Client ID to CQ name
@@ -87,22 +88,23 @@ public class CloseCQ extends BaseCQCommand {
       }
       InternalCqQuery cqQuery = cqService.getCq(serverCqName);
 
-      AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
-      if (authzRequest != null) {
-        String queryStr = null;
-        Set cqRegionNames = null;
+      if (cqQuery != null) {
+        securityService.authorize(Resource.DATA, Operation.READ, cqQuery.getRegionName());
 
-        if (cqQuery != null) {
-          queryStr = cqQuery.getQueryString();
-          cqRegionNames = new HashSet();
-          cqRegionNames.add(((InternalCqQuery) cqQuery).getRegionName());
-          authzRequest.closeCQAuthorize(cqName, queryStr, cqRegionNames);
+        AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
+        if (authzRequest != null) {
+
+          if (cqQuery != null) {
+            String queryStr = cqQuery.getQueryString();
+            Set cqRegionNames = new HashSet();
+            cqRegionNames.add(cqQuery.getRegionName());
+            authzRequest.closeCQAuthorize(cqName, queryStr, cqRegionNames);
+          }
+
         }
 
+        cqService.closeCq(cqName, id);
       }
-      // String cqNameWithClientId = new String(cqName + "__" +
-      // getMembershipID());
-      cqService.closeCq(cqName, id);
       if (cqQuery != null)
         serverConnection.removeCq(cqName, cqQuery.isDurable());
     } catch (CqException cqe) {
@@ -123,11 +125,9 @@ public class CloseCQ extends BaseCQCommand {
         clientMessage.getTransactionId(), null, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
 
-    {
-      long oldStart = start;
-      start = DistributionStats.getStatTime();
-      stats.incProcessCloseCqTime(start - oldStart);
-    }
+    long oldStart = start;
+    start = DistributionStats.getStatTime();
+    stats.incProcessCloseCqTime(start - oldStart);
   }
 
 }

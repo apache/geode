@@ -12,28 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * 
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.operations.RegisterInterestOperationContext;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.*;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
-import org.apache.geode.cache.DynamicRegionFactory;
-import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.operations.RegisterInterestOperationContext;
-import org.apache.geode.i18n.StringId;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * @since GemFire 6.1
@@ -49,8 +53,8 @@ public class RegisterInterestList61 extends BaseCommand {
   RegisterInterestList61() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keyPart = null, numberOfKeysPart = null;
     String regionName = null;
     Object key = null;
@@ -171,7 +175,6 @@ public class RegisterInterestList61 extends BaseCommand {
       return;
     }
 
-
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       logger.info(LocalizedMessage.create(
@@ -182,7 +185,7 @@ public class RegisterInterestList61 extends BaseCommand {
       // responded = true;
     } // else { // region not null
     try {
-      this.securityService.authorizeRegionRead(regionName);
+      securityService.authorize(Resource.DATA, Operation.READ, regionName);
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {

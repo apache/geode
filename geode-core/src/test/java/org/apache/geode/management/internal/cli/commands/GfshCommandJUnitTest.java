@@ -14,6 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -21,18 +29,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.util.CollectionUtils;
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -42,10 +47,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Set;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The GfshCommandJUnitTest class is a test suite of test cases testing the contract and
@@ -64,10 +77,20 @@ public class GfshCommandJUnitTest {
 
   private Mockery mockContext;
 
-  private static class DefaultGfshCommmand implements GfshCommand {
+  private static <T extends Function> T register(T function) {
+    if (FunctionService.isRegistered(function.getId())) {
+      function = (T) FunctionService.getFunction(function.getId());
+    } else {
+      FunctionService.registerFunction(function);
+    }
+
+    return function;
   }
 
-  private DefaultGfshCommmand defaultGfshCommmand;
+  private static class DefaultGfshCommand implements GfshCommand {
+  }
+
+  private DefaultGfshCommand defaultGfshCommand;
 
   @Before
   public void setup() {
@@ -75,7 +98,7 @@ public class GfshCommandJUnitTest {
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
     mockContext.setThreadingPolicy(new Synchroniser());
 
-    defaultGfshCommmand = new DefaultGfshCommmand();
+    defaultGfshCommand = new DefaultGfshCommand();
   }
 
   @After
@@ -106,13 +129,13 @@ public class GfshCommandJUnitTest {
 
   @Test
   public void testConvertDefaultValue() {
-    assertNull(defaultGfshCommmand.convertDefaultValue(null, StringUtils.EMPTY));
+    assertNull(defaultGfshCommand.convertDefaultValue(null, StringUtils.EMPTY));
     assertEquals(StringUtils.EMPTY,
-        defaultGfshCommmand.convertDefaultValue(StringUtils.EMPTY, "test"));
+        defaultGfshCommand.convertDefaultValue(StringUtils.EMPTY, "test"));
     assertEquals(StringUtils.SPACE,
-        defaultGfshCommmand.convertDefaultValue(StringUtils.SPACE, "testing"));
+        defaultGfshCommand.convertDefaultValue(StringUtils.SPACE, "testing"));
     assertEquals("tested",
-        defaultGfshCommmand.convertDefaultValue(CliMetaData.ANNOTATION_DEFAULT_VALUE, "tested"));
+        defaultGfshCommand.convertDefaultValue(CliMetaData.ANNOTATION_DEFAULT_VALUE, "tested"));
   }
 
   @Test
@@ -311,7 +334,7 @@ public class GfshCommandJUnitTest {
           createAbstractCommandsSupport(mockContext.mock(InternalCache.class));
 
       assertFalse(FunctionService.isRegistered("testRegister"));
-      assertSame(mockFunction, commands.register(mockFunction));
+      assertSame(mockFunction, register(mockFunction));
       assertTrue(FunctionService.isRegistered("testRegister"));
     } finally {
       FunctionService.unregisterFunction("testRegister");
@@ -342,7 +365,7 @@ public class GfshCommandJUnitTest {
       FunctionService.registerFunction(registeredFunction);
 
       assertTrue(FunctionService.isRegistered("testRegisteredAlready"));
-      assertSame(registeredFunction, commands.register(unregisteredFunction));
+      assertSame(registeredFunction, register(unregisteredFunction));
       assertTrue(FunctionService.isRegistered("testRegisteredAlready"));
     } finally {
       FunctionService.unregisterFunction("testRegisteredAlready");
@@ -351,22 +374,22 @@ public class GfshCommandJUnitTest {
 
   @Test
   public void testToStringOnBoolean() {
-    assertEquals("false", defaultGfshCommmand.toString(null, null, null));
-    assertEquals("true", defaultGfshCommmand.toString(true, null, null));
-    assertEquals("true", defaultGfshCommmand.toString(Boolean.TRUE, null, null));
-    assertEquals("false", defaultGfshCommmand.toString(false, null, null));
-    assertEquals("false", defaultGfshCommmand.toString(Boolean.FALSE, null, null));
-    assertEquals("false", defaultGfshCommmand.toString(true, "false", "true"));
-    assertEquals("true", defaultGfshCommmand.toString(false, "false", "true"));
-    assertEquals("Yes", defaultGfshCommmand.toString(true, "Yes", "No"));
-    assertEquals("Yes", defaultGfshCommmand.toString(false, "No", "Yes"));
-    assertEquals("TRUE", defaultGfshCommmand.toString(Boolean.TRUE, "TRUE", "FALSE"));
-    assertEquals("FALSE", defaultGfshCommmand.toString(Boolean.FALSE, "TRUE", "FALSE"));
+    assertEquals("false", defaultGfshCommand.toString(null, null, null));
+    assertEquals("true", defaultGfshCommand.toString(true, null, null));
+    assertEquals("true", defaultGfshCommand.toString(Boolean.TRUE, null, null));
+    assertEquals("false", defaultGfshCommand.toString(false, null, null));
+    assertEquals("false", defaultGfshCommand.toString(Boolean.FALSE, null, null));
+    assertEquals("false", defaultGfshCommand.toString(true, "false", "true"));
+    assertEquals("true", defaultGfshCommand.toString(false, "false", "true"));
+    assertEquals("Yes", defaultGfshCommand.toString(true, "Yes", "No"));
+    assertEquals("Yes", defaultGfshCommand.toString(false, "No", "Yes"));
+    assertEquals("TRUE", defaultGfshCommand.toString(Boolean.TRUE, "TRUE", "FALSE"));
+    assertEquals("FALSE", defaultGfshCommand.toString(Boolean.FALSE, "TRUE", "FALSE"));
   }
 
   @Test
   public void testToStringOnThrowable() {
-    assertEquals("test", defaultGfshCommmand.toString(new Throwable("test"), false));
+    assertEquals("test", defaultGfshCommand.toString(new Throwable("test"), false));
   }
 
   @Test
@@ -376,7 +399,7 @@ public class GfshCommandJUnitTest {
 
     t.printStackTrace(new PrintWriter(writer));
 
-    assertEquals(writer.toString(), defaultGfshCommmand.toString(t, true));
+    assertEquals(writer.toString(), defaultGfshCommand.toString(t, true));
   }
 
   private static class TestCommands implements GfshCommand {
@@ -394,4 +417,221 @@ public class GfshCommandJUnitTest {
     }
   }
 
+  @Test
+  public void testAddGemFirePropertyFileToCommandLine() {
+    List<String> commandLine = new ArrayList<>();
+    assertTrue(commandLine.isEmpty());
+
+    StartMemberUtils.addGemFirePropertyFile(commandLine, null);
+    assertTrue(commandLine.isEmpty());
+
+    File file = new File("/path/to/gemfire.properties");
+    StartMemberUtils.addGemFirePropertyFile(commandLine, file);
+    assertFalse(commandLine.isEmpty());
+    assertTrue(commandLine.contains("-DgemfirePropertyFile=" + file.getAbsolutePath()));
+  }
+
+  @Test
+  public void testAddGemFireSystemPropertiesToCommandLine() {
+    final List<String> commandLine = new ArrayList<>();
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addGemFireSystemProperties(commandLine, new Properties());
+    assertTrue(commandLine.isEmpty());
+
+    final Properties gemfireProperties = new Properties();
+    gemfireProperties.setProperty(LOCATORS, "localhost[11235]");
+    gemfireProperties.setProperty(LOG_LEVEL, "config");
+    gemfireProperties.setProperty(LOG_FILE, org.apache.commons.lang.StringUtils.EMPTY);
+    gemfireProperties.setProperty(MCAST_PORT, "0");
+    gemfireProperties.setProperty(NAME, "machine");
+    StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
+
+    assertFalse(commandLine.isEmpty());
+    assertEquals(4, commandLine.size());
+
+    for (final String propertyName : gemfireProperties.stringPropertyNames()) {
+      final String propertyValue = gemfireProperties.getProperty(propertyName);
+      if (org.apache.commons.lang.StringUtils.isBlank(propertyValue)) {
+        for (final String systemProperty : commandLine) {
+          assertFalse(systemProperty.startsWith(
+              "-D" + DistributionConfig.GEMFIRE_PREFIX + "".concat(propertyName).concat("=")));
+        }
+      } else {
+        assertTrue(commandLine.contains("-D" + DistributionConfig.GEMFIRE_PREFIX
+            + "".concat(propertyName).concat("=").concat(propertyValue)));
+      }
+    }
+  }
+
+  @Test
+  public void testAddGemFireSystemPropertiesToCommandLineWithRestAPI() {
+    final List<String> commandLine = new ArrayList<>();
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addGemFireSystemProperties(commandLine, new Properties());
+    assertTrue(commandLine.isEmpty());
+    final Properties gemfireProperties = new Properties();
+    gemfireProperties.setProperty(LOCATORS, "localhost[11235]");
+    gemfireProperties.setProperty(LOG_LEVEL, "config");
+    gemfireProperties.setProperty(LOG_FILE, StringUtils.EMPTY);
+    gemfireProperties.setProperty(MCAST_PORT, "0");
+    gemfireProperties.setProperty(NAME, "machine");
+    gemfireProperties.setProperty(START_DEV_REST_API, "true");
+    gemfireProperties.setProperty(HTTP_SERVICE_PORT, "8080");
+    gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+
+    StartMemberUtils.addGemFireSystemProperties(commandLine, gemfireProperties);
+
+    assertFalse(commandLine.isEmpty());
+    assertEquals(7, commandLine.size());
+
+    for (final String propertyName : gemfireProperties.stringPropertyNames()) {
+      final String propertyValue = gemfireProperties.getProperty(propertyName);
+      if (StringUtils.isBlank(propertyValue)) {
+        for (final String systemProperty : commandLine) {
+          assertFalse(systemProperty.startsWith(
+              "-D" + DistributionConfig.GEMFIRE_PREFIX + "".concat(propertyName).concat("=")));
+        }
+      } else {
+        assertTrue(commandLine.contains("-D" + DistributionConfig.GEMFIRE_PREFIX
+            + "".concat(propertyName).concat("=").concat(propertyValue)));
+      }
+    }
+  }
+
+  @Test
+  public void testAddInitialHeapToCommandLine() {
+    final List<String> commandLine = new ArrayList<>();
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addInitialHeap(commandLine, null);
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addInitialHeap(commandLine, org.apache.commons.lang.StringUtils.EMPTY);
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addInitialHeap(commandLine, " ");
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addInitialHeap(commandLine, "512M");
+    assertFalse(commandLine.isEmpty());
+    assertEquals("-Xms512M", commandLine.get(0));
+  }
+
+  @Test
+  public void testAddJvmArgumentsAndOptionsToCommandLine() {
+    final List<String> commandLine = new ArrayList<>();
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, null);
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addJvmArgumentsAndOptions(commandLine, new String[] {});
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addJvmArgumentsAndOptions(commandLine,
+        new String[] {"-DmyProp=myVal", "-d64", "-server", "-Xprof"});
+    assertFalse(commandLine.isEmpty());
+    assertEquals(4, commandLine.size());
+    assertEquals("-DmyProp=myVal", commandLine.get(0));
+    assertEquals("-d64", commandLine.get(1));
+    assertEquals("-server", commandLine.get(2));
+    assertEquals("-Xprof", commandLine.get(3));
+  }
+
+  @Test
+  public void testAddMaxHeapToCommandLine() {
+    final List<String> commandLine = new ArrayList<>();
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addMaxHeap(commandLine, null);
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addMaxHeap(commandLine, org.apache.commons.lang.StringUtils.EMPTY);
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addMaxHeap(commandLine, "  ");
+    assertTrue(commandLine.isEmpty());
+    StartMemberUtils.addMaxHeap(commandLine, "1024M");
+    assertFalse(commandLine.isEmpty());
+    assertEquals(3, commandLine.size());
+    assertEquals("-Xmx1024M", commandLine.get(0));
+    assertEquals("-XX:+UseConcMarkSweepGC", commandLine.get(1));
+    assertEquals(
+        "-XX:CMSInitiatingOccupancyFraction=" + StartMemberUtils.CMS_INITIAL_OCCUPANCY_FRACTION,
+        commandLine.get(2));
+  }
+
+  @Test(expected = AssertionError.class)
+  public void testReadPidWithNull() {
+    try {
+      StartMemberUtils.readPid(null);
+    } catch (AssertionError expected) {
+      assertEquals("The file from which to read the process ID (pid) cannot be null!",
+          expected.getMessage());
+      throw expected;
+    }
+  }
+
+  @Test
+  public void testReadPidWithNonExistingFile() {
+    assertEquals(StartMemberUtils.INVALID_PID,
+        StartMemberUtils.readPid(new File("/path/to/non_existing/pid.file")));
+  }
+
+  @Test
+  public void testGetSystemClasspath() {
+    assertEquals(System.getProperty("java.class.path"), StartMemberUtils.getSystemClasspath());
+  }
+
+  @Test
+  public void testToClasspath() {
+    final boolean EXCLUDE_SYSTEM_CLASSPATH = false;
+    final boolean INCLUDE_SYSTEM_CLASSPATH = true;
+    String[] jarFilePathnames =
+        {"/path/to/user/libs/A.jar", "/path/to/user/libs/B.jar", "/path/to/user/libs/C.jar"};
+    String[] userClasspaths = {"/path/to/classes:/path/to/libs/1.jar:/path/to/libs/2.jar",
+        "/path/to/ext/libs/1.jar:/path/to/ext/classes:/path/to/ext/lib/10.jar"};
+    String expectedClasspath = StartMemberUtils.GEODE_JAR_PATHNAME.concat(File.pathSeparator)
+        .concat(toClasspath(userClasspaths)).concat(File.pathSeparator)
+        .concat(toClasspath(jarFilePathnames));
+    assertEquals(expectedClasspath,
+        StartMemberUtils.toClasspath(EXCLUDE_SYSTEM_CLASSPATH, jarFilePathnames, userClasspaths));
+    expectedClasspath = StartMemberUtils.GEODE_JAR_PATHNAME.concat(File.pathSeparator)
+        .concat(toClasspath(userClasspaths)).concat(File.pathSeparator)
+        .concat(System.getProperty("java.class.path")).concat(File.pathSeparator)
+        .concat(toClasspath(jarFilePathnames));
+    assertEquals(expectedClasspath,
+        StartMemberUtils.toClasspath(INCLUDE_SYSTEM_CLASSPATH, jarFilePathnames, userClasspaths));
+    expectedClasspath = StartMemberUtils.GEODE_JAR_PATHNAME.concat(File.pathSeparator)
+        .concat(System.getProperty("java.class.path"));
+    assertEquals(expectedClasspath,
+        StartMemberUtils.toClasspath(INCLUDE_SYSTEM_CLASSPATH, null, (String[]) null));
+    assertEquals(StartMemberUtils.GEODE_JAR_PATHNAME,
+        StartMemberUtils.toClasspath(EXCLUDE_SYSTEM_CLASSPATH, null, (String[]) null));
+    assertEquals(StartMemberUtils.GEODE_JAR_PATHNAME,
+        StartMemberUtils.toClasspath(EXCLUDE_SYSTEM_CLASSPATH, new String[0], ""));
+  }
+
+  @Test
+  public void testToClassPathOrder() {
+    String userClasspathOne = "/path/to/user/lib/a.jar:/path/to/user/classes";
+    String userClasspathTwo =
+        "/path/to/user/lib/x.jar:/path/to/user/lib/y.jar:/path/to/user/lib/z.jar";
+
+    String expectedClasspath = StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator)
+        .concat(userClasspathOne).concat(File.pathSeparator).concat(userClasspathTwo)
+        .concat(File.pathSeparator).concat(System.getProperty("java.class.path"))
+        .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME)
+        .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
+
+    String actualClasspath =
+        StartMemberUtils.toClasspath(true,
+            new String[] {StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME,
+                StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME},
+            userClasspathOne, userClasspathTwo);
+
+    assertEquals(expectedClasspath, actualClasspath);
+  }
+
+  private String toClasspath(final String... jarFilePathnames) {
+    String classpath = org.apache.commons.lang.StringUtils.EMPTY;
+    if (jarFilePathnames != null) {
+      for (final String jarFilePathname : jarFilePathnames) {
+        classpath +=
+            (classpath.isEmpty() ? org.apache.commons.lang.StringUtils.EMPTY : File.pathSeparator);
+        classpath += jarFilePathname;
+      }
+    }
+    return classpath;
+  }
 }

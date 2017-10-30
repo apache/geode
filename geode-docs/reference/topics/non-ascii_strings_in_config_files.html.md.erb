@@ -1,6 +1,4 @@
----
-title:  Using Non-ASCII Strings in Apache Geode Property Files
----
+<% set_title("Using Non-ASCII Strings in", product_name_long, "Property Files") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-You can specify Unicode (non-ASCII) characters in Apache Geode property files by using a `\uXXXX` escape sequence.
+You can specify Unicode (non-ASCII) characters in <%=vars.product_name_long%> property files by using a `\uXXXX` escape sequence.
 
 For a supplementary character, you need two escape sequences, one for each of the two UTF-16 code units. The XXXX denotes the 4 hexadecimal digits for the value of the UTF-16 code unit. For example, a properties file might have the following entries:
 

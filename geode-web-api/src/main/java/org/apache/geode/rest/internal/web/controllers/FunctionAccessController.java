@@ -59,7 +59,8 @@ import org.apache.geode.rest.internal.web.util.JSONUtils;
  * @since GemFire 8.0
  */
 @Controller("functionController")
-@Api(value = "functions", description = "Rest api for gemfire function execution")
+@Api(value = "functions", description = "Rest api for gemfire function execution",
+    tags = "functions")
 @RequestMapping(FunctionAccessController.REST_API_VERSION + "/functions")
 @SuppressWarnings("unused")
 public class FunctionAccessController extends AbstractBaseController {
@@ -84,7 +85,7 @@ public class FunctionAccessController extends AbstractBaseController {
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
   @ApiOperation(value = "list all functions",
-      notes = "list all functions available in the GemFire cluster", response = void.class)
+      notes = "list all functions available in the GemFire cluster")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -120,8 +121,7 @@ public class FunctionAccessController extends AbstractBaseController {
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId:.+}",
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "execute function",
-      notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified",
-      response = void.class)
+      notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),

@@ -1,6 +1,4 @@
----
-title:  How to Install
----
+<% set_title("How to Install", product_name_long)%>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Build from source or use the ZIP or TAR distribution to install Apache Geode on every physical and virtual machine that will run Apache Geode.
+Build from source or use the ZIP or TAR distribution to install <%=vars.product_name_long%> on every physical and virtual machine that will run <%=vars.product_name_long%>.
 
 ## Build from Source on Unix
 
@@ -109,7 +107,7 @@ Build from source or use the ZIP or TAR distribution to install Apache Geode on 
     set JAVA_HOME=c:\Program Files\Java\jdk1.8.0_60 
     ```
 
-4.  Add the Geode scripts to your PATH environment variable. On Linux/Unix platforms:
+4.  Add the <%=vars.product_name%> scripts to your PATH environment variable. On Linux/Unix platforms:
 
     ``` pre
     PATH=$PATH:$JAVA_HOME/bin:path_to_product/bin
@@ -122,7 +120,7 @@ Build from source or use the ZIP or TAR distribution to install Apache Geode on 
     set PATH=%PATH%;%JAVA_HOME%\bin;path_to_product\bin 
     ```
 
-5.  To verify the installation, type `gfsh version` at the command line and note that the output lists the installed version of Geode. For example:
+5.  To verify the installation, type `gfsh version` at the command line and note that the output lists the installed version of <%=vars.product_name%>. For example:
 
     ``` pre
     $ gfsh version

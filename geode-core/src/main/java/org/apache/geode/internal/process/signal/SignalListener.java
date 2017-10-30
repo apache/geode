@@ -12,21 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.process.signal;
 
 import java.util.EventListener;
 
 /**
  * The SignalListener class...
- * </p>
- * 
+ *
  * @see java.util.EventListener
+ *
  * @since GemFire 7.0
  */
-@SuppressWarnings("unused")
 public interface SignalListener extends EventListener {
 
-  public void handle(SignalEvent event);
-
+  void handle(SignalEvent event);
 }

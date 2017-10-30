@@ -17,26 +17,6 @@ package org.apache.geode.internal.cache;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.UnmodifiableException;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.process.ClusterConfigurationNotAvailableException;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
-import org.apache.logging.log4j.Logger;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,6 +31,27 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 
 public class ClusterConfigurationLoader {
 
@@ -152,13 +153,12 @@ public class ClusterConfigurationLoader {
 
   /***
    * Apply the gemfire properties cluster configuration on this member
-   *
-   * @param cache Cache created for this member
+   * 
    * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
    * @param config this member's config
    */
-  public static void applyClusterPropertiesConfiguration(Cache cache,
-      ConfigurationResponse response, DistributionConfig config) {
+  public static void applyClusterPropertiesConfiguration(ConfigurationResponse response,
+      DistributionConfig config) {
     if (response == null || response.getRequestedConfiguration().isEmpty()) {
       return;
     }
@@ -232,7 +232,7 @@ public class ClusterConfigurationLoader {
       if (StringUtils.isNotBlank(ipaddress)) {
         locatorInetAddress = InetAddress.getByName(ipaddress);
       } else {
-        locatorInetAddress = dlId.getHost();
+        locatorInetAddress = dlId.getHost().getAddress();
       }
 
       int port = dlId.getPort();

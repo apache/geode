@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 
 import java.util.stream.IntStream;
 

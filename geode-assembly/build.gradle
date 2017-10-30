@@ -26,8 +26,6 @@ extraArchive {
   tests = false
 }
 
-disableMavenPublishing()
-
 // Gradle doesn't automatically remove the jar artifact even though we disabled it
 // this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.
 configurations.all {
@@ -37,7 +35,13 @@ configurations.all {
 gradle.taskGraph.whenReady( { graph ->
   tasks.withType(Tar).each { tar ->
     tar.compression = Compression.GZIP
-    tar.extension = 'tar.gz'
+    tar.extension = 'tgz'
+  }
+  tasks.srcDistZip {
+    classifier 'src'
+  }
+  tasks.srcDistTar {
+    classifier 'src'
   }
 })
 
@@ -56,6 +60,7 @@ dependencies {
   archives project(':geode-core')
   archives project(':geode-lucene')
   archives project(':geode-old-client-support')
+  archives project(':geode-protobuf')
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-wan')
@@ -72,6 +77,21 @@ dependencies {
 
   testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
+  testCompile 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
+
+  testCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+
+  testCompile (project(':extensions/geode-modules')) {
+    // Remove everything related to Tomcat
+    exclude group: 'org.apache.tomcat'
+  }
+  testCompile (project(':extensions/geode-modules-session-internal')) {
+    // Remove everything related to Tomcat
+    exclude group: 'org.apache.tomcat'
+  }
+
+  testCompile project(':extensions/session-testing-war')
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
   testRuntime files("$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar")
@@ -81,6 +101,8 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
+
+  testCompile project(':geode-old-versions')
 }
 
 sourceSets {
@@ -140,6 +162,7 @@ def cp = {
         it.contains('commons-collections') ||
         it.contains('commons-lang') ||
         it.contains('commons-logging') ||
+        it.contains('commons-validator') ||
         it.contains('fast-classpath-scanner') ||
         it.contains('fastutil') ||
         it.contains('jackson-annotations') ||
@@ -177,7 +200,11 @@ def cp = {
         it.contains('lucene-analyzers-common') ||
         it.contains('lucene-core') ||
         it.contains('lucene-queries') ||
-        it.contains('lucene-queryparser')
+        it.contains('lucene-queryparser') ||
+        it.contains('lucene-analyzers-phonetic') ||
+
+        // dependencies from geode-protobuf
+        it.contains('protobuf-java')
       }
     }
   }.flatten().unique().join(' ')
@@ -265,7 +292,7 @@ gradle.taskGraph.whenReady( { graph ->
 
 distributions {
   src {
-    baseName = 'apache-geode-src'
+    baseName = 'apache-geode'
     contents {
       from writeBuildInfo
       from (rootDir) {
@@ -338,6 +365,9 @@ distributions {
         from project(":geode-old-client-support").configurations.runtime
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
 
+        from project(":geode-protobuf").configurations.runtime
+        from project(":geode-protobuf").configurations.archives.allArtifacts.files
+
         from project(":geode-rebalancer").configurations.runtime
         from project(":geode-rebalancer").configurations.archives.allArtifacts.files
 
@@ -388,6 +418,7 @@ def dependOnInstalledProduct = {
 
 // Add the configuration closure to the test targets so they depend on the install directory
 test dependOnInstalledProduct
+acceptanceTest dependOnInstalledProduct
 distributedTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
 flakyTest dependOnInstalledProduct
@@ -396,6 +427,8 @@ flakyTest dependOnInstalledProduct
 build.dependsOn installDist
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
+distributedTest.dependsOn ':extensions/session-testing-war:war'
+distributedTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
@@ -406,22 +439,24 @@ def printJars(tree) {
   };
 }
 
-task dumpInstalledJars(dependsOn: installDist) << {
-  description "Dump a list of all of the jars shipped with the binary distribution, for validation purposes"
+task dumpInstalledJars(dependsOn: installDist) {
+  doLast {
+    description "Dump a list of all of the jars shipped with the binary distribution, for validation purposes"
 
-  FileTree installDir = fileTree(dir: installDist.destinationDir)
+    FileTree installDir = fileTree(dir: installDist.destinationDir)
 
-  println("Jars in the binary install")
-  println("==========================")
-  printJars(installDir)
+    println("Jars in the binary install")
+    println("==========================")
+    printJars(installDir)
 
-  installDir.include("**/*.war").visit{ file -> 
-    if(!file.isDirectory()) {
-        FileTree warContents = zipTree(file.file)
-        println ""
-        println file.name
-        println("==========================")
-        printJars(warContents);
-    } 
-  };
+    installDir.include("**/*.war").visit{ file ->
+      if(!file.isDirectory()) {
+          FileTree warContents = zipTree(file.file)
+          println ""
+          println file.name
+          println("==========================")
+          printJars(warContents);
+      }
+    };
+  }
 }

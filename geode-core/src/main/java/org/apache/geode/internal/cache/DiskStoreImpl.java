@@ -33,8 +33,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -60,7 +58,6 @@ import java.util.regex.Pattern;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -86,8 +83,6 @@ import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.lru.LRUAlgorithm;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.persistence.BackupInspector;
-import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -97,7 +92,6 @@ import org.apache.geode.internal.cache.persistence.OplogType;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.cache.persistence.RestoreScript;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
@@ -125,8 +119,6 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 @SuppressWarnings("synthetic-access")
 public class DiskStoreImpl implements DiskStore {
   private static final Logger logger = LogService.getLogger();
-
-  private static final String BACKUP_DIR_PREFIX = "dir";
 
   public static final boolean KRF_DEBUG = Boolean.getBoolean("disk.KRF_DEBUG");
 
@@ -301,8 +293,6 @@ public class DiskStoreImpl implements DiskStore {
   private final OplogCompactor oplogCompactor;
 
   private DiskInitFile initFile = null;
-
-  private volatile DiskStoreBackup diskStoreBackup = null;
 
   private final ReentrantReadWriteLock compactorLock = new ReentrantReadWriteLock();
 
@@ -670,6 +660,10 @@ public class DiskStoreImpl implements DiskStore {
     } else {
       return overflowOplogs;
     }
+  }
+
+  public PersistentOplogSet getPersistentOplogSet() {
+    return persistentOplogs;
   }
 
   PersistentOplogSet getPersistentOplogSet(DiskRegionView drv) {
@@ -2031,6 +2025,10 @@ public class DiskStoreImpl implements DiskStore {
     return this.directories[this.infoFileDirIndex];
   }
 
+  int getInforFileDirIndex() {
+    return this.infoFileDirIndex;
+  }
+
   /**
    * returns the size of the biggest directory available to the region
    */
@@ -2692,84 +2690,9 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * Returns the dir name used to back up this DiskStore's directories under. The name is a
-   * concatenation of the disk store name and id.
-   */
-  public String getBackupDirName() {
-    String name = getName();
-
-    if (name == null) {
-      name = GemFireCacheImpl.getDefaultDiskStoreName();
-    }
-
-    return (name + "_" + getDiskStoreID().toString());
-  }
-
-  /**
-   * Filters and returns the current set of oplogs that aren't already in the baseline for
-   * incremental backup
-   * 
-   * @param baselineInspector the inspector for the previous backup.
-   * @param baselineCopyMap this will be populated with baseline oplogs Files that will be used in
-   *        the restore script.
-   * @return an array of Oplogs to be copied for an incremental backup.
-   */
-  private Oplog[] filterBaselineOplogs(BackupInspector baselineInspector,
-      Map<File, File> baselineCopyMap) throws IOException {
-    File baselineDir = new File(baselineInspector.getBackupDir(), BackupManager.DATA_STORES);
-    baselineDir = new File(baselineDir, getBackupDirName());
-
-    // Find all of the member's diskstore oplogs in the member's baseline
-    // diskstore directory structure (*.crf,*.krf,*.drf)
-    Collection<File> baselineOplogFiles =
-        FileUtils.listFiles(baselineDir, new String[] {"krf", "drf", "crf"}, true);
-    // Our list of oplogs to copy (those not already in the baseline)
-    List<Oplog> oplogList = new LinkedList<Oplog>();
-
-    // Total list of member oplogs
-    Oplog[] allOplogs = getAllOplogsForBackup();
-
-    /*
-     * Loop through operation logs and see if they are already part of the baseline backup.
-     */
-    for (Oplog log : allOplogs) {
-      // See if they are backed up in the current baseline
-      Map<File, File> oplogMap = log.mapBaseline(baselineOplogFiles);
-
-      // No? Then see if they were backed up in previous baselines
-      if (oplogMap.isEmpty() && baselineInspector.isIncremental()) {
-        Set<String> matchingOplogs =
-            log.gatherMatchingOplogFiles(baselineInspector.getIncrementalOplogFileNames());
-        if (!matchingOplogs.isEmpty()) {
-          for (String matchingOplog : matchingOplogs) {
-            oplogMap.put(new File(baselineInspector.getCopyFromForOplogFile(matchingOplog)),
-                new File(baselineInspector.getCopyToForOplogFile(matchingOplog)));
-          }
-        }
-      }
-
-      if (oplogMap.isEmpty()) {
-        /*
-         * These are fresh operation log files so lets back them up.
-         */
-        oplogList.add(log);
-      } else {
-        /*
-         * These have been backed up before so lets just add their entries from the previous backup
-         * or restore script into the current one.
-         */
-        baselineCopyMap.putAll(oplogMap);
-      }
-    }
-
-    // Convert the filtered oplog list to an array
-    return oplogList.toArray(new Oplog[oplogList.size()]);
-  }
-
-  /**
    * Get all of the oplogs
    */
-  private Oplog[] getAllOplogsForBackup() {
+  Oplog[] getAllOplogsForBackup() {
     return persistentOplogs.getAllOplogs();
   }
 
@@ -2909,7 +2832,6 @@ public class DiskStoreImpl implements DiskStore {
      * missed. Notifications need not be sent if the thread is already compaction
      */
     public void run() {
-      getCache().getCachePerfStats().decDiskTasksWaiting();
       if (!this.scheduled)
         return;
       boolean compactedSuccessfully = false;
@@ -3913,7 +3835,6 @@ public class DiskStoreImpl implements DiskStore {
           public void writeBatch(Map<Object, RecoveredEntry> entries) throws IOException {
             for (Map.Entry<Object, RecoveredEntry> re : entries.entrySet()) {
               Object key = re.getKey();
-              // TODO:KIRK:OK Rusty's code was value = de.getValueWithContext(drv);
               Object value = re.getValue().getValue();
               writer.snapshotEntry(new SnapshotRecord(key, value));
             }
@@ -4003,6 +3924,16 @@ public class DiskStoreImpl implements DiskStore {
 
   private final HashMap<String, LRUStatistics> prlruStatMap = new HashMap<String, LRUStatistics>();
 
+  /**
+   * Lock used to synchronize access to the init file. This is a lock rather than a synchronized
+   * block because the backup tool needs to acquire this lock.
+   */
+  private final BackupLock backupLock = new BackupLock();
+
+  public BackupLock getBackupLock() {
+    return backupLock;
+  }
+
   LRUStatistics getOrCreatePRLRUStats(PlaceHolderDiskRegion dr) {
     String prName = dr.getPrName();
     LRUStatistics result = null;
@@ -4047,132 +3978,14 @@ public class DiskStoreImpl implements DiskStore {
     // level operations, we will need to be careful
     // to block them *before* they are put in the async
     // queue
-    getDiskInitFile().lockForBackup();
+    getBackupLock().lockForBackup();
   }
 
   /**
    * Release the lock that is preventing operations on this disk store during the backup process.
    */
   public void releaseBackupLock() {
-    getDiskInitFile().unlockForBackup();
-  }
-
-  /**
-   * Start the backup process. This is the second step of the backup process. In this method, we
-   * define the data we're backing up by copying the init file and rolling to the next file. After
-   * this method returns operations can proceed as normal, except that we don't remove oplogs.
-   */
-  public void startBackup(File targetDir, BackupInspector baselineInspector,
-      RestoreScript restoreScript) throws IOException {
-    getDiskInitFile().setBackupThread(Thread.currentThread());
-    boolean done = false;
-    try {
-      for (;;) {
-        Oplog childOplog = persistentOplogs.getChild();
-        if (childOplog == null) {
-          this.diskStoreBackup = new DiskStoreBackup(new Oplog[0], targetDir);
-          break;
-        }
-
-        // Get an appropriate lock object for each set of oplogs.
-        Object childLock = childOplog.lock;
-
-        // TODO - We really should move this lock into the disk store, but
-        // until then we need to do this magic to make sure we're actually
-        // locking the latest child for both types of oplogs
-
-        // This ensures that all writing to disk is blocked while we are
-        // creating the snapshot
-        synchronized (childLock) {
-          if (persistentOplogs.getChild() != childOplog) {
-            continue;
-          }
-
-          if (logger.isDebugEnabled()) {
-            logger.debug("snapshotting oplogs for disk store {}", getName());
-          }
-
-          // Create the directories for this disk store
-          for (int i = 0; i < directories.length; i++) {
-            File dir = getBackupDir(targetDir, i);
-            if (!dir.mkdirs()) {
-              throw new IOException("Could not create directory " + dir);
-            }
-            restoreScript.addFile(directories[i].getDir(), dir);
-          }
-
-          restoreScript.addExistenceTest(this.initFile.getIFFile());
-
-          // Contains all oplogs that will backed up
-          Oplog[] allOplogs = null;
-
-          // Incremental backup so filter out oplogs that have already been
-          // backed up
-          if (null != baselineInspector) {
-            Map<File, File> baselineCopyMap = new HashMap<File, File>();
-            allOplogs = filterBaselineOplogs(baselineInspector, baselineCopyMap);
-            restoreScript.addBaselineFiles(baselineCopyMap);
-          } else {
-            allOplogs = getAllOplogsForBackup();
-          }
-
-          // mark all oplogs as being backed up. This will
-          // prevent the oplogs from being deleted
-          this.diskStoreBackup = new DiskStoreBackup(allOplogs, targetDir);
-
-          // copy the init file
-          File firstDir = getBackupDir(targetDir, infoFileDirIndex);
-          initFile.copyTo(firstDir);
-          persistentOplogs.forceRoll(null);
-
-          if (logger.isDebugEnabled()) {
-            logger.debug("done snaphotting for disk store {}", getName());
-          }
-          break;
-        }
-      }
-      done = true;
-    } finally {
-      if (!done) {
-        clearBackup();
-      }
-    }
-  }
-
-  private File getBackupDir(File targetDir, int index) {
-    return new File(targetDir, BACKUP_DIR_PREFIX + index);
-  }
-
-  /**
-   * Copy the oplogs to the backup directory. This is the final step of the backup process. The
-   * oplogs we copy are defined in the startBackup method.
-   */
-  public void finishBackup(BackupManager backupManager) throws IOException {
-    if (diskStoreBackup == null) {
-      return;
-    }
-    try {
-      // Wait for oplogs to be unpreblown before backing them up.
-      waitForDelayedWrites();
-
-      // Backup all of the oplogs
-      for (Oplog oplog : this.diskStoreBackup.getPendingBackup()) {
-        if (backupManager.isCancelled()) {
-          break;
-        }
-        // Copy theoplog to the destination directory
-        int index = oplog.getDirectoryHolder().getArrayIndex();
-        File backupDir = getBackupDir(this.diskStoreBackup.getTargetDir(), index);
-        // TODO prpersist - We could probably optimize this to *move* the files
-        // that we know are supposed to be deleted.
-        oplog.copyTo(backupDir);
-
-        // Allow the oplog to be deleted, and process any pending delete
-        this.diskStoreBackup.backupFinished(oplog);
-      }
-    } finally {
-      clearBackup();
-    }
+    getBackupLock().unlockForBackup();
   }
 
   private int getArrayIndexOfDirectory(File searchDir) {
@@ -4188,16 +4001,9 @@ public class DiskStoreImpl implements DiskStore {
     return this.directories;
   }
 
-  private void clearBackup() {
-    DiskStoreBackup backup = this.diskStoreBackup;
-    if (backup != null) {
-      this.diskStoreBackup = null;
-      backup.cleanup();
-    }
-  }
-
   public DiskStoreBackup getInProgressBackup() {
-    return diskStoreBackup;
+    BackupManager backupManager = cache.getBackupManager();
+    return backupManager == null ? null : backupManager.getBackupForDiskStore(this);
   }
 
   public Collection<DiskRegionView> getKnown() {
@@ -4614,32 +4420,6 @@ public class DiskStoreImpl implements DiskStore {
       }
     }
     return false;
-  }
-
-  private void stopDiskStoreTaskPool() {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Stopping DiskStoreTaskPool");
-    }
-    shutdownPool(diskStoreTaskPool);
-
-    // Allow the delayed writes to complete
-    delayedWritePool.shutdown();
-    try {
-      delayedWritePool.awaitTermination(1, TimeUnit.SECONDS);
-    } catch (InterruptedException ignore) {
-      Thread.currentThread().interrupt();
-    }
-  }
-
-  private void shutdownPool(ThreadPoolExecutor pool) {
-    // All the regions have already been closed
-    // so this pool shouldn't be doing anything.
-    List<Runnable> l = pool.shutdownNow();
-    for (Runnable runnable : l) {
-      if (l instanceof DiskStoreTask) {
-        ((DiskStoreTask) l).taskCancelled();
-      }
-    }
   }
 
   public void writeRVVGC(DiskRegion dr, LocalRegion region) {

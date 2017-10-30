@@ -19,25 +19,19 @@ import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.query.CqAttributes;
-import org.apache.geode.cache.query.CqAttributesFactory;
-import org.apache.geode.cache.query.CqEvent;
-import org.apache.geode.cache.query.CqListener;
-import org.apache.geode.cache.query.CqQuery;
-import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -71,75 +65,4 @@ public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
           "DATA:READ:AuthRegion");
     });
   }
-
-  @Test
-  public void testCQ() {
-    String query = "select * from /AuthRegion";
-    client1.invoke(() -> {
-      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
-      Region region = createProxyRegion(cache, REGION_NAME);
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
-
-      CqAttributes cqa = new CqAttributesFactory().create();
-
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
-
-      assertNotAuthorized(() -> cq.executeWithInitialResults(), "DATA:READ:AuthRegion");
-      assertNotAuthorized(() -> cq.execute(), "DATA:READ:AuthRegion");
-
-      assertNotAuthorized(() -> cq.close(), "DATA:MANAGE");
-    });
-
-    client2.invoke(() -> {
-      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
-      Region region = createProxyRegion(cache, REGION_NAME);
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
-
-      CqAttributes cqa = new CqAttributesFactory().create();
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
-      cq.execute();
-
-      assertNotAuthorized(() -> cq.stop(), "DATA:MANAGE");
-      assertNotAuthorized(() -> qs.getAllDurableCqsFromServer(), "CLUSTER:READ");
-    });
-
-    client3.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
-      Region region = createProxyRegion(cache, REGION_NAME);
-      Pool pool = PoolManager.find(region);
-      QueryService qs = pool.getQueryService();
-
-      CqAttributesFactory factory = new CqAttributesFactory();
-      factory.addCqListener(new CqListener() {
-        @Override
-        public void onEvent(final CqEvent aCqEvent) {
-          System.out.println(aCqEvent);
-        }
-
-        @Override
-        public void onError(final CqEvent aCqEvent) {
-
-        }
-
-        @Override
-        public void close() {
-
-        }
-      });
-
-
-      CqAttributes cqa = factory.create();
-
-      // Create the CqQuery
-      CqQuery cq = qs.newCq("CQ1", query, cqa);
-      System.out.println("query result: " + cq.executeWithInitialResults());
-
-      cq.stop();
-    });
-  }
-
 }

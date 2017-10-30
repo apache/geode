@@ -15,10 +15,10 @@
 package org.apache.geode.internal.process;
 
 /**
- * Defines the methods for providing input arguments to the <code>ProcessController</code>.
+ * Defines the methods for providing input arguments to the {@code ProcessController}.
  * 
- * Implementations of <code>ProcessController</code> are in this package. Classes that implement
- * <code>ProcessControllerArguments</code> would typically be in a different package.
+ * Implementations of {@code ProcessController} are in this package. Classes that implement
+ * {@code ProcessController} would typically be in a different package.
  * 
  * @since GemFire 8.0
  */

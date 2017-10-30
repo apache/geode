@@ -14,7 +14,7 @@ build-eclipse/
 /tags
 out/
 
-
+.DS_store
 *.iml
 *.ipr
 *.iws
@@ -26,3 +26,4 @@ out/
 *.rej
 *.orig
 geode-pulse/screenshots/
+/jpf.properties

@@ -14,19 +14,21 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.management.ManagementException;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,11 +37,13 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.mockito.Matchers;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class SizeExportLogsFunctionTest {
@@ -81,7 +85,8 @@ public class SizeExportLogsFunctionTest {
     config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
 
     server.withProperties(config).startServer();
-    FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
+    FunctionContext context =
+        new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
 
     // log and stat files sizes are not constant with a real cache running, so check for the sizer
     // estimate within a range
@@ -98,7 +103,8 @@ public class SizeExportLogsFunctionTest {
 
     server.withProperties(config).startServer();
 
-    FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
+    FunctionContext context =
+        new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
     new SizeExportLogsFunction().execute(context);
     getAndVerifySizeEstimate(resultSender, 0L);
   }
@@ -107,16 +113,20 @@ public class SizeExportLogsFunctionTest {
   public void withFunctionError_shouldThrow() throws Throwable {
     server.withProperties(config).startServer();
 
-    FunctionContext context = new FunctionContextImpl("functionId", null, resultSender);
+    FunctionContext context =
+        new FunctionContextImpl(server.getCache(), "functionId", null, resultSender);
     new SizeExportLogsFunction().execute(context);
     assertThatThrownBy(resultSender::getResults).isInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void sizeGreaterThanDiskAvailable_sendsErrorResult() throws Throwable {
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
     server.withProperties(config).startServer();
 
-    FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
+    FunctionContext context =
+        new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
     SizeExportLogsFunction testFunction = new SizeExportLogsFunction();
     SizeExportLogsFunction spyFunction = spy(testFunction);
     long fakeDiskAvailable = 1024;

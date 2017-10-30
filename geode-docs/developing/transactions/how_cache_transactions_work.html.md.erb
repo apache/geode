@@ -1,6 +1,4 @@
----
-title: How Geode Cache Transactions Work
----
+<% set_title("How", product_name, "Cache Transactions Work") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -21,21 +19,21 @@ limitations under the License.
 <a id="topic_fls_1j1_wk"></a>
 
 
-This section provides an explanation of how transactions work on Geode caches.
+This section provides an explanation of how transactions work on <%=vars.product_name%> caches.
 
-All the regions in a Geode member cache can participate in a transaction. A Java application can operate on the cache using multiple transactions. A transaction is associated with only one thread, and a thread can operate on only one transaction at a time. Child threads do not inherit existing transactions.
+All the regions in a <%=vars.product_name%> member cache can participate in a transaction. A Java application can operate on the cache using multiple transactions. A transaction is associated with only one thread, and a thread can operate on only one transaction at a time. Child threads do not inherit existing transactions.
 
--   **[Transaction View](../../developing/transactions/how_cache_transactions_work.html#concept_hls_1j1_wk)**
+-   **[Transaction View](#concept_hls_1j1_wk)**
 
--   **[Committing Transactions](../../developing/transactions/how_cache_transactions_work.html#concept_sbj_lj1_wk)**
+-   **[Committing Transactions](#concept_sbj_lj1_wk)**
 
--   **[Transactions by Region Type](../../developing/transactions/cache_transactions_by_region_type.html#topic_nlq_sk1_wk)**
+-   **[Transactions by Region Type](cache_transactions_by_region_type.html#topic_nlq_sk1_wk)**
 
--   **[Client Transactions](../../developing/transactions/client_server_transactions.html)**
+-   **[Client Transactions](client_server_transactions.html)**
 
--   **[Comparing Transactional and Non-Transactional Operations](../../developing/transactions/transactional_and_nontransactional_ops.html#transactional_and_nontransactional_ops)**
+-   **[Comparing Transactional and Non-Transactional Operations](transactional_and_nontransactional_ops.html#transactional_and_nontransactional_ops)**
 
--   **[Geode Cache Transaction Semantics](../../developing/transactions/transaction_semantics.html)**
+-   **[<%=vars.product_name%> Cache Transaction Semantics](transaction_semantics.html)**
 
 ## Transaction View
 

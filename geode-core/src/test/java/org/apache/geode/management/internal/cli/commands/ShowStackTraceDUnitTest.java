@@ -14,13 +14,24 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -31,19 +42,15 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
-/***
+/**
  * DUnit test for 'show stack-trace' command
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@SuppressWarnings("serial")
 public class ShowStackTraceDUnitTest extends CliCommandTestBase {
-
-  private static final long serialVersionUID = 1L;
 
   @Rule
   public TemporaryFolder workDirectory = new SerializableTemporaryFolder();
@@ -106,7 +113,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File mgrStacktraceFile = workDirectory.newFile("managerStacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, mgrStacktraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Manager");
+    csb.addOption(CliStrings.MEMBER, "Manager");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
@@ -116,7 +123,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File serverStacktraceFile = workDirectory.newFile("serverStacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, serverStacktraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "Server");
+    csb.addOption(CliStrings.MEMBER, "Server");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
@@ -126,7 +133,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File groupStacktraceFile = workDirectory.newFile("groupstacktrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, groupStacktraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__GROUP, "G2");
+    csb.addOption(CliStrings.GROUP, "G2");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);
@@ -136,7 +143,7 @@ public class ShowStackTraceDUnitTest extends CliCommandTestBase {
     File wrongStackTraceFile = workDirectory.newFile("wrongStackTrace.txt");
     csb = new CommandStringBuilder(CliStrings.EXPORT_STACKTRACE);
     csb.addOption(CliStrings.EXPORT_STACKTRACE__FILE, wrongStackTraceFile.getCanonicalPath());
-    csb.addOption(CliStrings.EXPORT_STACKTRACE__MEMBER, "WrongMember");
+    csb.addOption(CliStrings.MEMBER, "WrongMember");
     commandString = csb.toString();
     getLogWriter().info("CommandString : " + commandString);
     commandResult = executeCommand(commandString);

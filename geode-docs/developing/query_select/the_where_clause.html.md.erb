@@ -162,7 +162,7 @@ SELECT * FROM /exampleRegion portfolio1, portfolio1.positions.values positions1,
 
 ## <a id="the_where_clause__section_D91E0B06FFF6431490CC0BFA369425AD" class="no-quick-link"></a>LIKE
 
-Geode offers limited support for the LIKE predicate. LIKE can be used to mean 'equals to'. If you terminate the string with a wildcard ('%'), it behaves like 'starts with'. You can also place a wildcard (either '%' or '\_') at any other position in the comparison string. You can escape the wildcard characters to represent the characters themselves.
+<%=vars.product_name%> offers limited support for the LIKE predicate. LIKE can be used to mean 'equals to'. If you terminate the string with a wildcard ('%'), it behaves like 'starts with'. You can also place a wildcard (either '%' or '\_') at any other position in the comparison string. You can escape the wildcard characters to represent the characters themselves.
 
 **Note:**
 The '\*' wildcard is not supported in OQL LIKE predicates.
@@ -234,6 +234,30 @@ For overloaded methods, the query processor decides which method to call by matc
 If more than one method can be invoked, the query processor chooses the method whose parameter types are the most specific for the given arguments. For example, if an overloaded method includes versions with the same number of arguments, but one takes a Person type as an argument and the other takes an Employee type, derived from Person, Employee is the more specific object type. If the argument passed to the method is compatible with both types, the query processor uses the method with the Employee parameter type.
 
 The query processor uses the runtime types of the parameters and the receiver to determine the proper method to invoke. Because runtime types are used, an argument with a null value has no typing information, and so can be matched with any object type parameter. When a null argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an `AmbiguousNameException`.
+
+**Methods calls with the `SecurityManager` enabled**
+
+When the `SecurityManager` is enabled,
+<%=vars.product_name%> throws a `NotAuthorizedException` when any
+method not on this list of whitelisted methods is invoked:
+
+- On a `Map`, `Collection`, or `Region` object: `keySet`, `entrySet`, `values`, `containsKey` or `get`
+- On a `Region.Entry` object: `getKey` or `getValue`
+- On a `Date` or `Timestamp` object: `after`, `before`, `getNanos`, or `getTime`
+- On a `String` object: any method
+- On any `Number` object: `intValue`, `longValue`, `shortValue`, etc.
+- On any `Boolean` object: `booleanValue`
+- On any object: `equals`, `compareTo`, or `toString`
+
+To disable the authorization check,
+start all servers with the added system property
+`gemfire.QueryService.allowUntrustedMethodInvocation`.
+For example:
+
+```
+gfsh>start server --name=Server1 \
+     --J=-Dgemfire.QueryService.allowUntrustedMethodInvocation=true
+```
 
 ## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
 
@@ -318,7 +342,7 @@ One problem is that you cannot create indexes on Set or List types (collection t
 
 ## <a id="the_where_clause__section_E7206D045BEC4F67A8D2B793922BF213" class="no-quick-link"></a>Double.NaN and Float.NaN Comparisons
 
-The comparison behavior of Double.NaN and Float.NaN within Geode queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
+The comparison behavior of Double.NaN and Float.NaN within <%=vars.product_name%> queries follow the semantics of the JDK methods Float.compareTo and Double.compareTo.
 
 In summary, the comparisons differ in the following ways from those performed by the Java language numerical comparison operators (<, <=, ==, >= >) when applied to primitive double [float] values:
 

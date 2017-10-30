@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.execute;
 
+import org.apache.geode.cache.Cache;
+
 /**
  * Defines the execution context of a {@link Function}. It is required by the
  * {@link Function#execute(FunctionContext)} to execute a {@link Function} on a particular member.
@@ -24,8 +26,6 @@ package org.apache.geode.cache.execute;
  * <p>
  * This interface is implemented by GemFire. Instances of it will be passed in to
  * {@link Function#execute(FunctionContext)}.
- * 
- * @param T1 object type of Arguments
  *
  * @since GemFire 6.0
  *
@@ -75,4 +75,6 @@ public interface FunctionContext<T1> {
    * @see Function#isHA()
    */
   public boolean isPossibleDuplicate();
+
+  public Cache getCache();
 }

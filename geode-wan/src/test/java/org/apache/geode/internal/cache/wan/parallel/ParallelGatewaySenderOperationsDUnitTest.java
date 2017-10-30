@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_SIZE_PROPERTY;
 import static org.apache.geode.test.dunit.Assert.*;
 
+import org.apache.geode.cache.wan.GatewaySender;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,6 +50,43 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
     IgnoredException.addIgnoredException("Broken pipe||Unexpected IOException");
+  }
+
+  @Test(timeout = 300000)
+  public void testStopOneConcurrentGatewaySenderWithSSL() throws Throwable {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    vm2.invoke(() -> WANTestBase.createReceiverWithSSL(nyPort));
+    vm3.invoke(() -> WANTestBase.createReceiverWithSSL(nyPort));
+
+    vm4.invoke(() -> WANTestBase.createCacheWithSSL(lnPort));
+    vm5.invoke(() -> WANTestBase.createCacheWithSSL(lnPort));
+
+    vm4.invoke(() -> createConcurrentSender("ln", 2, true, 100, 10, false, true, null, true, 5,
+        GatewaySender.OrderPolicy.KEY));
+    vm5.invoke(() -> createConcurrentSender("ln", 2, true, 100, 10, false, true, null, true, 5,
+        GatewaySender.OrderPolicy.KEY));
+
+    String regionName = getTestMethodName() + "_PR";
+    vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm5.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+
+    vm2.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm3.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    vm4.invoke(() -> WANTestBase.doPuts(regionName, 10));
+
+    vm4.invoke(() -> WANTestBase.stopSender("ln"));
+    vm4.invoke(() -> WANTestBase.startSender("ln"));
+
+    vm4.invoke(() -> WANTestBase.doPuts(regionName, 10));
+
+    vm5.invoke(() -> WANTestBase.stopSender("ln"));
+    vm5.invoke(() -> WANTestBase.startSender("ln"));
   }
 
   @Test

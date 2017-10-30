@@ -18,9 +18,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -31,6 +31,7 @@ import org.junit.experimental.categories.Category;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class AccessControlMBeanJUnitTest {
+
   private AccessControlMXBean bean;
 
   @ClassRule

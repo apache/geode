@@ -34,7 +34,7 @@ import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.MapResultCollector;
 
 /**
- * Implementation of PageableLuceneQueryResults that fetchs a page at a time from the server, given
+ * Implementation of PageableLuceneQueryResults that fetches a page at a time from the server, given
  * a set of EntryScores (key and score).
  *
  * @param <K> The type of the key

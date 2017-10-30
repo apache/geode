@@ -1527,7 +1527,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
       }
     });
 
-    region.getAttributesMutator().setCacheListener(new CacheListenerAdapter() {
+    region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
       public void afterCreate(EntryEvent event) {
         th.start();
       }
@@ -2721,6 +2721,9 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     boolean compacted = ((LocalRegion) region).getDiskStore().forceCompaction();
     assertEquals(true, oplog.testConfirmCompacted());
     assertEquals(true, compacted);
+    CachePerfStats stats = ((InternalCache) cache).getCachePerfStats();
+    assertTrue("expected " + stats.getDiskTasksWaiting() + " to be >= 0",
+        stats.getDiskTasksWaiting() >= 0);
   }
 
   @Test

@@ -80,6 +80,6 @@ public class ConnectionJUnitTest {
     Connection conn = new Connection(table, socket);
     conn.setSharedUnorderedForTest();
     conn.run();
-    verify(membership).suspectMember(any(InternalDistributedMember.class), any(String.class));
+    verify(membership).suspectMember(isNull(InternalDistributedMember.class), any(String.class));
   }
 }

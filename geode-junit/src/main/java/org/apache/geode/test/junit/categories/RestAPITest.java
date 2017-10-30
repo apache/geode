@@ -15,7 +15,7 @@
 package org.apache.geode.test.junit.categories;
 
 /**
- * A categor for REST API tests
+ * A category for REST API tests
  */
 public interface RestAPITest {
 }

@@ -22,6 +22,40 @@ import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+import org.junit.FixMethodOrder;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -51,38 +85,9 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.TimeUnit;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.Query;
-import javax.management.QueryExp;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * The LauncherLifecycleCommandsDUnitTest class is a test suite of integration tests testing the
@@ -96,13 +101,16 @@ import javax.management.remote.JMXServiceURL;
  * @see org.apache.geode.internal.AvailablePortHelper
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.apache.geode.management.internal.cli.commands.CliCommandTestBase
- * @see org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands
  * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@SuppressWarnings("serial")
 public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   protected static final DateFormat TIMESTAMP = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 
@@ -148,7 +156,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
   @Override
   public final void postTearDown() throws Exception {
-    LauncherLifecycleCommands launcherLifecycleCommands = new LauncherLifecycleCommands();
     Integer pid;
 
     while ((pid = processIds.poll()) != null) {
@@ -254,9 +261,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
         if (pid != null) {
           WaitCriterion waitCriteria = new WaitCriterion() {
-            private LauncherLifecycleCommands launcherLifecycleCommands =
-                new LauncherLifecycleCommands();
-
             @Override
             public boolean done() {
               return !ProcessUtils.isProcessAlive(pid);
@@ -1031,9 +1035,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       final int serverPid = serverState.getPid();
 
       WaitCriterion waitCriteria = new WaitCriterion() {
-        private LauncherLifecycleCommands launcherLifecycleCommands =
-            new LauncherLifecycleCommands();
-
         @Override
         public boolean done() {
           return !ProcessUtils.isProcessAlive(serverPid);

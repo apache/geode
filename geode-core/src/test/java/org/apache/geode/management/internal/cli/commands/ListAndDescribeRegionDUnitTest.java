@@ -14,34 +14,54 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.commandResultToString;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION__NAME;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_REGION;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.MEMBER;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.util.CacheListenerAdapter;
+import java.io.Serializable;
+import java.util.Properties;
+
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 @Category(DistributedTest.class)
-public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
-
+public class ListAndDescribeRegionDUnitTest implements Serializable {
   private static final String REGION1 = "region1";
   private static final String REGION2 = "region2";
   private static final String REGION3 = "region3";
@@ -51,13 +71,181 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
   private static final String PR1 = "PR1";
   private static final String LOCALREGIONONMANAGER = "LocalRegionOnManager";
 
-  static class CacheListener2 extends CacheListenerAdapter {
+  @ClassRule
+  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+
+  @ClassRule
+  public static GfshShellConnectionRule gfshShellConnectionRule = new GfshShellConnectionRule();
+
+  @BeforeClass
+  public static void setupSystem() throws Exception {
+    final Properties locatorProps = createProperties("Locator", "G3");
+    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
+
+    final Properties managerProps = createProperties("Manager", "G1");
+    managerProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
+    MemberVM manager = lsRule.startServerVM(1, managerProps, locator.getPort());
+
+    final Properties serverProps = createProperties("Server", "G2");
+    MemberVM server = lsRule.startServerVM(2, serverProps, locator.getPort());
+
+    manager.invoke(() -> {
+      final Cache cache = CacheFactory.getAnyInstance();
+      RegionFactory<String, Integer> dataRegionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+      dataRegionFactory.setConcurrencyLevel(4);
+      EvictionAttributes ea =
+          EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
+      dataRegionFactory.setEvictionAttributes(ea);
+      dataRegionFactory.setEnableAsyncConflation(true);
+
+      FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par1", true);
+      PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(100)
+          .setRecoveryDelay(2).setTotalMaxMemory(200).setRedundantCopies(1)
+          .addFixedPartitionAttributes(fpa).create();
+      dataRegionFactory.setPartitionAttributes(pa);
+
+      dataRegionFactory.create(PR1);
+      createLocalRegion(LOCALREGIONONMANAGER);
+    });
+
+    server.invoke(() -> {
+      final Cache cache = CacheFactory.getAnyInstance();
+      RegionFactory<String, Integer> dataRegionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+      dataRegionFactory.setConcurrencyLevel(4);
+      EvictionAttributes ea =
+          EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
+      dataRegionFactory.setEvictionAttributes(ea);
+      dataRegionFactory.setEnableAsyncConflation(true);
+
+      FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par2", 4);
+      PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(150)
+          .setRecoveryDelay(4).setTotalMaxMemory(200).setRedundantCopies(1)
+          .addFixedPartitionAttributes(fpa).create();
+      dataRegionFactory.setPartitionAttributes(pa);
+
+      dataRegionFactory.create(PR1);
+      createRegionsWithSubRegions();
+    });
+
+    gfshShellConnectionRule.connectAndVerify(locator);
   }
 
-  static class CacheListener1 extends CacheListenerAdapter {
+  @Test
+  public void listAllRegions() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(PR1);
+    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
+    assertThat(commandResultString).contains(REGION1);
+    assertThat(commandResultString).contains(REGION2);
+    assertThat(commandResultString).contains(REGION3);
   }
 
-  private Properties createProperties(String name, String groups) {
+  @Test
+  public void listRegionsOnManager() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
+    csb.addOption(MEMBER, "Manager");
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(PR1);
+    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
+  }
+
+  @Test
+  public void listRegionsOnServer() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
+    csb.addOption(MEMBER, "Server");
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(PR1);
+    assertThat(commandResultString).contains(REGION1);
+    assertThat(commandResultString).contains(REGION2);
+    assertThat(commandResultString).contains(REGION3);
+    assertThat(commandResultString).contains(SUBREGION1A);
+  }
+
+  @Test
+  public void listRegionsInGroup1() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
+    csb.addOption(GROUP, "G1");
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(PR1);
+    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
+  }
+
+  @Test
+  public void listRegionsInGroup2() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
+    csb.addOption(GROUP, "G2");
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(PR1);
+    assertThat(commandResultString).contains(REGION1);
+    assertThat(commandResultString).contains(REGION2);
+    assertThat(commandResultString).contains(REGION3);
+    assertThat(commandResultString).contains(SUBREGION1A);
+  }
+
+  @Test
+  public void describeRegionsOnManager() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
+    csb.addOption(DESCRIBE_REGION__NAME, PR1);
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(PR1);
+    assertThat(commandResultString).contains("Server");
+  }
+
+  @Test
+  public void describeRegionsOnServer() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
+    csb.addOption(DESCRIBE_REGION__NAME, LOCALREGIONONMANAGER);
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(csb.toString());
+
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(LOCALREGIONONMANAGER);
+    assertThat(commandResultString).contains("Manager");
+  }
+
+  /**
+   * Asserts that a describe region command issued on a region with compression returns the correct
+   * non default region attribute for compression and the correct codec value.
+   */
+  @Category(FlakyTest.class) // GEODE-1033: HeadlesssGFSH, random port, Snappy dependency
+  @Test
+  public void describeRegionWithCompressionCodec() throws Exception {
+    final String regionName = "compressedRegion";
+    VM vm = Host.getHost(0).getVM(1);
+
+    // Create compressed region
+    vm.invoke(() -> {
+      createCompressedRegion(regionName);
+    });
+
+    // Test the describe command; look for compression
+    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
+    csb.addOption(DESCRIBE_REGION__NAME, regionName);
+    String commandString = csb.toString();
+    CommandResult commandResult = gfshShellConnectionRule.executeAndVerifyCommand(commandString);
+    String commandResultString = commandResultToString(commandResult);
+    assertThat(commandResultString).contains(regionName);
+    assertThat(commandResultString).contains(RegionAttributesNames.COMPRESSOR);
+    assertThat(commandResultString).contains(RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
+
+    // Destroy compressed region
+    vm.invoke(() -> {
+      final Region region = CacheFactory.getAnyInstance().getRegion(regionName);
+      assertThat(region).isNotNull();
+      region.destroyRegion();
+    });
+  }
+
+  private static Properties createProperties(String name, String groups) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, "info");
@@ -68,94 +256,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     return props;
   }
 
-  private void createPartitionedRegion1() {
-    final Cache cache = getCache();
-    // Create the data region
-    RegionFactory<String, Integer> dataRegionFactory =
-        cache.createRegionFactory(RegionShortcut.PARTITION);
-    dataRegionFactory.create(PR1);
-  }
-
-  private void setupSystem() {
-    final Properties managerProps = createProperties("Manager", "G1");
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
-
-    final Properties server1Props = createProperties("Server1", "G2");
-    final Host host = Host.getHost(0);
-    final VM[] servers = {host.getVM(0), host.getVM(1)};
-
-    // The mananger VM
-    servers[0].invoke(new SerializableRunnable() {
-      public void run() {
-        final Cache cache = getCache();
-        RegionFactory<String, Integer> dataRegionFactory =
-            cache.createRegionFactory(RegionShortcut.PARTITION);
-        dataRegionFactory.setConcurrencyLevel(4);
-        EvictionAttributes ea =
-            EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
-        dataRegionFactory.setEvictionAttributes(ea);
-        dataRegionFactory.setEnableAsyncConflation(true);
-
-        FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par1", true);
-        PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(100)
-            .setRecoveryDelay(2).setTotalMaxMemory(200).setRedundantCopies(1)
-            .addFixedPartitionAttributes(fpa).create();
-        dataRegionFactory.setPartitionAttributes(pa);
-
-        dataRegionFactory.create(PR1);
-        createLocalRegion(LOCALREGIONONMANAGER);
-      }
-    });
-
-    servers[1].invoke(new SerializableRunnable() {
-      public void run() {
-        getSystem(server1Props);
-        final Cache cache = getCache();
-        RegionFactory<String, Integer> dataRegionFactory =
-            cache.createRegionFactory(RegionShortcut.PARTITION);
-        dataRegionFactory.setConcurrencyLevel(4);
-        EvictionAttributes ea =
-            EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
-        dataRegionFactory.setEvictionAttributes(ea);
-        dataRegionFactory.setEnableAsyncConflation(true);
-
-        FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par2", 4);
-        PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(150)
-            .setRecoveryDelay(4).setTotalMaxMemory(200).setRedundantCopies(1)
-            .addFixedPartitionAttributes(fpa).create();
-        dataRegionFactory.setPartitionAttributes(pa);
-
-        dataRegionFactory.create(PR1);
-        createRegionsWithSubRegions();
-      }
-    });
-  }
-
-  private void createPartitionedRegion(String regionName) {
-
-    final Cache cache = getCache();
-    // Create the data region
-    RegionFactory<String, Integer> dataRegionFactory =
-        cache.createRegionFactory(RegionShortcut.PARTITION);
-    dataRegionFactory.setConcurrencyLevel(4);
-    EvictionAttributes ea =
-        EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
-    dataRegionFactory.setEvictionAttributes(ea);
-    dataRegionFactory.setEnableAsyncConflation(true);
-
-    FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par1", true);
-    PartitionAttributes pa =
-        new PartitionAttributesFactory().setLocalMaxMemory(100).setRecoveryDelay(2)
-            .setTotalMaxMemory(200).setRedundantCopies(1).addFixedPartitionAttributes(fpa).create();
-    dataRegionFactory.setPartitionAttributes(pa);
-    dataRegionFactory.addCacheListener(new CacheListener1());
-    dataRegionFactory.addCacheListener(new CacheListener2());
-    dataRegionFactory.create(regionName);
-  }
-
-
-  private void createLocalRegion(final String regionName) {
-    final Cache cache = getCache();
+  private static void createLocalRegion(final String regionName) {
+    final Cache cache = CacheFactory.getAnyInstance();
     // Create the data region
     RegionFactory<String, Integer> dataRegionFactory =
         cache.createRegionFactory(RegionShortcut.LOCAL);
@@ -164,11 +266,11 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
 
   /**
    * Creates a region that uses compression on region entry values.
-   *
+   * 
    * @param regionName a unique region name.
    */
-  private void createCompressedRegion(final String regionName) {
-    final Cache cache = getCache();
+  private static void createCompressedRegion(final String regionName) {
+    final Cache cache = CacheFactory.getAnyInstance();
 
     RegionFactory<String, Integer> dataRegionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -177,8 +279,8 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
   }
 
   @SuppressWarnings("deprecation")
-  private void createRegionsWithSubRegions() {
-    final Cache cache = getCache();
+  private static void createRegionsWithSubRegions() {
+    final Cache cache = CacheFactory.getAnyInstance();
 
     RegionFactory<String, Integer> dataRegionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -191,141 +293,5 @@ public class ListAndDescribeRegionDUnitTest extends CliCommandTestBase {
     subregion2.createSubregion(SUBREGION1B, subregion2.getAttributes());
     dataRegionFactory.create(REGION2);
     dataRegionFactory.create(REGION3);
-  }
-
-  @Test
-  public void testListRegion() {
-    setupSystem();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    String commandString = csb.toString();
-    CommandResult commandResult = executeCommand(commandString);
-    String commandResultAsString = commandResultToString(commandResult);
-    getLogWriter().info("Command String : " + commandString);
-    getLogWriter().info("Output : \n" + commandResultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(PR1));
-    assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
-    assertTrue(commandResultAsString.contains(REGION1));
-    assertTrue(commandResultAsString.contains(REGION2));
-    assertTrue(commandResultAsString.contains(REGION3));
-
-
-    csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__MEMBER, "Manager");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    commandResultAsString = commandResultToString(commandResult);
-    getLogWriter().info("Command String : " + commandString);
-    getLogWriter().info("Output : \n" + commandResultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(PR1));
-    assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
-
-    csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__MEMBER, "Server1");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    commandResultAsString = commandResultToString(commandResult);
-    getLogWriter().info("Command String : " + commandString);
-    getLogWriter().info("Output : \n" + commandResultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(PR1));
-    assertTrue(commandResultAsString.contains(REGION1));
-    assertTrue(commandResultAsString.contains(REGION2));
-    assertTrue(commandResultAsString.contains(REGION3));
-    assertTrue(commandResultAsString.contains(SUBREGION1A));
-
-    csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__GROUP, "G1");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    commandResultAsString = commandResultToString(commandResult);
-    getLogWriter().info("Command String : " + commandString);
-    getLogWriter().info("Output : \n" + commandResultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(PR1));
-    assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
-
-    csb = new CommandStringBuilder(CliStrings.LIST_REGION);
-    csb.addOption(CliStrings.LIST_REGION__GROUP, "G2");
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    commandResultAsString = commandResultToString(commandResult);
-    getLogWriter().info("Command String : " + commandString);
-    getLogWriter().info("Output : \n" + commandResultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(PR1));
-    assertTrue(commandResultAsString.contains(REGION1));
-    assertTrue(commandResultAsString.contains(REGION2));
-    assertTrue(commandResultAsString.contains(REGION3));
-    assertTrue(commandResultAsString.contains(SUBREGION1A));
-  }
-
-  @Test
-  public void testDescribeRegion() {
-    setupSystem();
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESCRIBE_REGION);
-    csb.addOption(CliStrings.DESCRIBE_REGION__NAME, PR1);
-    String commandString = csb.toString();
-    CommandResult commandResult = executeCommand(commandString);
-    String commandResultAsString = commandResultToString(commandResult);
-    getLogWriter().info("Command String : " + commandString);
-    getLogWriter().info("Output : \n" + commandResultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(PR1));
-    assertTrue(commandResultAsString.contains("Server1"));
-
-    csb = new CommandStringBuilder(CliStrings.DESCRIBE_REGION);
-    csb.addOption(CliStrings.DESCRIBE_REGION__NAME, LOCALREGIONONMANAGER);
-    commandString = csb.toString();
-    commandResult = executeCommand(commandString);
-    commandResultAsString = commandResultToString(commandResult);
-    getLogWriter().info("Command String : " + commandString);
-    getLogWriter().info("Output : \n" + commandResultAsString);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(LOCALREGIONONMANAGER));
-    assertTrue(commandResultAsString.contains("Manager"));
-  }
-
-  /**
-   * Asserts that a describe region command issued on a region with compression returns the correct
-   * non default region attribute for compression and the correct codec value.
-   */
-  @Category(FlakyTest.class) // GEODE-1033: HeadlesssGFSH, random port, Snappy dependency
-  @Test
-  public void testDescribeRegionWithCompressionCodec() {
-    final String regionName = "compressedRegion";
-    VM vm = Host.getHost(0).getVM(1);
-
-    setupSystem();
-
-    // Create compressed region
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        createCompressedRegion(regionName);
-      }
-    });
-
-    // Test the describe command; look for compression
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESCRIBE_REGION);
-    csb.addOption(CliStrings.DESCRIBE_REGION__NAME, regionName);
-    String commandString = csb.toString();
-    CommandResult commandResult = executeCommand(commandString);
-    String commandResultAsString = commandResultToString(commandResult);
-    assertEquals(Status.OK, commandResult.getStatus());
-    assertTrue(commandResultAsString.contains(regionName));
-    assertTrue(commandResultAsString.contains(RegionAttributesNames.COMPRESSOR));
-    assertTrue(commandResultAsString.contains(RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER));
-
-    // Destroy compressed region
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Region region = getCache().getRegion(regionName);
-        assertNotNull(region);
-        region.destroyRegion();
-      }
-    });
   }
 }

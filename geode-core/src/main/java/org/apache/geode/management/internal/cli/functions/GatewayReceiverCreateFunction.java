@@ -19,9 +19,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -53,7 +51,7 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
   public void execute(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
@@ -158,6 +156,11 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
                 CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER));
       }
     }
+
+    String hostnameForSenders = gatewayReceiverCreateArgs.getHostnameForSenders();
+    if (hostnameForSenders != null) {
+      gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
+    }
     return gatewayReceiverFactory.create();
   }
 
@@ -172,13 +175,13 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
       }
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-              new Object[] {classToLoadName, neededFor}),
+          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+              classToLoadName, neededFor),
           e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          new Object[] {classToLoadName, neededFor}), e);
+          classToLoadName, neededFor), e);
     }
 
     return loadedClass;
@@ -190,12 +193,12 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
       instance = klass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_GATEWAYSENDER__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_GATEWAYSENDER__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
+          klass, neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_GATEWAYSENDER__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] {klass, neededFor}), e);
+          CliStrings.CREATE_GATEWAYSENDER__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, klass,
+          neededFor), e);
     }
     return instance;
   }

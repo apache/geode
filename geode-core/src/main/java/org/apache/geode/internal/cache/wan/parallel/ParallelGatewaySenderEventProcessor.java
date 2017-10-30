@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -112,15 +113,20 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     }
 
     // TODO: Looks like for PDX region bucket id is set to -1.
+    EventID eventID = ((EntryEventImpl) event).getEventId();
+
+    // while merging 42004, kept substituteValue as it is(it is barry's
+    // change 42466). bucketID is merged with eventID.getBucketID
+    gatewayQueueEvent =
+        new GatewaySenderEventImpl(operation, event, substituteValue, true, eventID.getBucketID());
+
+    enqueueEvent(gatewayQueueEvent);
+  }
+
+  @Override
+  protected void enqueueEvent(GatewayQueueEvent gatewayQueueEvent) {
     boolean queuedEvent = false;
     try {
-      EventID eventID = ((EntryEventImpl) event).getEventId();
-
-      // while merging 42004, kept substituteValue as it is(it is barry's
-      // change 42466). bucketID is merged with eventID.getBucketID
-      gatewayQueueEvent = new GatewaySenderEventImpl(operation, event, substituteValue, true,
-          eventID.getBucketID());
-
       if (getSender().beforeEnqueue(gatewayQueueEvent)) {
         long start = getSender().getStatistics().startTime();
         try {
@@ -138,7 +144,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     } finally {
       if (!queuedEvent) {
         // it was not queued for some reason
-        gatewayQueueEvent.release();
+        ((GatewaySenderEventImpl) gatewayQueueEvent).release();
       }
     }
   }

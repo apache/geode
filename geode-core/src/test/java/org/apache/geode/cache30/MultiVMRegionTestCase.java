@@ -40,6 +40,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Ignore;
@@ -3932,8 +3933,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                       ((InternalDistributedSystem) (region.getCache().getDistributedSystem()))
                           .getClock().getStopTime();
                   logger.info("DEBUG: waiting for expire destroy expirationTime= "
-                      + eet.getExpirationTime() + " now=" + eet.getNow() + " stopTime=" + stopTime
-                      + " currentTimeMillis=" + System.currentTimeMillis());
+                      + eet.getExpirationTime() + " now=" + eet.calculateNow() + " stopTime="
+                      + stopTime + " currentTimeMillis=" + System.currentTimeMillis());
                 } else {
                   logger.info("DEBUG: waiting for expire destroy but expiry task is null");
                 }
@@ -3947,8 +3948,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               try {
                 EntryExpiryTask eet = getEntryExpiryTask(region, key);
                 if (eet != null) {
-                  expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now=" + eet.getNow()
-                      + " currentTimeMillis=" + System.currentTimeMillis();
+                  expiryInfo = "expirationTime= " + eet.getExpirationTime() + " now="
+                      + eet.calculateNow() + " currentTimeMillis=" + System.currentTimeMillis();
                 }
               } catch (EntryNotFoundException ex) {
                 expiryInfo = "EntryNotFoundException when getting expiry task";
@@ -6089,9 +6090,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 Collection events;
                 RegionAttributes attr = getRegionAttributes();
                 if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-                  events = tl.lastEvent.getPutEvents();
+                  events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                 } else {
-                  events = tl.lastEvent.getCreateEvents();
+                  events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
                 }
                 assertEquals(1, events.size());
                 EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -6136,7 +6137,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               tl.checkAfterCommitCount(2);
               assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
               {
-                Collection events = tl.lastEvent.getPutEvents();
+                Collection events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                 assertEquals(1, events.size());
                 EntryEvent ev = (EntryEvent) events.iterator().next();
                 assertEquals(tl.expectedTxId, ev.getTransactionId());
@@ -6182,7 +6183,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               tl.checkAfterCommitCount(3);
               assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
               {
-                Collection events = tl.lastEvent.getInvalidateEvents();
+                Collection events = TxEventTestUtil.getInvalidateEvents(tl.lastEvent.getEvents());
                 assertEquals(1, events.size());
                 EntryEvent ev = (EntryEvent) events.iterator().next();
                 assertEquals(tl.expectedTxId, ev.getTransactionId());
@@ -6226,7 +6227,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               tl.checkAfterCommitCount(4);
               assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
               {
-                Collection events = tl.lastEvent.getDestroyEvents();
+                Collection events = TxEventTestUtil.getDestroyEvents(tl.lastEvent.getEvents());
                 assertEquals(1, events.size());
                 EntryEvent ev = (EntryEvent) events.iterator().next();
                 assertEquals(tl.expectedTxId, ev.getTransactionId());
@@ -6354,7 +6355,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().info("testTXUpdateLoadNoConflict: did commit");
       assertEquals("txValue", rgn.getEntry("key").getValue());
       {
-        Collection events = tl.lastEvent.getCreateEvents();
+        Collection events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
         assertEquals(1, events.size());
         EntryEvent ev = (EntryEvent) events.iterator().next();
         assertEquals(myTXId, ev.getTransactionId());
@@ -6403,7 +6404,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().info("testTXUpdateLoadNoConflict: did commit");
       assertEquals("txValue3", rgn.getEntry("key3").getValue());
       {
-        Collection events = tl.lastEvent.getCreateEvents();
+        Collection events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
         assertEquals(1, events.size());
         EntryEvent ev = (EntryEvent) events.iterator().next();
         assertEquals(myTXId, ev.getTransactionId());
@@ -6462,7 +6463,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().info("testTXUpdateLoadNoConflict: did commit");
       assertEquals("new txValue", rgn.getEntry("key").getValue());
       {
-        Collection events = tl.lastEvent.getPutEvents();
+        Collection events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
         assertEquals(1, events.size());
         EntryEvent ev = (EntryEvent) events.iterator().next();
         assertEquals(myTXId, ev.getTransactionId());
@@ -6636,9 +6637,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           Collection events;
           RegionAttributes attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-            events = tl.lastEvent.getPutEvents();
+            events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
-            events = tl.lastEvent.getCreateEvents();
+            events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertEquals(2, events.size());
           ArrayList eventList = new ArrayList(events);
@@ -6713,9 +6714,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           Collection events;
           RegionAttributes attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-            events = tl.lastEvent.getPutEvents();
+            events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
-            events = tl.lastEvent.getCreateEvents();
+            events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertEquals(2, events.size());
           ArrayList eventList = new ArrayList(events);
@@ -6784,9 +6785,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           Collection events;
           RegionAttributes attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-            events = tl.lastEvent.getPutEvents();
+            events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
-            events = tl.lastEvent.getCreateEvents();
+            events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertEquals(1, events.size());
           EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -6824,9 +6825,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           Collection events;
           RegionAttributes attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-            events = tl.lastEvent.getPutEvents();
+            events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
-            events = tl.lastEvent.getCreateEvents();
+            events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertEquals(1, events.size());
           EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -6864,9 +6865,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           Collection events;
           RegionAttributes attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-            events = tl.lastEvent.getPutEvents();
+            events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
-            events = tl.lastEvent.getCreateEvents();
+            events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertEquals(1, events.size());
           EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -7333,7 +7334,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertEquals(0, tl.closeCount);
         assertEquals(rgn.getCache(), tl.lastEvent.getCache());
         {
-          Collection events = tl.lastEvent.getCreateEvents();
+          Collection events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           assertEquals(1, events.size());
           EntryEvent ev = (EntryEvent) events.iterator().next();
           // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
@@ -7366,8 +7367,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertEquals(0, tl.afterFailedCommitCount);
         assertEquals(0, tl.afterRollbackCount);
         assertEquals(0, tl.closeCount);
-        assertEquals(0, tl.lastEvent.getCreateEvents().size());
-        assertEquals(0, tl.lastEvent.getPutEvents().size());
+        assertEquals(0, TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents()).size());
+        assertEquals(0, TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents()).size());
         assertEquals(rgn.getCache(), tl.lastEvent.getCache());
       }
     };
@@ -7485,9 +7486,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             Collection events;
             RegionAttributes attr = getRegionAttributes();
             if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-              events = tl.lastEvent.getPutEvents();
+              events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
             } else {
-              events = tl.lastEvent.getCreateEvents();
+              events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
             }
             assertEquals(1, events.size());
             EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -7511,7 +7512,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertEquals("value2", rgn.getEntry("key").getValue());
       {
         localTl.assertCounts(1, 0, 0, 0);
-        Collection events = localTl.lastEvent.getCreateEvents();
+        Collection events = TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertEquals(myTXId, localTl.lastEvent.getTransactionId());
         assertEquals(1, events.size());
         EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -7564,9 +7565,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 Collection events;
                 RegionAttributes attr = getRegionAttributes();
                 if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-                  events = tl.lastEvent.getPutEvents();
+                  events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                 } else {
-                  events = tl.lastEvent.getCreateEvents();
+                  events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
                 }
                 assertEquals(1, events.size());
                 EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -7591,7 +7592,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertTrue(!rgn.containsValueForKey("key"));
       localTl.assertCounts(2, 0, 0, 0);
       {
-        Collection events = localTl.lastEvent.getCreateEvents();
+        Collection events = TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertEquals(myTXId, localTl.lastEvent.getTransactionId());
         assertEquals(1, events.size());
         EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -7670,7 +7671,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertNull(rgn.getEntry("key").getValue());
         localTl.assertCounts(3, 0, 0, 0);
         {
-          Collection events = localTl.lastEvent.getInvalidateEvents();
+          Collection events = TxEventTestUtil.getInvalidateEvents(localTl.lastEvent.getEvents());
           assertEquals(1, events.size());
           EntryEvent ev = (EntryEvent) events.iterator().next();
           assertEquals(myTXId, ev.getTransactionId());
@@ -7717,7 +7718,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertTrue(!rgn1.containsValueForKey("key"));
           tl.assertCounts(3, 0, 0, 0);
           {
-            Collection events = tl.lastEvent.getDestroyEvents();
+            Collection events = TxEventTestUtil.getDestroyEvents(tl.lastEvent.getEvents());
             assertEquals(1, events.size());
             EntryEvent ev = (EntryEvent) events.iterator().next();
             // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
@@ -7781,9 +7782,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 Collection events;
                 RegionAttributes attr = getRegionAttributes();
                 if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-                  events = tl.lastEvent.getPutEvents();
+                  events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                 } else {
-                  events = tl.lastEvent.getCreateEvents();
+                  events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
                 }
                 assertEquals(1, events.size());
                 EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -7808,7 +7809,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertTrue(!rgn.containsValueForKey("key"));
       localTl.assertCounts(4, 0, 0, 0);
       {
-        Collection events = localTl.lastEvent.getCreateEvents();
+        Collection events = TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertEquals(myTXId, localTl.lastEvent.getTransactionId());
         assertEquals(1, events.size());
         EntryEvent ev = (EntryEvent) events.iterator().next();
@@ -7854,7 +7855,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertEquals("value2", rgn.getEntry("key").getValue());
       localTl.assertCounts(5, 0, 0, 0);
       {
-        Collection events = localTl.lastEvent.getCreateEvents();
+        Collection events = TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertEquals(myTXId, localTl.lastEvent.getTransactionId());
         assertEquals(1, events.size());
         EntryEvent ev = (EntryEvent) events.iterator().next();

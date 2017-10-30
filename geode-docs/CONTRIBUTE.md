@@ -48,3 +48,47 @@ The most important advice we can provide for working with the Apache Geode docs 
 - To start a new topic, you can make a copy of an existing file with similar content and edit it.
 - Use the appropriate document type for the content you are writing. Create multiple topics if you are writing overview, procedural, and reference content.
 - To edit elements in the navigation pane (the "subnav") that appears on the left side of the documentation, navigate to `../geode-book/master_middleman/source/subnavs/geode-subnav.md`.
+
+## Product Name Variables
+
+For flexibility, the product name (a long version and a short one) and version are defined as variables. Here's how to use them:
+
+**Define these three variables in `../geode-book/config.yml`:**
+
+```
+template_variables:
+  - product_name_long: Apache Geode
+  - product_name: Geode
+  - product_version: 1.2
+
+```
+
+**Use the following Ruby syntax to refer to these variables everywhere _except_ in `title:` lines:**
+
+    <%=vars.product_name %>
+    <%=vars.product_name_long %>
+    <%=vars.product_version %>
+    
+**You can't use these variables in `title:` lines. Here's the workaround:**
+
+Instead of:
+
+    ---
+    title: Apache Geode 1.2 Documentation
+    ---
+    
+Do this:
+
+    <% set_title(product_name_long, product_version, "Documentation") %>
+
+Why? Because the `title:` construct is not Ruby code, it's YAML, and it cannot interpret Ruby variables.
+
+**Cautions:**
+
+  - Begin with `<%`, not `<%=`. (We're invoking a function, not printing its value.)
+  - Do not put a space before the opening parenthesis (use `set_title(` not `set_title (`.)
+  - **Do not** quote the three product variable names (`product_name`, `product_name_long`, and `product_version`). **Do** quote all other text.
+  - This feature requires Bookbinder v10.1.7 (Aug 2017) or later.
+
+
+

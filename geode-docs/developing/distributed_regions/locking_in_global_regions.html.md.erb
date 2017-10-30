@@ -26,7 +26,7 @@ In regions with global scope, locking helps ensure cache consistency.
 
 Locking of regions and entries is done in two ways:
 
-1.  **Implicit**. Geode automatically locks global regions and their data entries during most operations. Region invalidation and destruction do not acquire locks.
+1.  **Implicit**. <%=vars.product_name%> automatically locks global regions and their data entries during most operations. Region invalidation and destruction do not acquire locks.
 2.  **Explicit**. You can use the API to explicitly lock the region and its entries. Do this to guarantee atomicity in tasks with multi-step distributed operations. The `Region` methods `org.apache.geode.cache.Region.getDistributedLock` and `org.apache.geode.cache.Region.getRegionDistributedLock` return instances of `java.util.concurrent.locks.Lock` for a region and a specified key.
 
     **Note:**

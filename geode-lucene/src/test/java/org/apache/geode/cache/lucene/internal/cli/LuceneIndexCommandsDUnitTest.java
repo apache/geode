@@ -21,6 +21,28 @@ import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -33,49 +55,46 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
-public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
+@SuppressWarnings("serial")
+public class LuceneIndexCommandsDUnitTest implements Serializable {
 
+  @Rule
+  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+
+  @Rule
+  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
+
+  private MemberVM serverVM;
 
   @Before
-  public void createJMXManager() {
-    disconnectAllFromDS();
-    setUpJmxManagerOnVm0ThenConnect(null);
+  public void before() throws Exception {
+    Properties props = new Properties();
+    serverVM = startupRule.startServerAsJmxManager(0, props);
+    connect(serverVM);
+  }
+
+  public void connect(MemberVM serverVM) throws Exception {
+    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
   }
 
   @Test
   public void listIndexShouldReturnExistingIndexWithStats() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
@@ -86,9 +105,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void listIndexShouldReturnExistingIndexWithoutStats() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     String resultAsString = executeCommandAndLogResult(csb);
@@ -98,8 +115,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void listIndexWhenNoExistingIndexShouldReturnNoIndex() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     String resultAsString = executeCommandAndLogResult(csb);
     assertTrue(resultAsString.contains("No lucene indexes found"));
@@ -107,9 +122,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void listIndexShouldReturnCorrectStatus() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndexWithoutRegion(vm1);
+    createIndexWithoutRegion();
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
@@ -120,15 +133,13 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void listIndexWithStatsShouldReturnCorrectStats() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
     Map<String, TestObject> entries = new HashMap<>();
     entries.put("A", new TestObject("field1:value1", "field2:value2", "field3:value3"));
     entries.put("B", new TestObject("ABC", "EFG", "HIJ"));
 
-    putEntries(vm1, entries, 2);
-    queryAndVerify(vm1, "field1:value1", "field1", Collections.singletonList("A"));
+    putEntries(entries, 2);
+    queryAndVerify("field1:value1", "field1", Collections.singletonList("A"));
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
@@ -145,8 +156,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void createIndexShouldCreateANewIndex() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       getCache();
     });
 
@@ -157,7 +167,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     String resultAsString = executeCommandAndLogResult(csb);
 
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
@@ -167,8 +177,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void createIndexWithAnalyzersShouldCreateANewIndex() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       getCache();
     });
 
@@ -176,7 +185,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
     analyzerNames.add(KeywordAnalyzer.class.getCanonicalName());
     analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
-
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -186,7 +194,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     String resultAsString = executeCommandAndLogResult(csb);
 
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
@@ -199,8 +207,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void createIndexShouldNotAcceptBadIndexOrRegionNames() {
-    final VM vm1 = Host.getHost(0).getVM(-1);
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       getCache();
     });
 
@@ -243,8 +250,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void createIndexShouldTrimAnalyzerNames() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(-1);
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       getCache();
     });
 
@@ -252,7 +258,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
     analyzerNames.add(KeywordAnalyzer.class.getCanonicalName());
     analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
-
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -263,7 +268,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     String resultAsString = executeCommandAndLogResult(csb);
 
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
@@ -276,8 +281,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void createIndexWithoutRegionShouldReturnCorrectResults() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       getCache();
     });
 
@@ -288,7 +292,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     String resultAsString = executeCommandAndLogResult(csb);
 
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       LuceneServiceImpl luceneService = (LuceneServiceImpl) LuceneServiceProvider.get(getCache());
       final ArrayList<LuceneIndexCreationProfile> profiles =
           new ArrayList<>(luceneService.getAllDefinedIndexes());
@@ -300,8 +304,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void createIndexWithWhitespaceOrDefaultKeywordAnalyzerShouldUseStandardAnalyzer()
       throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(-1);
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       getCache();
     });
 
@@ -338,7 +341,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     resultAsString = executeCommandAndLogResult(csb);
 
-    vm1.invoke(() -> {
+    serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       createRegion();
       final LuceneIndex spaceIndex = luceneService.getIndex("space", REGION_NAME);
@@ -378,9 +381,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void describeIndexShouldReturnExistingIndex() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -391,9 +392,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void describeIndexShouldNotReturnResultWhenIndexNotFound() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "notAnIndex");
@@ -405,10 +404,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void describeIndexWithoutRegionShouldReturnErrorMessage() throws Exception {
-
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndexWithoutRegion(vm1);
+    createIndexWithoutRegion();
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "notAnIndex");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -418,9 +414,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void searchShouldReturnCorrectResults() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
     Map<String, TestObject> entries = new HashMap<>();
     entries.put("A", new TestObject("value1 ", "value2", "value3"));
     entries.put("B", new TestObject("ABC", "EFG", "HIJ"));
@@ -430,7 +424,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     entries.put("F", new TestObject("ABC", "EFG", "HIJ"));
     entries.put("G", new TestObject(" value1", "JKR", "POW"));
     entries.put("H", new TestObject("ABC", "EFG", "H2J"));
-    putEntries(vm1, entries, 8);
+    putEntries(entries, 8);
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -444,10 +438,38 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void searchShouldReturnNoResults() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
+  public void searchShouldReturnResultsInCorrectOrderOfScore() throws Exception {
+    createIndex();
+    Map<String, TestObject> entries = new HashMap<>();
 
-    createIndex(vm1);
+    entries.put("A", new TestObject("jon ", "value2", "value3"));
+    entries.put("B", new TestObject("don", "EFG", "HIJ"));
+    entries.put("C", new TestObject("eon", "QWE", "RTY"));
+    entries.put("D", new TestObject("kion", "QWE", "RTY"));
+    entries.put("E", new TestObject("ryan", "QWE", "RTY"));
+    putEntries(entries, 5);
+
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "field1:jon~");
+    csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field1");
+    executeCommandAndLogResult(csb);
+
+    TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
+    assertEquals(4, data.retrieveAllValues("key").size());
+
+    // confirm the order
+    List<String> scoreRatings = data.retrieveAllValues("score");
+    boolean inOrder = IntStream.range(0, scoreRatings.size() - 1)
+        .allMatch(index -> scoreRatings.get(index).compareTo(scoreRatings.get(index + 1)) >= 0);
+    assertTrue("Lucene search result not in expected order", inOrder);
+
+  }
+
+  @Test
+  public void searchShouldReturnNoResults() throws Exception {
+    createIndex();
     Map<String, TestObject> entries = new HashMap<>();
     entries.put("A", new TestObject("value1 ", "value2", "value3"));
     entries.put("B", new TestObject("ABC", "EFG", "HIJ"));
@@ -457,7 +479,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     entries.put("F", new TestObject("ABC", "EFG", "HIJ"));
     entries.put("G", new TestObject(" value1", "JKR", "POW"));
     entries.put("H", new TestObject("ABC", "EFG", "H2J"));
-    putEntries(vm1, entries, 8);
+    putEntries(entries, 8);
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -472,9 +494,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void searchWithLimitShouldReturnCorrectResults() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
     Map<String, TestObject> entries = new HashMap<>();
     entries.put("A", new TestObject("value1 ", "value2", "value3"));
     entries.put("B", new TestObject("ABC", "EFG", "HIJ"));
@@ -484,7 +504,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     entries.put("F", new TestObject("ABC", "EFG", "HIJ"));
     entries.put("G", new TestObject(" value1", "JKR", "POW"));
     entries.put("H", new TestObject("ABC", "EFG", "H2J"));
-    putEntries(vm1, entries, 8);
+    putEntries(entries, 8);
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -499,9 +519,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void searchWithoutFieldNameShouldReturnCorrectResults() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
     Map<String, TestObject> entries = new HashMap<>();
     entries.put("A", new TestObject("value1 ", "value2", "value3"));
     entries.put("B", new TestObject("ABC", "EFG", "HIJ"));
@@ -511,7 +529,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     entries.put("F", new TestObject("ABC", "EFG", "HIJ"));
     entries.put("G", new TestObject("value1", "JKR", "POW"));
     entries.put("H", new TestObject("ABC", "EFG", "H2J"));
-    putEntries(vm1, entries, 8);
+    putEntries(entries, 8);
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -527,9 +545,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void searchOnIndexWithoutRegionShouldReturnError() throws Exception {
 
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndexWithoutRegion(vm1);
+    createIndexWithoutRegion();
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -543,9 +559,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void searchWithoutIndexShouldReturnError() throws Exception {
 
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    vm1.invoke(() -> createRegion());
+    serverVM.invoke(() -> createRegion());
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -555,8 +569,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
     String commandString = csb.toString();
     writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
+    CommandResult commandResult = gfsh.executeCommand(commandString);
+    String resultAsString = gfsh.getGfshOutput();
     writeToLog("Result String :\n ", resultAsString);
     assertEquals(Status.ERROR, commandResult.getStatus());
     assertEquals("Unexpected CommandResult string :" + resultAsString, true,
@@ -565,9 +579,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void searchIndexShouldReturnCorrectKeys() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-
-    createIndex(vm1);
+    createIndex();
     Map<String, TestObject> entries = new HashMap<>();
     entries.put("A", new TestObject("value1 ", "value2", "value3"));
     entries.put("B", new TestObject("ABC", "EFG", "HIJ"));
@@ -577,7 +589,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     entries.put("F", new TestObject("ABC", "EFG", "HIJ"));
     entries.put("G", new TestObject("value1", "JKR", "POW"));
     entries.put("H", new TestObject("ABC", "EFG", "H2J"));
-    putEntries(vm1, entries, 8);
+    putEntries(entries, 8);
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -594,14 +606,13 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   @Test
   @Parameters({"true", "false"})
   public void testDestroySingleIndex(boolean createRegion) throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
     if (createRegion) {
-      createIndex(vm1);
+      createIndex();
     } else {
-      createIndexWithoutRegion(vm1);
+      createIndexWithoutRegion();
     }
     CommandResult result = createAndExecuteDestroyIndexCommand(INDEX_NAME, REGION_NAME);
-    String resultAsString = commandResultToString(result);
+    String resultAsString = gfsh.getGfshOutput();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
         new Object[] {INDEX_NAME, REGION_NAME});
@@ -611,14 +622,13 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   @Test
   @Parameters({"true", "false"})
   public void testDestroyAllIndexes(boolean createRegion) throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
     if (createRegion) {
-      createIndex(vm1);
+      createIndex();
     } else {
-      createIndexWithoutRegion(vm1);
+      createIndexWithoutRegion();
     }
     CommandResult result = createAndExecuteDestroyIndexCommand(null, REGION_NAME);
-    String resultAsString = commandResultToString(result);
+    String resultAsString = gfsh.getGfshOutput();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
         new Object[] {REGION_NAME});
@@ -627,10 +637,9 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testDestroyNonExistentSingleIndex() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-    vm1.invoke(() -> createRegion());
+    serverVM.invoke(() -> createRegion());
     CommandResult result = createAndExecuteDestroyIndexCommand(INDEX_NAME, REGION_NAME);
-    String resultAsString = commandResultToString(result);
+    String resultAsString = gfsh.getGfshOutput();
     String expectedStatus = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
         .toLocalizedString(new Object[] {INDEX_NAME, '/' + REGION_NAME});
     assertTrue(resultAsString.contains(expectedStatus));
@@ -638,10 +647,9 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
 
   @Test
   public void testDestroyNonExistentIndexes() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-    vm1.invoke(() -> createRegion());
+    serverVM.invoke(() -> createRegion());
     CommandResult result = createAndExecuteDestroyIndexCommand(null, REGION_NAME);
-    String resultAsString = commandResultToString(result);
+    String resultAsString = gfsh.getGfshOutput();
     String expectedStatus = LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
         .toLocalizedString(new Object[] {'/' + REGION_NAME});
     assertTrue(resultAsString.contains(expectedStatus));
@@ -664,8 +672,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   private String executeCommandAndLogResult(final CommandStringBuilder csb) {
     String commandString = csb.toString();
     writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
+    CommandResult commandResult = gfsh.executeAndVerifyCommand(commandString);
+    String resultAsString = gfsh.getGfshOutput();
     writeToLog("Result String :\n ", resultAsString);
     assertEquals("Command failed\n" + resultAsString, Status.OK, commandResult.getStatus());
     return resultAsString;
@@ -674,16 +682,17 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   private CommandResult executeCommandAndGetResult(final CommandStringBuilder csb) {
     String commandString = csb.toString();
     writeToLog("Command String :\n ", commandString);
-    CommandResult commandResult = executeCommand(commandString);
-    String resultAsString = commandResultToString(commandResult);
+    CommandResult commandResult = gfsh.executeAndVerifyCommand(commandString);
+    String resultAsString = gfsh.getGfshOutput();
     writeToLog("Result String :\n ", resultAsString);
     assertEquals("Command failed\n" + resultAsString, Status.OK, commandResult.getStatus());
     return commandResult;
   }
 
-  private void createIndex(final VM vm1) {
-    vm1.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+  private void createIndex() {
+    serverVM.invoke(() -> {
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
       Map<String, Analyzer> fieldAnalyzers = new HashMap();
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
@@ -693,9 +702,10 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  private void createIndexWithoutRegion(final VM vm1) {
-    vm1.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+  private void createIndexWithoutRegion() {
+    serverVM.invoke(() -> {
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
       Map<String, Analyzer> fieldAnalyzers = new HashMap();
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
@@ -705,13 +715,12 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   private void writeToLog(String text, String resultAsString) {
-    System.out.println(text + ": " + getTestMethodName() + " : ");
+    System.out.println(text + ": " + testName.getMethodName() + " : ");
     System.out.println(text + ":" + resultAsString);
   }
 
-  private void putEntries(final VM vm1, Map<String, TestObject> entries, int countOfDocuments) {
-    Cache cache = getCache();
-    vm1.invoke(() -> {
+  private void putEntries(Map<String, TestObject> entries, int countOfDocuments) {
+    serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Region region = getCache().getRegion(REGION_NAME);
       region.putAll(entries);
@@ -723,9 +732,8 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     });
   }
 
-  private void queryAndVerify(VM vm1, String queryString, String defaultField,
-      List<String> expectedKeys) {
-    vm1.invoke(() -> {
+  private void queryAndVerify(String queryString, String defaultField, List<String> expectedKeys) {
+    serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       final LuceneQuery<String, TestObject> query = luceneService.createLuceneQueryFactory()
           .create(INDEX_NAME, REGION_NAME, queryString, defaultField);
@@ -737,6 +745,10 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     return CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0,
         new Object[] {regionPath});
+  }
+
+  private static Cache getCache() {
+    return LocatorServerStartupRule.serverStarter.getCache();
   }
 
   protected class TestObject implements Serializable {

@@ -24,15 +24,13 @@ import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
-import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public class LuceneXmlParser extends AbstractXmlParser {
 
   @Override
-  public String getNamspaceUri() {
+  public String getNamespaceUri() {
     return NAMESPACE;
   }
 

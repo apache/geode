@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -37,17 +36,13 @@ public class AlterRuntimeConfigFunction extends FunctionAdapter implements Inter
 
   private static Logger logger = LogService.getLogger();
 
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
   @Override
   public void execute(FunctionContext context) {
     String memberId = "";
 
     try {
       Object arg = context.getArguments();
-      InternalCache cache = getCache();
+      InternalCache cache = (InternalCache) context.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
 

@@ -228,6 +228,9 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
 
   private File[] findChildrenExcept(final File dir, final Pattern pattern, final File exception) {
     final String exceptionName = (exception == null) ? null : exception.getName();
+    if (dir == null) {
+      return new File[] {};
+    }
     return dir
         .listFiles((dir1, name) -> !name.equals(exceptionName) && pattern.matcher(name).matches());
   }

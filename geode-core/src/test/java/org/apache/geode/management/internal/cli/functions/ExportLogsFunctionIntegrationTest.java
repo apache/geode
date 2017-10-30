@@ -19,28 +19,29 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.logging.log4j.Level;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.io.IOException;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class ExportLogsFunctionIntegrationTest {
 
   @Rule
-  public ServerStarterRule serverStarterRule = new ServerStarterRule().withAutoStart();
+  public ServerStarterRule serverStarterRule =
+      new ServerStarterRule().withWorkingDir().withAutoStart();
   private File serverWorkingDir;
 
   @Before
@@ -58,18 +59,19 @@ public class ExportLogsFunctionIntegrationTest {
     File notALogFile = new File(serverWorkingDir, "foo.txt");
     FileUtils.writeStringToFile(notALogFile, "some text");
 
-    verifyExportLogsFunctionDoesNotBlowUp();
+    verifyExportLogsFunctionDoesNotBlowUp(serverStarterRule.getCache());
 
-    Cache cache = GemFireCacheImpl.getInstance();
+    Cache cache = serverStarterRule.getCache();
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isEmpty();
   }
 
-  public static void verifyExportLogsFunctionDoesNotBlowUp() throws Throwable {
+  public static void verifyExportLogsFunctionDoesNotBlowUp(Cache cache) throws Throwable {
     ExportLogsFunction.Args args =
         new ExportLogsFunction.Args(null, null, "info", false, false, false);
 
     CapturingResultSender resultSender = new CapturingResultSender();
-    FunctionContext context = new FunctionContextImpl("functionId", args, resultSender);
+
+    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
 
     new ExportLogsFunction().execute(context);
 
@@ -94,37 +96,6 @@ public class ExportLogsFunctionIntegrationTest {
 
     ExportLogsFunction.destroyExportLogsRegion(cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNull();
-  }
-
-
-  @Test
-  public void argsCorrectlyBuildALogLevelFilter() {
-    ExportLogsFunction.Args args =
-        new ExportLogsFunction.Args(null, null, "info", false, false, false);
-    assertThat(args.getLogLevel().toString()).isEqualTo("INFO");
-    assertThat(args.isThisLogLevelOnly()).isFalse();
-    assertThat(args.isIncludeLogs()).isTrue();
-    assertThat(args.isIncludeStats()).isTrue();
-  }
-
-  @Test
-  public void argsCorrectlyBuilt() {
-    ExportLogsFunction.Args args =
-        new ExportLogsFunction.Args(null, null, "error", true, true, false);
-    assertThat(args.getLogLevel()).isEqualTo(Level.ERROR);
-    assertThat(args.isThisLogLevelOnly()).isTrue();
-    assertThat(args.isIncludeLogs()).isTrue();
-    assertThat(args.isIncludeStats()).isFalse();
-  }
-
-  @Test
-  public void argsCorrectlyBuiltWithGeodeLevel() {
-    ExportLogsFunction.Args args =
-        new ExportLogsFunction.Args(null, null, "fine", true, true, false);
-    assertThat(args.getLogLevel()).isEqualTo(Level.DEBUG);
-    assertThat(args.isThisLogLevelOnly()).isTrue();
-    assertThat(args.isIncludeLogs()).isTrue();
-    assertThat(args.isIncludeStats()).isFalse();
   }
 
   private static class CapturingResultSender implements ResultSender {

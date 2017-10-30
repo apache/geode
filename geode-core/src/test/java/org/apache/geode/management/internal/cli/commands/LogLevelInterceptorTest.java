@@ -18,19 +18,20 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LogLevelInterceptorTest {
@@ -42,8 +43,8 @@ public class LogLevelInterceptorTest {
   @Before
   public void before() {
     interceptors.add(new ExportLogsInterceptor());
-    interceptors.add(new ConfigCommands.AlterRuntimeInterceptor());
-    interceptors.add(new MiscellaneousCommands.ChangeLogLevelInterceptor());
+    interceptors.add(new AlterRuntimeConfigCommand.AlterRuntimeInterceptor());
+    interceptors.add(new ChangeLogLevelCommand.ChangeLogLevelCommandInterceptor());
 
     parseResult = Mockito.mock(GfshParseResult.class);
     arguments = new HashMap<>();

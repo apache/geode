@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
@@ -52,7 +51,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
     Object argsObject = context.getArguments();
     boolean hideDefaults = ((Boolean) argsObject).booleanValue();
 
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
     DistributionConfig config = system.getConfig();
 

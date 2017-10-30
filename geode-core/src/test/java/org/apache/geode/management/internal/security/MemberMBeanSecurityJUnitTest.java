@@ -17,29 +17,32 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+
 @Category({IntegrationTest.class, SecurityTest.class})
 public class MemberMBeanSecurityJUnitTest {
+
   private MemberMXBean bean;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule // do not use a ClassRule since some test will do a shutdownMember
-  public ServerStarterRule server = ServerStarterRule.createWithoutTemporaryWorkingDir()
-      .withJMXManager().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server = new ServerStarterRule().withJMXManager()
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
       .withAutoStart();
@@ -66,7 +69,6 @@ public class MemberMBeanSecurityJUnitTest {
     bean.isCacheServer();
     bean.isServer();
     bean.listConnectedGatewayReceivers();
-    // bean.processCommand("create region --name=Region_A");
     bean.showJVMMetrics();
     bean.status();
   }
@@ -74,8 +76,7 @@ public class MemberMBeanSecurityJUnitTest {
   @Test
   @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testClusterAdmin() throws Exception {
-    assertThatThrownBy(() -> bean.compactAllDiskStores())
-        .hasMessageContaining(TestCommand.dataManage.toString());
+    bean.compactAllDiskStores();
     bean.shutDownMember();
     bean.createManager();
     bean.fetchJvmThreads();
@@ -92,11 +93,12 @@ public class MemberMBeanSecurityJUnitTest {
   @Test
   @ConnectionConfiguration(user = "data-admin", password = "1234567")
   public void testDataAdmin() throws Exception {
-    bean.compactAllDiskStores();
+    assertThatThrownBy(() -> bean.compactAllDiskStores())
+        .hasMessageContaining(TestCommand.clusterManageDisk.toString());
     assertThatThrownBy(() -> bean.shutDownMember())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     assertThatThrownBy(() -> bean.createManager())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
     bean.showJVMMetrics();
     bean.status();
   }
@@ -104,31 +106,35 @@ public class MemberMBeanSecurityJUnitTest {
   @Test
   @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testDataUser() throws Exception {
-    assertThatThrownBy(() -> bean.shutDownMember())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
-    assertThatThrownBy(() -> bean.createManager())
-        .hasMessageContaining(TestCommand.clusterManage.toString());
-    assertThatThrownBy(() -> bean.compactAllDiskStores())
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.fetchJvmThreads())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getName())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getDiskStores())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.hasGatewayReceiver())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.isCacheServer())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.isServer())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.listConnectedGatewayReceivers())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.showJVMMetrics())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.status())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> bean.shutDownMember())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
+    softly.assertThatThrownBy(() -> bean.createManager())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
+    softly.assertThatThrownBy(() -> bean.compactAllDiskStores())
+        .hasMessageContaining(TestCommand.clusterManageDisk.toString());
+    softly.assertThatThrownBy(() -> bean.fetchJvmThreads())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.getName())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.getDiskStores())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.hasGatewayReceiver())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.isCacheServer())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.isServer())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.listConnectedGatewayReceivers())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.processCommand("create region --name=Region_A"))
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
+    softly.assertThatThrownBy(() -> bean.showJVMMetrics())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.status())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+
+    softly.assertAll();
   }
 }

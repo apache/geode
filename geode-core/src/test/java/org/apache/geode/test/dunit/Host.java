@@ -17,25 +17,19 @@ package org.apache.geode.test.dunit;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
- * <P>
  * This class represents a host on which a remote method may be invoked. It provides access to the
  * VMs and GemFire systems that run on that host.
- * </P>
  *
- * <P>
+ * <p>
  * Additionally, it provides access to the Java RMI registry that runs on the host. By default, an
  * RMI registry is only started on the host on which Hydra's Master VM runs. RMI registries may be
  * started on other hosts via additional Hydra configuration.
- * </P>
- *
  */
 @SuppressWarnings("serial")
 public abstract class Host implements Serializable {
@@ -48,21 +42,17 @@ public abstract class Host implements Serializable {
   /** Indicates an unstarted RMI registry */
   protected static int NO_REGISTRY = -1;
 
-  //////////////////// Instance Fields ////////////////////
-
   /** The name of this host machine */
   private String hostName;
 
   /** The VMs that run on this host */
-  private List vms;
+  private List<VM> vms;
 
   /** The GemFire systems that are available on this host */
   private List systems;
 
   /** Key is system name, value is GemFireSystem instance */
   private HashMap systemNames;
-
-  //////////////////// Static Methods /////////////////////
 
   /**
    * Returns the number of known hosts
@@ -72,7 +62,7 @@ public abstract class Host implements Serializable {
   }
 
   /**
-   * Makes note of a new <code>Host</code>
+   * Makes note of a new {@code Host}
    */
   protected static void addHost(Host host) {
     hosts.add(host);
@@ -83,7 +73,7 @@ public abstract class Host implements Serializable {
    *
    * @param n A zero-based identifier of the host
    *
-   * @throws IllegalArgumentException <code>n</code> is more than the number of hosts
+   * @throws IllegalArgumentException {@code n} is more than the number of hosts
    */
   public static Host getHost(int n) {
     int size = hosts.size();
@@ -119,7 +109,7 @@ public abstract class Host implements Serializable {
   ///////////////////// Constructors //////////////////////
 
   /**
-   * Creates a new <code>Host</code> with the given name
+   * Creates a new {@code Host} with the given name
    */
   protected Host(String hostName) {
     if (hostName == null) {
@@ -154,7 +144,7 @@ public abstract class Host implements Serializable {
    *
    * @param n A zero-based identifier of the VM
    *
-   * @throws IllegalArgumentException <code>n</code> is more than the number of VMs
+   * @throws IllegalArgumentException {@code n} is more than the number of VMs
    */
   public VM getVM(int n) {
     int size = vms.size();
@@ -163,34 +153,32 @@ public abstract class Host implements Serializable {
       throw new IllegalArgumentException(s);
 
     } else {
-      return (VM) vms.get(n);
+      VM vm = (VM) vms.get(n);
+      vm.makeAvailable();
+      return vm;
     }
   }
 
   /**
    * return a collection of all VMs
    */
-  public Set<VM> getAllVMs() {
-    return new HashSet<>(vms);
+  public List<VM> getAllVMs() {
+    return new ArrayList<>(vms);
   }
 
   /**
    * Returns the nth VM of the given version. Optional operation currently supported only in
    * distributedTests.
-   * 
-   * @param version
-   * @param n
-   * @return the requested VM
    */
   public VM getVM(String version, int n) {
     throw new UnsupportedOperationException("Not supported in this implementation of Host");
   }
 
   /**
-   * Adds a VM to this <code>Host</code> with the given process id and client record.
+   * Adds a VM to this {@code Host} with the given process id and client record.
    */
-  protected void addVM(int pid, RemoteDUnitVMIF client) {
-    VM vm = new VM(this, pid, client);
+  protected void addVM(int vmid, RemoteDUnitVMIF client) {
+    VM vm = new VM(this, vmid, client);
     this.vms.add(vm);
   }
 
@@ -202,8 +190,8 @@ public abstract class Host implements Serializable {
     locator = l;
   }
 
-  protected void addLocator(int pid, RemoteDUnitVMIF client) {
-    setLocator(new VM(this, pid, client));
+  protected void addLocator(int vmid, RemoteDUnitVMIF client) {
+    setLocator(new VM(this, vmid, client));
   }
 
   /**
@@ -213,10 +201,8 @@ public abstract class Host implements Serializable {
     return this.systems.size();
   }
 
-  //////////////////// Utility Methods ////////////////////
-
   public String toString() {
-    StringBuffer sb = new StringBuffer("Host ");
+    StringBuilder sb = new StringBuilder("Host ");
     sb.append(this.getHostName());
     sb.append(" with ");
     sb.append(getVMCount());
@@ -225,7 +211,7 @@ public abstract class Host implements Serializable {
   }
 
   /**
-   * Two <code>Host</code>s are considered equal if they have the same name.
+   * Two {@code Host}s are considered equal if they have the same name.
    */
   public boolean equals(Object o) {
     if (o instanceof Host) {
@@ -237,10 +223,9 @@ public abstract class Host implements Serializable {
   }
 
   /**
-   * A <code>Host</code>'s hash code is based on the hash code of its name.
+   * A {@code Host}'s hash code is based on the hash code of its name.
    */
   public int hashCode() {
     return this.getHostName().hashCode();
   }
-
 }

@@ -23,8 +23,8 @@ We assume that the reader is familiar with Apache Lucene's indexing and search f
 
 The Apache Lucene integration:
 
-- enables users to create Lucene indexes on data stored in Geode
-- provides high availability of indexes using Geode's HA capabilities to store the indexes in memory
+- enables users to create Lucene indexes on data stored in <%=vars.product_name%>
+- provides high availability of indexes using <%=vars.product_name%>'s HA capabilities to store the indexes in memory
 - optionally stores indexes on disk
 - updates the indexes asynchronously to minimize impacting write latency
 - provides scalability by partitioning index data
@@ -134,7 +134,7 @@ as there will be no field name to use in the case of a primitive type.
 For details, see the [gfsh search lucene](gfsh/command-pages/search.html#search_lucene") command reference page.
 
 ``` pre
-gfsh>search lucene --name=indexName --region=/orders --queryStrings="John*"
+gfsh>search lucene --name=indexName --region=/orders --queryString="John*"
    --defaultField=customer --limit=100
 ```
 
@@ -201,7 +201,22 @@ Implement these steps to change an index:
 5. Create a new region without the user-defined business logic callbacks
 6. Import the region data with the option to turn on callbacks. 
 The callbacks will be to invoke a Lucene async event listener to index
-the data.
+the data. The `gfsh import data` command will be of the form:
+
+    ``` pre
+    gfsh>import data --region=myReg --member=M3 --file=myReg.gfd --invoke-callbacks=true
+    ```
+If the API is used to import data, the code to set the option to
+invoke callbacks will be similar to this code fragment:
+
+    ``` pre
+    Region region = ...;
+    File snapshotFile = ...;
+    RegionSnapshotService service = region.getSnapshotService();
+    SnapshotOptions options = service.createOptions();
+    options.invokeCallbacks(true);
+    service.load(snapshotFile, SnapshotFormat.GEMFIRE, options);
+    ```
 7. Alter the region to add the user-defined business logic callbacks
 
 ## <a id="addl-gfsh-api" class="no-quick-link"></a>Additional Gfsh Commands

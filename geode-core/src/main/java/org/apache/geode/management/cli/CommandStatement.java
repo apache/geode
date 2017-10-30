@@ -22,6 +22,8 @@ import java.util.Map;
  * 
  * 
  * @since GemFire 7.0
+ *
+ * @deprecated since Geode 1.3. simply use commandProcessor to process the command
  */
 public interface CommandStatement {
 
@@ -45,7 +47,7 @@ public interface CommandStatement {
 
   /**
    * Returns whether the command statement is well formed.
-   * 
+   *
    * @return True if the command statement is well formed, false otherwise.
    */
   public boolean validate();

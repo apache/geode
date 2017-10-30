@@ -735,7 +735,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       assertEquals(0, queryExecution.getResult());
     } catch (Throwable e) {
       e.printStackTrace();
-      fail();
+      fail("queryExecution.getResult() threw Exception " + e.toString());
     }
   }
 

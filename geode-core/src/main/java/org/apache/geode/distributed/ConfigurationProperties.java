@@ -686,6 +686,11 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_WEB_ALIAS = "ssl-web-alias";
+
+
+  @Deprecated
+  String HTTP_SERVICE_SSL_PREFIX = "http-service-ssl-";
+
   /**
    * The static String definition of the <i>"http-service-ssl-ciphers"</i> property <a
    * name="http-service-ssl-ciphers"/a>
@@ -1980,6 +1985,18 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_KEYSTORE_TYPE = "ssl-keystore-type";
+
+  /**
+   * The static String definition of the <i>"ssl-truststore-type"</i> property <a
+   * name="ssl-truststore-type"/a>
+   * </p>
+   * <U>Description</U>For Java truststore file format, this property has the value jks (or JKS).
+   * </p>
+   * <U>Default</U>: ""
+   * </p>
+   * <U>Since</U>: Geode 1.3
+   */
+  String SSL_TRUSTSTORE_TYPE = "ssl-truststore-type";
   /**
    * The static String definition of the <i>"cluster-ssl-protocols"</i> property <a
    * name="ssl-protocols"/a>

@@ -1052,7 +1052,8 @@ public class IndexManager {
             }
             IndexProtocol index = (IndexProtocol) ind;
 
-            if (((AbstractIndex) index).isPopulated() && index.getType() != IndexType.PRIMARY_KEY) {
+            if (index.isValid() && ((AbstractIndex) index).isPopulated()
+                && index.getType() != IndexType.PRIMARY_KEY) {
               // Asif : If the current Index contains an entry inspite
               // of add operation , this can only mean that Index
               // has already acted on it during creation, so do not
@@ -1063,9 +1064,7 @@ public class IndexManager {
                       this.region.getFullPath(), entry.getKey());
                 }
                 start = ((AbstractIndex) index).updateIndexUpdateStats();
-
-                index.addIndexMapping(entry);
-
+                addIndexMapping(entry, index);
                 ((AbstractIndex) index).updateIndexUpdateStats(start);
               }
             }
@@ -1101,7 +1100,7 @@ public class IndexManager {
               }
               start = ((AbstractIndex) index).updateIndexUpdateStats();
 
-              index.addIndexMapping(entry);
+              addIndexMapping(entry, index);
 
               ((AbstractIndex) index).updateIndexUpdateStats(start);
             }
@@ -1153,6 +1152,24 @@ public class IndexManager {
         ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).internalResume(tx);
       }
       getCachePerfStats().endIndexUpdate(startPA);
+    }
+  }
+
+  private void addIndexMapping(RegionEntry entry, IndexProtocol index) throws IMQException {
+    try {
+      index.addIndexMapping(entry);
+    } catch (Exception exception) {
+      index.markValid(false);
+      setPRIndexAsInvalid((AbstractIndex) index);
+      logger.warn("Put operation for the entry corrupted the index : "
+          + ((AbstractIndex) index).indexName + " with the exception : \n " + exception);
+    }
+  }
+
+  private void setPRIndexAsInvalid(AbstractIndex index) {
+    if (index.prIndex != null) {
+      AbstractIndex prIndex = (AbstractIndex) index.prIndex;
+      prIndex.markValid(false);
     }
   }
 

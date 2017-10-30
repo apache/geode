@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CountingDataInputStream;
@@ -583,7 +584,7 @@ public class DiskInitFileParser {
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     if (args.length != 1) {
       System.err.println("Usage: parse filename");
-      System.exit(1);
+      ExitCode.FATAL.doSystemExit();
     }
     dump(new File(args[0]));
   }

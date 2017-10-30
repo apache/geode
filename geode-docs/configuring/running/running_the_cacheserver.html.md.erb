@@ -1,6 +1,4 @@
----
-title:  Running Geode Server Processes
----
+<% set_title("Running", product_name, "Server Processes") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,29 +17,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-A Geode server is a process that runs as a long-lived, configurable member of a client/server system.
+A <%=vars.product_name%> server is a process that runs as a long-lived, configurable member of a client/server system.
 
 <a id="running_the_cacheserver__section_6C2B495518C04064A181E7917CA81FC1"></a>
-The Geode server is used primarily for hosting long-lived data regions and for running standard Geode processes such as the server in a client/server configuration. You can start and stop servers using the following methods:
+The <%=vars.product_name%> server is used primarily for hosting long-lived data regions and for running standard <%=vars.product_name%> processes such as the server in a client/server configuration. You can start and stop servers using the following methods:
 
--   The `gfsh` tool allows you to manage Geode server processes from the command line.
--   You can also start, stop and manage the Geode servers through the `org.apache.geode.distributed.ServerLauncher` API. The `ServerLauncher` API can only be used for Geode Servers that were started with `gfsh` or with the `ServerLauncher` class itself. See the JavaDocs for additional specifics on using the `ServerLauncher` API.
+-   The `gfsh` tool allows you to manage <%=vars.product_name%> server processes from the command line.
+-   You can also start, stop and manage the <%=vars.product_name%> servers through the `org.apache.geode.distributed.ServerLauncher` API. The `ServerLauncher` API can only be used for <%=vars.product_name%> Servers that were started with `gfsh` or with the `ServerLauncher` class itself. See the JavaDocs for additional specifics on using the `ServerLauncher` API.
 
 ## <a id="running_the_cacheserver__section_E15FB1B039CE4F6CB2E4B5618D7ECAA1" class="no-quick-link"></a>Default Server Configuration and Log Files
 
 The `gfsh` utility uses a working directory for its configuration files and log files. These are the defaults and configuration options:
 
--   When you start a standalone server using `gfsh`, `gfsh` will automatically load the required JAR files `$GEMFIRE/lib/server-dependencies.jar` and `$JAVA_HOME/lib/tools.jar` into the CLASSPATH of the JVM process. If you start a standalone server using the ServerLauncher API, you must specify `$GEMFIRE/lib/server-dependencies.jar` inside your command to launch the process. For more information on CLASSPATH settings in Geode, see [Setting Up the CLASSPATH](../../getting_started/setup_classpath.html).
--   Servers are configured like any other Geode process, with `gemfire.properties` and shared cluster configuration files. It is not programmable except through application plug-ins. Typically, you provide the `gemfire.properties` file and the `gfsecurity.properties` file (if you are using a separate, restricted access security settings file). You can also specify a `cache.xml` file in the cache server’s working directory.
+-   When you start a standalone server using `gfsh`, `gfsh` will automatically load the required JAR file `lib/geode-dependencies.jar` into the CLASSPATH of the JVM process. If you start a standalone server using the ServerLauncher API, you must specify this JAR file inside your command to launch the process. For more information on CLASSPATH settings in <%=vars.product_name%>, see [Setting Up the CLASSPATH](../../getting_started/setup_classpath.html).
+-   Servers are configured like any other <%=vars.product_name%> process, with `gemfire.properties` and shared cluster configuration files. It is not programmable except through application plug-ins. Typically, you provide the `gemfire.properties` file and the `gfsecurity.properties` file (if you are using a separate, restricted access security settings file). You can also specify a `cache.xml` file in the cache server’s working directory.
 -   By default, a new server started with `gfsh` receives its initial cache configuration from the cluster configuration service, assuming the locator is running the cluster configuration service. If you specify a group when starting the server, the server also receives configurations that apply to a group. The shared configuration consists of `cache.xml` files, `gemfire.properties` files, and deployed jar files. You can disable use of the cluster configuration service by specifying `--use-cluster-configuration=false` when starting the server using `gfsh`.
 
     See [Overview of the Cluster Configuration Service](../cluster_config/gfsh_persist.html#concept_r22_hyw_bl).
 
--   If you are using the Spring Framework, you can specify a Spring ApplicationContext XML file when starting up your server in `gfsh` by using the `--spring-xml-location` command-line option. This option allows you to bootstrap your Geode server process with your Spring application's configuration. See [Spring documentation](http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/resources.html#resources-app-ctx) for more information on this file.
+-   If you are using the Spring Framework, you can specify a Spring ApplicationContext XML file when starting up your server in `gfsh` by using the `--spring-xml-location` command-line option. This option allows you to bootstrap your <%=vars.product_name%> server process with your Spring application's configuration. See [Spring documentation](http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/resources.html#resources-app-ctx) for more information on this file.
 -   For logging output, log file output defaults to `server_name.log` in the cache server's working directory. If you restart a server with the same server name, the existing *server\_name*.log file is automatically renamed for you (for example, `server1-01-01.log` or `server1-02-01.log`). You can modify the level of logging details in this file by specifying a level in the `--log-level` argument when starting up the server.
 -   By default, the server will start in a subdirectory (named after the server's specified `--name`) under the directory where `gfsh` is executed. This subdirectory is considered the current working directory. You can also specify a different working directory when starting the cache server in `gfsh`.
--   By default, a server process that has been shutdown and disconnected due to a network partition event or member unresponsiveness will restart itself and automatically try to reconnect to the existing distributed system. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/autoreconnect/member-reconnect.html#concept_22EE6DDE677F4E8CAF5786E17B4183A9) for more details.
--   You can pass JVM parameters to the server's JVM by using the `--J=-Dproperty.name=value` upon server startup. These parameters can be Java properties or Geode configuration properties such as `gemfire.jmx-manager`. For example:
+-   By default, a server process that has been shutdown and disconnected due to a network partition event or member unresponsiveness will restart itself and automatically try to reconnect to the existing distributed system. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/member-reconnect.html#concept_22EE6DDE677F4E8CAF5786E17B4183A9) for more details.
+-   You can pass JVM parameters to the server's JVM by using the `--J=-Dproperty.name=value` upon server startup. These parameters can be Java properties or <%=vars.product_name%> configuration properties such as `gemfire.jmx-manager`. For example:
 
     ``` pre
     gfsh>start server --name=server1 --J=-Dgemfire.jmx-manager=true \
@@ -52,7 +50,7 @@ The `gfsh` utility uses a working directory for its configuration files and log 
 
 ## <a id="running_the_cacheserver__section_07001480D33745139C3707EDF8166D86" class="no-quick-link"></a>Start the Server
 
-The startup syntax for Geode servers in `gfsh` is:
+The startup syntax for <%=vars.product_name%> servers in `gfsh` is:
 
 ``` pre
 start server --name=value [--assign-buckets(=value)] [--bind-address=value]
@@ -74,7 +72,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 ```
 
 **Note:**
-When both `--max-heap` and `--initial-heap` are specified during server startup, additional GC parameters are specified internally by Geode's Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` & `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+When both `--max-heap` and `--initial-heap` are specified during server startup, additional GC parameters are specified internally by <%=vars.product_name%>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` & `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
 The following `gfsh start server` start sequences specify a `cache.xml` file for cache configuration, and use different incoming client connection ports:
 

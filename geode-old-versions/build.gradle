@@ -18,8 +18,9 @@
 
 disableMavenPublishing()
 
-def addTestSource(def source, def geodeVersion) {
-//  def sourceSet =
+project.ext.installs = new Properties();
+
+def addOldVersion(def source, def geodeVersion, def downloadInstall) {
   sourceSets.create(source, {
     compileClasspath += configurations.provided
     runtimeClasspath += configurations.provided
@@ -33,13 +34,21 @@ def addTestSource(def source, def geodeVersion) {
   dependencies.add "${source}Compile", "org.apache.geode:geode-cq:$geodeVersion"
   dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:$geodeVersion"
 
+  if (downloadInstall) {
+    configurations.create("${source}OldInstall")
+
+    dependencies.add "${source}OldInstall", "org.apache.geode:apache-geode:$geodeVersion"
+
+    project.ext.installs.setProperty(source, "$buildDir/apache-geode-${geodeVersion}")
+    task "downloadAndUnzipFile${geodeVersion}"(type: Copy) {
+      from zipTree(configurations["${source}OldInstall"].singleFile)
+      into buildDir
+    }
+
+    createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${geodeVersion}"]
+  }
 }
 
-// Add sourceSets for backwards compatibility, rolling upgrade, and
-// pdx testing.
-addTestSource('test100', '1.0.0-incubating')
-addTestSource('test110', '1.1.0')
-addTestSource('test111', '1.1.1')
 
 def generatedResources = "$buildDir/generated-resources/main"
 
@@ -51,12 +60,14 @@ sourceSets {
 
 task createGeodeClasspathsFile  {
   File classpathsFile = file("$generatedResources/geodeOldVersionClasspaths.txt")
-  outputs.file(classpathsFile);
+  File installsFile = file("$generatedResources/geodeOldVersionInstalls.txt")
+  outputs.file(classpathsFile)
+  outputs.file(installsFile)
 
   doLast {
     Properties versions = new Properties();
     project(':geode-old-versions').sourceSets.each {
-      versions.setProperty(it.name,it.runtimeClasspath.getAsPath()) 
+      versions.setProperty(it.name,it.runtimeClasspath.getAsPath())
     }
 
     classpathsFile.getParentFile().mkdirs();
@@ -64,6 +75,21 @@ task createGeodeClasspathsFile  {
     new FileOutputStream(classpathsFile).withStream { fos ->
       versions.store(fos, '')
     }
+
+    installsFile.getParentFile().mkdirs();
+
+    new FileOutputStream(installsFile).withStream { fos ->
+      project.ext.installs.store(fos, '')
+    }
   }
+
+  // Add sourceSets for backwards compatibility, rolling upgrade, and
+  // pdx testing.
+  addOldVersion('test100', '1.0.0-incubating', false)
+  addOldVersion('test110', '1.1.0', false)
+  addOldVersion('test111', '1.1.1', false)
+  addOldVersion('test120', '1.2.0', true)
 }
+
+
 

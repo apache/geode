@@ -14,13 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-
 /**
- * The abstract superclass of tests that require the creation of a {@link Cache}.
- *
- * @since GemFire 3.0
+ * @deprecated Please use {@link org.apache.geode.test.dunit.cache.CacheTestCase} instead.
  */
-public abstract class CacheTestCase extends JUnit4CacheTestCase {
+@Deprecated
+public abstract class CacheTestCase extends org.apache.geode.test.dunit.cache.CacheTestCase {
 }

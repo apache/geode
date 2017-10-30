@@ -104,25 +104,25 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
           }
           for (DistributionLocatorId value : entry.getValue()) {
             try {
-              tcpClient.requestToServer(value.getHost(), value.getPort(),
+              tcpClient.requestToServer(value.getHost(),
                   new LocatorJoinMessage(distributedSystemId, locator, localLocatorId, ""), 1000,
                   false);
             } catch (Exception e) {
               if (logger.isDebugEnabled()) {
                 logger.debug(LocalizedMessage.create(
                     LocalizedStrings.LOCATOR_MEMBERSHIP_LISTENER_COULD_NOT_EXCHANGE_LOCATOR_INFORMATION_0_1_WIHT_2_3,
-                    new Object[] {locator.getHost(), locator.getPort(), value.getHost(),
+                    new Object[] {locator.getHostName(), locator.getPort(), value.getHostName(),
                         value.getPort()}));
               }
             }
             try {
-              tcpClient.requestToServer(locator.getHost(), locator.getPort(),
+              tcpClient.requestToServer(locator.getHost(),
                   new LocatorJoinMessage(entry.getKey(), value, localLocatorId, ""), 1000, false);
             } catch (Exception e) {
               if (logger.isDebugEnabled()) {
                 logger.debug(LocalizedMessage.create(
                     LocalizedStrings.LOCATOR_MEMBERSHIP_LISTENER_COULD_NOT_EXCHANGE_LOCATOR_INFORMATION_0_1_WIHT_2_3,
-                    new Object[] {value.getHost(), value.getPort(), locator.getHost(),
+                    new Object[] {value.getHostName(), value.getPort(), locator.getHostName(),
                         locator.getPort()}));
               }
             }

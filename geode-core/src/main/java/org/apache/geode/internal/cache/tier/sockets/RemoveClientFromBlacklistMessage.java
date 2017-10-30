@@ -46,22 +46,7 @@ public class RemoveClientFromBlacklistMessage extends PooledDistributionMessage 
 
   @Override
   protected void process(DistributionManager dm) {
-    final Cache cache;
-    try {
-      // use GemFireCache.getInstance to avoid blocking during cache.xml
-      // processing.
-      cache = GemFireCacheImpl.getInstance();
-    } catch (Exception ignore) {
-      DistributedSystem ds = dm.getSystem();
-      if (ds != null) {
-        if (logger.isTraceEnabled()) {
-          logger.trace("The node does not contain cache & so QDM Message will return.", ignore);
-        }
-      }
-      return;
-    }
-
-    Cache c = GemFireCacheImpl.getInstance();
+    Cache c = dm.getCache();
     if (c != null) {
       List l = c.getCacheServers();
       if (l != null) {

@@ -21,7 +21,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.DiskStoreAttributesCreation;
@@ -119,7 +118,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
       DiskStoreImpl ds =
           new DiskStoreImpl(this.cache, this.attrs, true/* ownedByRegion */, internalRegionArgs);
       if (isOwnedByPR) {
-        ds.doInitialRecovery();
+        initializeDiskStore(ds);
       }
       this.cache.addRegionOwnedDiskStore(ds);
       return ds;
@@ -141,7 +140,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
           // Added for M&M
           this.cache.getInternalDistributedSystem()
               .handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, dsi);
-          dsi.doInitialRecovery();
+          initializeDiskStore(dsi);
           this.cache.addDiskStore(dsi);
           if (registry != null) {
             registry.creatingDiskStore(dsi);
@@ -166,6 +165,20 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
       }
     }
     return result;
+  }
+
+  /**
+   * Protected for testing purposes. If during the initial recovery for the disk store, an uncaught
+   * exception is thrown, the disk store will not be in a valid state. In this case, we want to
+   * ensure the resources of the disk store are cleaned up.
+   */
+  protected void initializeDiskStore(DiskStoreImpl diskStore) {
+    try {
+      diskStore.doInitialRecovery();
+    } catch (RuntimeException e) {
+      diskStore.close();
+      throw e;
+    }
   }
 
   private DiskStore findExisting(String name) {

@@ -44,12 +44,15 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ClientHandShake;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.CallbackInstantiator;
+import org.apache.geode.internal.security.Credentials;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -120,7 +123,7 @@ public class HandShake implements ClientHandShake {
 
   public static final byte REPLY_SERVER_IS_LOCATOR = (byte) 67;
 
-  private static SecurityService securityService = IntegratedSecurityService.getSecurityService();
+  private final SecurityService securityService;
 
   private byte code;
   private int clientReadTimeout = PoolFactory.DEFAULT_READ_TIMEOUT;
@@ -248,19 +251,21 @@ public class HandShake implements ClientHandShake {
   protected HandShake() {
     system = null;
     id = null;
+    this.securityService = SecurityServiceFactory.create();
   }
 
   /**
    * HandShake Constructor used by server side connection
    */
   public HandShake(Socket sock, int timeout, DistributedSystem sys, Version clientVersion,
-      byte communicationMode) throws IOException, AuthenticationRequiredException {
+      CommunicationMode communicationMode, SecurityService securityService)
+      throws IOException, AuthenticationRequiredException {
+
     this.clientVersion = clientVersion;
     this.system = sys;
-    // SocketChannel sc = sock.getChannel();
-    /*
-     * if (sc != null) { } else
-     */ {
+    this.securityService = securityService;
+
+    {
       int soTimeout = -1;
       try {
         soTimeout = sock.getSoTimeout();
@@ -296,9 +301,8 @@ public class HandShake implements ClientHandShake {
             setClientConflation(dis.readByte());
           }
           // Hitesh
-          if (this.clientVersion.compareTo(Version.GFE_65) < 0
-              || communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-            this.credentials = readCredentials(dis, dos, sys);
+          if (this.clientVersion.compareTo(Version.GFE_65) < 0 || communicationMode.isWAN()) {
+            this.credentials = readCredentials(dis, dos, sys, this.securityService);
           } else {
             this.credentials = this.readCredential(dis, dos, sys);
           }
@@ -329,12 +333,14 @@ public class HandShake implements ClientHandShake {
   /**
    * Client-side handshake. This form of HandShake can communicate with a server
    */
-  public HandShake(ClientProxyMembershipID id, DistributedSystem sys) {
+  public HandShake(ClientProxyMembershipID id, DistributedSystem sys,
+      SecurityService securityService) {
     this.id = id;
     this.code = REPLY_OK;
     this.system = sys;
     setOverrides();
     this.credentials = null;
+    this.securityService = securityService;
   }
 
   public void updateProxyID(InternalDistributedMember idm) {
@@ -358,6 +364,7 @@ public class HandShake implements ClientHandShake {
     this.overrides = handShake.overrides;
     this.system = handShake.system;
     this.id = handShake.id;
+    this.securityService = handShake.securityService;
     // create new one
     this._decrypt = null;
     this._encrypt = null;
@@ -446,13 +453,13 @@ public class HandShake implements ClientHandShake {
   /**
    * client-to-server handshake. Nothing is sent to the server prior to invoking this method.
    */
-  private byte write(DataOutputStream dos, DataInputStream dis, byte communicationMode,
+  private byte write(DataOutputStream dos, DataInputStream dis, CommunicationMode communicationMode,
       int replyCode, int readTimeout, List ports, Properties p_credentials,
       DistributedMember member, boolean isCallbackConnection) throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(32, Version.CURRENT);
     byte acceptanceCode = -1;
     try {
-      hdos.writeByte(communicationMode);
+      hdos.writeByte(communicationMode.getModeNumber());
       if (overrideClientVersion > 0) {
         // for testing
         Version.writeOrdinal(hdos, overrideClientVersion, true);
@@ -488,9 +495,8 @@ public class HandShake implements ClientHandShake {
         }
       }
 
-      if (isCallbackConnection || communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
-        if (isCallbackConnection && this.multiuserSecureMode
-            && communicationMode != Acceptor.GATEWAY_TO_GATEWAY) {
+      if (isCallbackConnection || communicationMode.isWAN()) {
+        if (isCallbackConnection && this.multiuserSecureMode && !communicationMode.isWAN()) {
           hdos.writeByte(SECURITY_MULTIUSER_NOTIFICATIONCHANNEL);
           hdos.flush();
           dos.write(hdos.toByteArray());
@@ -1085,7 +1091,8 @@ public class HandShake implements ClientHandShake {
     // Initialize the keys when either the host is a client that has
     // non-blank setting for DH symmetric algo, or this is a server
     // that has authenticator defined.
-    if ((dhSKAlgo != null && dhSKAlgo.length() > 0) || securityService.isClientSecurityRequired()) {
+    if ((dhSKAlgo != null
+        && dhSKAlgo.length() > 0) /* || securityService.isClientSecurityRequired() */) {
       KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
       DHParameterSpec dhSpec = new DHParameterSpec(dhP, dhG, dhL);
       keyGen.initialize(dhSpec);
@@ -1103,7 +1110,7 @@ public class HandShake implements ClientHandShake {
   }
 
   public void accept(OutputStream out, InputStream in, byte epType, int qSize,
-      byte communicationMode, Principal principal) throws IOException {
+      CommunicationMode communicationMode, Principal principal) throws IOException {
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
     if (clientVersion.compareTo(Version.CURRENT) < 0) {
@@ -1113,7 +1120,7 @@ public class HandShake implements ClientHandShake {
       dis = new DataInputStream(in);
     }
     // Write ok reply
-    if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY && principal != null) {
+    if (communicationMode.isWAN() && principal != null) {
       dos.writeByte(REPLY_WAN_CREDENTIALS);
     } else {
       dos.writeByte(REPLY_OK);// byte 59
@@ -1121,7 +1128,7 @@ public class HandShake implements ClientHandShake {
 
 
     // additional byte of wan site needs to send for Gateway BC
-    if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
+    if (communicationMode.isWAN()) {
       Version.writeOrdinal(dos, ServerHandShakeProcessor.currentServerVersion.ordinal(), true);
     }
 
@@ -1136,28 +1143,25 @@ public class HandShake implements ClientHandShake {
     dos.writeUTF("");
 
     // Write delta-propagation property value if this is not WAN.
-    if (communicationMode != Acceptor.GATEWAY_TO_GATEWAY
-        && this.clientVersion.compareTo(Version.GFE_61) >= 0) {
+    if (!communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_61) >= 0) {
       dos.writeBoolean(((InternalDistributedSystem) this.system).getConfig().getDeltaPropagation());
     }
 
     // Neeraj: Now if the communication mode is GATEWAY_TO_GATEWAY
     // and principal not equal to null then send the credentials also
-    if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY && principal != null) {
+    if (communicationMode.isWAN() && principal != null) {
       sendCredentialsForWan(dos, dis);
     }
 
     // Write the distributed system id if this is a 6.6 or greater client
     // on the remote side of the gateway
-    if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY
-        && this.clientVersion.compareTo(Version.GFE_66) >= 0
+    if (communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_66) >= 0
         && ServerHandShakeProcessor.currentServerVersion.compareTo(Version.GFE_66) >= 0) {
       dos.writeByte(((InternalDistributedSystem) this.system).getDistributionManager()
           .getDistributedSystemId());
     }
 
-    if ((communicationMode == Acceptor.GATEWAY_TO_GATEWAY)
-        && this.clientVersion.compareTo(Version.GFE_80) >= 0
+    if ((communicationMode.isWAN()) && this.clientVersion.compareTo(Version.GFE_80) >= 0
         && ServerHandShakeProcessor.currentServerVersion.compareTo(Version.GFE_80) >= 0) {
       int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
       dos.writeInt(pdxSize);
@@ -1181,7 +1185,7 @@ public class HandShake implements ClientHandShake {
    * Client-side handshake with a Server
    */
   public ServerQueueStatus handshakeWithServer(Connection conn, ServerLocation location,
-      byte communicationMode) throws IOException, AuthenticationRequiredException,
+      CommunicationMode communicationMode) throws IOException, AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     try {
       ServerQueueStatus serverQStatus = null;
@@ -1201,15 +1205,14 @@ public class HandShake implements ClientHandShake {
           updateProxyID(dm.getDistributionManagerId());
         }
       }
-      if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY) {
+      if (communicationMode.isWAN()) {
         this.credentials = getCredentials(member);
       }
       byte intermediateAcceptanceCode = write(dos, dis, communicationMode, REPLY_OK,
           this.clientReadTimeout, null, this.credentials, member, false);
 
       String authInit = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
-      if (communicationMode != Acceptor.GATEWAY_TO_GATEWAY
-          && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
+      if (!communicationMode.isWAN() && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
           && (authInit != null && authInit.length() != 0)) {
         location.compareAndSetRequiresCredentials(true);
       }
@@ -1227,9 +1230,8 @@ public class HandShake implements ClientHandShake {
       }
 
       // Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
-      if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY
-          && !(acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED
-              || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
+      if (communicationMode.isWAN() && !(acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED
+          || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
         short wanSiteVersion = Version.readOrdinal(dis);
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
@@ -1253,14 +1255,12 @@ public class HandShake implements ClientHandShake {
       // Read delta-propagation property value from server.
       // [sumedh] Static variable below? Client can connect to different
       // DSes with different values of this. It shoule be a member variable.
-      if (communicationMode != Acceptor.GATEWAY_TO_GATEWAY
-          && currentClientVersion.compareTo(Version.GFE_61) >= 0) {
+      if (!communicationMode.isWAN() && currentClientVersion.compareTo(Version.GFE_61) >= 0) {
         deltaEnabledOnServer = dis.readBoolean();
       }
 
       // validate that the remote side has a different distributed system id.
-      if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY
-          && Version.GFE_66.compareTo(conn.getWanSiteVersion()) <= 0
+      if (communicationMode.isWAN() && Version.GFE_66.compareTo(conn.getWanSiteVersion()) <= 0
           && currentClientVersion.compareTo(Version.GFE_66) >= 0) {
         int remoteDistributedSystemId = in.read();
         int localDistributedSystemId =
@@ -1273,8 +1273,7 @@ public class HandShake implements ClientHandShake {
         }
       }
       // Read the PDX registry size from the remote size
-      if (communicationMode == Acceptor.GATEWAY_TO_GATEWAY
-          && Version.GFE_80.compareTo(conn.getWanSiteVersion()) <= 0
+      if (communicationMode.isWAN() && Version.GFE_80.compareTo(conn.getWanSiteVersion()) <= 0
           && currentClientVersion.compareTo(Version.GFE_80) >= 0) {
         int remotePdxSize = dis.readInt();
         serverQStatus.setPdxSize(remotePdxSize);
@@ -1304,8 +1303,8 @@ public class HandShake implements ClientHandShake {
       if (!this.multiuserSecureMode) {
         this.credentials = getCredentials(member);
       }
-      byte mode =
-          isPrimary ? Acceptor.PRIMARY_SERVER_TO_CLIENT : Acceptor.SECONDARY_SERVER_TO_CLIENT;
+      CommunicationMode mode = isPrimary ? CommunicationMode.PrimaryServerToClient
+          : CommunicationMode.SecondaryServerToClient;
       write(dos, dis, mode, REPLY_OK, 0, new ArrayList(), this.credentials, member, true);
 
       // Wait here for a reply before continuing. This ensures that the client
@@ -1503,12 +1502,13 @@ public class HandShake implements ClientHandShake {
     Properties credentials = null;
     // if no authInit, Try to extract the credentials directly from securityProps
     if (StringUtils.isBlank(authInitMethod)) {
-      return SecurityService.getCredentials(securityProperties);
+      return Credentials.getCredentials(securityProperties);
     }
 
     // if authInit exists
     try {
-      AuthInitialize auth = SecurityService.getObjectOfType(authInitMethod, AuthInitialize.class);
+      AuthInitialize auth =
+          CallbackInstantiator.getObjectOfType(authInitMethod, AuthInitialize.class);
       auth.init(logWriter, securityLogWriter);
       try {
         credentials = auth.getCredentials(securityProperties, server, isPeer);
@@ -1536,7 +1536,8 @@ public class HandShake implements ClientHandShake {
 
   // This assumes that authentication is the last piece of info in handshake
   public static Properties readCredentials(DataInputStream dis, DataOutputStream dos,
-      DistributedSystem system) throws GemFireSecurityException, IOException {
+      DistributedSystem system, SecurityService securityService)
+      throws GemFireSecurityException, IOException {
 
     boolean requireAuthentication = securityService.isClientSecurityRequired();
     Properties credentials = null;
@@ -1671,7 +1672,8 @@ public class HandShake implements ClientHandShake {
    */
   public static Object verifyCredentials(String authenticatorMethod, Properties credentials,
       Properties securityProperties, InternalLogWriter logWriter,
-      InternalLogWriter securityLogWriter, DistributedMember member)
+      InternalLogWriter securityLogWriter, DistributedMember member,
+      SecurityService securityService)
       throws AuthenticationRequiredException, AuthenticationFailedException {
 
     if (!AcceptorImpl.isAuthenticationRequired()) {
@@ -1693,8 +1695,9 @@ public class HandShake implements ClientHandShake {
     } catch (Exception ex) {
       throw new AuthenticationFailedException(ex.getMessage(), ex);
     } finally {
-      if (auth != null)
+      if (auth != null) {
         auth.close();
+      }
     }
   }
 
@@ -1704,7 +1707,8 @@ public class HandShake implements ClientHandShake {
     String methodName = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     return verifyCredentials(methodName, this.credentials, this.system.getSecurityProperties(),
         (InternalLogWriter) this.system.getLogWriter(),
-        (InternalLogWriter) this.system.getSecurityLogWriter(), this.id.getDistributedMember());
+        (InternalLogWriter) this.system.getSecurityLogWriter(), this.id.getDistributedMember(),
+        this.securityService);
   }
 
   public void sendCredentialsForWan(OutputStream out, InputStream in) {
@@ -1730,10 +1734,10 @@ public class HandShake implements ClientHandShake {
       return;
     }
     String authenticator = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
-    Properties peerWanProps = readCredentials(dis, dos, this.system);
+    Properties peerWanProps = readCredentials(dis, dos, this.system, this.securityService);
     verifyCredentials(authenticator, peerWanProps, this.system.getSecurityProperties(),
         (InternalLogWriter) this.system.getLogWriter(),
-        (InternalLogWriter) this.system.getSecurityLogWriter(), member);
+        (InternalLogWriter) this.system.getSecurityLogWriter(), member, this.securityService);
   }
 
   private static int getKeySize(String skAlgo) {

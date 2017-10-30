@@ -688,7 +688,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     @Override
     public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
         boolean exchangeProfiles, final List<Profile> replyProfiles) {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (cache != null) {
         AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(adviseePath);
         handleDistributionAdvisee(sender, removeProfile, exchangeProfiles, replyProfiles);

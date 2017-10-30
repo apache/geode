@@ -203,9 +203,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
-    int batchSize = this.getPartitionedRegion().getParallelGatewaySender().getBatchSize();
     Iterator<Object> itr = eventSeqNumDeque.iterator();
-    markEventsAsDuplicate(batchSize, itr);
+    markEventsAsDuplicate(itr);
   }
 
   @Override

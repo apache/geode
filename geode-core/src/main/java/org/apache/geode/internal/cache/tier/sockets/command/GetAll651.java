@@ -33,7 +33,10 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetAll651 extends BaseCommand {
 
@@ -44,8 +47,8 @@ public class GetAll651 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart = null, keysPart = null;
     String regionName = null;
     Object[] keys = null;
@@ -67,7 +70,7 @@ public class GetAll651 extends BaseCommand {
     }
 
     if (logger.isDebugEnabled()) {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append(serverConnection.getName()).append(": Received getAll request (")
           .append(clientMessage.getPayloadLength()).append(" bytes) from ")
           .append(serverConnection.getSocketString()).append(" for region ").append(regionName)
@@ -113,7 +116,7 @@ public class GetAll651 extends BaseCommand {
 
     // Send chunk response
     try {
-      fillAndSendGetAllResponseChunks(region, regionName, keys, serverConnection);
+      fillAndSendGetAllResponseChunks(region, regionName, keys, serverConnection, securityService);
       serverConnection.setAsTrue(RESPONDED);
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
@@ -127,7 +130,7 @@ public class GetAll651 extends BaseCommand {
   }
 
   private void fillAndSendGetAllResponseChunks(Region region, String regionName, Object[] keys,
-      ServerConnection servConn) throws IOException {
+      ServerConnection servConn, SecurityService securityService) throws IOException {
 
     // Interpret null keys object as a request to get all key,value entry pairs
     // of the region; otherwise iterate each key and perform the get behavior.
@@ -183,7 +186,7 @@ public class GetAll651 extends BaseCommand {
       }
 
       try {
-        this.securityService.authorizeRegionRead(regionName, key.toString());
+        securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
       } catch (NotAuthorizedException ex) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
@@ -199,7 +202,7 @@ public class GetAll651 extends BaseCommand {
       request.getValueAndIsObject(region, key, null, servConn, valueAndIsObject);
       Object value = valueAndIsObject[0];
       boolean isObject = ((Boolean) valueAndIsObject[1]).booleanValue();
-      keyNotPresent = ((Boolean) valueAndIsObject[2]).booleanValue();;
+      keyNotPresent = ((Boolean) valueAndIsObject[2]).booleanValue();
       if (isDebugEnabled) {
         logger.debug("{}: Retrieved value for key={}: {}", servConn.getName(), key, value);
       }
@@ -226,7 +229,7 @@ public class GetAll651 extends BaseCommand {
           continue;
         }
       }
-      value = this.securityService.postProcess(regionName, key, value, isObject);
+      value = securityService.postProcess(regionName, key, value, isObject);
 
       if (isDebugEnabled) {
         logger.debug("{}: Returning value for key={}: {}", servConn.getName(), key, value);

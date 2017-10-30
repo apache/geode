@@ -15,15 +15,20 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
-import java.io.*;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.cache.query.internal.types.StructTypeImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
+
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 

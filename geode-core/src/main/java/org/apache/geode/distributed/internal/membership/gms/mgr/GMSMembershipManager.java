@@ -919,8 +919,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
             logger.warn(LocalizedMessage.create(
                 LocalizedStrings.GroupMembershipService_Invalid_Surprise_Member,
                 new Object[] {member, latestView}));
-            requestMemberRemoval(member,
-                "this member is no longer in the view but is initiating connections");
+            try {
+              requestMemberRemoval(member,
+                  "this member is no longer in the view but is initiating connections");
+            } catch (CancelException e) {
+              // okay to ignore
+            }
           }
         }.start();
         addShunnedMember(member);
@@ -1077,6 +1081,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     InternalDistributedMember m = msg.getSender();
     boolean shunned = false;
 
+    // UDP messages received from surprise members will have partial IDs.
+    // Attempt to replace these with full IDs from the MembershipManager's view.
+    if (msg.getSender().isPartial()) {
+      replacePartialIdentifierInMessage(msg);
+    }
+
     // If this member is shunned or new, grab the latestViewWriteLock: update the appropriate data
     // structure.
     // synchronized (latestViewLock) {
@@ -1115,6 +1125,24 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     }
 
     listener.messageReceived(msg);
+  }
+
+  /**
+   * If the message's sender ID is a partial ID, which can happen if it's received in a JGroups
+   * message, replace it with an ID from the current membership view.
+   *
+   * @param msg the message holding the sender ID
+   */
+  public void replacePartialIdentifierInMessage(DistributionMessage msg) {
+    InternalDistributedMember sender = msg.getSender();
+    sender = this.services.getJoinLeave().getMemberID(sender.getNetMember());
+    if (sender.isPartial()) {
+      // the DM's view also has surprise members, so let's check it as well
+      sender = this.dcReceiver.getDM().getCanonicalId(sender);
+    }
+    if (!sender.isPartial()) {
+      msg.setSender(sender);
+    }
   }
 
 

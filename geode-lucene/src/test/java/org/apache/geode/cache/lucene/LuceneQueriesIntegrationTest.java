@@ -14,8 +14,14 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.IntRangeQueryProvider;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeyAndValues;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.verifyQueryKeys;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,9 +32,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.LoaderHelper;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -44,6 +47,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.TestObject;
@@ -59,7 +65,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
   private static final String INDEX_NAME = "index";
-  protected static final String REGION_NAME = "index";
+  public static final String REGION_NAME = "index";
   private Region region;
 
   @Test()
@@ -138,6 +144,42 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
     verifyQueryUsingCustomizedProvider(LuceneService.REGION_VALUE_FIELD, 123, 223, "primitiveInt1",
         "primitiveInt2");
+  }
+
+  @Test()
+  public void shouldQueryUsingSoundexAnalyzer() throws Exception {
+    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    fields.put("field1", new StandardAnalyzer());
+    fields.put("field2", new DoubleMetaphoneAnalyzer());
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    // Put two values with some of the same tokens
+    String value1 = "Stefan";
+    String value2 = "Steph";
+    String value3 = "Stephen";
+    String value4 = "Steve";
+    String value5 = "Steven";
+    String value6 = "Stove";
+    String value7 = "Stuffin";
+
+    region.put("A", new TestObject(value1, value1));
+    region.put("B", new TestObject(value2, value2));
+    region.put("C", new TestObject(value3, value3));
+    region.put("D", new TestObject(value4, value4));
+    region.put("E", new TestObject(value5, value5));
+    region.put("F", new TestObject(value6, value6));
+    region.put("G", new TestObject(value7, value7));
+
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
+    // soundex search
+    verifyQuery("field2:Stephen", DEFAULT_FIELD, "A", "C", "E", "G");
+
+    // compare with Ste* search on soundex analyzer will not find anything
+    // but on standard analyzer will find 5 matchs
+    verifyQuery("field2:Ste*", DEFAULT_FIELD);
+    verifyQuery("field1:Ste*", DEFAULT_FIELD, "A", "B", "C", "D", "E");
   }
 
   @Ignore
@@ -287,6 +329,31 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     expectedResults.put("jsondoc1", pdx1);
     expectedResults.put("jsondoc10", pdx10);
     verifyQuery("name:jsondoc1*", DEFAULT_FIELD, expectedResults);
+  }
+
+  @Test()
+  public void waitUntilFlushThrowsIllegalStateExceptionWhenAEQNotFound() throws Exception {
+    Map<String, Analyzer> fields = new HashMap<>();
+    fields.put("name", null);
+    fields.put("lastName", null);
+    fields.put("address", null);
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+
+    // This is to send IllegalStateException from WaitUntilFlushedFunction
+    String nonCreatedIndex = "index2";
+    boolean result = false;
+    try {
+      result = luceneService.waitUntilFlushed(nonCreatedIndex, REGION_NAME, 60000,
+          TimeUnit.MILLISECONDS);
+      fail(
+          "Should have got the exception because the queue does not exist for the non created index ");
+    } catch (Exception ex) {
+      assertEquals(ex.getMessage(),
+          "java.lang.IllegalStateException: The AEQ does not exist for the index index2 region /index");
+      assertFalse(result);
+    }
   }
 
   @Test()

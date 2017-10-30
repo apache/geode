@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -68,8 +69,8 @@ public class TcpServerJUnitTest {
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
     stats = new SimpleStats();
-    server = new TcpServer(port, localhost, new Properties(), null, handler, stats,
-        Thread.currentThread().getThreadGroup(), "server thread");
+    server = new TcpServerFactory().makeTcpServer(port, localhost, new Properties(), null, handler,
+        stats, Thread.currentThread().getThreadGroup(), "server thread", null);
     server.start();
   }
 

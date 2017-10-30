@@ -39,13 +39,14 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 
 /**
  * @version $Revision: 1.2 $
  */
-public class DefaultQueryService implements QueryService {
+public class DefaultQueryService implements InternalQueryService {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -62,22 +63,37 @@ public class DefaultQueryService implements QueryService {
           DistributionConfig.GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
       .booleanValue();
 
+  public static boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
+      DistributionConfig.GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
+
 
   /** Test purpose only */
   public static boolean TEST_QUERY_HETEROGENEOUS_OBJECTS = false;
 
   private final InternalCache cache;
 
+  private final MethodInvocationAuthorizer methodInvocationAuthorizer;
+
   private InternalPool pool;
 
   private Map<Region, HashSet<IndexCreationData>> indexDefinitions =
       Collections.synchronizedMap(new HashMap<Region, HashSet<IndexCreationData>>());
+
 
   public DefaultQueryService(InternalCache cache) {
     if (cache == null)
       throw new IllegalArgumentException(
           LocalizedStrings.DefaultQueryService_CACHE_MUST_NOT_BE_NULL.toLocalizedString());
     this.cache = cache;
+    if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
+      // A no-op authorizer, allow method invocation
+      this.methodInvocationAuthorizer = ((Method m, Object t) -> {
+      });
+    } else {
+      this.methodInvocationAuthorizer =
+          new RestrictedMethodInvocationAuthorizer(cache.getSecurityService());
+
+    }
   }
 
   /**
@@ -950,4 +966,7 @@ public class DefaultQueryService implements QueryService {
     return pool;
   }
 
+  public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
+    return methodInvocationAuthorizer;
+  }
 }

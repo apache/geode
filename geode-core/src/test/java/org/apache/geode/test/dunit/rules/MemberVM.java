@@ -15,20 +15,31 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import java.io.File;
+import java.util.Arrays;
+
+import org.apache.commons.io.FileUtils;
+
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-
-import java.io.File;
-import java.nio.file.Paths;
+import org.apache.geode.test.junit.rules.Locator;
+import org.apache.geode.test.junit.rules.Member;
+import org.apache.geode.test.junit.rules.Server;
 
 public class MemberVM<T extends Member> implements Member {
   private T member;
   private VM vm;
+  private boolean tempWorkingDir;
 
   public MemberVM(T member, VM vm) {
+    this(member, vm, false);
+  }
+
+  public MemberVM(T member, VM vm, boolean tempWorkingDir) {
     this.member = member;
     this.vm = vm;
+    this.tempWorkingDir = tempWorkingDir;
   }
 
   public boolean isLocator() {
@@ -48,12 +59,14 @@ public class MemberVM<T extends Member> implements Member {
   }
 
   public T getMember() {
-    return (T) member;
+    return member;
   }
 
   @Override
   public File getWorkingDir() {
-    return member.getWorkingDir();
+    if (tempWorkingDir)
+      return member.getWorkingDir();
+    return vm.getWorkingDirectory();
   }
 
   @Override
@@ -76,18 +89,28 @@ public class MemberVM<T extends Member> implements Member {
     return member.getName();
   }
 
-  public void stopMember() {
-
-    this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
-    /**
-     * The LocatorServerStarterRule may dynamically change the "user.dir" system property to point
-     * to a temporary folder. The Path API caches the first value of "user.dir" that it sees, and
-     * this can result in a stale cached value of "user.dir" which points to a directory that no
-     * longer exists.
-     */
-    boolean vmIsClean = this.getVM().invoke(() -> Paths.get("").toAbsolutePath().toFile().exists());
-    if (!vmIsClean) {
-      this.getVM().bounce();
+  public int getEmbeddedLocatorPort() {
+    if (!(member instanceof Server)) {
+      throw new RuntimeException("member needs to be a server");
     }
+    return ((Server) member).getEmbeddedLocatorPort();
+  }
+
+  public void stopMember() {
+    this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    if (tempWorkingDir) {
+      /*
+       * this temporary workingDir will dynamically change the "user.dir". system property to point
+       * to a temporary folder. The Path API caches the first value of "user.dir" that it sees, and
+       * this can result in a stale cached value of "user.dir" which points to a directory that no
+       * longer exists.
+       */
+      vm.bounce();
+    } else
+      // if using the dunit/vm dir as the preset working dir, need to cleanup dir except
+      // the locator0view* file, so that regions/indexes won't get persisted across tests
+      Arrays.stream(getWorkingDir().listFiles((dir, name) -> {
+        return !name.startsWith("locator0view");
+      })).forEach(FileUtils::deleteQuietly);
   }
 }

@@ -27,7 +27,7 @@ import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.CacheServerAdvisor;
-import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
@@ -45,7 +45,7 @@ public class LoadMonitor implements ConnectionListener {
   private static final Logger logger = LogService.getLogger();
 
   private final ServerLoadProbe probe;
-  private final ServerMetricsImpl metrics;
+  protected final ServerMetricsImpl metrics;
   protected final CacheServerAdvisor advisor;
   protected ServerLocation location;
   private final PollingThread pollingThread;
@@ -88,8 +88,8 @@ public class LoadMonitor implements ConnectionListener {
     probe.close();
   }
 
-  public void connectionClosed(boolean lastConnection, byte communicationMode) {
-    if (communicationMode == Acceptor.CLIENT_TO_SERVER) {
+  public void connectionClosed(boolean lastConnection, CommunicationMode communicationMode) {
+    if (communicationMode.isClientOperations()) {
       metrics.decConnectionCount();
     }
     if (lastConnection) {
@@ -101,9 +101,8 @@ public class LoadMonitor implements ConnectionListener {
     return lastLoad;
   }
 
-  public void connectionOpened(boolean firstConnection, byte communicationMode) {
-    // ignore all other types of client connections.
-    if (communicationMode == Acceptor.CLIENT_TO_SERVER) {
+  public void connectionOpened(boolean firstConnection, CommunicationMode communicationMode) {
+    if (communicationMode.isClientOperations()) {
       metrics.incConnectionCount();
     }
     if (firstConnection) {

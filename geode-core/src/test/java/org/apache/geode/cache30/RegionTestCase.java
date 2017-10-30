@@ -3480,7 +3480,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         // ignore
       }
       Date ttlTime = new Date(et.getTTLExpirationTime());
-      Date getNow = new Date(et.getNow());
+      Date getNow = new Date(et.calculateNow());
       Date scheduleETime = new Date(et.scheduledExecutionTime());
       getCache().getLogger()
           .info(callback + " now: " + getCurrentTimeStamp(now) + " ttl:" + getCurrentTimeStamp(ttl)

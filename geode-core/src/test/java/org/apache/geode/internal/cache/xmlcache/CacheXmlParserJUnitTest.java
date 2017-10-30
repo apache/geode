@@ -23,11 +23,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -46,6 +50,9 @@ import java.util.Properties;
  */
 @Category(UnitTest.class)
 public class CacheXmlParserJUnitTest {
+
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private static final String NAMESPACE_URI =
       "urn:java:org.apache.geode.internal.cache.xmlcache.MockXmlParser";
@@ -103,18 +110,26 @@ public class CacheXmlParserJUnitTest {
     assertNotNull("Did not find simple config.xml file", getClass()
         .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
 
-    DM dm = mock(DM.class);
-
     Properties nonDefault = new Properties();
     nonDefault.setProperty(MCAST_PORT, "0"); // loner
 
-    InternalDistributedSystem system =
-        InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
-    when(dm.getSystem()).thenReturn(system);
-    InternalDistributedSystem.connect(nonDefault);
+    ClientCache cache = new ClientCacheFactory(nonDefault).set("cache-xml-file",
+        "xmlcache/CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml").create();
+    cache.close();
+  }
 
-    CacheXmlParser.parse(getClass()
-        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+  /**
+   * Test that {@link CacheXmlParser} can parse the test cache.xml file, using the Apache Xerces XML
+   * parser.
+   * 
+   * @since Geode 1.3
+   */
+  @Test
+  public void testCacheXmlParserWithSimplePoolXerces() {
+    System.setProperty("javax.xml.parsers.SAXParserFactory",
+        "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+
+    testCacheXmlParserWithSimplePool();
   }
 
   /**
@@ -135,6 +150,20 @@ public class CacheXmlParserJUnitTest {
     } finally {
       Locale.setDefault(previousLocale);
     }
+  }
+
+  /**
+   * Test that {@link CacheXmlParser} falls back to DTD parsing when locale language is not English,
+   * using the Apache Xerces XML parser.
+   * 
+   * @since Geode 1.3
+   */
+  @Test
+  public void testDTDFallbackWithNonEnglishLocalXerces() {
+    System.setProperty("javax.xml.parsers.SAXParserFactory",
+        "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+
+    testDTDFallbackWithNonEnglishLocal();
   }
 
   /**
@@ -189,7 +218,7 @@ public class CacheXmlParserJUnitTest {
   public static class MockXmlParser extends AbstractXmlParser {
 
     @Override
-    public String getNamspaceUri() {
+    public String getNamespaceUri() {
       return "urn:java:org.apache.geode.internal.cache.xmlcache.MockXmlParser";
     }
 

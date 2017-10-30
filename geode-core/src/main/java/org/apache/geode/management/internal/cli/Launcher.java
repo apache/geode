@@ -14,22 +14,23 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import org.springframework.shell.core.ExitShellRequest;
+
+import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
-import org.springframework.shell.core.ExitShellRequest;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
 
 /**
  * Launcher class for :
@@ -92,9 +93,7 @@ public class Launcher {
 
   protected Launcher() {
     this.startupTimeLogHelper = new StartupTimeLogHelper();
-    this.allowedCommandLineCommands = new HashSet<String>();
-
-    this.allowedCommandLineCommands.add(CliStrings.ENCRYPT);
+    this.allowedCommandLineCommands = new HashSet<>();
     this.allowedCommandLineCommands.add(CliStrings.RUN);
     this.allowedCommandLineCommands.add(CliStrings.START_PULSE);
     this.allowedCommandLineCommands.add(CliStrings.START_JCONSOLE);
@@ -132,7 +131,8 @@ public class Launcher {
     }
 
     Launcher launcher = new Launcher();
-    System.exit(launcher.parseCommandLine(args));
+    int exitValue = launcher.parseCommandLine(args);
+    ExitCode.fromValue(exitValue).doSystemExit();
   }
 
   private int parseCommandLineCommand(final String... args) {
@@ -140,10 +140,6 @@ public class Launcher {
     try {
       gfsh = Gfsh.getInstance(false, args, new GfshConfig());
       this.startupTimeLogHelper.logStartupTime();
-    } catch (ClassNotFoundException cnfex) {
-      log(cnfex, gfsh);
-    } catch (IOException ioex) {
-      log(ioex, gfsh);
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
     }
@@ -207,10 +203,6 @@ public class Launcher {
     try {
       gfsh = Gfsh.getInstance(launchShell, args, new GfshConfig());
       this.startupTimeLogHelper.logStartupTime();
-    } catch (ClassNotFoundException cnfex) {
-      log(cnfex, gfsh);
-    } catch (IOException ioex) {
-      log(ioex, gfsh);
     } catch (IllegalStateException isex) {
       System.err.println("ERROR : " + isex.getMessage());
     }

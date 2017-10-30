@@ -20,24 +20,20 @@ package org.apache.geode.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.awaitility.Awaitility;
+import java.io.File;
+import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Set;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class JarDeployerIntegrationTest {
@@ -101,25 +97,7 @@ public class JarDeployerIntegrationTest {
     // Test to verify that deployment fails if the directory doesn't exist.
     assertThatThrownBy(() -> {
       jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarBytes);
-    }).isInstanceOf(IOException.class);
-
-    // Test to verify that deployment succeeds if the directory doesn't
-    // initially exist, but is then created while the JarDeployer is looping
-    // looking for a valid directory.
-    final AtomicBoolean isDeployed = new AtomicBoolean(false);
-    final CyclicBarrier barrier = new CyclicBarrier(2);
-
-    Executors.newSingleThreadExecutor().submit(() -> {
-      barrier.await();
-      jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarBytes);
-      isDeployed.set(true);
-      return true;
-    });
-
-    barrier.await();
-    alternateDir.mkdirs();
-    Awaitility.await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertThat(isDeployed.get()).isTrue());
+    }).isInstanceOf(IOException.class).hasMessageContaining("Unable to write to deploy directory:");
   }
 
   @Test

@@ -30,6 +30,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -47,8 +48,9 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
 
   @Override
   @Test
-  public void testStartTwoLocators() throws Exception {
-    super.testStartTwoLocators();
+  @Ignore // GEODE-3094
+  public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
+    super.testMultipleLocatorsRestartingAtSameTimeWithMissingServers();
   }
 
   @Test

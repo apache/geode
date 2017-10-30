@@ -160,10 +160,12 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       final int locatorPort3 = ports[2];
       String locators =
           getLocatorString(host, new int[] {locatorPort0, locatorPort1, locatorPort3});
-      vm0.invoke("Start Locator", () -> startLocator(NetworkUtils.getServerHostName(vm0.getHost()),
-          locatorPort0, locators));
-      vm1.invoke("Start Locator", () -> startLocator(NetworkUtils.getServerHostName(vm1.getHost()),
-          locatorPort1, locators));
+      vm0.invoke("Start Locator1 ",
+          () -> startLocator(NetworkUtils.getServerHostName(vm0.getHost()), locatorPort0,
+              locators));
+      vm1.invoke("Start Locator2 ",
+          () -> startLocator(NetworkUtils.getServerHostName(vm1.getHost()), locatorPort1,
+              locators));
 
       vm2.invoke("StartBridgeClient", () -> startBridgeClient(null,
           NetworkUtils.getServerHostName(vm0.getHost()), locatorPort0));
@@ -524,7 +526,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
         }
 
         List<InetSocketAddress> locators = pool.getOnlineLocators();
-        Assert.assertEquals(expected.length, locators.size());
+        Assert.assertEquals("found " + locators, expected.length, locators.size());
         Arrays.sort(expected, Comparator.comparing(InetSocketAddress::getPort));
         for (int i = 0; i < locators.size(); i++) {
           InetSocketAddress locator = locators.get(i);

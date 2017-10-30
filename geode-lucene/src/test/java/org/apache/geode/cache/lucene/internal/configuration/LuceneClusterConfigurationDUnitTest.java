@@ -23,6 +23,17 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
@@ -37,21 +48,11 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.Member;
+import org.apache.geode.test.junit.rules.Member;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.lucene.analysis.Analyzer;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 
 @Category(DistributedTest.class)
@@ -293,14 +294,14 @@ public class LuceneClusterConfigurationDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
-    csb.addOptionWithValueCheck(CliStrings.CREATE_REGION__GROUP, group);
+    csb.addOptionWithValueCheck(CliStrings.GROUP, group);
     gfshConnector.executeAndVerifyCommand(csb.toString());
   }
 
   private CommandResult alterRegionUsingGfsh(String group) throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
     csb.addOption(CliStrings.ALTER_REGION__REGION, REGION_NAME);
-    csb.addOption(CliStrings.ALTER_REGION__GROUP, group);
+    csb.addOption(CliStrings.GROUP, group);
     csb.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "5764");
     return gfshConnector.executeAndVerifyCommand(csb.toString());
   }

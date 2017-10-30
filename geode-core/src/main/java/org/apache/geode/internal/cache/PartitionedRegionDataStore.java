@@ -14,13 +14,54 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryExistsException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.InterestRegistrationEvent;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
@@ -40,9 +81,14 @@ import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
-import org.apache.geode.internal.cache.partitioned.*;
+import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserver;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
+import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
+import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
-import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -55,16 +101,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Implementation of DataStore (DS) for a PartitionedRegion (PR). This will be import
@@ -494,6 +530,20 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
       return result;
 
+    } catch (PartitionOfflineException validationException) {
+      // GEODE-3055
+      PartitionedRegion leader = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      boolean isLeader = leader.equals(this.partitionedRegion);
+      if (!isLeader) {
+        leader.getDataStore().removeBucket(possiblyFreeBucketId, true);
+        if (isDebugEnabled) {
+          logger.debug("For bucket " + possiblyFreeBucketId
+              + ", failed to create cololcated child bucket for "
+              + this.partitionedRegion.getFullPath() + ", removed leader region "
+              + leader.getFullPath() + " bucket.");
+        }
+      }
+      throw validationException;
     } finally {
       this.partitionedRegion.getPrStats().endBucketCreate(startTime, createdBucket, isRebalance);
     }
@@ -903,6 +953,16 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
   }
 
+  protected void lockBucketCreationAndVisit(BucketVisitor visitor) {
+    StoppableWriteLock lock = this.bucketCreationLock.writeLock();
+    lock.lock();
+    try {
+      visitBuckets(visitor);
+    } finally {
+      lock.unlock();
+    }
+  }
+
   /**
    * Gets the total amount of memory in bytes allocated for all values for this PR in this VM. This
    * is the current memory (MB) watermark for data in this PR.
@@ -934,7 +994,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       }
       return false;
     }
-    if (!canAccommodateMoreBytesSafely(size)) {
+    if (!forceCreation && !canAccommodateMoreBytesSafely(size)) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Partitioned Region {} has exceeded local maximum memory configuration {} Mb, current size is {} Mb",
@@ -1417,6 +1477,39 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
   }
 
+  public boolean isRemotePrimaryReadyForColocatedChildren(int bucketId) {
+    boolean isRemotePrimaryReady = true;
+    InternalDistributedMember myId =
+        this.partitionedRegion.getDistributionManager().getDistributionManagerId();
+
+    List<PartitionedRegion> colocatedChildPRs =
+        ColocationHelper.getColocatedChildRegions(this.partitionedRegion);
+    if (colocatedChildPRs != null) {
+      for (PartitionedRegion pr : colocatedChildPRs) {
+        InternalDistributedMember primaryChild = pr.getBucketPrimary(bucketId);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Checking colocated child bucket " + pr + ", bucketId=" + bucketId
+              + ", primary is " + primaryChild);
+        }
+        if (primaryChild == null || myId.equals(primaryChild)) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Colocated bucket region " + pr + " " + bucketId
+                + " does not have a remote primary yet. Not to remove.");
+          }
+          return false;
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger
+                .debug(pr + " bucketId=" + bucketId + " has remote primary, checking its children");
+          }
+          isRemotePrimaryReady = isRemotePrimaryReady
+              && pr.getDataStore().isRemotePrimaryReadyForColocatedChildren(bucketId);
+        }
+      }
+    }
+    return isRemotePrimaryReady;
+  }
+
   /**
    * Removes a redundant bucket hosted by this data store. The rebalancer invokes this method
    * directly or sends this member a message to invoke it.
@@ -1450,7 +1543,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
     // Don't allow the removal of a bucket if we haven't
     // finished recovering from disk
-    if (!this.partitionedRegion.getRedundancyProvider().isPersistentRecoveryComplete()) {
+    if (!forceRemovePrimary
+        && !this.partitionedRegion.getRedundancyProvider().isPersistentRecoveryComplete()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Returning false from removeBucket because we have not finished recovering all colocated regions from disk");
@@ -1471,7 +1565,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
       }
 
+      PartitionedRegion leader = ColocationHelper.getLeaderRegion(this.partitionedRegion);
+      boolean isLeader = leader.equals(this.partitionedRegion);
       BucketAdvisor bucketAdvisor = bucketRegion.getBucketAdvisor();
+      InternalDistributedMember myId =
+          this.partitionedRegion.getDistributionManager().getDistributionManagerId();
       Lock writeLock = bucketAdvisor.getActiveWriteLock();
 
       // Fix for 43613 - don't remove the bucket
@@ -1480,8 +1578,31 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       // member is no longer hosting the bucket.
       writeLock.lock();
       try {
+        // forceRemovePrimary==true will enable remove the bucket even when:
+        // 1) it's primary
+        // 2) no other primary ready yet
+        // 3) colocated bucket and its child is not completely ready
         if (!forceRemovePrimary && bucketAdvisor.isPrimary()) {
           return false;
+        }
+
+        if (isLeader) {
+          if (!forceRemovePrimary && !isRemotePrimaryReadyForColocatedChildren(bucketId)) {
+            return false;
+          }
+
+          InternalDistributedMember primary = bucketAdvisor.getPrimary();
+          if (!forceRemovePrimary && (primary == null || myId.equals(primary))) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Bucket region " + bucketRegion
+                  + " does not have a remote primary yet. Not to remove.");
+            }
+            return false;
+          }
+
+          if (logger.isDebugEnabled()) {
+            logger.debug("Bucket region " + bucketRegion + " has primary at " + primary);
+          }
         }
 
         // recurse down to each tier of children to remove first
@@ -1513,8 +1634,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       // because it won't block write operations while we're trying to acquire
       // the activePrimaryMoveLock
       InternalDistributedMember primary = bucketAdvisor.getPrimary();
-      InternalDistributedMember myId =
-          this.partitionedRegion.getDistributionManager().getDistributionManagerId();
       if (!myId.equals(primary)) {
         StateFlushOperation flush = new StateFlushOperation(bucketRegion);
         int executor = DistributionManager.WAITING_POOL_EXECUTOR;
@@ -1995,8 +2114,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         throw new EntryNotFoundException(
             LocalizedStrings.PartitionedRegionDataStore_ENTRY_NOT_FOUND.toLocalizedString());
 
-        // TODO:KIRK:OK } else if ((ent.isTombstone() && allowTombstones) ||
-        // !Token.isRemoved(ent.getValueInVM(getPartitionedRegion()))) {
       } else if ((ent.isTombstone() && allowTombstones) || !ent.isDestroyedOrRemoved()) {
         res = new EntrySnapshot(ent, bucketRegion, partitionedRegion, allowTombstones);
       }
@@ -2369,8 +2486,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * Interface for visiting buckets
    */
   // public visibility for tests
-  public static abstract class BucketVisitor {
-    abstract public void visit(Integer bucketId, Region r);
+  public interface BucketVisitor {
+    void visit(Integer bucketId, Region r);
   }
 
   // public visibility for tests
@@ -2812,8 +2929,16 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         }
         if ((isDiskRecovery || pr.isInitialized())
             && (pr.getDataStore().isColocationComplete(bucketId))) {
-          grab = pr.getDataStore().grabFreeBucketRecursively(bucketId, pr, moveSource,
-              forceCreation, replaceOffineData, isRebalance, creationRequestor, isDiskRecovery);
+          try {
+            grab = pr.getDataStore().grabFreeBucketRecursively(bucketId, pr, moveSource,
+                forceCreation, replaceOffineData, isRebalance, creationRequestor, isDiskRecovery);
+          } catch (RegionDestroyedException rde) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Failed to grab, colocated region for bucketId = {}{}{} is destroyed.",
+                  this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+                  bucketId);
+            }
+          }
           if (!grab.nowExists()) {
             if (logger.isDebugEnabled()) {
               logger.debug("Failed grab for bucketId = {}{}{}", this.partitionedRegion.getPRId(),
@@ -2895,7 +3020,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         this.partitionedRegion, time, msg, function, bucketSet);
 
     final RegionFunctionContextImpl prContext =
-        new RegionFunctionContextImpl(function.getId(),
+        new RegionFunctionContextImpl(getPartitionedRegion().getCache(), function.getId(),
             this.partitionedRegion, object, localKeys, ColocationHelper
                 .constructAndGetAllColocatedLocalDataSet(this.partitionedRegion, bucketSet),
             bucketSet, resultSender, isReExecute);

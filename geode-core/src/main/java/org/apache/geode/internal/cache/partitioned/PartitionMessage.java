@@ -166,9 +166,10 @@ public abstract class PartitionMessage extends DistributionMessage
             "Sending remote txId even though transaction is local. This should never happen: txState="
                 + txState);
       }
-    }
-    if (txState != null && txState.isMemberIdForwardingRequired()) {
-      this.txMemberId = txState.getOriginatingMember();
+      // GEODE-3679. Even if TXStateProxy has a local transaction,
+      // we still need to forward original txMemberId to other nodes
+      // if the message does not start a new transaction.
+      this.txMemberId = txState.getTxId().getMemberId();
     }
   }
 

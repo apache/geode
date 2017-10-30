@@ -53,9 +53,9 @@ import org.apache.geode.internal.logging.LogService;
  * re-balancing request. Auto-Balancing is expected to prevent failures and data loss.
  * 
  * <P>
- * This implementation is based on {@code Initializer} implementation. By default auto-balancing is
- * disabled. A user needs to configure {@link AutoBalancer} during cache initialization
- * {@link GemFireCache#getInitializer()}
+ * This implementation is based on {@code ConfigInitialization} implementation. By default
+ * auto-balancing is disabled. A user needs to configure {@link AutoBalancer} during cache
+ * initialization {@link GemFireCache#getInitializer()}
  * 
  * <P>
  * In a cluster only one member owns auto-balancing responsibility. This is achieved by grabbing a

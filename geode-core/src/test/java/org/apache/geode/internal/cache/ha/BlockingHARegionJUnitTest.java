@@ -390,7 +390,8 @@ public class BlockingHARegionJUnitTest {
           }
         } catch (Exception e) {
           exceptionOccurred = true;
-          exceptionString.append(" Exception occurred due to " + e);
+          exceptionString.append(" Exception occurred due to ").append(e);
+          break;
         }
       }
     }
@@ -414,9 +415,13 @@ public class BlockingHARegionJUnitTest {
       for (int i = 0; i < numberOfTakes; i++) {
         try {
           assertNotNull(this.regionQueue.take());
+          if (Thread.currentThread().isInterrupted()) {
+            break;
+          }
         } catch (Exception e) {
           exceptionOccurred = true;
-          exceptionString.append(" Exception occurred due to " + e);
+          exceptionString.append(" Exception occurred due to ").append(e);
+          break;
         }
       }
     }

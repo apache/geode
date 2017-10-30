@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +43,8 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -107,7 +112,7 @@ public class GetAllWithCallbackTest {
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
@@ -117,7 +122,7 @@ public class GetAllWithCallbackTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
@@ -127,7 +132,8 @@ public class GetAllWithCallbackTest {
       assertThat(key).isIn(KEYS);
     }
     for (Object key : KEYS) {
-      verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
+      verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
+          key.toString());
     }
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
@@ -139,14 +145,15 @@ public class GetAllWithCallbackTest {
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.securityService)
-          .authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
+      doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+          Operation.READ, REGION_NAME, key.toString());
     }
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     for (Object key : KEYS) {
-      verify(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(key.toString()));
+      verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
+          key.toString());
     }
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
@@ -165,7 +172,7 @@ public class GetAllWithCallbackTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
@@ -192,7 +199,7 @@ public class GetAllWithCallbackTest {
           eq(key.toString()), eq(null));
     }
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, 0);
+    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
     verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());

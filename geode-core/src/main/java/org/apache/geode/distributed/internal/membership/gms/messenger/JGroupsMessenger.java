@@ -306,7 +306,9 @@ public class JGroupsMessenger implements Messenger {
         myChannel = (JChannel) oldChannel;
         // scrub the old channel
         ViewId vid = new ViewId(new JGAddress(), 0);
-        View jgv = new View(vid, new ArrayList<>());
+        List<Address> members = new ArrayList<>();
+        members.add(new UUID(0, 0));// TODO open a JGroups JIRA for GEODE-3034
+        View jgv = new View(vid, members);
         this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
         UUID logicalAddress = (UUID) myChannel.getAddress();
         if (logicalAddress instanceof JGAddress) {
@@ -455,6 +457,7 @@ public class JGroupsMessenger implements Messenger {
         }
       }
       if (recipient != null) {
+        logger.warn("Unable to send message to " + recipient, e);
         services.getHealthMonitor().suspect(recipient,
             "Unable to send messages to this member via JGroups");
       }
@@ -1411,7 +1414,7 @@ public class JGroupsMessenger implements Messenger {
   public void initClusterKey() {
     if (encrypt != null) {
       try {
-        logger.debug("Initializing cluster key");
+        logger.info("Initializing cluster key");
         encrypt.initClusterSecretKey();
       } catch (Exception e) {
         throw new RuntimeException("unable to create cluster key ", e);

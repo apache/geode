@@ -668,7 +668,11 @@ public class TXState implements TXStateInterface {
       while (it.hasNext()) {
         Map.Entry<LocalRegion, TXRegionState> me = it.next();
         LocalRegion r = me.getKey();
-        if (r instanceof BucketRegion && (((BucketRegion) r).getBucketAdvisor().isPrimary())) {
+        if (r instanceof BucketRegion) {
+          if (isDistTx() && !((BucketRegion) r).getBucketAdvisor().isPrimary()) {
+            // For distTx we skip for taking locks on secondary.
+            continue;
+          }
           BucketRegion b = (BucketRegion) r;
           /*
            * Lock the primary bucket so it doesnt get rebalanced until we cleanup!
@@ -1006,7 +1010,6 @@ public class TXState implements TXStateInterface {
             writer.beforeCommit(event);
           }
         } catch (TransactionWriterException twe) {
-          cleanup();
           throw new CommitConflictException(twe);
         } catch (VirtualMachineError err) {
           // cleanup(); this allocates objects so I don't think we can do it - that leaves the TX
@@ -1017,7 +1020,6 @@ public class TXState implements TXStateInterface {
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
-          cleanup(); // rollback the transaction!
           // Whenever you catch Error or Throwable, you must also
           // catch VirtualMachineError (see above). However, there is
           // _still_ a possibility that you are dealing with a cascading
@@ -1027,9 +1029,8 @@ public class TXState implements TXStateInterface {
           throw new CommitConflictException(t);
         }
       }
-
-
     } catch (CommitConflictException commitConflict) {
+      cleanup();
       this.proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
       throw new SynchronizationCommitConflictException(
           LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0

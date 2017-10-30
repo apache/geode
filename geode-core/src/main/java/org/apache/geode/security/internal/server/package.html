@@ -1,0 +1,45 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<p>This package provides authentication and authorization for a client.  There is a default
+"no-op" implementation that is overridden by the Protobuf form of client/server
+   communication.</p>
+<p>This can also be overridden by _you_ in order to use a different mechanism
+on the server by setting the property geode.protocol-authentication-mode to the name
+   of your implementation.  This is the string returned by your class's
+   implementationID method.</p>
+
+<p>The Authenticator.authenticate() method
+   is first given the i/o streams connected to the client so that it
+can interact with the client to get credentials.  A simple mechanism might expect a
+username and password on the input stream.</p>
+
+<p>Once the client is authenticated the Authenticator will be asked for an authorizer each time
+a message is received.  The authorizer will be asked if the authenticated principal
+is authorized for permissions associated with the request sent by the client.</p>
+
+<p><i>Note: the legacy "GemFire" client/server authorization mechanism is hardcoded
+to get credentials using a non-documented interchange and is not affected by this package.
+It interacts directly with the SecurityManager, as does the default mechanism used in
+Protobuf communications.</i></p>
+</body>
+</html>

@@ -23,7 +23,7 @@ import org.junit.runners.model.Statement;
  * object in the before and after methods, so that the implementation would have access to the
  * annotation of the test methods
  */
-public class DescribedExternalResource implements TestRule {
+public abstract class DescribedExternalResource implements TestRule {
   public Statement apply(Statement base, Description description) {
     return statement(base, description);
   }

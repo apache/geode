@@ -14,26 +14,30 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import org.junit.Rule;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.powermock.api.mockito.PowerMockito;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -51,9 +55,9 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.cache.execute.Function;
 
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
@@ -126,6 +130,7 @@ public class ExecuteFunctionTest {
     when(this.callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
     when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
+    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
 
     when(this.functionPart.getStringOrObject()).thenReturn(FUNCTION);
 
@@ -156,7 +161,7 @@ public class ExecuteFunctionTest {
   public void nonSecureShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     // verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none
     // of the reply message types get sent?
@@ -166,10 +171,9 @@ public class ExecuteFunctionTest {
   public void withIntegratedSecurityShouldSucceedIfAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
-
-    verify(this.securityService).authorizeDataWrite();
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
     // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
     // types get sent?
   }
@@ -178,11 +182,12 @@ public class ExecuteFunctionTest {
   public void withIntegratedSecurityShouldThrowIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeDataWrite();
+    doThrow(new NotAuthorizedException("")).when(this.securityService)
+        .authorize(ResourcePermissions.DATA_WRITE);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(this.securityService).authorizeDataWrite();
+    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }
 
@@ -191,7 +196,7 @@ public class ExecuteFunctionTest {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
@@ -206,7 +211,7 @@ public class ExecuteFunctionTest {
     doThrow(new NotAuthorizedException("")).when(this.authzRequest)
         .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, 0);
+    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
     verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
   }

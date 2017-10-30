@@ -37,6 +37,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.geode.cache.util.GatewayConflictResolver;
 import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -400,6 +401,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(name);
     stack.push(f);
     String v;
+    v = atts.getValue(SOCKET_CONNECT_TIMEOUT);
+    if (v != null) {
+      f.setSocketConnectTimeout(parseInt(v));
+    }
     v = atts.getValue(FREE_CONNECTION_TIMEOUT);
     if (v != null) {
       f.setFreeConnectionTimeout(parseInt(v));
@@ -2592,6 +2597,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
       throws SAXException {
+    // This while loop pops all StringBuffers at the top of the stack
+    // that contain only whitespace; see GEODE-3306
+    while (!stack.empty()) {
+      Object o = stack.peek();
+      if (o instanceof StringBuffer && StringUtils.isBlank(((StringBuffer) o).toString())) {
+        stack.pop();
+      } else {
+        break;
+      }
+    }
+
     if (qName.equals(CACHE)) {
       startCache(atts);
     } else if (qName.equals(CLIENT_CACHE)) {
@@ -2764,11 +2780,11 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         final ServiceLoader<XmlParser> serviceLoader =
             ServiceLoader.load(XmlParser.class, ClassPathLoader.getLatestAsClassLoader());
         for (final XmlParser xmlParser : serviceLoader) {
-          if (xmlParser.getNamspaceUri().equals(namespaceUri)) {
+          if (xmlParser.getNamespaceUri().equals(namespaceUri)) {
             delegate = xmlParser;
             delegate.setStack(stack);
             delegate.setDocumentLocator(documentLocator);
-            delegates.put(xmlParser.getNamspaceUri(), xmlParser);
+            delegates.put(xmlParser.getNamespaceUri(), xmlParser);
             break;
           }
         }
@@ -2868,6 +2884,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   }
 
   public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+    // This while loop pops all StringBuffers at the top of the stack
+    // that contain only whitespace; see GEODE-3306
+    while (!stack.empty()) {
+      Object o = stack.peek();
+      if (o instanceof StringBuffer && StringUtils.isBlank(((StringBuffer) o).toString())) {
+        stack.pop();
+      } else {
+        break;
+      }
+    }
+
     try {
       // logger.debug("endElement namespaceURI=" + namespaceURI
       // + "; localName = " + localName + "; qName = " + qName);

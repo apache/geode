@@ -27,51 +27,6 @@ import org.apache.geode.internal.Version;
  */
 public abstract class Acceptor {
 
-  // The following are communications "mode" bytes sent as the first byte of a
-  // client/server handshake. They must not be larger than 1 byte
-
-  /**
-   * Byte meaning that the Socket is being used for 'client to server' communication.
-   */
-  public static final byte CLIENT_TO_SERVER = (byte) 100;
-
-  /**
-   * Byte meaning that the Socket is being used for 'primary server to client' communication.
-   */
-  public static final byte PRIMARY_SERVER_TO_CLIENT = (byte) 101;
-
-  /**
-   * Byte meaning that the Socket is being used for 'seconadry server to client' communication.
-   */
-  public static final byte SECONDARY_SERVER_TO_CLIENT = (byte) 102;
-
-  /**
-   * Byte meaning that the Socket is being used for 'gateway to gateway' communication.
-   */
-  public static final byte GATEWAY_TO_GATEWAY = (byte) 103;
-
-  /**
-   * Byte meaning that the Socket is being used for 'monitor to gateway' communication.
-   */
-  public static final byte MONITOR_TO_SERVER = (byte) 104;
-
-  /**
-   * Byte meaning that the connection between the server and client was successful.
-   */
-  public static final byte SUCCESSFUL_SERVER_TO_CLIENT = (byte) 105;
-
-  /**
-   * Byte meaning that the connection between the server and client was unsuccessful.
-   */
-  public static final byte UNSUCCESSFUL_SERVER_TO_CLIENT = (byte) 106;
-
-  /**
-   * Byte meaning that the Socket is being used for 'client to server' messages related to a client
-   * queue (register interest, create cq, etc.).
-   */
-  public static final byte CLIENT_TO_SERVER_FOR_QUEUE = (byte) 107;
-
-
   /**
    * The GFE version of the server.
    * 
@@ -93,6 +48,12 @@ public abstract class Acceptor {
    * Returns the port on which this acceptor listens for connections from clients.
    */
   public abstract int getPort();
+
+  /**
+   * returns the server's name string, including the inet address and port that the server is
+   * listening on
+   */
+  public abstract String getServerName();
 
   /**
    * Closes this acceptor thread

@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Used for bootstrapping txState/PeerTXStateStub on the server. This command is send when in client
@@ -49,7 +50,8 @@ public class TXFailoverCommand extends BaseCommand {
   private TXFailoverCommand() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long start)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     // Build the TXId for the transaction
@@ -59,7 +61,7 @@ public class TXFailoverCommand extends BaseCommand {
     if (logger.isDebugEnabled()) {
       logger.debug("TX: Transaction {} from {} is failing over to this server", uniqId, client);
     }
-    TXId txId = new TXId(client, uniqId);
+    TXId txId = createTXId(client, uniqId);
     TXManagerImpl mgr = (TXManagerImpl) serverConnection.getCache().getCacheTransactionManager();
     mgr.waitForCompletingTransaction(txId); // in case it's already completing here in another
                                             // thread
@@ -89,6 +91,10 @@ public class TXFailoverCommand extends BaseCommand {
           logger.debug(
               "TX: txState is not local, bootstrapping PeerTXState stub for targetNode: {}",
               hostingMember);
+        }
+        // GEODE-3310 set the target node in the tx
+        if (tx.getTarget() == null) {
+          tx.setTarget(hostingMember);
         }
         // inject the real deal
         tx.setLocalTXState(new PeerTXStateStub(tx, hostingMember, client));
@@ -123,6 +129,10 @@ public class TXFailoverCommand extends BaseCommand {
     }
     writeReply(clientMessage, serverConnection);
     serverConnection.setAsTrue(RESPONDED);
+  }
+
+  TXId createTXId(InternalDistributedMember client, int uniqId) {
+    return new TXId(client, uniqId);
   }
 
 }

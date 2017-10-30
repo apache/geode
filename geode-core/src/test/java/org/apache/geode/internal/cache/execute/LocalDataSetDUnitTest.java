@@ -112,8 +112,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
         Region region = basicGetCache().getRegion("CustomerPR");
         Set filter = new HashSet();
         filter.add("1");
-        FunctionService.onRegion(region).withFilter(filter)
-            .execute(IterateFunction.id, true, false, true).getResult();
+        FunctionService.onRegion(region).withFilter(filter).execute(IterateFunction.id).getResult();
         return null;
       }
     });
@@ -193,24 +192,22 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   public static void executeFunction() {
     try {
-      FunctionService.onRegion(customerPR).execute("LocalDataSetFunction" + true, true, false, true)
-          .getResult();
-      FunctionService.onRegion(customerPR)
-          .execute("LocalDataSetFunction" + false, true, false, false).getResult();
+      FunctionService.onRegion(customerPR).execute("LocalDataSetFunction" + true).getResult();
+      FunctionService.onRegion(customerPR).execute("LocalDataSetFunction" + false).getResult();
       Set<String> filter = new HashSet<String>();
       filter.add("YOYO-CUST-KEY-" + 0);
+      FunctionService.onRegion(customerPR).withFilter(filter).execute("LocalDataSetFunction" + true)
+          .getResult();
       FunctionService.onRegion(customerPR).withFilter(filter)
-          .execute("LocalDataSetFunction" + true, true, false, true).getResult();
-      FunctionService.onRegion(customerPR).withFilter(filter)
-          .execute("LocalDataSetFunction" + false, true, false, false).getResult();
+          .execute("LocalDataSetFunction" + false).getResult();
       filter.clear();
       for (int i = 0; i < 6; i++) {
         filter.add("YOYO-CUST-KEY-" + i);
       }
+      FunctionService.onRegion(customerPR).withFilter(filter).execute("LocalDataSetFunction" + true)
+          .getResult();
       FunctionService.onRegion(customerPR).withFilter(filter)
-          .execute("LocalDataSetFunction" + true, true, false, true).getResult();
-      FunctionService.onRegion(customerPR).withFilter(filter)
-          .execute("LocalDataSetFunction" + false, true, false, false).getResult();
+          .execute("LocalDataSetFunction" + false).getResult();
     } catch (Exception e) {
       e.printStackTrace();
       Assert.fail("Test failed due to ", e);

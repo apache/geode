@@ -27,7 +27,7 @@ However, if you know the architecture of your system well, and you are sure you 
 
 When the network connecting members of a distributed system goes down, system members treat this like a machine crash. Members on each side of the network failure respond by removing the members on the other side from the membership list. If network partitioning detection is enabled (the default), the partition that contains sufficient quorum (&gt; 51% based on member weight) will continue to operate, while the other partition with insufficient quorum will shut down. See [Network Partitioning](../network_partitioning/chapter_overview.html#network_partitioning) for a detailed explanation on how this detection system operates.
 
-In addition, members that have been disconnected either via network partition or due to unresponsiveness will automatically try to reconnect to the distributed system unless configured otherwise. See [Handling Forced Cache Disconnection Using Autoreconnect](../autoreconnect/member-reconnect.html).
+In addition, members that have been disconnected either via network partition or due to unresponsiveness will automatically try to reconnect to the distributed system unless configured otherwise. See [Handling Forced Cache Disconnection Using Autoreconnect](../member-reconnect.html).
 
 ## <a id="rec_network_crash__section_F9A0C31AE25C4E7185DF3B1A8486BDFA" class="no-quick-link"></a>Recovery Procedure
 

@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.IndexExistsException;
@@ -43,7 +42,7 @@ public class CreateIndexFunction extends FunctionAdapter implements InternalEnti
     final IndexInfo indexInfo = (IndexInfo) context.getArguments();
     String memberId = null;
     try {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       QueryService queryService = cache.getQueryService();
       String indexName = indexInfo.getIndexName();
@@ -55,13 +54,13 @@ public class CreateIndexFunction extends FunctionAdapter implements InternalEnti
       String regionPath = regionPathTokens[0];
 
       switch (indexInfo.getIndexType()) {
-        case IndexInfo.RANGE_INDEX:
+        case FUNCTIONAL:
           queryService.createIndex(indexName, indexedExpression, fromClause);
           break;
-        case IndexInfo.KEY_INDEX:
+        case PRIMARY_KEY:
           queryService.createKeyIndex(indexName, indexedExpression, fromClause);
           break;
-        case IndexInfo.HASH_INDEX:
+        case HASH:
           queryService.createHashIndex(indexName, indexedExpression, fromClause);
           break;
         default:

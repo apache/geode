@@ -96,7 +96,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
         logger.debug("processing {}", this);
       }
       FindRemoteTXMessageReply reply = new FindRemoteTXMessageReply();
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (cache != null) {
         TXManagerImpl mgr = (TXManagerImpl) cache.getCacheTransactionManager();
         mgr.waitForCompletingTransaction(txId); // in case there is a lost commit going on

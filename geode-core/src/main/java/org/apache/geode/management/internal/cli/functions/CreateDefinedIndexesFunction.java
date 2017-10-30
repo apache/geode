@@ -14,16 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.InternalEntity;
@@ -38,9 +37,9 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
   public void execute(FunctionContext context) {
     String memberId = null;
     List<Index> indexes = null;
-    Cache cache = null;
+    Cache cache;
     try {
-      cache = CacheFactory.getAnyInstance();
+      cache = context.getCache();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       QueryService queryService = cache.getQueryService();
       Set<IndexInfo> indexDefinitions = (Set<IndexInfo>) context.getArguments();
@@ -48,9 +47,9 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
         String indexName = indexDefinition.getIndexName();
         String indexedExpression = indexDefinition.getIndexedExpression();
         String regionPath = indexDefinition.getRegionPath();
-        if (indexDefinition.getIndexType() == IndexInfo.KEY_INDEX) {
+        if (indexDefinition.getIndexType() == IndexType.PRIMARY_KEY) {
           queryService.defineKeyIndex(indexName, indexedExpression, regionPath);
-        } else if (indexDefinition.getIndexType() == IndexInfo.HASH_INDEX) {
+        } else if (indexDefinition.getIndexType() == IndexType.HASH) {
           queryService.defineHashIndex(indexName, indexedExpression, regionPath);
         } else {
           queryService.defineIndex(indexName, indexedExpression, regionPath);
@@ -71,11 +70,6 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, exceptionMessage));
     }
-  }
-
-  public void createCommandObject(IndexInfo info) {
-    Cache cache = CacheFactory.getAnyInstance();
-    QueryService queryService = cache.getQueryService();
   }
 
   @Override

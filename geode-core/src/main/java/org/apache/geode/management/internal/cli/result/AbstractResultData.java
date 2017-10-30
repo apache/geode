@@ -16,12 +16,10 @@ package org.apache.geode.management.internal.cli.result;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.sql.Time;
 import java.text.MessageFormat;
 import java.util.Base64;
 import java.util.zip.DataFormatException;
@@ -74,9 +72,6 @@ public abstract class AbstractResultData implements ResultData {
     this.contentObject = gfJsonObject.getJSONObject(RESULT_CONTENT);
   }
 
-  /**
-   * @return the gfJsonObject
-   */
   public GfJsonObject getGfJsonObject() {
     return gfJsonObject;
   }
@@ -110,9 +105,7 @@ public abstract class AbstractResultData implements ResultData {
   }
 
   /**
-   * 
-   * @param footerText
-   * @return this ResultData
+   *
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
   public AbstractResultData setFooter(String footerText) {
@@ -126,7 +119,7 @@ public abstract class AbstractResultData implements ResultData {
   }
 
   private static String addTimeStampBeforeLastDot(String src) {
-    String toAdd = String.valueOf(new java.sql.Time(System.currentTimeMillis()));
+    String toAdd = String.valueOf(new Time(System.currentTimeMillis()));
     toAdd = "-" + toAdd.replaceAll(":", "_");
 
     int lastIndexOf = src.lastIndexOf(".");
@@ -150,11 +143,10 @@ public abstract class AbstractResultData implements ResultData {
 
   public ResultData addAsFile(String fileName, byte[] data, int fileType, String message,
       boolean addTimeStampToName) {
-    byte[] bytes = data;
     if (addTimeStampToName) {
       fileName = addTimeStampBeforeLastDot(fileName);
     }
-    return addAsFile(fileName, bytes, fileType, message);
+    return addAsFile(fileName, data, fileType, message);
   }
 
   private ResultData addAsFile(String fileName, byte[] data, int fileType, String message) {
@@ -194,11 +186,8 @@ public abstract class AbstractResultData implements ResultData {
       throws GfJsonException, DataFormatException, IOException {
     boolean overwriteAllExisting = false;
     int length = byteDataArray.size();
-    String options = length > 1 ? "(y/N/a)" : "(y/N)"; // TODO - Abhishek Make this consistent -
-                                                       // with
-                                                       // AbstractCliAroundInterceptor.readYesNo()
-
-    BYTEARRAY_LOOP: for (int i = 0; i < length; i++) {
+    String options = length > 1 ? "(y/N/a)" : "(y/N)";
+    for (int i = 0; i < length; i++) {
       GfJsonObject object = byteDataArray.getJSONObject(i);
 
       int fileType = object.getInt(FILE_TYPE_FIELD);
@@ -208,8 +197,8 @@ public abstract class AbstractResultData implements ResultData {
       }
 
       // build file name
-      byte[] fileNameBytes = null;
-      String fileName = null;
+      byte[] fileNameBytes;
+      String fileName;
       GfJsonArray fileNameJsonBytes = object.getJSONArray(FILE_NAME_FIELD);
       if (fileNameJsonBytes != null) { // if in gfsh
         fileNameBytes = GfJsonArray.toByteArray(fileNameJsonBytes);
@@ -219,8 +208,8 @@ public abstract class AbstractResultData implements ResultData {
       }
 
       // build file message
-      byte[] fileMessageBytes = null;
-      String fileMessage = null;
+      byte[] fileMessageBytes;
+      String fileMessage;
       GfJsonArray fileMessageJsonBytes = object.getJSONArray(FILE_MESSAGE);
       if (fileMessageJsonBytes != null) { // if in gfsh
         fileMessageBytes = GfJsonArray.toByteArray(fileMessageJsonBytes);
@@ -234,7 +223,6 @@ public abstract class AbstractResultData implements ResultData {
       byte[] byteArray = Base64.getDecoder().decode(fileDataString);
       byte[] uncompressBytes = CliUtil.uncompressBytes(byteArray, fileDataLength).getData();
 
-      boolean isGfshVM = CliUtil.isGfshVM();
       File fileToDumpData = new File(fileName);
       if (!fileToDumpData.isAbsolute()) {
         if (directory == null || directory.isEmpty()) {
@@ -247,21 +235,19 @@ public abstract class AbstractResultData implements ResultData {
       if (parentDirectory != null) {
         parentDirectory.mkdirs();
       }
+      Gfsh gfsh = Gfsh.getCurrentInstance();
       if (fileToDumpData.exists()) {
         String fileExistsMessage =
             CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__FILE_WITH_NAME_0_EXISTS_IN_1,
-                new Object[] {fileName, fileToDumpData.getParent(), options});
-        if (isGfshVM) {
-          Gfsh gfsh = Gfsh.getCurrentInstance();
-          if (gfsh != null && !gfsh.isQuietMode() && !overwriteAllExisting) {
-            fileExistsMessage = fileExistsMessage + " Overwrite? " + options + " : ";
-            String interaction = gfsh.interact(fileExistsMessage);
-            if ("a".equalsIgnoreCase(interaction.trim())) {
-              overwriteAllExisting = true;
-            } else if (!"y".equalsIgnoreCase(interaction.trim())) {
-              // do not save file & continue
-              continue BYTEARRAY_LOOP;
-            }
+                fileName, fileToDumpData.getParent(), options);
+        if (gfsh != null && !gfsh.isQuietMode() && !overwriteAllExisting) {
+          fileExistsMessage = fileExistsMessage + " Overwrite? " + options + " : ";
+          String interaction = gfsh.interact(fileExistsMessage);
+          if ("a".equalsIgnoreCase(interaction.trim())) {
+            overwriteAllExisting = true;
+          } else if (!"y".equalsIgnoreCase(interaction.trim())) {
+            // do not save file & continue
+            continue;
           }
         } else {
           throw new IOException(fileExistsMessage);
@@ -269,18 +255,17 @@ public abstract class AbstractResultData implements ResultData {
       } else if (!parentDirectory.exists()) {
         handleCondition(CliStrings.format(
             CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_DIRECTORY_OF_0_DOES_NOT_EXIST,
-            fileToDumpData.getAbsolutePath()), isGfshVM);
+            fileToDumpData.getAbsolutePath()));
         return;
       } else if (!parentDirectory.canWrite()) {
         handleCondition(CliStrings.format(
             CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_DIRECTORY_OF_0_IS_NOT_WRITABLE,
-            fileToDumpData.getAbsolutePath()), isGfshVM);
+            fileToDumpData.getAbsolutePath()));
         return;
       } else if (!parentDirectory.isDirectory()) {
         handleCondition(
             CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__PARENT_OF_0_IS_NOT_DIRECTORY,
-                fileToDumpData.getAbsolutePath()),
-            isGfshVM);
+                fileToDumpData.getAbsolutePath()));
         return;
       }
       if (fileType == FILE_TYPE_TEXT) {
@@ -296,25 +281,19 @@ public abstract class AbstractResultData implements ResultData {
         fos.flush();
         fos.close();
       }
-      // System.out.println("fileMessage :: "+fileMessage);
       if (fileMessage != null && !fileMessage.isEmpty()) {
-        if (isGfshVM) {
-          Gfsh.println(
-              MessageFormat.format(fileMessage, new Object[] {fileToDumpData.getAbsolutePath()}));
+        if (gfsh != null) {
+          Gfsh.println(MessageFormat.format(fileMessage, fileToDumpData.getAbsolutePath()));
         }
       }
-      // System.out.println(new String(uncompressed));
     }
   }
 
-  // TODO - Abhishek : prepare common utility for this & ANSI Styling
-  static void handleCondition(String message, boolean isGfshVM) throws IOException {
-    if (isGfshVM) {
-      Gfsh gfsh = Gfsh.getCurrentInstance();
-      // null check required in GfshVM too to avoid test issues
-      if (gfsh != null && !gfsh.isQuietMode()) {
-        gfsh.logWarning(message, null);
-      }
+  static void handleCondition(String message) throws IOException {
+    Gfsh gfsh = Gfsh.getCurrentInstance();
+    // null check required in GfshVM too to avoid test issues
+    if (gfsh != null && !gfsh.isQuietMode()) {
+      gfsh.logWarning(message, null);
     } else {
       throw new IOException(message);
     }

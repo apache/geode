@@ -14,119 +14,132 @@
  */
 package org.apache.geode.cache.snapshot;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
 import com.examples.snapshot.MyPdxSerializer;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import org.apache.geode.cache30.CacheTestCase;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.snapshot.SnapshotFileMapper;
 import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
 public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
-  static byte[] ffff = new byte[] {0xf, 0xf, 0xf, 0xf};
-  static byte[] eeee = new byte[] {0xe, 0xe, 0xe, 0xe};
+  private static final byte[] ffff = new byte[] {0xf, 0xf, 0xf, 0xf};
+  private static final byte[] eeee = new byte[] {0xe, 0xe, 0xe, 0xe};
+  private static final int DATA_POINTS = 100;
 
-  private static class TestSnapshotFileMapper implements SnapshotFileMapper {
-    volatile boolean explode;
+  private File directory;
 
-    @Override
-    public File mapExportPath(DistributedMember member, File snapshot) {
-      if (explode) {
-        throw new RuntimeException();
-      }
-      return new File(snapshot.getAbsoluteFile().toString() + VM.getCurrentVMNum());
-    }
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
-    @Override
-    public File[] mapImportPath(DistributedMember member, File snapshot) {
-      if (explode) {
-        throw new RuntimeException();
-      }
-
-      File f = new File(snapshot.getAbsoluteFile().toString() + VM.getCurrentVMNum());
-      return new File[] {f};
-    }
-  }
-
-  public ParallelSnapshotDUnitTest() {
-    super();
+  @Before
+  public void setup() throws IOException {
+    directory = temporaryFolder.newFolder();
   }
 
   @Test
   public void testExportImport() throws Exception {
+    loadCache();
     doExport(false);
     doImport(false);
   }
 
   @Test
+  public void testExportWithSequentialImport() throws Exception {
+    loadCache();
+    doExport(false);
+    doSequentialImport();
+  }
+
+  @Test
   public void testExportImportErrors() throws Exception {
+    loadCache();
     try {
       doExport(true);
-      fail();
+      fail("Expected exception not thrown");
     } catch (Exception e) {
+      // do nothing on expected exception from test
     }
 
     doExport(false);
     try {
       doImport(true);
-      fail();
+      fail("Expected exception not thrown");
     } catch (Exception e) {
+      // do nothing on expected exception from test
     }
   }
 
+  /**
+   * This test ensures that parallel import succeeds even when each node does not have a file to
+   * import (import cluster larger than export one)
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testImportOnLargerCluster() throws Exception {
+    loadCache(2);
+    doExport(false, 2);
+    getCache().getRegion("test").destroyRegion();
+    loadCache();
+    doImport(false);
+  }
+
   private void doExport(boolean explode) throws Exception {
+    doExport(explode, Host.getHost(0).getVMCount());
+  }
+
+  private void doExport(boolean explode, int nodes) throws Exception {
     Region region = getCache().getRegion("test");
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < DATA_POINTS; i++) {
       region.put(i, ffff);
     }
 
     RegionSnapshotService rss = region.getSnapshotService();
 
     final TestSnapshotFileMapper mapper = new TestSnapshotFileMapper();
-    mapper.explode = explode;
+    mapper.setShouldExplode(explode);
 
     SnapshotOptionsImpl opt = (SnapshotOptionsImpl) rss.createOptions();
     opt.setParallelMode(true);
     opt.setMapper(mapper);
 
-    final File f = new File("mysnap");
+    File f = new File(directory, "mysnap.gfd").getAbsoluteFile();
     rss.save(f, SnapshotFormat.GEMFIRE, opt);
 
-    mapper.explode = false;
+    mapper.setShouldExplode(false);
     SerializableCallable check = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         getCache().getDistributedSystem().getDistributedMember();
         File snap =
             mapper.mapExportPath(getCache().getDistributedSystem().getDistributedMember(), f);
-
         assertTrue("Could not find snapshot: " + snap, snap.exists());
         return null;
       }
     };
 
-    forEachVm(check, true);
+    forEachVm(check, true, nodes);
   }
 
   private void doImport(boolean explode) throws ClassNotFoundException, IOException {
@@ -134,60 +147,61 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
     RegionSnapshotService rss = region.getSnapshotService();
 
     final TestSnapshotFileMapper mapper = new TestSnapshotFileMapper();
-    mapper.explode = explode;
+    mapper.setShouldExplode(explode);
 
     SnapshotOptionsImpl opt = (SnapshotOptionsImpl) rss.createOptions();
     opt.setParallelMode(true);
     opt.setMapper(mapper);
 
-    final File f = new File("mysnap");
-
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < DATA_POINTS; i++) {
       region.put(i, eeee);
     }
 
-    rss.load(f, SnapshotFormat.GEMFIRE, opt);
-    for (int i = 0; i < 1000; i++) {
+    rss.load(directory, SnapshotFormat.GEMFIRE, opt);
+    for (int i = 0; i < DATA_POINTS; i++) {
       assertTrue(Arrays.equals(ffff, (byte[]) region.get(i)));
     }
   }
 
-  public Object forEachVm(SerializableCallable call, boolean local) throws Exception {
+  private void doSequentialImport() throws IOException, ClassNotFoundException {
+    Region region = getCache().getRegion("test");
+    RegionSnapshotService rss = region.getSnapshotService();
+    SnapshotOptionsImpl opt = (SnapshotOptionsImpl) rss.createOptions();
+
+
+    for (int i = 0; i < DATA_POINTS; i++) {
+      region.put(i, eeee);
+    }
+    int vmCount = Host.getHost(0).getVMCount();
+    for (int i = 0; i <= vmCount; i++) {
+      rss.load(new File(directory, Integer.toString(i)), SnapshotFormat.GEMFIRE, opt);
+    }
+    for (int i = 0; i < DATA_POINTS; i++) {
+      assertTrue(Arrays.equals(ffff, (byte[]) region.get(i)));
+    }
+  }
+
+  private void forEachVm(SerializableCallable call, boolean local, int maxNodes) throws Exception {
     Host host = Host.getHost(0);
-    int vms = host.getVMCount();
+    int vms = Math.min(host.getVMCount(), maxNodes);
 
     for (int i = 0; i < vms; ++i) {
       host.getVM(i).invoke(call);
     }
 
     if (local) {
-      return call.call();
-    }
-    return null;
-  }
-
-  @Override
-  public final void postSetUp() throws Exception {
-    loadCache();
-  }
-
-  @Override
-  public final void postTearDownCacheTestCase() throws Exception {
-    File[] snaps = new File(".").listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return name.startsWith("mysnap");
-      }
-    });
-
-    if (snaps != null) {
-      for (File f : snaps) {
-        f.delete();
-      }
+      call.call();
     }
   }
 
-  public void loadCache() throws Exception {
+  @Override
+  public final void postSetUp() throws Exception {}
+
+  private void loadCache() throws Exception {
+    this.loadCache(Integer.MAX_VALUE);
+  }
+
+  private void loadCache(int maxNodes) throws Exception {
     SerializableCallable setup = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
@@ -201,6 +215,6 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    forEachVm(setup, true);
+    forEachVm(setup, true, maxNodes);
   }
 }

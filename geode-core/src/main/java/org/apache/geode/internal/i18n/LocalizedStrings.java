@@ -286,7 +286,7 @@ public class LocalizedStrings {
           "CacheClientNotifier: The requested durable client has the same identifier ( {0} ) as an existing durable client ( {1} ). Duplicate durable clients are not allowed.");
   public static final StringId CacheClientNotifier_CACHECLIENTNOTIFIER_UNSUCCESSFULLY_REGISTERED_CLIENT_WITH_IDENTIFIER__0 =
       new StringId(1143,
-          "CacheClientNotifier: Unsuccessfully registered client with identifier  {0}");
+          "CacheClientNotifier: Unsuccessfully registered client with identifier  {0} and response code {1}");
   public static final StringId CacheClientNotifier_CANNOT_NOTIFY_CLIENTS_TO_PERFORM_OPERATION_0_ON_EVENT_1 =
       new StringId(1144,
           "CacheClientNotifier: Cannot notify clients to perform operation {0} on event {1}");
@@ -1112,7 +1112,7 @@ public class LocalizedStrings {
       new StringId(1690, "Running in local mode since no locators were specified.");
   public static final StringId InternalDistributedSystem_SHUTDOWNLISTENER__0__THREW =
       new StringId(1691, "ShutdownListener < {0} > threw...");
-  public static final StringId InternalDistributedSystem_STARTUP_CONFIGURATIONN_0 =
+  public static final StringId InternalDistributedSystem_STARTUP_CONFIGURATION_0 =
       new StringId(1692, "Startup Configuration:\n {0}");
 
   public static final StringId InternalInstantiator_CLASS_0_DOES_NOT_HAVE_A_TWOARGUMENT_CLASS_INT_CONSTRUCTOR =
@@ -2086,6 +2086,8 @@ public class LocalizedStrings {
           "Method '' {0} '' in class '' {1} '' is not accessible to the query processor");
   public static final StringId AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1 =
       new StringId(2253, "No public attribute named '' {0} '' was found in class  {1}");
+  public static final StringId AttributeDescriptor_NO_ACCESS_BECAUSE_METHOD_WAS_BLACKLISTED =
+      new StringId(2254, "No access to attribute named '' {0} '' because it has been blacklisted");
 
   public static final StringId AvailablePort_UNKNOWN_PROTOCOL_0 =
       new StringId(2258, "Unknown protocol:  {0}");
@@ -4514,8 +4516,6 @@ public class LocalizedStrings {
       "Prints statistic values from a statistic archive\nBy default all statistics are printed.\nThe statSpec arguments can be used to print individual resources or a specific statistic.\nThe format of a statSpec is: an optional combine operator, followed by an optional instanceId, followed by an optional typeId, followed by an optional statId.\nA combine operator can be \"{0}\" to combine all matches in the same file, or \"{1}\" to combine all matches across all files.\nAn instanceId must be the name or id of a resource.\nA typeId is a \"{2}\" followed by the name of a resource type.\nA statId is a \"{3}\" followed by the name of a statistic.\nA typeId or instanceId with no statId prints out all the matching resources and all their statistics.\nA typeId or instanceId with a statId prints out just the named statistic on the matching resources.\nA statId with no typeId or instanceId matches all statistics with that name.\nThe \"{4}\" option causes statistic descriptions to also be printed.\nThe \"{5}\" option, in conjunction with \"{6}\", causes the printed statistics to all be raw, unfiltered, values.\nThe \"{7}\" option, in conjunction with \"{6}\", causes the printed statistics to be the rate of change, per second, of the raw values.\nThe \"{8}\" option, in conjunction with \"{6}\", causes the printed statistics to be the rate of change, per sample, of the raw values.\nThe \"{9}\" option, in conjunction with \"{6}\", causes statistics whose values are all zero to not be printed.");
   public static final StringId SystemAdmin_STATS_HELP_PART_B = new StringId(3751,
       "The \"{0}\" option, in conjunction with \"{1}\", causes statistics samples taken before this time to be ignored. The argument format must match \"{2}\".\nThe \"{3}\" option, in conjunction with \"{1}\", causes statistics samples taken after this time to be ignored. The argument format must match \"{2}\".\nThe \"{1}\" option causes the data to come from an archive file.");
-  public static final StringId SystemAdmin_ENCRYPTS_A_PASSWORD_FOR_USE_IN_CACHE_XML_DATA_SOURCE_CONFIGURATION =
-      new StringId(3752, "Encrypts a password for use in cache.xml data source configuration.");
   public static final StringId SystemAdmin_START_LOCATOR_HELP = new StringId(3753,
       "Starts a locator.\nThe \"{0}\" option specifies the port the locator will listen on. It defaults to \"{1}\"\nThe \"{2}\" option specifies the address the locator will listen on. It defaults to listening on all local addresses.\nThe \"{3}\" option can be used to specify the directory the locator will run in.\nThe \"{4}\" option can be used to specify the gemfire.properties file for configuring the locator''s distributed system.  The file''s path should be absolute, or relative to the locator''s directory ({3})\nThe \"{5}\" option can be used to specify whether peer locator service should be enabled. True (the default) will enable the service.\nThe \"{6}\" option can be used to specify whether server locator service should be enabled. True (the default) will enable the service.\nThe \"{7}\" option can be used to specify a host name or ip address that will be sent to clients so they can connect to this locator. The default is to use the address the locator is listening on.\nThe \"{8}\" option can be used to set system properties for the locator VM\nThe \"{9}\" option can be used to set vendor-specific VM options and is usually used to increase the size of the locator VM when using multicast.\n");
   public static final StringId SystemAdmin_STOP_LOCATOR_HELP = new StringId(3754,
@@ -4960,7 +4960,6 @@ public class LocalizedStrings {
       new StringId(3979, "Pooled High Priority Message Processor ");
   public static final StringId DistributionManager_POOLED_WAITING_MESSAGE_PROCESSOR =
       new StringId(3980, "Pooled Waiting Message Processor ");
-  public static final StringId PasswordUtil_ENCRYPTED_TO_0 = new StringId(3981, "Encrypted to {0}");
   public static final StringId DistributionManager_SHUTDOWN_MESSAGE_THREAD_FOR_0 =
       new StringId(3982, "Shutdown Message Thread for {0}");
   public static final StringId HealthMonitorImpl_HEALTH_MONITOR_OWNED_BY_0 =
@@ -7216,7 +7215,7 @@ public class LocalizedStrings {
       new StringId(5305,
           "Exception occurred while handling call to {0}.afterAcknowledgement for event {1}:");
   public static final StringId GatewayReceiverImpl_USING_LOCAL_HOST =
-      new StringId(5399, "No bind-address or hostname-for-sender is specified, Using local host ");
+      new StringId(5399, "No bind-address or hostname-for-senders specified, Using local host ");
   public static final StringId GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME =
       new StringId(5400, "Could not get host name");
   public static final StringId CqService_ERROR_SENDING_CQ_CONNECTION_STATUS =
@@ -7699,6 +7698,20 @@ public class LocalizedStrings {
 
   public static final StringId LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED = new StringId(6660,
       "Region {0} cannot be destroyed because it defines Lucene index(es) [{1}]. Destroy all Lucene indexes before destroying the region.");
+
+  public static final StringId AbstractGatewaySender_CAUGHT_EXCEPTION_ENQUEUEING_SYNCHRONIZATION_EVENT =
+      new StringId(6661,
+          "{0}: Caught the following exception attempting to enqueue synchronization event={1}:");
+  public static final StringId GemFireCacheImpl_CAUGHT_EXCEPTION_SYNCHRONIZING_EVENTS =
+      new StringId(6662,
+          "Caught the following exception attempting to synchronize events from member={0}; regionPath={1}; entriesToSynchronize={2}:");
+  public static final StringId GatewaySenderQueueEntrySynchronizationReplyProcessor_REPLY_IS_EMPTY =
+      new StringId(6663,
+          "Synchronization event reply from member={0}; regionPath={1}; key={2}; entryVersion={3} is empty");
+  public static final StringId AbstractGatewaySender_PROVIDING_SYNCHRONIZATION_EVENT =
+      new StringId(6664, "{0}: Providing synchronization event for key={1}; timestamp={2}: {3}");
+  public static final StringId AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT =
+      new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
 
   /** Testing strings, messageId 90000-99999 **/
 

@@ -18,23 +18,23 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import junit.framework.TestCase;
-import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class is the superclass of all distributed tests using JUnit 3.
+ *
+ * @deprecated Please use {@link DistributedTestCase} which extends
+ *             {@link JUnit4DistributedTestCase} when writing new tests.
  */
+@Deprecated
 @Category(DistributedTest.class)
 public abstract class JUnit3DistributedTestCase extends TestCase
     implements DistributedTestFixture, Serializable {
-
-  private static final Logger logger = LogService.getLogger();
 
   private final JUnit4DistributedTestCase delegate = new JUnit4DistributedTestCase(this) {};
 
@@ -47,19 +47,12 @@ public abstract class JUnit3DistributedTestCase extends TestCase
     JUnit4DistributedTestCase.initializeDistributedTestCase();
   }
 
-  // ---------------------------------------------------------------------------
-  // methods for tests
-  // ---------------------------------------------------------------------------
-
   /**
    * @deprecated Please override {@link #getDistributedSystemProperties()} instead.
    */
   @Deprecated
-  public final void setSystem(final Properties props, final DistributedSystem ds) { // TODO:
-                                                                                    // override
-                                                                                    // getDistributedSystemProperties
-                                                                                    // and then
-                                                                                    // delete
+  public final void setSystem(final Properties props, final DistributedSystem ds) {
+    // TODO: override getDistributedSystemProperties and then delete
     delegate.setSystem(props, ds);
   }
 
@@ -98,10 +91,6 @@ public abstract class JUnit3DistributedTestCase extends TestCase
 
   public final InternalDistributedSystem basicGetSystem() {
     return delegate.basicGetSystem();
-  }
-
-  public final void nullSystem() { // TODO: delete
-    delegate.nullSystem();
   }
 
   public static final InternalDistributedSystem getSystemStatic() {
@@ -146,10 +135,6 @@ public abstract class JUnit3DistributedTestCase extends TestCase
     JUnit4DistributedTestCase.disconnectFromDS();
   }
 
-  // ---------------------------------------------------------------------------
-  // name methods
-  // ---------------------------------------------------------------------------
-
   public static final String getTestMethodName() {
     return JUnit4DistributedTestCase.getTestMethodName();
   }
@@ -162,10 +147,6 @@ public abstract class JUnit3DistributedTestCase extends TestCase
     return delegate.getUniqueName();
   }
 
-  // ---------------------------------------------------------------------------
-  // setup methods
-  // ---------------------------------------------------------------------------
-
   /**
    * Sets up the DistributedTestCase.
    * <p>
@@ -174,30 +155,30 @@ public abstract class JUnit3DistributedTestCase extends TestCase
    */
   @Override
   public final void setUp() throws Exception {
-    delegate.setUp();
+    delegate.setUpDistributedTestCase();
   }
 
   /**
    * {@code preSetUp()} is invoked before
-   * {@link JUnit4DistributedTestCase#setUpDistributedTestCase()}.
+   * {@link JUnit4DistributedTestCase#doSetUpDistributedTestCase()}.
    *
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void preSetUp() throws Exception {}
+  public void preSetUp() throws Exception {
+    // nothing by default
+  }
 
   /**
    * {@code postSetUp()} is invoked after
-   * {@link JUnit4DistributedTestCase#setUpDistributedTestCase()}.
+   * {@link JUnit4DistributedTestCase#doSetUpDistributedTestCase()}.
    *
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void postSetUp() throws Exception {}
-
-  // ---------------------------------------------------------------------------
-  // teardown methods
-  // ---------------------------------------------------------------------------
+  public void postSetUp() throws Exception {
+    // nothing by default
+  }
 
   /**
    * Tears down the DistributedTestCase.
@@ -209,26 +190,30 @@ public abstract class JUnit3DistributedTestCase extends TestCase
    */
   @Override
   public final void tearDown() throws Exception {
-    delegate.tearDown();
+    delegate.tearDownDistributedTestCase();
   }
 
   /**
    * {@code preTearDown()} is invoked before
-   * {@link JUnit4DistributedTestCase#tearDownDistributedTestCase()}.
+   * {@link JUnit4DistributedTestCase#doTearDownDistributedTestCase()}.
    *
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void preTearDown() throws Exception {}
+  public void preTearDown() throws Exception {
+    // nothing by default
+  }
 
   /**
    * {@code postTearDown()} is invoked after
-   * {@link JUnit4DistributedTestCase#tearDownDistributedTestCase()}.
+   * {@link JUnit4DistributedTestCase#doTearDownDistributedTestCase()}.
    *
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void postTearDown() throws Exception {}
+  public void postTearDown() throws Exception {
+    // nothing by default
+  }
 
   /**
    * {@code preTearDownAssertions()} is invoked before any tear down methods have been invoked. If
@@ -237,7 +222,9 @@ public abstract class JUnit3DistributedTestCase extends TestCase
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void preTearDownAssertions() throws Exception {}
+  public void preTearDownAssertions() throws Exception {
+    // nothing by default
+  }
 
   /**
    * {@code postTearDownAssertions()} is invoked after all tear down methods have completed. This
@@ -246,10 +233,8 @@ public abstract class JUnit3DistributedTestCase extends TestCase
    * <p>
    * Override this as needed. Default implementation is empty.
    */
-  public void postTearDownAssertions() throws Exception {}
-
-  protected static final void destroyRegions(final Cache cache) { // TODO: this should move to
-                                                                  // CacheTestCase
-    JUnit4DistributedTestCase.destroyRegions(cache);
+  public void postTearDownAssertions() throws Exception {
+    // nothing by default
   }
+
 }

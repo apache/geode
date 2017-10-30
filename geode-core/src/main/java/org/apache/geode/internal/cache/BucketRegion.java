@@ -30,7 +30,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyProcessor;
-import org.apache.geode.internal.cache.EventTracker.EventSeqnoHolder;
+import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -280,12 +280,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  public void createEventTracker() {
-    this.eventTracker = new EventTracker(this);
-    this.eventTracker.start();
-  }
-
-  @Override
   public void registerCreateRegionReplyProcessor(CreateRegionReplyProcessor processor) {
     this.createRegionReplyProcessor = processor;
   }
@@ -293,7 +287,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   protected void recordEventStateFromImageProvider(InternalDistributedMember provider) {
     if (this.createRegionReplyProcessor != null) {
-      Map<ThreadIdentifier, EventSeqnoHolder> providerEventStates =
+      Map<ThreadIdentifier, EventSequenceNumberHolder> providerEventStates =
           this.createRegionReplyProcessor.getEventState(provider);
       if (providerEventStates != null) {
         recordEventState(provider, providerEventStates);
@@ -1310,6 +1304,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       throws TimeoutException, CacheWriterException {
     beginLocalWrite(event);
     try {
+      if (getPartitionedRegion().isParallelWanEnabled()) {
+        handleWANEvent(event);
+      }
       event.setInvokePRCallbacks(true);
       forceSerialized(event);
       return super.basicPutEntry(event, lastModified);
@@ -1392,6 +1389,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   public int sizeEstimate() {
     return size();
+  }
+
+  @Override
+  public int getRegionSize(DistributedMember target) {
+    // GEODE-3679. Do not forward the request again.
+    return getRegionSize();
   }
 
   @Override
@@ -1632,7 +1635,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (this.isInitialized()) {
       boolean callThem = callDispatchListenerEvent;
       if (event.isPossibleDuplicate()
-          && this.eventTracker.isInitialImageProvider(event.getDistributedMember())) {
+          && getEventTracker().isInitialImageProvider(event.getDistributedMember())) {
         callThem = false;
       }
       super.invokeTXCallbacks(eventType, event, callThem);
@@ -1664,7 +1667,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (this.isInitialized()) {
       boolean callThem = callDispatchListenerEvent;
       if (event.isPossibleDuplicate()
-          && this.eventTracker.isInitialImageProvider(event.getDistributedMember())) {
+          && this.getEventTracker().isInitialImageProvider(event.getDistributedMember())) {
         callThem = false;
       }
       super.invokeDestroyCallbacks(eventType, event, callThem, notifyGateways);
@@ -1695,7 +1698,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (this.isInitialized()) {
       boolean callThem = callDispatchListenerEvent;
       if (event.isPossibleDuplicate()
-          && this.eventTracker.isInitialImageProvider(event.getDistributedMember())) {
+          && this.getEventTracker().isInitialImageProvider(event.getDistributedMember())) {
         callThem = false;
       }
       super.invokeInvalidateCallbacks(eventType, event, callThem);
@@ -1729,7 +1732,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (this.isInitialized()) {
       boolean callThem = callDispatchListenerEvent;
       if (callThem && event.isPossibleDuplicate()
-          && this.eventTracker.isInitialImageProvider(event.getDistributedMember())) {
+          && this.getEventTracker().isInitialImageProvider(event.getDistributedMember())) {
         callThem = false;
       }
       super.invokePutCallbacks(eventType, event, callThem, notifyGateways);
@@ -2439,5 +2442,31 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return getPartitionedRegion().notifiesMultipleSerialGateways();
   }
 
+  @Override
+  public boolean hasSeenEvent(EntryEventImpl event) {
+    ensureEventTrackerInitialization();
+    return super.hasSeenEvent(event);
+  }
+
+  // bug 41289 - wait for event tracker to be initialized before checkin
+  // so that an operation intended for a previous version of a bucket
+  // is not prematurely applied to a new version of the bucket
+  private void ensureEventTrackerInitialization() {
+    try {
+      getEventTracker().waitOnInitialization();
+    } catch (InterruptedException ie) {
+      stopper.checkCancelInProgress(ie);
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  @Override
+  protected void postDestroyRegion(boolean destroyDiskRegion, RegionEventImpl event) {
+    DiskRegion dr = this.getDiskRegion();
+    if (dr != null && destroyDiskRegion) {
+      dr.statsClear(this);
+    }
+    super.postDestroyRegion(destroyDiskRegion, event);
+  }
 }
 

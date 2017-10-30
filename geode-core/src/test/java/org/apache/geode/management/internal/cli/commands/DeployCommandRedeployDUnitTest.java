@@ -15,24 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.Serializable;
@@ -44,6 +26,25 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
 public class DeployCommandRedeployDUnitTest implements Serializable {
@@ -64,6 +65,9 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
 
   private MemberVM locator;
   private MemberVM server;
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -139,7 +143,7 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
     classContents = classContents.replaceAll("FUNCTION_A", FUNCTION_A);
     classContents = classContents.replaceAll("VERSION", version);
 
-    File jar = new File(lsRule.getTempFolder().newFolder(JAR_NAME_A + version), this.JAR_NAME_A);
+    File jar = new File(temporaryFolder.newFolder(JAR_NAME_A + version), this.JAR_NAME_A);
     ClassBuilder functionClassBuilder = new ClassBuilder();
     functionClassBuilder.writeJarFromContent(FUNCTION_A, classContents, jar);
 
@@ -156,7 +160,7 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
     classContents = classContents.replaceAll("FUNCTION_B", FUNCTION_B);
     classContents = classContents.replaceAll("VERSION", version);
 
-    File jar = new File(lsRule.getTempFolder().newFolder(JAR_NAME_B + version), this.JAR_NAME_B);
+    File jar = new File(temporaryFolder.newFolder(JAR_NAME_B + version), this.JAR_NAME_B);
     ClassBuilder functionClassBuilder = new ClassBuilder();
     functionClassBuilder.writeJarFromContent("jddunit/function/" + FUNCTION_B, classContents, jar);
 

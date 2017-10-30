@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management.cli;
 
-import org.apache.geode.management.internal.cli.CliAroundInterceptor;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 
 /**
  * An annotation to define additional meta-data for commands.
@@ -38,8 +38,8 @@ public @interface CliMetaData {
   public static final String ANNOTATION_NULL_VALUE = "__NULL__";
 
   /**
-   * Indicates that the command will only run in the gfsh shell and will not need the management
-   * service
+   * Indicates that the command will only run in the gfsh shell Gfsh ExecutionStrategy will use this
+   * flag to determine whether to invoke remote call or not.
    **/
   boolean shellOnly() default false;
 
@@ -50,6 +50,12 @@ public @interface CliMetaData {
    * to use that temp file to fit your need.
    **/
   boolean isFileDownloadOverHttp() default false;
+
+  /**
+   * Indicates whether this command would require fileData to be sent from the client. If this is
+   * true, the preExecution of the interceptor needs to return a FileResult
+   */
+  boolean isFileUploaded() default false;
 
   /**
    * Indicates that the effect of the command is persisted or the commands affects the persistent

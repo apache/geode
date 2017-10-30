@@ -252,9 +252,9 @@ public class StartupMessageDataJUnitTest {
 
   private String createOneLocatorString() throws Exception {
     DistributionLocatorId locatorId =
-        new DistributionLocatorId(SocketCreator.getLocalHost(), 445566, "111.222.333.444", null);
+        new DistributionLocatorId(SocketCreator.getLocalHost(), 44556, "111.222.333.444", null);
     String locatorString = locatorId.marshal();
-    assertEquals("" + locatorId.getHost().getHostAddress() + ":111.222.333.444[445566]",
+    assertEquals("" + locatorId.getHost().getAddress().getHostAddress() + ":111.222.333.444[44556]",
         locatorString);
     return locatorString;
   }

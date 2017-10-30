@@ -49,7 +49,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
-import org.apache.geode.internal.cache.EventTracker.EventSeqnoHolder;
+import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
@@ -91,10 +91,8 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           logger.debug("CreateRegionProcessor.initializeRegion, no recipients, msg not sent");
         }
         this.newRegion.getDistributionAdvisor().setInitialized();
-        EventTracker tracker = ((LocalRegion) this.newRegion).getEventTracker();
-        if (tracker != null) {
-          tracker.setInitialized();
-        }
+
+        ((LocalRegion) this.newRegion).getEventTracker().setInitialized();
         return;
       }
 
@@ -138,13 +136,11 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
       } finally {
         replyProc.cleanup();
-        EventTracker tracker = ((LocalRegion) this.newRegion).getEventTracker();
-        if (tracker != null) {
-          tracker.setInitialized();
-        }
+        ((LocalRegion) this.newRegion).getEventTracker().setInitialized();
         if (((LocalRegion) this.newRegion).isUsedForPartitionedRegionBucket()) {
           if (logger.isDebugEnabled()) {
-            logger.debug("initialized bucket event tracker: {}", tracker);
+            logger.debug("initialized bucket event tracker: {}",
+                ((LocalRegion) this.newRegion).getEventTracker());
           }
         }
       }
@@ -203,12 +199,12 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           .getDistributedSystem(), members);
     }
 
-    private final Map<DistributedMember, Map<ThreadIdentifier, EventSeqnoHolder>> remoteEventStates =
+    private final Map<DistributedMember, Map<ThreadIdentifier, EventSequenceNumberHolder>> remoteEventStates =
         new ConcurrentHashMap<>();
 
     private boolean allMembersSkippedChecks = true;
 
-    public Map<ThreadIdentifier, EventSeqnoHolder> getEventState(
+    public Map<ThreadIdentifier, EventSequenceNumberHolder> getEventState(
         InternalDistributedMember provider) {
       return this.remoteEventStates.get(provider);
     }
@@ -254,7 +250,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           // Save all event states, need to initiate the event tracker from the GII provider
           if (reply.eventState != null) {
             remoteEventStates.put(reply.getSender(),
-                (Map<ThreadIdentifier, EventSeqnoHolder>) reply.eventState);
+                (Map<ThreadIdentifier, EventSequenceNumberHolder>) reply.eventState);
           }
 
           if (lr.isUsedForPartitionedRegionBucket()) {

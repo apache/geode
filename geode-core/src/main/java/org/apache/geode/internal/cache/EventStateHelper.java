@@ -19,7 +19,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
-import org.apache.geode.internal.cache.EventTracker.EventSeqnoHolder;
+import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
 import org.apache.geode.internal.cache.InitialImageOperation.RegionStateMessage;
 import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -89,7 +89,7 @@ public class EventStateHelper {
           DispatchedAndCurrentEvents value = (DispatchedAndCurrentEvents) entry.getValue();
           InternalDataSerializer.invokeToData(value, dop);
         } else {
-          EventSeqnoHolder value = (EventSeqnoHolder) entry.getValue();
+          EventSequenceNumberHolder value = (EventSequenceNumberHolder) entry.getValue();
           InternalDataSerializer.invokeToData(value, dop);
         }
       }
@@ -130,11 +130,11 @@ public class EventStateHelper {
           InternalDataSerializer.invokeFromData(value, dip);
           eventState.put(key, value);
         } else {
-          EventSeqnoHolder value = new EventSeqnoHolder();
+          EventSequenceNumberHolder value = new EventSequenceNumberHolder();
           InternalDataSerializer.invokeFromData(value, dip);
           eventState.put(key, value);
-          if (value.versionTag != null) {
-            value.versionTag.replaceNullIDs(senderId);
+          if (value.getVersionTag() != null) {
+            value.getVersionTag().replaceNullIDs(senderId);
           }
         }
       }

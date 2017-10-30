@@ -14,18 +14,11 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import java.io.File;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -34,7 +27,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class DeployCommandsSecurityTest {
@@ -43,8 +43,7 @@ public class DeployCommandsSecurityTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withJMXManager()
-      .withAutoStart();
+      .withSecurityManager(SimpleTestSecurityManager.class).withJMXManager().withAutoStart();
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -81,14 +80,7 @@ public class DeployCommandsSecurityTest {
         .isInstanceOf(NotAuthorizedException.class);
   }
 
-  @Test // only cluster access right is not enough to deploy
-  @ConnectionConfiguration(user = "cluster", password = "cluster")
-  public void testNoAccess3() {
-    assertThatThrownBy(() -> bean.processCommand(deployCommand))
-        .isInstanceOf(NotAuthorizedException.class);
-  }
-
-  @Test // not sufficient privalge
+  @Test // not sufficient privilege
   @ConnectionConfiguration(user = "clusterRead,clusterWrite,dataRead,dataWrite",
       password = "clusterRead,clusterWrite,dataRead,dataWrite")
   public void testNoAccess4() {
@@ -100,7 +92,8 @@ public class DeployCommandsSecurityTest {
   @ConnectionConfiguration(user = "cluster,data", password = "cluster,data")
   public void testPowerAccess1() {
     String result = bean.processCommand(deployCommand);
-    assertTrue(result.contains("File does not contain valid JAR content: functions.jar"));
+
+    assertThat(result).contains("can not be executed only from server side");
   }
 
   @Test // only power user can deploy
@@ -108,9 +101,6 @@ public class DeployCommandsSecurityTest {
       password = "clusterManage,clusterWrite,dataManage,dataWrite")
   public void testPowerAccess2() {
     String result = bean.processCommand(deployCommand);
-    assertTrue(result.contains("File does not contain valid JAR content: functions.jar"));
+    assertThat(result).contains("can not be executed only from server side");
   }
-
-
-
 }

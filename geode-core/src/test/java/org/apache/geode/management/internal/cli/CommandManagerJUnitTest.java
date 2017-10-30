@@ -18,12 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,7 +31,12 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import java.util.List;
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
@@ -138,15 +139,13 @@ public class CommandManagerJUnitTest {
         @CliOption(key = ARGUMENT1_NAME, optionContext = ARGUMENT1_CONTEXT, help = ARGUMENT1_HELP,
             mandatory = true) String argument1,
         @CliOption(key = ARGUMENT2_NAME, optionContext = ARGUMENT2_CONTEXT, help = ARGUMENT2_HELP,
-            mandatory = false, unspecifiedDefaultValue = ARGUMENT2_UNSPECIFIED_DEFAULT_VALUE,
-            systemProvided = false) String argument2,
+            unspecifiedDefaultValue = ARGUMENT2_UNSPECIFIED_DEFAULT_VALUE) String argument2,
         @CliOption(key = {OPTION1_NAME, OPTION1_SYNONYM}, help = OPTION1_HELP, mandatory = true,
             optionContext = OPTION1_CONTEXT,
             specifiedDefaultValue = OPTION1_SPECIFIED_DEFAULT_VALUE) String option1,
-        @CliOption(key = {OPTION2_NAME}, help = OPTION2_HELP, mandatory = false,
-            optionContext = OPTION2_CONTEXT,
+        @CliOption(key = {OPTION2_NAME}, help = OPTION2_HELP, optionContext = OPTION2_CONTEXT,
             specifiedDefaultValue = OPTION2_SPECIFIED_DEFAULT_VALUE) String option2,
-        @CliOption(key = {OPTION3_NAME, OPTION3_SYNONYM}, help = OPTION3_HELP, mandatory = false,
+        @CliOption(key = {OPTION3_NAME, OPTION3_SYNONYM}, help = OPTION3_HELP,
             optionContext = OPTION3_CONTEXT,
             unspecifiedDefaultValue = OPTION3_UNSPECIFIED_DEFAULT_VALUE,
             specifiedDefaultValue = OPTION3_SPECIFIED_DEFAULT_VALUE) String option3) {

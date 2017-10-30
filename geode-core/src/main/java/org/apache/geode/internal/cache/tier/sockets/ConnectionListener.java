@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.internal.cache.tier.CommunicationMode;
+
 /**
  * A listener which can be registered on {@link AcceptorImpl} in order to receive events about
  * connections created or destroyed for this acceptor.
@@ -28,7 +30,7 @@ public interface ConnectionListener {
    * @param firstConnection true if this is the first connection from this client.
    * @param communicationMode the communication mode of this connection.
    */
-  void connectionOpened(boolean firstConnection, byte communicationMode);
+  void connectionOpened(boolean firstConnection, CommunicationMode communicationMode);
 
   /**
    * Indicates that the a connection to this acceptor has been closed.
@@ -36,7 +38,7 @@ public interface ConnectionListener {
    * @param lastConnection indicates that this was the last connection from this client.
    * @param communicationMode of this connection.
    */
-  void connectionClosed(boolean lastConnection, byte communicationMode);
+  void connectionClosed(boolean lastConnection, CommunicationMode communicationMode);
 
   /**
    * Indicates that a new queue was created on this Acceptor.

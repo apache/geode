@@ -27,7 +27,10 @@ public interface GatewaySender {
 
   /**
    * The default value (false) for manually starting a <code>GatewaySender</code>.
+   * 
+   * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
+  @Deprecated
   public static final boolean DEFAULT_MANUAL_START = false;
 
   /**
@@ -368,8 +371,10 @@ public interface GatewaySender {
    * GatewaySender will automatically start once created.
    * 
    * @return the manual start boolean property for this GatewaySender
-   * 
+   *
+   * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
+  @Deprecated
   public boolean isManualStart();
 
   /**

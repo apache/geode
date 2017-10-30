@@ -37,7 +37,10 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Destroy extends BaseCommand {
 
@@ -48,7 +51,8 @@ public class Destroy extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection, long startparam)
+  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
+      final SecurityService securityService, long startparam)
       throws IOException, InterruptedException {
     long start = startparam;
 
@@ -135,7 +139,7 @@ public class Destroy extends BaseCommand {
 
     try {
       // for integrated security
-      this.securityService.authorizeRegionWrite(regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key.toString());
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.result;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,7 +39,7 @@ import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
  * 
  * @since GemFire 7.0
  */
-// Should this have info about the command String??
+
 public class CommandResult implements Result {
 
   private GfJsonObject gfJsonObject;
@@ -52,12 +53,27 @@ public class CommandResult implements Result {
 
   private transient int numTimesSaved;
 
+  public Path getFileToDownload() {
+    return fileToDownload;
+  }
+
+  private Path fileToDownload;
+
 
   public CommandResult(ResultData resultData) {
     this.resultData = resultData;
     this.gfJsonObject = this.resultData.getGfJsonObject();
     this.status = this.resultData.getStatus();
-    this.resultLines = new Vector<String>();
+    this.resultLines = new Vector<>();
+  }
+
+  public CommandResult(Path fileToDownload) {
+    this(new InfoResultData(fileToDownload.toString()));
+    this.fileToDownload = fileToDownload.toAbsolutePath();
+  }
+
+  public boolean hasFileToDownload() {
+    return fileToDownload != null;
   }
 
   @Override
@@ -78,7 +94,6 @@ public class CommandResult implements Result {
     index = 0;
   }
 
-  // TODO -Abhishek - extract this code out in a FormatBuilder or PresentationBuilder??
   private void buildData() {
     try {
       if (ResultData.TYPE_OBJECT.equals(resultData.getType())) {
@@ -95,7 +110,6 @@ public class CommandResult implements Result {
           RowGroup rowGroup = resultTable.newRowGroup();
 
           if (ResultData.TYPE_TABULAR.equals(resultData.getType())) {
-            // resultTable.setColumnSeparator(" | ");
             resultTable.setColumnSeparator("   ");
             resultTable.setTabularResult(true);
             buildTable(rowGroup, content);
@@ -111,7 +125,6 @@ public class CommandResult implements Result {
     } catch (GfJsonException e) {
       resultLines
           .add("Error occurred while processing Command Result. Internal Error - Invalid Result.");
-      // TODO - Abhishek. Add stack trace when 'debug' is enabled. Log to LogWrapper always
     } finally {
       isDataBuilt = true;
     }
@@ -152,7 +165,7 @@ public class CommandResult implements Result {
     }
   }
 
-  /* private */ void buildObjectResultOutput() {
+  void buildObjectResultOutput() {
     try {
       Table resultTable = TableBuilder.newTable();
       resultTable.setColumnSeparator(" : ");
@@ -169,12 +182,7 @@ public class CommandResult implements Result {
           GfJsonObject object = objectsArray.getJSONObject(i);
           buildObjectSection(resultTable, null, object, 0);
         }
-      } /*
-         * else { // GfJsonObject jsonObject =
-         * content.getJSONObject(ObjectResultData.ROOT_OBJECT_ACCESSOR); //
-         * buildObjectSection(resultTable, null, jsonObject, 0); }
-         */
-
+      }
       addFooterInTable(resultTable, getGfJsonObject());
 
       resultLines.addAll(resultTable.buildTableList());
@@ -182,7 +190,6 @@ public class CommandResult implements Result {
     } catch (GfJsonException e) {
       resultLines
           .add("Error occurred while processing Command Result. Internal Error - Invalid Result.");
-      // TODO - Abhishek. Add stack trace when 'debug' is enabled. Log to LogWrapper always
     } finally {
       isDataBuilt = true;
     }
@@ -191,7 +198,7 @@ public class CommandResult implements Result {
   private void buildObjectSection(Table table, RowGroup parentRowGroup, GfJsonObject object,
       int depth) throws GfJsonException {
     Iterator<String> keys = object.keys();
-    RowGroup rowGroup = null;
+    RowGroup rowGroup;
     if (parentRowGroup != null) {
       rowGroup = parentRowGroup;
     } else {
@@ -205,8 +212,8 @@ public class CommandResult implements Result {
 
     List<String> fieldsToSkipOnUI = null;
     if (object.has(CliJsonSerializable.FIELDS_TO_SKIP_ON_UI)) {
-      GfJsonArray jsonArray = object.getJSONArray(CliJsonSerializable.FIELDS_TO_SKIP_ON_UI);;
-      fieldsToSkipOnUI = new ArrayList<String>();
+      GfJsonArray jsonArray = object.getJSONArray(CliJsonSerializable.FIELDS_TO_SKIP_ON_UI);
+      fieldsToSkipOnUI = new ArrayList<>();
       for (int i = 0; i < jsonArray.size(); i++) {
         fieldsToSkipOnUI.add(String.valueOf(jsonArray.get(i)));
       }
@@ -222,8 +229,8 @@ public class CommandResult implements Result {
 
       try {
         nestedCollection = object.getJSONArray(key);
-      } catch (GfJsonException e) {
-        /* next check if it's a nested object */}
+      } catch (GfJsonException ignored) {
+      }
 
       Object field = null;
       if (nestedCollection == null) {
@@ -240,10 +247,8 @@ public class CommandResult implements Result {
 
       Row newRow = rowGroup.newRow();
       String prefix = "";
-      /* if (nestedCollection != null) */ {
-        for (int i = 0; i < depth; i++) {
-          prefix += " . ";
-        }
+      for (int i = 0; i < depth; i++) {
+        prefix += " . ";
       }
       String fieldNameToDisplay = fieldDisplayNames.getString(key);
 
@@ -252,22 +257,21 @@ public class CommandResult implements Result {
       }
 
       if (nestedCollection != null) {
-        Map<String, Integer> columnsMap = new HashMap<String, Integer>();
+        Map<String, Integer> columnsMap = new HashMap<>();
 
-        GfJsonArray rowsArray = nestedCollection;
         RowGroup newRowGroup = table.newRowGroup();
         newRowGroup.setColumnSeparator(" | ");
         newRowGroup.newBlankRow();
         newRowGroup.newRow().newLeftCol(fieldNameToDisplay);
         Row headerRow = newRowGroup.newRow();
 
-        int numOfRows = rowsArray.size();
+        int numOfRows = nestedCollection.size();
         List<String> tableFieldsToSkipOnUI = null;
         for (int j = 0; j < numOfRows; j++) {
-          GfJsonObject content = rowsArray.getJSONObject(j);
+          GfJsonObject content = nestedCollection.getJSONObject(j);
           if (content.has(CliJsonSerializable.FIELDS_TO_SKIP_ON_UI)) {
             GfJsonArray jsonArray = content.getJSONArray(CliJsonSerializable.FIELDS_TO_SKIP_ON_UI);
-            tableFieldsToSkipOnUI = new ArrayList<String>();
+            tableFieldsToSkipOnUI = new ArrayList<>();
             for (int i = 0; i < jsonArray.size(); i++) {
               tableFieldsToSkipOnUI.add(String.valueOf(jsonArray.get(i)));
             }
@@ -284,7 +288,7 @@ public class CommandResult implements Result {
               if (CliJsonSerializable.FIELDS_TO_SKIP.contains((String) columnName)
                   || (tableFieldsToSkipOnUI != null
                       && tableFieldsToSkipOnUI.contains(columnName))) {
-                // skip file data if any //TODO - make response format better
+                // skip file data if any
                 continue;
               }
 
@@ -299,7 +303,7 @@ public class CommandResult implements Result {
             Object columnName = columnNames.get(i);
             if (CliJsonSerializable.FIELDS_TO_SKIP.contains((String) columnName)
                 || (tableFieldsToSkipOnUI != null && tableFieldsToSkipOnUI.contains(columnName))) {
-              // skip file data if any //TODO - make response format better
+              // skip file data if any
               continue;
             }
             newRow.newLeftCol(String.valueOf(content.get((String) columnName)));
@@ -308,18 +312,7 @@ public class CommandResult implements Result {
       } else if (nestedObject != null) {
         buildObjectSection(table, rowGroup, nestedObject, depth + 1);
       } else {
-        // Row newRow = rowGroup.newRow();
-        // String prefix = "";
-        // for (int i = 0; i < depth; i++) {
-        // prefix += " . ";
-        // }
-        // newRow.newLeftCol(prefix+fieldDisplayNames.getString(key)).newLeftCol(field);
-        Object value = field;
-        /*
-         * if (isPrimitiveOrStringOrWrapperArray(value)) { value = Arrays.toString((String[])value);
-         * }
-         */
-        newRow.newLeftCol(value);
+        newRow.newLeftCol(field);
       }
       nestedCollection = null;
       nestedObject = null;
@@ -375,14 +368,14 @@ public class CommandResult implements Result {
       GfJsonArray jsonArr = (GfJsonArray) object;
       try {
         isPrimitive = isPrimitiveOrStringOrWrapper(jsonArr.get(0));
-      } catch (GfJsonException e) {
+      } catch (GfJsonException ignored) {
       }
     }
 
     return isPrimitive;
   }
 
-  /* private */ void buildComposite() {
+  void buildComposite() {
     try {
       GfJsonObject content = getContent();
       if (content != null) {
@@ -418,7 +411,7 @@ public class CommandResult implements Result {
   private void buildSection(Table table, RowGroup parentRowGroup, GfJsonObject section, int depth)
       throws GfJsonException {
     Iterator<String> keys = section.keys();
-    RowGroup rowGroup = null;
+    RowGroup rowGroup;
     if (parentRowGroup != null) {
       rowGroup = parentRowGroup;
     } else {
@@ -428,7 +421,6 @@ public class CommandResult implements Result {
     while (keys.hasNext()) {
       String key = keys.next();
       Object object = section.get(key);
-      // System.out.println(key +" : " + object);
       if (key.startsWith(CompositeResultData.TABLE_DATA_ACCESSOR)) {
         GfJsonObject tableObject = section.getJSONObject(key);
 
@@ -446,7 +438,6 @@ public class CommandResult implements Result {
         rowGroup.newRowSeparator(separatorString.charAt(0), true);
       } else if (key.equals(ResultData.RESULT_HEADER) || key.equals(ResultData.RESULT_FOOTER)) {
         // skip header & footer
-        continue;
       } else {
         Row newRow = rowGroup.newRow();
         String prefix = "";
@@ -468,22 +459,14 @@ public class CommandResult implements Result {
             newRow.newLeftCol(prefix + key).newLeftCol("");
           }
         }
-        // System.out.println(key+" : "+object);
       }
     }
     addFooterInRowGroup(rowGroup, section);
   }
 
-  // public static void main(String[] args) {
-  // String[] valuesSeparatedByLines = getValuesSeparatedByLines(CliConstants.LINE_SEPARATOR);
-  // System.out.println(valuesSeparatedByLines +" -- "+valuesSeparatedByLines.length);
-  // }
-
   private static String[] getValuesSeparatedByLines(Object object) {
-    String[] values = null;
     String valueString = String.valueOf(object);
-    values = valueString.split(GfshParser.LINE_SEPARATOR);
-    return values;
+    return valueString.split(GfshParser.LINE_SEPARATOR);
   }
 
   /**
@@ -502,10 +485,10 @@ public class CommandResult implements Result {
     for (int i = 0; i < numOfColumns; i++) {
       Object object = columnNames.get(i);
       if (AbstractResultData.BYTE_DATA_ACCESSOR.equals(object)) {
-        // skip file data if any //TODO - make response format better
+        // skip file data if any
         continue;
       }
-      headerRow.newCenterCol((String) object);
+      headerRow.newCenterCol(object);
     }
 
     // Build remaining rows by extracting data column-wise from JSON object
@@ -513,7 +496,7 @@ public class CommandResult implements Result {
     for (int i = 0; i < numOfColumns; i++) {
       Object object = columnNames.get(i);
       if (AbstractResultData.BYTE_DATA_ACCESSOR.equals(object)) {
-        // skip file data if any //TODO - make response format better
+        // skip file data if any
         continue;
       }
       GfJsonArray accumulatedData = content.getJSONArray((String) object);
@@ -574,13 +557,10 @@ public class CommandResult implements Result {
         GfJsonArray bytesArray = content.getJSONArray(CompositeResultData.BYTE_DATA_ACCESSOR);
         AbstractResultData.readFileDataAndDump(bytesArray, directory);
       } else {
-        throw new RuntimeException("No associated files to save .. "); // TODO Abhishek - add i18n
-                                                                       // string
+        throw new RuntimeException("No associated files to save .. ");
       }
       numTimesSaved = numTimesSaved + 1;
-    } catch (DataFormatException e) {
-      throw new RuntimeException(e);
-    } catch (GfJsonException e) {
+    } catch (DataFormatException | GfJsonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -621,13 +601,9 @@ public class CommandResult implements Result {
     return gfJsonObject.getString(ResultData.RESULT_HEADER);
   }
 
-  public GfJsonObject getContent() throws GfJsonException {
+  public GfJsonObject getContent() {
     return gfJsonObject.getJSONObject(ResultData.RESULT_CONTENT);
   }
-
-  // public String getContentStr() {
-  // return gfJsonObject.getString(ResultData.RESULT_CONTENT);
-  // }
 
   public String getFooter() {
     return getFooter(gfJsonObject);
@@ -669,4 +645,7 @@ public class CommandResult implements Result {
     this.failedToPersist = !commandPersisted;
   }
 
+  public void setFileToDownload(Path fileToDownload) {
+    this.fileToDownload = fileToDownload;
+  }
 }

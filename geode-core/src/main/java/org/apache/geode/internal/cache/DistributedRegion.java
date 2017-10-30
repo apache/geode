@@ -48,6 +48,7 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
@@ -60,6 +61,8 @@ import org.apache.geode.cache.RegionMembershipListener;
 import org.apache.geode.cache.ResumptionAction;
 import org.apache.geode.cache.RoleException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.TransactionDataNotColocatedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -90,6 +93,8 @@ import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
 import org.apache.geode.internal.cache.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
+import org.apache.geode.internal.cache.event.DistributedEventTracker;
+import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultWaiter;
@@ -98,7 +103,7 @@ import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.lru.LRUEntry;
-import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.RemoteSizeMessage;
 import org.apache.geode.internal.cache.persistence.CreatePersistentRegionProcessor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
@@ -255,9 +260,10 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   }
 
   @Override
-  public void createEventTracker() {
-    this.eventTracker = new EventTracker(this);
-    this.eventTracker.start();
+  protected EventTracker createEventTracker() {
+    EventTracker tracker = new DistributedEventTracker(cache, stopper, getName());
+    tracker.start();
+    return tracker;
   }
 
   /**
@@ -489,6 +495,38 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
               this.getName());
         }
         op.distribute();
+      }
+    }
+  }
+
+  @Override
+  public boolean hasSeenEvent(EntryEventImpl event) {
+    boolean isDuplicate = false;
+
+    isDuplicate = getEventTracker().hasSeenEvent(event);
+    if (isDuplicate) {
+      markEventAsDuplicate(event);
+    } else {
+      // bug #48205 - a retried PR operation may already have a version assigned to it
+      // in another VM
+      if (event.isPossibleDuplicate() && event.getRegion().concurrencyChecksEnabled
+          && event.getVersionTag() == null && event.getEventId() != null) {
+        boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
+        VersionTag tag =
+            FindVersionTagOperation.findVersionTag(event.getRegion(), event.getEventId(), isBulkOp);
+        event.setVersionTag(tag);
+      }
+    }
+    return isDuplicate;
+  }
+
+  private void markEventAsDuplicate(EntryEventImpl event) {
+    event.setPossibleDuplicate(true);
+    if (concurrencyChecksEnabled && event.getVersionTag() == null) {
+      if (event.isBulkOpInProgress()) {
+        event.setVersionTag(getEventTracker().findVersionTagForBulkOp(event.getEventId()));
+      } else {
+        event.setVersionTag(getEventTracker().findVersionTagForSequence(event.getEventId()));
       }
     }
   }
@@ -935,7 +973,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   public void invalidate(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException {
     validateKey(key);
-    validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForLimitedOrNoAccess();
     Lock dlock = this.getDistributedLockIfGlobal(key);
@@ -1039,9 +1076,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       // makes sure all latches are released if they haven't been already
       super.initialize(null, null, null);
     } finally {
-      if (this.eventTracker != null) {
-        this.eventTracker.setInitialized();
-      }
+      getEventTracker().setInitialized();
     }
   }
 
@@ -1466,6 +1501,54 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     // is stuck in some operation. Hence adding this log
     logger.info(LocalizedMessage.create(
         LocalizedStrings.DistributedRegion_INITIALIZING_REGION_COMPLETED_0, this.getName()));
+  }
+
+  @Override
+  public void basicBridgeRemove(Object key, Object expectedOldValue, Object p_callbackArg,
+      ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
+    Lock lock = getDistributedLockIfGlobal(key);
+    try {
+      super.basicBridgeRemove(key, expectedOldValue, p_callbackArg, memberId, fromClient,
+          clientEvent);
+    } finally {
+      if (lock != null) {
+        logger.debug("releasing distributed lock on {}", key);
+        lock.unlock();
+        getLockService().freeResources(key);
+      }
+    }
+  }
+
+  @Override
+  public void basicBridgeDestroy(Object key, Object p_callbackArg, ClientProxyMembershipID memberId,
+      boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
+    Lock lock = getDistributedLockIfGlobal(key);
+    try {
+      super.basicBridgeDestroy(key, p_callbackArg, memberId, fromClient, clientEvent);
+    } finally {
+      if (lock != null) {
+        logger.debug("releasing distributed lock on {}", key);
+        lock.unlock();
+        getLockService().freeResources(key);
+      }
+    }
+  }
+
+  @Override
+  public void basicBridgeInvalidate(Object key, Object p_callbackArg,
+      ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
+    Lock lock = getDistributedLockIfGlobal(key);
+    try {
+      super.basicBridgeInvalidate(key, p_callbackArg, memberId, fromClient, clientEvent);
+    } finally {
+      if (lock != null) {
+        logger.debug("releasing distributed lock on {}", key);
+        lock.unlock();
+      }
+    }
   }
 
   @Override
@@ -2166,12 +2249,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     validateKey(event.getKey());
     // this next step also distributes the object to other processes, if necessary
     try {
-      // set the tail key so that the event is passed to GatewaySender queues.
-      // if the tailKey is not set, the event gets filtered out in ParallelGatewaySenderQueue
-      if (this instanceof BucketRegion) {
-        if (((BucketRegion) this).getPartitionedRegion().isParallelWanEnabled())
-          ((BucketRegion) this).handleWANEvent(event);
-      }
       re = basicPutEntry(event, lastModified);
 
       // Update client event with latest version tag from re.
@@ -3479,6 +3556,30 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     return super.getOwnerForKey(key);
   }
 
+
+  /**
+   * Returns the size in this region.
+   *
+   * This is used in a transaction to find the size of the region on the transaction hosting node.
+   *
+   * @param target the host of the transaction TXState
+   * @return the number of entries in this region
+   */
+  public int getRegionSize(DistributedMember target) {
+    try {
+      RemoteSizeMessage.SizeResponse response =
+          RemoteSizeMessage.send(Collections.singleton(target), this);
+      return response.waitForSize();
+    } catch (RegionDestroyedException rde) {
+      throw new TransactionDataNotColocatedException(
+          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
+              .toLocalizedString(rde.getRegionFullPath()),
+          rde);
+    } catch (Exception e) {
+      throw new TransactionException(e);
+    }
+  }
+
   /**
    * Execute the provided named function in all locations that contain the given keys. So function
    * can be executed on just one fabric node, executed in parallel on a subset of nodes in parallel
@@ -3619,8 +3720,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       final Object args, int prid, final Set filter, boolean isReExecute) throws IOException {
     final DM dm = getDistributionManager();
     ResultSender resultSender = new DistributedRegionFunctionResultSender(dm, msg, function);
-    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(function.getId(), this,
-        args, filter, null, null, resultSender, isReExecute);
+    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
+        this, args, filter, null, null, resultSender, isReExecute);
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), dm.getSystem());
     try {
       long start = stats.startTime();
@@ -3657,7 +3758,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     final DM dm = getDistributionManager();
     final DistributedRegionFunctionResultSender resultSender =
         new DistributedRegionFunctionResultSender(dm, localRC, function, sender);
-    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(function.getId(),
+    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
         DistributedRegion.this, args, filter, null, null, resultSender, execution.isReExecute());
     execution.executeFunctionOnLocalNode(function, context, resultSender, dm, isTX());
     return localRC;

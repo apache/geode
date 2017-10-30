@@ -21,7 +21,6 @@ import java.util.concurrent.CancellationException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
@@ -48,7 +47,7 @@ public class RebalanceFunction implements Function, InternalEntity {
     RebalanceOperation op = null;
     String[] str = new String[0];
 
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
     ResourceManager manager = cache.getResourceManager();
     Object[] args = (Object[]) context.getArguments();
     String simulate = ((String) args[0]);

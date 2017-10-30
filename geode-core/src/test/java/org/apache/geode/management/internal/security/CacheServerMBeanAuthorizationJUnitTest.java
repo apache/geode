@@ -17,18 +17,20 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.management.CacheServerMXBean;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.management.CacheServerMXBean;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class CacheServerMBeanAuthorizationJUnitTest {
@@ -55,11 +57,13 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   public void testDataAdmin() throws Exception {
     bean.removeIndex("foo");
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataRead.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_READ.toString());
     bean.fetchLoadProbe();
     bean.getActiveCQCount();
-    bean.stopContinuousQuery("bar");
-    bean.closeAllContinuousQuery("bar");
+    assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
+    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
     bean.isRunning();
     bean.showClientQueueDetails("foo");
   }
@@ -68,9 +72,9 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
   public void testClusterAdmin() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataRead.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_READ.toString());
     bean.fetchLoadProbe();
   }
 
@@ -79,30 +83,34 @@ public class CacheServerMBeanAuthorizationJUnitTest {
   @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testDataUser() throws Exception {
     assertThatThrownBy(() -> bean.removeIndex("foo"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
     bean.executeContinuousQuery("bar");
     assertThatThrownBy(() -> bean.fetchLoadProbe())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
   }
 
   @Test
   @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testNoAccess() throws Exception {
-    assertThatThrownBy(() -> bean.removeIndex("foo"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataRead.toString());
-    assertThatThrownBy(() -> bean.fetchLoadProbe())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.getActiveCQCount())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
-        .hasMessageContaining(TestCommand.dataManage.toString());
-    assertThatThrownBy(() -> bean.isRunning())
-        .hasMessageContaining(TestCommand.clusterRead.toString());
-    assertThatThrownBy(() -> bean.showClientQueueDetails("bar"))
-        .hasMessageContaining(TestCommand.clusterRead.toString());
+    SoftAssertions softly = new SoftAssertions();
+
+    softly.assertThatThrownBy(() -> bean.removeIndex("foo"))
+        .hasMessageContaining(ResourcePermissions.DATA_MANAGE.toString());
+    softly.assertThatThrownBy(() -> bean.executeContinuousQuery("bar"))
+        .hasMessageContaining(ResourcePermissions.DATA_READ.toString());
+    softly.assertThatThrownBy(() -> bean.fetchLoadProbe())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.getActiveCQCount())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.stopContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
+    softly.assertThatThrownBy(() -> bean.closeAllContinuousQuery("bar"))
+        .hasMessageContaining(TestCommand.clusterManageQuery.toString());
+    softly.assertThatThrownBy(() -> bean.isRunning())
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+    softly.assertThatThrownBy(() -> bean.showClientQueueDetails("bar"))
+        .hasMessageContaining(ResourcePermissions.CLUSTER_READ.toString());
+
+    softly.assertAll();
   }
 }

@@ -12,22 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.partitioned;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -64,6 +49,19 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.util.ObjectIntProcedure;
+import org.apache.logging.log4j.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FetchEntriesMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -232,9 +230,6 @@ public class FetchEntriesMessage extends PartitionMessage {
                * @return true to continue to next chunk
                */
               public boolean executeWith(Object a, int b) {
-                // if (this.last)
-                // throw new
-                // InternalGemFireError(LocalizedStrings.FetchEntriesMessage_ALREADY_PROCESSED_LAST_CHUNK.toLocalizedString());
                 HeapDataOutputStream chunk = (HeapDataOutputStream) a;
                 this.last = b > 0;
                 try {
@@ -269,7 +264,6 @@ public class FetchEntriesMessage extends PartitionMessage {
       return (failures == null) || (failures.size() == 0);
     }
 
-
     /**
      * Serialize the given map's entries into byte[] chunks, calling proc for each one. proc args:
      * the byte[] chunk and an int indicating whether it is the last chunk (positive means last
@@ -301,7 +295,6 @@ public class FetchEntriesMessage extends PartitionMessage {
           LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) it.next();
           RegionEntry re = entry.getRegionEntry();
           synchronized (re) {
-            // TODO:KIRK:OK Object value = re.getValueInVM(map);
             Object value = re._getValueRetain(map, true);
             try {
               if (value == null) {
@@ -350,7 +343,6 @@ public class FetchEntriesMessage extends PartitionMessage {
       return sentLastChunk;
     }
 
-
     /**
      * Processes this message. This method is invoked by the receiver of the message.
      * 
@@ -376,7 +368,6 @@ public class FetchEntriesMessage extends PartitionMessage {
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
-
 
     @Override
     public void toData(DataOutput out) throws IOException {
@@ -409,7 +400,7 @@ public class FetchEntriesMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("FetchEntriesReplyMessage ").append("processorid=").append(this.processorId)
           .append(",bucketId=").append(this.bucketId);
       if (getSender() != null) {
@@ -472,17 +463,11 @@ public class FetchEntriesMessage extends PartitionMessage {
 
         @Override
         public String toString() {
-          // int sz;
-          // synchronized(this) {
-          // sz = this.size();
-          // }
           return "Bucket id = " + bucketId + " from member = " + recipient + ": "
               + super.toString();
         }
       };
     }
-
-
 
     @Override
     public void process(DistributionMessage msg) {
@@ -502,8 +487,6 @@ public class FetchEntriesMessage extends PartitionMessage {
       }
       super.process(msg);
     }
-
-
 
     void processChunk(FetchEntriesReplyMessage msg) {
       // this processing algorighm won't work well if there are multiple recipients. currently the

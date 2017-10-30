@@ -21,7 +21,7 @@ limitations under the License.
 
 ## <a id="how_function_execution_works__section_881D2FF6761B4D689DDB46C650E2A2E1" class="no-quick-link"></a>Where Functions Are Executed
 
-You can execute data-independent functions or data-dependent functions in Geode in the following places:
+You can execute data-independent functions or data-dependent functions in <%=vars.product_name%> in the following places:
 
 **For Data-independent Functions**
 
@@ -39,13 +39,22 @@ See the `org.apache.geode.cache.execute.FunctionService` Java API documentation 
 
 The following things occur when executing a function:
 
-1.  When you call the `execute` method on the `Execution` object, Geode invokes the function on all members where it needs to run. The locations are determined by the `FunctionService` `on*` method calls, region configuration, and any filters.
-2.  If the function has results, they are returned to the `addResult` method call in a `ResultCollector` object.
-3.  The originating member collects results using `ResultCollector.getResult`.
+1.  For security-enabled clusters, prior to executing the function,
+a check is made to see that that caller is authorized to execute
+the function.
+The required permissions for authorization are provided by
+the function's `Function.getRequiredPermissions()` method.
+See [Authorization of Function Execution](../../managing/security/implementing_authorization.html#AuthorizeFcnExecution) for a discussion of this method.
+2.  Given successful authorization,
+<%=vars.product_name%> invokes the function on all members where it
+needs to run. The locations are determined by the `FunctionService` `on*`
+method calls, region configuration, and any filters.
+3.  If the function has results, they are returned to the `addResult` method call in a `ResultCollector` object.
+4.  The originating member collects results using `ResultCollector.getResult`.
 
 ## <a id="how_function_execution_works__section_14FF9932C7134C5584A14246BB4D4FF6" class="no-quick-link"></a>Highly Available Functions
 
-Generally, function execution errors are returned to the calling application. You can code for high availability for `onRegion` functions that return a result, so Geode automatically retries a function if it does not execute successfully. You must code and configure the function to be highly available, and the calling application must invoke the function using the results collector `getResult` method.
+Generally, function execution errors are returned to the calling application. You can code for high availability for `onRegion` functions that return a result, so <%=vars.product_name%> automatically retries a function if it does not execute successfully. You must code and configure the function to be highly available, and the calling application must invoke the function using the results collector `getResult` method.
 
 When a failure (such as an execution error or member crash while executing) occurs, the system responds by:
 

@@ -14,105 +14,87 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.Repeat;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.RepeatRule;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-/** A test of 46438 - missing response to an update attributes message */
+import java.util.Properties;
+
+/**
+ * A test of 46438 - missing response to an update attributes message
+ *
+ * see bugs #50785 and #46438
+ */
 @Category(DistributedTest.class)
 public class ConnectDisconnectDUnitTest extends JUnit4CacheTestCase {
+  private static final Logger logger = LogService.getLogger();
 
-  private IgnoredException ex;
+  private static int count;
 
-  // see bugs #50785 and #46438
-  @Test
-  public void testManyConnectsAndDisconnects() throws Throwable {
-    // invokeInEveryVM(new SerializableRunnable() {
-    //
-    // @Override
-    // public void run() {
-    // Log.setLogWriterLevel("info");
-    // }
-    // });
+  @Rule
+  public RepeatRule repeat = new RepeatRule();
 
-    // uncomment these lines to use stand-alone locators
-    // int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
-    // setLocatorPorts(ports);
-
-    for (int i = 0; i < 20; i++) {
-      LogWriterUtils.getLogWriter().info("Test run: " + i);
-      runOnce();
-      tearDown();
-      setUp();
-    }
+  @BeforeClass
+  public static void beforeClass() {
+    count = 0;
   }
 
+  @Before
+  public void before() {
+    count++;
+  }
 
-  static int LOCATOR_PORT;
-  static String LOCATORS_STRING;
+  @After
+  public void after() {
+    disconnectAllFromDS();
 
-  static int[] locatorPorts;
+  }
 
-  public void setLocatorPorts(int[] ports) {
-    DistributedTestUtils.deleteLocatorStateFile(ports);
-    String locators = "";
-    for (int i = 0; i < ports.length; i++) {
-      if (i > 0) {
-        locators += ",";
-      }
-      locators += "localhost[" + ports[i] + "]";
-    }
-    final String locators_string = locators;
-    for (int i = 0; i < ports.length; i++) {
-      final int port = ports[i];
-      Host.getHost(0).getVM(i).invoke(new SerializableRunnable("set locator port") {
-        public void run() {
-          LOCATOR_PORT = port;
-          LOCATORS_STRING = locators_string;
-        }
-      });
-    }
-    locatorPorts = ports;
+  @AfterClass
+  public static void afterClass() {
+    assertThat(count).isEqualTo(20);
   }
 
   @Override
-  public final void postTearDownCacheTestCase() throws Exception {
-    if (locatorPorts != null) {
-      DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-    }
+  public Properties getDistributedSystemProperties() {
+    Properties props = super.getDistributedSystemProperties();
+    props.setProperty(LOG_LEVEL, "info");
+    props.setProperty(CONSERVE_SOCKETS, "false");
+    return props;
   }
 
   /**
    * This test creates 4 vms and starts a cache in each VM. If that doesn't hang, it destroys the DS
    * in all vms and recreates the cache.
-   * 
-   * @throws Throwable
    */
-  public void runOnce() throws Throwable {
+  @Test
+  @Repeat(20)
+  public void testManyConnectsAndDisconnects() throws Exception {
+    logger.info("Test run: {}", count);
 
     int numVMs = 4;
-
     VM[] vms = new VM[numVMs];
 
     for (int i = 0; i < numVMs; i++) {
-      // if(i == 0) {
-      // vms[i] = Host.getHost(0).getVM(4);
-      // } else {
       vms[i] = Host.getHost(0).getVM(i);
-      // }
     }
 
     AsyncInvocation[] asyncs = new AsyncInvocation[numVMs];
@@ -120,44 +102,14 @@ public class ConnectDisconnectDUnitTest extends JUnit4CacheTestCase {
       asyncs[i] = vms[i].invokeAsync(new SerializableRunnable("Create a cache") {
         @Override
         public void run() {
-          // try {
-          // JGroupMembershipManager.setDebugJGroups(true);
           getCache();
-          // } finally {
-          // JGroupMembershipManager.setDebugJGroups(false);
-          // }
         }
       });
     }
 
-
     for (int i = 0; i < numVMs; i++) {
-      asyncs[i].getResult();
-      // try {
-      // asyncs[i].getResult(30 * 1000);
-      // } catch(TimeoutException e) {
-      // getLogWriter().severe("DAN DEBUG - we have a hang");
-      // dumpAllStacks();
-      // fail("DAN - WE HIT THE ISSUE",e);
-      // throw e;
-      // }
+      asyncs[i].await();
     }
-
-    disconnectAllFromDS();
   }
-
-
-  @Override
-  public Properties getDistributedSystemProperties() {
-    Properties props = super.getDistributedSystemProperties();
-    props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(CONSERVE_SOCKETS, "false");
-    if (LOCATOR_PORT > 0) {
-      props.setProperty(START_LOCATOR, "localhost[" + LOCATOR_PORT + "]");
-      props.setProperty(LOCATORS, LOCATORS_STRING);
-    }
-    return props;
-  }
-
 
 }

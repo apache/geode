@@ -19,13 +19,13 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class GetTestMethodNameDUnitTest extends JUnit4DistributedTestCase {
+public class GetTestMethodNameDUnitTest extends DistributedTestCase {
 
   @Test
   public void testGetTestMethodName() {

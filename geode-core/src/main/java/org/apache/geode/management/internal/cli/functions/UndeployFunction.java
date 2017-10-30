@@ -16,14 +16,13 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
@@ -40,10 +39,6 @@ public class UndeployFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
-  private InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
   @Override
   public void execute(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
@@ -51,8 +46,8 @@ public class UndeployFunction implements Function, InternalEntity {
 
     try {
       final Object[] args = (Object[]) context.getArguments();
-      final String jarFilenameList = (String) args[0]; // Comma separated
-      InternalCache cache = getCache();
+      final String[] jarFilenameList = (String[]) args[0]; // Comma separated
+      InternalCache cache = (InternalCache) context.getCache();
 
       final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
 
@@ -65,7 +60,7 @@ public class UndeployFunction implements Function, InternalEntity {
       }
 
       String[] undeployedJars = new String[0];
-      if (jarFilenameList == null || jarFilenameList.equals("")) {
+      if (ArrayUtils.isEmpty(jarFilenameList)) {
         final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
         undeployedJars = new String[jarClassLoaders.size() * 2];
         int index = 0;
@@ -81,9 +76,7 @@ public class UndeployFunction implements Function, InternalEntity {
         }
       } else {
         List<String> undeployedList = new ArrayList<String>();
-        StringTokenizer jarTokenizer = new StringTokenizer(jarFilenameList, ",");
-        while (jarTokenizer.hasMoreTokens()) {
-          String jarFilename = jarTokenizer.nextToken().trim();
+        for (String jarFilename : jarFilenameList) {
           try {
             undeployedList.add(jarFilename);
             undeployedList.add(ClassPathLoader.getLatest().getJarDeployer().undeploy(jarFilename));

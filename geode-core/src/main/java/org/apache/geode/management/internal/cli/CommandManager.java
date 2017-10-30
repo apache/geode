@@ -16,22 +16,6 @@ package org.apache.geode.management.internal.cli;
 
 import static org.apache.geode.distributed.ConfigurationProperties.USER_COMMAND_PACKAGES;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
-import org.apache.geode.management.internal.cli.help.Helper;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
-import org.springframework.shell.converters.SimpleFileConverter;
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,6 +26,21 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import org.springframework.shell.converters.SimpleFileConverter;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.MethodTarget;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.internal.cli.commands.GfshCommand;
+import org.apache.geode.management.internal.cli.help.Helper;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 
 /**
  *
@@ -73,7 +72,7 @@ public class CommandManager {
 
   /**
    * this is used when getting the instance in a cache server. We are getting the
-   * user-command-package from distribution properties. used by CommandProcessor.
+   * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
   public CommandManager(final Properties cacheProperties) {
     if (cacheProperties != null) {

@@ -1210,7 +1210,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
     @Override
     protected void process(DistributionManager dm) {
-      InternalCache cache = GemFireCacheImpl.getInstance();
+      InternalCache cache = dm.getCache();
       if (cache != null) {
         TXManagerImpl mgr = cache.getTXMgr();
         mgr.removeTransactions(this.txIds, false);
@@ -1301,50 +1301,55 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   private ConcurrentMap<TransactionId, Queue<Thread>> waitMap = new ConcurrentHashMap<>();
 
+  Queue<Thread> getWaitQueue(TransactionId transactionId) {
+    return waitMap.get(transactionId);
+  }
+
+  private Queue<Thread> getOrCreateWaitQueue(TransactionId transactionId) {
+    Queue<Thread> threadq = getWaitQueue(transactionId);
+    if (threadq == null) {
+      threadq = new ConcurrentLinkedQueue<Thread>();
+      Queue<Thread> oldq = waitMap.putIfAbsent(transactionId, threadq);
+      if (oldq != null) {
+        threadq = oldq;
+      }
+    }
+    return threadq;
+  }
+
   public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit) {
     if (transactionId == null || getTXState() != null || !exists(transactionId)) {
       return false;
     }
-    Thread currentThread = Thread.currentThread();
-    long timeout = unit.toNanos(time);
-    long startTime = System.nanoTime();
-    Queue<Thread> threadq = null;
+    final Thread currentThread = Thread.currentThread();
+    final long endTime = System.nanoTime() + unit.toNanos(time);
+    final Queue<Thread> threadq = getOrCreateWaitQueue(transactionId);
 
     try {
       while (true) {
-        threadq = waitMap.get(transactionId);
-        if (threadq == null) {
-          threadq = new ConcurrentLinkedQueue<Thread>();
-          Queue<Thread> oldq = waitMap.putIfAbsent(transactionId, threadq);
-          if (oldq != null) {
-            threadq = oldq;
-          }
+        if (!threadq.contains(currentThread)) {
+          threadq.add(currentThread);
         }
-        threadq.add(currentThread);
-        // after putting this thread in waitMap, we should check for
-        // an entry in suspendedTXs. if no entry is found in suspendedTXs
-        // next invocation of suspend() will unblock this thread
         if (tryResume(transactionId)) {
           return true;
-        } else if (!exists(transactionId)) {
+        }
+        if (!exists(transactionId)) {
           return false;
         }
-        LockSupport.parkNanos(timeout);
-        long nowTime = System.nanoTime();
-        timeout -= nowTime - startTime;
-        startTime = nowTime;
-        if (timeout <= 0) {
-          break;
+        long parkTimeout = endTime - System.nanoTime();
+        if (parkTimeout <= 0) {
+          return false;
         }
+        parkToRetryResume(parkTimeout);
       }
     } finally {
-      threadq = waitMap.get(transactionId);
-      if (threadq != null) {
-        threadq.remove(currentThread);
-        // the queue itself will be removed at commit/rollback
-      }
+      threadq.remove(currentThread);
+      // the queue itself will be removed at commit/rollback
     }
-    return false;
+  }
+
+  void parkToRetryResume(long timeout) {
+    LockSupport.parkNanos(timeout);
   }
 
   public boolean exists(TransactionId transactionId) {

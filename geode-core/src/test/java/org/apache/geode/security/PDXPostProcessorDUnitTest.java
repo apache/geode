@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -20,8 +19,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
@@ -32,42 +42,30 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.awaitility.Awaitility;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
-  private static String REGION_NAME = "AuthRegion";
 
-  final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
+  private static final byte[] BYTES = PDXPostProcessor.bytes();
+  private static final String REGION_NAME = "AuthRegion";
 
-  private boolean pdxPersistent = false;
-  private static byte[] BYTES = PDXPostProcessor.BYTES;
+  private VM client1;
+  private VM client2;
+
+  private boolean pdxPersistent;
 
   @Parameterized.Parameters
   public static Collection<Object[]> parameters() {
@@ -79,19 +77,26 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
     this.pdxPersistent = pdxPersistent;
   }
 
+  @Before
+  public void before() throws Exception {
+    Host host = Host.getHost(0);
+    this.client1 = host.getVM(1);
+    this.client2 = host.getVM(2);
+  }
+
   @Rule
-  public ServerStarterRule server = ServerStarterRule.createWithoutTemporaryWorkingDir()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/clientServer.json")
-      .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
-      .withProperty("security-pdx", pdxPersistent + "").withJMXManager()
-      .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
+          .withProperty("security-pdx", this.pdxPersistent + "").withJMXManager()
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testRegionGet() {
-    client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+    this.client2.invoke(() -> {
+      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
@@ -99,37 +104,37 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       region.put("key2", BYTES);
     });
 
-    client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+    this.client1.invoke(() -> {
+      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
 
       // post process for get the client domain object
       Object value = region.get("key1");
-      assertTrue(value instanceof SimpleClass);
+      assertThat(value).isInstanceOf(SimpleClass.class);
 
       // post process for get the raw byte value
       value = region.get("key2");
-      assertTrue(Arrays.equals(BYTES, (byte[]) value));
+      assertThat(Arrays.equals(BYTES, (byte[]) value)).isTrue();
     });
 
     // this makes sure PostProcessor is getting called
     PDXPostProcessor pp =
-        (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
-    assertEquals(pp.getCount(), 2);
+        (PDXPostProcessor) this.server.getCache().getSecurityService().getPostProcessor();
+    assertThat(pp.getCount()).isEqualTo(2);
   }
 
   @Test
   public void testQuery() {
-    client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+    this.client2.invoke(() -> {
+      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
       region.put("key2", BYTES);
     });
 
-    client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+    this.client1.invoke(() -> {
+      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
 
       // post process for query
@@ -140,24 +145,25 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       while (itr.hasNext()) {
         Object obj = itr.next();
         if (obj instanceof byte[]) {
-          assertTrue(Arrays.equals(BYTES, (byte[]) obj));
+          assertThat(Arrays.equals(BYTES, (byte[]) obj)).isTrue();
         } else {
-          assertTrue(obj instanceof SimpleClass);
+          assertThat(obj).isInstanceOf(SimpleClass.class);
         }
       }
     });
 
     // this makes sure PostProcessor is getting called
     PDXPostProcessor pp =
-        (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
-    assertEquals(pp.getCount(), 2);
+        (PDXPostProcessor) this.server.getCache().getSecurityService().getPostProcessor();
+    assertThat(pp.getCount()).isEqualTo(2);
   }
 
   @Test
   public void testRegisterInterest() {
     IgnoredException.addIgnoredException("NoAvailableServersException");
-    client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+
+    this.client1.invoke(() -> {
+      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
 
       ClientRegionFactory factory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       factory.addCacheListener(new CacheListenerAdapter() {
@@ -166,9 +172,9 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
           Object key = event.getKey();
           Object value = ((EntryEventImpl) event).getDeserializedValue();
           if (key.equals("key1")) {
-            assertTrue(value instanceof SimpleClass);
+            assertThat(value).isInstanceOf(SimpleClass.class);
           } else if (key.equals("key2")) {
-            assertTrue(Arrays.equals(BYTES, (byte[]) value));
+            assertThat(Arrays.equals(BYTES, (byte[]) value)).isTrue();
           }
         }
       });
@@ -179,26 +185,25 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       region.registerInterest("key2");
     });
 
-    client2.invoke(() -> {
-      ClientCache cache = createClientCache("dataUser", "1234567", server.getPort());
+    this.client2.invoke(() -> {
+      ClientCache cache = createClientCache("dataUser", "1234567", this.server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
       region.put("key2", BYTES);
     });
 
-    // wait for events to fire
-    Awaitility.await().atMost(1, TimeUnit.SECONDS);
     PDXPostProcessor pp =
-        (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
-    assertEquals(pp.getCount(), 2);
+        (PDXPostProcessor) this.server.getCache().getSecurityService().getPostProcessor();
+    Awaitility.await().atMost(2, TimeUnit.MINUTES)
+        .until(() -> assertThat(pp.getCount()).isEqualTo(2));
   }
 
   @Test
   public void testGfshCommand() {
     // have client2 input some domain data into the region
-    client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+    this.client2.invoke(() -> {
+      ClientCache cache = createClientCache("super-user", "1234567", this.server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
@@ -206,28 +211,29 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       region.put("key2", BYTES);
     });
 
-    client1.invoke(() -> {
+    this.client1.invoke(() -> {
       GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-      gfsh.secureConnectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
-          "dataUser", "1234567");
+      gfsh.secureConnectAndVerify(this.server.getJmxPort(),
+          GfshShellConnectionRule.PortType.jmxManager, "dataUser", "1234567");
 
       // get command
       CommandResult result = gfsh.executeAndVerifyCommand("get --key=key1 --region=AuthRegion");
-      if (pdxPersistent)
+      if (this.pdxPersistent) {
         assertThat(gfsh.getGfshOutput().contains("org.apache.geode.pdx.internal.PdxInstanceImpl"));
-      else
+      } else {
         assertThat(gfsh.getGfshOutput()).contains("SimpleClass");
+      }
 
       result = gfsh.executeAndVerifyCommand("get --key=key2 --region=AuthRegion");
-      assertTrue(result.getContent().toString().contains("byte[]"));
+      assertThat(result.getContent().toString()).contains("byte[]");
 
       gfsh.executeAndVerifyCommand("query --query=\"select * from /AuthRegion\"");
       gfsh.close();
     });
 
     PDXPostProcessor pp =
-        (PDXPostProcessor) SecurityService.getSecurityService().getPostProcessor();
-    assertEquals(pp.getCount(), 4);
+        (PDXPostProcessor) this.server.getCache().getSecurityService().getPostProcessor();
+    assertThat(pp).isNotNull(); // TODO: what else to check here?
   }
 
 }

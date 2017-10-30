@@ -14,6 +14,32 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.Manager;
+import org.apache.catalina.ha.session.SerializablePrincipal;
+import org.apache.catalina.realm.GenericPrincipal;
+import org.apache.catalina.security.SecurityUtil;
+import org.apache.catalina.session.StandardSession;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
@@ -27,29 +53,6 @@ import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeE
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEventBatch;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
-import org.apache.catalina.Manager;
-import org.apache.catalina.ha.session.SerializablePrincipal;
-import org.apache.catalina.realm.GenericPrincipal;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.session.StandardSession;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
-import javax.servlet.http.HttpSession;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("serial")
 public class DeltaSession extends StandardSession
@@ -80,8 +83,18 @@ public class DeltaSession extends StandardSession
 
   private byte[] serializedPrincipal;
 
+  private static Field cachedField = null;
+
   private final Log LOG = LogFactory.getLog(DeltaSession.class.getName());
 
+  static {
+    try {
+      cachedField = StandardSession.class.getDeclaredField("attributes");
+      cachedField.setAccessible(true);
+    } catch (NoSuchFieldException e) {
+      throw new IllegalStateException(e);
+    }
+  }
   /**
    * The string manager for this package.
    */
@@ -531,7 +544,7 @@ public class DeltaSession extends StandardSession
     this.maxInactiveInterval = in.readInt();
     this.isNew = in.readBoolean();
     this.isValid = in.readBoolean();
-    this.attributes = readInAttributes(in);
+    readInAttributes(in);
     this.serializedPrincipal = DataSerializer.readByteArray(in);
 
     // Read the DeltaSession state
@@ -553,8 +566,26 @@ public class DeltaSession extends StandardSession
     }
   }
 
-  protected Map readInAttributes(final DataInput in) throws IOException, ClassNotFoundException {
-    return DataSerializer.readObject(in);
+  private void readInAttributes(DataInput in) throws IOException, ClassNotFoundException {
+    ConcurrentHashMap map = (ConcurrentHashMap) DataSerializer.readObject(in);
+    try {
+      Field field = getAttributesFieldObject();
+      field.set(this, map);
+    } catch (IllegalAccessException e) {
+      logError(e);
+      throw new IllegalStateException(e);
+    }
+  }
+
+  protected Field getAttributesFieldObject() {
+    return cachedField;
+  }
+
+  protected void logError(Exception e) {
+    if (getManager() != null) {
+      DeltaSessionManager mgr = (DeltaSessionManager) getManager();
+      mgr.getLogger().error(e);
+    }
   }
 
   @Override
@@ -576,14 +607,25 @@ public class DeltaSession extends StandardSession
   protected Map<String, byte[]> getSerializedAttributes() {
     // Iterate the values and serialize them if necessary before sending them to the server. This
     // makes the application classes unnecessary on the server.
-    Map<String, byte[]> serializedAttributes = new ConcurrentHashMap<String, byte[]>();
-    for (Iterator i = this.attributes.entrySet().iterator(); i.hasNext();) {
+    Map<String, byte[]> serializedAttributes = new ConcurrentHashMap<>();
+    for (Iterator i = getAttributes().entrySet().iterator(); i.hasNext();) {
       Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
       Object value = entry.getValue();
       byte[] serializedValue = value instanceof byte[] ? (byte[]) value : serialize(value);
       serializedAttributes.put(entry.getKey(), serializedValue);
     }
     return serializedAttributes;
+  }
+
+  protected Map getAttributes() {
+    try {
+      Field field = getAttributesFieldObject();
+      Map map = (Map) field.get(this);
+      return map;
+    } catch (IllegalAccessException e) {
+      logError(e);
+    }
+    throw new IllegalStateException("Unable to access attributes field");
   }
 
   protected byte[] serialize(Object obj) {

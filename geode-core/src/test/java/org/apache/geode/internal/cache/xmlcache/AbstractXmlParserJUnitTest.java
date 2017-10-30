@@ -154,7 +154,7 @@ public class AbstractXmlParserJUnitTest {
     }
 
     @Override
-    public String getNamspaceUri() {
+    public String getNamespaceUri() {
       throw new IllegalStateException();
     }
   }

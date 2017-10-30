@@ -1291,6 +1291,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     ((ParallelGatewaySenderQueue) this.queue).addShadowPartitionedRegionForUserRR(userRegion);
   }
 
+  protected abstract void enqueueEvent(GatewayQueueEvent event);
+
   protected class SenderStopperCallable implements Callable<Boolean> {
     private final AbstractGatewaySenderEventProcessor p;
 
