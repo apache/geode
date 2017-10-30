@@ -2547,13 +2547,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void testQueueSize(String senderId, int numQueueEntries) {
-    GatewaySender sender = null;
-    for (GatewaySender s : cache.getGatewaySenders()) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
+    GatewaySender sender = cache.getGatewaySender(senderId);
     if (sender.isParallel()) {
       int totalSize = 0;
       Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
