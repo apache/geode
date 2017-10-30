@@ -75,7 +75,8 @@ public class RebalanceCommand implements GfshCommand {
           help = CliStrings.REBALANCE__TIMEOUT__HELP) long timeout,
       @CliOption(key = CliStrings.REBALANCE__SIMULATE, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
-          help = CliStrings.REBALANCE__SIMULATE__HELP) boolean simulate) {
+          help = CliStrings.REBALANCE__SIMULATE__HELP) boolean simulate)
+      throws Exception {
 
     ExecutorService commandExecutors = Executors.newSingleThreadExecutor();
     List<Future<Result>> commandResult = new ArrayList<>();
@@ -89,14 +90,9 @@ public class RebalanceCommand implements GfshCommand {
         result = fs.get(timeout, TimeUnit.SECONDS);
       } else {
         result = fs.get();
-
       }
     } catch (TimeoutException timeoutException) {
       result = ResultBuilder.createInfoResult(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
-
-    } catch (Exception ex) {
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
-          CliStrings.REBALANCE__MSG__EXCEPTION_OCCURRED_WHILE_REBALANCING_0, ex.getMessage()));
     }
     LogWrapper.getInstance().info("Rebalance returning result >>>" + result);
     return result;
@@ -140,7 +136,7 @@ public class RebalanceCommand implements GfshCommand {
   }
 
   private CompositeResultData toCompositeResultData(CompositeResultData rebalanceResultData,
-      ArrayList<String> rstlist, int index, boolean simulate, InternalCache cache) {
+      List<String> rstlist, int index, boolean simulate, InternalCache cache) {
     int resultItemCount = 9;
     // add only if there are any valid regions in results
     if (rstlist.size() > resultItemCount && StringUtils.isNotEmpty(rstlist.get(resultItemCount))) {
@@ -293,8 +289,8 @@ public class RebalanceCommand implements GfshCommand {
                 }
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
 
-                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
-                    (ArrayList) rstList, index, true, cache));
+                result = ResultBuilder.buildResult(
+                    toCompositeResultData(rebalanceResultData, rstList, index, true, cache));
               } else {
                 List resultList;
                 try {
@@ -319,8 +315,8 @@ public class RebalanceCommand implements GfshCommand {
                 }
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
 
-                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
-                    (ArrayList) rstList, index, false, cache));
+                result = ResultBuilder.buildResult(
+                    toCompositeResultData(rebalanceResultData, rstList, index, false, cache));
               }
 
             } else {
@@ -543,7 +539,7 @@ public class RebalanceCommand implements GfshCommand {
 
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
                 result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
-                    (ArrayList) rstList, index, simulate.equals("true"), cache));
+                    rstList, index, simulate.equals("true"), cache));
                 index++;
 
                 // Rebalancing for region is done so break and continue with other region
@@ -579,8 +575,8 @@ public class RebalanceCommand implements GfshCommand {
             }
 
             List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-            result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
-                (ArrayList) rstList, index, simulate.equals("true"), cache));
+            result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData, rstList,
+                index, simulate.equals("true"), cache));
             index++;
           }
         }
