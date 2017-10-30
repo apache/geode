@@ -505,8 +505,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     int numIterations = 100;
     vm1.invoke(() -> putSameEntry(regionName, numIterations));
 
-    // Verify queue size (no need to wait)
-    vm1.invoke(() -> testQueueSize(senderId, 2));
+    // Wait for appropriate queue size
+    vm1.invoke(() -> checkQueueSize(senderId, 2));
 
     // Verify the conflation indexes size stat
     verifyConflationIndexesSize(senderId, 1, vm1);
