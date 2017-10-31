@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
@@ -33,7 +34,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
-import org.apache.geode.internal.lang.ThreadUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
 
@@ -138,7 +138,8 @@ public class AlertAppender extends AbstractAppender implements PropertyChangeLis
       final Date date = new Date(event.getTimeMillis());
       final String threadName = event.getThreadName();
       final String logMessage = event.getMessage().getFormattedMessage();
-      final String stackTrace = ThreadUtils.stackTraceToString(event.getThrown(), true);
+      final String stackTrace =
+          (event.getThrown() == null) ? null : ExceptionUtils.getStackTrace(event.getThrown());
       final String connectionName = ds.getConfig().getName();
 
       for (Listener listener : this.listeners) {
