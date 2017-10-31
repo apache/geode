@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
 
+import org.apache.geode.internal.protocol.protobuf.ConnectionAPI;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,6 +76,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     dataOutputStream.writeInt(0);
     // Using the constant from AcceptorImpl to ensure that magic byte is the same
     dataOutputStream.writeByte(ProtobufClientServerProtocol.getModeNumber());
+    dataOutputStream.writeByte(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
     return socket;
   }
 

@@ -38,4 +38,6 @@ public interface ClientProtocolService {
    * Create a locator processor. The locator does not currently provide any authentication.
    */
   ClientProtocolProcessor createProcessorForLocator(InternalLocator locator);
+
+  int getServiceProtocolVersion();
 }

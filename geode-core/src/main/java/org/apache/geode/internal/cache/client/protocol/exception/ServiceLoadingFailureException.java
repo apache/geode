@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache.tier.sockets;
+package org.apache.geode.internal.cache.client.protocol.exception;
 
 import org.apache.geode.GemFireException;
 

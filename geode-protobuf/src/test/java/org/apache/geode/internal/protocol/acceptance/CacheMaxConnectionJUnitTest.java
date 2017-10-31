@@ -102,7 +102,8 @@ public class CacheMaxConnectionJUnitTest {
     socket = new Socket("localhost", cacheServerPort);
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     OutputStream outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
@@ -188,6 +189,7 @@ public class CacheMaxConnectionJUnitTest {
           Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
           OutputStream outputStream = socket.getOutputStream();
           outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+          outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
           ClientProtocol.Message.newBuilder()
               .setRequest(ClientProtocol.Request.newBuilder()
