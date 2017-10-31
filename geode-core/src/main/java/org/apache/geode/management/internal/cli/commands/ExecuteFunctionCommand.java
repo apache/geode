@@ -34,7 +34,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.UserFunctionExecution;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -75,9 +74,9 @@ public class ExecuteFunctionCommand implements GfshCommand {
     Set<DistributedMember> dsMembers;
     if (onRegion == null) {
       // find the members based on the groups or members
-      dsMembers = CliUtil.findMembers(onGroups, onMembers);
+      dsMembers = findMembers(onGroups, onMembers);
     } else {
-      dsMembers = CliUtil.getRegionAssociatedMembers(onRegion, getCache());
+      dsMembers = findMembersForRegion(getCache(), onRegion);
     }
 
     if (dsMembers.size() == 0) {

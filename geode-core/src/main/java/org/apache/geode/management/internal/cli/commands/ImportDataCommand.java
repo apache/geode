@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -74,8 +73,8 @@ public class ImportDataCommand implements GfshCommand {
       String path = dirPath != null ? dirPath : filePath;
       final Object args[] = {regionName, path, invokeCallbacks, parallel};
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(importDataFunction, args, targetMember);
-      result = DataCommandUtil.getFunctionResult(rc, CliStrings.IMPORT_DATA);
+      ResultCollector<?, ?> rc = executeFunction(importDataFunction, args, targetMember);
+      result = CliUtil.getFunctionResult(rc, CliStrings.IMPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {

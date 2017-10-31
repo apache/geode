@@ -206,14 +206,14 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
   }
 
   private Set<String> getRegionNamesOnServer(DistributedMember server) {
-    ResultCollector rc = CliUtil.executeFunction(new GetRegionNamesFunction(), null, server);
+    ResultCollector rc = executeFunction(new GetRegionNamesFunction(), null, server);
     List<Set<String>> results = (List<Set<String>>) rc.getResult();
 
     return results.get(0);
   }
 
   private CliFunctionResult reCreateCache(DistributedMember server) {
-    ResultCollector rc = CliUtil.executeFunction(new RecreateCacheFunction(), null, server);
+    ResultCollector rc = executeFunction(new RecreateCacheFunction(), null, server);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     return results.get(0);

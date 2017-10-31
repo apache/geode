@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -148,7 +149,7 @@ public class CreateRegionCommandTest {
   @Test
   public void defaultValues() throws Exception {
     ResultCollector resultCollector = mock(ResultCollector.class);
-    doReturn(resultCollector).when(command).executeFunction(any(), any(), any());
+    doReturn(resultCollector).when(command).executeFunction(any(), any(), any(Set.class));
     when(resultCollector.getResult()).thenReturn(Collections.emptyList());
     DistributedSystemMXBean dsMBean = mock(DistributedSystemMXBean.class);
     doReturn(dsMBean).when(command).getDSMBean(any());
@@ -159,7 +160,7 @@ public class CreateRegionCommandTest {
     parser.executeCommandWithInstance(command, "create region --name=A --type=REPLICATE");
     ArgumentCaptor<RegionFunctionArgs> argsCaptor =
         ArgumentCaptor.forClass(RegionFunctionArgs.class);
-    verify(command).executeFunction(any(), argsCaptor.capture(), any());
+    verify(command).executeFunction(any(), argsCaptor.capture(), any(Set.class));
     RegionFunctionArgs args = argsCaptor.getValue();
 
     assertThat(args.getRegionPath()).isEqualTo("/A");

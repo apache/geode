@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
 
 import java.util.Set;
@@ -64,7 +63,7 @@ public class PutCommand implements GfshCommand {
     Region region = cache.getRegion(regionPath);
     DataCommandFunction putfn = new DataCommandFunction();
     if (region == null) {
-      Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
+      Set<DistributedMember> memberList = findAnyMembersForRegion(getCache(), regionPath);
       if (CollectionUtils.isNotEmpty(memberList)) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.PUT);

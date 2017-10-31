@@ -13,18 +13,27 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
+
 @Category(UnitTest.class)
-public class QueryCommandUnitTest {
+public class CliUtilTest {
 
   @Test
-  public void query() throws Exception {
-    QueryCommand queryCommand = new QueryCommand();
+  public void arrayToString() throws Exception {
+    assertThat(CliUtil.arrayToString(null)).isEqualTo("null");
+    String[] array1 = {"one", "two", "three"};
+    assertThat(CliUtil.arrayToString(array1)).isEqualTo("one, two, three");
+    String[] array2 = {"one", null, "three"};
+    assertThat(CliUtil.arrayToString(array2)).isEqualTo("one, null, three");
+    String[] array3 = {null};
+    assertThat(CliUtil.arrayToString(array3)).isEqualTo("null");
   }
 }

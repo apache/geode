@@ -418,12 +418,11 @@ public class CreateRegionCommand implements GfshCommand {
 
     if (attributes == null) {
       // find first member which has the region
-      Set<DistributedMember> regionAssociatedMembers =
-          CliUtil.getRegionAssociatedMembers(regionPath, cache);
+      Set<DistributedMember> regionAssociatedMembers = findMembersForRegion(cache, regionPath);
       if (regionAssociatedMembers != null && !regionAssociatedMembers.isEmpty()) {
         DistributedMember distributedMember = regionAssociatedMembers.iterator().next();
-        ResultCollector<?, ?> resultCollector = CliUtil
-            .executeFunction(FetchRegionAttributesFunction.INSTANCE, regionPath, distributedMember);
+        ResultCollector<?, ?> resultCollector =
+            executeFunction(FetchRegionAttributesFunction.INSTANCE, regionPath, distributedMember);
         List<?> resultsList = (List<?>) resultCollector.getResult();
 
         if (resultsList != null && !resultsList.isEmpty()) {

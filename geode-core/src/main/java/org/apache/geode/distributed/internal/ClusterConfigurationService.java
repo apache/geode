@@ -18,10 +18,41 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFI
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheLoaderException;
@@ -53,34 +84,6 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 public class ClusterConfigurationService {
@@ -671,8 +674,9 @@ public class ClusterConfigurationService {
 
   private byte[] downloadJarFromLocator(DistributedMember locator, String groupName,
       String jarName) {
-    ResultCollector<byte[], List<byte[]>> rc = (ResultCollector<byte[], List<byte[]>>) CliUtil
-        .executeFunction(new UploadJarFunction(), new Object[] {groupName, jarName}, locator);
+    ResultCollector<byte[], List<byte[]>> rc =
+        (ResultCollector<byte[], List<byte[]>>) CliUtil.executeFunction(new UploadJarFunction(),
+            new Object[] {groupName, jarName}, Collections.singleton(locator));
 
     List<byte[]> result = rc.getResult();
 
