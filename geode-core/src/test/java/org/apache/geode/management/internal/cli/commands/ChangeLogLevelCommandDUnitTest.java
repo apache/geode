@@ -16,20 +16,18 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -37,8 +35,8 @@ import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ChangeLogLevelCommandDUnitTest {
-  private static final boolean CONNECT_OVER_HTTP = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
   private static final String SERVER2_NAME = "Server2";
@@ -46,14 +44,23 @@ public class ChangeLogLevelCommandDUnitTest {
   private static final String GROUP1 = "Group1";
   private static final String GROUP2 = "Group2";
 
-  @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  @ClassRule
+  public static LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
-  @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  @ClassRule
+  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
-  @Before
-  public void setup() throws Exception {
+
+  @Parameterized.Parameter
+  public static boolean useHttp;
+
+  @Parameterized.Parameters
+  public static Object[] data() {
+    return new Object[] {true, false};
+  }
+
+  @BeforeClass
+  public static void setup() throws Exception {
     Properties managerProps = new Properties();
     managerProps.setProperty(NAME, MANAGER_NAME);
     managerProps.setProperty(GROUPS, GROUP0);
@@ -69,7 +76,7 @@ public class ChangeLogLevelCommandDUnitTest {
     server2Props.setProperty(GROUPS, GROUP2);
     locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
 
-    if (CONNECT_OVER_HTTP) {
+    if (useHttp) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);
     } else {
       gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
@@ -81,26 +88,16 @@ public class ChangeLogLevelCommandDUnitTest {
   public void testChangeLogLevelForGroups() {
     String commandString = "change loglevel --loglevel=finer --groups=" + GROUP1 + "," + GROUP2;
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
-
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).contains(SERVER1_NAME);
-    assertThat(output).contains(SERVER2_NAME);
-    assertThat(output).doesNotContain(MANAGER_NAME);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
+        .containsOutput(SERVER1_NAME, SERVER2_NAME).doesNotContainOutput(MANAGER_NAME);
   }
 
   @Test
   public void testChangeLogLevelForGroup() {
     String commandString = "change loglevel --loglevel=finer --groups=" + GROUP1;
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
-
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).contains(SERVER1_NAME);
-    assertThat(output).doesNotContain(SERVER2_NAME);
-    assertThat(output).doesNotContain(MANAGER_NAME);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(SERVER1_NAME)
+        .doesNotContainOutput(SERVER2_NAME, MANAGER_NAME);
   }
 
   @Test
@@ -108,37 +105,23 @@ public class ChangeLogLevelCommandDUnitTest {
     String commandString =
         "change loglevel --loglevel=finer --members=" + SERVER1_NAME + "," + SERVER2_NAME;
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
-
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).contains(SERVER1_NAME);
-    assertThat(output).contains(SERVER2_NAME);
-    assertThat(output).doesNotContain(MANAGER_NAME);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
+        .containsOutput(SERVER1_NAME, SERVER2_NAME).doesNotContainOutput(MANAGER_NAME);
   }
 
   @Test
   public void testChangeLogLevelForMember() {
     String commandString = "change loglevel --loglevel=finer --members=" + SERVER1_NAME;
 
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess();
-
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).contains(SERVER1_NAME);
-    assertThat(output).doesNotContain(SERVER2_NAME);
-    assertThat(output).doesNotContain(MANAGER_NAME);
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(SERVER1_NAME)
+        .doesNotContainOutput(SERVER2_NAME, MANAGER_NAME);
   }
 
   @Test
   public void testChangeLogLevelForInvalidMember() {
     String commandString = "change loglevel --loglevel=finer --members=NotAValidMember";
 
-    CommandResult result = gfsh.executeCommand(commandString);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).contains("No members were found matching the given member IDs or groups.");
+    gfsh.executeAndAssertThat(commandString).statusIsError()
+        .containsOutput("No members were found matching the given member IDs or groups.");
   }
 }
