@@ -71,7 +71,7 @@ public class DescribeDiskStoreCommand implements GfshCommand {
   }
 
   DiskStoreDetails getDiskStoreDescription(final String memberName, final String diskStoreName) {
-    final DistributedMember member = getMember(getCache(), memberName);
+    final DistributedMember member = getMember(memberName);
 
     final ResultCollector<?, ?> resultCollector =
         getMembersFunctionExecutor(Collections.singleton(member)).setArguments(diskStoreName)

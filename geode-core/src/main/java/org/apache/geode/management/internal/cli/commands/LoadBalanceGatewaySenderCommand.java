@@ -31,7 +31,6 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -54,49 +53,43 @@ public class LoadBalanceGatewaySenderCommand implements GfshCommand {
       senderId = senderId.trim();
     }
 
-    try {
-      InternalCache cache = getCache();
-      SystemManagementService service =
-          (SystemManagementService) ManagementService.getExistingManagementService(cache);
-      TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.getAllNormalMembers(cache);
+    InternalCache cache = getCache();
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    TabularResultData resultData = ResultBuilder.createTabularResultData();
+    Set<DistributedMember> dsMembers = CliUtil.getAllNormalMembers(cache);
 
-      if (dsMembers.isEmpty()) {
-        result = ResultBuilder.createInfoResult(CliStrings.GATEWAY_MSG_MEMBERS_NOT_FOUND);
-      } else {
-        boolean gatewaySenderExists = false;
-        for (DistributedMember member : dsMembers) {
-          GatewaySenderMXBean bean;
-          if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
-            bean = service.getLocalGatewaySenderMXBean(senderId);
-          } else {
-            ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
-            bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
-          }
-          if (bean != null) {
-            gatewaySenderExists = true;
-            bean.rebalance();
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
-                CliStrings.GATEWAY_OK,
-                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_REBALANCED_ON_MEMBER_1, senderId,
-                    member.getId()));
-          } else {
-            GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
-                CliStrings.GATEWAY_ERROR,
-                CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-                    senderId, member.getId()));
-          }
-        }
-        if (gatewaySenderExists) {
-          result = ResultBuilder.buildResult(resultData);
+    if (dsMembers.isEmpty()) {
+      result = ResultBuilder.createInfoResult(CliStrings.GATEWAY_MSG_MEMBERS_NOT_FOUND);
+    } else {
+      boolean gatewaySenderExists = false;
+      for (DistributedMember member : dsMembers) {
+        GatewaySenderMXBean bean;
+        if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
+          bean = service.getLocalGatewaySenderMXBean(senderId);
         } else {
-          result = ResultBuilder.createInfoResult(CliStrings.format(
-              CliStrings.GATEWAY_SENDER_0_IS_NOT_FOUND_ON_ANY_MEMBER, new Object[] {senderId}));
+          ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
+          bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+        }
+        if (bean != null) {
+          gatewaySenderExists = true;
+          bean.rebalance();
+          GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+              CliStrings.GATEWAY_OK, CliStrings.format(
+                  CliStrings.GATEWAY_SENDER_0_IS_REBALANCED_ON_MEMBER_1, senderId, member.getId()));
+        } else {
+          GatewayCommandsUtils.accumulateStartResult(resultData, member.getId(),
+              CliStrings.GATEWAY_ERROR,
+              CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1, senderId,
+                  member.getId()));
         }
       }
-    } catch (Exception e) {
-      LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
+      if (gatewaySenderExists) {
+        result = ResultBuilder.buildResult(resultData);
+      } else {
+        result = ResultBuilder.createInfoResult(CliStrings.format(
+            CliStrings.GATEWAY_SENDER_0_IS_NOT_FOUND_ON_ANY_MEMBER, new Object[] {senderId}));
+      }
     }
 
     return result;

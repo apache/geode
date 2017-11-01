@@ -14,13 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -43,6 +43,9 @@ public class CommandExecutor {
     } catch (NotAuthorizedException e) {
       logger.error("Not authorized to execute \"" + parseResult + "\".", e);
       throw e;
+    } catch (MemberNotFoundException e) {
+      return ResultBuilder.createUserErrorResult(
+          "Could not process command <" + parseResult + "> Reason : " + e.getMessage());
     } catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
       return ResultBuilder.createGemFireErrorResult(

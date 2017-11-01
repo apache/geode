@@ -103,7 +103,7 @@ public class ListIndexCommand implements GfshCommand {
   }
 
   List<IndexDetails> getIndexListing() {
-    final Execution functionExecutor = getMembersFunctionExecutor(getMembers(getCache()));
+    final Execution functionExecutor = getMembersFunctionExecutor(getAllMembers(getCache()));
 
     if (functionExecutor instanceof AbstractExecution) {
       ((AbstractExecution) functionExecutor).setIgnoreDepartedMembers(true);

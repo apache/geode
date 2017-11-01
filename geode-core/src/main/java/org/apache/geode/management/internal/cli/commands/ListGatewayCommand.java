@@ -35,8 +35,6 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -55,71 +53,66 @@ public class ListGatewayCommand implements GfshCommand {
           help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String[] onMember,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup) {
+          help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup)
+      throws Exception {
 
     Result result;
     InternalCache cache = getCache();
-    try {
-      SystemManagementService service =
-          (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+    Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
-      if (dsMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+    if (dsMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    }
 
-      Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans = new TreeMap<>();
-      Map<String, GatewayReceiverMXBean> gatewayReceiverBeans = new TreeMap<>();
+    Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans = new TreeMap<>();
+    Map<String, GatewayReceiverMXBean> gatewayReceiverBeans = new TreeMap<>();
 
-      DistributedSystemMXBean dsMXBean = service.getDistributedSystemMXBean();
-      for (DistributedMember member : dsMembers) {
-        String memberName = member.getName();
-        String memberNameOrId =
-            (memberName != null && !memberName.isEmpty()) ? memberName : member.getId();
-        ObjectName gatewaySenderObjectNames[] =
-            dsMXBean.listGatewaySenderObjectNames(memberNameOrId);
-        // gateway senders : a member can have multiple gateway senders defined
-        // on it
-        if (gatewaySenderObjectNames != null) {
-          for (ObjectName name : gatewaySenderObjectNames) {
-            GatewaySenderMXBean senderBean = service.getMBeanProxy(name, GatewaySenderMXBean.class);
-            if (senderBean != null) {
-              if (gatewaySenderBeans.containsKey(senderBean.getSenderId())) {
-                Map<String, GatewaySenderMXBean> memberToBeanMap =
-                    gatewaySenderBeans.get(senderBean.getSenderId());
-                memberToBeanMap.put(member.getId(), senderBean);
-              } else {
-                Map<String, GatewaySenderMXBean> memberToBeanMap = new TreeMap<>();
-                memberToBeanMap.put(member.getId(), senderBean);
-                gatewaySenderBeans.put(senderBean.getSenderId(), memberToBeanMap);
-              }
+    DistributedSystemMXBean dsMXBean = service.getDistributedSystemMXBean();
+    for (DistributedMember member : dsMembers) {
+      String memberName = member.getName();
+      String memberNameOrId =
+          (memberName != null && !memberName.isEmpty()) ? memberName : member.getId();
+      ObjectName gatewaySenderObjectNames[] = dsMXBean.listGatewaySenderObjectNames(memberNameOrId);
+      // gateway senders : a member can have multiple gateway senders defined
+      // on it
+      if (gatewaySenderObjectNames != null) {
+        for (ObjectName name : gatewaySenderObjectNames) {
+          GatewaySenderMXBean senderBean = service.getMBeanProxy(name, GatewaySenderMXBean.class);
+          if (senderBean != null) {
+            if (gatewaySenderBeans.containsKey(senderBean.getSenderId())) {
+              Map<String, GatewaySenderMXBean> memberToBeanMap =
+                  gatewaySenderBeans.get(senderBean.getSenderId());
+              memberToBeanMap.put(member.getId(), senderBean);
+            } else {
+              Map<String, GatewaySenderMXBean> memberToBeanMap = new TreeMap<>();
+              memberToBeanMap.put(member.getId(), senderBean);
+              gatewaySenderBeans.put(senderBean.getSenderId(), memberToBeanMap);
             }
           }
         }
-        // gateway receivers : a member can have only one gateway receiver
-        ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
-        if (gatewayReceiverObjectName != null) {
-          GatewayReceiverMXBean receiverBean;
-          receiverBean =
-              service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
-          if (receiverBean != null) {
-            gatewayReceiverBeans.put(member.getId(), receiverBean);
-          }
+      }
+      // gateway receivers : a member can have only one gateway receiver
+      ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
+      if (gatewayReceiverObjectName != null) {
+        GatewayReceiverMXBean receiverBean;
+        receiverBean =
+            service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
+        if (receiverBean != null) {
+          gatewayReceiverBeans.put(member.getId(), receiverBean);
         }
       }
-      if (gatewaySenderBeans.isEmpty() && gatewayReceiverBeans.isEmpty()) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER);
-      }
-      CompositeResultData crd = ResultBuilder.createCompositeResultData();
-      crd.setHeader(CliStrings.HEADER_GATEWAYS);
-      accumulateListGatewayResult(crd, gatewaySenderBeans, gatewayReceiverBeans);
-      result = ResultBuilder.buildResult(crd);
-    } catch (Exception e) {
-      LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
     }
+    if (gatewaySenderBeans.isEmpty() && gatewayReceiverBeans.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER);
+    }
+    CompositeResultData crd = ResultBuilder.createCompositeResultData();
+    crd.setHeader(CliStrings.HEADER_GATEWAYS);
+    accumulateListGatewayResult(crd, gatewaySenderBeans, gatewayReceiverBeans);
+    result = ResultBuilder.buildResult(crd);
+
     return result;
   }
 

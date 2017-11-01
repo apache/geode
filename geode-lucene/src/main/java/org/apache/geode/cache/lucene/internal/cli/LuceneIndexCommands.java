@@ -107,7 +107,7 @@ public class LuceneIndexCommands implements GfshCommand {
 
   @SuppressWarnings("unchecked")
   protected List<LuceneIndexDetails> getIndexListing() {
-    final Execution functionExecutor = getMembersFunctionExecutor(getMembers(getCache()));
+    final Execution functionExecutor = getMembersFunctionExecutor(getAllMembers(getCache()));
 
     if (functionExecutor instanceof AbstractExecution) {
       ((AbstractExecution) functionExecutor).setIgnoreDepartedMembers(true);
@@ -365,8 +365,8 @@ public class LuceneIndexCommands implements GfshCommand {
     // the index has been created, but not the region
     XmlEntity xmlEntity = null;
     InternalCache cache = getCache();
-    Set<DistributedMember> regionMembers = getRegionMembers(cache, regionPath);
-    Set<DistributedMember> normalMembers = getNormalMembers(cache);
+    Set<DistributedMember> regionMembers = findMembersForRegion(cache, regionPath);
+    Set<DistributedMember> normalMembers = getAllNormalMembers(cache);
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath);
     ResultCollector<?, ?> rc;
     if (regionMembers.isEmpty()) {
@@ -401,14 +401,6 @@ public class LuceneIndexCommands implements GfshCommand {
       }
     }
     return xmlEntity;
-  }
-
-  protected Set<DistributedMember> getRegionMembers(InternalCache cache, String regionPath) {
-    return CliUtil.getMembersForeRegionViaFunction(cache, regionPath, true);
-  }
-
-  protected Set<DistributedMember> getNormalMembers(InternalCache cache) {
-    return CliUtil.getAllNormalMembers(cache);
   }
 
   private Result getDestroyIndexResult(List<CliFunctionResult> cliFunctionResults, String indexName,
@@ -553,19 +545,14 @@ public class LuceneIndexCommands implements GfshCommand {
 
   protected ResultCollector<?, ?> executeFunctionOnRegion(Function function,
       LuceneFunctionSerializable functionArguments, boolean returnAllMembers) {
-    Set<DistributedMember> targetMembers = CliUtil.getMembersForeRegionViaFunction(getCache(),
-        functionArguments.getRegionPath(), returnAllMembers);
+    Set<DistributedMember> targetMembers = CliUtil.getRegionAssociatedMembers(
+        functionArguments.getRegionPath(), getCache(), returnAllMembers);
     if (targetMembers.isEmpty()) {
       throw new IllegalArgumentException(CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0,
           new Object[] {functionArguments.getRegionPath()}));
     }
     return executeFunction(function, functionArguments, targetMembers);
-  }
-
-  protected ResultCollector<?, ?> executeFunction(Function function,
-      LuceneFunctionSerializable functionArguments, Set<DistributedMember> targetMembers) {
-    return CliUtil.executeFunction(function, functionArguments, targetMembers);
   }
 
   @CliAvailabilityIndicator({LuceneCliStrings.LUCENE_SEARCH_INDEX,

@@ -162,7 +162,7 @@ public class GfshCommandJUnitTest {
 
     final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
-    assertSame(mockMemberTwo, commands.getMember(mockCache, "2"));
+    assertSame(mockMemberTwo, commands.getMember("2"));
   }
 
   @Test
@@ -189,7 +189,7 @@ public class GfshCommandJUnitTest {
 
     final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
-    assertSame(mockMemberOne, commands.getMember(mockCache, "One"));
+    assertSame(mockMemberOne, commands.getMember("One"));
   }
 
   @Test
@@ -216,7 +216,7 @@ public class GfshCommandJUnitTest {
 
     final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
-    assertSame(mockMemberSelf, commands.getMember(mockCache, "self"));
+    assertSame(mockMemberSelf, commands.getMember("self"));
   }
 
   @Test(expected = MemberNotFoundException.class)
@@ -244,7 +244,7 @@ public class GfshCommandJUnitTest {
     final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     try {
-      commands.getMember(mockCache, "zero");
+      commands.getMember("zero");
     } catch (MemberNotFoundException expected) {
       assertEquals(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, "zero"),
           expected.getMessage());
@@ -278,7 +278,7 @@ public class GfshCommandJUnitTest {
 
     final Set<DistributedMember> expectedMembers =
         CollectionUtils.asSet(mockMemberOne, mockMemberTwo, mockMemberSelf);
-    final Set<DistributedMember> actualMembers = commands.getMembers(mockCache);
+    final Set<DistributedMember> actualMembers = commands.getAllMembers(mockCache);
 
     assertNotNull(actualMembers);
     assertEquals(expectedMembers.size(), actualMembers.size());
@@ -307,7 +307,7 @@ public class GfshCommandJUnitTest {
     final GfshCommand commands = createAbstractCommandsSupport(mockCache);
 
     final Set<DistributedMember> expectedMembers = CollectionUtils.asSet(mockMemberSelf);
-    final Set<DistributedMember> actualMembers = commands.getMembers(mockCache);
+    final Set<DistributedMember> actualMembers = commands.getAllMembers(mockCache);
 
     assertNotNull(actualMembers);
     assertEquals(expectedMembers.size(), actualMembers.size());
