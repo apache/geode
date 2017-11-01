@@ -71,6 +71,22 @@ public class QueryServiceJUnitTest {
   }
 
   @Test
+  public void testNewQueryWithToDatePresetFunction() throws Exception {
+    String testDate = "01/01/2000";
+    QueryService queryService = CacheUtils.getQueryService();
+
+    try {
+      queryService
+          .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+      queryService.newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date('" + testDate
+          + "', 'MM/dd/yyyy')");
+    } catch (Exception exception) {
+      exception.printStackTrace();
+      fail("Unexpected Exception, both queries are valid: " + exception.getMessage());
+    }
+  }
+
+  @Test
   public void testCreateIndex() throws Exception {
     CacheUtils.log("testCreateIndex");
     QueryService qs = CacheUtils.getQueryService();
