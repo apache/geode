@@ -226,4 +226,13 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     return ((ParallelGatewaySenderQueue) (processors[0].getQueue()))
         .getNumEntriesOverflowOnDiskTestOnly();
   }
+
+  public void clearQueueTestOnly() {
+    for (int i = 0; i < processors.length; i++) {
+
+      ((ParallelGatewaySenderQueue) this.processors[i].getQueue()).clearQueueTestOnly();
+    }
+
+
+  }
 }

@@ -1510,6 +1510,9 @@ public interface DiskEntry extends RegionEntry {
         throws RegionClearedException {
       DiskRegion dr = region.getDiskRegion();
       DiskId did = entry.getDiskId();
+      if (dr == null)
+        return;
+
       Object syncObj = did;
       if (did == null) {
         syncObj = entry;

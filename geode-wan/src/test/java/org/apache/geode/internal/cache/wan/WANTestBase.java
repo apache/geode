@@ -298,6 +298,21 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     return port;
   }
 
+  public static void clearGatewaySender(String senderId) {
+
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    AbstractGatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = (AbstractGatewaySender) s;
+        ConcurrentParallelGatewaySenderQueue r =
+            (ConcurrentParallelGatewaySenderQueue) sender.getQueue();
+        r.clearQueueTestOnly();
+        break;
+      }
+    }
+  }
+
   public static Integer createSecondLocator(int dsId, int locatorPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
