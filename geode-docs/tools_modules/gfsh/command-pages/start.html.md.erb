@@ -267,7 +267,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
  [--groups=value(,value)*] [--hostname-for-clients=value]
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
- [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-from-cluster-configuration-dir(=value)]
+ [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-cluster-configuration-from-dir(=value)]
  [--cluster-config-dir=value]
  [--http-service-port=value] [--http-service-bind-address=value] 
  [--J=value(,value)*]
@@ -380,7 +380,7 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>true</td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-load-from-cluster-configuration-dir</span></td>
+<td><span class="keyword parmname">\-\-load-cluster-configuration-from-dir</span></td>
 <td>Loads the cluster configuration from the <span class="ph filepath">shared-config</span> directory. (When set to false, the configuration is loaded from the disk store of the internal, persistent region used by the locator to persist the configuration.)</td>
 <td>false</td>
 </tr>
