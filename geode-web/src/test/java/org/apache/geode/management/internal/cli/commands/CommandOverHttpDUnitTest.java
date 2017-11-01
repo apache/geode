@@ -24,13 +24,14 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.SuiteRunner;
 
+/**
+ * Only commands that extends CliCommandTestBase needs to be in this test suite
+ */
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(SuiteRunner.class)
-@Suite.SuiteClasses({ChangeLogLevelCommandDUnitTest.class, DeployWithGroupsDUnitTest.class,
-    DiskStoreCommandsDUnitTest.class, GcCommandDUnitTest.class, GemfireDataCommandsDUnitTest.class,
-    ListAndDescribeDiskStoreCommandsDUnitTest.class, ShutdownCommandDUnitTest.class,
-    QueueCommandsDUnitTest.class, ShellCommandsDUnitTest.class, ShowDeadlockDUnitTest.class,
-    ShowLogCommandDUnitTest.class, ShowMetricsDUnitTest.class, ShowStackTraceDUnitTest.class})
+@Suite.SuiteClasses({DiskStoreCommandsDUnitTest.class, GemfireDataCommandsDUnitTest.class,
+    ListAndDescribeDiskStoreCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
+    ShellCommandsDUnitTest.class, ShowStackTraceDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =

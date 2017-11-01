@@ -17,17 +17,18 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -38,8 +39,8 @@ import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class GcCommandDUnitTest {
-  private static final boolean CONNECT_OVER_HTTP = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
   private static final String SERVER2_NAME = "Server2";
@@ -47,14 +48,23 @@ public class GcCommandDUnitTest {
   private static final String GROUP1 = "Group1";
   private static final String GROUP2 = "Group2";
 
-  @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  @Parameterized.Parameter
+  public static boolean useHttp;
 
-  @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  @Parameterized.Parameters
+  public static Object[] data() {
+    return new Object[] {true, false};
+  }
 
-  @Before
-  public void setup() throws Exception {
+
+  @ClassRule
+  public static LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+
+  @ClassRule
+  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+
+  @BeforeClass
+  public static void setup() throws Exception {
     Properties managerProps = new Properties();
     managerProps.setProperty(NAME, MANAGER_NAME);
     managerProps.setProperty(GROUPS, GROUP0);
@@ -72,7 +82,7 @@ public class GcCommandDUnitTest {
     server2Props.setProperty(GROUPS, GROUP2);
     locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
 
-    if (CONNECT_OVER_HTTP) {
+    if (useHttp) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);
     } else {
       gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);

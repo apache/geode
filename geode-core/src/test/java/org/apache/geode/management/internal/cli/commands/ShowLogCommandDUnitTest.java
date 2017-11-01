@@ -16,8 +16,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,10 +27,12 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
@@ -45,9 +47,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ShowLogCommandDUnitTest implements Serializable {
-  private static final boolean CONNECT_OVER_HTTP = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
-
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
   private static final String SERVER2_NAME = "Server2";
@@ -57,22 +58,30 @@ public class ShowLogCommandDUnitTest implements Serializable {
   private static final String MESSAGE_ON_MANAGER = "someLogMessageOnManager";
   private static final String MESSAGE_ON_SERVER1 = "someLogMessageOnServer1";
   private static final String MESSAGE_ON_SERVER2 = "someLogMessageOnServer2";
-  private MemberVM manager;
-  private MemberVM server1;
-  private MemberVM server2;
-  @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  private static MemberVM manager;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  @ClassRule
+  public static LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
-  @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  @ClassRule
+  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
+  @Parameterized.Parameter
+  public static boolean useHttp;
 
-  @Before
-  public void setup() throws Exception {
+  @Parameterized.Parameters
+  public static Object[] data() {
+    return new Object[] {true, false};
+  }
+
+  @BeforeClass
+  public static void setup() throws Exception {
     Properties managerProps = new Properties();
     managerProps.setProperty(NAME, MANAGER_NAME);
     managerProps.setProperty(GROUPS, GROUP0);
     managerProps.setProperty(LOG_FILE, MANAGER_NAME + ".log");
+    managerProps.setProperty(LOG_LEVEL, "info");
 
     manager = locatorServerStartupRule.startLocatorVM(0, managerProps);
 
@@ -80,6 +89,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     server1Props.setProperty(NAME, SERVER1_NAME);
     server1Props.setProperty(GROUPS, GROUP1);
     server1Props.setProperty(LOG_FILE, SERVER1_NAME + ".log");
+    managerProps.setProperty(LOG_LEVEL, "info");
 
     server1 = locatorServerStartupRule.startServerVM(1, server1Props, manager.getPort());
 
@@ -87,16 +97,18 @@ public class ShowLogCommandDUnitTest implements Serializable {
     server2Props.setProperty(NAME, SERVER2_NAME);
     server2Props.setProperty(GROUPS, GROUP2);
     server2Props.setProperty(LOG_FILE, SERVER2_NAME + ".log");
+    managerProps.setProperty(LOG_LEVEL, "info");
 
     server2 = locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
 
-    if (CONNECT_OVER_HTTP) {
+    if (useHttp) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);
     } else {
       gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
     }
 
-    Awaitility.await().atMost(2, TimeUnit.MINUTES).until(this::allMembersAreConnected);
+    Awaitility.await().atMost(2, TimeUnit.MINUTES)
+        .until(ShowLogCommandDUnitTest::allMembersAreConnected);
   }
 
   private void writeLogMessages() {
@@ -147,7 +159,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
 
   }
 
-  private boolean allMembersAreConnected() {
+  private static boolean allMembersAreConnected() {
     return manager.getVM().invoke(() -> {
       InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
       DistributedMember server1 = CliUtil.getDistributedMemberByNameOrId(SERVER1_NAME);
