@@ -17,16 +17,10 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -43,11 +37,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
+import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -61,6 +58,14 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
 
 /**
  * Class JMXDataUpdater Class used for creating JMX connection and getting all the required MBeans
@@ -1256,15 +1261,20 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to iterate through all member attributes and return the updated member
    */
   private Cluster.Member initializeMember(ObjectName mbeanName, Cluster.Member member)
-      throws InstanceNotFoundException, ReflectionException, IOException {
+      throws InstanceNotFoundException, ReflectionException, IOException, IntrospectionException {
+
+    MBeanAttributeInfo[] mbeanAttributes = this.mbs.getMBeanInfo(mbeanName).getAttributes();
+    Set<String> mbeanAttributeNames =
+        Arrays.stream(mbeanAttributes).map(MBeanAttributeInfo::getName).collect(Collectors.toSet());
 
     AttributeList attributeList =
-        this.mbs.getAttributes(mbeanName, PulseConstants.MEMBER_MBEAN_ATTRIBUTES);
+        this.mbs.getAttributes(mbeanName, mbeanAttributeNames.toArray(new String[0]));
 
     for (int i = 0; i < attributeList.size(); i++) {
 
       Attribute attribute = (Attribute) attributeList.get(i);
       String name = attribute.getName();
+
       switch (name) {
         case PulseConstants.MBEAN_ATTRIBUTE_GEMFIREVERSION:
           if (member.getGemfireVersion() == null) {
@@ -1424,7 +1434,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         memberList.add(clusterMember);
         cluster.getPhysicalToMember().put(clusterMember.getHost(), memberList);
       }
-    } catch (InstanceNotFoundException | ReflectionException infe) {
+    } catch (InstanceNotFoundException | ReflectionException | IntrospectionException infe) {
       logger.warn(infe);
     }
   }
