@@ -14,15 +14,15 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
+import org.apache.geode.internal.protocol.MessageExecutionContext;
+import org.apache.geode.internal.protocol.OperationContext;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.protocol.state.ConnectionHandshakingStateProcessor;
 import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.LegacySecurityConnectionStateProcessor;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
-import org.apache.geode.internal.protocol.OperationContext;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.security.SecurityService;
 
 public class ProtobufConnectionHandshakeStateProcessor

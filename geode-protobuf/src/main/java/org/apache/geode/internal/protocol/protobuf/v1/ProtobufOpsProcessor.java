@@ -14,21 +14,21 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_OPERATION;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.Failure;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
-
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.*;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching

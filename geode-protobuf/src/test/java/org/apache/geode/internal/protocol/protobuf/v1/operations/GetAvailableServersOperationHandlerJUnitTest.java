@@ -14,31 +14,31 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.LocatorLoadSnapshot;
-import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.ServerLocator;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.TestExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.protobuf.v1.ServerAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.ServerAPI.GetAvailableServersResponse;
-import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
-import org.apache.geode.test.junit.categories.UnitTest;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.ArrayList;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.LocatorLoadSnapshot;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocator;
+import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.Success;
+import org.apache.geode.internal.protocol.TestExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ServerAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.ServerAPI.GetAvailableServersResponse;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandlerJUnitTest {

@@ -22,9 +22,9 @@ import java.io.OutputStream;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionHandshakeStateProcessor;
 import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 import org.apache.geode.internal.security.SecurityService;
 

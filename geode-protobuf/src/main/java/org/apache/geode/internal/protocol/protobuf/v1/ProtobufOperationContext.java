@@ -18,7 +18,6 @@ import java.util.function.Function;
 
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.security.ResourcePermission;
 
 public class ProtobufOperationContext<OperationRequest, OperationResponse> extends

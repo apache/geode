@@ -16,24 +16,24 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations.security;
 
 import java.util.Properties;
 
-import org.apache.geode.internal.protocol.state.ConnectionAuthenticatingStateProcessor;
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.Failure;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.state.ConnectionAuthenticatingStateProcessor;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.security.AuthenticationFailedException;
 
 public class AuthenticationRequestOperationHandler implements

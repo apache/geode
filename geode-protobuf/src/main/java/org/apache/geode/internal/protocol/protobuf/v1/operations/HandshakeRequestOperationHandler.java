@@ -14,21 +14,22 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.state.ConnectionHandshakingStateProcessor;
-import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.geode.internal.protocol.state.ConnectionHandshakingStateProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
 public class HandshakeRequestOperationHandler implements
     OperationHandler<ConnectionAPI.HandshakeRequest, ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> {

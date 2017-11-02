@@ -23,9 +23,8 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufStreamProcessor;
-import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
+import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 

@@ -14,19 +14,20 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
-import org.apache.geode.internal.protocol.state.ConnectionAuthenticatingStateProcessor;
-import org.apache.geode.internal.protocol.state.ConnectionShiroAuthorizingStateProcessor;
-import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.AuthenticationRequestOperationHandler;
+import org.apache.geode.internal.protocol.state.ConnectionAuthenticatingStateProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionShiroAuthorizingStateProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.shiro.subject.Subject;
-
-import java.util.Properties;
 
 public class ConnectionShiroAuthenticatingStateProcessor
     implements ConnectionAuthenticatingStateProcessor {

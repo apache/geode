@@ -14,6 +14,27 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.AUTHENTICATION_FAILED;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
@@ -27,26 +48,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.AUTHENTICATION_FAILED;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Security seems to have a few possible setups: * Manual SecurityManager set: integrated security *
