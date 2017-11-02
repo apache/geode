@@ -1218,7 +1218,11 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public void addAsyncEventQueueId(String asyncEventQueueId) {
-    super.addAsyncEventQueueId(asyncEventQueueId);
+    addAsyncEventQueueId(asyncEventQueueId, false);
+  }
+
+  public void addAsyncEventQueueId(String asyncEventQueueId, boolean isInternal) {
+    super.addAsyncEventQueueId(asyncEventQueueId, isInternal);
     new UpdateAttributesProcessor(this).distribute();
     ((PartitionedRegion) this).distributeUpdatedProfileOnSenderCreation();
     GatewaySender sender = getCache()
@@ -4966,10 +4970,8 @@ public class PartitionedRegion extends LocalRegion
 
     fillInProfile((PartitionProfile) profile);
 
-    if (cacheServiceProfiles != null) {
-      for (CacheServiceProfile csp : cacheServiceProfiles.values()) {
-        profile.addCacheServiceProfile(csp);
-      }
+    for (CacheServiceProfile csp : getCacheServiceProfiles().values()) {
+      profile.addCacheServiceProfile(csp);
     }
 
     profile.isOffHeap = getOffHeap();

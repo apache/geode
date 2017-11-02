@@ -657,5 +657,10 @@ public class AbstractRegionJUnitTest {
     public boolean supportsConcurrencyChecks() {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void addCacheServiceProfile(CacheServiceProfile profile) {
+      throw new UnsupportedOperationException();
+    }
   }
 }

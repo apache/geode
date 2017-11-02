@@ -110,4 +110,7 @@ public interface InternalRegion<K, V>
 
   void invokeInvalidateCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
       final boolean callDispatchListenerEvent);
+
+  void addCacheServiceProfile(CacheServiceProfile profile);
+
 }
