@@ -280,7 +280,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * Returns the version of the GemFire Enterprise instance as a string.
    * 
-   * @return GemFire Enterprise version string derived from {@link org.apache.geode.internal.VersionInformation}
+   * @return GemFire Enterprise version string derived from
+   *         {@link org.apache.geode.internal.VersionInformation}
    */
   /* getter for attribute - Version */
   public String getVersion() {

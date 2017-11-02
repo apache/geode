@@ -132,13 +132,11 @@ public class VersionDescription {
     printHostInfo(pw);
   }
 
-  private void printHostInfo(PrintWriter pw)
-      throws Error {
+  private void printHostInfo(PrintWriter pw) throws Error {
     try {
-      String sb = SocketCreator.getLocalHost().toString() + ", " +
-          Runtime.getRuntime().availableProcessors() + " cpu(s), " +
-          getOsArchitecture() + ' ' + getOsName() + ' ' +
-          getOsVersion() + ' ';
+      String sb = SocketCreator.getLocalHost().toString() + ", "
+          + Runtime.getRuntime().availableProcessors() + " cpu(s), " + getOsArchitecture() + ' '
+          + getOsName() + ' ' + getOsVersion() + ' ';
       pw.println(LocalizedStrings.GemFireVersion_RUNNING_ON_0.toLocalizedString(sb));
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);

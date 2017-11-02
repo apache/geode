@@ -126,7 +126,8 @@ public class ShellCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/version")
   @ResponseBody
   public String version() {
-    return VersionInformation.getProductName().concat("/").concat(VersionInformation.getGemFireVersion());
+    return VersionInformation.getProductName().concat("/")
+        .concat(VersionInformation.getGemFireVersion());
   }
 
   @RequestMapping(method = RequestMethod.GET, value = "/version/full")

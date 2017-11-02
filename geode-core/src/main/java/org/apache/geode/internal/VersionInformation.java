@@ -35,8 +35,8 @@ import java.net.URL;
 import java.util.StringTokenizer;
 
 /**
- * This class provides build and version information. It gathers this information from
- * the resource property file for this class.
+ * This class provides build and version information. It gathers this information from the resource
+ * property file for this class.
  */
 public class VersionInformation {
   /** The singleton instance */

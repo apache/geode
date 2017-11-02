@@ -84,8 +84,8 @@ public class GemFireStatSampler extends HostStatSampler {
 
   @Override
   public String getProductDescription() {
-    return "GemFire " + VersionInformation.getGemFireVersion() + " #" + VersionInformation.getBuildId()
-        + " as of " + VersionInformation.getSourceDate();
+    return "GemFire " + VersionInformation.getGemFireVersion() + " #"
+        + VersionInformation.getBuildId() + " as of " + VersionInformation.getSourceDate();
   }
 
   public int addListener(InternalDistributedMember recipient, long resourceId, String statName) {
