@@ -23,8 +23,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.logging.LogService;
 
 /**

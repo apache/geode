@@ -14,10 +14,10 @@
  */
 package org.apache.geode.modules.util;
 
-import org.apache.geode.internal.VersionInformation;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+import org.apache.geode.internal.VersionInformation;
 
 public class Banner {
 

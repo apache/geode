@@ -14,11 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.util.ArgumentRedactor;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
@@ -31,6 +26,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
  * Utility class to print banner information at manager startup.

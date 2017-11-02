@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache;
 
+import java.util.Properties;
+
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -31,8 +33,6 @@ import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-
-import java.util.Properties;
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire

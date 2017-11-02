@@ -14,21 +14,6 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.Statistics;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.VersionInformation;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.admin.ListenerIdMap;
-import org.apache.geode.internal.admin.remote.StatListenerMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
-import org.apache.geode.internal.statistics.platform.ProcessStats;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +24,21 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.Statistics;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.VersionInformation;
+import org.apache.geode.internal.admin.ListenerIdMap;
+import org.apache.geode.internal.admin.remote.StatListenerMessage;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
+import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 /**
  * GemFireStatSampler adds listeners and rolling archives to HostStatSampler.

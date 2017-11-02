@@ -25,8 +25,8 @@ import joptsimple.OptionSet;
 import org.springframework.shell.core.ExitShellRequest;
 
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
