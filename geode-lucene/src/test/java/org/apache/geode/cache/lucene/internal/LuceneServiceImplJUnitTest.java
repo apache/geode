@@ -63,7 +63,8 @@ public class LuceneServiceImplJUnitTest {
     factory.setLuceneSerializer(serializer);
     factory.setFields("field1", "field2");
     factory.create("index", "region");
-    Mockito.verify(service).createIndex(eq("index"), eq("region"), any(), eq(serializer));
+    Mockito.verify(service).createIndex(eq("index"), eq("region"), any(), eq(serializer),
+        eq(false));
   }
 
   @Test
@@ -75,7 +76,7 @@ public class LuceneServiceImplJUnitTest {
   @Test
   public void shouldThrowIllegalArgumentExceptionIfFieldsMapIsMissing() {
     thrown.expect(IllegalArgumentException.class);
-    service.createIndex("index", "region", Collections.emptyMap(), null);
+    service.createIndex("index", "region", Collections.emptyMap(), null, false);
   }
 
   @Test

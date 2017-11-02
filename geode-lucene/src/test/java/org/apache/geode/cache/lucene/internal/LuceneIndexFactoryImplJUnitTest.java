@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -37,7 +36,8 @@ public class LuceneIndexFactoryImplJUnitTest {
     LuceneIndexFactory factory = new LuceneIndexFactoryImpl(service);
     factory.setLuceneSerializer(serializer);
     factory.create("index", "region");
-    Mockito.verify(service).createIndex(eq("index"), eq("region"), any(), eq(serializer));
+    Mockito.verify(service).createIndex(eq("index"), eq("region"), any(), eq(serializer),
+        eq(false));
   }
 
 }

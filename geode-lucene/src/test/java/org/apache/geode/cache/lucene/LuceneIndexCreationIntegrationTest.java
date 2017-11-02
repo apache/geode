@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImplFactory;
 import org.apache.geode.cache.lucene.internal.LuceneRawIndex;
 import org.apache.geode.cache.lucene.internal.LuceneRawIndexFactory;
@@ -181,6 +183,43 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
       throws IOException, ParseException {
     createRegion();
     createIndex("field1", "field2", "field3");
+  }
+
+  @Test()
+  public void canCreateLuceneIndexAfterRegionCreatedIfAllowFlagIsSet()
+      throws IOException, ParseException, InterruptedException, LuceneQueryException {
+    Region region = createRegion();
+    LuceneService luceneService = LuceneServiceProvider.get(cache);
+    final LuceneIndexFactoryImpl indexFactory =
+        (LuceneIndexFactoryImpl) luceneService.createIndexFactory();
+    indexFactory.setFields("field1", "field2").create(INDEX_NAME, REGION_NAME, true);
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    assertNotNull(index);
+
+    region.put("key1", new TestObject("hello", "world"));
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 1, TimeUnit.MINUTES);
+    LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory().create(INDEX_NAME,
+        REGION_NAME, "field1:hello", "field1");
+
+    assertEquals(Collections.singletonList("key1"), query.findKeys());
+  }
+
+
+  @Test()
+  public void creatingDuplicateLuceneIndexFails()
+      throws IOException, ParseException, InterruptedException, LuceneQueryException {
+    Region region = createRegion();
+    LuceneService luceneService = LuceneServiceProvider.get(cache);
+    final LuceneIndexFactoryImpl indexFactory =
+        (LuceneIndexFactoryImpl) luceneService.createIndexFactory();
+    indexFactory.setFields("field1", "field2").create(INDEX_NAME, REGION_NAME, true);
+
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    assertNotNull(index);
+
+    expectedException.expect(LuceneIndexExistsException.class);
+    indexFactory.setFields("field1", "field2").create(INDEX_NAME, REGION_NAME, true);
   }
 
   @Test

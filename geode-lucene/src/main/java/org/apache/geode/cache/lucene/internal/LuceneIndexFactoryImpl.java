@@ -23,7 +23,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 
-public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.LuceneIndexFactory {
+public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
   private final LuceneServiceImpl service;
   private final Map<String, Analyzer> fields = new LinkedHashMap<String, Analyzer>();
   private LuceneSerializer serializer;
@@ -34,12 +34,12 @@ public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.Luc
   }
 
   @Override
-  public LuceneIndexFactory addField(final String name) {
+  public LuceneIndexFactoryImpl addField(final String name) {
     return addField(name, new StandardAnalyzer());
   }
 
   @Override
-  public LuceneIndexFactory setFields(final String... fields) {
+  public LuceneIndexFactoryImpl setFields(final String... fields) {
     this.fields.clear();
     for (String field : fields) {
       addField(field);
@@ -48,13 +48,13 @@ public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.Luc
   }
 
   @Override
-  public LuceneIndexFactory addField(final String name, final Analyzer analyzer) {
+  public LuceneIndexFactoryImpl addField(final String name, final Analyzer analyzer) {
     fields.put(name, analyzer);
     return this;
   }
 
   @Override
-  public LuceneIndexFactory setFields(final Map<String, Analyzer> fieldMap) {
+  public LuceneIndexFactoryImpl setFields(final Map<String, Analyzer> fieldMap) {
     this.fields.clear();
     this.fields.putAll(fieldMap);
     return this;
@@ -62,11 +62,16 @@ public class LuceneIndexFactoryImpl implements org.apache.geode.cache.lucene.Luc
 
   @Override
   public void create(final String indexName, final String regionPath) {
-    service.createIndex(indexName, regionPath, fields, serializer);
+    this.create(indexName, regionPath, false);
+  }
+
+  public void create(final String indexName, final String regionPath,
+      boolean allowOnExistingRegion) {
+    service.createIndex(indexName, regionPath, fields, serializer, allowOnExistingRegion);
   }
 
   @Override
-  public LuceneIndexFactory setLuceneSerializer(LuceneSerializer luceneSerializer) {
+  public LuceneIndexFactoryImpl setLuceneSerializer(LuceneSerializer luceneSerializer) {
     this.serializer = luceneSerializer;
     return this;
   }

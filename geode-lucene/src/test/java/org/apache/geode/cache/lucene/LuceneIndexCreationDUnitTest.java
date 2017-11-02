@@ -15,26 +15,47 @@
 package org.apache.geode.cache.lucene;
 
 import static junitparams.JUnitParamsRunner.$;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS_2;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_NAMES;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -43,6 +64,9 @@ import org.apache.geode.util.test.TestUtil;
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
+
+  @Rule
+  public transient ExpectedException expectedException = ExpectedException.none();
 
   private Object[] parametersForMultipleIndexCreates() {
     Integer[] numIndexes = {1, 2, 10};
@@ -249,6 +273,67 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex, regionType));
   }
 
+  @Test
+  @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
+  public void creatingIndexAfterRegionAndStartingUpSecondMemberSucceeds(
+      RegionTestableType regionType) {
+    dataStore1.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore2.invoke(() -> {
+      createIndexAfterRegion("field1");
+      regionType.createDataStore(getCache(), REGION_NAME);
+    });
+    dataStore1.invoke(() -> {
+      putEntryAndQuery();
+    });
+  }
+
+  @Test()
+  @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
+  public void creatingIndexAfterRegionAndStartingUpSecondMemberWithoutIndexFails(
+      RegionTestableType regionType) {
+    dataStore1.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+      createIndexAfterRegion("field1");
+    });
+
+    expectedException.expectCause(Matchers.instanceOf(IllegalStateException.class));
+    dataStore2.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore1.invoke(() -> {
+      putEntryAndQuery();
+    });
+  }
+
+  @Test
+  @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
+  public void creatingIndexAfterRegionInTwoMembersSucceed(RegionTestableType regionType) {
+    dataStore1.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+    });
+
+    dataStore2.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+    });
+
+    dataStore1.invoke(() -> {
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore2.invoke(() -> {
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore1.invoke(() -> {
+      putEntryAndQuery();
+    });
+  }
 
   @Test
   @Parameters(method = "getXmlAndExceptionMessages")
@@ -545,4 +630,24 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   protected void verifyAsyncEventQueues(final int expectedSize) {
     assertEquals(expectedSize, getCache().getAsyncEventQueues(false).size());
   }
+
+  private void createIndexAfterRegion(String... fields) {
+    LuceneService luceneService = LuceneServiceProvider.get(getCache());
+    LuceneIndexFactoryImpl indexFactory =
+        (LuceneIndexFactoryImpl) luceneService.createIndexFactory();
+    indexFactory.setFields(fields).create(INDEX_NAME, REGION_NAME, true);
+  }
+
+  private void putEntryAndQuery() throws InterruptedException, LuceneQueryException {
+    Cache cache = getCache();
+    Region region = cache.getRegion(REGION_NAME);
+    region.put("key1", new TestObject("field1Value", "field2Value"));
+    LuceneService luceneService = LuceneServiceProvider.get(cache);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 1, TimeUnit.MINUTES);
+    LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory().create(INDEX_NAME,
+        REGION_NAME, "field1:field1Value", "field1");
+    assertEquals(Collections.singletonList("key1"), query.findKeys());
+  }
+
+
 }

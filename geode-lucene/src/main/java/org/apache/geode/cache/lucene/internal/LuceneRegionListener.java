@@ -20,8 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.lucene.analysis.Analyzer;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
@@ -83,21 +81,7 @@ public class LuceneRegionListener implements RegionListener {
 
     if (path.equals(this.regionPath) && this.beforeCreateInvoked.compareAndSet(false, true)) {
 
-      if (!attrs.getDataPolicy().withPartitioning()) {
-        // replicated region
-        throw new UnsupportedOperationException(
-            "Lucene indexes on replicated regions are not supported");
-      }
-
-      // For now we cannot support eviction with local destroy.
-      // Eviction with overflow to disk still needs to be supported
-      EvictionAttributes evictionAttributes = attrs.getEvictionAttributes();
-      EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
-      if (evictionAlgorithm != EvictionAlgorithm.NONE
-          && evictionAttributes.getAction().isLocalDestroy()) {
-        throw new UnsupportedOperationException(
-            "Lucene indexes on regions with eviction and action local destroy are not supported");
-      }
+      LuceneServiceImpl.validateRegionAttributes(attrs);
 
       String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
       if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
@@ -124,11 +108,6 @@ public class LuceneRegionListener implements RegionListener {
     if (region.getFullPath().equals(this.regionPath)
         && this.afterCreateInvoked.compareAndSet(false, true)) {
       this.service.afterDataRegionCreated(this.luceneIndex);
-      String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
-      AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
-      AbstractPartitionedRepositoryManager repositoryManager =
-          (AbstractPartitionedRepositoryManager) luceneIndex.getRepositoryManager();
-      repositoryManager.allowRepositoryComputation();
     }
   }
 
