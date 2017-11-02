@@ -273,6 +273,8 @@ org/apache/geode/cache/operations/RemoveAllOperationContext
 org/apache/geode/cache/operations/StopCQOperationContext
 org/apache/geode/cache/operations/UnregisterInterestOperationContext
 org/apache/geode/cache/operations/internal/GetOperationContextImpl
+org/apache/geode/internal/cache/client/protocol/exception/ServiceLoadingFailureException
+org/apache/geode/internal/cache/client/protocol/exception/ServiceVersionNotFoundException
 org/apache/geode/internal/cache/operations/ContainsKeyOperationContext
 org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation
