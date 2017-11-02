@@ -107,7 +107,7 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
 
     // LRUStatistics lruStats = getLRUStats(region);
 
-    setCacheObserverCallBack();
+    DiskRegionTestingBase.setCacheObserverCallBack();
 
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       public void afterHavingCompacted() {
@@ -176,7 +176,7 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
     log.info(statsGet2);
     System.out.println("Perf Stats of get which is fauting in from Second OpLog  :" + statsGet2);
 
-    unSetCacheObserverCallBack();
+    DiskRegionTestingBase.unSetCacheObserverCallBack();
 
   }
 

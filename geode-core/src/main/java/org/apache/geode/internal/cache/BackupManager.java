@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -267,7 +266,7 @@ public class BackupManager implements MembershipListener {
         File backupDir = getBackupDir(backup.getTargetDir(), index);
         // TODO prpersist - We could probably optimize this to *move* the files
         // that we know are supposed to be deleted.
-        backupOplog(backupDir, oplog);
+        oplog.copyTo(backupDir);
 
         // Allow the oplog to be deleted, and process any pending delete
         backup.backupFinished(oplog);
@@ -568,28 +567,6 @@ public class BackupManager implements MembershipListener {
     } finally {
       fos.close();
     }
-  }
-
-  private void backupOplog(File targetDir, Oplog oplog) throws IOException {
-    File crfFile = oplog.getCrfFile();
-    backupFile(targetDir, crfFile);
-
-    File drfFile = oplog.getDrfFile();
-    backupFile(targetDir, drfFile);
-
-    oplog.finishKrf();
-    File krfFile = oplog.getKrfFile();
-    backupFile(targetDir, krfFile);
-  }
-
-  private void backupFile(File targetDir, File file) throws IOException {
-    if (file != null && file.exists())
-      try {
-        Files.createLink(targetDir.toPath().resolve(file.getName()), file.toPath());
-      } catch (IOException | UnsupportedOperationException e) {
-        logger.warn("Unable to create hard link for + {}. Reverting to file copy", targetDir);
-        FileUtils.copyFileToDirectory(file, targetDir);
-      }
   }
 
   private String cleanSpecialCharacters(String string) {
