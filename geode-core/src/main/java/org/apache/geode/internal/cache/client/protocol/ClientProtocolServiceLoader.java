@@ -19,7 +19,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.apache.geode.internal.cache.tier.sockets.ServiceLoadingFailureException;
+import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 
 public class ClientProtocolServiceLoader {
   private final List<ClientProtocolService> clientProtocolServices;
@@ -38,7 +39,7 @@ public class ClientProtocolServiceLoader {
     return resultList;
   }
 
-  public ClientProtocolService lookupService() {
+  public ClientProtocolService lookupService(int protocolVersion) {
     if (clientProtocolServices.isEmpty()) {
       throw new ServiceLoadingFailureException(
           "There is no ClientProtocolService implementation found in JVM");
@@ -48,6 +49,11 @@ public class ClientProtocolServiceLoader {
       throw new ServiceLoadingFailureException(
           "There is more than one ClientProtocolService implementation found in JVM; aborting");
     }
-    return clientProtocolServices.get(0);
+    ClientProtocolService clientProtocolService = clientProtocolServices.get(0);
+    if (clientProtocolService.getServiceProtocolVersion() != protocolVersion) {
+      throw new ServiceVersionNotFoundException(
+          "The ClientProtocolService doesn't match the requested version.");
+    }
+    return clientProtocolService;
   }
 }

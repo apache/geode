@@ -25,6 +25,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
+import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.security.SecurityService;
@@ -42,9 +44,9 @@ public class ServerConnectionFactory {
 
 
   private synchronized ClientProtocolService getClientProtocolService(
-      StatisticsFactory statisticsFactory, String serverName) {
+      StatisticsFactory statisticsFactory, String serverName, int protocolVersion) {
     if (clientProtocolService == null) {
-      clientProtocolService = clientProtocolServiceLoader.lookupService();
+      clientProtocolService = clientProtocolServiceLoader.lookupService(protocolVersion);
       clientProtocolService.initializeStatistics(serverName, statisticsFactory);
     }
     return clientProtocolService;
@@ -58,11 +60,15 @@ public class ServerConnectionFactory {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
       } else {
+        int protocolVersion = readProtocolVersionByte(socket);
         try {
           return createGenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
-              socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService);
+              socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService,
+              protocolVersion);
         } catch (ServiceLoadingFailureException ex) {
           throw new IOException("Could not load protobuf client protocol", ex);
+        } catch (ServiceVersionNotFoundException ex) {
+          throw new IOException("No service matching provided version byte", ex);
         }
       }
     } else {
@@ -71,12 +77,16 @@ public class ServerConnectionFactory {
     }
   }
 
+  private int readProtocolVersionByte(Socket socket) throws IOException {
+    return socket.getInputStream().read();
+  }
+
   private ServerConnection createGenericProtocolServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService) {
-    ClientProtocolService service =
-        getClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
+      SecurityService securityService, int protocolVersion) {
+    ClientProtocolService service = getClientProtocolService(cache.getDistributedSystem(),
+        acceptor.getServerName(), protocolVersion);
 
     ClientProtocolProcessor processor = service.createProcessorForCache(cache, securityService);
 

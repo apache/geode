@@ -63,7 +63,8 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
-import org.apache.geode.internal.cache.tier.sockets.ServiceLoadingFailureException;
+import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
+import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -385,8 +386,9 @@ public class TcpServer {
           if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
             try {
+              int protocolVersion = input.readUnsignedByte();
               ClientProtocolService clientProtocolService =
-                  clientProtocolServiceLoader.lookupService();
+                  clientProtocolServiceLoader.lookupService(protocolVersion);
               clientProtocolService.initializeStatistics("LocatorStats",
                   internalLocator.getDistributedSystem());
               try (ClientProtocolProcessor pipeline =
@@ -400,6 +402,11 @@ public class TcpServer {
               log.error("There was an error looking up the client protocol service", e);
               socket.close();
               throw new IOException("There was an error looking up the client protocol service", e);
+            } catch (ServiceVersionNotFoundException e) {
+              log.error("Unable to find service matching the client protocol version byte", e);
+              socket.close();
+              throw new IOException(
+                  "Unable to find service matching the client protocol version byte", e);
             }
           } else {
             rejectUnknownProtocolConnection(socket, gossipVersion);

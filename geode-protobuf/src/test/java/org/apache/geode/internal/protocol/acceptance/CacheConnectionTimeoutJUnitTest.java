@@ -26,6 +26,8 @@ import java.net.Socket;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.protocol.protobuf.ConnectionAPI;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -100,7 +102,8 @@ public class CacheConnectionTimeoutJUnitTest {
 
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
     serializationService = new ProtobufSerializationService();
 

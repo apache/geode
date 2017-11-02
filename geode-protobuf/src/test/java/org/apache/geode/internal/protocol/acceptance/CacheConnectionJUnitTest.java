@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -57,6 +58,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -121,7 +123,6 @@ public class CacheConnectionJUnitTest {
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
-    cacheFactory.setSecurityManager(null);
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
@@ -141,7 +142,8 @@ public class CacheConnectionJUnitTest {
     }
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(110);
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
     serializationService = new ProtobufSerializationService();
   }
@@ -196,8 +198,11 @@ public class CacheConnectionJUnitTest {
 
   @Test
   public void testConnectionCountIsProperlyDecremented() throws Exception {
-    CacheServer cacheServer = this.cache.getCacheServers().stream().findFirst().get();
+    List<CacheServer> cacheServers = this.cache.getCacheServers();
+    assertEquals(1, cacheServers.size());
+    CacheServer cacheServer = cacheServers.stream().findFirst().get();
     AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+
     Awaitility.await().atMost(30, TimeUnit.SECONDS)
         .until(() -> acceptor.getClientServerCnxCount() == 1);
 

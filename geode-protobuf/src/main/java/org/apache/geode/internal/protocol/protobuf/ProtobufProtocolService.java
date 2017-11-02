@@ -59,4 +59,9 @@ public class ProtobufProtocolService implements ClientProtocolService {
   public ClientProtocolProcessor createProcessorForLocator(InternalLocator locator) {
     return new ProtobufLocatorPipeline(protobufStreamProcessor, getStatistics(), locator);
   }
+
+  @Override
+  public int getServiceProtocolVersion() {
+    return ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE;
+  }
 }
