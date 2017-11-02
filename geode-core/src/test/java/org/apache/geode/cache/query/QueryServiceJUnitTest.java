@@ -71,18 +71,50 @@ public class QueryServiceJUnitTest {
   }
 
   @Test
-  public void testNewQueryWithToDatePresetFunction() throws Exception {
+  public void toDateWithPresetDateShouldExecuteWithoutExceptions() throws Exception {
     String testDate = "01/01/2000";
     QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService.newQuery(
+        "SELECT * FROM /Portfolios WHERE createDate >= to_date('" + testDate + "', 'MM/dd/yyyy')");
+    query.execute();
+  }
 
+  @Test
+  public void toDateWithValidBindParameterDateShouldExecuteWithoutExceptions() throws Exception {
+    String testDate = "01/01/2000";
+    QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService
+        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+    query.execute(testDate);
+  }
+
+  @Test
+  public void toDateWithInValidStringBindParameterDateShouldThrowQueryInvalidException()
+      throws Exception {
+    String invalid = "someInvalidString";
+    QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService
+        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
     try {
-      queryService
-          .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
-      queryService.newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date('" + testDate
-          + "', 'MM/dd/yyyy')");
-    } catch (Exception exception) {
-      exception.printStackTrace();
-      fail("Unexpected Exception, both queries are valid: " + exception.getMessage());
+      query.execute(invalid);
+      fail();
+    } catch (QueryInvalidException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void toDateWithRegionAsBindParameterDateShouldThrowQueryInvalidException()
+      throws Exception {
+    Object invalid = CacheUtils.getRegion("Portfolios");
+    QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService
+        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+    try {
+      query.execute(invalid);
+      fail();
+    } catch (QueryInvalidException e) {
+      // expected
     }
   }
 
