@@ -36,14 +36,14 @@ resources:
   type: git
   source:
     uri: https://github.com/apache/geode.git
-    branch: create-docker-image
+    branch: develop
     paths:
     - ci/pipelines/develop.yml
 - name: geode-docker-images-pipeline
   type: git
   source:
     uri: https://github.com/apache/geode.git
-    branch: create-docker-image
+    branch: develop
     paths:
     - ci/pipelines/docker-images.yml
 

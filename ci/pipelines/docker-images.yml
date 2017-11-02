@@ -22,7 +22,7 @@ resources:
   type: git
   source:
     uri: https://github.com/apache/geode.git
-    branch: create-docker-image
+    branch: develop
     paths:
     - ci/docker/*
 
