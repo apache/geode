@@ -95,6 +95,7 @@ import org.apache.geode.internal.util.ArrayUtils;
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from the edge and starts
  * up threads to process requests from these.
+ * 
  * @since GemFire 2.0.2
  */
 @SuppressWarnings("deprecation")
@@ -273,6 +274,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * The ip address or host name this acceptor is to bind to; <code>null</code> or "" indicates it
    * will listen on all local addresses.
+   * 
    * @since GemFire 5.7
    */
   private final String bindHostName;
@@ -312,13 +314,14 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * Initializes this acceptor thread to listen for connections on the given port.
+   * 
    * @param port The port on which this acceptor listens for connections. If <code>0</code>, a
-   * random port will be chosen.
+   *        random port will be chosen.
    * @param bindHostName The ip address or host name this acceptor listens on for connections. If
-   * <code>null</code> or "" then all local addresses are used
+   *        <code>null</code> or "" then all local addresses are used
    * @param socketBufferSize The buffer size for server-side sockets
    * @param maximumTimeBetweenPings The maximum time between client pings. This value is used by the
-   * <code>ClientHealthMonitor</code> to monitor the health of this server's clients.
+   *        <code>ClientHealthMonitor</code> to monitor the health of this server's clients.
    * @param internalCache The GemFire cache whose contents is served to clients
    * @param maxConnections the maximum number of connections allowed in the server pool
    * @param maxThreads the maximum number of threads allowed in the server pool
@@ -327,14 +330,11 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * @since GemFire 5.7
    */
   public AcceptorImpl(int port, String bindHostName, boolean notifyBySubscription,
-                      int socketBufferSize, int maximumTimeBetweenPings,
-                      InternalCache internalCache,
-                      int maxConnections, int maxThreads, int maximumMessageCount,
-                      int messageTimeToLive,
-                      ConnectionListener listener, List overflowAttributesList,
-                      boolean isGatewayReceiver,
-                      List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay,
-                      ServerConnectionFactory serverConnectionFactory) throws IOException {
+      int socketBufferSize, int maximumTimeBetweenPings, InternalCache internalCache,
+      int maxConnections, int maxThreads, int maximumMessageCount, int messageTimeToLive,
+      ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver,
+      List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay,
+      ServerConnectionFactory serverConnectionFactory) throws IOException {
     this.securityService = internalCache.getSecurityService();
     this.bindHostName = calcBindHostName(internalCache, bindHostName);
     this.connectionListener = listener == null ? new ConnectionListenerAdapter() : listener;
@@ -446,7 +446,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         // fix for bug 36617. If BindException is thrown, retry after
         // sleeping. The server may have been stopped and then
         // immediately restarted, which sometimes results in a bind exception
-        for (; ; ) {
+        for (;;) {
           try {
             this.serverSock.bind(new InetSocketAddress(getBindAddress(), port), backLog);
             break;
@@ -475,7 +475,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         // fix for bug 36617. If BindException is thrown, retry after
         // sleeping. The server may have been stopped and then
         // immediately restarted, which sometimes results in a bind exception
-        for (; ; ) {
+        for (;;) {
           try {
             this.serverSock = this.socketCreator.createServerSocket(port, backLog, getBindAddress(),
                 this.gatewayTransportFilters, socketBufferSize);
@@ -520,7 +520,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       String sockName = getServerName();
       logger.info(LocalizedMessage.create(
           LocalizedStrings.AcceptorImpl_CACHE_SERVER_CONNECTION_LISTENER_BOUND_TO_ADDRESS_0_WITH_BACKLOG_1,
-          new Object[]{sockName, Integer.valueOf(backLog)}));
+          new Object[] {sockName, Integer.valueOf(backLog)}));
       if (isGatewayReceiver) {
         this.stats = GatewayReceiverStats.createGatewayReceiverStats(sockName);
       } else {
@@ -616,8 +616,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         return new Thread(clientQueueThreadGroup, runnable, threadName);
       }
     };
-    return new PooledExecutorWithDMStats(new SynchronousQueue(), 16,
-        getStats().getCnxPoolHelper(), clientQueueThreadFactory, 60000);
+    return new PooledExecutorWithDMStats(new SynchronousQueue(), 16, getStats().getCnxPoolHelper(),
+        clientQueueThreadFactory, 60000);
   }
 
   private ThreadPoolExecutor initializeServerConnectionThreadPool() throws IOException {
@@ -680,6 +680,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * This system property is only used if max-threads == 0. This is for 5.0.2 backwards
    * compatibility.
+   * 
    * @deprecated since 5.1 use cache-server max-threads instead
    */
   @Deprecated
@@ -688,6 +689,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * This system property is only used if max-threads == 0. This is for 5.0.2 backwards
    * compatibility.
+   * 
    * @deprecated since 5.1 use cache-server max-threads instead
    */
   @Deprecated
@@ -825,6 +827,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * Ensure that the CachedRegionHelper and ServerConnection classes get loaded.
+   * 
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {
@@ -1186,6 +1189,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * The work loop of this acceptor
+   * 
    * @see #accept
    */
   public void run() {
@@ -1226,8 +1230,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   /**
-   * {@linkplain ServerSocket#accept Listens}for a client to connect and then creates a new {@link
-   * ServerConnection}to handle messages from that client.
+   * {@linkplain ServerSocket#accept Listens}for a client to connect and then creates a new
+   * {@link ServerConnection}to handle messages from that client.
    */
   @Override
   public void accept() {
@@ -1315,7 +1319,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * blocking is good because it will throttle the rate at which we create new connections.
    */
   private void handOffNewClientConnection(final Socket socket,
-                                          final ServerConnectionFactory serverConnectionFactory) {
+      final ServerConnectionFactory serverConnectionFactory) {
     try {
       this.stats.incAcceptsInProgress();
       this.hsPool.execute(new Runnable() {
@@ -1400,8 +1404,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   protected void handleNewClientConnection(final Socket socket,
-                                           final ServerConnectionFactory serverConnectionFactory)
-      throws IOException {
+      final ServerConnectionFactory serverConnectionFactory) throws IOException {
     // Read the first byte. If this socket is being used for 'client to server'
     // communication, create a ServerConnection. If this socket is being used
     // for 'server to client' communication, send it to the CacheClientNotifier
@@ -1436,7 +1439,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       if (curCnt >= this.maxConnections) {
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_CURRENT_CONNECTION_COUNT_OF_1_IS_GREATER_THAN_OR_EQUAL_TO_THE_CONFIGURED_MAX_OF_2,
-            new Object[]{socket.getInetAddress(), Integer.valueOf(curCnt),
+            new Object[] {socket.getInetAddress(), Integer.valueOf(curCnt),
                 Integer.valueOf(this.maxConnections)}));
         if (communicationMode.expectsConnectionRefusalMessage()) {
           try {
@@ -1476,7 +1479,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         }
         logger.warn(LocalizedMessage.create(
             LocalizedStrings.AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_REQUEST_REJECTED_BY_POOL,
-            new Object[]{serverConn}));
+            new Object[] {serverConn}));
         try {
           ServerHandShakeProcessor.refuse(socket.getOutputStream(),
               LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
@@ -1662,9 +1665,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * @param bindName the ip address or host name that this acceptor should bind to. If null or ""
-   * then calculate it.
+   *        then calculate it.
    * @return the ip address or host name this acceptor will listen on. An "" if all local addresses
-   * will be listened to.
+   *         will be listened to.
    * @since GemFire 5.7
    */
   private static String calcBindHostName(Cache cache, String bindName) {
@@ -1701,6 +1704,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * Gets the address that this bridge server can be contacted on from external processes.
+   * 
    * @since GemFire 5.7
    */
   public String getExternalAddress() {
@@ -1734,6 +1738,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * This method finds a client notifier and returns it. It is used to propagate interest
    * registrations to other servers
+   * 
    * @return the instance that provides client notification
    */
   @Override
@@ -1821,7 +1826,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     private final AcceptorImpl acceptor;
 
     public ClientQueueInitializerTask(Socket socket, boolean isPrimaryServerToClient,
-                                      AcceptorImpl acceptor) {
+        AcceptorImpl acceptor) {
       this.socket = socket;
       this.acceptor = acceptor;
       this.isPrimaryServerToClient = isPrimaryServerToClient;
