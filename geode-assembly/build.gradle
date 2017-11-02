@@ -164,6 +164,8 @@ def cp = {
         it.contains('commons-lang') ||
         it.contains('commons-logging') ||
         it.contains('commons-validator') ||
+        it.contains('commons-beanutils') ||
+        it.contains('commons-codec') ||
         it.contains('fast-classpath-scanner') ||
         it.contains('fastutil') ||
         it.contains('jackson-annotations') ||
