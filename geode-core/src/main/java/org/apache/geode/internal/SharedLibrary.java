@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLDecoder;
-
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+
+import java.io.File;
+import java.net.URL;
+import java.net.URLDecoder;
 
 /**
  * The class puts in one place the code that will determine the name of the GemFire shared library.
@@ -163,7 +163,7 @@ public class SharedLibrary {
   public static void loadLibrary(boolean debug) throws UnsatisfiedLinkError {
     String library = getName();
     try {
-      URL gemfireJarURL = VersionInformation.getJarURL();
+      URL gemfireJarURL = GemFireVersion.getJarURL();
 
       if (gemfireJarURL == null) {
         throw new InternalGemFireError("Unable to locate jar file.");

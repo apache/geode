@@ -14,10 +14,13 @@
  */
 package org.apache.geode.modules.util;
 
+import org.apache.geode.internal.GemFireVersion;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import org.apache.geode.internal.VersionInformation;
+import java.util.Properties;
 
 public class Banner {
 
@@ -31,6 +34,6 @@ public class Banner {
 
   private static void print(PrintWriter pw) {
     pw.println("Geode Modules");
-    VersionInformation.print(pw);
+    GemFireVersion.print(pw);
   }
 }

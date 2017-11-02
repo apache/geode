@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.internal.VersionInformation;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -55,7 +55,7 @@ public class VersionCommandJUnitTest {
   @Parameters({"version", "version --full=false"})
   public void versionShort(String versionCommand) throws Exception {
     String result = gfsh.execute(versionCommand);
-    assertThat(result).contains(VersionInformation.getGemFireVersion());
+    assertThat(result).contains(GemFireVersion.getGemFireVersion());
   }
 
   @Test

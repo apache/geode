@@ -35,19 +35,19 @@ import java.net.URL;
 import java.util.StringTokenizer;
 
 /**
- * This class provides build and version information. It gathers this information from the resource
- * property file for this class.
+ * This class provides build and version information about GemFire. It gathers this information from
+ * the resource property file for this class.
  */
-public class VersionInformation {
+public class GemFireVersion {
   /** The singleton instance */
   private static VersionDescription description;
 
-  private VersionInformation() {}
+  private GemFireVersion() {}
 
   private static synchronized VersionDescription getDescription() {
     if (description == null) {
       String name =
-          VersionInformation.class.getPackage().getName().replace('.', '/') + "/" + RESOURCE_NAME;
+          GemFireVersion.class.getPackage().getName().replace('.', '/') + "/" + RESOURCE_NAME;
       description = new VersionDescription(name);
     }
     return description;
@@ -90,7 +90,7 @@ public class VersionInformation {
   }
 
   public static String getGemFireJarFileName() {
-    return "geode-core-" + VersionInformation.getGemFireVersion() + ".jar";
+    return "geode-core-" + GemFireVersion.getGemFireVersion() + ".jar";
   }
 
   public static void print(PrintWriter pw) {
@@ -111,7 +111,7 @@ public class VersionInformation {
 
   /** Public method that returns the URL of the gemfire jar file */
   public static URL getJarURL() {
-    java.security.CodeSource cs = VersionInformation.class.getProtectionDomain().getCodeSource();
+    java.security.CodeSource cs = GemFireVersion.class.getProtectionDomain().getCodeSource();
     if (cs != null) {
       return cs.getLocation();
     }

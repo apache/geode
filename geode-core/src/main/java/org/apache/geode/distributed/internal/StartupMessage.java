@@ -14,6 +14,19 @@
  */
 package org.apache.geode.distributed.internal;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
+import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -22,29 +35,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.apache.geode.SystemConnectException;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
-import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionInformation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
-
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
  */
 public class StartupMessage extends HighPriorityDistributionMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
-  private String version = VersionInformation.getGemFireVersion(); // added for bug 29005
+  private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
   private int replyProcessorId;
   private boolean isMcastEnabled;
   private boolean isTcpDisabled;
@@ -184,7 +181,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     final boolean isAdminDM = dm.getId().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE
         || dm.getId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
 
-    String myVersion = VersionInformation.getGemFireVersion();
+    String myVersion = GemFireVersion.getGemFireVersion();
     String theirVersion = this.version;
     if (dm.getTransport().isMcastEnabled() != isMcastEnabled) {
       rejectionMessage =
@@ -268,7 +265,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     StartupResponseMessage m = null;
     // Commenting out. See Bruces note in the StartupMessageData constructor.
     // Comparisons should use the functionality described in SerializationVersions
-    // if (VersionInformation.compareVersions(theirVersion,"6.6.2") >= 0) {
+    // if (GemFireVersion.compareVersions(theirVersion,"6.6.2") >= 0) {
     m = new StartupResponseWithVersionMessage(dm, replyProcessorId, getSender(), rejectionMessage,
         isAdminDM);
     // } else {

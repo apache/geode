@@ -16,17 +16,14 @@ package org.apache.geode.admin.internal;
 
 // import org.apache.geode.admin.DistributedSystemConfig;
 // import org.apache.geode.admin.ManagedEntity;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
-
 import org.apache.geode.admin.ManagedEntityConfig;
-import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.net.SocketCreator;
+
+import java.io.File;
+import java.net.*;
 
 /**
  * The abstract superclass of objects that configure a managed entity such as a GemFire cache server
@@ -87,7 +84,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * location of the gemfire jar and working backwards.
    */
   private static File getGemFireInstallation() {
-    URL url = VersionInformation.getJarURL();
+    URL url = GemFireVersion.getJarURL();
     if (url == null) {
       throw new IllegalStateException(
           LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());

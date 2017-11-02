@@ -14,62 +14,26 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
-import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import java.net.InetAddress;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.ListenerNotFoundException;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanException;
-import javax.management.MBeanNotificationInfo;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationFilter;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.management.OperationsException;
-import javax.management.ReflectionException;
-
-import mx4j.AbstractDynamicMBean;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.CacheVm;
-import org.apache.geode.admin.ConfigurationParameter;
-import org.apache.geode.admin.GemFireMemberStatus;
-import org.apache.geode.admin.RegionSubRegionSnapshot;
-import org.apache.geode.admin.StatisticResource;
-import org.apache.geode.admin.SystemMember;
-import org.apache.geode.admin.SystemMemberCacheServer;
+import org.apache.geode.admin.*;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.VersionInformation;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import mx4j.AbstractDynamicMBean;
+import org.apache.logging.log4j.Logger;
+
+import javax.management.*;
+import java.net.InetAddress;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class uses the JMX Attributes/Operations that use (return/throw) GemFire types. This is the
@@ -133,7 +97,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       throws OperationsException, MBeanRegistrationException, AdminException {
     this.agent = agent;
     this.objectName = ObjectName.getInstance(MBEAN_NAME);
-    this.version = VersionInformation.getGemFireVersion();
+    this.version = GemFireVersion.getGemFireVersion();
     this.refreshInterval = -1;
     this.id = NOT_AVAILABLE_STR;
     this.forwarder = new NotificationForwarder(agent.getMBeanServer());
@@ -280,8 +244,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * Returns the version of the GemFire Enterprise instance as a string.
    * 
-   * @return GemFire Enterprise version string derived from
-   *         {@link org.apache.geode.internal.VersionInformation}
+   * @return GemFire Enterprise version string derived from {@link GemFireVersion}
    */
   /* getter for attribute - Version */
   public String getVersion() {

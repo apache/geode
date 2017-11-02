@@ -14,13 +14,11 @@
  */
 package org.apache.geode.cache;
 
-import java.util.Properties;
-
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
-import org.apache.geode.internal.VersionInformation;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -33,6 +31,8 @@ import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+
+import java.util.Properties;
 
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire
@@ -327,7 +327,7 @@ public class CacheFactory {
    * @return the version of the cache implementation as a {@code String}
    */
   public static String getVersion() {
-    return VersionInformation.getGemFireVersion();
+    return GemFireVersion.getGemFireVersion();
   }
 
   /**

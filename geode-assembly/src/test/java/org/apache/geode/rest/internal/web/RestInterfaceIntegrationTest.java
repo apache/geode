@@ -67,7 +67,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.VersionInformation;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.pdx.PdxInstance;
@@ -121,7 +121,7 @@ public class RestInterfaceIntegrationTest {
 
   @Before
   public void setupGemFire() {
-    AgentUtil agentUtil = new AgentUtil(VersionInformation.getGemFireVersion());
+    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
     if (agentUtil.findWarLocation("geode-web-api") == null) {
       fail("unable to locate geode-web-api WAR file");
     }

@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli;
 import java.nio.file.Path;
 import java.text.DateFormat;
 
-import org.apache.geode.internal.VersionInformation;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
@@ -55,7 +55,7 @@ public class CommandResponse {
     this.debugInfo = debugInfo;
     this.data = new Data(header, content, footer);
     this.when = DateFormat.getInstance().format(new java.util.Date());
-    this.version = VersionInformation.getGemFireVersion();
+    this.version = GemFireVersion.getGemFireVersion();
     this.failedToPersist = failedToPersist;
     if (fileToDownload != null) {
       this.fileToDownload = fileToDownload.toString();

@@ -14,17 +14,9 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.internal.lang.ThrowableUtils.hasCauseMessage;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertNotSame;
-import static org.apache.geode.test.dunit.Assert.assertNull;
-import static org.apache.geode.test.dunit.Assert.assertSame;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.apache.geode.internal.lang.ThrowableUtils.*;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -48,6 +40,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Ignore;
@@ -94,7 +87,6 @@ import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -2654,7 +2646,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         vm.invoke(newKey);
       }
     }
-    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
 
     try {
@@ -6030,7 +6022,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         vm.invoke(newKey);
       }
     }
-    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
     try {
       Region rgn = createRegion(rgnName);
@@ -6305,7 +6297,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         };
 
     VM vm0 = Host.getHost(0).getVM(0);
-    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
     try {
       MyTransactionListener tl = new MyTransactionListener();
@@ -6868,7 +6860,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
     VM vm0 = Host.getHost(0).getVM(0);
     VM vm1 = Host.getHost(0).getVM(1);
     VM vm2 = Host.getHost(0).getVM(2);
@@ -7353,7 +7345,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     };
 
 
-    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
     try {
       Region rgn;

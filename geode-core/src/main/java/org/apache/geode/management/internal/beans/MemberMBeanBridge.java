@@ -61,8 +61,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.cache.BackupManager;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DirectoryHolder;
@@ -388,7 +388,7 @@ public class MemberMBeanBridge {
 
     // Initialize Proecess related informations
 
-    this.gemFireVersion = VersionInformation.asString();
+    this.gemFireVersion = GemFireVersion.asString();
     this.classPath = runtimeMXBean.getClassPath();
     this.name = cache.getDistributedSystem().getDistributedMember().getName();
     this.id = cache.getDistributedSystem().getDistributedMember().getId();

@@ -59,7 +59,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.DistributionLocator;
-import org.apache.geode.internal.VersionInformation;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.net.SocketCreator;
@@ -1997,7 +1997,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       this(status, launcher.statusMessage, System.currentTimeMillis(), launcher.getId(),
           identifyPid(), ManagementFactory.getRuntimeMXBean().getUptime(),
           launcher.getWorkingDirectory(), ManagementFactory.getRuntimeMXBean().getInputArguments(),
-          System.getProperty("java.class.path"), VersionInformation.getGemFireVersion(),
+          System.getProperty("java.class.path"), GemFireVersion.getGemFireVersion(),
           System.getProperty("java.version"), getLogFileCanonicalPath(launcher),
           launcher.getBindAddressAsString(), launcher.getPortAsString(), launcher.getMemberName());
     }
@@ -2013,7 +2013,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           launcher.getWorkingDirectory(), // workingDirectory
           ManagementFactory.getRuntimeMXBean().getInputArguments(), // jvmArguments
           null, // classpath
-          VersionInformation.getGemFireVersion(), // gemfireVersion
+          GemFireVersion.getGemFireVersion(), // gemfireVersion
           System.getProperty("java.version"), // javaVersion
           null, // logFile
           launcher.getBindAddressAsString(), // host

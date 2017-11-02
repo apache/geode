@@ -26,6 +26,7 @@ import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -46,8 +47,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
@@ -417,7 +418,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @return a String representation of GemFire's version.
    */
   public String version() {
-    return VersionInformation.getGemFireVersion();
+    return GemFireVersion.getGemFireVersion();
   }
 
   int identifyPid() throws PidUnavailableException {
