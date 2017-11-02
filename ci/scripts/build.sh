@@ -91,7 +91,7 @@ function sendSuccessfulJobEmail {
   echo "Sending job success email"
 
   cat <<EOF >${EMAIL_SUBJECT}
-Build for version ${PRODUCT_VERSION} of Apache Geode succeeded.
+Build for version ${FULL_PRODUCT_VERSION} of Apache Geode succeeded.
 EOF
 
   cat <<EOF >${EMAIL_BODY}
@@ -116,7 +116,7 @@ function sendFailureJobEmail {
   echo "Sending job failure email"
 
   cat <<EOF >${EMAIL_SUBJECT}
-Build for version ${PRODUCT_VERSION} of Apache Geode failed.
+Build for version ${FULL_PRODUCT_VERSION} of Apache Geode failed.
 EOF
 
   cat <<EOF >${EMAIL_BODY}
