@@ -25,7 +25,7 @@ import joptsimple.OptionSet;
 import org.springframework.shell.core.ExitShellRequest;
 
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -268,7 +268,7 @@ public class Launcher {
     int terminalWidth = gfsh.getTerminalWidth();
     StringBuilder usageBuilder = new StringBuilder();
     stream.print("Pivotal GemFire(R) v");
-    stream.print(GemFireVersion.getGemFireVersion());
+    stream.print(VersionInformation.getGemFireVersion());
     stream.println(" Command Line Shell" + GfshParser.LINE_SEPARATOR);
     stream.println("USAGE");
     stream.println(

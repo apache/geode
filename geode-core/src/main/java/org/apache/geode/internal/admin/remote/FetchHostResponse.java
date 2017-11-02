@@ -20,7 +20,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -85,7 +85,7 @@ public class FetchHostResponse extends AdminResponse {
 
       m.workingDir = new File(System.getProperty("user.dir")).getAbsoluteFile();
 
-      URL url = GemFireVersion.getJarURL();
+      URL url = VersionInformation.getJarURL();
       if (url == null) {
         throw new IllegalStateException(
             LocalizedStrings.FetchHostResponse_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());

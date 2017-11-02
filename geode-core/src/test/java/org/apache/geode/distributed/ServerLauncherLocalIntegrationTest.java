@@ -37,7 +37,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -226,7 +226,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
     assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
-    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
@@ -246,7 +246,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
     assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
-    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
@@ -276,7 +276,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
     assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(serverState.getClasspath()).isNull();
-    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());

@@ -51,7 +51,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -178,7 +178,7 @@ public class ManagementAgent {
   }
 
   private Server httpServer;
-  private final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
+  private final String GEMFIRE_VERSION = VersionInformation.getGemFireVersion();
   private final AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
   private void startHttpService(boolean isServer) {

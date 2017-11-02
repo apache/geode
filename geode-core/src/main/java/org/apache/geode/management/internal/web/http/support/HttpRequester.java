@@ -40,7 +40,7 @@ import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
@@ -61,7 +61,7 @@ public class HttpRequester {
   private Properties securityProperties;
 
   protected static final String USER_AGENT_HTTP_REQUEST_HEADER_VALUE =
-      "GemFire-Shell/v" + GemFireVersion.getGemFireVersion();
+      "GemFire-Shell/v" + VersionInformation.getGemFireVersion();
 
   // a list of acceptable content/media types supported by Gfsh
   private final List<MediaType> acceptableMediaTypes = Arrays.asList(MediaType.APPLICATION_JSON,

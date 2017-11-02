@@ -40,7 +40,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.logging.LogService;
@@ -161,9 +161,9 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     }
 
     String productDesc = statSampler.getProductDescription();
-    assertTrue(productDesc.contains(GemFireVersion.getGemFireVersion()));
-    assertTrue(productDesc.contains(GemFireVersion.getBuildId()));
-    assertTrue(productDesc.contains(GemFireVersion.getSourceDate()));
+    assertTrue(productDesc.contains(VersionInformation.getGemFireVersion()));
+    assertTrue(productDesc.contains(VersionInformation.getBuildId()));
+    assertTrue(productDesc.contains(VersionInformation.getSourceDate()));
   }
 
   /**

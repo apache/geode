@@ -21,7 +21,7 @@ import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -97,7 +97,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       throws OperationsException, MBeanRegistrationException, AdminException {
     this.agent = agent;
     this.objectName = ObjectName.getInstance(MBEAN_NAME);
-    this.version = GemFireVersion.getGemFireVersion();
+    this.version = VersionInformation.getGemFireVersion();
     this.refreshInterval = -1;
     this.id = NOT_AVAILABLE_STR;
     this.forwarder = new NotificationForwarder(agent.getMBeanServer());
@@ -244,7 +244,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * Returns the version of the GemFire Enterprise instance as a string.
    * 
-   * @return GemFire Enterprise version string derived from {@link GemFireVersion}
+   * @return GemFire Enterprise version string derived from {@link org.apache.geode.internal.VersionInformation}
    */
   /* getter for attribute - Version */
   public String getVersion() {

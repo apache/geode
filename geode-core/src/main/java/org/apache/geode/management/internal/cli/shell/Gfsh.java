@@ -44,7 +44,7 @@ import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ShellStatus.Status;
 
 import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -645,14 +645,14 @@ public class Gfsh extends JLineShell {
 
   public String getVersion(boolean full) {
     if (full) {
-      return GemFireVersion.asString();
+      return VersionInformation.asString();
     } else {
-      return GemFireVersion.getGemFireVersion();
+      return VersionInformation.getGemFireVersion();
     }
   }
 
   public String getWelcomeMessage() {
-    return ansiHandler.decorateString("Monitor and Manage " + GemFireVersion.getProductName(),
+    return ansiHandler.decorateString("Monitor and Manage " + VersionInformation.getProductName(),
         ANSIStyle.CYAN);
   }
 

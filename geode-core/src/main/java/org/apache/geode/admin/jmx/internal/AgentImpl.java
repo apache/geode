@@ -58,7 +58,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -511,7 +511,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * Retrieves display-friendly GemFire version information.
    */
   public String getVersion() {
-    return GemFireVersion.asString();
+    return VersionInformation.asString();
   }
 
   // -------------------------------------------------------------------------

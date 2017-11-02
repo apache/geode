@@ -23,8 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 
@@ -47,7 +46,7 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   StartupResponseWithVersionMessage(DistributionManager dm, int processorId,
       InternalDistributedMember recipient, String rejectionMessage, boolean responderIsAdmin) {
     super(dm, processorId, recipient, rejectionMessage, responderIsAdmin);
-    version = GemFireVersion.getGemFireVersion();
+    version = VersionInformation.getGemFireVersion();
     this.hostedLocators = InternalLocator.getLocatorStrings();
     InternalLocator locator = InternalLocator.getLocator();
     if (locator != null) {

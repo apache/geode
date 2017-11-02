@@ -99,7 +99,7 @@ public class SystemAdmin {
    * in.
    */
   public static File findGemFireLibDir() {
-    URL jarURL = GemFireVersion.getJarURL();
+    URL jarURL = VersionInformation.getJarURL();
     if (jarURL == null)
       return null;
     String path = jarURL.getPath();
@@ -2079,7 +2079,7 @@ public class SystemAdmin {
         System.out.println(LocalizedStrings.SystemAdmin_GEMFIRE_PRODUCT_DIRECTORY_0
             .toLocalizedString(getProductDir()));
 
-        GemFireVersion.print(System.out);
+        VersionInformation.print(System.out);
 
       } else if (cmd.equalsIgnoreCase("help")) {
         if (cmdLine.size() > 1) {

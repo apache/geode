@@ -27,15 +27,15 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * This test prints out the version information obtained from the {@link GemFireVersion} class. It
+ * This test prints out the version information obtained from the {@link VersionInformation} class. It
  * provides a record of what version of GemFire (and the JDK) was used to run the unit tests.
  */
 @Category(UnitTest.class)
-public class GemFireVersionJUnitTest {
+public class VersionInformationJUnitTest {
 
   @Test
   public void testPrintInfo() {
-    final String versionOutput = GemFireVersion.asString();
+    final String versionOutput = VersionInformation.asString();
     System.out.println(versionOutput);
 
     assertTrue(versionOutput.contains(VersionDescription.PRODUCT_NAME));

@@ -41,7 +41,7 @@ public class VersionInfoResponse extends AdminResponse {
       InternalDistributedMember recipient) {
     VersionInfoResponse m = new VersionInfoResponse();
     m.setRecipient(recipient);
-    m.verInfo = GemFireVersion.asString();
+    m.verInfo = VersionInformation.asString();
     return m;
   }
 

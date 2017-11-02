@@ -16,7 +16,6 @@ package org.apache.geode.internal;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArgumentRedactor;
 
@@ -78,7 +77,7 @@ public class Banner {
     }
     out.println();
 
-    final String productName = GemFireVersion.getProductName();
+    final String productName = VersionInformation.getProductName();
 
     out.println(SEPARATOR);
 
@@ -102,7 +101,7 @@ public class Banner {
 
     out.println(SEPARATOR);
 
-    GemFireVersion.print(out);
+    VersionInformation.print(out);
 
     out.println("Communications version: " + Version.CURRENT_ORDINAL);
 

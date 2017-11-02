@@ -17,15 +17,12 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.GemFireVersion;
 
 /**
  * Provides optional data fields as properties for StartupMessage and StartupResponseMessage. This

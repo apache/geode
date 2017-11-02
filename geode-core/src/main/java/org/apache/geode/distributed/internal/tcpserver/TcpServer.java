@@ -53,7 +53,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
@@ -541,7 +541,7 @@ public class TcpServer {
     String[] info = new String[2];
     info[0] = System.getProperty("user.dir");
 
-    URL url = GemFireVersion.getJarURL();
+    URL url = VersionInformation.getJarURL();
     if (url == null) {
       String s = "Could not find gemfire jar";
       throw new IllegalStateException(s);

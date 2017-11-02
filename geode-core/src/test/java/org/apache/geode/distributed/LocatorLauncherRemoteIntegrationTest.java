@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -136,7 +136,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
     assertThat(locatorState.getStatus()).isEqualTo(ONLINE);
     assertThat(locatorState.getClasspath()).isEqualTo(getClassPath());
-    assertThat(locatorState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(locatorState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(locatorState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
     assertThat(locatorState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(locatorState.getJvmArguments()).isEqualTo(getJvmArguments());
@@ -156,7 +156,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
     assertThat(locatorState.getStatus()).isEqualTo(ONLINE);
     assertThat(locatorState.getClasspath()).isEqualTo(getClassPath());
-    assertThat(locatorState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(locatorState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(locatorState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
     assertThat(locatorState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(locatorState.getJvmArguments()).isEqualTo(getJvmArguments());
@@ -186,7 +186,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
     assertThat(locatorState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(locatorState.getClasspath()).isNull();
-    assertThat(locatorState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(locatorState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(locatorState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
     assertThat(locatorState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(locatorState.getLogFile()).isNull();

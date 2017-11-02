@@ -32,7 +32,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -55,7 +55,7 @@ public class StartMemberUtils {
   static final String CORE_DEPENDENCIES_JAR_PATHNAME =
       IOUtils.appendToPath(GEODE_HOME, "lib", "geode-dependencies.jar");
   static final String GEODE_JAR_PATHNAME =
-      IOUtils.appendToPath(GEODE_HOME, "lib", GemFireVersion.getGemFireJarFileName());
+      IOUtils.appendToPath(GEODE_HOME, "lib", VersionInformation.getGemFireJarFileName());
   static final long PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS = 5 * 1000;
   static final int INVALID_PID = -1;
 

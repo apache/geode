@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -65,7 +65,7 @@ public class AbstractLauncherServiceStateTest {
     workingDirectory = new File(System.getProperty("user.dir")).getAbsolutePath();
     jvmArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
     classpath = ManagementFactory.getRuntimeMXBean().getClassPath();
-    gemfireVersion = GemFireVersion.getGemFireVersion();
+    gemfireVersion = VersionInformation.getGemFireVersion();
     javaVersion = System.getProperty("java.version");
 
     int port = 12345;

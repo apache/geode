@@ -16,7 +16,7 @@
 package org.apache.geode.cache.client.internal.locator;
 
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
@@ -71,7 +71,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
     this.jvmArgs = runtimeBean.getInputArguments();
     this.uptime = runtimeBean.getUptime();
     this.classpath = runtimeBean.getClassPath();
-    this.gemfireVersion = GemFireVersion.getGemFireVersion();
+    this.gemfireVersion = VersionInformation.getGemFireVersion();
     this.javaVersion = System.getProperty("java.version");
     this.workingDirectory = System.getProperty("user.dir");
     this.logFile = locatorLogFile;

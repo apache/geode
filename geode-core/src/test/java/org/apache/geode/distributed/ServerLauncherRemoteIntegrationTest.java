@@ -32,7 +32,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -194,7 +194,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
-    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getLogFile()).isEqualTo(getLogFile().getCanonicalPath());
     assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
@@ -214,7 +214,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
-    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getLogFile()).isEqualTo(getLogFile().getCanonicalPath());
     assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
@@ -243,7 +243,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
     assertThat(serverState.getUptime().intValue()).isEqualTo(0);
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
     assertThat(serverState.getClasspath()).isNull();
-    assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
+    assertThat(serverState.getGemFireVersion()).isEqualTo(VersionInformation.getGemFireVersion());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getLogFile()).isNull();
     assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());

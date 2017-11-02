@@ -2646,7 +2646,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         vm.invoke(newKey);
       }
     }
-    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
 
     try {
@@ -6022,7 +6022,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         vm.invoke(newKey);
       }
     }
-    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
     try {
       Region rgn = createRegion(rgnName);
@@ -6297,7 +6297,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         };
 
     VM vm0 = Host.getHost(0).getVM(0);
-    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
     try {
       MyTransactionListener tl = new MyTransactionListener();
@@ -6860,7 +6860,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
     VM vm0 = Host.getHost(0).getVM(0);
     VM vm1 = Host.getHost(0).getVM(1);
     VM vm2 = Host.getHost(0).getVM(2);
@@ -7345,7 +7345,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     };
 
 
-    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
+    // VersionInformation.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
     try {
       Region rgn;

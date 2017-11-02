@@ -28,7 +28,7 @@ import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -614,7 +614,7 @@ public class ClientCacheFactory {
    * @return the version of the cache implementation as a <code>String</code>
    */
   public static String getVersion() {
-    return GemFireVersion.getGemFireVersion();
+    return VersionInformation.getGemFireVersion();
   }
 
   /**

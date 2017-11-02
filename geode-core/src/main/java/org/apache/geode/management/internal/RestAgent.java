@@ -21,7 +21,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
@@ -98,7 +98,7 @@ public class RestAgent {
   }
 
   private Server httpServer;
-  private final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
+  private final String GEMFIRE_VERSION = VersionInformation.getGemFireVersion();
   private AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
   private boolean isRunningInTomcat() {

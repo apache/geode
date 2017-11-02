@@ -60,7 +60,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerLauncher;
@@ -2588,7 +2588,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       this(status, launcher.statusMessage, System.currentTimeMillis(), launcher.getId(),
           identifyPid(), ManagementFactory.getRuntimeMXBean().getUptime(),
           launcher.getWorkingDirectory(), ManagementFactory.getRuntimeMXBean().getInputArguments(),
-          System.getProperty("java.class.path"), GemFireVersion.getGemFireVersion(),
+          System.getProperty("java.class.path"), VersionInformation.getGemFireVersion(),
           System.getProperty("java.version"), getServerLogFileCanonicalPath(launcher),
           getServerBindAddressAsString(launcher), getServerPortAsString(launcher),
           launcher.getMemberName());
@@ -2605,7 +2605,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
           launcher.getWorkingDirectory(), // workingDirectory
           ManagementFactory.getRuntimeMXBean().getInputArguments(), // jvmArguments
           null, // classpath
-          GemFireVersion.getGemFireVersion(), // gemfireVersion
+          VersionInformation.getGemFireVersion(), // gemfireVersion
           System.getProperty("java.version"), // javaVersion
           null, // logFile
           getServerBindAddressAsString(launcher), // host

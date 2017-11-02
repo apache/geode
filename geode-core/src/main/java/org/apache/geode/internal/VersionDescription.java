@@ -30,7 +30,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
 public class VersionDescription {
-  public static final String RESOURCE_NAME = "GemFireVersion.properties";
+  public static final String RESOURCE_NAME = "VersionInformation.properties";
 
   /**
    * Constant for the GemFire version Resource Property entry

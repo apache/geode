@@ -41,7 +41,7 @@ import java.util.Set;
 public class StartupMessage extends HighPriorityDistributionMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
-  private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
+  private String version = VersionInformation.getGemFireVersion(); // added for bug 29005
   private int replyProcessorId;
   private boolean isMcastEnabled;
   private boolean isTcpDisabled;
@@ -181,7 +181,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     final boolean isAdminDM = dm.getId().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE
         || dm.getId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
 
-    String myVersion = GemFireVersion.getGemFireVersion();
+    String myVersion = VersionInformation.getGemFireVersion();
     String theirVersion = this.version;
     if (dm.getTransport().isMcastEnabled() != isMcastEnabled) {
       rejectionMessage =
@@ -265,7 +265,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     StartupResponseMessage m = null;
     // Commenting out. See Bruces note in the StartupMessageData constructor.
     // Comparisons should use the functionality described in SerializationVersions
-    // if (GemFireVersion.compareVersions(theirVersion,"6.6.2") >= 0) {
+    // if (VersionInformation.compareVersions(theirVersion,"6.6.2") >= 0) {
     m = new StartupResponseWithVersionMessage(dm, replyProcessorId, getSender(), rejectionMessage,
         isAdminDM);
     // } else {

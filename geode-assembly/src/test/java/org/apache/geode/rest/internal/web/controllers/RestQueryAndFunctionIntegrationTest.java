@@ -68,7 +68,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -596,7 +596,7 @@ public class RestQueryAndFunctionIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
+    AgentUtil agentUtil = new AgentUtil(VersionInformation.getGemFireVersion());
     if (agentUtil.findWarLocation("geode-web-api") == null) {
       fail("unable to locate geode-web-api WAR file");
     }

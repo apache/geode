@@ -18,7 +18,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -327,7 +327,7 @@ public class CacheFactory {
    * @return the version of the cache implementation as a {@code String}
    */
   public static String getVersion() {
-    return GemFireVersion.getGemFireVersion();
+    return VersionInformation.getGemFireVersion();
   }
 
   /**

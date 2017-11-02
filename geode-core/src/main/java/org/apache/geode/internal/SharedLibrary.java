@@ -163,7 +163,7 @@ public class SharedLibrary {
   public static void loadLibrary(boolean debug) throws UnsatisfiedLinkError {
     String library = getName();
     try {
-      URL gemfireJarURL = GemFireVersion.getJarURL();
+      URL gemfireJarURL = VersionInformation.getJarURL();
 
       if (gemfireJarURL == null) {
         throw new InternalGemFireError("Unable to locate jar file.");

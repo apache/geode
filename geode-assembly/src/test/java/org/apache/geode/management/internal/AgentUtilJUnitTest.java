@@ -16,7 +16,7 @@ package org.apache.geode.management.internal;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +37,7 @@ public class AgentUtilJUnitTest {
 
   @Before
   public void setUp() throws IOException {
-    version = GemFireVersion.getGemFireVersion();
+    version = VersionInformation.getGemFireVersion();
     agentUtil = new AgentUtil(version);
   }
 

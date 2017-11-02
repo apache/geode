@@ -19,7 +19,7 @@ package org.apache.geode.admin.internal;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.net.SocketCreator;
 
 import java.io.File;
@@ -84,7 +84,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * location of the gemfire jar and working backwards.
    */
   private static File getGemFireInstallation() {
-    URL url = GemFireVersion.getJarURL();
+    URL url = VersionInformation.getJarURL();
     if (url == null) {
       throw new IllegalStateException(
           LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());

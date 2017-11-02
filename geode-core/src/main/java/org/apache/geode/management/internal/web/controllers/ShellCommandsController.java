@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.VersionInformation;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
@@ -126,13 +126,13 @@ public class ShellCommandsController extends AbstractCommandsController {
   @RequestMapping(method = RequestMethod.GET, value = "/version")
   @ResponseBody
   public String version() {
-    return GemFireVersion.getProductName().concat("/").concat(GemFireVersion.getGemFireVersion());
+    return VersionInformation.getProductName().concat("/").concat(VersionInformation.getGemFireVersion());
   }
 
   @RequestMapping(method = RequestMethod.GET, value = "/version/full")
   @ResponseBody
   public String fullVersion() {
-    return GemFireVersion.asString();
+    return VersionInformation.asString();
   }
 
 
