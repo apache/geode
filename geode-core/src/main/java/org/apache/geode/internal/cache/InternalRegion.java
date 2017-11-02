@@ -45,10 +45,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 public interface InternalRegion<K, V>
     extends Region<K, V>, HasCachePerfStats, RegionEntryContext, RegionAttributes, HasDiskRegion {
 
-  CachePerfStats getCachePerfStats();
-
-  DiskRegion getDiskRegion();
-
   RegionEntry getRegionEntry(K key);
 
   RegionVersionVector getVersionVector();

@@ -30,7 +30,6 @@ import java.io.InterruptedIOException;
 import java.io.SyncFailedException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -1161,7 +1160,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Otherwise, for windows the actual file length does not match with the File size obtained from
    * the File object
    */
-  File getOplogFileForTest() throws IOException {
+  File getOplogFile() throws SyncFailedException, IOException {
     // @todo check callers for drf
     // No need to get the backup lock prior to synchronizing (correct lock order) since the
     // synchronized block does not attempt to get the backup lock (incorrect lock order)
@@ -1171,14 +1170,6 @@ public class Oplog implements CompactableOplog, Flushable {
       }
       return this.crf.f;
     }
-  }
-
-  File getCrfFile() {
-    return this.crf.f;
-  }
-
-  File getDrfFile() {
-    return this.drf.f;
   }
 
   /**
@@ -4233,7 +4224,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  File getKrfFile() {
+  private File getKrfFile() {
     return new File(this.diskFile.getPath() + KRF_FILE_EXT);
   }
 
@@ -5758,6 +5749,23 @@ public class Oplog implements CompactableOplog, Flushable {
 
   public void deleteDRFFileOnly() {
     deleteFile(this.drf);
+  }
+
+  public void copyTo(File targetDir) throws IOException {
+    if (this.crf.f != null && this.crf.f.exists()) {
+      FileUtils.copyFileToDirectory(this.crf.f, targetDir);
+    }
+    if (this.drf.f.exists()) {
+      FileUtils.copyFileToDirectory(this.drf.f, targetDir);
+    }
+
+    // this krf existence check fixes 45089
+    // TODO: should we wait for the async KRF creation to finish by calling this.finishKrf?
+    if (getParent().getDiskInitFile().hasKrf(this.oplogId)) {
+      if (this.getKrfFile().exists()) {
+        FileUtils.copyFileToDirectory(this.getKrfFile(), targetDir);
+      }
+    }
   }
 
   /**

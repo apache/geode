@@ -114,7 +114,7 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
 
   private void populateSecond10kto20kwrites() {
     afterHavingCompacted = false;
-    setCacheObserverCallBack();
+    DiskRegionTestingBase.setCacheObserverCallBack();
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       public void afterHavingCompacted() {
         afterHavingCompacted = true;
@@ -185,7 +185,7 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
     log.info(statsGet2);
     if (debug)
       System.out.println("Perf Stats of get which is fauting in from Second OpLog  :" + statsGet2);
-    unSetCacheObserverCallBack();
+    DiskRegionTestingBase.unSetCacheObserverCallBack();
   }
 
   /**

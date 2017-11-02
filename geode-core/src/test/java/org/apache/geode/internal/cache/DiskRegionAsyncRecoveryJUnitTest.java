@@ -191,7 +191,7 @@ public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
     putEntries(region, 10, 15, "A");
 
     PersistentOplogSet set = store.getPersistentOplogSet(region.getDiskRegion());
-    String currentChild = set.getChild().getOplogFileForTest().getName();
+    String currentChild = set.getChild().getOplogFile().getName();
     // Wait for the krfs to be created
     Set<String> crfs;
     Set<String> krfs;
