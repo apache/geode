@@ -29,6 +29,7 @@
 		<!-- Can be invoked w/o auth -->
 		<intercept-url pattern="/login.html" access="permitAll"  />
 		<intercept-url pattern="/authenticateUser" access="permitAll" />
+		<intercept-url pattern="/pulseVersion" access="permitAll" />
 		<!-- Can be invoked w/o auth -->
 
 		<!-- Restricted urls -->
