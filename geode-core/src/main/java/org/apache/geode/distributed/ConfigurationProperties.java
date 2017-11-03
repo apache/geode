@@ -1860,7 +1860,10 @@ public interface ConfigurationProperties {
    * <U>Default</U>: <code>""</code>
    * </p>
    * <U>Since</U>: GemFire 8.0
+   *
+   * @deprecated Since Geode 1.4 (See GEODE-3007)
    */
+  @Deprecated()
   String USER_COMMAND_PACKAGES = "user-command-packages";
   /**
    * The static String definition of the <i>"off-heap-memory-size"</i> property <a

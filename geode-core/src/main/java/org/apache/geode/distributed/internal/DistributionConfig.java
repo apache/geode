@@ -387,34 +387,6 @@ public interface DistributionConfig extends Config, LogConfig {
   File DEFAULT_DEPLOY_WORKING_DIR = new File(System.getProperty("user.dir"));
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#USER_COMMAND_PACKAGES} property
-   */
-  @ConfigAttributeGetter(name = USER_COMMAND_PACKAGES)
-  String getUserCommandPackages();
-
-  /**
-   * Sets the system's user command path.
-   * 
-   * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
-   *         writing to the system's configuration file.
-   */
-  @ConfigAttributeSetter(name = USER_COMMAND_PACKAGES)
-  void setUserCommandPackages(String value);
-
-  /**
-   * The name of the {@link ConfigurationProperties#USER_COMMAND_PACKAGES} property.
-   */
-  @ConfigAttribute(type = String.class)
-  String USER_COMMAND_PACKAGES_NAME = USER_COMMAND_PACKAGES;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#USER_COMMAND_PACKAGES} property
-   */
-  String DEFAULT_USER_COMMAND_PACKAGES = "";
-
-  /**
    * Returns the value of the {@link ConfigurationProperties#LOG_FILE} property
    * 
    * @return <code>null</code> if logging information goes to standard out
