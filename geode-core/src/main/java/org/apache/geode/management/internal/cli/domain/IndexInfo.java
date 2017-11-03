@@ -30,6 +30,7 @@ public class IndexInfo implements Serializable {
   private String indexedExpression = null;
   private String regionPath = null;
   private IndexType indexType = IndexType.FUNCTIONAL;
+  private boolean ifExists;
 
   public IndexInfo(String indexName) {
     this.indexName = indexName;
@@ -90,6 +91,14 @@ public class IndexInfo implements Serializable {
 
   public void setIndexType(IndexType indexType) {
     this.indexType = indexType;
+  }
+
+  public boolean isIfExists() {
+    return ifExists;
+  }
+
+  public void setIfExists(Boolean ifExists) {
+    this.ifExists = ifExists == null ? false : ifExists;
   }
 
   public String toString() {

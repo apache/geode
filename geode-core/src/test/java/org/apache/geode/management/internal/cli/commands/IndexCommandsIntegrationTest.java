@@ -206,7 +206,7 @@ public class IndexCommandsIntegrationTest {
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "IncorrectRegion");
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("Region \"IncorrectRegion\" not found.");
+    assertThat(gfsh.getGfshOutput()).contains("ERROR:Region \"IncorrectRegion\" not found");
   }
 
   @Test
@@ -237,7 +237,7 @@ public class IndexCommandsIntegrationTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, regionName);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("Indexes on region : /regionA successfully destroyed");
+        .containsOutput("Destroyed all indexes on region regionA");
   }
 
   @Test
@@ -247,7 +247,46 @@ public class IndexCommandsIntegrationTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.GROUP, groupName);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("Indexes successfully destroyed");
+        .containsOutput("Destroyed all indexes");
+  }
+
+  @Test
+  public void testFailWhenDestroyIndexIsNotIdempotent() throws Exception {
+    createSimpleIndexA();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.IFEXISTS, "false");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Destroyed index " + indexName);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("Index named \"" + indexName + "\" not found");
+  }
+
+  @Test
+  public void testDestroyIndexOnRegionIsIdempotent() throws Exception {
+    createSimpleIndexA();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.DESTROY_INDEX__REGION, regionName);
+    csb.addOption(CliStrings.IFEXISTS, "true");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Destroyed all indexes on region regionA");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Destroyed all indexes on region regionA");
+  }
+
+  @Test
+  public void testDestroyIndexByNameIsIdempotent() throws Exception {
+    createSimpleIndexA();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
+    csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
+    csb.addOption(CliStrings.IFEXISTS);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Destroyed index " + indexName);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Index " + indexName + " not found - skipped");
   }
 
   private void createSimpleIndexA() throws Exception {
