@@ -27,9 +27,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,7 +80,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
 
   public static boolean checkIfCommandsAreLoadedOrNot() {
     CommandManager manager = new CommandManager();
-    List<CommandMarker> commands = manager.getCommandMarkers();
+    Set<CommandMarker> commands = manager.getCommandMarkers();
     return commands.size() >= 1;
 
   }

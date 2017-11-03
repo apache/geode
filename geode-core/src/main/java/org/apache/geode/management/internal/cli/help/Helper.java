@@ -14,9 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.help;
 
+import static java.util.stream.Collectors.joining;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,19 +27,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.shell.core.MethodTarget;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-
 /**
- *
- *
+ * 
+ * 
  * @since GemFire 7.0
  */
 public class Helper {
@@ -94,7 +85,25 @@ public class Helper {
     topics.put(topic, new Topic(topic, desc));
   }
 
-  public void addCommand(CliCommand command, Method commandMethod) {
+  public void registerCommand(CommandMarker commandMarker) {
+    for (Method method : commandMarker.getClass().getMethods()) {
+      CliCommand cliCommand = method.getAnnotation(CliCommand.class);
+      CliAvailabilityIndicator availability = method.getAnnotation(CliAvailabilityIndicator.class);
+      if (cliCommand == null && availability == null) {
+        continue;
+      }
+
+      if (cliCommand != null) {
+        addCommand(cliCommand, method);
+      }
+
+      if (availability != null) {
+        addAvailabilityIndicator(availability, new MethodTarget(method, commandMarker));
+      }
+    }
+  }
+
+  protected void addCommand(CliCommand command, Method commandMethod) {
     // put all the command synonyms in the command map
     Arrays.stream(command.value()).forEach(cmd -> {
       commands.put(cmd, commandMethod);
@@ -120,7 +129,8 @@ public class Helper {
     });
   }
 
-  public void addAvailabilityIndicator(CliAvailabilityIndicator availability, MethodTarget target) {
+  private void addAvailabilityIndicator(CliAvailabilityIndicator availability,
+      MethodTarget target) {
     Arrays.stream(availability.value()).forEach(command -> {
       availabilityIndicators.put(command, target);
     });
@@ -152,9 +162,7 @@ public class Helper {
       builder.append(CliStrings.HINT__MSG__TOPICS_AVAILABLE).append(GfshParser.LINE_SEPARATOR)
           .append(GfshParser.LINE_SEPARATOR);
 
-      List<String> sortedTopics = new ArrayList<>(topics.keySet());
-      Collections.sort(sortedTopics);
-      sortedTopics.stream()
+      topics.keySet().stream().sorted()
           .forEachOrdered(topic -> builder.append(topic).append(GfshParser.LINE_SEPARATOR));
       return builder.toString();
     }
@@ -165,8 +173,7 @@ public class Helper {
     }
 
     builder.append(topic.desc).append(GfshParser.LINE_SEPARATOR).append(GfshParser.LINE_SEPARATOR);
-    Collections.sort(topic.relatedCommands);
-    topic.relatedCommands.stream().forEachOrdered(command -> builder.append(command.command)
+    topic.relatedCommands.stream().sorted().forEach(command -> builder.append(command.command)
         .append(": ").append(command.desc).append(GfshParser.LINE_SEPARATOR));
     return builder.toString();
   }
@@ -175,7 +182,7 @@ public class Helper {
     return topics.keySet();
   }
 
-  boolean isAvailable(String command) {
+  private boolean isAvailable(String command) {
     MethodTarget target = availabilityIndicators.get(command);
     if (target == null) {
       return true;
@@ -261,16 +268,12 @@ public class Helper {
     HelpBlock optionNode = new HelpBlock(getPrimaryKey(cliOption));
     String help = cliOption.help();
     optionNode.addChild(new HelpBlock((StringUtils.isNotBlank(help) ? help : "")));
-    if (getSynonyms(cliOption).size() > 0) {
-      StringBuilder builder = new StringBuilder();
-      for (String string : getSynonyms(cliOption)) {
-        if (builder.length() > 0) {
-          builder.append(",");
-        }
-        builder.append(string);
-      }
-      optionNode.addChild(new HelpBlock(SYNONYMS_SUB_NAME + builder.toString()));
+
+    String synonyms = getSynonyms(cliOption).stream().collect(joining(","));
+    if (StringUtils.isNotEmpty(synonyms)) {
+      optionNode.addChild(new HelpBlock(SYNONYMS_SUB_NAME + synonyms));
     }
+
     optionNode.addChild(
         new HelpBlock(REQUIRED_SUB_NAME + ((cliOption.mandatory()) ? TRUE_TOKEN : FALSE_TOKEN)));
     if (!isNullOrBlank(cliOption.specifiedDefaultValue())) {
@@ -359,18 +362,14 @@ public class Helper {
   }
 
   private static List<String> getSynonyms(CliOption option) {
-    List<String> synonyms = new ArrayList<>();
     String[] keys = option.key();
     if (keys.length < 2)
-      return synonyms;
+      return Collections.emptyList();
     // if the primary key is empty (like sh and help command), then there should be no synonyms.
     if ("".equals(keys[0]))
-      return synonyms;
+      return Collections.emptyList();
 
-    for (int i = 1; i < keys.length; i++) {
-      synonyms.add(keys[i]);
-    }
-    return synonyms;
+    return Arrays.asList(keys).subList(1, keys.length);
   }
 
   private static boolean isNullOrBlank(String value) {
