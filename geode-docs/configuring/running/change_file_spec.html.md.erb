@@ -37,8 +37,8 @@ The gfsh start server command can use the same specifications:
 
 ``` pre
 gfsh>start server \
--J-Dgemfire.cache-xml-file=/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml \
--J-DgemfirePropertyFile=defaultConfigs/gemfire.properties
+--J=-Dgemfire.cache-xml-file=/gemfireSamples/examples/dist/cacheRunner/queryPortfolios.xml \
+--J=-DgemfirePropertyFile=defaultConfigs/gemfire.properties
 ```
 
 You can also change the specifications for the `cache.xml` file inside the `gemfire.properties` file.
