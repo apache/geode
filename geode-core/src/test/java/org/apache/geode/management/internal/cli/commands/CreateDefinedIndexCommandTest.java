@@ -33,12 +33,18 @@ import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 
 import static org.apache.geode.management.cli.Result.Status.ERROR;
 import static org.apache.geode.management.cli.Result.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 @Category(UnitTest.class)
 public class CreateDefinedIndexCommandTest {
@@ -112,6 +118,47 @@ public class CreateDefinedIndexCommandTest {
     assertThat(result.getStatus()).isEqualTo(OK);
     assertThat(result.failedToPersist()).isFalse();
     verify(command, Mockito.times(1)).persistClusterConfiguration(any(), any());
+    assertThat(result.getContent().toString()).contains("Indexes successfully created");
+  }
+
+  @Test
+  public void multipleIndexesOnMultipleRegions() throws Exception {
+    XmlEntity xmlEntityRegion1 = mock(XmlEntity.class);
+    XmlEntity xmlEntityRegion2 = mock(XmlEntity.class);
+    DistributedMember member1 = mock(DistributedMember.class);
+    DistributedMember member2 = mock(DistributedMember.class);
+    when(member1.getId()).thenReturn("memberId_1");
+    when(member2.getId()).thenReturn("memberId_2");
+
+    ClusterConfigurationService mockService = mock(ClusterConfigurationService.class);
+    CliFunctionResult member1Region1Result =
+        new CliFunctionResult(member1.getId(), xmlEntityRegion1);
+    CliFunctionResult member1Region2Result =
+        new CliFunctionResult(member1.getId(), xmlEntityRegion2);
+    CliFunctionResult member2Region1Result =
+        new CliFunctionResult(member2.getId(), xmlEntityRegion2);
+    CliFunctionResult member2Region2Result =
+        new CliFunctionResult(member2.getId(), xmlEntityRegion2);
+
+    doReturn(mockService).when(command).getSharedConfiguration();
+    doReturn(new HashSet<>(Arrays.asList(new DistributedMember[] {member1, member2}))).when(command)
+        .findMembers(any(), any());
+    doReturn(Arrays.asList(new CliFunctionResult[] {member1Region1Result, member1Region2Result,
+        member2Region1Result, member2Region2Result})).when(resultCollector).getResult();
+
+    IndexDefinition.indexDefinitions
+        .add(new IndexInfo("index1", "value1", "TestRegion1", IndexType.FUNCTIONAL));
+    IndexDefinition.indexDefinitions
+        .add(new IndexInfo("index2", "value2", "TestRegion2", IndexType.FUNCTIONAL));
+
+    result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
+
+    assertThat(result.getStatus()).isEqualTo(OK);
+    assertThat(result.failedToPersist()).isFalse();
+
+    // The command will receive 4 results from 2 members, but we need to persist only 2 (#regions)
+    // of them.
+    verify(command, Mockito.times(2)).persistClusterConfiguration(any(), any());
     assertThat(result.getContent().toString()).contains("Indexes successfully created");
   }
 }

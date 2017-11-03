@@ -89,7 +89,13 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
 
           if (cliFunctionResult.isSuccessful()) {
             successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-            xmlEntities.add(cliFunctionResult.getXmlEntity());
+
+            // Only add the XmlEntity if it wasn't previously added from the result of another
+            // successful member.
+            XmlEntity resultEntity = cliFunctionResult.getXmlEntity();
+            if ((null != resultEntity) && (!xmlEntities.contains(resultEntity))) {
+              xmlEntities.add(cliFunctionResult.getXmlEntity());
+            }
           } else {
             final String exceptionMessage = cliFunctionResult.getMessage();
             Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
@@ -150,6 +156,7 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
       for (XmlEntity xmlEntity : xmlEntities) {
         persistClusterConfiguration(result,
             () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
+
       }
     }
 
