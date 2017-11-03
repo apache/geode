@@ -64,6 +64,7 @@ spring-aop
 spring-aspects
 spring-beans
 spring-context
+spring-context-support
 spring-core
 spring-expression
 spring-hateoas

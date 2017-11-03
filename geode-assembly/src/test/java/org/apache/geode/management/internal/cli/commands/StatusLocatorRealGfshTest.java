@@ -18,9 +18,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 
 @Category(AcceptanceTest.class)
 public class StatusLocatorRealGfshTest {
@@ -30,7 +30,6 @@ public class StatusLocatorRealGfshTest {
   @Test
   public void statusLocatorSucceedsWhenConnected() throws Exception {
     GfshScript.of("start locator --name=locator1").execute(gfshRule);
-
     GfshScript.of("connect", "status locator --name=locator1").execute(gfshRule);
   }
 
