@@ -313,6 +313,20 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     }
   }
 
+  public static Boolean isSenderPaused(String senderId) {
+    Boolean isPaused = false;
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    AbstractGatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = (AbstractGatewaySender) s;
+        isPaused = sender.isPaused();
+        break;
+      }
+    }
+    return isPaused;
+  }
+
   public static Integer createSecondLocator(int dsId, int locatorPort) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();

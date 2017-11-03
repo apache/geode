@@ -1795,8 +1795,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
         clearPartitionedRegionTestOnly((PartitionedRegion) prQ);
       }
-    } catch (Exception ee) {
-      throw ee;
     } finally {
       if (this.sender.isPaused())
         this.sender.resume();
@@ -1806,26 +1804,21 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   // clear the partition region
   private void clearPartitionedRegionTestOnly(PartitionedRegion partitionedRegion) {
     LocalDataSet lds = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(partitionedRegion);
-    Set<Integer> set = lds.getBucketSet(); // this returns bucket ids in the
-                                           // function context
-
+    Set<Integer> set = lds.getBucketSet(); // this returns bucket ids in the function context
     for (Integer bucketId : set) {
       Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(bucketId);
-      if (bucket instanceof ProxyBucketRegion == false) {
-        if (bucket instanceof BucketRegion) {
-          BucketRegion bucketRegion = (BucketRegion) bucket;
-          Set keySet = bucketRegion.keySet();
-          for (Iterator iterator = keySet.iterator(); iterator.hasNext();) {
-            Object key = iterator.next();
-            try {
-              bucketRegion.remove(key);
-            } catch (Exception ee) {
-              ee.printStackTrace(System.out);
-              throw ee;
-            }
-          }
-        }
+      if ((bucket instanceof ProxyBucketRegion == false) && bucket instanceof BucketRegion) {
+        BucketRegion bucketRegion = (BucketRegion) bucket;
+        clearBucketRegionTestOnly(bucketRegion);
       }
+    }
+  }
+
+  private void clearBucketRegionTestOnly(BucketRegion bucketRegion) {
+    Set keySet = bucketRegion.keySet();
+    for (Iterator iterator = keySet.iterator(); iterator.hasNext();) {
+      Object key = iterator.next();
+      bucketRegion.remove(key);
     }
   }
 }
