@@ -87,6 +87,10 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.ProxyBucketRegion;
+import org.apache.geode.internal.cache.partitioned.Bucket;
 
 public class ParallelGatewaySenderQueue implements RegionQueue {
 
@@ -1779,6 +1783,42 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       ParallelGatewaySenderQueueMetaRegion meta =
           new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender);
       return meta;
+    }
+  }
+
+
+
+  public void clearQueueTestOnly() {
+
+    this.sender.pause();// it wil take internal read-write-lock
+    try {
+      for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
+        clearPartitionedRegionTestOnly((PartitionedRegion) prQ);
+      }
+    } finally {
+      if (this.sender.isPaused())
+        this.sender.resume();
+    }
+  }
+
+  // clear the partition region
+  private void clearPartitionedRegionTestOnly(PartitionedRegion partitionedRegion) {
+    LocalDataSet lds = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(partitionedRegion);
+    Set<Integer> set = lds.getBucketSet(); // this returns bucket ids in the function context
+    for (Integer bucketId : set) {
+      Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(bucketId);
+      if ((bucket instanceof ProxyBucketRegion == false) && bucket instanceof BucketRegion) {
+        BucketRegion bucketRegion = (BucketRegion) bucket;
+        clearBucketRegionTestOnly(bucketRegion);
+      }
+    }
+  }
+
+  private void clearBucketRegionTestOnly(BucketRegion bucketRegion) {
+    Set keySet = bucketRegion.keySet();
+    for (Iterator iterator = keySet.iterator(); iterator.hasNext();) {
+      Object key = iterator.next();
+      bucketRegion.remove(key);
     }
   }
 }

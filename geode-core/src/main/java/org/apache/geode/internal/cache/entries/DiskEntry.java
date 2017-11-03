@@ -713,7 +713,6 @@ public interface DiskEntry extends RegionEntry {
       if (o instanceof StoredObject) {
         StoredObject so = (StoredObject) o;
         if (so.hasRefCount()) {
-          //
           return true;
         }
       }
@@ -1382,8 +1381,9 @@ public interface DiskEntry extends RegionEntry {
     }
 
     public static void doAsyncFlush(VersionTag tag, LocalRegion region) {
-      if (region.isThisRegionBeingClosedOrDestroyed())
+      if (region.isThisRegionBeingClosedOrDestroyed()) {
         return;
+      }
       DiskRegion dr = region.getDiskRegion();
       if (!dr.isBackup()) {
         return;
@@ -1415,8 +1415,9 @@ public interface DiskEntry extends RegionEntry {
      */
     private static void writeEntryToDisk(DiskEntry entry, LocalRegion region, VersionTag tag,
         boolean asyncQueueWasFull) {
-      if (region.isThisRegionBeingClosedOrDestroyed())
+      if (region.isThisRegionBeingClosedOrDestroyed()) {
         return;
+      }
       DiskRegion dr = region.getDiskRegion();
       if (!asyncQueueWasFull) {
         dr.setClearCountReference();
@@ -1510,6 +1511,9 @@ public interface DiskEntry extends RegionEntry {
         throws RegionClearedException {
       DiskRegion dr = region.getDiskRegion();
       DiskId did = entry.getDiskId();
+      if (dr == null) {
+        return;
+      }
       Object syncObj = did;
       if (did == null) {
         syncObj = entry;
