@@ -31,16 +31,16 @@ import io.github.lukehutch.fastclasspathscanner.matchprocessor.ImplementingClass
 public class ClasspathScanLoadHelper {
 
   public static <T> Set<Class<? extends T>> scanClasspathForClassesImplementing(
-      Class<T> implementedInterface) {
-    return scanPackageForClassesImplementing("", implementedInterface);
+      Class<T> implementedInterface, String... packageSpec) {
+    return scanPackageForClassesImplementing(implementedInterface, packageSpec);
   }
 
-  public static <T> Set<Class<? extends T>> scanPackageForClassesImplementing(String packageToScan,
-      Class<T> implementedInterface) {
+  public static <T> Set<Class<? extends T>> scanPackageForClassesImplementing(
+      Class<T> implementedInterface, String... packageSpec) {
     Set<Class<? extends T>> classesImplementing = new HashSet<>();
     ImplementingClassMatchProcessor<T> matchProcessor = classesImplementing::add;
 
-    new FastClasspathScanner(packageToScan)
+    new FastClasspathScanner(packageSpec)
         .matchClassesImplementing(implementedInterface, matchProcessor).scan();
 
     return classesImplementing.stream().filter(ClasspathScanLoadHelper::isInstantiable)

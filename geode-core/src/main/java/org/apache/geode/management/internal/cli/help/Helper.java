@@ -27,9 +27,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.MethodTarget;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class Helper {
@@ -56,8 +67,7 @@ public class Helper {
 
   private final Map<String, Topic> topics = new HashMap<>();
   private final Map<String, Method> commands = new TreeMap<String, Method>();
-  private final Map<String, MethodTarget> availabilityIndicators =
-      new HashMap<String, MethodTarget>();
+  private final Map<String, MethodTarget> availabilityIndicators = new HashMap<>();
 
   public Helper() {
     initTopic(CliStrings.DEFAULT_TOPIC_GEODE, CliStrings.DEFAULT_TOPIC_GEODE__DESC);

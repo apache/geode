@@ -160,7 +160,6 @@ def cp = {
         // depedencies from geode-core
         it.contains('antlr') ||
         it.contains('commons-io') ||
-        it.contains('commons-beanutils') ||
         it.contains('commons-collections') ||
         it.contains('commons-lang') ||
         it.contains('commons-logging') ||
@@ -169,7 +168,6 @@ def cp = {
         it.contains('commons-codec') ||
         it.contains('fast-classpath-scanner') ||
         it.contains('fastutil') ||
-        it.contains('guava') ||
         it.contains('jackson-annotations') ||
         it.contains('jackson-core') ||
         it.contains('jackson-databind') ||
@@ -195,9 +193,6 @@ def cp = {
         it.contains('log4j-slf4j-impl') ||
         it.contains('shiro') ||
         it.contains('slf4j-api') ||
-        it.contains('spring-beans') ||
-        it.contains('spring-context') ||
-        it.contains('spring-context-support') ||
         it.contains('spring-core') ||
         it.contains('spring-shell') ||
         it.contains('snappy') ||

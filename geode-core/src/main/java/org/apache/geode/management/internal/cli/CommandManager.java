@@ -19,14 +19,8 @@ import static java.util.stream.Collectors.toSet;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableSet;
-import org.springframework.shell.commands.ConsoleCommands;
-import org.springframework.shell.commands.ExitCommands;
-import org.springframework.shell.commands.HelpCommands;
-import org.springframework.shell.converters.EnumConverter;
-import org.springframework.shell.converters.SimpleFileConverter;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
 
@@ -41,8 +35,14 @@ import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
  */
 public class CommandManager {
   // Skip some of the Converters from Spring Shell for our customization
-  private static final Set<Class> EXCLUDED_CLASSES = ImmutableSet.of(SimpleFileConverter.class,
-      EnumConverter.class, ExitCommands.class, HelpCommands.class, ConsoleCommands.class);
+  private static final Set<String> EXCLUDED_CLASSES =
+      Stream.of("-org.springframework.shell.converters.SimpleFileConverter",
+          "-org.springframework.shell.converters.FileConverter",
+          "-org.springframework.shell.converters.EnumConverter",
+          "-org.springframework.shell.commands.ExitCommands",
+          "-org.springframework.shell.commands.HelpCommands",
+          "-org.springframework.shell.commands.VersionCommands",
+          "-org.springframework.shell.commands.ConsoleCommands").collect(toSet());
 
   private final LogWrapper logWrapper = LogWrapper.getInstance();
   private final Set<CommandMarker> commandMarkers;
@@ -73,13 +73,10 @@ public class CommandManager {
   }
 
   private <T> Set<T> instantiateAllClassesImplementing(Class<T> implementedInterface) {
-    Set<Class<? extends T>> classes =
-        ClasspathScanLoadHelper.scanClasspathForClassesImplementing(implementedInterface);
+    Set<Class<? extends T>> classes = ClasspathScanLoadHelper.scanClasspathForClassesImplementing(
+        implementedInterface, EXCLUDED_CLASSES.toArray(new String[0]));
 
-    Predicate<Class<? extends T>> classIsNotExcluded = aClass -> !EXCLUDED_CLASSES.contains(aClass);
-
-    return classes.stream().filter(classIsNotExcluded).map(this::instantiateClass)
-        .filter(Objects::nonNull).collect(toSet());
+    return classes.stream().map(this::instantiateClass).filter(Objects::nonNull).collect(toSet());
   }
 
   private <T> T instantiateClass(Class<T> classToInstantiate) {

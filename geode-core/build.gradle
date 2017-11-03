@@ -52,7 +52,6 @@ dependencies {
   compile 'commons-io:commons-io:' + project.'commons-io.version'
   compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
-  compile 'com.google.guava:guava:' + project.'guava.version'
 
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile ('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
@@ -112,7 +111,9 @@ dependencies {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
+    exclude module: 'guava'
     exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
     ext.optional = true
   }
   compile ('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
