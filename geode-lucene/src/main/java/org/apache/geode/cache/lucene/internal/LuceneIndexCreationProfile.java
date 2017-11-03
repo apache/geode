@@ -103,7 +103,8 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
     LuceneIndexCreationProfile remoteProfile = (LuceneIndexCreationProfile) profile;
 
     // Verify fields are the same
-    if (!Arrays.equals(remoteProfile.getFieldNames(), getFieldNames())) {
+    if ((getFieldNames().length != remoteProfile.getFieldNames().length) || (!Arrays
+        .asList(getFieldNames()).containsAll(Arrays.asList(remoteProfile.getFieldNames())))) {
       return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELDS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELDS_3
           .toString(getIndexName(), regionPath, Arrays.toString(getFieldNames()),
               Arrays.toString(remoteProfile.getFieldNames()));
@@ -128,10 +129,10 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
     // since its a transient object.
     if (!getFieldAnalyzers().equals(remoteProfile.getFieldAnalyzers())) {
       if (getFieldAnalyzers().size() != remoteProfile.getFieldAnalyzers().size()) {
-        return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELDS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELDS_3
+        return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELD_ANALYZERS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELD_ANALYZERS_3
             .toString(getIndexName(), regionPath,
-                Arrays.toString(getFieldAnalyzers().keySet().toArray()),
-                Arrays.toString(remoteProfile.getFieldAnalyzers().keySet().toArray()));
+                Arrays.toString(getFieldAnalyzers().values().toArray()),
+                Arrays.toString(remoteProfile.getFieldAnalyzers().values().toArray()));
       }
       // now the 2 maps should have the same size
       for (String field : getFieldAnalyzers().keySet()) {

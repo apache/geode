@@ -111,6 +111,8 @@ public class LuceneIndexCreationProfileJUnitTest {
     return $(
         new Object[] {getOneFieldLuceneIndexCreationProfile(),
             getTwoFieldLuceneIndexCreationProfile(), CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
+        new Object[] {getTwoFieldLuceneIndexCreationProfile(),
+            getReverseFieldsLuceneIndexCreationProfile(), null},
         new Object[] {getTwoAnalyzersLuceneIndexCreationProfile(),
             getOneAnalyzerLuceneIndexCreationProfile(new KeywordAnalyzer()),
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS},
@@ -140,6 +142,11 @@ public class LuceneIndexCreationProfileJUnitTest {
   private LuceneIndexCreationProfile getTwoFieldLuceneIndexCreationProfile() {
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, new StandardAnalyzer(), null, null);
+  }
+
+  private LuceneIndexCreationProfile getReverseFieldsLuceneIndexCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
+        new String[] {"field2", "field1"}, new StandardAnalyzer(), null, null);
   }
 
   private LuceneIndexCreationProfile getOneAnalyzerLuceneIndexCreationProfile(Analyzer analyzer) {
