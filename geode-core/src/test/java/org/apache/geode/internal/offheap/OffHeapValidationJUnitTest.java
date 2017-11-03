@@ -279,7 +279,7 @@ public class OffHeapValidationJUnitTest {
   }
 
   private long getMemoryAddress(Region region, String key) {
-    Object entry = ((LocalRegion) region).getRegionEntry(key)._getValue();
+    Object entry = ((LocalRegion) region).getRegionEntry(key).getValue();
     assertTrue(entry instanceof OffHeapStoredObject);
     long memoryAddress = ((OffHeapStoredObject) entry).getAddress();
     assertTrue(memoryAddress > 0);

@@ -536,6 +536,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     return initializingRegion.get();
   }
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return this.stopper;
   }
@@ -690,6 +691,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   }
 
   /** returns the regions version-vector */
+  @Override
   public RegionVersionVector getVersionVector() {
     return this.versionVector;
   }
@@ -779,6 +781,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
 
   private final InternalDataView sharedDataView;
 
+  @Override
   public ServerRegionProxy getServerProxy() {
     return this.serverRegionProxy;
   }
@@ -838,6 +841,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     return this.cache.getInternalDistributedSystem().getDistributedMember();
   }
 
+  @Override
   public VersionSource getVersionMember() {
     if (this.dataPolicy.withPersistence()) {
       return getDiskStore().getDiskStoreID();
@@ -1797,6 +1801,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * {@link #isDestroyed()} this method will not return true if the cache is closing but has not yet
    * started closing this region.
    */
+  @Override
   public boolean isThisRegionBeingClosedOrDestroyed() {
     return this.isDestroyed;
   }
@@ -2900,6 +2905,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    * @return true if cacheWrite was performed
    * @see DistributedRegion#cacheWriteBeforeDestroy(EntryEventImpl, Object)
    */
+  @Override
   public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     boolean result = false;
@@ -3204,6 +3210,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     return this.tombstoneCount.get();
   }
 
+  @Override
   public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion) {
     scheduleTombstone(entry, destroyedVersion, false);
   }
@@ -3237,6 +3244,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     scheduleTombstone(entry, version, true);
   }
 
+  @Override
   public void unscheduleTombstone(RegionEntry entry) {
     unscheduleTombstone(entry, true);
   }
@@ -3380,6 +3388,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    *
    * @since GemFire 3.2
    */
+  @Override
   public Object getValueInVM(Object key) throws EntryNotFoundException {
     return basicGetValueInVM(key, true);
   }
@@ -3450,6 +3459,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    *
    * @since GemFire 3.2
    */
+  @Override
   public Object getValueOnDisk(Object key) throws EntryNotFoundException {
     // Ok for this to ignore tx state
     RegionEntry re = this.entries.getEntry(key);
@@ -4960,6 +4970,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * invoke callbacks for an invalidation
    */
+  @Override
   public void invokeInvalidateCallbacks(final EnumListenerEvent eventType,
       final EntryEventImpl event, final boolean callDispatchListenerEvent) {
     // Notify bridge clients (if this is a CacheServer)
@@ -5877,6 +5888,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     }
   }
 
+  @Override
   public void invokePutCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
       final boolean callDispatchListenerEvent, boolean notifyGateways) {
 
@@ -5930,6 +5942,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * generate version tag if it does not exist and set it into the event.
    */
+  @Override
   public void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry) {
     if (entry != null && event.getOperation().isEntry()) {
       EntryEventImpl entryEvent = (EntryEventImpl) event;
@@ -5947,8 +5960,14 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * record the event's sequenceId in Region's event state to prevent replay.
    */
+  @Override
   public void recordEvent(InternalCacheEvent event) {
     getEventTracker().recordEvent(event);
+  }
+
+  @Override
+  public boolean isConcurrencyChecksEnabled() {
+    return this.concurrencyChecksEnabled;
   }
 
   /**
@@ -6717,6 +6736,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     }
   }
 
+  @Override
   public void invokeDestroyCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
       final boolean callDispatchListenerEvent, boolean notifyGateways) {
 
@@ -6885,7 +6905,8 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     return expTime != 0 && expTime <= cacheTimeMillis();
   }
 
-  void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
+  @Override
+  public void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
     // Return if the inhibit all notifications flag is set
     boolean isEntryEvent = event instanceof EntryEventImpl;
     if (isEntryEvent) {
@@ -7065,6 +7086,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    *
    * @return the actual lastModifiedTime used.
    */
+  @Override
   public long updateStatsForPut(RegionEntry entry, long lastModified, boolean lruRecentUse) {
     long lastAccessed = cacheTimeMillis();
     if (lruRecentUse) {
@@ -7775,8 +7797,9 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     }
   }
 
-  public void addExpiryTaskIfAbsent(RegionEntry re) {
-    addExpiryTask(re, true);
+  @Override
+  public void addExpiryTaskIfAbsent(RegionEntry entry) {
+    addExpiryTask(entry, true);
   }
 
   void addExpiryTask(RegionEntry re) {
@@ -8143,6 +8166,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * get the ImageState for this region
    */
+  @Override
   public ImageState getImageState() {
     return this.imageState;
   }
@@ -8513,6 +8537,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
           return this.currentIterator != null && this.currentIterator.hasNext();
         }
 
+        @Override
         public Object next() {
           return next(false);
         }
@@ -8758,6 +8783,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * For internal use only.
    */
+  @Override
   public RegionMap getRegionMap() {
     // OK to ignore tx state
     return this.entries;
@@ -10222,9 +10248,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     // nothing needs to be done here since LocalRegion does not have an advisor.
   }
 
-  /**
-   * @return Returns the isUsedForPartitionedRegionAdmin.
-   */
+  @Override
   public boolean isUsedForPartitionedRegionAdmin() {
     return this.isUsedForPartitionedRegionAdmin;
   }
@@ -10488,6 +10512,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * Returns the CQ/interest profile for this region
    */
+  @Override
   public FilterProfile getFilterProfile() {
     return this.filterProfile;
   }
@@ -10697,6 +10722,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   }
 
   // TODO: return value is never used
+  @Override
   public int updateSizeOnEvict(Object key, int oldSize) {
     // Only needed by BucketRegion
     return 0;

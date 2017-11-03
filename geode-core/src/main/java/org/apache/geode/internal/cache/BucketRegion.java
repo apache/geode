@@ -1478,7 +1478,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * Horribly plagiarized from the similar method in LocalRegion
    * 
    * @param clientEvent holder for the entry's version information
-   * @param returnTombstones TODO
    * @return serialized (byte) form
    * @throws IOException if the result is not serializable
    * @see LocalRegion#get(Object, Object, boolean, EntryEventImpl)
@@ -2120,7 +2119,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   @Override
   public int calculateRegionEntryValueSize(RegionEntry regionEntry) {
-    return calcMemSize(regionEntry._getValue()); // OFFHEAP _getValue ok
+    return calcMemSize(regionEntry.getValue()); // OFFHEAP _getValue ok
   }
 
   @Override

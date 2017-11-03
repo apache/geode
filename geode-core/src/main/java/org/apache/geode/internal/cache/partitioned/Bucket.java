@@ -18,14 +18,14 @@ import java.util.Set;
 
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisee;
-import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.HasDiskRegion;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Represents a storage or meta-data container for a <code>PartitionedRegion</code>.
  */
-public interface Bucket extends CacheDistributionAdvisee {
+public interface Bucket extends CacheDistributionAdvisee, HasDiskRegion {
 
   /**
    * Returns the distribution and metadata <code>BucketAdvisor</code> for this bucket.
@@ -65,8 +65,6 @@ public interface Bucket extends CacheDistributionAdvisee {
   public Set/* InternalDistributedMembers */ getBucketOwners();
 
   public PersistenceAdvisor getPersistenceAdvisor();
-
-  public DiskRegion getDiskRegion();
 
   /**
    * Returns the parent {@link PartitionedRegion} of this bucket.

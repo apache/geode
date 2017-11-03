@@ -1262,7 +1262,7 @@ public abstract class BaseCommand implements Command {
           VersionStamp vs = ((NonTXEntry) entry).getRegionEntry().getVersionStamp();
           vt = vs == null ? null : vs.asVersionTag();
           key = entry.getKey();
-          value = ((NonTXEntry) entry).getRegionEntry()._getValueRetain(region, true);
+          value = ((NonTXEntry) entry).getRegionEntry().getValueRetain(region, true);
           try {
             updateValues(values, key, value, vt);
           } finally {

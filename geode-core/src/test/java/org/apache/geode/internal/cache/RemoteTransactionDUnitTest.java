@@ -4400,7 +4400,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
   public Object getEntryValue(final CustId custId0, PartitionedRegion cust) {
     RegionEntry entry = cust.getBucketRegion(custId0).getRegionEntry(custId0);
-    Object value = entry._getValue();
+    Object value = entry.getValue();
     return value;
   }
 

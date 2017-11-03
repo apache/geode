@@ -29,6 +29,7 @@ import java.util.concurrent.locks.Lock;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriterException;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -49,6 +51,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -469,6 +474,117 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
+    public RegionEntry getRegionEntry(final Object key) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public RegionVersionVector getVersionVector() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object getValueInVM(Object key) throws EntryNotFoundException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object getValueOnDisk(Object key) throws EntryNotFoundException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isUsedForPartitionedRegionAdmin() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ImageState getImageState() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public VersionSource getVersionMember() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public long updateStatsForPut(RegionEntry entry, long lastModified, boolean lruRecentUse) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public FilterProfile getFilterProfile() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ServerRegionProxy getServerProxy() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void unscheduleTombstone(RegionEntry entry) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void addExpiryTaskIfAbsent(RegionEntry entry) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+        throws CacheWriterException, EntryNotFoundException, TimeoutException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void recordEvent(InternalCacheEvent event) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isConcurrencyChecksEnabled() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isThisRegionBeingClosedOrDestroyed() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public DiskRegion getDiskRegion() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public CancelCriterion getCancelCriterion() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int updateSizeOnEvict(Object key, int oldSize) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     Object get(Object key, Object aCallbackArgument, boolean generateCallbacks,
         EntryEventImpl clientEvent) throws TimeoutException, CacheLoaderException {
       throw new UnsupportedOperationException();
@@ -501,6 +617,24 @@ public class AbstractRegionJUnitTest {
 
     @Override
     public RegionEntry basicGetEntry(Object key) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void invokePutCallbacks(EnumListenerEvent eventType, EntryEventImpl event,
+        boolean callDispatchListenerEvent, boolean notifyGateways) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void invokeDestroyCallbacks(EnumListenerEvent eventType, EntryEventImpl event,
+        boolean callDispatchListenerEvent, boolean notifyGateways) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void invokeInvalidateCallbacks(EnumListenerEvent eventType, EntryEventImpl event,
+        boolean callDispatchListenerEvent) {
       throw new UnsupportedOperationException();
     }
 

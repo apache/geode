@@ -23,7 +23,7 @@ import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryBits;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -45,9 +45,9 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   public abstract void setDiskId(RegionEntry oldRe);
 
   @Override
-  public void removePhase1(LocalRegion r, boolean isClear) throws RegionClearedException {
+  public void removePhase1(InternalRegion region, boolean clear) throws RegionClearedException {
     synchronized (this) {
-      Helper.removeFromDisk(this, r, isClear);
+      Helper.removeFromDisk(this, region, clear);
       _removePhase1();
     }
   }
@@ -64,67 +64,72 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   }
 
   @Override
-  public boolean fillInValue(LocalRegion r, Entry entry, ByteArrayDataInput in, DM mgr,
+  public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in, DM mgr,
       final Version version) {
-    return Helper.fillInValue(this, entry, r.getDiskRegion(), mgr, in, r, version);
+    return Helper.fillInValue(this, entry, region.getDiskRegion(), mgr, in, region, version);
   }
 
   @Override
-  public boolean isOverflowedToDisk(LocalRegion r, DistributedRegion.DiskPosition dp) {
-    return Helper.isOverflowedToDisk(this, r.getDiskRegion(), dp, r);
+  public boolean isOverflowedToDisk(InternalRegion region,
+      DistributedRegion.DiskPosition diskPosition) {
+    return Helper.isOverflowedToDisk(this, region.getDiskRegion(), diskPosition, region);
   }
 
   @Override
   public Object getValue(RegionEntryContext context) {
-    return Helper.faultInValue(this, (LocalRegion) context); // OFFHEAP returned to callers
+    return Helper.faultInValue(this, (InternalRegion) context); // OFFHEAP returned to callers
   }
 
   @Override
   @Retained
   public Object getValueRetain(RegionEntryContext context) {
-    return Helper.faultInValueRetain(this, (LocalRegion) context);
+    return Helper.faultInValueRetain(this, (InternalRegion) context);
   }
 
   @Override
-  public Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner) {
-    return Helper.getValueInVMOrDiskWithoutFaultIn(this, owner);
+  public Object getValueInVMOrDiskWithoutFaultIn(InternalRegion region) {
+    return Helper.getValueInVMOrDiskWithoutFaultIn(this, region);
   }
 
   @Retained
   @Override
-  public Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner) {
-    return Helper.getValueOffHeapOrDiskWithoutFaultIn(this, owner);
+  public Object getValueOffHeapOrDiskWithoutFaultIn(InternalRegion region) {
+    return Helper.getValueOffHeapOrDiskWithoutFaultIn(this, region);
   }
 
   @Override
-  public Object getValueOnDisk(LocalRegion r) throws EntryNotFoundException {
-    return Helper.getValueOnDisk(this, r.getDiskRegion());
+  public Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException {
+    return Helper.getValueOnDisk(this, region.getDiskRegion());
   }
 
   @Override
-  public Object getSerializedValueOnDisk(LocalRegion r) throws EntryNotFoundException {
-    return Helper.getSerializedValueOnDisk(this, r.getDiskRegion());
+  public Object getSerializedValueOnDisk(InternalRegion region) throws EntryNotFoundException {
+    return Helper.getSerializedValueOnDisk(this, region.getDiskRegion());
   }
 
   @Override
-  public Object getValueOnDiskOrBuffer(LocalRegion r) throws EntryNotFoundException {
+  public Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException {
     // @todo darrel if value is Token.REMOVED || Token.DESTROYED throw
     // EntryNotFoundException
-    return Helper.getValueOnDiskOrBuffer(this, r.getDiskRegion(), r);
+    return Helper.getValueOnDiskOrBuffer(this, region.getDiskRegion(), region);
   }
 
+  @Override
   public DiskEntry getPrev() {
     return getDiskId().getPrev();
   }
 
+  @Override
   public DiskEntry getNext() {
     return getDiskId().getNext();
   }
 
+  @Override
   public void setPrev(DiskEntry v) {
     getDiskId().setPrev(v);
   }
 
+  @Override
   public void setNext(DiskEntry v) {
     getDiskId().setNext(v);
   }
@@ -134,7 +139,7 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
    * tag
    */
   @Override
-  public void persistConflictingTag(LocalRegion region, VersionTag tag) {
+  public void persistConflictingTag(InternalRegion region, VersionTag tag) {
     // only persist region needs to persist conflict tag
     Helper.updateVersionOnly(this, region, tag);
     setRecentlyUsed();
@@ -149,7 +154,7 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
     DiskId did = getDiskId();
     boolean checkConflicts = true;
     if (did != null) {
-      LocalRegion lr = (LocalRegion) cacheEvent.getRegion();
+      InternalRegion lr = (InternalRegion) cacheEvent.getRegion();
       if (lr != null && lr.getDiskRegion().isReadyForRecovery()) {
         synchronized (did) {
           checkConflicts = !EntryBits.isRecoveredFromDisk(did.getUserBits());

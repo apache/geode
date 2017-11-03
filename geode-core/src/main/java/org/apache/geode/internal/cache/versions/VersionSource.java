@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
@@ -28,11 +27,8 @@ import org.apache.geode.internal.DataSerializableFixedID;
  * (for a persistent region).
  * 
  * VersionMembers should implement equals and hashcode.
- * 
- *
  */
 public interface VersionSource<T> extends DataSerializableFixedID, Comparable<T> {
 
-  public void writeEssentialData(DataOutput out) throws IOException;
-
+  void writeEssentialData(DataOutput out) throws IOException;
 }

@@ -170,8 +170,6 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This method clears the region and notifies the other member when complete
-   * 
-   * @throws InterruptedException
    */
   private static void invokeRemoteClearAndWait(VM remoteVM, VM thisVM) {
     remoteVM.invoke(() -> clearRegionAndNotify(thisVM));
@@ -289,7 +287,7 @@ public class Bug37377DUnitTest extends JUnit4CacheTestCase {
      * Overridden setValue method to call clear Region before actually writing the entry
      */
     @Override
-    public boolean initialImageInit(final LocalRegion r, final long lastModifiedTime,
+    public boolean initialImageInit(final InternalRegion r, final long lastModifiedTime,
         final Object newValue, final boolean create, final boolean wasRecovered,
         final boolean versionTagAccepted) throws RegionClearedException {
       synchronized (clearOccurred) {

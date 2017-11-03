@@ -285,7 +285,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
          * value could be GATEWAY_SENDER_EVENT_IMPL_VALUE or region entry value.
          */
         @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
-        Object value = re._getValue();
+        Object value = re.getValue();
         if (value instanceof OffHeapStoredObject) {
           result.add((OffHeapStoredObject) value);
         }

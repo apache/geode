@@ -7699,7 +7699,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
+  public void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
     // don't dispatch the event if the interest policy forbids it
     if (hasListener()) {
       if (event.getOperation().isEntry()) {

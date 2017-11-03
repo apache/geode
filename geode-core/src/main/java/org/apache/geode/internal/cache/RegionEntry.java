@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ABSTRACT_REGION_ENTRY_FILL_IN_VALUE;
@@ -91,7 +90,7 @@ public interface RegionEntry {
    * @param event the event causing this change
    * @return a new version tag for this entry (null if versions not supported)
    */
-  VersionTag generateVersionTag(VersionSource member, boolean withDelta, LocalRegion region,
+  VersionTag generateVersionTag(VersionSource member, boolean withDelta, InternalRegion region,
       EntryEventImpl event);
 
   /**
@@ -113,31 +112,31 @@ public interface RegionEntry {
   /**
    * Resets any entry state as needed for a transaction that did a destroy to this entry.
    * 
-   * @param currTime Current Cache Time.
+   * @param currentTime Current Cache Time.
    */
-  void txDidDestroy(long currTime);
+  void txDidDestroy(long currentTime);
 
   void resetCounts() throws InternalStatisticsDisabledException;
 
   /**
    * this is done instead of removePhase2 if the entry needs to be kept for concurrency control
    * 
-   * @param r the region holding the entry
+   * @param region the region holding the entry
    * @param version whether the operation is from another member or local
    */
-  void makeTombstone(LocalRegion r, VersionTag version) throws RegionClearedException;
+  void makeTombstone(InternalRegion region, VersionTag version) throws RegionClearedException;
 
   /**
    * Mark this entry as being in the process of removal from the map that contains it by setting its
    * value to Token.REMOVED_PHASE1. An entry in this state may be resurrected by changing the value
    * under synchronization prior to the entry executing removePhase2.
-   * 
-   * @param r LocalRegion
+   *
+   * @param region the region
    * @param clear - if we removing this entry as a result of a region clear.
    * @throws RegionClearedException If operation got aborted due to a clear
    * 
    */
-  void removePhase1(LocalRegion r, boolean clear) throws RegionClearedException;
+  void removePhase1(InternalRegion region, boolean clear) throws RegionClearedException;
 
   /**
    * Mark this entry as having been removed from the map that contained it by setting its value to
@@ -177,15 +176,16 @@ public interface RegionEntry {
    *
    * @since GemFire 3.2.1
    */
-  boolean fillInValue(LocalRegion r, @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry,
-      ByteArrayDataInput in, DM mgr, final Version version);
+  boolean fillInValue(InternalRegion region,
+      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in,
+      DM distributionManager, final Version version);
 
   /**
    * Returns true if this entry has overflowed to disk.
    * 
-   * @param dp if overflowed then the position of the value is set in dp
+   * @param diskPosition if overflowed then the position of the value is set in dp
    */
-  boolean isOverflowedToDisk(LocalRegion r, DistributedRegion.DiskPosition dp);
+  boolean isOverflowedToDisk(InternalRegion region, DistributedRegion.DiskPosition diskPosition);
 
   /**
    * Gets the key for this entry.
@@ -225,12 +225,13 @@ public interface RegionEntry {
    * @return possible OFF_HEAP_OBJECT (caller must release)
    */
   @Retained
-  Object _getValueRetain(RegionEntryContext context, boolean decompress);
+  Object getValueRetain(RegionEntryContext context, boolean decompress);
 
-  /** Gets the value field of this entry. */
-
+  /**
+   * Gets the value field of this entry.
+   */
   @Unretained
-  Object _getValue();
+  Object getValue();
 
   /**
    * Returns a tokenized form of the value. If the value can not be represented as a token then
@@ -263,34 +264,33 @@ public interface RegionEntry {
    * @return the value or EntryEvent.NOT_AVAILABLE token if it's not in the VM or null if the entry
    *         doesn't exist.
    *
-   * @see LocalRegion#getValueInVM
+   * @see InternalRegion#getValueInVM
    */
   Object getValueInVM(RegionEntryContext context);
 
   /**
    * Returns the value of an entry as it resides on disk. For testing purposes only.
    *
-   * @see LocalRegion#getValueOnDisk
+   * @see InternalRegion#getValueOnDisk
    */
-  Object getValueOnDisk(LocalRegion r) throws EntryNotFoundException;
+  Object getValueOnDisk(InternalRegion region) throws EntryNotFoundException;
 
   /**
    * Returns the value of an entry as it resides on buffer or disk. For asynch mode a value is not
    * immediately written to the disk & so checking in asynch buffers is needed .For testing purposes
    * only.
    *
-   * @see LocalRegion#getValueOnDisk
+   * @see InternalRegion#getValueOnDisk
    */
 
-  Object getValueOnDiskOrBuffer(LocalRegion r) throws EntryNotFoundException;
-
+  Object getValueOnDiskOrBuffer(InternalRegion region) throws EntryNotFoundException;
 
 
   /**
    * Used to modify an existing RegionEntry when processing the values obtained during a
    * getInitialImage.
    */
-  boolean initialImagePut(LocalRegion region, long lastModified, Object newValue,
+  boolean initialImagePut(InternalRegion region, long lastModified, Object newValue,
       boolean wasRecovered, boolean acceptedVersionTag) throws RegionClearedException;
 
   /**
@@ -313,8 +313,9 @@ public interface RegionEntry {
    * must write-synchronize to protect against puts from other<br>
    * threads running this method
    */
-  boolean initialImageInit(LocalRegion region, long lastModified, Object newValue, boolean create,
-      boolean wasRecovered, boolean acceptedVersionTag) throws RegionClearedException;
+  boolean initialImageInit(InternalRegion region, long lastModified, Object newValue,
+      boolean create, boolean wasRecovered, boolean acceptedVersionTag)
+      throws RegionClearedException;
 
   /**
    * @param expectedOldValue only succeed with destroy if current value is equal to expectedOldValue
@@ -323,8 +324,9 @@ public interface RegionEntry {
    * @return true if destroy was done; false if not
    */
   @Released
-  boolean destroy(LocalRegion region, EntryEventImpl event, boolean inTokenMode, boolean cacheWrite,
-      @Unretained Object expectedOldValue, boolean forceDestroy, boolean removeRecoveredEntry)
+  boolean destroy(InternalRegion region, EntryEventImpl event, boolean inTokenMode,
+      boolean cacheWrite, @Unretained Object expectedOldValue, boolean forceDestroy,
+      boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException, RegionClearedException;
 
   /**
@@ -334,26 +336,26 @@ public interface RegionEntry {
   boolean getValueWasResultOfSearch();
 
   /**
-   * @param v true if entry's value should be marked as having been the result of a netsearch.
+   * @param value true if entry's value should be marked as having been the result of a netsearch.
    * @since GemFire 6.5
    */
-  void setValueResultOfSearch(boolean v);
+  void setValueResultOfSearch(boolean value);
 
   /**
    * Get the serialized bytes from disk. This method only looks for the value on the disk, ignoring
    * heap data.
    * 
-   * @param localRegion the persistent region
+   * @param region the persistent region
    * @return the serialized value from disk
    * @since GemFire 5.7
    */
-  Object getSerializedValueOnDisk(LocalRegion localRegion);
+  Object getSerializedValueOnDisk(InternalRegion region);
 
   /**
    * Gets the value for this entry. For DiskRegions, unlike {@link #getValue(RegionEntryContext)}
    * this will not fault in the value rather return a temporary copy.
    */
-  Object getValueInVMOrDiskWithoutFaultIn(LocalRegion owner);
+  Object getValueInVMOrDiskWithoutFaultIn(InternalRegion region);
 
   /**
    * Gets the value for this entry. For DiskRegions, unlike {@link #getValue(RegionEntryContext)}
@@ -361,7 +363,7 @@ public interface RegionEntry {
    * kept off heap (and compressed) if possible.
    */
   @Retained
-  Object getValueOffHeapOrDiskWithoutFaultIn(LocalRegion owner);
+  Object getValueOffHeapOrDiskWithoutFaultIn(InternalRegion region);
 
   /**
    * RegionEntry is underUpdate as soon as RegionEntry lock is help by an update thread to put a new
@@ -389,7 +391,7 @@ public interface RegionEntry {
 
   /**
    * Sets RegionEntry isCacheListenerInvoked flag when put is happening for a Region.Entry. Called
-   * ONLY in {@link LocalRegion#dispatchListenerEvent}.
+   * ONLY in {@link InternalRegion#dispatchListenerEvent}.
    */
   void setCacheListenerInvocationInProgress(final boolean isListenerInvoked);
 
@@ -435,7 +437,7 @@ public interface RegionEntry {
 
   boolean isInUseByTransaction();
 
-  void setInUseByTransaction(final boolean v);
+  void setInUseByTransaction(final boolean inUseByTransaction);
 
   /**
    * Increments the number of transactions that are currently referencing this node.
@@ -445,9 +447,9 @@ public interface RegionEntry {
   /**
    * Decrements the number of transactions that are currently referencing this node.
    * 
-   * @param lr the local region that owns this region entry; null if no local region owner
+   * @param region the local region that owns this region entry; null if no local region owner
    */
-  void decRefCount(NewLRUClockHand lruList, LocalRegion lr);
+  void decRefCount(NewLRUClockHand lruList, InternalRegion region);
 
   /**
    * Clear the number of transactions that are currently referencing this node and returns to LRU
@@ -456,9 +458,9 @@ public interface RegionEntry {
   void resetRefCount(NewLRUClockHand lruList);
 
   @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
-  Object prepareValueForCache(RegionEntryContext r, Object val, boolean isEntryUpdate);
+  Object prepareValueForCache(RegionEntryContext context, Object value, boolean isEntryUpdate);
 
   @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
-  Object prepareValueForCache(RegionEntryContext r, Object val, EntryEventImpl event,
+  Object prepareValueForCache(RegionEntryContext context, Object value, EntryEventImpl event,
       boolean isEntryUpdate);
 }
