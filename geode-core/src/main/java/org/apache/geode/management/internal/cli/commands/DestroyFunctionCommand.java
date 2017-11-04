@@ -72,7 +72,7 @@ public class DestroyFunctionCommand implements GfshCommand {
         return results;
       } else if (memberId != null) {
         // execute on member
-        dsMembers.add(getMember(cache, memberId));
+        dsMembers.add(getMember(memberId));
         @SuppressWarnings("unchecked")
         Result results = executeFunction(cache, dsMembers, functionId);
         return results;

@@ -19,6 +19,7 @@ import java.io.*;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
@@ -109,8 +110,9 @@ public class ClientInterestMessageImpl implements ClientMessage {
     this.action = action;
   }
 
-  public ClientInterestMessageImpl(ClientInterestMessageImpl message, Object keyOfInterest) {
-    this.eventId = new EventID(CacheFactory.getAnyInstance().getDistributedSystem());
+  public ClientInterestMessageImpl(DistributedSystem distributedSystem,
+      ClientInterestMessageImpl message, Object keyOfInterest) {
+    this.eventId = new EventID(distributedSystem);
     this.regionName = message.regionName;
     this.keyOfInterest = keyOfInterest;
     this.interestType = message.interestType;

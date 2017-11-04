@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_MEMBER;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -26,7 +25,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class DescribeMembersCommandDUnitTest {
@@ -35,7 +34,7 @@ public class DescribeMembersCommandDUnitTest {
   private static MemberVM locator;
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -46,8 +45,8 @@ public class DescribeMembersCommandDUnitTest {
   @Test
   public void describeInvalidMember() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=foo").statusIsSuccess()
-        .containsOutput("Member \"foo\" not found");
+    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=foo").statusIsError()
+        .containsOutput("Member foo could not be found");
   }
 
   @Test

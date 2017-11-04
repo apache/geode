@@ -134,9 +134,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
-import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.QueryMonitor;
-import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache.server.CacheServer;
@@ -174,6 +172,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
@@ -676,7 +675,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /** Map of Futures used to track Regions that are being reinitialized */
   private final ConcurrentMap reinitializingRegions = new ConcurrentHashMap();
 
-  /** Returns the last created instance of GemFireCache */
+  /**
+   * Returns the last created instance of GemFireCache
+   *
+   * @deprecated use DM.getCache instead
+   */
+  @Deprecated
   public static GemFireCacheImpl getInstance() {
     return instance;
   }
@@ -695,7 +699,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *
    * @return the existing cache
    * @throws CacheClosedException if an existing cache can not be found.
+   * @deprecated use DM.getExistingCache instead.
    */
+  @Deprecated
   public static GemFireCacheImpl getExisting() {
     final GemFireCacheImpl result = instance;
     if (result != null && !result.isClosing) {
@@ -715,7 +721,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @param reason the reason an existing cache is being requested.
    * @return the existing cache
    * @throws CacheClosedException if an existing cache can not be found.
+   * @deprecated use DM.getExistingCache instead.
    */
+  @Deprecated
   public static GemFireCacheImpl getExisting(String reason) {
     GemFireCacheImpl result = getInstance();
     if (result == null) {

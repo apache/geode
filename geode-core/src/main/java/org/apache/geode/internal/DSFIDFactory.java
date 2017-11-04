@@ -24,12 +24,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.admin.internal.FinishBackupRequest;
-import org.apache.geode.admin.internal.FinishBackupResponse;
-import org.apache.geode.admin.internal.FlushToDiskRequest;
-import org.apache.geode.admin.internal.FlushToDiskResponse;
-import org.apache.geode.admin.internal.PrepareBackupRequest;
-import org.apache.geode.admin.internal.PrepareBackupResponse;
 import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.admin.jmx.internal.StatAlertNotification;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -281,6 +275,11 @@ import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.UpdateEntryVersionOperation.UpdateEntryVersionMessage;
 import org.apache.geode.internal.cache.UpdateOperation;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.internal.cache.backup.BackupResponse;
+import org.apache.geode.internal.cache.backup.FinishBackupRequest;
+import org.apache.geode.internal.cache.backup.FlushToDiskRequest;
+import org.apache.geode.internal.cache.backup.FlushToDiskResponse;
+import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
 import org.apache.geode.internal.cache.compression.SnappyCompressedCachedDeserializable;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceProfileMessage;
@@ -874,9 +873,13 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(CLIENT_MEMBERSHIP_MESSAGE, ClientMembershipMessage.class);
     registerDSFID(END_BUCKET_CREATION_MESSAGE, EndBucketCreationMessage.class);
     registerDSFID(PREPARE_BACKUP_REQUEST, PrepareBackupRequest.class);
-    registerDSFID(PREPARE_BACKUP_RESPONSE, PrepareBackupResponse.class);
+    registerDSFID(BACKUP_RESPONSE, BackupResponse.class); // in older versions this was
+                                                          // FinishBackupResponse which is
+                                                          // compatible
     registerDSFID(FINISH_BACKUP_REQUEST, FinishBackupRequest.class);
-    registerDSFID(FINISH_BACKUP_RESPONSE, FinishBackupResponse.class);
+    registerDSFID(FINISH_BACKUP_RESPONSE, BackupResponse.class); // for backwards compatibility map
+                                                                 // FINISH_BACKUP_RESPONSE to
+                                                                 // BackupResponse
     registerDSFID(COMPACT_REQUEST, CompactRequest.class);
     registerDSFID(COMPACT_RESPONSE, CompactResponse.class);
     registerDSFID(FLOW_CONTROL_PERMIT_MESSAGE, FlowControlPermitMessage.class);

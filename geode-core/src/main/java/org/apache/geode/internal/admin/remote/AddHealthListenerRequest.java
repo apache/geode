@@ -57,7 +57,7 @@ public class AddHealthListenerRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return AddHealthListenerResponse.create(dm, this.getSender(), this.cfg);
   }
 

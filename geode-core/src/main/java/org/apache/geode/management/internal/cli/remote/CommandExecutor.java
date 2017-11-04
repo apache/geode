@@ -14,12 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.ReflectionUtils;
 
+import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -40,13 +42,44 @@ public class CommandExecutor {
         return ResultBuilder.createGemFireErrorResult("Command returned null: " + parseResult);
       }
       return result;
-    } catch (NotAuthorizedException e) {
+    }
+
+    // for Authorization Exception, we need to throw them for higher level code to catch
+    catch (NotAuthorizedException e) {
       logger.error("Not authorized to execute \"" + parseResult + "\".", e);
       throw e;
-    } catch (Exception e) {
+    }
+
+    // for these exceptions, needs to create a UserErrorResult (still reported as error by gfsh)
+    // no need to log since this is a user error
+    catch (UserErrorException | IllegalStateException | IllegalArgumentException e) {
+      return ResultBuilder.createUserErrorResult(e.getMessage());
+    }
+
+    // if entity not found, depending on the thrower's intention, report either as success or error
+    // no need to log since this is a user error
+    catch (EntityNotFoundException e) {
+      if (e.isStatusOK()) {
+        return ResultBuilder.createInfoResult("Skipping: " + e.getMessage());
+      } else {
+        return ResultBuilder.createUserErrorResult(e.getMessage());
+      }
+    }
+
+    // all other exceptions, log it and build an error result.
+    catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
       return ResultBuilder.createGemFireErrorResult(
           "Error while processing command <" + parseResult + "> Reason : " + e.getMessage());
+    }
+
+    // for errors more lower-level than Exception, just throw them.
+    catch (VirtualMachineError e) {
+      SystemFailure.initiateFailure(e);
+      throw e;
+    } catch (Throwable t) {
+      SystemFailure.checkFailure();
+      throw t;
     }
   }
 

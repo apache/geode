@@ -77,6 +77,7 @@ import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.LocalRegion.RegionPerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion.BucketLock;
 import org.apache.geode.internal.cache.PartitionedRegion.SizeEntry;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSender;

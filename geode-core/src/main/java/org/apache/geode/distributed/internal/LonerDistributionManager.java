@@ -22,6 +22,8 @@ import java.util.concurrent.*;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
@@ -1249,7 +1251,7 @@ public class LonerDistributionManager implements DM {
   }
 
   private final Stopper stopper = new Stopper();
-  private InternalCache cache;
+  private volatile InternalCache cache;
 
   public CancelCriterion getCancelCriterion() {
     return stopper;
@@ -1379,12 +1381,45 @@ public class LonerDistributionManager implements DM {
   }
 
   @Override
+  public void setCache(InternalCache instance) {
+    this.cache = instance;
+  }
+
+  @Override
   public InternalCache getCache() {
     return this.cache;
   }
 
   @Override
-  public void setCache(InternalCache instance) {
-    this.cache = instance;
+  public InternalCache getExistingCache() {
+    InternalCache result = this.cache;
+    if (result == null) {
+      throw new CacheClosedException(
+          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+    }
+    result.getCancelCriterion().checkCancelInProgress(null);
+    if (result.isClosed()) {
+      throw result.getCacheClosedException(
+          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+    }
+    return result;
+  }
+
+  @Override
+  public HealthMonitor getHealthMonitor(InternalDistributedMember owner) {
+    throw new UnsupportedOperationException(
+        "getHealthMonitor is not supported by " + getClass().getSimpleName());
+  }
+
+  @Override
+  public void removeHealthMonitor(InternalDistributedMember owner, int theId) {
+    throw new UnsupportedOperationException(
+        "removeHealthMonitor is not supported by " + getClass().getSimpleName());
+  }
+
+  @Override
+  public void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg) {
+    throw new UnsupportedOperationException(
+        "createHealthMonitor is not supported by " + getClass().getSimpleName());
   }
 }

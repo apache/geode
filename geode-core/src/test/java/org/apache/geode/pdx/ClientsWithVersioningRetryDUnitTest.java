@@ -215,8 +215,8 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeSendMessage(DistributionManager dm, DistributionMessage msg) {
-            if (msg instanceof DistributedPutAllOperation.PutAllMessage) {
+          public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+            if (message instanceof DistributedPutAllOperation.PutAllMessage) {
               DistributionMessageObserver.setInstance(null);
               disconnectFromDS(vm1);
             }

@@ -20,7 +20,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
@@ -44,29 +43,35 @@ public class RegionDestroyFunction implements Function, InternalEntity {
     String regionPath = null;
     try {
       String functionId = context.getFunctionId();
-      if (getId().equals(functionId)) {
-        Object arguments = context.getArguments();
-        if (arguments != null) {
-          regionPath = (String) arguments;
-          Cache cache = context.getCache();
-          Region<?, ?> region = cache.getRegion(regionPath);
-          region.destroyRegion();
-          String regionName =
-              regionPath.startsWith(Region.SEPARATOR) ? regionPath.substring(1) : regionPath;
-          XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
-          context.getResultSender().lastResult(new CliFunctionResult("", xmlEntity, regionPath));
-        }
+      Object arguments = context.getArguments();
+
+      if (!getId().equals(functionId) || arguments == null) {
+        context.getResultSender().lastResult(new CliFunctionResult("", false,
+            "Function Id mismatch or arguments is not available."));
+        return;
       }
-      context.getResultSender().lastResult(new CliFunctionResult("", false, "FAILURE"));
-    } catch (IllegalStateException e) {
-      context.getResultSender().lastResult(new CliFunctionResult("", e, null));
+
+      regionPath = (String) arguments;
+      Cache cache = context.getCache();
+      Region<?, ?> region = cache.getRegion(regionPath);
+      // if the region is a distributed region, and is already destroyed by another member
+      if (region == null) {
+        context.getResultSender().lastResult(new CliFunctionResult("", true, "SUCCESS"));
+        return;
+      }
+
+      region.destroyRegion();
+      String regionName =
+          regionPath.startsWith(Region.SEPARATOR) ? regionPath.substring(1) : regionPath;
+      XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
+      context.getResultSender().lastResult(new CliFunctionResult("", xmlEntity, regionPath));
+
+    } catch (IllegalStateException ex) {
+      // user is trying to destroy something that can't destroyed.
+      context.getResultSender().lastResult(new CliFunctionResult("", false, ex.getMessage()));
     } catch (Exception ex) {
       context.getResultSender()
-          .lastResult(new CliFunctionResult("",
-              new RuntimeException(CliStrings.format(
-                  CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
-                  new Object[] {regionPath, ex.getMessage()})),
-              null));
+          .lastResult(new CliFunctionResult("", ex, "failed to destroy " + regionPath));
     }
   }
 

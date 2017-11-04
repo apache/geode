@@ -98,6 +98,7 @@ public class Fakes {
     when(distributionManager.getSystem()).thenReturn(system);
     when(distributionManager.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(distributionManager.getCache()).thenReturn(cache);
+    when(distributionManager.getExistingCache()).thenReturn(cache);
 
     return cache;
   }
@@ -120,6 +121,8 @@ public class Fakes {
     when(attributes.getDataPolicy()).thenReturn(policy);
     when(region.getCache()).thenReturn(cache);
     when(region.getRegionService()).thenReturn(cache);
+    when(region.getName()).thenReturn(name);
+
     return region;
   }
 

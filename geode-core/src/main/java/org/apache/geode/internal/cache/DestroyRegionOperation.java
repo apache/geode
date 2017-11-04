@@ -166,7 +166,6 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
         public void run() {
           final int oldLevel =
               LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
-          // do this before CacheFactory.getInstance for bug 33471
 
           Throwable thr = null;
           try {
@@ -177,9 +176,8 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
               boolean waitForBucketInitializationToComplete = true;
               CacheDistributionAdvisee advisee = null;
               try {
-                advisee =
-                    PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(),
-                        regionPath, waitForBucketInitializationToComplete);
+                advisee = PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath,
+                    waitForBucketInitializationToComplete);
               } catch (PRLocallyDestroyedException ignore) {
                 // region not found - it's been destroyed
               } catch (RegionDestroyedException ignore) {
@@ -202,7 +200,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
             } // lclRegion == null
 
             // refetch to use special destroy region logic
-            final LocalRegion lr = getRegionFromPath(dm.getSystem(), lclRgn.getFullPath());
+            final LocalRegion lr = getRegionFromPath(dm, lclRgn.getFullPath());
             if (lr == null) {
               if (logger.isDebugEnabled())
                 logger.debug("{} region not found, nothing to do", this);
@@ -295,12 +293,12 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
       }
     }
 
-    protected LocalRegion getRegionFromPath(InternalDistributedSystem sys, String path) {
+    protected LocalRegion getRegionFromPath(DistributionManager dm, String path) {
       // allow a destroyed region to be returned if we're dealing with a
       // shared region, since another cache may
       // have already destroyed it in shared memory, in which our listeners
       // still need to be called and java region object cleaned up.
-      InternalCache cache = (InternalCache) CacheFactory.getInstance(sys);
+      InternalCache cache = dm.getExistingCache();
 
       // only get the region while holding the appropriate destroy lock.
       // this prevents us from getting a "stale" region

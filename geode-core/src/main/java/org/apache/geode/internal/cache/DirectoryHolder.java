@@ -91,7 +91,7 @@ public class DirectoryHolder {
     return dir;
   }
 
-  int getArrayIndex() {
+  public int getArrayIndex() {
     return this.index;
   }
 

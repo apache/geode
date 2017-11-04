@@ -31,7 +31,6 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -60,46 +59,42 @@ public class StatusGatewaySenderCommand implements GfshCommand {
     if (senderId != null) {
       senderId = senderId.trim();
     }
-    try {
-      InternalCache cache = getCache();
-      SystemManagementService service =
-          (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      GatewaySenderMXBean bean;
+    InternalCache cache = getCache();
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      CompositeResultData crd = ResultBuilder.createCompositeResultData();
-      TabularResultData availableSenderData =
-          crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
-              .addTable(CliStrings.TABLE_GATEWAY_SENDER);
+    GatewaySenderMXBean bean;
 
-      TabularResultData notAvailableSenderData =
-          crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
-              .addTable(CliStrings.TABLE_GATEWAY_SENDER);
+    CompositeResultData crd = ResultBuilder.createCompositeResultData();
+    TabularResultData availableSenderData =
+        crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+            .addTable(CliStrings.TABLE_GATEWAY_SENDER);
 
-      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+    TabularResultData notAvailableSenderData =
+        crd.addSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
+            .addTable(CliStrings.TABLE_GATEWAY_SENDER);
 
-      if (dsMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
 
-      for (DistributedMember member : dsMembers) {
-        if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
-          bean = service.getLocalGatewaySenderMXBean(senderId);
-        } else {
-          ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
-          bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
-        }
-        if (bean != null) {
-          buildSenderStatus(member.getId(), bean, availableSenderData);
-        } else {
-          buildSenderStatus(member.getId(), bean, notAvailableSenderData);
-        }
-      }
-      result = ResultBuilder.buildResult(crd);
-    } catch (Exception e) {
-      LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
+    if (dsMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
+
+    for (DistributedMember member : dsMembers) {
+      if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
+        bean = service.getLocalGatewaySenderMXBean(senderId);
+      } else {
+        ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
+        bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+      }
+      if (bean != null) {
+        buildSenderStatus(member.getId(), bean, availableSenderData);
+      } else {
+        buildSenderStatus(member.getId(), bean, notAvailableSenderData);
+      }
+    }
+    result = ResultBuilder.buildResult(crd);
     return result;
   }
 

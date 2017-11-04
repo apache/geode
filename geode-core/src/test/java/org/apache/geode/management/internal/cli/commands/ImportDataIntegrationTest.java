@@ -36,7 +36,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
@@ -51,7 +51,7 @@ public class ImportDataIntegrationTest {
       .withRegion(RegionShortcut.PARTITION, TEST_REGION_NAME).withEmbeddedLocator();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
@@ -62,8 +62,7 @@ public class ImportDataIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(),
-        GfshShellConnectionRule.PortType.locator);
+    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     region = server.getCache().getRegion(TEST_REGION_NAME);
     loadRegion("value");
     Path basePath = tempDir.getRoot().toPath();
@@ -128,7 +127,8 @@ public class ImportDataIntegrationTest {
         .addOption(CliStrings.IMPORT_DATA__REGION, TEST_REGION_NAME)
         .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeCommand(invalidMemberCommand);
-    assertThat(gfsh.getGfshOutput()).contains("Member " + invalidMemberName + " not found");
+    assertThat(gfsh.getGfshOutput())
+        .contains("Member " + invalidMemberName + " could not be found");
   }
 
   @Test
@@ -149,24 +149,6 @@ public class ImportDataIntegrationTest {
     gfsh.executeCommand(invalidFileCommand);
     assertThat(gfsh.getGfshOutput())
         .contains("Invalid file type, the file extension must be \".gfd\"");
-  }
-
-  @Test
-  public void testMissingRegion() throws Exception {
-    String missingRegionCommand = new CommandStringBuilder(CliStrings.IMPORT_DATA)
-        .addOption(CliStrings.MEMBER, server.getName())
-        .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(missingRegionCommand);
-    assertThat(gfsh.getGfshOutput()).contains("You should specify option");
-  }
-
-  @Test
-  public void testMissingMember() throws Exception {
-    String missingMemberCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
-        .addOption(CliStrings.IMPORT_DATA__REGION, TEST_REGION_NAME)
-        .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(missingMemberCommand);
-    assertThat(gfsh.getGfshOutput()).contains("You should specify option");
   }
 
   @Test

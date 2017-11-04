@@ -1150,7 +1150,8 @@ public class CacheClientProxy implements ClientSession {
     if (Version.GFE_701.compareTo(this.clientVersion) > 0
         && message.getKeyOfInterest() instanceof List) {
       for (Iterator i = ((List) message.getKeyOfInterest()).iterator(); i.hasNext();) {
-        this._messageDispatcher.enqueueMessage(new ClientInterestMessageImpl(message, i.next()));
+        this._messageDispatcher.enqueueMessage(
+            new ClientInterestMessageImpl(getCache().getDistributedSystem(), message, i.next()));
       }
     } else {
       this._messageDispatcher.enqueueMessage(message);

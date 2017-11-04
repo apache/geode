@@ -598,14 +598,13 @@ public class TXCommitMessage extends PooledDistributionMessage
     if (logger.isDebugEnabled()) {
       logger.debug("begin processing TXCommitMessage for {}", this.txIdent);
     }
-    // do this before CacheFactory.getInstance for bug 33471
     final int oldLevel =
         LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     boolean forceListener = false; // this gets flipped if we need to fire tx listener
     // it needs to default to false because we don't want to fire listeners on pr replicates
     try {
       TXRmtEvent txEvent = null;
-      final Cache cache = CacheFactory.getInstance(dm.getSystem());
+      final Cache cache = dm.getExistingCache();
       if (cache == null) {
         addProcessingException(new CacheClosedException());
         // return ... this cache is closed so we can't do anything.
@@ -1300,8 +1299,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         PartitionedRegion pr = (PartitionedRegion) r;
         BucketRegion br = pr.getBucketRegion(entryOp.key);
         Set bucketOwners = br.getBucketOwners();
-        InternalDistributedMember thisMember =
-            GemFireCacheImpl.getExisting().getDistributionManager().getId();
+        InternalDistributedMember thisMember = this.r.getDistributionManager().getId();
         if (bucketOwners.contains(thisMember)) {
           return;
         }

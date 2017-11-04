@@ -33,7 +33,7 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(IntegrationTest.class)
 public class LogNoPasswordTest {
@@ -43,7 +43,7 @@ public class LogNoPasswordTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void testPasswordInLogs() throws Exception {
@@ -51,7 +51,7 @@ public class LogNoPasswordTest {
     properties.setProperty(LOG_LEVEL, "debug");
     properties.setProperty(SECURITY_MANAGER, MySecurityManager.class.getName());
     MemberVM locator = lsRule.startLocatorVM(0, properties);
-    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http, "any",
+    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http, "any",
         PASSWORD);
     gfsh.executeAndAssertThat("list members").statusIsSuccess();
 

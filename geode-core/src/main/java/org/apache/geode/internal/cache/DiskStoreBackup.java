@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.internal.cache.persistence.BackupInspector;
-
 /**
  * This class manages the state of the backup of an individual disk store. It holds the list of
  * oplogs that still need to be backed up, along with the lists of oplog files that should be

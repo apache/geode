@@ -28,7 +28,7 @@ import org.json.JSONArray;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -65,7 +65,7 @@ import org.apache.geode.pdx.PdxInstance;
 /**
  * @since GemFire 7.0
  */
-public class DataCommandFunction extends FunctionAdapter implements InternalEntity {
+public class DataCommandFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;

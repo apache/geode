@@ -28,13 +28,11 @@ import javax.net.ssl.SSLException;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
@@ -119,219 +117,193 @@ public class StartLocatorCommand implements GfshCommand {
       @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT,
           help = CliStrings.START_LOCATOR__HTTP_SERVICE_PORT__HELP) final Integer httpServicePort,
       @CliOption(key = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS,
-          help = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress) {
-    try {
-      if (StringUtils.isBlank(memberName)) {
-        // when the user doesn't give us a name, we make one up!
-        memberName = StartMemberUtils.getNameGenerator().generate('-');
-      }
-
-      workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
-
-      if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
-                gemfirePropertiesFile.getAbsolutePath()));
-      }
-
-      if (gemfireSecurityPropertiesFile != null && !gemfireSecurityPropertiesFile.exists()) {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
-                gemfireSecurityPropertiesFile.getAbsolutePath()));
-      }
-
-      File locatorPidFile = new File(workingDirectory, ProcessType.LOCATOR.getPidFileName());
-
-      final int oldPid = StartMemberUtils.readPid(locatorPidFile);
-
-      Properties gemfireProperties = new Properties();
-
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS,
-          group);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS,
-          locators);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL,
-          logLevel);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.MCAST_ADDRESS, mcastBindAddress);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT,
-          mcastPort);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, enableSharedConfiguration);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
-          loadSharedConfigurationFromDirectory);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.CLUSTER_CONFIGURATION_DIR, clusterConfigDir);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
-
-      // read the OSProcess enable redirect system property here
-      // TODO: replace with new GFSH argument
-      final boolean redirectOutput =
-          Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
-      LocatorLauncher.Builder locatorLauncherBuilder =
-          new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)
-              .setRedirectOutput(redirectOutput).setWorkingDirectory(workingDirectory);
-      if (hostnameForClients != null) {
-        locatorLauncherBuilder.setHostnameForClients(hostnameForClients);
-      }
-      if (memberName != null) {
-        locatorLauncherBuilder.setMemberName(memberName);
-      }
-      LocatorLauncher locatorLauncher = locatorLauncherBuilder.build();
-
-      String[] locatorCommandLine = createStartLocatorCommandLine(locatorLauncher,
-          gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, classpath,
-          includeSystemClasspath, jvmArgsOpts, initialHeap, maxHeap);
-
-      final Process locatorProcess = new ProcessBuilder(locatorCommandLine)
-          .directory(new File(locatorLauncher.getWorkingDirectory())).start();
-
-      locatorProcess.getInputStream().close();
-      locatorProcess.getOutputStream().close();
-
-      // fix TRAC bug #51967 by using NON_BLOCKING on Windows
-      final ProcessStreamReader.ReadingMode readingMode = SystemUtils.isWindows()
-          ? ProcessStreamReader.ReadingMode.NON_BLOCKING : ProcessStreamReader.ReadingMode.BLOCKING;
-
-      final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
-      ProcessStreamReader.InputListener inputListener = line -> {
-        message.append(line);
-        if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
-          message.append(StringUtils.LINE_SEPARATOR);
-        }
-      };
-
-      ProcessStreamReader stderrReader = new ProcessStreamReader.Builder(locatorProcess)
-          .inputStream(locatorProcess.getErrorStream()).inputListener(inputListener)
-          .readingMode(readingMode).continueReadingMillis(2 * 1000).build().start();
-
-      LocatorLauncher.LocatorState locatorState;
-
-      String previousLocatorStatusMessage = null;
-
-      LauncherSignalListener locatorSignalListener = new LauncherSignalListener();
-
-      final boolean registeredLocatorSignalListener =
-          getGfsh().getSignalHandler().registerListener(locatorSignalListener);
-
-      try {
-        getGfsh().logInfo(String.format(CliStrings.START_LOCATOR__RUN_MESSAGE,
-            IOUtils.tryGetCanonicalPathElseGetAbsolutePath(
-                new File(locatorLauncher.getWorkingDirectory()))),
-            null);
-
-        do {
-          if (locatorProcess.isAlive()) {
-            Gfsh.print(".");
-
-            synchronized (this) {
-              TimeUnit.MILLISECONDS.timedWait(this, 500);
-            }
-
-            locatorState = LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
-
-            String currentLocatorStatusMessage = locatorState.getStatusMessage();
-
-            if (locatorState.isStartingOrNotResponding()
-                && !(StringUtils.isBlank(currentLocatorStatusMessage)
-                    || currentLocatorStatusMessage.equalsIgnoreCase(previousLocatorStatusMessage)
-                    || currentLocatorStatusMessage.trim().toLowerCase().equals("null"))) {
-              Gfsh.println();
-              Gfsh.println(currentLocatorStatusMessage);
-              previousLocatorStatusMessage = currentLocatorStatusMessage;
-            }
-          } else {
-            final int exitValue = locatorProcess.exitValue();
-
-            return ResultBuilder.createShellClientErrorResult(
-                String.format(CliStrings.START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                    exitValue, locatorLauncher.getWorkingDirectory(), message.toString()));
-          }
-        } while (!(registeredLocatorSignalListener && locatorSignalListener.isSignaled())
-            && locatorState.isStartingOrNotResponding());
-      } finally {
-        // stop will close
-        stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS);
-
-        // ErrorStream
-        getGfsh().getSignalHandler().unregisterListener(locatorSignalListener);
-      }
-
-      Gfsh.println();
-
-      final boolean asyncStart =
-          (registeredLocatorSignalListener && locatorSignalListener.isSignaled()
-              && ServerLauncher.ServerState.isStartingNotRespondingOrNull(locatorState));
-
-      InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-
-      if (asyncStart) {
-        infoResultData.addLine(
-            String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, CliStrings.LOCATOR_TERM_NAME));
-        return ResultBuilder.buildResult(infoResultData);
-      }
-
-      infoResultData.addLine(locatorState.toString());
-      String locatorHostName;
-      InetAddress bindAddr = locatorLauncher.getBindAddress();
-      if (bindAddr != null) {
-        locatorHostName = bindAddr.getCanonicalHostName();
-      } else {
-        locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(),
-            HostUtils.getLocalHost());
-      }
-
-      int locatorPort = Integer.parseInt(locatorState.getPort());
-
-
-      ConnectCommand connectCommand = new ConnectCommand();
-      Properties configProperties = connectCommand.resolveSslProperties(getGfsh(), false,
-          gemfirePropertiesFile, gemfireSecurityPropertiesFile);
-
-      // AUTO-CONNECT
-      // If the connect succeeds add the connected message to the result,
-      // Else, ask the user to use the "connect" command to connect to the Locator.
-      if (shouldAutoConnect(connect)) {
-        doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
-      }
-
-      // Report on the state of the Shared Configuration service if enabled...
-      if (enableSharedConfiguration) {
-        infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
-            locatorPort, configProperties));
-      }
-
-      return ResultBuilder.buildResult(infoResultData);
-    } catch (IllegalArgumentException e) {
-      String message = e.getMessage();
-      if (message != null && message.matches(
-          LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE.toLocalizedString(".+"))) {
-        message =
-            CliStrings.format(CliStrings.LAUNCHERLIFECYCLECOMMANDS__MSG__FAILED_TO_START_0_REASON_1,
-                CliStrings.LOCATOR_TERM_NAME, message);
-      }
-      return ResultBuilder.createUserErrorResult(message);
-    } catch (IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      String errorMessage = String.format(CliStrings.START_LOCATOR__GENERAL_ERROR_MESSAGE,
-          StringUtils.defaultIfBlank(workingDirectory, memberName),
-          HostUtils.getLocatorId(bindAddress, port), this.toString(t, getGfsh().getDebug()));
-      getGfsh().logToFile(errorMessage, t);
-      return ResultBuilder.createShellClientErrorResult(errorMessage);
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
+          help = CliStrings.START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress)
+      throws Exception {
+    if (StringUtils.isBlank(memberName)) {
+      // when the user doesn't give us a name, we make one up!
+      memberName = StartMemberUtils.getNameGenerator().generate('-');
     }
+
+    workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
+
+    if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
+              gemfirePropertiesFile.getAbsolutePath()));
+    }
+
+    if (gemfireSecurityPropertiesFile != null && !gemfireSecurityPropertiesFile.exists()) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
+              gemfireSecurityPropertiesFile.getAbsolutePath()));
+    }
+
+    File locatorPidFile = new File(workingDirectory, ProcessType.LOCATOR.getPidFileName());
+
+    final int oldPid = StartMemberUtils.readPid(locatorPidFile);
+
+    Properties gemfireProperties = new Properties();
+
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS, group);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS,
+        locators);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL,
+        logLevel);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_ADDRESS,
+        mcastBindAddress);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT,
+        mcastPort);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, enableSharedConfiguration);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
+        loadSharedConfigurationFromDirectory);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.CLUSTER_CONFIGURATION_DIR, clusterConfigDir);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
+
+    // read the OSProcess enable redirect system property here
+    // TODO: replace with new GFSH argument
+    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+    LocatorLauncher.Builder locatorLauncherBuilder =
+        new LocatorLauncher.Builder().setBindAddress(bindAddress).setForce(force).setPort(port)
+            .setRedirectOutput(redirectOutput).setWorkingDirectory(workingDirectory);
+    if (hostnameForClients != null) {
+      locatorLauncherBuilder.setHostnameForClients(hostnameForClients);
+    }
+    if (memberName != null) {
+      locatorLauncherBuilder.setMemberName(memberName);
+    }
+    LocatorLauncher locatorLauncher = locatorLauncherBuilder.build();
+
+    String[] locatorCommandLine = createStartLocatorCommandLine(locatorLauncher,
+        gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, classpath,
+        includeSystemClasspath, jvmArgsOpts, initialHeap, maxHeap);
+
+    final Process locatorProcess = new ProcessBuilder(locatorCommandLine)
+        .directory(new File(locatorLauncher.getWorkingDirectory())).start();
+
+    locatorProcess.getInputStream().close();
+    locatorProcess.getOutputStream().close();
+
+    // fix TRAC bug #51967 by using NON_BLOCKING on Windows
+    final ProcessStreamReader.ReadingMode readingMode = SystemUtils.isWindows()
+        ? ProcessStreamReader.ReadingMode.NON_BLOCKING : ProcessStreamReader.ReadingMode.BLOCKING;
+
+    final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
+    ProcessStreamReader.InputListener inputListener = line -> {
+      message.append(line);
+      if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
+        message.append(StringUtils.LINE_SEPARATOR);
+      }
+    };
+
+    ProcessStreamReader stderrReader = new ProcessStreamReader.Builder(locatorProcess)
+        .inputStream(locatorProcess.getErrorStream()).inputListener(inputListener)
+        .readingMode(readingMode).continueReadingMillis(2 * 1000).build().start();
+
+    LocatorLauncher.LocatorState locatorState;
+
+    String previousLocatorStatusMessage = null;
+
+    LauncherSignalListener locatorSignalListener = new LauncherSignalListener();
+
+    final boolean registeredLocatorSignalListener =
+        getGfsh().getSignalHandler().registerListener(locatorSignalListener);
+
+    try {
+      getGfsh().logInfo(String.format(CliStrings.START_LOCATOR__RUN_MESSAGE, IOUtils
+          .tryGetCanonicalPathElseGetAbsolutePath(new File(locatorLauncher.getWorkingDirectory()))),
+          null);
+
+      do {
+        if (locatorProcess.isAlive()) {
+          Gfsh.print(".");
+
+          synchronized (this) {
+            TimeUnit.MILLISECONDS.timedWait(this, 500);
+          }
+
+          locatorState = LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
+
+          String currentLocatorStatusMessage = locatorState.getStatusMessage();
+
+          if (locatorState.isStartingOrNotResponding()
+              && !(StringUtils.isBlank(currentLocatorStatusMessage)
+                  || currentLocatorStatusMessage.equalsIgnoreCase(previousLocatorStatusMessage)
+                  || currentLocatorStatusMessage.trim().toLowerCase().equals("null"))) {
+            Gfsh.println();
+            Gfsh.println(currentLocatorStatusMessage);
+            previousLocatorStatusMessage = currentLocatorStatusMessage;
+          }
+        } else {
+          final int exitValue = locatorProcess.exitValue();
+
+          return ResultBuilder.createShellClientErrorResult(
+              String.format(CliStrings.START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
+                  exitValue, locatorLauncher.getWorkingDirectory(), message.toString()));
+        }
+      } while (!(registeredLocatorSignalListener && locatorSignalListener.isSignaled())
+          && locatorState.isStartingOrNotResponding());
+    } finally {
+      // stop will close
+      stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS);
+
+      // ErrorStream
+      getGfsh().getSignalHandler().unregisterListener(locatorSignalListener);
+    }
+
+    Gfsh.println();
+
+    final boolean asyncStart =
+        (registeredLocatorSignalListener && locatorSignalListener.isSignaled()
+            && ServerLauncher.ServerState.isStartingNotRespondingOrNull(locatorState));
+
+    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
+
+    if (asyncStart) {
+      infoResultData.addLine(
+          String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, CliStrings.LOCATOR_TERM_NAME));
+      return ResultBuilder.buildResult(infoResultData);
+    }
+
+    infoResultData.addLine(locatorState.toString());
+    String locatorHostName;
+    InetAddress bindAddr = locatorLauncher.getBindAddress();
+    if (bindAddr != null) {
+      locatorHostName = bindAddr.getCanonicalHostName();
+    } else {
+      locatorHostName = StringUtils.defaultIfBlank(locatorLauncher.getHostnameForClients(),
+          HostUtils.getLocalHost());
+    }
+
+    int locatorPort = Integer.parseInt(locatorState.getPort());
+
+
+    ConnectCommand connectCommand = new ConnectCommand();
+    Properties configProperties = connectCommand.resolveSslProperties(getGfsh(), false,
+        gemfirePropertiesFile, gemfireSecurityPropertiesFile);
+
+    // AUTO-CONNECT
+    // If the connect succeeds add the connected message to the result,
+    // Else, ask the user to use the "connect" command to connect to the Locator.
+    if (shouldAutoConnect(connect)) {
+      doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
+    }
+
+    // Report on the state of the Shared Configuration service if enabled...
+    if (enableSharedConfiguration) {
+      infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
+          locatorPort, configProperties));
+    }
+
+    return ResultBuilder.buildResult(infoResultData);
+
   }
 
   // TODO should we connect implicitly when in non-interactive, headless mode (e.g. gfsh -e "start

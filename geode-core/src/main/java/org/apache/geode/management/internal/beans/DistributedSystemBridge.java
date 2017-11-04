@@ -44,8 +44,6 @@ import javax.management.ObjectName;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.admin.internal.BackupDataStoreHelper;
-import org.apache.geode.admin.internal.BackupDataStoreResult;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
@@ -58,6 +56,8 @@ import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
+import org.apache.geode.internal.cache.backup.BackupDataStoreResult;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;

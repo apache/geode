@@ -27,10 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.SyncFailedException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +53,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -84,6 +81,7 @@ import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
@@ -688,6 +686,10 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
+  public Object getLock() {
+    return lock;
+  }
+
   public void replaceIncompatibleEntry(DiskRegionView dr, DiskEntry old, DiskEntry repl) {
     boolean useNextOplog = false;
     // No need to get the backup lock prior to synchronizing (correct lock order) since the
@@ -1173,11 +1175,11 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  File getCrfFile() {
+  public File getCrfFile() {
     return this.crf.f;
   }
 
-  File getDrfFile() {
+  public File getDrfFile() {
     return this.drf.f;
   }
 
@@ -1187,7 +1189,7 @@ public class Oplog implements CompactableOplog, Flushable {
    *
    * @param oplogFileNames a Set of operation log file names.
    */
-  Set<String> gatherMatchingOplogFiles(Set<String> oplogFileNames) {
+  public Set<String> gatherMatchingOplogFiles(Set<String> oplogFileNames) {
     Set<String> matchingFiles = new HashSet<>();
 
     // CRF match?
@@ -1221,7 +1223,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @return a map of baslineline oplog files to copy. May be empty if total current set for this
    *         oplog does not match the baseline.
    */
-  Map<File, File> mapBaseline(Collection<File> baselineOplogFiles) {
+  public Map<File, File> mapBaseline(Collection<File> baselineOplogFiles) {
     // Map of baseline oplog file name to oplog file
     Map<String, File> baselineOplogMap =
         TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
@@ -4233,7 +4235,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  File getKrfFile() {
+  public File getKrfFile() {
     return new File(this.diskFile.getPath() + KRF_FILE_EXT);
   }
 
@@ -5822,7 +5824,7 @@ public class Oplog implements CompactableOplog, Flushable {
     return this.crf.channel;
   }
 
-  DirectoryHolder getDirectoryHolder() {
+  public DirectoryHolder getDirectoryHolder() {
     return this.dirHolder;
   }
 
@@ -7751,7 +7753,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  void finishKrf() {
+  public void finishKrf() {
     createKrf(false);
   }
 

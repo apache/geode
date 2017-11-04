@@ -14,13 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.cache.CacheFactory;
@@ -33,46 +29,22 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 
 /**
  * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
+ * this provides wrapper around the static methods in CliUtils for easy mock of the commands
  *
- * @see org.apache.geode.cache.Cache
- * @see org.apache.geode.cache.execute.FunctionService
- * @see org.apache.geode.distributed.DistributedMember
- * @see org.apache.geode.management.internal.cli.shell.Gfsh
- * @see org.springframework.shell.core.CommandMarker
+ * this class should not have much implementation of its own other then those tested in
+ * GfshCommandJUnitTest
  */
 @SuppressWarnings("unused")
 public interface GfshCommand extends CommandMarker {
-
-  default String convertDefaultValue(final String from, final String to) {
-    return CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(from) ? to : from;
-  }
-
-  default String toString(final Boolean condition, final String trueValue,
-      final String falseValue) {
-    return Boolean.TRUE.equals(condition) ? StringUtils.defaultIfBlank(trueValue, "true")
-        : StringUtils.defaultIfBlank(falseValue, "false");
-  }
-
-  default String toString(final Throwable t, final boolean printStackTrace) {
-    String message = t.getMessage();
-
-    if (printStackTrace) {
-      StringWriter writer = new StringWriter();
-      t.printStackTrace(new PrintWriter(writer));
-      message = writer.toString();
-    }
-
-    return message;
-  }
 
   default boolean isConnectedAndReady() {
     return getGfsh() != null && getGfsh().isConnectedAndReady();
@@ -104,7 +76,6 @@ public interface GfshCommand extends CommandMarker {
     return getGfsh() != null;
   }
 
-
   default InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
@@ -117,40 +88,82 @@ public interface GfshCommand extends CommandMarker {
     return Gfsh.getCurrentInstance();
   }
 
-  @SuppressWarnings("deprecated")
-  default DistributedMember getMember(final InternalCache cache, final String memberName) {
-    for (final DistributedMember member : getMembers(cache)) {
-      if (memberName.equalsIgnoreCase(member.getName())
-          || memberName.equalsIgnoreCase(member.getId())) {
-        return member;
-      }
-    }
+  /**
+   * this either returns a non-null member or throw an exception if member is not found.
+   */
+  default DistributedMember getMember(final String memberName) {
+    DistributedMember member = findMember(memberName);
 
-    throw new MemberNotFoundException(
-        CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
+    if (member == null) {
+      throw new EntityNotFoundException(
+          CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
+    }
+    return member;
   }
 
   /**
-   * Gets all members in the GemFire distributed system/cache.
-   *
-   * @param cache the GemFire cache.
-   * @return all members in the GemFire distributed system/cache.
-   * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.internal.cache.InternalCache)
-   * @deprecated use CliUtil.getAllMembers(org.apache.geode.cache.Cache) instead
+   * this will return the member found or null if no member with that name
    */
-  @Deprecated
-  default Set<DistributedMember> getMembers(final InternalCache cache) {
-    Set<DistributedMember> members = new HashSet<>(cache.getMembers());
-    members.add(cache.getDistributedSystem().getDistributedMember());
-    return members;
+  default DistributedMember findMember(final String memberName) {
+    return CliUtil.getDistributedMemberByNameOrId(memberName);
+  }
+
+  /**
+   * Gets all members in the GemFire distributed system/cache, including locators
+   */
+  default Set<DistributedMember> getAllMembers(final InternalCache cache) {
+    return CliUtil.getAllMembers(cache);
+  }
+
+  /**
+   * Get All members, exclusing locators
+   */
+  default Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
+    return CliUtil.getAllNormalMembers(cache);
   }
 
   default Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
     return FunctionService.onMembers(members);
   }
 
+  /**
+   * if no members matches these names, an empty set would return
+   */
   default Set<DistributedMember> findMembers(String[] groups, String[] members) {
     return CliUtil.findMembers(groups, members);
+  }
+
+  /**
+   * if no members matches these names, a UserErrorException will be thrown
+   */
+  default Set<DistributedMember> getMembers(String[] groups, String[] members) {
+    Set<DistributedMember> matchingMembers = findMembers(groups, members);
+    if (matchingMembers.size() == 0) {
+      throw new EntityNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    }
+    return matchingMembers;
+  }
+
+  /**
+   * if no members matches these names, an empty set would return
+   */
+  default Set<DistributedMember> findMembersIncludingLocators(String[] groups, String[] members) {
+    return CliUtil.findMembersIncludingLocators(groups, members);
+  }
+
+  /**
+   * if no members matches these names, a UserErrorException will be thrown
+   */
+  default Set<DistributedMember> getMembersIncludingLocators(String[] groups, String[] members) {
+    Set<DistributedMember> matchingMembers = findMembersIncludingLocators(groups, members);
+    if (matchingMembers.size() == 0) {
+      throw new EntityNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    }
+    return matchingMembers;
+  }
+
+  default ManagementService getManagementService() {
+    return ManagementService.getExistingManagementService(getCache());
   }
 
   default Set<DistributedMember> findMembersForRegion(InternalCache cache, String regionPath) {

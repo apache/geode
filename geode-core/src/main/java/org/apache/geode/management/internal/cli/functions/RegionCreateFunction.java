@@ -44,7 +44,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
-import org.apache.geode.management.internal.cli.exceptions.CreateSubregionException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -105,7 +104,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
                 new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, null/* do not log */));
-    } catch (IllegalArgumentException | CreateSubregionException e) {
+    } catch (IllegalArgumentException e) {
       resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (RegionExistsException e) {
       String exceptionMsg =

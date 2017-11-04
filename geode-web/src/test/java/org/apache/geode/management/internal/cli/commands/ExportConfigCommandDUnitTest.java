@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -45,7 +45,7 @@ public class ExportConfigCommandDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -59,9 +59,9 @@ public class ExportConfigCommandDUnitTest {
     MemberVM server0 = startupRule.startServerAsEmbededLocator(0, props);
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     // start server1 and server2 in group2

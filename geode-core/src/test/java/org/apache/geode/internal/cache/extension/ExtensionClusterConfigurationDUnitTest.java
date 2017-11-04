@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({DistributedTest.class})
 @SuppressWarnings("serial")
@@ -48,7 +48,7 @@ public class ExtensionClusterConfigurationDUnitTest {
   public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private static final String REPLICATE_REGION = "ReplicateRegion1";
 
