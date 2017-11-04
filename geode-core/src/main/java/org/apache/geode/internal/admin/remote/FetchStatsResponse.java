@@ -18,23 +18,19 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Statistics;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.StatisticsVisitor;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * Provides a response of remote statistic resources for a <code>FetchStatsRequest</code>
- *
+ * Provides a response of remote statistic resources for a {@code FetchStatsRequest}
  */
 public class FetchStatsResponse extends AdminResponse {
 
-  // instance variables
   private RemoteStatResource[] stats;
 
   /**
@@ -44,12 +40,11 @@ public class FetchStatsResponse extends AdminResponse {
    * @param recipient the recipient who made the original request
    * @return response containing all remote stat resources
    */
-  public static FetchStatsResponse create(DistributionManager dm,
-      InternalDistributedMember recipient, final String statisticsTypeName) {
-    // LogWriterI18n log = dm.getLogger();
+  public static FetchStatsResponse create(DM dm, InternalDistributedMember recipient,
+      final String statisticsTypeName) {
     FetchStatsResponse m = new FetchStatsResponse();
     m.setRecipient(recipient);
-    final List<RemoteStatResource> statList = new ArrayList<RemoteStatResource>();
+    List<RemoteStatResource> statList = new ArrayList<RemoteStatResource>();
     // get vm-local stats
     // call visitStatistics to fix for bug 40358
     if (statisticsTypeName == null) {
@@ -71,7 +66,6 @@ public class FetchStatsResponse extends AdminResponse {
     m.stats = (RemoteStatResource[]) statList.toArray(m.stats);
     return m;
   }
-
 
   @Override
   public boolean sendViaUDP() {
@@ -130,7 +124,7 @@ public class FetchStatsResponse extends AdminResponse {
    */
   @Override
   public String toString() {
-    return "FetchStatsResponse from " + this.getRecipient() + " stats.length=" + stats.length;
+    return "FetchStatsResponse from " + getRecipient() + " stats.length=" + stats.length;
   }
 
 }

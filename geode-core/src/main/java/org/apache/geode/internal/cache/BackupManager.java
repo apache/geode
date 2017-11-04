@@ -354,18 +354,16 @@ public class BackupManager implements MembershipListener {
           diskStore.getPersistentOplogSet().forceRoll(null);
 
           if (logger.isDebugEnabled()) {
-            logger.debug("done snaphotting for disk store {}", diskStore.getName());
+            logger.debug("done backing up disk store {}", diskStore.getName());
           }
           break;
         }
       }
       done = true;
     } finally {
-      if (!done) {
-        if (backup != null) {
-          backupByDiskStore.remove(diskStore);
-          backup.cleanup();
-        }
+      if (!done && backup != null) {
+        backupByDiskStore.remove(diskStore);
+        backup.cleanup();
       }
     }
     return backup;

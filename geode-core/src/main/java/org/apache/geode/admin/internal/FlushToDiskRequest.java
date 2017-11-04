@@ -22,12 +22,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
@@ -39,17 +38,37 @@ import org.apache.geode.internal.logging.LogService;
 public class FlushToDiskRequest extends CliLegacyMessage {
   private static final Logger logger = LogService.getLogger();
 
+  private final DM dm;
+  private final FlushToDiskProcessor replyProcessor;
+
   public FlushToDiskRequest() {
-    // nothing
+    super();
+    this.dm = null;
+    this.replyProcessor = null;
+  }
+
+  private FlushToDiskRequest(DM dm, Set<InternalDistributedMember> recipients) {
+    this(dm, recipients, new FlushToDiskProcessor(dm, recipients));
+  }
+
+  FlushToDiskRequest(DM dm, Set<InternalDistributedMember> recipients,
+      FlushToDiskProcessor replyProcessor) {
+    this.dm = dm;
+    setRecipients(recipients);
+    this.replyProcessor = replyProcessor;
+    this.msgId = this.replyProcessor.getProcessorId();
   }
 
   public static void send(DM dm, Set recipients) {
-    FlushToDiskRequest request = new FlushToDiskRequest();
-    request.setRecipients(recipients);
+    FlushToDiskRequest request = new FlushToDiskRequest(dm, recipients);
+    request.send();
+  }
 
-    FlushToDiskProcessor replyProcessor = new FlushToDiskProcessor(dm, recipients);
-    request.msgId = replyProcessor.getProcessorId();
-    dm.putOutgoing(request);
+  void send() {
+    dm.putOutgoing(this);
+
+    AdminResponse response = createResponse(dm);
+
     try {
       replyProcessor.waitForReplies();
     } catch (ReplyException e) {
@@ -57,21 +76,21 @@ public class FlushToDiskRequest extends CliLegacyMessage {
         throw e;
       }
     } catch (InterruptedException e) {
-      logger.debug(e);
+      logger.warn(e);
     }
-    AdminResponse response = request.createResponse((DistributionManager) dm);
+
     response.setSender(dm.getDistributionManagerId());
     replyProcessor.process(response);
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     InternalCache cache = dm.getCache();
     if (cache != null) {
       cache.listDiskStoresIncludingRegionOwned().forEach(DiskStore::flush);
     }
 
-    return new FlushToDiskResponse(this.getSender());
+    return new FlushToDiskResponse(getSender());
   }
 
   @Override
@@ -79,8 +98,9 @@ public class FlushToDiskRequest extends CliLegacyMessage {
     return FLUSH_TO_DISK_REQUEST;
   }
 
-  private static class FlushToDiskProcessor extends AdminMultipleReplyProcessor {
-    public FlushToDiskProcessor(DM dm, Collection initMembers) {
+  static class FlushToDiskProcessor extends AdminMultipleReplyProcessor {
+
+    FlushToDiskProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
 

@@ -35,7 +35,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -81,7 +80,7 @@ public class CompactRequest extends CliLegacyMessage {
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     InternalCache cache = dm.getCache();
     HashSet<PersistentID> compactedStores = new HashSet<>();
     if (cache != null && !cache.isClosed()) {
@@ -135,14 +134,14 @@ public class CompactRequest extends CliLegacyMessage {
     }
 
     @Override
-    protected void process(DistributionMessage msg, boolean warn) {
-      if (msg instanceof CompactResponse) {
-        final Set<PersistentID> persistentIds = ((CompactResponse) msg).getPersistentIds();
+    protected void process(DistributionMessage message, boolean warn) {
+      if (message instanceof CompactResponse) {
+        final Set<PersistentID> persistentIds = ((CompactResponse) message).getPersistentIds();
         if (persistentIds != null && !persistentIds.isEmpty()) {
-          this.results.put(msg.getSender(), persistentIds);
+          this.results.put(message.getSender(), persistentIds);
         }
       }
-      super.process(msg, warn);
+      super.process(message, warn);
     }
   }
 }

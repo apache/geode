@@ -22,6 +22,7 @@ import java.util.concurrent.*;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
@@ -1386,5 +1387,23 @@ public class LonerDistributionManager implements DM {
   @Override
   public void setCache(InternalCache instance) {
     this.cache = instance;
+  }
+
+  @Override
+  public HealthMonitor getHealthMonitor(InternalDistributedMember owner) {
+    throw new UnsupportedOperationException(
+        "getHealthMonitor is not supported by " + getClass().getSimpleName());
+  }
+
+  @Override
+  public void removeHealthMonitor(InternalDistributedMember owner, int theId) {
+    throw new UnsupportedOperationException(
+        "removeHealthMonitor is not supported by " + getClass().getSimpleName());
+  }
+
+  @Override
+  public void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg) {
+    throw new UnsupportedOperationException(
+        "createHealthMonitor is not supported by " + getClass().getSimpleName());
   }
 }
