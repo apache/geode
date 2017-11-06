@@ -64,7 +64,7 @@ public class DestroyIndexCommand implements GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group,
       @CliOption(key = CliStrings.IFEXISTS, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false", help = CliStrings.IFEXISTS_HELP) Boolean ifExists) {
+          unspecifiedDefaultValue = "false", help = CliStrings.IFEXISTS_HELP) boolean ifExists) {
 
     if (StringUtils.isBlank(indexName) && StringUtils.isBlank(regionPath)
         && ArrayUtils.isEmpty(group) && ArrayUtils.isEmpty(memberNameOrID)) {

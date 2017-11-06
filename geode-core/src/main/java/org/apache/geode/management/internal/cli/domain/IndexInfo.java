@@ -97,8 +97,8 @@ public class IndexInfo implements Serializable {
     return ifExists;
   }
 
-  public void setIfExists(Boolean ifExists) {
-    this.ifExists = ifExists == null ? false : ifExists;
+  public void setIfExists(boolean ifExists) {
+    this.ifExists = ifExists;
   }
 
   public String toString() {
