@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +73,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     MemberVM serverVM = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
     serverVM.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getSecurityService()).isNotNull();
       assertThat(cache.getSecurityService().getSecurityManager()).isNotNull();
       assertThat(cache.getSecurityService().getPostProcessor()).isNotNull();
@@ -107,7 +106,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
 
     serverVM.invoke(() -> {
-      PDXPostProcessor pp = (PDXPostProcessor) LocatorServerStartupRule.serverStarter.getCache()
+      PDXPostProcessor pp = (PDXPostProcessor) LocatorServerStartupRule.getCache()
           .getSecurityService().getPostProcessor();
       // verify that the post processor is called 6 times. (5 for the query, 1 for the get)
       assertEquals(pp.getCount(), 6);

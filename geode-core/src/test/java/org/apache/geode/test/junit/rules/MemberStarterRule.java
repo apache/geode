@@ -36,6 +36,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -228,17 +229,21 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return getManagementService().getDistributedRegionMXBean(regionName);
   }
 
-  public ManagementService getManagementService(){
-    ManagementService managementService = ManagementService.getExistingManagementService(getCache());
-    if(managementService == null){
+  public ManagementService getManagementService() {
+    ManagementService managementService =
+        ManagementService.getExistingManagementService(getCache());
+    if (managementService == null) {
       throw new IllegalStateException("Management service is not available on this member");
     }
     return managementService;
   }
 
-  public void waitTillRegionIsReadyOnServers(String regionName, int serverCount){
-    await().atMost(2, TimeUnit.SECONDS).until(()->getRegionMBean(regionName) != null);
-    await().atMost(2, TimeUnit.SECONDS).until(()->getRegionMBean(regionName).getMembers().length == serverCount);
+  public abstract InternalCache getCache();
+
+  public void waitTillRegionIsReadyOnServers(String regionName, int serverCount) {
+    await().atMost(2, TimeUnit.SECONDS).until(() -> getRegionMBean(regionName) != null);
+    await().atMost(2, TimeUnit.SECONDS)
+        .until(() -> getRegionMBean(regionName).getMembers().length == serverCount);
   }
 
   abstract void stopMember();

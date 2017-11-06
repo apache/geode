@@ -121,7 +121,7 @@ public class WANClusterConfigurationDUnitTest {
     // verify GatewayReceiver attributes saved in cluster config
     newMember.invoke(() -> {
       Set<GatewayReceiver> gatewayReceivers =
-          LocatorServerStartupRule.serverStarter.getCache().getGatewayReceivers();
+          LocatorServerStartupRule.getCache().getGatewayReceivers();
       assertNotNull(gatewayReceivers);
       assertFalse(gatewayReceivers.isEmpty());
       assertTrue(gatewayReceivers.size() == 1);
@@ -136,7 +136,7 @@ public class WANClusterConfigurationDUnitTest {
 
     // verify GatewaySender attributes saved in cluster config
     newMember.invoke(() -> {
-      GatewaySender gs = LocatorServerStartupRule.serverStarter.getCache().getGatewaySender(gsId);
+      GatewaySender gs = LocatorServerStartupRule.getCache().getGatewaySender(gsId);
       assertNotNull(gs);
       assertTrue(alertThreshold.equals(Integer.toString(gs.getAlertThreshold())));
       assertTrue(batchSize.equals(Integer.toString(gs.getBatchSize())));

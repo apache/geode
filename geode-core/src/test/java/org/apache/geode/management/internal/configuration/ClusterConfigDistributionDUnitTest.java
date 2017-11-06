@@ -122,7 +122,7 @@ public class ClusterConfigDistributionDUnitTest {
     MemberVM server = lsRule.startServerVM(2, new Properties(), locator.getPort());
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertNotNull(cache);
       assertTrue(cache.getCopyOnRead());
 

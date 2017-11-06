@@ -133,7 +133,7 @@ public class ShowDeadlockDUnitTest {
   }
 
   private static InternalDistributedMember getInternalDistributedMember(MemberVM memberVM) {
-    return memberVM.getVM().invoke(() -> LocatorServerStartupRule.serverStarter.getCache()
+    return memberVM.getVM().invoke(() -> LocatorServerStartupRule.getCache()
         .getInternalDistributedSystem().getDistributedMember());
   }
 

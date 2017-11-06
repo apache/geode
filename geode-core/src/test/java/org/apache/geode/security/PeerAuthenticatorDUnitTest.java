@@ -62,7 +62,7 @@ public class PeerAuthenticatorDUnitTest {
 
     server2.invoke(() -> {
       ServerStarterRule serverStarter = new ServerStarterRule();
-      LocatorServerStartupRule.serverStarter = serverStarter;
+      LocatorServerStartupRule.memberStarter = serverStarter;
       assertThatThrownBy(() -> serverStarter.startServer(server2Props, locatorPort))
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
 

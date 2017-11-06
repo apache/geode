@@ -63,7 +63,7 @@ public class ShowMetricsDUnitTest {
     server = lsRule.startServerVM(1, locator.getPort());
     int serverPort = server.getPort();
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.REPLICATE);
       dataRegionFactory.create("REGION1");
@@ -73,7 +73,7 @@ public class ShowMetricsDUnitTest {
     });
 
     locator.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.locatorStarter.getLocator().getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       // Wait for all of the relevant beans to be ready
       await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 1, "", null, 0));
       await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 2, "REGION1", null, 0));

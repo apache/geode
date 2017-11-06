@@ -96,7 +96,7 @@ public class ImportOldClusterConfigDUnitTest {
   }
 
   private static void regionExists(String regionName) {
-    Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+    Cache cache = LocatorServerStartupRule.getCache();
     assertThat(cache).isNotNull();
     Region<Object, Object> one = cache.getRegion(regionName);
     assertThat(one).isNotNull();

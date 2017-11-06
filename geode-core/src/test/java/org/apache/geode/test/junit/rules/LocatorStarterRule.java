@@ -23,9 +23,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
@@ -92,7 +92,7 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
   }
 
   @Override
-  public Cache getCache() {
+  public InternalCache getCache() {
     return locator.getCache();
   }
 }
