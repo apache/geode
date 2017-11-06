@@ -22,7 +22,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 
 /**
  * Admin request to transfer region info for a member
- * 
+ *
  */
 public class RegionSubRegionSizeRequest extends AdminRequest implements Cancellable {
   public RegionSubRegionSizeRequest() {

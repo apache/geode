@@ -20,7 +20,7 @@ package org.apache.geode.internal.offheap;
 public interface SlabFactory {
   /**
    * Create and return a Slab
-   * 
+   *
    * @throws OutOfMemoryError if the create fails
    */
   public Slab create(int size);

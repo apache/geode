@@ -20,13 +20,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.lucene.analysis.Analyzer;
+
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-
-import org.apache.lucene.analysis.Analyzer;
 
 public class LuceneIndexDetails extends LuceneFunctionSerializable
     implements Comparable<LuceneIndexDetails> {

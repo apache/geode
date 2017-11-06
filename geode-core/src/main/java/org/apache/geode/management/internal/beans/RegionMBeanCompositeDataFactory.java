@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.ManagementConstants;
 
 /**
  * Utility class to create CompositeDataTypes for RegionMXBean
- * 
+ *
  *
  */
 public class RegionMBeanCompositeDataFactory {

@@ -21,6 +21,20 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryEvent;
@@ -37,19 +51,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * JUnit tests covering some miscellaneous functionality of Disk Region.
@@ -492,7 +493,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /**
    * DiskDirectoriesJUnitTest:
-   * 
+   *
    * This tests the potential deadlock situation if the region is created such that rolling is
    * turned on but the Max directory space is less than or equal to the Max Oplog Size. In such
    * situations , if during switch over , if the Oplog to be rolled is added after function call of

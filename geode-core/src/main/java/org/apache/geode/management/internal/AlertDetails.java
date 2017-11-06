@@ -138,7 +138,7 @@ public class AlertDetails {
 
   /**
    * Converts the int alert level to a string representation.
-   * 
+   *
    * @param intLevel int alert level to convert
    * @return A string representation of the alert level
    */

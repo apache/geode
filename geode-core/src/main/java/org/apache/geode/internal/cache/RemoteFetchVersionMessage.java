@@ -41,10 +41,10 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * This message is used to request a VersionTag from a remote member.
- * 
+ *
  * DistributedRegions with DataPolicy EMPTY, NORMAL, PRELOADED, can use this message to fetch
  * VersionTag for a key.
- * 
+ *
  * @since GemFire 7.0
  */
 public class RemoteFetchVersionMessage extends RemoteOperationMessage {
@@ -58,7 +58,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
   /**
    * Send RemoteFetchVersionMessage to the recipient for the given key
-   * 
+   *
    * @param recipient
    * @param r
    * @param key
@@ -142,7 +142,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
   /**
    * This message is used to send a reply for RemoteFetchVersionMessage.
-   * 
+   *
    */
   public static class FetchVersionReplyMessage extends ReplyMessage {
     private VersionTag tag;
@@ -207,7 +207,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
   /**
    * A processor to capture the VersionTag returned by RemoteFetchVersion message.
-   * 
+   *
    */
   public static class FetchVersionResponse extends RemoteOperationResponse {
 

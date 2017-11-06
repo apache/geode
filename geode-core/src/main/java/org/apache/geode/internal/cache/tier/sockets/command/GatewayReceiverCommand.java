@@ -59,7 +59,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 public class GatewayReceiverCommand extends BaseCommand {
 
-  private final static GatewayReceiverCommand singleton = new GatewayReceiverCommand();
+  private static final GatewayReceiverCommand singleton = new GatewayReceiverCommand();
 
   public static Command getCommand() {
     return singleton;

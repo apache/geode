@@ -19,7 +19,7 @@ import org.apache.geode.cache.query.QueryService;
 /**
  * The aggregator for compuing average which is used on the bucket node for partitioned region based
  * queries.
- * 
+ *
  *
  */
 public class AvgBucketNode extends Sum {

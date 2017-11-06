@@ -36,7 +36,7 @@ public interface FunctionContext<T1> {
   /**
    * Returns the arguments provided to this function execution. These are the arguments specified by
    * the caller using {@link Execution#setArguments(Object)}
-   * 
+   *
    * @return the arguments or null if there are no arguments
    * @since GemFire 6.0
    */
@@ -44,7 +44,7 @@ public interface FunctionContext<T1> {
 
   /**
    * Returns the identifier of the function.
-   * 
+   *
    * @return a unique identifier
    * @see Function#getId()
    * @since GemFire 6.0
@@ -58,7 +58,7 @@ public interface FunctionContext<T1> {
    *
    * The returned ResultSender is only valid for the duration of the function call. If the Function
    * needs to return a result, the result should be sent before the function exits.
-   * 
+   *
    * @return ResultSender
    * @since GemFire 6.0
    */
@@ -68,9 +68,9 @@ public interface FunctionContext<T1> {
   /**
    * Returns a boolean to identify whether this is a re-execute. Returns true if it is a re-execute
    * else returns false
-   * 
+   *
    * @return a boolean (true) to identify whether it is a re-execute (else false)
-   * 
+   *
    * @since GemFire 6.5
    * @see Function#isHA()
    */

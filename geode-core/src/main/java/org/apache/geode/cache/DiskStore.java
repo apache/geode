@@ -24,7 +24,7 @@ import java.util.UUID;
  * <p>
  * Instances of this interface are created using {@link DiskStoreFactory#create}. So to create a
  * <code>DiskStore</code> named <code>myDiskStore</code> do this:
- * 
+ *
  * <PRE>
  * new DiskStoreFactory().create("myDiskStore");
  * </PRE>
@@ -55,7 +55,7 @@ public interface DiskStore {
   /**
    * Returns the threshold at which an oplog will become compactable. Until it reaches this
    * threshold the oplog will not be compacted. The threshold is a percentage in the range 0..100.
-   * 
+   *
    * @return the threshold, as a percentage, at which an oplog is considered compactable.
    */
   public int getCompactionThreshold();
@@ -110,7 +110,7 @@ public interface DiskStore {
    * Returns the universally unique identifier for the Disk Store across the GemFire distributed
    * system.
    * </p>
-   * 
+   *
    * @return a UUID uniquely identifying this Disk Store in the GemFire distributed system.
    * @see java.util.UUID
    */
@@ -155,7 +155,7 @@ public interface DiskStore {
    * active oplog can be compacted.
    * <P>
    * This method will block until the compaction completes.
-   * 
+   *
    * @return <code>true</code> if one or more oplogs were compacted; <code>false</code> indicates
    *         that no oplogs were ready to be compacted or that a compaction was already in progress.
    * @see #getAllowForceCompaction
@@ -165,14 +165,14 @@ public interface DiskStore {
   /**
    * Destroys this disk store. Removes the disk store from the cache, and removes all files related
    * to the disk store from disk.
-   * 
+   *
    * If there are any currently open regions in the disk store this method will throw an exception.
    * If there are any closed regions that are persisted in this disk store, the data for those
    * regions will be destroyed.
    *
    * @throws IllegalStateException if the disk store is currently in use by any regions, gateway
    *         senders, or a PDX type registry.
-   * 
+   *
    * @since GemFire 8.0
    */
   public void destroy();
@@ -180,7 +180,7 @@ public interface DiskStore {
 
   /**
    * Returns the warning threshold for disk usage as a percentage of the total disk volume.
-   * 
+   *
    * @return the warning percent
    * @since GemFire 8.0
    */
@@ -188,7 +188,7 @@ public interface DiskStore {
 
   /**
    * Returns the critical threshold for disk usage as a percentage of the total disk volume.
-   * 
+   *
    * @return the critical percent
    * @since GemFire 8.0
    */
@@ -196,14 +196,14 @@ public interface DiskStore {
 
   /**
    * Sets the value of the disk usage warning percentage.
-   * 
+   *
    * @param warningPercent the warning percent
    */
   public void setDiskUsageWarningPercentage(float warningPercent);
 
   /**
    * Sets the value of the disk usage critical percentage.
-   * 
+   *
    * @param criticalPercent the critical percent
    */
   public void setDiskUsageCriticalPercentage(float criticalPercent);

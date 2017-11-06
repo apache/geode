@@ -40,7 +40,7 @@ public class DiskStoreBackup {
 
   /**
    * Add the oplog to the list of deferred deletes.
-   * 
+   *
    * @return true if the delete has been deferred. False if this oplog should be deleted
    *         immediately.
    */
@@ -55,7 +55,7 @@ public class DiskStoreBackup {
 
   /**
    * Add the oplog to the list of deferred deletes.
-   * 
+   *
    * @return true if the delete has been deferred. False if this oplog should be deleted
    *         immediately.
    */

@@ -64,7 +64,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  * The queue could be SerialGatewaySenderQueue or ParallelGatewaySenderQueue or
  * {@link ConcurrentParallelGatewaySenderQueue}. The dispatcher could be either
  * GatewaySenderEventRemoteDispatcher or GatewaySenderEventCallbackDispatcher.
- * 
+ *
  * @since GemFire 7.0
  */
 public abstract class AbstractGatewaySenderEventProcessor extends Thread {
@@ -153,7 +153,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     this.batchSize = sender.getBatchSize();
   }
 
-  abstract protected void initializeMessageQueue(String id);
+  protected abstract void initializeMessageQueue(String id);
 
   public abstract void enqueueEvent(EnumListenerEvent operation, EntryEvent event,
       Object substituteValue) throws IOException, CacheException;
@@ -231,7 +231,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   /**
    * Returns the current batch id to be used to identify the next batch.
-   * 
+   *
    * @return the current batch id to be used to identify the next batch
    */
   protected int getBatchId() {
@@ -464,7 +464,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
               /*
                * // Check if paused. If so, wait for resumption if (this.isPaused) {
                * waitForResumption(); }
-               * 
+               *
                * synchronized (this.getQueue()) { // its quite possible that the queue region is //
                * destroyed(userRegion // localdestroy destroys shadow region locally). In this case
                * // better to // wait for shadows region to get recreated instead of keep loop //
@@ -851,7 +851,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   /**
    * Mark all PDX types as requiring dispatch so that they will be sent over the connection again.
-   * 
+   *
    * @param remotePdxSize
    */
   public void checkIfPdxNeedsResend(int remotePdxSize) {
@@ -1104,7 +1104,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   /**
    * Stops the dispatcher from dispatching events . The dispatcher will stay alive for a predefined
    * time OR until its queue is empty.
-   * 
+   *
    * @see AbstractGatewaySender#MAXIMUM_SHUTDOWN_WAIT_TIME
    */
   public void stopProcessing() {
@@ -1233,7 +1233,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   /**
    * Logs a batch of events.
-   * 
+   *
    * @param events The batch of events to log
    **/
   public void logBatchFine(String message, List<GatewaySenderEventImpl> events) {

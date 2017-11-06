@@ -22,14 +22,13 @@ import java.util.*;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
-
 import org.apache.geode.cache.query.internal.*;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of StructType
- * 
+ *
  * @since GemFire 4.0
  */
 public class StructTypeImpl extends ObjectTypeImpl implements StructType {

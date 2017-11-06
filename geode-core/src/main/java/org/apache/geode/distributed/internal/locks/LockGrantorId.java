@@ -21,7 +21,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Identifies specific lock grantor member and version.
- * 
+ *
  * @since GemFire 5.1
  */
 public class LockGrantorId {
@@ -38,7 +38,7 @@ public class LockGrantorId {
 
   /**
    * Constructs a new instance to identify a specific lock grantor member and version.
-   * 
+   *
    * @param dm the distribution manager which is used by {@link #isLocal()}
    * @param lockGrantorMember the non-null member hosting the grantor
    * @param lockGrantorVersion the long grantor version number
@@ -57,7 +57,7 @@ public class LockGrantorId {
 
   /**
    * Returns the non-null member hosting the grantor.
-   * 
+   *
    * @return the member hosting the grantor
    */
   public InternalDistributedMember getLockGrantorMember() {
@@ -67,7 +67,7 @@ public class LockGrantorId {
   /**
    * Returns the long grantor version number. A given member may host grantor several times during
    * its life and this version number will be greater for later grantor instances.
-   * 
+   *
    * @return the long grantor version number
    */
   public long getLockGrantorVersion() {
@@ -76,7 +76,7 @@ public class LockGrantorId {
 
   /**
    * Returns the DLS serial number of the lock service that is hosting the grantor.
-   * 
+   *
    * @return the grantor's DLS serial number
    */
   public int getLockGrantorSerialNumber() {
@@ -85,7 +85,7 @@ public class LockGrantorId {
 
   /**
    * Returns true if the grantor version number is positive.
-   * 
+   *
    * @return true if the grantor version number is positive
    */
   public boolean hasLockGrantorVersion() {
@@ -95,7 +95,7 @@ public class LockGrantorId {
   /**
    * Returns true if <code>otherLockGrantorId</code> is same as this instance. Returns false if
    * different or if <code>otherLockGrantorId</code> is null.
-   * 
+   *
    * @param otherLockGrantorId the other instance to compare this instance to
    * @return true if <code>otherLockGrantorId</code> is same
    */
@@ -110,7 +110,7 @@ public class LockGrantorId {
   /**
    * Returns true if this instance represents a newer lock grantor version than
    * <code>otherLockGrantorId</code>. Returns true if <code>otherLockGrantorId</code> is null.
-   * 
+   *
    * @param otherLockGrantorId the other lock grantor id to compare to
    * @return true if this instance represents a newer lock grantor version
    */
@@ -131,7 +131,7 @@ public class LockGrantorId {
 
   /**
    * Returns true if this instance represents the same lock grantor member and version
-   * 
+   *
    * @param someLockGrantorMember the lock grantor member
    * @param someLockGrantorVersion the lock grantor version
    * @return true if <code>otherLockGrantorId</code> is same
@@ -149,7 +149,7 @@ public class LockGrantorId {
 
   /**
    * Returns true if this instance represents a local lock grantor.
-   * 
+   *
    * @return true if this instance represents a local lock grantor
    */
   public boolean isLocal() {
@@ -159,7 +159,7 @@ public class LockGrantorId {
   /**
    * Returns true if this instance represents a local lock grantor with the specified DLS serial
    * number
-   * 
+   *
    * @return ture if local grantor with matching serial number
    */
   public boolean isLocal(int dlsSerialNumber) {
@@ -169,7 +169,7 @@ public class LockGrantorId {
 
   /**
    * Returns true if this instance represents a remote lock grantor.
-   * 
+   *
    * @return true if this instance represents a remote lock grantor
    */
   public boolean isRemote() {
@@ -178,7 +178,7 @@ public class LockGrantorId {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override

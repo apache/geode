@@ -19,10 +19,10 @@ import java.util.ServiceLoader;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 import org.apache.geode.internal.protocol.serialization.SerializationType;
 import org.apache.geode.internal.protocol.serialization.TypeCodec;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecAlreadyRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 @Experimental
 public class SerializationCodecRegistry {

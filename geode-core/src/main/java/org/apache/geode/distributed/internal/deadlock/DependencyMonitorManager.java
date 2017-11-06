@@ -23,14 +23,14 @@ import org.apache.geode.internal.CopyOnWriteHashSet;
 
 /**
  * A singleton which keeps track of all of the dependency monitors registered in this VM.
- * 
+ *
  * Dependency monitors track dependencies between threads that may not be known to the JVM. For
  * example, a thread in one VM may be waiting for a response to a thread in another VM.
- * 
+ *
  * {@link DependencyMonitor}s should register themselves with this class. Then, the
  * {@link DeadlockDetector} will be able to query them for dependencies when finding deadlocks.
- * 
- * 
+ *
+ *
  */
 public class DependencyMonitorManager {
 

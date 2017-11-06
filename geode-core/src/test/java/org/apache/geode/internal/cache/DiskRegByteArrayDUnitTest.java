@@ -14,18 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -36,16 +32,19 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Disk Reg DUNIT Test: A byte array value when put in a remote VM , gets pushed to local VM as a
  * VMCachedDeserializable object & that should get persisted in the DiskRegion correctly. The value
  * when obtained from the disk ,locally , should be correctly obtained as ByteArrray.
- * 
+ *
  */
 
 @Category(DistributedTest.class)
@@ -57,7 +56,7 @@ public class DiskRegByteArrayDUnitTest extends JUnit4CacheTestCase {
   static Region region;
   static CacheTransactionManager cacheTxnMgr;
   protected static File[] dirs = null;
-  final static byte[] value = new byte[1024];
+  static final byte[] value = new byte[1024];
 
   public DiskRegByteArrayDUnitTest() {
     super();
@@ -166,7 +165,7 @@ public class DiskRegByteArrayDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(() -> DiskRegByteArrayDUnitTest.flushMethod());
     /*
      * get the val from disk verify that the value retrieved from disk represents a byte[]
-     * 
+     *
      */
     vm1.invoke(DiskRegByteArrayDUnitTest.class, "verifyByteArray", objArr);
 
@@ -259,4 +258,3 @@ public class DiskRegByteArrayDUnitTest extends JUnit4CacheTestCase {
   }
 
 }// end of class
-

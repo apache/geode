@@ -38,9 +38,9 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * connect to a new server before realizing that all the servers crashed. To fix this, we would need
  * to get some kind of birthdate of the server ds we connect and use that to decide if we need to
  * recover instantiators. As it is, the window is not very large.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class InstantiatorRecoveryListener extends EndpointManager.EndpointListenerAdapter {
   private static final Logger logger = LogService.getLogger();

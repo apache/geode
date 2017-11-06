@@ -50,10 +50,10 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * Removes a batch of events from the remote secondary queues
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 public class ParallelQueueBatchRemovalMessage extends PartitionMessage {
 

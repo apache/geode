@@ -15,20 +15,21 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of SelectResults that extends TreeSet This is the sorted version of ResultSet used
  * for order by clause If the elements are Structs, then use SortedStructSet instead.
- * 
+ *
  * @since GemFire 4.0
  */
 public class SortedResultSet extends TreeSet

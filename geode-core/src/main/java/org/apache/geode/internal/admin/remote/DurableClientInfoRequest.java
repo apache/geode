@@ -15,16 +15,17 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.*; // import
 import java.io.*;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.*;
 
 /**
  * A message that is sent to a particular distribution manager to get information about a durable
  * client's proxy in the bridge-servers of its current cache.
- * 
+ *
  * @since GemFire 5.6
- * 
+ *
  */
 public class DurableClientInfoRequest extends AdminRequest {
   static final int HAS_DURABLE_CLIENT_REQUEST = 10;
@@ -78,7 +79,7 @@ public class DurableClientInfoRequest extends AdminRequest {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {

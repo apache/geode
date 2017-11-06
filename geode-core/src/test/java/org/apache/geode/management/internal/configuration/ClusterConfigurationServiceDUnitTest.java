@@ -14,6 +14,20 @@
  */
 package org.apache.geode.management.internal.configuration;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionFactory;
@@ -35,19 +49,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 /**
  * Tests the starting up of shared configuration, installation of

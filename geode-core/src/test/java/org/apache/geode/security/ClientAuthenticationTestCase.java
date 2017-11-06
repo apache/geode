@@ -15,9 +15,9 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.internal.AvailablePort.*;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.*;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheClient;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheServer;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.*;
 import static org.apache.geode.security.SecurityTestUtils.*;
 import static org.apache.geode.security.SecurityTestUtils.createCacheClient;
 import static org.apache.geode.test.dunit.IgnoredException.*;
@@ -28,6 +28,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
+
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 

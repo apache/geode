@@ -14,16 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import org.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,9 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
@@ -296,7 +294,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
   /**
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
-   * 
+   *
    * @throws Exception
    */
   @Test

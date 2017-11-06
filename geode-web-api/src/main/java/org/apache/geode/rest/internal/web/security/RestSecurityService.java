@@ -14,13 +14,13 @@
  */
 package org.apache.geode.rest.internal.web.security;
 
+import org.springframework.stereotype.Component;
+
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.GemFireSecurityException;
-import org.springframework.stereotype.Component;
-
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 

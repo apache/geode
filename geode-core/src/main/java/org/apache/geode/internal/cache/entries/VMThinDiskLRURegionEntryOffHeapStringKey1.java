@@ -17,17 +17,18 @@ package org.apache.geode.internal.cache.entries;
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.cache.lru.EnableLRU;
-import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.LRUClockNode;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
-import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;

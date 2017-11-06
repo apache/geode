@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.domain;
 /**
  * Used to transfer information about an AsyncEventQueue from a function being executed on a server
  * back to the manager that invoked the function.
- * 
+ *
  * @since GemFire 8.0
  */
 import java.io.Serializable;

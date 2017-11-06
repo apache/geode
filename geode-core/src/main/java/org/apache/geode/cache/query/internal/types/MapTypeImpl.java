@@ -16,13 +16,14 @@
 package org.apache.geode.cache.query.internal.types;
 
 import java.io.*;
-import org.apache.geode.cache.query.types.*;
+
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.types.*;
 
 
 /**
  * Implementation of CollectionType
- * 
+ *
  * @since GemFire 4.0
  */
 public class MapTypeImpl extends CollectionTypeImpl implements MapType {

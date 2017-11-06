@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.distributed.internal.*;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
@@ -51,7 +49,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * 
+ *
  */
 public class DestroyRegionOperation extends DistributedCacheOperation {
 
@@ -87,7 +85,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
 
   /**
    * Creates new instance of DestroyRegionOperation
-   * 
+   *
    * @param notifyOfRegionDeparture was added to fix bug 41111. If false then don't deliver
    *        afterRemoteRegionDeparture events.
    */

@@ -20,26 +20,26 @@ package org.apache.geode.internal.cache.lru;
  * <b>Sample Implementation</b><br>
  * <code>public int getSizeInBytes(){</code><br>
  * // The sizes of the primitive as well as object instance variables are calculated:<br>
- * 
+ *
  * <code>int size = 0;</code><br>
- * 
+ *
  * // Add overhead for this instance.<br>
  * <code>size += Sizeable.PER_OBJECT_OVERHEAD;</code><br>
- * 
+ *
  * // Add object references (implements Sizeable)<br>
  * // value reference = 4 bytes <br>
- * 
+ *
  * <code>size += 4;</code><br>
- * 
+ *
  * // Add primitive instance variable size<br>
  * // byte bytePr = 1 byte<br>
  * // boolean flag = 1 byte<br>
- * 
+ *
  * <code>size += 2;</code><br>
- * 
+ *
  * // Add individual object size<br>
  * <code>size += (value.getSizeInBytes());</code><br>
- * 
+ *
  * <code>return size;</code><br>
  * }<br>
  *

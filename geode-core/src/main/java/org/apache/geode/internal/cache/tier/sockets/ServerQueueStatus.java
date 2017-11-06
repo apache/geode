@@ -21,9 +21,9 @@ import org.apache.geode.distributed.DistributedMember;
  * information abt HARegionQueue and this gets populated as a response of Handshake to server. This
  * wrapper object is used to hold the various info retrurned from Handshake. such as endpoint type
  * and queue size.
- * 
+ *
  * @since GemFire 5.5
- * 
+ *
  */
 public class ServerQueueStatus {
   /** queueSize of HARegionQueue for this client */
@@ -43,7 +43,7 @@ public class ServerQueueStatus {
 
   /**
    * Constructor Called when connectionsPerServer is nto equal to 0
-   * 
+   *
    * @param epType
    * @param qSize
    */
@@ -56,7 +56,7 @@ public class ServerQueueStatus {
 
   /**
    * returns true if the endpoint is primary
-   * 
+   *
    * @return epType
    */
   public boolean isPrimary() {
@@ -65,7 +65,7 @@ public class ServerQueueStatus {
 
   /**
    * returns true if the endpoint is redundant
-   * 
+   *
    * @return epType
    */
   public boolean isRedundant() {
@@ -74,7 +74,7 @@ public class ServerQueueStatus {
 
   /**
    * returns true if the endpoint is Non redundant
-   * 
+   *
    * @return epType
    */
   public boolean isNonRedundant() {
@@ -83,7 +83,7 @@ public class ServerQueueStatus {
 
   /**
    * returns qSize of the HARegionQueue for this client
-   * 
+   *
    * @return qSize
    */
   public int getServerQueueSize() {
@@ -121,7 +121,7 @@ public class ServerQueueStatus {
 
   /**
    * The member id of the server we connected to.
-   * 
+   *
    * @return the memberid
    */
   public DistributedMember getMemberId() {

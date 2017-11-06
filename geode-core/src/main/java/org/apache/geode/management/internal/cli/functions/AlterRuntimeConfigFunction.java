@@ -14,6 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -24,11 +30,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 public class AlterRuntimeConfigFunction extends FunctionAdapter implements InternalEntity {
 

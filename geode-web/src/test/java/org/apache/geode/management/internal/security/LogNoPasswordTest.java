@@ -30,10 +30,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(IntegrationTest.class)
 public class LogNoPasswordTest {

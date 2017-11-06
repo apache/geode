@@ -39,7 +39,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * Executes 'netstat' OS command & returns the result as compressed bytes.
- * 
+ *
  * @since GemFire 7.0
  */
 @SuppressWarnings({"serial"})

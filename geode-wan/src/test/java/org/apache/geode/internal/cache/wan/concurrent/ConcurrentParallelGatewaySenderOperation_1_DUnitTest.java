@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -28,6 +26,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTestBase {
@@ -142,7 +141,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
 
   /**
    * Normal scenario in which the sender is paused in between.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -205,7 +204,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
 
   /**
    * Normal scenario in which a paused sender is resumed.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -283,7 +282,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Negative scenario in which a sender that is stopped (and not paused) is resumed. Expected:
    * resume is only valid for pause. If a sender which is stopped is resumed, it will not be started
    * again.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -343,7 +342,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
 
   /**
    * Normal scenario in which a sender is stopped.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -504,7 +503,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
    * Normal scenario in which a sender is stopped and then started again. Differs from above test
    * case in the way that when the sender is starting from stopped state, puts are simultaneously
    * happening on the region by another thread.
-   * 
+   *
    * @throws Exception
    */
   @Ignore("Bug47553")
@@ -600,7 +599,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
 
   /**
    * Normal scenario in which a sender is stopped and then started again on accessor node.
-   * 
+   *
    * @throws Exception
    */
   @Test

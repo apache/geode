@@ -29,4 +29,3 @@ public abstract class SerialDistributionMessage extends DistributionMessage {
 
 
 }
-

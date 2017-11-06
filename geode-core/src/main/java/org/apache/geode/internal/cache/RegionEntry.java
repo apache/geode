@@ -58,7 +58,7 @@ public interface RegionEntry {
   /**
    * Returns true if getLastAccessed, getHitCount, and getMissCount can be called without throwing
    * InternalStatisticsDisabledException. Otherwise returns false.
-   * 
+   *
    * @since GemFire 6.0
    */
   boolean hasStats();
@@ -97,7 +97,7 @@ public interface RegionEntry {
    * Dispatch listener events for the given entry event. If the event is from another member and
    * there are already pending events, this will merely queue the event for later dispatch by one of
    * those other events.
-   * 
+   *
    * This is done within the RegionEntry synchronization lock.
    */
   boolean dispatchListenerEvents(EntryEventImpl event) throws InterruptedException;
@@ -111,7 +111,7 @@ public interface RegionEntry {
 
   /**
    * Resets any entry state as needed for a transaction that did a destroy to this entry.
-   * 
+   *
    * @param currentTime Current Cache Time.
    */
   void txDidDestroy(long currentTime);
@@ -120,7 +120,7 @@ public interface RegionEntry {
 
   /**
    * this is done instead of removePhase2 if the entry needs to be kept for concurrency control
-   * 
+   *
    * @param region the region holding the entry
    * @param version whether the operation is from another member or local
    */
@@ -134,7 +134,7 @@ public interface RegionEntry {
    * @param region the region
    * @param clear - if we removing this entry as a result of a region clear.
    * @throws RegionClearedException If operation got aborted due to a clear
-   * 
+   *
    */
   void removePhase1(InternalRegion region, boolean clear) throws RegionClearedException;
 
@@ -182,7 +182,7 @@ public interface RegionEntry {
 
   /**
    * Returns true if this entry has overflowed to disk.
-   * 
+   *
    * @param diskPosition if overflowed then the position of the value is set in dp
    */
   boolean isOverflowedToDisk(InternalRegion region, DistributedRegion.DiskPosition diskPosition);
@@ -217,10 +217,10 @@ public interface RegionEntry {
    * Obtain, retain and return the value of this entry. WARNING: if a StoredObject is returned and
    * it has a refCount then the caller MUST make sure that {@link StoredObject#release()} before the
    * returned object is garbage collected.
-   * 
+   *
    * This is only retained in off-heap subclasses. However, it's marked as Retained here so that
    * callers are aware that the value may be retained.
-   * 
+   *
    * @param decompress if true returned value will be decompressed if it is compressed
    * @return possible OFF_HEAP_OBJECT (caller must release)
    */
@@ -241,7 +241,7 @@ public interface RegionEntry {
 
   /**
    * Set the value of this entry and perform checks to see if a GC task needs to be scheduled.
-   * 
+   *
    * @param value the new value for this entry
    * @param event the cache event that caused this change
    * @throws RegionClearedException thrown if the region is concurrently cleared
@@ -252,7 +252,7 @@ public interface RegionEntry {
   /**
    * Returns the value as stored by the RegionEntry implementation. For instance, if compressed this
    * value would be the compressed form.
-   * 
+   *
    * @since GemFire 8.0
    */
   @Retained
@@ -260,7 +260,7 @@ public interface RegionEntry {
 
   /**
    * Returns the value of an entry as it resides in the VM.
-   * 
+   *
    * @return the value or EntryEvent.NOT_AVAILABLE token if it's not in the VM or null if the entry
    *         doesn't exist.
    *
@@ -344,7 +344,7 @@ public interface RegionEntry {
   /**
    * Get the serialized bytes from disk. This method only looks for the value on the disk, ignoring
    * heap data.
-   * 
+   *
    * @param region the persistent region
    * @return the serialized value from disk
    * @since GemFire 5.7
@@ -384,7 +384,7 @@ public interface RegionEntry {
    * Event containing this RegionEntry is being passed through dispatchListenerEvent for
    * CacheListeners under RegionEntry lock. This is used during deserialization for a
    * VMCacheSerializable value contained by this RegionEntry.
-   * 
+   *
    * @return true if Event is being dispatched to CacheListeners.
    */
   boolean isCacheListenerInvocationInProgress();
@@ -446,7 +446,7 @@ public interface RegionEntry {
 
   /**
    * Decrements the number of transactions that are currently referencing this node.
-   * 
+   *
    * @param region the local region that owns this region entry; null if no local region owner
    */
   void decRefCount(NewLRUClockHand lruList, InternalRegion region);

@@ -24,11 +24,11 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.lru.LRUMapCallbacks;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -111,7 +111,7 @@ public interface RegionMap extends LRUMapCallbacks {
 
   /**
    * fetches the entry from the backing ConcurrentHashMap
-   * 
+   *
    * @return the RegionEntry from memory or disk
    */
   RegionEntry getEntry(Object key);
@@ -120,7 +120,7 @@ public interface RegionMap extends LRUMapCallbacks {
 
   /**
    * fetches the entry from the backing ConcurrentHashMap.
-   * 
+   *
    * @return the RegionEntry from memory
    */
   RegionEntry getEntryInVM(Object key);
@@ -128,7 +128,7 @@ public interface RegionMap extends LRUMapCallbacks {
   /**
    * fetches the entry from the backing ConcurrentHashMap only if the entry is considered to be in
    * operational data i.e. does not have isMarkedForEviction() bit set.
-   * 
+   *
    * @return the RegionEntry in operational data
    */
   RegionEntry getOperationalEntryInVM(Object key);
@@ -142,7 +142,7 @@ public interface RegionMap extends LRUMapCallbacks {
   /**
    * Used by disk regions when recovering data from backup. Currently this "put" is done at a very
    * low level to keep it from generating events or pushing updates to others.
-   * 
+   *
    * @return the created RegionEntry or null if entry already existed
    */
   RegionEntry initRecoveredEntry(Object key, DiskEntry.RecoveredEntry value);
@@ -151,7 +151,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * Used by disk regions when recovering data from backup and initRecoveredEntry has already been
    * called for the given key. Currently this "put" is done at a very low level to keep it from
    * generating events or pushing updates to others.
-   * 
+   *
    * @return the updated RegionEntry
    */
   RegionEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value);
@@ -159,7 +159,7 @@ public interface RegionMap extends LRUMapCallbacks {
   /**
    * Used to modify an existing RegionEntry or create a new one when processing the values obtained
    * during a getInitialImage.
-   * 
+   *
    * @param wasRecovered true if the current entry in the cache was recovered from disk.
    * @param entryVersion version information from InitialImageOperation or RegisterInterest
    * @param sender the sender of the initial image, if IIO. Not needed on clients
@@ -171,7 +171,7 @@ public interface RegionMap extends LRUMapCallbacks {
 
   /**
    * Destroy an entry the map.
-   * 
+   *
    * @param event indicates entry to destroy as well as data for a <code>CacheCallback</code>
    * @param inTokenMode true if destroy is occurring during region initialization
    * @param duringRI true if destroy is occurring during register interest
@@ -180,7 +180,7 @@ public interface RegionMap extends LRUMapCallbacks {
    * @param expectedOldValue if non-null, only destroy if key exists and value is is equal to
    *        expectedOldValue
    * @return true if the entry was destroyed, false otherwise
-   * 
+   *
    * @see LocalRegion
    * @see AbstractRegionMap
    * @see CacheCallback
@@ -319,7 +319,7 @@ public interface RegionMap extends LRUMapCallbacks {
 
   /**
    * Removes an entry that was previously destroyed and made into a tombstone.
-   * 
+   *
    * @param re the entry that was destroyed
    * @param destroyedVersion the version that was destroyed
    * @param isEviction true if the tombstone is being evicted by LRU
@@ -331,7 +331,7 @@ public interface RegionMap extends LRUMapCallbacks {
 
   /**
    * Checks to see if the given version is still the version in the map
-   * 
+   *
    * @param re the entry that was destroyed
    * @param destroyedVersion the version that was destroyed
    * @return true of the tombstone is no longer needed (entry was resurrected or evicted)

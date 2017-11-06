@@ -26,7 +26,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * <li>The length of the byte array (which represent the value)on disk
  * <li>Userbits of the value
  * </ul>
- * 
+ *
  * @since GemFire 5.1
  */
 
@@ -35,7 +35,7 @@ public abstract class DiskId {
   // @todo this field could be an int for an overflow only region
   /**
    * id consists of most significant 1 byte = users bits 2-8 bytes = oplog id least significant.
-   * 
+   *
    * The highest bit in the oplog id part is set to 1 if the oplog id is negative.
    */
   private long id;
@@ -88,7 +88,7 @@ public abstract class DiskId {
 
   /**
    * Setter for oplog offset of an entry
-   * 
+   *
    * @param offsetInOplog - offset in oplog where the entry is stored.
    */
   public abstract void setOffsetInOplog(long offsetInOplog);
@@ -140,7 +140,7 @@ public abstract class DiskId {
   /**
    * Return true if entry is schedule to be async written to disk. Return false if it has already
    * been written or was never modified.
-   * 
+   *
    * @since GemFire prPersistSprint1
    */
   public boolean isPendingAsync() {
@@ -220,7 +220,7 @@ public abstract class DiskId {
    * Creates appropriate instance of DiskId depending upon the maxOplogSize set by the user. If the
    * maxOplogSize (in bytes) is greater than Integer.MAX_VALUE, LongOplogOffsetDiskId will be
    * created and for maxOplogSize lesser than that, IntOplogOffsetDiskId will be created.
-   * 
+   *
    * @return the disk-id instance created.
    */
   public static DiskId createDiskId(long maxOplogSize, boolean isPersistenceType,
@@ -259,7 +259,7 @@ public abstract class DiskId {
 
   /**
    * Test method to verify if the passed DiskId is an instance of PersistenceWithIntOffset.
-   * 
+   *
    * @param diskId - the DiskId instance
    * @return true if the given DiskId is an instance of PersistenceWithIntOffset
    */
@@ -269,7 +269,7 @@ public abstract class DiskId {
 
   /**
    * Test method to verify if the passed DiskId is an instance of PersistenceWithLongOffset.
-   * 
+   *
    * @param diskId - the DiskId instance
    * @return true if the given DiskId is an instance of PersistenceWithLongOffset
    */
@@ -279,7 +279,7 @@ public abstract class DiskId {
 
   /**
    * Test method to verify if the passed DiskId is an instance of OverflowOnlyWithIntOffset.
-   * 
+   *
    * @param diskId - the DiskId instance
    * @return true if the given DiskId is an instance of OverflowOnlyWithIntOffset
    */
@@ -289,7 +289,7 @@ public abstract class DiskId {
 
   /**
    * Test method to verify if the passed DiskId is an instance of PersistenceWithLongOffset.
-   * 
+   *
    * @param diskId - the DiskId instance
    * @return true if the given DiskId is an instance of LongOplogOffsetDiskId
    */
@@ -299,8 +299,8 @@ public abstract class DiskId {
 
   /**
    * Inner class implementation of DiskId which stores offset in oplog as 'int' field.
-   * 
-   * 
+   *
+   *
    */
   protected abstract static class IntOplogOffsetDiskId extends DiskId {
     /**
@@ -318,7 +318,7 @@ public abstract class DiskId {
 
     /**
      * Setter for oplog offset of an entry
-     * 
+     *
      * @param offsetInOplog - offset in oplog where the entry is stored.
      */
     @Override
@@ -329,8 +329,8 @@ public abstract class DiskId {
 
   /**
    * Inner class implementation of DiskId which stores offset in oplog as 'long' field.
-   * 
-   * 
+   *
+   *
    */
   protected abstract static class LongOplogOffsetDiskId extends DiskId {
     /**
@@ -348,7 +348,7 @@ public abstract class DiskId {
 
     /**
      * Setter for oplog offset of an entry
-     * 
+     *
      * @param offsetInOplog - offset in oplog where the entry is stored.
      */
     @Override
@@ -394,13 +394,13 @@ public abstract class DiskId {
   protected static final class OverflowOnlyWithIntOffset extends OverflowOnlyWithIntOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
@@ -463,13 +463,13 @@ public abstract class DiskId {
   protected static final class OverflowOnlyWithLongOffset extends OverflowOnlyWithLongOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
@@ -536,13 +536,13 @@ public abstract class DiskId {
   protected static final class PersistenceWithIntOffset extends PersistenceWithIntOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
@@ -610,13 +610,13 @@ public abstract class DiskId {
   protected static final class PersistenceWithLongOffset extends PersistenceWithLongOffsetNoLL {
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry prev;
     /**
      * Used by DiskRegion for compaction
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     private DiskEntry next;
@@ -642,4 +642,3 @@ public abstract class DiskId {
     }
   }
 }
-

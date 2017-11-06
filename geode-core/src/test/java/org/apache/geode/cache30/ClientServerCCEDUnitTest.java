@@ -18,8 +18,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
-import org.awaitility.Awaitility;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,28 +28,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.geode.cache.AttributesMutator;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.ExpirationAttributes;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.distributed.internal.locks.DistributedLockStats;
-import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
@@ -61,17 +54,23 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.locks.DistributedLockStats;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
+import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.partitioned.PRTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -80,11 +79,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * concurrency-control tests for client/server
- * 
+ *
  *
  */
 @Category({DistributedTest.class, ClientServerTest.class})
@@ -112,7 +112,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
    * This test sets up two servers each with a client attached. The clients perform operations on
    * the same key in a region which, in the servers, has Scope.GLOBAL. There should be no conflation
    * and each operation should obtain a lock.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -304,7 +304,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * test that distributed GC messages are sent to clients and properly processed
-   * 
+   *
    * @param replicatedRegion whether to use a RR or PR in the servers
    */
   private void clientServerTombstoneGCTest(String uniqueName, boolean replicatedRegion) {

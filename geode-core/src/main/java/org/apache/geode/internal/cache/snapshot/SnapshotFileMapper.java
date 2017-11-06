@@ -26,7 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
 /**
  * Defines a mapping between the snapshot path and the file(s) to be imported or exported on a
  * specific member.
- * 
+ *
  * @see SnapshotOptionsImpl#setMapper(SnapshotFileMapper)
  *
  */
@@ -37,16 +37,16 @@ public interface SnapshotFileMapper extends Serializable {
    * must resolve to a valid file path.
    * <p>
    * Example:
-   * 
+   *
    * <pre>
    * public File mapExportFile(String regionPath, DistributedMember member, File snapshot) {
    *   return new File(snapshot.getAbsolutePath() + "-" + member.getId());
    * }
    * </pre>
-   * 
+   *
    * If members are writing to a shared location, the implementation <b>must</b> provide a unique
    * file path to avoid an export error.
-   * 
+   *
    * @param member the member performing the export
    * @param snapshot the path specified in the invocation of
    *        {@link RegionSnapshotService#save(File, org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat)
@@ -64,17 +64,17 @@ public interface SnapshotFileMapper extends Serializable {
    * more valid file paths.
    * <p>
    * Example:
-   * 
+   *
    * <pre>
    * public File[] mapImportPath(DistributedMember member, File snapshot) {
    *   File dir = new File(snapshot, member.getHost() + ":" + member.getProcessId());
    *   return dir.listFiles();
    * }
    * </pre>
-   * 
+   *
    * If members are reading from a shared location, the implementation should partition the files so
    * that a snapshot file is only imported once.
-   * 
+   *
    * @param member the member performing the import
    * @param snapshot the path specified in the invocation of
    *        {@link RegionSnapshotService#load(File, org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat)

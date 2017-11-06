@@ -14,16 +14,12 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
@@ -35,11 +31,14 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic use cases for PR persistence.
@@ -53,7 +52,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
 
   /**
    * do a put/modify/destroy while closing disk store
-   * 
+   *
    * to turn on debug, add following parameter in local.conf: hydra.VmPrms-extraVMArgs +=
    * "-Ddisk.KRF_DEBUG=true";
    */

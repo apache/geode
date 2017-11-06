@@ -13,20 +13,16 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal.index;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import java.io.IOException;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -58,9 +54,12 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * 
+ *
  */
 @Category(DistributedTest.class)
 public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTestCase {

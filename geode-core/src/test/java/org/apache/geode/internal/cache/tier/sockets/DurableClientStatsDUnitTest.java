@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,6 +40,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * 2) QueueDroppedCount -> Incremented Each time a queue for a durable client is dropped after
  * durable Timeout 3) EventsEnqueuedWhileClientAwayCount -> Incremented Each time an entry is made
  * when client is away.
- * 
+ *
  * In the given test DurableClient comes up and goes down discreetly with different
  * DurableClientTimeouts so as to increment the counts
  */

@@ -20,10 +20,10 @@ import org.apache.geode.cache.*;
 import org.apache.geode.cache.util.ObjectSizer;
 
 /**
- * 
+ *
  * A testing helper factory to get a disk region with the desired configuration
- * 
- * 
+ *
+ *
  */
 public class DiskRegionHelperFactory {
 

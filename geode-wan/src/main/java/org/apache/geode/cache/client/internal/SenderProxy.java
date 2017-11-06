@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Used to send operations from a sender to a receiver.
- * 
+ *
  * @since GemFire 8.1
  */
 public class SenderProxy extends ServerProxy {

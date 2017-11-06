@@ -51,7 +51,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * Functions} on a Partitioned Region.
  * <p>
  * Example of a Function using utility methods:
- * 
+ *
  * <pre>
  *  public Serializable execute(FunctionContext context) {
  *     if (context instanceof RegionFunctionContext) {
@@ -81,7 +81,7 @@ public final class PartitionRegionHelper {
    * local data reference to a partitioned region, return a map of local
    * {@linkplain PartitionAttributesFactory#setColocatedWith(String) colocated Regions}. If there
    * are no colocated regions, return an empty map.
-   * 
+   *
    * @param r a partitioned Region
    * @throws IllegalStateException if the Region is not a {@linkplain DataPolicy#PARTITION
    *         partitioned Region}
@@ -118,7 +118,7 @@ public final class PartitionRegionHelper {
 
   /**
    * Test a Region to see if it is a partitioned Region
-   * 
+   *
    * @param r
    * @return true if it is a partitioned Region
    * @since GemFire 6.0
@@ -133,7 +133,7 @@ public final class PartitionRegionHelper {
 
   /**
    * Test a Region to see if it is a partitioned Region
-   * 
+   *
    * @param r
    * @throws IllegalStateException
    * @return PartitionedRegion if it is a partitioned Region
@@ -165,7 +165,7 @@ public final class PartitionRegionHelper {
   /**
    * Gathers details about the specified partitioned region. Returns null if the partitioned region
    * is not locally defined.
-   * 
+   *
    * @param region the region to get info about
    * @return details about the specified partitioned region
    * @since GemFire 6.0
@@ -204,9 +204,9 @@ public final class PartitionRegionHelper {
    * the buckets without putting any data in partition region. This method should not be called
    * until all of the partitions are running because it will divide the buckets between the running
    * partitions. If the buckets are already assigned this method will have no effect.
-   * 
+   *
    * This method will block until all buckets are assigned.
-   * 
+   *
    * @param region The region which should have it's buckets assigned.
    * @throws IllegalStateException if the provided region is something other than a
    *         {@linkplain DataPolicy#PARTITION partitioned Region}
@@ -251,7 +251,7 @@ public final class PartitionRegionHelper {
    * <p>
    * This method is not a substitute for {@link Region#containsKey(Object)}.
    * </p>
-   * 
+   *
    * @param r a PartitionedRegion
    * @param key the key to evaluate
    * @throws IllegalStateException if the provided region is something other than a
@@ -279,7 +279,7 @@ public final class PartitionRegionHelper {
    *  allMembers.remove(primary);
    * </code>
    * </p>
-   * 
+   *
    * @param r a PartitionedRegion
    * @param key the key to evaluate
    * @throws IllegalStateException if the provided region is something other than a
@@ -354,7 +354,7 @@ public final class PartitionRegionHelper {
    * optimizeForWrite} as true,the returned Region will only contain primary copy of the data.
    * <p>
    * Writes using this Region have no constraints and behave the same as a partitioned Region.
-   * 
+   *
    * @param c a functions context
    * @throws IllegalStateException if {@link RegionFunctionContext#getDataSet()} returns something
    *         other than a {@linkplain DataPolicy#PARTITION partitioned Region}
@@ -371,7 +371,7 @@ public final class PartitionRegionHelper {
   /**
    * Given a partitioned Region return a Region providing read access limited to the local heap,
    * writes using this Region have no constraints and behave the same as a partitioned Region.<br>
-   * 
+   *
    * @param r a partitioned region
    * @throws IllegalStateException if the provided region is something other than a
    *         {@linkplain DataPolicy#PARTITION partitioned Region}
@@ -401,7 +401,7 @@ public final class PartitionRegionHelper {
    * Given a partitioned Region return a Region providing read access to primary copy of the data
    * which is limited to the local heap, writes using this Region have no constraints and behave the
    * same as a partitioned Region.<br>
-   * 
+   *
    * @param r a partitioned region
    * @throws IllegalStateException if the provided region is something other than a
    *         {@linkplain DataPolicy#PARTITION partitioned Region}
@@ -438,7 +438,7 @@ public final class PartitionRegionHelper {
    * <p>
    * This method allows direct control of what data to move. To automatically balance buckets, see
    * {@link ResourceManager#createRebalanceFactory()}
-   * 
+   *
    * @param region The region in which to move the bucket. Data in regions colocated with this
    *        region will also be moved.
    * @param source A member that is currently hosting this bucket. The bucket is moved off of this
@@ -448,11 +448,11 @@ public final class PartitionRegionHelper {
    * @param key A key which maps to the bucket to move. This key does not actually need to exist in
    *        the region, but if using a {@link PartitionResolver} the resolver should be able to get
    *        the routing object from this key to determine the bucket to move.
-   * 
+   *
    * @throws IllegalStateException if the bucket is not present on the source, if the source or
    *         destination are not valid members of the system, if the destination already hosts a
    *         copy of the bucket, or if the bucket does not exist.
-   * 
+   *
    * @since GemFire 7.1
    */
   public static <K> void moveBucketByKey(Region<K, ?> region, DistributedMember source,
@@ -475,7 +475,7 @@ public final class PartitionRegionHelper {
    * method does not throw an exception. The percentage is a percentage of the amount of data in
    * bytes on the source member for this region.
    * <p>
-   * 
+   *
    * If this region has colocated regions, the colocated data will also be moved. The total amount
    * of data in all colocated regions will be taken into consideration when determining what
    * percentage of data will be moved.
@@ -487,20 +487,20 @@ public final class PartitionRegionHelper {
    * <p>
    * This method allows direct control of what data to move. To automatically balance buckets, see
    * {@link ResourceManager#createRebalanceFactory()}
-   * 
+   *
    * @param region The region in which to move data. Data in regions colocated with this region will
    *        also be moved.
    * @param source A member that is currently hosting data. The bucket is moved off of this member.
    * @param destination A member that that has the partitioned region defined. Data is moved to this
    *        member.
    * @param percentage the maximum amount of data to move, as a percentage from 0 to 100.
-   * 
+   *
    * @throws IllegalStateException if the source or destination are not valid members of the system.
    * @throws IllegalArgumentException if the percentage is not between 0 to 100.
-   * 
+   *
    * @return A RebalanceResult object that contains information about what what data was actually
    *         moved.
-   * 
+   *
    * @since GemFire 7.1
    */
   public static RebalanceResults moveData(Region<?, ?> region, DistributedMember source,

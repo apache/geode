@@ -119,7 +119,7 @@ public class ClientHealthMonitorJUnitTest {
     }
   }
 
-  private final static int TIME_BETWEEN_PINGS = 50;
+  private static final int TIME_BETWEEN_PINGS = 50;
 
   /**
    * Creates and starts the server instance

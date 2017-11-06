@@ -19,16 +19,16 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.util.function.Consumer;
 
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
+
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.IndexRepositoryFactory;
 import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
-
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 public class IndexRepositorySpy extends IndexRepositoryFactory {
 

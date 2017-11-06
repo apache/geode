@@ -14,21 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.index.AbstractIndex;
-import org.apache.geode.pdx.PdxReader;
-import org.apache.geode.pdx.PdxSerializable;
-import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -44,6 +30,10 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -54,8 +44,8 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
-import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -64,25 +54,34 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  *

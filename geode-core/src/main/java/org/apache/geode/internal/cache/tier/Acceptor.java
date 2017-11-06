@@ -29,7 +29,7 @@ public interface Acceptor {
 
   /**
    * The GFE version of the server.
-   * 
+   *
    * @since GemFire 5.7
    */
   Version VERSION = Version.CURRENT.getGemFireVersion();

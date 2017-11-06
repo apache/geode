@@ -139,7 +139,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateStub#putEntry(org.apache.geode
    * .internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
    */
@@ -160,7 +160,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(org
    * .apache.geode.internal.cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long,
    * boolean)
@@ -183,7 +183,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, java.lang.Object)
    */
@@ -196,7 +196,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#destroyOnRemote(java .lang.Integer,
    * org.apache.geode.internal.cache.EntryEventImpl, java.lang.Object)
    */
@@ -209,7 +209,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
@@ -223,7 +223,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */

@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
-
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 // Note: This class is used by AsyncEventQueueValidationsJUnitTest
 // testAsyncEventQueueConfiguredFromXmlUsesFilter

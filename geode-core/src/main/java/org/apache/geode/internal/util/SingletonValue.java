@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A builder that caches the singleton value.
- * 
+ *
  * The result is created and cached by the first thread that invokes the underlying
  * {@code Callable}. Concurrent requests will block and be notified once the originating request has
  * completed. Once the result has been cached, all subsequent invocations will return the cached
@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * threads but executes blocking operations serially. Even when the call supports timeouts, the
  * serial execution penalty can cause "timeout stacking" and thus unbounded delays on the invoking
  * threads.
- * 
+ *
  *
  * @param <T> the type of the singleton
  */
@@ -48,7 +48,7 @@ public class SingletonValue<T extends Closeable> {
   public interface SingletonBuilder<T extends Closeable> {
     /**
      * Constructs the value.
-     * 
+     *
      * @return the value
      * @throws IOException unable to construct the value
      */
@@ -108,7 +108,7 @@ public class SingletonValue<T extends Closeable> {
 
   /**
    * Returns true if the value is cached.
-   * 
+   *
    * @return true if cached
    */
   public boolean hasCachedValue() {
@@ -122,7 +122,7 @@ public class SingletonValue<T extends Closeable> {
 
   /**
    * Returns true if the value is cached.
-   * 
+   *
    * @return true if cached
    */
   public boolean isCleared() {
@@ -136,7 +136,7 @@ public class SingletonValue<T extends Closeable> {
 
   /**
    * Returns the cached result, or null if the value is not cached.
-   * 
+   *
    * @return the cached result
    */
   public T getCachedValue() {
@@ -151,7 +151,7 @@ public class SingletonValue<T extends Closeable> {
   /**
    * Clears the cached result. Any threads waiting for the result will retry unless
    * {@code allowReset} is {@code false}.
-   * 
+   *
    * @param allowReset true if the value is allowed to be cached subsequently
    * @return the old value, or null if not set.
    */
@@ -184,7 +184,7 @@ public class SingletonValue<T extends Closeable> {
 
   /**
    * Clears the cached value as long it matches the expected value.
-   * 
+   *
    * @param expect the expected value
    * @param allowReset true if the value is allowed be be cached subsequently
    * @return true if the value was cleared

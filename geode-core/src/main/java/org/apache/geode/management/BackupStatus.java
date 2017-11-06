@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.BackupUtil;
 /**
  * The status of a backup operation, returned by
  * {@link BackupUtil#backupAllMembers(DM, java.io.File,java.io.File)}.
- * 
+ *
  * @since GemFire 6.5
  */
 public interface BackupStatus {

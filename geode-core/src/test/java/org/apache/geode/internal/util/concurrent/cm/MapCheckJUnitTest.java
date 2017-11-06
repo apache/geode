@@ -656,4 +656,3 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   }
 
 }
-

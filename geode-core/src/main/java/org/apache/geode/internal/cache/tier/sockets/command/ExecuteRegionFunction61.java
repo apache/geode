@@ -49,13 +49,13 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 6.1
  */
 public class ExecuteRegionFunction61 extends BaseCommand {
 
-  private final static ExecuteRegionFunction61 singleton = new ExecuteRegionFunction61();
+  private static final ExecuteRegionFunction61 singleton = new ExecuteRegionFunction61();
 
   public static Command getCommand() {
     return singleton;
@@ -294,4 +294,3 @@ public class ExecuteRegionFunction61 extends BaseCommand {
     }
   }
 }
-

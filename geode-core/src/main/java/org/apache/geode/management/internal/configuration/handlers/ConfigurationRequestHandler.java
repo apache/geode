@@ -16,11 +16,11 @@ package org.apache.geode.management.internal.configuration.handlers;
 
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.logging.LogService;

@@ -22,7 +22,7 @@ import org.apache.geode.*;
  *
  * {@link org.apache.geode.distributed.DistributedSystem} is an OS statistics factory.
  * <P>
- * 
+ *
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
  *

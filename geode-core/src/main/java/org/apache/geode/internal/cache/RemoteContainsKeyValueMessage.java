@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * This message is used be a replicate region to send a contains key/value request to another peer.
- * 
+ *
  * @since GemFire 6.5
  */
 public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDirectReply {
@@ -68,7 +68,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
    * {@link org.apache.geode.cache.Region#containsKey(Object)}or
    * {@link org.apache.geode.cache.Region#containsValueForKey(Object)} depending on the
    * <code>valueCheck</code> argument
-   * 
+   *
    * @param recipient the member that the contains keys/value message is sent to
    * @param r the LocalRegion
    * @param key the key to be queried
@@ -191,7 +191,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -243,7 +243,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueReplyMessage}
-   * 
+   *
    * @since GemFire 6.5
    */
   public static class RemoteContainsKeyValueResponse extends RemoteOperationResponse {

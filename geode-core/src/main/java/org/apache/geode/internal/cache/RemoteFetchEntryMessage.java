@@ -49,7 +49,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * This message is used as the request for a
  * {@link org.apache.geode.cache.Region#getEntry(Object)}operation. The reply is sent in a
  * {@link org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
- * 
+ *
  * @since GemFire 5.1
  */
 public class RemoteFetchEntryMessage extends RemoteOperationMessage {
@@ -70,7 +70,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
   /**
    * Sends a LocalRegion {@link org.apache.geode.cache.Region#getEntry(Object)} message
-   * 
+   *
    * @param recipient the member that the getEntry message is sent to
    * @param r the Region for which getEntry was performed upon
    * @param key the object to which the value should be feteched
@@ -163,7 +163,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
   /**
    * This message is used for the reply to a {@link RemoteFetchEntryMessage}.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class FetchEntryReplyMessage extends ReplyMessage {
@@ -192,7 +192,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -270,7 +270,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}
-   * 
+   *
    */
   public static class FetchEntryResponse extends RemoteOperationResponse {
     private volatile EntrySnapshot returnValue;

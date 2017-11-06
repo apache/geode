@@ -24,7 +24,7 @@ import org.apache.geode.internal.Version;
 
 /**
  * Operation that determines the latest last access time for a given region and key
- * 
+ *
  * @since Geode 1.4
  */
 public class LatestLastAccessTimeOperation<K> {

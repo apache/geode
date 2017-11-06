@@ -14,11 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.internal.util.IOUtils;
-
 import java.io.File;
 import java.util.logging.Level;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.internal.util.IOUtils;
 
 /**
  *

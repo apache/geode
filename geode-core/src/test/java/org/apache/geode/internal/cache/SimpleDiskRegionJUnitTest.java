@@ -14,7 +14,7 @@
  */
 /*
  * Created on Feb 15, 2006
- * 
+ *
  * TODO To change the template for this generated file go to Window - Preferences - Java - Code
  * Style - Code Templates
  */
@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Testing methods for SimpleDiskRegion.java api's
- * 
+ *
  * @since GemFire 5.1
  */
 @Category(IntegrationTest.class)

@@ -57,7 +57,7 @@ public class ExportLogsCommand implements GfshCommand {
   public static final String FORMAT = "yyyy/MM/dd/HH/mm/ss/SSS/z";
   public static final String ONLY_DATE_FORMAT = "yyyy/MM/dd";
 
-  public final static String DEFAULT_EXPORT_LOG_LEVEL = "ALL";
+  public static final String DEFAULT_EXPORT_LOG_LEVEL = "ALL";
 
   private static final Pattern DISK_SPACE_LIMIT_PATTERN = Pattern.compile("(\\d+)([kmgtKMGT]?)");
 

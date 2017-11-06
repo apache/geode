@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache.lucene.test;
 
-import org.apache.geode.internal.cache.xmlcache.Declarable2;
-
 import java.util.Properties;
+
+import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 /**
  * A Test LuceneSerializer that takes properties during construction (init)

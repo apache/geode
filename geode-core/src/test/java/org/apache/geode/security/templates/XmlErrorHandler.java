@@ -24,10 +24,10 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Implementation of {@link ErrorHandler} interface to handle validation errors while XML parsing.
- * 
+ *
  * This throws back exceptions raised for {@code error} and {@code fatalError} cases while a
  * {@link LogWriter#warning(String)} level logging is done for the {@code warning} case.
- * 
+ *
  * @since GemFire 5.5
  */
 public class XmlErrorHandler implements ErrorHandler {

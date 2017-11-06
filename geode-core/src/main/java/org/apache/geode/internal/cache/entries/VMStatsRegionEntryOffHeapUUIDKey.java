@@ -18,8 +18,9 @@ package org.apache.geode.internal.cache.entries;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-import org.apache.geode.internal.cache.RegionEntryContext;
+
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;

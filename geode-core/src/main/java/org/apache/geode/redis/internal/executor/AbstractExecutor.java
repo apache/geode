@@ -16,17 +16,17 @@ package org.apache.geode.redis.internal.executor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
+import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.GeodeRedisServer;
 
 /**
  * The AbstractExecutor is the base of all {@link Executor} types for the {@link GeodeRedisServer}.
- * 
+ *
  *
  */
 public abstract class AbstractExecutor implements Executor {
@@ -51,13 +51,13 @@ public abstract class AbstractExecutor implements Executor {
    * given name does not exist. Before getting or creating a Region, a check is first done to make
    * sure the desired key doesn't already exist with a different {@link RedisDataType}. If there is
    * a data type mismatch this method will throw a {@link RuntimeException}.
-   * 
+   *
    * ********************** IMPORTANT NOTE ********************************************** This
    * method will not fail in returning a Region unless an internal error occurs, so if a Region is
    * destroyed right after it is created, it will attempt to retry until a reference to that Region
    * is obtained
    * *************************************************************************************
-   * 
+   *
    * @param context Client client
    * @param key String key of desired key
    * @param type Type of data type desired
@@ -71,7 +71,7 @@ public abstract class AbstractExecutor implements Executor {
   /**
    * Checks if the given key is associated with the passed data type. If there is a mismatch, a
    * {@link RuntimeException} is thrown
-   * 
+   *
    * @param key Key to check
    * @param type Type to check to
    * @param context context

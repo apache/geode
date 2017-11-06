@@ -16,12 +16,12 @@
 package org.apache.geode.internal.cache;
 
 import java.util.*;
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.InternalStatisticsDisabledException;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
+
+import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 /**
  * Interface for accessing extended features of a ConcurrentMap used for the entries of a Region.
@@ -77,7 +77,7 @@ public interface EntriesMap extends ConcurrentMap {
 
   /**
    * Returns the value of an entry as it resides in the VM.
-   * 
+   *
    * @return the value or EntryEvent.NOT_AVAILABLE token if it's not in the VM or null if the entry
    *         doesn't exist.
    *
@@ -118,7 +118,7 @@ public interface EntriesMap extends ConcurrentMap {
 
     /**
      * Gets the value for this entry. For DiskRegions, faults in value and returns it
-     * 
+     *
      * @param map the map this entry came from
      */
     Object getValue(EntriesMap map);

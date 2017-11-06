@@ -37,7 +37,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 /**
  * Does a Execution of function on server (possibly without region/cache) It does not get the resulf
  * from the server (follows Fire&Forget approch)
- * 
+ *
  * @since GemFire 5.8Beta
  */
 public class ExecuteFunctionNoAckOp {
@@ -51,7 +51,7 @@ public class ExecuteFunctionNoAckOp {
   /**
    * Does a execute Function on a server using connections from the given pool to communicate with
    * the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param function of the function to be executed
    * @param args specified arguments to the application function

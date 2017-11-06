@@ -85,14 +85,14 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 /**
  * The LauncherLifecycleCommandsDUnitTest class is a test suite of integration tests testing the
  * contract and functionality of the GemFire launcher lifecycle commands inside Gfsh.
- * 
+ *
  * @see javax.management.MBeanServerConnection
  * @see javax.management.remote.JMXConnector
  * @see org.apache.geode.distributed.AbstractLauncher
@@ -402,7 +402,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
 
   /**
    * Test to verify GEODE-2138
-   * 
+   *
    * @throws IOException
    */
   @Test

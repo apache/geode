@@ -14,14 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
-import jline.console.history.MemoryHistory;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jline.console.history.MemoryHistory;
+
 /**
  * Overrides jline.History to add History without newline characters.
- * 
+ *
  * @since GemFire 7.0
  */
 public class GfshHistory extends MemoryHistory {

@@ -28,7 +28,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
@@ -49,6 +48,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetE
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class SingleHopClientExecutor {
@@ -223,7 +223,7 @@ public class SingleHopClientExecutor {
   /**
    * execute bulk op (putAll or removeAll) on multiple PR servers, returning a map of the results.
    * Results are either a VersionedObjectList or a BulkOpPartialResultsException
-   * 
+   *
    * @param callableTasks
    * @param cms
    * @param region

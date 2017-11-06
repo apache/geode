@@ -27,14 +27,14 @@ import org.apache.geode.management.membership.MembershipListener;
 
 /**
  * Interface to the GemFire management service for a single Cache.
- * 
+ *
  * @since GemFire 7.0
  */
 public abstract class ManagementService {
 
   /**
    * Returns a newly created or the existing instance of the management service for a cache.
-   * 
+   *
    * @param cache Cache for which to get the management service.
    */
   public static ManagementService getManagementService(Cache cache) {
@@ -43,7 +43,7 @@ public abstract class ManagementService {
 
   /**
    * Returns the existing instance of the management service for a cache.
-   * 
+   *
    * @param cache Cache for which to get the management service.
    * @return The existing management service if one exists, null otherwise.
    */
@@ -53,7 +53,7 @@ public abstract class ManagementService {
 
   /**
    * Returns whether this member is running the management service.
-   * 
+   *
    * @return True if this member is running the management service, false otherwise.
    */
   public abstract boolean isManager();
@@ -71,7 +71,7 @@ public abstract class ManagementService {
   /**
    * Registers an MBean in the GemFire domain. Any other domain specified as part of the object will
    * be ignored.
-   * 
+   *
    * @param object MBean to register.
    * @param objectName Object name of the MBean to register.
    * @return Object name, which may have been modified to use the GemFire domain.
@@ -80,7 +80,7 @@ public abstract class ManagementService {
 
   /**
    * Unregisters an MBean.
-   * 
+   *
    * @param objectName Object name of the MBean to unregister.
    */
   public abstract void unregisterMBean(ObjectName objectName);
@@ -90,16 +90,16 @@ public abstract class ManagementService {
    * pushed to managing members. It's possible to simply register MBeans in the GemFire domain
    * without calling federate if the developer doesn't need their state to be shared amongst
    * members. Note that Dynamic MBeans are not supported by this service.
-   * 
+   *
    * <pre>
    * Example Usage:
-   * 
-   * <code>CustomMXBean bean = new CustomMBean(); 
+   *
+   * <code>CustomMXBean bean = new CustomMBean();
    * ObjectName beanName = ObjectName.getInstance("DefualtDomain:type=CustomType");
-   * ObjectName gemfireBeanName = service.registerMBean(customMBean, customMBeanName); 
+   * ObjectName gemfireBeanName = service.registerMBean(customMBean, customMBeanName);
    * service.federate(gemfireBeanName, CustomMXBean.class, true);</code>
    * </pre>
-   * 
+   *
    * @param objectName Object name of the MBean.
    * @param interfaceClass Interface which this MBean exposes.
    * @param notificationEmitter True if the MBean is a notification emitter.
@@ -115,7 +115,7 @@ public abstract class ManagementService {
 
   /**
    * Returns a RegionMXBbean for managing and monitoring a Region.
-   * 
+   *
    * @param regionPath Path of the region.
    * @return A RegionMXBean if the region exists, null otherwise.
    */
@@ -123,7 +123,7 @@ public abstract class ManagementService {
 
   /**
    * Returns a LockServiceMXBean for managing and monitoring a lock service.
-   * 
+   *
    * @param lockServiceName Name of the lock service.
    * @return A LockServiceMXBean if the lock service exists, null otherwise.
    */
@@ -131,7 +131,7 @@ public abstract class ManagementService {
 
   /**
    * Returns a DiskStoreMXBean for managing and monitoring a disk store.
-   * 
+   *
    * @param diskStoreName Name of the disk store.
    * @return A DiskStoreMXBean if the disk store exists, null otherwise.
    */
@@ -139,7 +139,7 @@ public abstract class ManagementService {
 
   /**
    * Returns a CacheServerMXBean for managing and monitoring a cache server.
-   * 
+   *
    * @param serverPort Port on which the cache server is listening.
    * @return A CacheServerMXBean if the cache server is found, null otherwise.
    */
@@ -148,14 +148,14 @@ public abstract class ManagementService {
   /**
    * Returns the DistributedSystemMXBean for managing and monitoring the distributed system as a
    * whole.
-   * 
+   *
    * @return A DistributedSystemMXBean if one is found, null otherwise.
    */
   public abstract DistributedSystemMXBean getDistributedSystemMXBean();
 
   /**
    * Returns the ManagerMXBean for the management service.
-   * 
+   *
    * @return A ManagerMXBean if one is found, null otherwise.
    */
   public abstract ManagerMXBean getManagerMXBean();
@@ -163,7 +163,7 @@ public abstract class ManagementService {
   /**
    * Returns a DistributedRegionMXBean for managing and monitoring a region from a system wide
    * perspective.
-   * 
+   *
    * @param regionPath Path of the Region.
    * @return A DistributedRegionMXBean if the region exists, null otherwise.
    */
@@ -172,7 +172,7 @@ public abstract class ManagementService {
   /**
    * Returns a LockServiceMXBean for managing and monitoring a lock service from a system wide
    * perspective.
-   * 
+   *
    * @param lockServiceName Name of the LockService.
    * @return A DistributedLockServiceMXBean if the lock service exists, null otherwise.
    */
@@ -181,14 +181,14 @@ public abstract class ManagementService {
 
   /**
    * Returns the GatewayReceiverMXBean for managing and monitoring the gateway receiver.
-   * 
+   *
    * @return A GatewayReceiverMXBean if one is found, null otherwise.
    */
   public abstract GatewayReceiverMXBean getLocalGatewayReceiverMXBean();
 
   /**
    * Returns a GatewaySenderMXBean for managing and monitoring a gateway sender.
-   * 
+   *
    * @param senderId ID of the gateway sender.
    * @return A GatewaySenderMXBean if the gateway sender is found, null otherwise.
    */
@@ -196,7 +196,7 @@ public abstract class ManagementService {
 
   /**
    * Returns a AsyncEventQueueMXBean for managing and monitoring an asynchronous queue.
-   * 
+   *
    * @param queueId ID of the asynchronous queue.
    * @return An AsyncEventQueueMXBean if the asynchronous queue is found, null otherwise.
    */
@@ -204,14 +204,14 @@ public abstract class ManagementService {
 
   /**
    * Returns the LocatorMXBean for managing and monitoring the locator.
-   * 
+   *
    * @return A LocatorMXBean if the locator is found, null otherwise.
    */
   public abstract LocatorMXBean getLocalLocatorMXBean();
 
   /**
    * Returns the object names for all MBeans associated with a member.
-   * 
+   *
    * @param member Member for which to find MBeans.
    */
   public abstract Set<ObjectName> queryMBeanNames(DistributedMember member);
@@ -219,7 +219,7 @@ public abstract class ManagementService {
   /**
    * Returns an instance of an MBean. This is a reference to the MBean instance and not a
    * {@link ObjectInstance}.
-   * 
+   *
    * @param objectName Object name of the MBean.
    * @param interfaceClass Interface which this MBean exposes.
    * @throws ClassCastException if the MBean does not implement the given interface.
@@ -228,7 +228,7 @@ public abstract class ManagementService {
 
   /**
    * Returns the last updated time of the remote MBean as reported by Sysem.currentTimeMillis().
-   * 
+   *
    * @param objectName Object name of the MBean.
    * @return Last updated time or 0 if the MBean is local or the management service is not running
    *         on this member.
@@ -238,7 +238,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the MemberMBean representing a distributed member. This is a utility
    * method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    */
   public abstract ObjectName getMemberMBeanName(DistributedMember member);
@@ -246,7 +246,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the RegionMBean representing a region. This is a utility method for
    * generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    * @param regionPath Path of the region.
    */
@@ -255,7 +255,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the DiskStoreMBean representing a disk store. This is a utility
    * method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    * @param diskName Name of the disk store.
    */
@@ -264,7 +264,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the CacheServerMBean representing a cache server. This is a utility
    * method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    * @param serverPort Port on which the cache server is listening.
    */
@@ -273,7 +273,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the LockServiceMBean representing a lock service. This is a utility
    * method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    * @param lockServiceName Name of the lock service.
    */
@@ -283,7 +283,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the GatewayReciverMBean representing a gateway receiver. This is a
    * utility method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    */
   public abstract ObjectName getGatewayReceiverMBeanName(DistributedMember member);
@@ -291,7 +291,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the GatewaySenderMBean representing a gateway sender. This is a
    * utility method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    * @param gatwaySenderId ID of the gateway sender.
    */
@@ -301,7 +301,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the AsyncEventQueueMBean representing a asynchronous queue. This is
    * a utility method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    * @param queueId ID of the asynchronous queue.
    */
@@ -310,7 +310,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the DistributedRegionMBean representing a region. This is a utility
    * method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param regionName Name of the region.
    */
   public abstract ObjectName getDistributedRegionMBeanName(String regionName);
@@ -318,7 +318,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the DistributedLockServiceMBean representing a lock service. This is
    * a utility method for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param lockService Name of the lock service.
    */
   public abstract ObjectName getDistributedLockServiceMBeanName(String lockService);
@@ -338,7 +338,7 @@ public abstract class ManagementService {
   /**
    * Returns the object name of the LocatorMBean representing a locator. This is a utility method
    * for generating an object name and it does not register an MBean.
-   * 
+   *
    * @param member Distributed member used to generate the object name.
    */
   public abstract ObjectName getLocatorMBeanName(DistributedMember member);

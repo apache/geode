@@ -14,16 +14,8 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,6 +23,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -74,6 +67,9 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
@@ -911,7 +907,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Run query using a function executed by client on a region on server with filter.
-   * 
+   *
    * @param function
    * @param regionName
    * @param filter
@@ -957,7 +953,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Runs a {@link LocalDataSet} query on a single server.
-   * 
+   *
    * @param func
    * @param filter
    * @param query

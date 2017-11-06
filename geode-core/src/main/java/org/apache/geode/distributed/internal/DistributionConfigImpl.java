@@ -105,7 +105,7 @@ import org.apache.geode.redis.GeodeRedisServer;
  * <p>
  * Note that if you add a property to this interface, should should update the
  * {@link #DistributionConfigImpl(DistributionConfig) copy constructor}.
- * 
+ *
  * @see InternalDistributedSystem
  * @since GemFire 2.1
  */
@@ -176,7 +176,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   /**
    * The level at which log messages are logged
-   * 
+   *
    * @see org.apache.geode.internal.logging.LogWriterImpl#levelNameToCode(String)
    */
   protected int logLevel = DEFAULT_LOG_LEVEL;
@@ -376,7 +376,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   /**
    * The level at which security related log messages are logged
-   * 
+   *
    * @see org.apache.geode.internal.logging.LogWriterImpl#levelNameToCode(String)
    */
   protected int securityLogLevel = DEFAULT_LOG_LEVEL;
@@ -867,7 +867,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Creates a new <code>DistributionConfigImpl</code> with the given non-default configuration
    * properties. See {@link org.apache.geode.distributed.DistributedSystem#connect} for a list of
    * exceptions that may be thrown.
-   * 
+   *
    * @param nonDefault The configuration properties specified by the caller
    */
   public DistributionConfigImpl(Properties nonDefault) {
@@ -878,7 +878,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Creates a new <code>DistributionConfigImpl</code> with the given non-default configuration
    * properties. See {@link org.apache.geode.distributed.DistributedSystem#connect} for a list of
    * exceptions that may be thrown.
-   * 
+   *
    * @param nonDefault The configuration properties specified by the caller
    * @param ignoreGemFirePropsFile whether to skip loading distributed system properties from
    *        gemfire.properties file
@@ -894,7 +894,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Creates a new <code>DistributionConfigImpl</code> with the given non-default configuration
    * properties. See {@link org.apache.geode.distributed.DistributedSystem#connect} for a list of
    * exceptions that may be thrown.
-   * 
+   *
    * @param nonDefault The configuration properties specified by the caller
    * @param ignoreGemFirePropsFile whether to skip loading distributed system properties from
    *        gemfire.properties file
@@ -1095,7 +1095,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   /**
    * Here we will validate the correctness of the set properties as per the CheckAttributeChecker
    * annotations defined in #AbstractDistributionConfig
-   * 
+   *
    * @param props
    */
   private void validateConfigurationProperties(final HashMap props) {
@@ -1539,7 +1539,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   /**
    * Loads the properties from gemfire.properties & gfsecurity.properties files into given
    * Properties object.
-   * 
+   *
    * @param p the Properties to fill in
    *
    * @throws GemFireIOException when error occurs while reading properties file
@@ -1552,7 +1552,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Loads the properties from gemfire.properties & gfsecurity.properties files into given
    * Properties object. if <code>ignoreGemFirePropsFile</code> is <code>true</code>, properties are
    * not read from gemfire.properties.
-   * 
+   *
    * @param p the Properties to fill in
    * @param ignoreGemFirePropsFile whether to ignore properties from gemfire.properties
    *
@@ -3107,7 +3107,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DistributionConfig#getMembershipPortRange()
    */
   public int[] getMembershipPortRange() {
@@ -3116,7 +3116,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DistributionConfig#setMembershipPortRange(int[])
    */
   public void setMembershipPortRange(int[] range) {

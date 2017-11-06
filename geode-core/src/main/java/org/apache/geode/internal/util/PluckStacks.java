@@ -35,8 +35,8 @@ import java.util.zip.GZIPInputStream;
  * When run as a program it takes a list of files that may contain thread dumps. It scans those
  * files, pulls out the thread dumps, removes any well-known idle threads and prints the rest to
  * stdout.
- * 
- * 
+ *
+ *
  *
  */
 

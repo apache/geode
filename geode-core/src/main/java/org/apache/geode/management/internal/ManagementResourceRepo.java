@@ -26,11 +26,11 @@ import org.apache.geode.distributed.DistributedMember;
 /**
  * Instance of this object behaves as a cache wide repository in the context of management and
  * monitoring. Various management infrastructures are initialized by this class
- * 
+ *
  * Various repository related methods are declared here These methods provide a consistent view to
  * read and update the repository.
- * 
- * 
+ *
+ *
  */
 
 public class ManagementResourceRepo {
@@ -62,7 +62,7 @@ public class ManagementResourceRepo {
   }
 
   /**
-   * 
+   *
    * @return local monitoring region
    */
   public Region<String, Object> getLocalMonitoringRegion() {
@@ -81,7 +81,7 @@ public class ManagementResourceRepo {
 
   /**
    * Sets the repository local monitoring region to the given Region
-   * 
+   *
    * @param localMonitoringRegion local monitoring region
    */
   public void setLocalMonitoringRegion(Region<String, Object> localMonitoringRegion) {
@@ -90,7 +90,7 @@ public class ManagementResourceRepo {
 
   /**
    * put an entry in local monitoring region
-   * 
+   *
    * @param name MBean name
    * @param data The value part of the Map
    */
@@ -103,7 +103,7 @@ public class ManagementResourceRepo {
 
   /**
    * uses putAll operation of region
-   * 
+   *
    * @param objectMap Object Map containing key-value operations
    */
   public void putAllInLocalMonitoringRegion(Map<String, FederationComponent> objectMap) {
@@ -126,7 +126,7 @@ public class ManagementResourceRepo {
 
   /**
    * get a entry from local monitoring region
-   * 
+   *
    * @param name MBean name
    * @return the value
    */
@@ -136,7 +136,7 @@ public class ManagementResourceRepo {
   }
 
   /**
-   * 
+   *
    * @return local notification region
    */
   public Region<NotificationKey, Notification> getLocalNotificationRegion() {
@@ -145,7 +145,7 @@ public class ManagementResourceRepo {
 
   /**
    * sets the local notification region
-   * 
+   *
    * @param localNotificationRegion local notification region
    */
   public void setLocalNotificationRegion(
@@ -155,7 +155,7 @@ public class ManagementResourceRepo {
 
   /**
    * put an entry in local notification region
-   * 
+   *
    * @param key Notiofication key
    * @param notif Notification Object
    */
@@ -165,7 +165,7 @@ public class ManagementResourceRepo {
 
   /**
    * put an entry in Monitoring Region Map
-   * 
+   *
    * @param member Distributed member
    * @param region Corresponding region
    */
@@ -175,7 +175,7 @@ public class ManagementResourceRepo {
   }
 
   /**
-   * 
+   *
    * @param member Distributed Member
    * @return the corresponding Monitoring region at Managing Node side
    */
@@ -186,7 +186,7 @@ public class ManagementResourceRepo {
 
   /**
    * remove the entry corresponding to the distributed member
-   * 
+   *
    * @param member Distributed Member
    */
   public void romoveEntryFromMonitoringRegionMap(DistributedMember member) {
@@ -195,7 +195,7 @@ public class ManagementResourceRepo {
   }
 
   /**
-   * 
+   *
    * @return the map containing all the member and region map
    */
   public Map<DistributedMember, Region<String, Object>> getMonitoringRegionMap() {
@@ -204,7 +204,7 @@ public class ManagementResourceRepo {
 
   /**
    * put an entry into notification region map
-   * 
+   *
    * @param member Distributed Member
    * @param region Corresponding notification region
    */
@@ -215,7 +215,7 @@ public class ManagementResourceRepo {
 
   /**
    * get the notification region for a corresponding member
-   * 
+   *
    * @param member Distributed Member
    * @return notification Region for the member
    */
@@ -227,7 +227,7 @@ public class ManagementResourceRepo {
 
   /**
    * removes an entry from notification region
-   * 
+   *
    * @param member Distributed Member
    */
   public void removeEntryFromNotifRegionMap(DistributedMember member) {

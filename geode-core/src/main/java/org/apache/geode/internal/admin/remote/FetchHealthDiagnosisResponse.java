@@ -16,18 +16,16 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.*;
 import org.apache.geode.admin.GemFireHealth;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
 import org.apache.geode.distributed.internal.*;
-import java.io.*;
-// import java.util.*;
 import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * The response to fetching the health diagnosis.
- * 
+ *
  * @since GemFire 3.5
  */
 public class FetchHealthDiagnosisResponse extends AdminResponse {

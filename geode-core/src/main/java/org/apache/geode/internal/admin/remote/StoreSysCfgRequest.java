@@ -16,13 +16,12 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
+import java.io.*;
+
 import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.internal.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.*;
-// import java.util.*;
 
 /**
  * A message that is sent to a particular distribution manager to modify its current

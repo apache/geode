@@ -14,23 +14,25 @@
  */
 package org.apache.geode.internal.jta;
 
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.*;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
 
 import javax.transaction.*;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test TransactionManagerImpl methods not tested by UserTransactionImplTest
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class TransactionManagerImplJUnitTest {

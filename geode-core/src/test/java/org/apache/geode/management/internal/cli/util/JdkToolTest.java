@@ -17,13 +17,14 @@ package org.apache.geode.management.internal.cli.util;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.GemFireException;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Stack;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Stack;
+import org.apache.geode.GemFireException;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class JdkToolTest {

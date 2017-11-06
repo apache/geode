@@ -80,7 +80,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is the test for the custom and colocated partitioning of PartitionedRegion
- * 
+ *
  */
 @SuppressWarnings("synthetic-access")
 @Category(DistributedTest.class)
@@ -100,11 +100,11 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   protected static int defaultStringSize = 0;
 
-  final static String CustomerPartitionedRegionName = "CustomerPartitionedRegion";
+  static final String CustomerPartitionedRegionName = "CustomerPartitionedRegion";
 
-  final static String OrderPartitionedRegionName = "OrderPartitionedRegion";
+  static final String OrderPartitionedRegionName = "OrderPartitionedRegion";
 
-  final static String ShipmentPartitionedRegionName = "ShipmentPartitionedRegion";
+  static final String ShipmentPartitionedRegionName = "ShipmentPartitionedRegion";
 
   String regionName = null;
 
@@ -1275,7 +1275,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
    * Member 1: PR2 colocatedWith PR1 <br>
    * Member 2: PR2 is not colocated <br>
    * Should throw IllegalStateException
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1424,7 +1424,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Confirm that the redundancy must be the same for colocated partitioned regions
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1459,7 +1459,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests to make sure that a VM will not make copies of any buckets for a region until all of the
    * colocated regions are created.
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1762,10 +1762,10 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for hang condition observed with the PRHARedundancyProvider.createMissingBuckets code.
-   * 
+   *
    * A parent region is populated with buckets. Then the child region is created simultaneously on
    * several nodes.
-   * 
+   *
    * @throws Throwable
    */
   @Test

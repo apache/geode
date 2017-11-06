@@ -26,8 +26,8 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.BackupStatus;
-import org.apache.geode.management.internal.BackupStatusImpl;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.internal.BackupStatusImpl;
 
 public class BackupUtil {
 

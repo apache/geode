@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.io;
 
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.regex.Pattern;
+
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Extracted from ManagerLogWriter. MainWithChildrenRollingFileHandler is used for both rolling of

@@ -331,7 +331,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
   /**
    * DiskRegOplog1OverridingOplog2JUnitTest: Disk Region test : oplog1 flush overriding oplog2 flush
-   * 
+   *
    * This test will hold the flush of oplog1 and flush oplog2 before it. After that oplog1 is
    * allowed to flush. A get of an entry which was first put in oplog1 and then in oplog2 should
    * result in the get being done from oplog2.

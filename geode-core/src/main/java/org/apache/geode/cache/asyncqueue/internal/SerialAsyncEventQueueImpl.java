@@ -219,7 +219,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.wan.AbstractGatewaySender#setModifiedEventId(org.apache.geode.
    * internal.cache.EntryEventImpl)

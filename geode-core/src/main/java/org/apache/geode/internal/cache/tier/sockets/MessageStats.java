@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 /**
  * Statistics supported by cache/server Message.
- * 
+ *
  * @since GemFire 5.0.2
  */
 public interface MessageStats {

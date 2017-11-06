@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
@@ -119,7 +119,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * No error or resending of delta.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -146,7 +146,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Simulates error in fromDelta() and toDelta()
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -176,7 +176,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Simulates old value null, entry null, InvalidDeltaExeption
-   * 
+   *
    * @throws Exception
    */
   @Ignore("TODO")
@@ -185,7 +185,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * No error or resending of delta.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -215,7 +215,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Simulates error in fromDelta()
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -251,7 +251,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Simulates old value null, entry null
-   * 
+   *
    * @throws Exception
    */
   @Ignore("TODO")
@@ -260,7 +260,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * No error or resending of delta.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -292,7 +292,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Simulates error in fromDelta() and toDelta()
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -323,7 +323,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Simulates old value null, entry null
-   * 
+   *
    * @throws Exception
    */
   @Ignore("TODO")

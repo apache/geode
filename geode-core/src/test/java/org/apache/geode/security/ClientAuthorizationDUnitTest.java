@@ -26,13 +26,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;

@@ -83,7 +83,7 @@ import org.apache.geode.internal.util.BlobHelper;
 public interface DiskEntry extends RegionEntry {
   /**
    * Sets the value with a {@link RegionEntryContext}.
-   * 
+   *
    * @param context the value's context.
    * @param value an entry value.
    */
@@ -138,7 +138,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Testing purpose only Get the value of an entry that is on disk without faulting it in and
      * without looking in the io buffer.
-     * 
+     *
      * @since GemFire 3.2.1
      */
     public static Object getValueOnDisk(DiskEntry entry, DiskRegion dr) {
@@ -166,7 +166,7 @@ public interface DiskEntry extends RegionEntry {
      * Get the serialized value directly from disk. Returned object may be a
      * {@link CachedDeserializable}. Goes straight to disk without faulting into memory. Only looks
      * at the disk storage, not at heap storage.
-     * 
+     *
      * @param entry the entry used to identify the value to fetch
      * @param dr the persistent storage from which to fetch the value
      * @return either null, byte array, or CacheDeserializable
@@ -196,7 +196,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Get the value of an entry that is on disk without faulting it in . It checks for the presence
      * in the buffer also. This method is used for concurrent map operations and CQ processing
-     * 
+     *
      * @since GemFire 5.1
      */
     public static Object getValueOnDiskOrBuffer(DiskEntry entry, DiskRegion dr,
@@ -291,7 +291,7 @@ public interface DiskEntry extends RegionEntry {
 
     /**
      * Get the value of an entry that is on disk without faulting it in.
-     * 
+     *
      * @since GemFire 3.2.1
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry, DiskRegion dr,
@@ -814,7 +814,7 @@ public interface DiskEntry extends RegionEntry {
 
     /**
      * Writes the key/value object stored in the given entry to disk
-     * 
+     *
      * @see DiskRegion#put
      */
     private static void writeToDisk(DiskEntry entry, InternalRegion region, boolean async,
@@ -1233,7 +1233,7 @@ public interface DiskEntry extends RegionEntry {
 
     /**
      * Caller must have "entry" and "did" synced and "dr" readLocked.
-     * 
+     *
      * @return the unretained result must be used by the caller before it releases the sync on
      *         "entry".
      */
@@ -1403,7 +1403,7 @@ public interface DiskEntry extends RegionEntry {
 
     /**
      * Flush an entry that was previously scheduled to be written to disk.
-     * 
+     *
      * @since GemFire prPersistSprint1
      */
     public static void doAsyncFlush(DiskEntry entry, InternalRegion region, VersionTag tag) {
@@ -1413,7 +1413,7 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Does a synchronous write to disk for a region that uses async. This method is used by both
      * doAsyncFlush and handleFullAsyncQueue to fix GEODE-1700.
-     * 
+     *
      * @param asyncQueueWasFull true if caller wanted to put this entry in the queue but could not
      *        do so because it was full
      */

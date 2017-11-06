@@ -38,18 +38,18 @@ import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Factory methods for fake objects for use in test.
- * 
+ *
  * These fakes are essentially mock objects with some limited functionality. For example the fake
  * cache can return a fake distributed system.
- * 
+ *
  * All of the fakes returned by this class are Mockito.mocks, so they can be modified by using
  * Mockito stubbing, ie
- * 
+ *
  * <pre>
  * cache = Fakes.cache(); Mockito.when(cache.getName()).thenReturn(...)
- * 
+ *
  * <pre>
- * 
+ *
  * Please help extend this class by adding other commonly used objects to this collection of fakes.
  */
 public class Fakes {
@@ -126,7 +126,7 @@ public class Fakes {
   /**
    * Add real map behavior to a mock region. Useful for tests where you want to mock region that
    * just behaves like a map.
-   * 
+   *
    * @param mock the mockito mock to add behavior too.
    */
   public static void addMapBehavior(Region mock) {

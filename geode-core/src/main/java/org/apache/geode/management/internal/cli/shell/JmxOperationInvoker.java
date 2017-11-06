@@ -54,7 +54,7 @@ import org.apache.geode.management.internal.cli.LogWrapper;
 
 /**
  * OperationInvoker JMX Implementation
- * 
+ *
  * @since GemFire 7.0
  */
 public class JmxOperationInvoker implements OperationInvoker {
@@ -207,7 +207,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   /**
    * JMX Specific operation invoke caller.
-   * 
+   *
    * @param resource
    * @param operationName
    * @param params
@@ -325,7 +325,7 @@ public class JmxOperationInvoker implements OperationInvoker {
    * If the given host address contains a ":", considers it as an IPv6 address & returns the host
    * based on RFC2732 requirements i.e. surrounds the given host address string with square
    * brackets. If ":" is not found in the given string, simply returns the same string.
-   * 
+   *
    * @param hostAddress host address to check if it's an IPv6 address
    *
    * @return for an IPv6 address returns compatible host address otherwise returns the same string
@@ -350,7 +350,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 
 /**
  * A Connection Notification Listener. Notifies Gfsh when a connection gets terminated abruptly.
- * 
+ *
  * @since GemFire 7.0
  */
 class JMXConnectionListener implements NotificationListener {

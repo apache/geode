@@ -114,7 +114,7 @@ public class CacheServerAdvisor extends GridAdvisor {
      * Used to process an incoming cache server profile. Any controller in this vm needs to be told
      * about this incoming new cache server. The reply needs to contain any controller(s) that exist
      * in this vm.
-     * 
+     *
      * @since GemFire 5.7
      */
     @Override

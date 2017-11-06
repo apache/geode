@@ -43,7 +43,7 @@ public abstract class AbstractDiskRegionEntry extends AbstractRegionEntry implem
 
   /**
    * Sets the value with a {@link RegionEntryContext}.
-   * 
+   *
    * @param context the value's context.
    * @param value an entry value.
    */

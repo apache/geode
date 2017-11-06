@@ -34,6 +34,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheException;
@@ -89,12 +92,10 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
- * 
+ *
  * @since Geode 1.0
  */
 @Category(DistributedTest.class)
@@ -427,7 +428,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   /**
    * test that puts in a server are rejected when a remote VM crosses critical threshold
-   * 
+   *
    * @throws Exception
    */
   private void doDistributedRegionRemotePutRejection(boolean localDestroy, boolean cacheClose)
@@ -1731,7 +1732,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * Verifies that the test listener value on the given vm is what is expected Note that for remote
    * events useWaitCriterion must be true. Note also that since off-heap local events are async
    * local events must also set useWaitCriterion to true.
-   * 
+   *
    * @param vm the vm where verification should take place
    * @param value the expected value
    * @param useWaitCriterion must be true for both local and remote events (see GEODE-138)

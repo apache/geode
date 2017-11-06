@@ -97,7 +97,7 @@ import org.apache.geode.security.GemFireSecurityException;
  * {@code CacheClientUpdater} is a thread that processes update messages from a cache server and
  * {@linkplain org.apache.geode.cache.Region#localInvalidate(Object) invalidates} the local cache
  * based on the contents of those messages.
- * 
+ *
  * @since GemFire 3.5
  */
 public class CacheClientUpdater extends Thread implements ClientUpdater, DisconnectListener {
@@ -203,7 +203,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Return true if cache appears
-   * 
+   *
    * @return true if cache appears
    */
   private boolean waitForCache() {
@@ -255,7 +255,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * @param location the endpoint we represent
    * @param primary true if our endpoint is primary
    * @param ids the system we are distributing messages through
-   * 
+   *
    * @throws AuthenticationRequiredException when client is not configured to send credentials using
    *         security-* system properties but server expects credentials
    * @throws AuthenticationFailedException when authentication of the client fails
@@ -580,7 +580,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Handle a marker message
-   * 
+   *
    * @param clientMessage message containing the data
    */
   private void handleMarker(Message clientMessage) {
@@ -606,7 +606,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Create or update an entry
-   * 
+   *
    * @param clientMessage message containing the data
    */
   private void handleUpdate(Message clientMessage) {
@@ -792,7 +792,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Invalidate an entry
-   * 
+   *
    * @param clientMessage message describing the entry
    */
   private void handleInvalidate(Message clientMessage) {
@@ -897,7 +897,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * locally destroy an entry
-   * 
+   *
    * @param clientMessage message describing the entry
    */
   private void handleDestroy(Message clientMessage) {
@@ -994,7 +994,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Locally destroy a region
-   * 
+   *
    * @param clientMessage message describing the region
    */
   private void handleDestroyRegion(Message clientMessage) {
@@ -1063,7 +1063,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Locally clear a region
-   * 
+   *
    * @param clientMessage message describing the region to clear
    */
   private void handleClearRegion(Message clientMessage) {
@@ -1130,7 +1130,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
   /**
    * Locally invalidate a region NOTE: Added as part of bug#38048. The code only takes care of CQ
    * processing. Support needs to be added for local region invalidate.
-   * 
+   *
    * @param clientMessage message describing the region to clear
    */
   private void handleInvalidateRegion(Message clientMessage) {
@@ -1549,11 +1549,11 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Processes messages received from the server.
-   * 
+   *
    * Only certain types of messages are handled.
    *
    * TODO: Method 'processMessages' is too complex to analyze by data flow algorithm
-   * 
+   *
    * @see MessageType#CLIENT_MARKER
    * @see MessageType#LOCAL_CREATE
    * @see MessageType#LOCAL_UPDATE
@@ -1778,7 +1778,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * <p>
    * Signals run thread to stop. Messages are not printed if the thread or the distributed system
    * has already been instructed to terminate.
-   * 
+   *
    * @param message contextual string for the failure
    * @param exception underlying exception
    */
@@ -1796,7 +1796,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
   /**
    * Return an object from serialization. Only used in debug logging.
-   * 
+   *
    * @param serializedBytes the serialized form
    * @return the deserialized object
    */
@@ -1834,7 +1834,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
   /**
    * Stats for a CacheClientUpdater. Currently the only thing measured are incoming bytes on the
    * wire
-   * 
+   *
    * @since GemFire 5.7
    */
   public static class CCUStats implements MessageStats {
@@ -1901,7 +1901,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
     /**
      * Returns the current time (ns).
-     * 
+     *
      * @return the current time (ns)
      */
     public long startTime() {

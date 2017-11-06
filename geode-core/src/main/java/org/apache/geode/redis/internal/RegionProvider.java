@@ -324,7 +324,7 @@ public class RegionProvider implements Closeable {
 
   /**
    * SYNCHRONIZE EXTERNALLY OF this.locks.get(key.toString())!!!!!
-   * 
+   *
    * @param key Key of region to destroy
    * @param type Type of region to destroyu
    * @return Flag if destroyed
@@ -345,7 +345,7 @@ public class RegionProvider implements Closeable {
 
   /**
    * Do not call this method if you are not synchronized on the lock associated with this key
-   * 
+   *
    * @param key Key of region to remove
    * @param type Type of key to remove all state
    */
@@ -389,7 +389,7 @@ public class RegionProvider implements Closeable {
   /**
    * This method creates a Region globally with the given name. If there is an error in the
    * creation, a runtime exception will be thrown.
-   * 
+   *
    * @param key Name of Region to create
    * @return Region Region created globally
    */
@@ -430,7 +430,7 @@ public class RegionProvider implements Closeable {
   /**
    * Checks if the given key is associated with the passed data type. If there is a mismatch, a
    * {@link RuntimeException} is thrown
-   * 
+   *
    * @param key Key to check
    * @param type Type to check to
    */
@@ -470,7 +470,7 @@ public class RegionProvider implements Closeable {
    * a delay, which means that both expiring after a time and at a time can be done but the delay to
    * expire at a time must be calculated before these calls. It is also important to note that the
    * delay is always handled in milliseconds
-   * 
+   *
    * @param key The key to set the expiration for
    * @param delay The delay in milliseconds of the expiration
    * @return True is expiration set, false otherwise
@@ -487,7 +487,7 @@ public class RegionProvider implements Closeable {
 
   /**
    * Modifies an expiration on a key
-   * 
+   *
    * @param key String key to modify expiration on
    * @param delay Delay in milliseconds to reset the expiration to
    * @return True if reset, false if not
@@ -513,7 +513,7 @@ public class RegionProvider implements Closeable {
 
   /**
    * Removes an expiration from a key
-   * 
+   *
    * @param key Key
    * @return True is expiration cancelled on the key, false otherwise
    */
@@ -530,7 +530,7 @@ public class RegionProvider implements Closeable {
 
   /**
    * Check method if key has expiration
-   * 
+   *
    * @param key Key
    * @return True if key has expiration, false otherwise
    */
@@ -540,7 +540,7 @@ public class RegionProvider implements Closeable {
 
   /**
    * Get remaining expiration time
-   * 
+   *
    * @param key Key
    * @return Remaining time in milliseconds or 0 if no delay or key doesn't exist
    */

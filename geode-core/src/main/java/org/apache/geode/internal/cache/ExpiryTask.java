@@ -174,7 +174,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   /**
    * Added for GEODE-3764.
-   * 
+   *
    * @return true if other members last access time indicates we have expired
    */
   protected boolean isIdleExpiredOnOthers() throws EntryNotFoundException {
@@ -208,7 +208,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   /**
    * Test method that causes expiration to be suspended until permitExpiration is called.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static void suspendExpiration() {
@@ -227,7 +227,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   /**
    * Wait until permission is given for expiration to be done. Tests are allowed to suspend
    * expiration.
-   * 
+   *
    * @since GemFire 5.0
    */
   private void waitOnExpirationSuspension() {
@@ -266,7 +266,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   /**
    * Why did this expire?
-   * 
+   *
    * @return the action to perform or null if NONE
    */
   protected ExpirationAction getAction() {
@@ -430,7 +430,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   /**
    * Reschedule (or not) this task for later consideration
    */
-  abstract protected void reschedule() throws CacheException;
+  protected abstract void reschedule() throws CacheException;
 
   @Override
   public String toString() {
@@ -498,7 +498,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   /**
    * Returns the current time in milliseconds. If the current thread has set the now thread local
    * then that time is return. Otherwise now is calculated and returned.
-   * 
+   *
    * @return the current time in milliseconds
    */
   protected long getNow() {

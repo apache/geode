@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region recovery tests
- * 
+ *
  * @since GemFire 5.1
  */
 @Category(IntegrationTest.class)
@@ -1415,4 +1415,3 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   }
 
 }
-

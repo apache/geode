@@ -21,7 +21,7 @@ import org.apache.geode.GemFireException;
  * The MemberNotFoundException is a GemFirException indicating that a member by name could not be
  * found in the GemFire distributed system.
  * </p>
- * 
+ *
  * @see org.apache.geode.GemFireException
  * @since GemFire 7.0
  */

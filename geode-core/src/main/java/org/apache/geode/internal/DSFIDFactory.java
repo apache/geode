@@ -374,7 +374,6 @@ import org.apache.geode.internal.cache.snapshot.FlowController.FlowControlAbortM
 import org.apache.geode.internal.cache.snapshot.FlowController.FlowControlAckMessage;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
-import org.apache.geode.internal.cache.tier.sockets.ServerInterestRegistrationMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientBlacklistProcessor.ClientBlacklistMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientInstantiatorMessage;
@@ -390,6 +389,7 @@ import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList651;
 import org.apache.geode.internal.cache.tier.sockets.RemoveClientFromBlacklistMessage;
 import org.apache.geode.internal.cache.tier.sockets.SerializedObjectPartList;
+import org.apache.geode.internal.cache.tier.sockets.ServerInterestRegistrationMessage;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;

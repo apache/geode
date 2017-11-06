@@ -14,7 +14,7 @@
  */
 /**
  * Used by <tt>ExperimentalJUnitTest</tt>. This is a non-<tt>Experimental</tt> package.
- * 
+ *
  * @see org.apache.geode.annotations.ExperimentalJUnitTest
  */
 package org.apache.geode.experimental.nonexperimentalpackage;

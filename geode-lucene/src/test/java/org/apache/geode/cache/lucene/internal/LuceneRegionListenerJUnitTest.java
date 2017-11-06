@@ -18,6 +18,10 @@ import static org.mockito.Mockito.*;
 
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
@@ -28,9 +32,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.lucene.analysis.Analyzer;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class LuceneRegionListenerJUnitTest {

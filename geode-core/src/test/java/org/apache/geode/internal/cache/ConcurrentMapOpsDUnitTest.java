@@ -178,7 +178,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private static abstract class AbstractConcMapOpsListener
+  private abstract static class AbstractConcMapOpsListener
       implements CacheListener<Integer, String> {
     public void afterCreate(EntryEvent<Integer, String> event) {
       validate(event);

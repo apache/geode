@@ -50,7 +50,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Removes a batch of events from the remote secondary queues
- * 
+ *
  * @since GemFire 8.0
  */
 public class ParallelQueueRemovalMessage extends PooledDistributionMessage {

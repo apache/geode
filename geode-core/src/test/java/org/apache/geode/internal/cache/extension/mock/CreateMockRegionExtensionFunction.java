@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  * Function to create {@link MockRegionExtension} on a {@link Region}.
- * 
+ *
  * <dl>
  * <dt>Arguments:</dt>
  * <dd>
@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  * </dl>
  * </dt>
  * </dl>
- * 
+ *
  *
  * @since GemFire 8.1
  */

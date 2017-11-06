@@ -54,9 +54,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 /**
  * Integration tests for {@link ClassPathLoader}.
@@ -613,7 +613,7 @@ public class ClassPathLoaderIntegrationTest {
     /**
      * Currently unused but potentially useful for some future test. This causes this loader to only
      * generate a class that the parent could not find.
-     * 
+     *
      * @param parent the parent class loader to check with first
      */
     @SuppressWarnings("unused")

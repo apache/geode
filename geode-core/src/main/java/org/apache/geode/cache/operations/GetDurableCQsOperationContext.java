@@ -19,7 +19,7 @@ package org.apache.geode.cache.operations;
  * Encapsulates a
  * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#GET_DURABLE_CQS}
  * operation for the pre-operation case.
- * 
+ *
  * @since GemFire 7.0
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -27,8 +27,8 @@ public class GetDurableCQsOperationContext extends OperationContext {
 
   /**
    * Constructor for the GET_DURABLE_CQS operation.
-   * 
-   * 
+   *
+   *
    */
   public GetDurableCQsOperationContext() {
     super();
@@ -36,7 +36,7 @@ public class GetDurableCQsOperationContext extends OperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.GET_DURABLE_CQS</code>.
    */
   @Override

@@ -29,14 +29,14 @@ import java.util.Date;
  * <P>
  * The methods on this interface are not thread safe so do not call them concurrently, on the same
  * instance, from more than one thread.
- * 
+ *
  * @since GemFire 6.6
  */
 public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>char</code>
@@ -47,7 +47,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
@@ -58,7 +58,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>byte</code>
@@ -69,7 +69,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>short</code>
@@ -80,7 +80,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>int</code>
@@ -91,7 +91,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>long</code>
@@ -102,7 +102,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a <code>float</code>
@@ -113,7 +113,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
@@ -124,7 +124,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxFieldTypeMismatchException if the named field exists and is not a
@@ -135,7 +135,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -146,7 +146,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -157,7 +157,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -168,7 +168,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -179,7 +179,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -190,7 +190,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -201,7 +201,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -212,7 +212,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -223,7 +223,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -234,7 +234,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -245,7 +245,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -256,7 +256,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -267,7 +267,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.
@@ -280,7 +280,7 @@ public interface PdxReader {
    * Checks if the named field exists and returns the result.
    * <p>
    * This can be useful when writing code that handles more than one version of a PDX class.
-   * 
+   *
    * @param fieldName the name of the field to check
    * @return <code>true</code> if the named field exists; otherwise <code>false</code>
    */
@@ -292,7 +292,7 @@ public interface PdxReader {
    * <p>
    * Note that if no fields have been marked then all the fields are used as identity fields even
    * though this method will return <code>false</code> since none of them have been <em>marked</em>.
-   * 
+   *
    * @param fieldName the name of the field to check
    * @return <code>true</code> if the named field exists and was marked as an identify field;
    *         otherwise <code>false</code>
@@ -301,7 +301,7 @@ public interface PdxReader {
 
   /**
    * Reads the named field and returns its value.
-   * 
+   *
    * @param fieldName the name of the field to read
    * @return the value of the field if the field exists; otherwise a default value
    * @throws PdxSerializationException if deserialization of the field fails.

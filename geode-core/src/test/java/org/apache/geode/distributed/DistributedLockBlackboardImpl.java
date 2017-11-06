@@ -14,13 +14,13 @@
  */
 package org.apache.geode.distributed;
 
-import org.apache.geode.internal.Assert;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+
+import org.apache.geode.internal.Assert;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 
 
 public class DistributedLockBlackboardImpl extends UnicastRemoteObject

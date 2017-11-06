@@ -22,10 +22,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.management.internal.cli.json.TypedJsonPdxIntegrationTest;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.json.TypedJson;
+import org.apache.geode.management.internal.cli.json.TypedJsonPdxIntegrationTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

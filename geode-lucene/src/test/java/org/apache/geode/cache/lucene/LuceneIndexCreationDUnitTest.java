@@ -14,12 +14,16 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.util.test.TestUtil;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.junit.Assert.*;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.analysis.Analyzer;
@@ -29,15 +33,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)

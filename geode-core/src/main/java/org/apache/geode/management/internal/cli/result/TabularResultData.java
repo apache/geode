@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @since GemFire 7.0

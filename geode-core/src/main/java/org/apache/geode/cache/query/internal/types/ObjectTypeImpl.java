@@ -21,14 +21,14 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 /**
  * Implementation of ObjectType
- * 
+ *
  * @since GemFire 4.0
  */
 public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {

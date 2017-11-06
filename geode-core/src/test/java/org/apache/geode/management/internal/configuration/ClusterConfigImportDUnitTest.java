@@ -37,10 +37,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(DistributedTest.class)
 public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {

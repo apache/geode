@@ -35,6 +35,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.admin.internal.FinishBackupRequest;
 import org.apache.geode.admin.internal.PrepareBackupRequest;
 import org.apache.geode.cache.Cache;
@@ -54,10 +59,6 @@ import org.apache.geode.internal.cache.BackupLock;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({DistributedTest.class})
 public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
@@ -213,7 +214,7 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
 
   /**
    * Create a region, installing the test hook in the backup lock
-   * 
+   *
    * @param shortcut The region shortcut to use to create the region
    * @return The newly created region.
    */

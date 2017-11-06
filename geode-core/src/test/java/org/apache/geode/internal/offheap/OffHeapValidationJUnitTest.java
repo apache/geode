@@ -14,6 +14,20 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -25,23 +39,10 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Basic integration tests for validating the off-heap implementation.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class OffHeapValidationJUnitTest {
@@ -229,7 +230,7 @@ public class OffHeapValidationJUnitTest {
   /**
    * Returns -1 if c1 is missing an element in c2, 1 if c2 is missing an element in c1, or 0 is they
    * contain the exact same elements.
-   * 
+   *
    * @throws NullPointerException if either c1 or c2 is null
    */
   private static int joint(Collection<?> c1, Collection<?> c2) {
@@ -255,7 +256,7 @@ public class OffHeapValidationJUnitTest {
   /**
    * Returns -1 if m1 is missing a key in m2, 1 if m2 is missing a key in m1, or 0 is they contain
    * the exact same keys.
-   * 
+   *
    * @throws NullPointerException if either c1 or c2 is null
    */
   private static int joint(Map<?, ?> m1, Map<?, ?> m2) {

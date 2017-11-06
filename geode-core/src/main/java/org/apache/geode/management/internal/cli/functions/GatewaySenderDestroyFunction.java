@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -24,7 +26,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.logging.log4j.Logger;
 
 public class GatewaySenderDestroyFunction extends FunctionAdapter implements InternalEntity {
   private static final long serialVersionUID = 1L;

@@ -14,6 +14,17 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.nio.BufferUnderflowException;
+import java.util.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -41,21 +52,11 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.net.ConnectException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.nio.BufferUnderflowException;
-import java.util.*;
 
 /**
  * Called from the client and execute client to server requests against servers. Handles retrying to
  * different servers, and marking servers dead if we get exception from them.
- * 
+ *
  * @since GemFire 5.7
  */
 public class OpExecutorImpl implements ExecutablePool {
@@ -209,7 +210,7 @@ public class OpExecutorImpl implements ExecutablePool {
   /**
    * execute the given op on the given server. If the server cannot be reached, sends a
    * TXFailoverOp, then retries the given op
-   * 
+   *
    * @param loc the server to execute the op on
    * @param op the op to execute
    * @return the result of execution
@@ -316,7 +317,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.OpExecutor#executeOn(org.apache.geode.distributed.
    * internal.ServerLocation, org.apache.geode.cache.client.internal.Op)
    */
@@ -411,7 +412,7 @@ public class OpExecutorImpl implements ExecutablePool {
    * gets a connection to the given serverLocation either by looking up the threadLocal
    * {@link #localConnectionMap}. If a connection does not exist (or has been destroyed) we borrow
    * one from connectionManager.
-   * 
+   *
    * @return the activated connection
    */
   private Connection getActivatedThreadLocalConnectionForSingleHop(ServerLocation server,
@@ -460,7 +461,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.ExecutablePool#executeOnPrimary(org.apache.geode.cache.
    * client.internal.Op)
@@ -528,7 +529,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.ExecutablePool#executeOnAllQueueServers(org.apache.geode
    * .cache.client.internal.Op)
@@ -720,7 +721,7 @@ public class OpExecutorImpl implements ExecutablePool {
        * note: the old code in ConnectionProxyImpl used to create a new socket here to the server to
        * determine if it really crashed. We may have to add this back in for some reason, but
        * hopefully not.
-       * 
+       *
        * note 05/21/08: an attempt to address this was made by increasing the time waited on server
        * before closing timeoutd clients see ServerConnection.hasBeenTimedOutOnClient
        */
@@ -928,4 +929,3 @@ public class OpExecutorImpl implements ExecutablePool {
   }
 
 }
-

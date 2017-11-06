@@ -287,7 +287,7 @@ public class ClusterConfigurationService {
   /**
    * Add jar information into the shared configuration and save the jars in the file system used
    * when deploying jars
-   * 
+   *
    * @return true on success
    */
   public boolean addJarsToThisLocator(String[] jarNames, byte[][] jarBytes, String[] groups) {
@@ -427,7 +427,7 @@ public class ClusterConfigurationService {
 
   /**
    * Creates the shared configuration service
-   * 
+   *
    * @param loadSharedConfigFromDir when set to true, loads the configuration from the share_config
    *        directory
    */
@@ -527,7 +527,7 @@ public class ClusterConfigurationService {
   /**
    * Create a response containing the status of the Shared configuration and information about other
    * locators containing newer shared configuration data (if at all)
-   * 
+   *
    * @return {@link SharedConfigurationStatusResponse} containing the
    *         {@link SharedConfigurationStatus}
    */
@@ -576,7 +576,7 @@ public class ClusterConfigurationService {
 
   /**
    * Returns the path of Shared configuration directory
-   * 
+   *
    * @return {@link String} path of the shared configuration directory
    */
   public String getSharedConfigurationDirPath() {
@@ -586,7 +586,7 @@ public class ClusterConfigurationService {
   /**
    * Gets the current status of the ClusterConfigurationService If the status is started , it
    * determines if the shared configuration is waiting for new configuration on other locators
-   * 
+   *
    * @return {@link SharedConfigurationStatus}
    */
   public SharedConfigurationStatus getStatus() {
@@ -688,7 +688,7 @@ public class ClusterConfigurationService {
    * Gets the region containing the shared configuration data. The region is created , if it does
    * not exist already. Note : this could block if this locator contains stale persistent
    * configuration data.
-   * 
+   *
    * @return {@link Region} ConfigurationRegion, this should never be null
    */
   private Region<String, Configuration> getConfigurationRegion() {
@@ -742,7 +742,7 @@ public class ClusterConfigurationService {
   /**
    * Reads the configuration information from the shared configuration directory and returns a
    * {@link Configuration} object
-   * 
+   *
    * @return {@link Configuration}
    */
   private Configuration readConfiguration(File groupConfigDir)

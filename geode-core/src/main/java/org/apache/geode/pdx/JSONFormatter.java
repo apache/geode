@@ -14,22 +14,23 @@
  */
 package org.apache.geode.pdx;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.pdx.internal.json.JSONToPdxMapper;
 import org.apache.geode.pdx.internal.json.PdxInstanceHelper;
 import org.apache.geode.pdx.internal.json.PdxInstanceSortedHelper;
 import org.apache.geode.pdx.internal.json.PdxListHelper;
 import org.apache.geode.pdx.internal.json.PdxToJSON;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 
 /**
@@ -111,7 +112,7 @@ public class JSONFormatter {
 
   /**
    * Converts a JSON document into a PdxInstance
-   * 
+   *
    * @return the PdxInstance.
    * @throws JSONFormatterException if unable to parse the JSON document
    */
@@ -121,7 +122,7 @@ public class JSONFormatter {
 
   /**
    * Converts a JSON document into a PdxInstance
-   * 
+   *
    * @return the PdxInstance.
    * @throws JSONFormatterException if unable to parse the JSON document
    */
@@ -160,7 +161,7 @@ public class JSONFormatter {
 
   /**
    * Converts a PdxInstance into a JSON document
-   * 
+   *
    * @return the JSON string.
    * @throws JSONFormatterException if unable to create the JSON document
    */
@@ -175,7 +176,7 @@ public class JSONFormatter {
 
   /**
    * Converts a PdxInstance into a JSON document in byte-array form
-   * 
+   *
    * @return the JSON byte array.
    * @throws JSONFormatterException if unable to create the JSON document
    */

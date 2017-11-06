@@ -97,14 +97,14 @@ public abstract class DistributedCacheOperation {
   /**
    * Deserialization policy: do not deserialize (for byte array, null or cases where the value
    * should stay serialized)
-   * 
+   *
    * @since GemFire 5.7
    */
   public static final byte DESERIALIZATION_POLICY_NONE = (byte) 0;
 
   /**
    * Deserialization policy: deserialize lazily (for all other objects)
-   * 
+   *
    * @since GemFire 5.7
    */
   public static final byte DESERIALIZATION_POLICY_LAZY = (byte) 2;
@@ -184,7 +184,7 @@ public abstract class DistributedCacheOperation {
    * Return true if this operation needs to check for reliable delivery. Return false if not.
    * Currently the only case it doesn't need to be is a DestroyRegionOperation doing a "local"
    * destroy.
-   * 
+   *
    * @since GemFire 5.0
    */
   boolean isOperationReliable() {
@@ -731,7 +731,7 @@ public abstract class DistributedCacheOperation {
 
   /**
    * Get the adjunct receivers for a partitioned region operation
-   * 
+   *
    * @param br the PR bucket
    * @param cacheOpReceivers the receivers of the CacheOperationMessage for this op
    * @param twoMessages PR members that are creating the bucket and need both cache op and adjunct
@@ -884,21 +884,21 @@ public abstract class DistributedCacheOperation {
     internalBeforePutOutgoing = beforePutOutgoing;
   }
 
-  public static abstract class CacheOperationMessage extends SerialDistributionMessage
+  public abstract static class CacheOperationMessage extends SerialDistributionMessage
       implements MessageWithReply, DirectReplyMessage, OldValueImporter {
 
-    protected final static short POSSIBLE_DUPLICATE_MASK = POS_DUP;
-    protected final static short OLD_VALUE_MASK = DistributionMessage.UNRESERVED_FLAGS_START;
-    protected final static short DIRECT_ACK_MASK = (OLD_VALUE_MASK << 1);
-    protected final static short FILTER_INFO_MASK = (DIRECT_ACK_MASK << 1);
-    protected final static short CALLBACK_ARG_MASK = (FILTER_INFO_MASK << 1);
-    protected final static short DELTA_MASK = (CALLBACK_ARG_MASK << 1);
-    protected final static short NEEDS_ROUTING_MASK = (DELTA_MASK << 1);
-    protected final static short VERSION_TAG_MASK = (NEEDS_ROUTING_MASK << 1);
-    protected final static short PERSISTENT_TAG_MASK = (VERSION_TAG_MASK << 1);
-    protected final static short UNRESERVED_FLAGS_START = (PERSISTENT_TAG_MASK << 1);
+    protected static final short POSSIBLE_DUPLICATE_MASK = POS_DUP;
+    protected static final short OLD_VALUE_MASK = DistributionMessage.UNRESERVED_FLAGS_START;
+    protected static final short DIRECT_ACK_MASK = (OLD_VALUE_MASK << 1);
+    protected static final short FILTER_INFO_MASK = (DIRECT_ACK_MASK << 1);
+    protected static final short CALLBACK_ARG_MASK = (FILTER_INFO_MASK << 1);
+    protected static final short DELTA_MASK = (CALLBACK_ARG_MASK << 1);
+    protected static final short NEEDS_ROUTING_MASK = (DELTA_MASK << 1);
+    protected static final short VERSION_TAG_MASK = (NEEDS_ROUTING_MASK << 1);
+    protected static final short PERSISTENT_TAG_MASK = (VERSION_TAG_MASK << 1);
+    protected static final short UNRESERVED_FLAGS_START = (PERSISTENT_TAG_MASK << 1);
 
-    private final static int INHIBIT_NOTIFICATIONS_MASK = 0x400;
+    private static final int INHIBIT_NOTIFICATIONS_MASK = 0x400;
 
     public boolean needsRouting;
 
@@ -981,7 +981,7 @@ public abstract class DistributedCacheOperation {
 
     /**
      * process a reply
-     * 
+     *
      * @return true if the reply-processor should continue to process this response
      */
     boolean processReply(ReplyMessage reply, CacheOperationReplyProcessor processor) {
@@ -993,7 +993,7 @@ public abstract class DistributedCacheOperation {
     /**
      * Add the cache event's old value to this message. We must propagate the old value when the
      * receiver is doing GII and has listeners (CQs) that require the old value.
-     * 
+     *
      * @since GemFire 5.5
      * @param event the entry event that contains the old value
      */
@@ -1010,7 +1010,7 @@ public abstract class DistributedCacheOperation {
     /**
      * Insert this message's oldValue into the given event. This fixes bug 38382 by propagating old
      * values with Entry level CacheOperationMessages during initial image transfer
-     * 
+     *
      * @since GemFire 5.5
      */
     public void setOldValueInEvent(EntryEventImpl event) {
@@ -1029,7 +1029,7 @@ public abstract class DistributedCacheOperation {
 
     /**
      * Sets a flag in the message indicating that this message contains delta bytes.
-     * 
+     *
      * @since GemFire 6.1
      */
     protected void setHasDelta(boolean flag) {
@@ -1261,7 +1261,7 @@ public abstract class DistributedCacheOperation {
      * Ensure that a version tag has been recorded in the region's version vector. This makes note
      * that the event has been received and processed but probably didn't affect the cache's state
      * or it would have been recorded earlier.
-     * 
+     *
      * @param tag the version information
      * @param r the affected region
      */
@@ -1535,7 +1535,7 @@ public abstract class DistributedCacheOperation {
   }
 
   /** Custom subclass that keeps all ReplyExceptions */
-  static private class ReliableCacheReplyProcessor extends CacheOperationReplyProcessor {
+  private static class ReliableCacheReplyProcessor extends CacheOperationReplyProcessor {
 
     private final Set failedMembers;
 

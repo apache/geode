@@ -14,6 +14,10 @@
  */
 package org.apache.geode.modules.gatewaydelta;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
@@ -21,10 +25,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 
 @SuppressWarnings("serial")
 public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
@@ -68,4 +68,3 @@ public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
         .append(this.gatewayDelta).append("]").toString();
   }
 }
-

@@ -25,9 +25,9 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -37,11 +37,11 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
 
   /**
    * map of the parent bucket region to the index repository
-   * 
+   *
    * This is based on the BucketRegion in case a bucket is rebalanced, we don't want to return a
    * stale index repository. If a bucket moves off of this node and comes back, it will have a new
    * BucketRegion object.
-   * 
+   *
    * It is weak so that the old BucketRegion will be garbage collected.
    */
   protected final ConcurrentHashMap<Integer, IndexRepository> indexRepositories =
@@ -52,7 +52,7 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
   protected final LuceneSerializer serializer;
   protected final LuceneIndexImpl index;
   protected volatile boolean closed;
-  final private CountDownLatch isDataRegionReady = new CountDownLatch(1);
+  private final CountDownLatch isDataRegionReady = new CountDownLatch(1);
 
   public AbstractPartitionedRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer) {
     this.index = index;

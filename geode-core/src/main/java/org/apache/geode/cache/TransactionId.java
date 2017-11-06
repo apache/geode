@@ -20,9 +20,9 @@ import java.io.Externalizable;
 /**
  * The TransactionId interface is a "marker" interface that represents a unique GemFire transaction.
  *
- * 
+ *
  * @since GemFire 4.0
- * 
+ *
  * @see Cache#getCacheTransactionManager
  * @see CacheTransactionManager#getTransactionId
  */

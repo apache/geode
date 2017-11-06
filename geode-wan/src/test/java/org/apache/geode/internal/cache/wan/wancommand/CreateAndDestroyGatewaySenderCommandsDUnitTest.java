@@ -31,22 +31,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(DistributedTest.class)
 public class CreateAndDestroyGatewaySenderCommandsDUnitTest {

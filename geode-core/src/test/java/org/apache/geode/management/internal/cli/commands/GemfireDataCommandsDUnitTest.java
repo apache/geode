@@ -135,7 +135,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   private static final String carTemplate =
       "\"('attributes':?map,'make':'?make','model':'?model','colors':?list,'attributeSet':?set)\"";
 
-  final static int COUNT = 5;
+  static final int COUNT = 5;
 
   public String getMemberId() {
     InternalCache cache = getCache();

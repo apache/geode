@@ -64,7 +64,7 @@ public class MockExtensionCommands implements GfshCommand {
 
   /**
    * Creates a {@link MockRegionExtension} on the given <code>regionName</code>.
-   * 
+   *
    * @param regionName {@link Region} name on which to create {@link MockRegionExtension} .
    * @param value {@link String} value to set on {@link MockRegionExtension#setValue(String)}.
    * @return {@link Result}
@@ -82,7 +82,7 @@ public class MockExtensionCommands implements GfshCommand {
 
   /**
    * Alters a {@link MockRegionExtension} on the given <code>regionName</code>.
-   * 
+   *
    * @param regionName {@link Region} name on which to create {@link MockRegionExtension} .
    * @param value {@link String} value to set on {@link MockRegionExtension#setValue(String)}.
    * @return {@link Result}
@@ -100,7 +100,7 @@ public class MockExtensionCommands implements GfshCommand {
 
   /**
    * Destroy the {@link MockRegionExtension} on the given <code>regionName</code>.
-   * 
+   *
    * @param regionName {@link Region} name on which to create {@link MockRegionExtension} .
    * @return {@link Result}
    * @since GemFire 8.1
@@ -116,7 +116,7 @@ public class MockExtensionCommands implements GfshCommand {
 
   /**
    * Creates a {@link MockCacheExtension}.
-   * 
+   *
    * @param value {@link String} value to set on {@link MockCacheExtension#setValue(String)}.
    * @return {@link Result}
    * @since GemFire 8.1
@@ -132,7 +132,7 @@ public class MockExtensionCommands implements GfshCommand {
 
   /**
    * Alter a {@link MockCacheExtension}.
-   * 
+   *
    * @param value {@link String} value to set on {@link MockCacheExtension#setValue(String)}.
    * @return {@link Result}
    * @since GemFire 8.1
@@ -148,7 +148,7 @@ public class MockExtensionCommands implements GfshCommand {
 
   /**
    * Destroy a {@link MockCacheExtension}.
-   * 
+   *
    * @return {@link Result}
    * @since GemFire 8.1
    */
@@ -162,7 +162,7 @@ public class MockExtensionCommands implements GfshCommand {
   /**
    * Call <code>function</code> with <code>args</code> on all members, tabulate results and persist
    * shared config if changed.
-   * 
+   *
    * @param function {@link Function} to execute.
    * @param addXmlElement If <code>true</code> then add result {@link XmlEntity} to the config,
    *        otherwise delete it.

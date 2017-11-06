@@ -19,7 +19,7 @@ package org.apache.geode.pdx.internal;
  * pdx and the blob we are deserializing contains fields that our local version does not read. Note
  * that instances of the class are only kept locally so I didn't add code to serialize
  * unreadFieldIndexes.
- * 
+ *
  * @since GemFire 6.6
  */
 public class UnreadPdxType extends PdxType {

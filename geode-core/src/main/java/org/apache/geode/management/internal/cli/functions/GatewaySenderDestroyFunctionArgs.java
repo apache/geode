@@ -30,4 +30,3 @@ public class GatewaySenderDestroyFunctionArgs implements Serializable {
     return id;
   }
 }
-

@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Extracted from TXWriterJUnitTest. The OOME is problematic and causes the test suite to fail due
  * to suspect strings from SystemFailure Watchdog sending output to STDERR.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class TXWriterOOMEJUnitTest extends TXWriterTestCase {

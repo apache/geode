@@ -15,8 +15,8 @@
 package org.apache.geode.internal.protocol.operations;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 
@@ -34,4 +34,3 @@ public interface OperationHandler<Req, Resp, ErrorResp> {
   Result<Resp, ErrorResp> process(SerializationService serializationService, Req request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException;
 }
-

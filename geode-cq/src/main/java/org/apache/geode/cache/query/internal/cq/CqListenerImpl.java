@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.cq;
 
-import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**

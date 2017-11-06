@@ -17,7 +17,7 @@ package org.apache.geode.internal.lang;
 /**
  * The ThrowableUtils class is an abstract utility class for working with {@code Throwable}s.
  * <p/>
- * 
+ *
  * @see java.lang.Throwable
  */
 public abstract class ThrowableUtils {

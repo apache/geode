@@ -14,16 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.*;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class RegionListenerJUnitTest {

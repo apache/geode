@@ -14,6 +14,14 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.*;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneSerializer;
@@ -22,13 +30,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CacheServiceProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.*;
 
 public class LuceneIndexCreationProfile implements CacheServiceProfile, VersionedDataSerializable {
 

@@ -18,16 +18,17 @@ import static org.apache.geode.test.junit.rules.serializable.FieldSerializationU
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.*;
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.Timeout;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SerializableTimeout}.

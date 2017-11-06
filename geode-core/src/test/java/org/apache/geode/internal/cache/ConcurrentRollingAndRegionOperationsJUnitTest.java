@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * This JUnit test tests concurrent rolling and normal region operations put,get,clear,destroy in
  * both sync and async mode
- * 
+ *
  * A region operation is done on the same key that is about to be rolled or has just been rolled and
  * the region operation is verified to have been correctly executed.
  */

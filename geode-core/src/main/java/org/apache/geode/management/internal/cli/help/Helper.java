@@ -14,15 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.help;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.springframework.shell.core.MethodTarget;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -35,9 +26,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.shell.core.MethodTarget;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class Helper {

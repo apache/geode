@@ -249,9 +249,9 @@ public class RemoteBridgeServer extends AbstractCacheServer
   /**
    * Registers a new <code>InterestRegistrationListener</code> with the set of
    * <code>InterestRegistrationListener</code>s.
-   * 
+   *
    * @param listener The <code>InterestRegistrationListener</code> to register
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
@@ -264,9 +264,9 @@ public class RemoteBridgeServer extends AbstractCacheServer
   /**
    * Unregisters an existing <code>InterestRegistrationListener</code> from the set of
    * <code>InterestRegistrationListener</code>s.
-   * 
+   *
    * @param listener The <code>InterestRegistrationListener</code> to unregister
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
@@ -279,10 +279,10 @@ public class RemoteBridgeServer extends AbstractCacheServer
   /**
    * Returns a read-only set of <code>InterestRegistrationListener</code>s registered with this
    * notifier.
-   * 
+   *
    * @return a read-only set of <code>InterestRegistrationListener</code>s registered with this
    *         notifier
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public Set getInterestRegistrationListeners() {

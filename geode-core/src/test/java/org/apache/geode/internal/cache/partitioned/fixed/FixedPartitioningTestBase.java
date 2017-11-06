@@ -21,8 +21,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -62,19 +76,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * This is the base class to do operations
@@ -1247,7 +1248,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
   /**
    * Local destroy all root regions and close the cache.
    */
-  protected synchronized static void remoteTearDown() {
+  protected static synchronized void remoteTearDown() {
     try {
       if (cache != null && !cache.isClosed()) {
         // try to destroy the root regions first so that

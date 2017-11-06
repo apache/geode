@@ -17,12 +17,12 @@ package org.apache.geode.cache.client.internal;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test if exceptions are logged when thread is submitted using

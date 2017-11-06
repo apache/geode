@@ -33,10 +33,10 @@ import org.junit.runner.RunWith;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)

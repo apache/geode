@@ -200,41 +200,41 @@ public class CommandResponse {
 
 /*
  ** TABLE
- * 
+ *
  * { "sender": "member1", "version": "gemfire70", "contentType": "table", "page": "1/1",
  * "tokenAccessor": "__NULL__", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
  * "val2" ], "data": { "header": [ "Header1", "Header2", "Header3", "Header4" ], "content": [ [
  * "val00", "val01", "val02", "val03" ], [ "val10", "val11", "val12", "val13" ], [ "val20", "val21",
  * "val22", "val23" ] ] } }
- ** 
+ **
  * TABLE SCROLLABLE
- * 
+ *
  * { "sender": "member1", "version": "gemfire70", "contentType": "table", "page": "1/5",
  * "tokenHolder": "TOKEN12345", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
  * "val2" ], "data": { "header": [ "Header1", "Header2", "Header3", "Header4" ], "content": [ [
  * "val00", "val01", "val02", "val03" ], [ "val10", "val11", "val12", "val13" ], [ "val20", "val21",
  * "val22", "val23" ] ] } }
- ** 
- * 
+ **
+ *
  * CATALOG
- * 
+ *
  * { "sender": "member1", "version": "gemfire70", "contentType": "catalog", "page": "1/1",
  * "tokenHolder": "__NULL__", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
  * "val2" ], "data": { "content": [ { "key1": "val1", "key2": "val2", "key3": "val3", "key4":
  * "val4", "key5": "val5", "key6": "val6", "key7": "val7" } ] } }
- ** 
- * 
+ **
+ *
  * CATALOG SCROLLABLE
- * 
+ *
  * { "sender": "member1", "version": "gemfire70", "contentType": "catalog", "page": "1/10",
  * "tokenHolder": "TOKEN1265765", "status": "OK", "when": "January 12 2012", "debugData": [ "val1",
  * "val2" ], "data": { "content": [ { "key1": "val1", "key2": "val2", "key3": "val3", "key4":
  * "val4", "key5": "val5", "key6": "val6", "key7": "val7" } ] } }
- ** 
- * 
+ **
+ *
  * Object as argument
- * 
+ *
  * { "com.foo.bar.Employee": { "id": 1234, "name": "Foo BAR", "department": { "id": 456, "name":
  * "support" } } }
- * 
+ *
  */

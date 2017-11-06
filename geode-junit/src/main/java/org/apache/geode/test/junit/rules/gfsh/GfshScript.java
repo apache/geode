@@ -63,7 +63,7 @@ public class GfshScript {
    * Will cause the thread that executes {@link GfshScript#awaitIfNecessary} to wait, if necessary,
    * until the subprocess executing this Gfsh script has terminated, or the specified waiting time
    * elapses.
-   * 
+   *
    * @throws RuntimeException if the current thread is interrupted while waiting.
    * @throws AssertionError if the specified waiting time elapses before the process exits.
    */

@@ -15,9 +15,10 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import java.io.Serializable;
 import java.util.List;
+
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
  * Class <code>CacheClientStatus</code> provides status about a client from the server's

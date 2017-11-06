@@ -16,9 +16,10 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
 import java.io.*;
+
+import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
 
 public class FetchResourceAttributesResponse extends AdminResponse {

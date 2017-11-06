@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.cache.lru;
 
+import java.util.*;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.*;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.*;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * A <code>CapacityController</code> that will remove the least recently used (LRU) entry from a
@@ -116,7 +116,7 @@ public class LRUCapacityController extends LRUAlgorithm implements Declarable {
   /**
    * Creates an LRU capacity controller that allows the given number of maximum entries and uses the
    * default eviction action.
-   * 
+   *
    * @param maximumEntries The maximum number of entries allowed in the region whose capacity this
    *        controller controls. Once there are <code>capacity</code> entries in a region, this
    *        controller will remove the least recently used entry.<br>
@@ -133,7 +133,7 @@ public class LRUCapacityController extends LRUAlgorithm implements Declarable {
 
   /**
    * Creates an LRU capacity controller that allows the given number of maximum entries.
-   * 
+   *
    * @param maximumEntries The maximum number of entries allowed in the region whose capacity this
    *        controller controls. Once there are <code>capacity</code> entries in a region, this
    *        controller will remove the least recently used entry.<br>
@@ -311,9 +311,9 @@ public class LRUCapacityController extends LRUAlgorithm implements Declarable {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
-   * 
+   *
    * Note that we just need to make sure that equal objects return equal hashcodes; nothing really
    * elaborate is done here.
    */

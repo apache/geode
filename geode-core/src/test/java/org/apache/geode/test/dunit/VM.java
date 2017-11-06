@@ -22,8 +22,8 @@ import java.rmi.RemoteException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.awaitility.Awaitility;
 import hydra.MethExecutorResult;
+import org.awaitility.Awaitility;
 
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.dunit.standalone.BounceResult;
@@ -121,7 +121,7 @@ public class VM implements Serializable {
 
   /**
    * Returns the version of Geode used in this VM.
-   * 
+   *
    * @see VersionManager#CURRENT_VERSION
    * @see Host#getVM(String, int)
    */
@@ -337,7 +337,7 @@ public class VM implements Serializable {
    * until it either succeeds, or repeatTimeoutMs has passed. The AssertionError is thrown back to
    * the sender of this method if {@code run} has not completed successfully before repeatTimeoutMs
    * has passed.
-   * 
+   *
    * @deprecated Please use {@link Awaitility} to await condition and then
    *             {@link #invoke(SerializableCallableIF)} instead.
    */
@@ -399,7 +399,7 @@ public class VM implements Serializable {
    * synchronized but attempts to invoke methods on a bouncing {@code VM} will cause test failure.
    * Tests using bounce should be placed at the end of the DUnit test suite, since an exception here
    * will cause all tests using the unsuccessfully bounced {@code VM} to fail.
-   * 
+   *
    * This method is currently not supported by the standalone DUnit runner.
    *
    * @throws RMIException if an exception occurs while bouncing this {@code VM}, for example a

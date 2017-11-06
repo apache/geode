@@ -13,9 +13,11 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
+
+import java.io.IOException;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -30,16 +32,14 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 
-import java.io.IOException;
-
 /**
  * This is the base command which read the parts for the MessageType.COMMIT.<br>
- * 
+ *
  * @since GemFire 6.6
  */
 public class CommitCommand extends BaseCommand {
 
-  private final static CommitCommand singleton = new CommitCommand();
+  private static final CommitCommand singleton = new CommitCommand();
 
   public static Command getCommand() {
     return singleton;

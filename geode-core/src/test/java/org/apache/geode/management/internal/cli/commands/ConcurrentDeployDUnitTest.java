@@ -15,20 +15,21 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.JarFileRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.JarFileRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(DistributedTest.class)
 public class ConcurrentDeployDUnitTest {

@@ -281,7 +281,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
   /**
    * check to see if the distributed system is closing
-   * 
+   *
    * @return true if the distributed system is closing
    */
   private boolean checkDSClosing(DistributionManager dm) {
@@ -405,7 +405,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TransactionMessage#canStartRemoteTransaction()
    */
   public boolean canStartRemoteTransaction() {
@@ -414,7 +414,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TransactionMessage#getTXUniqId()
    */
   public int getTXUniqId() {

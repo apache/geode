@@ -67,7 +67,7 @@ public interface CqService {
 
   /**
    * Retrieve a cq by client cq name from server
-   * 
+   *
    * @return the CqQuery or null if not found
    */
   public abstract CqQuery getClientCqFromServer(ClientProxyMembershipID clientProxyId,
@@ -75,7 +75,7 @@ public interface CqService {
 
   /**
    * Retrieve a CqQuery by name.
-   * 
+   *
    * @return the CqQuery or null if not found
    */
   public abstract InternalCqQuery getCq(String cqName);
@@ -87,7 +87,7 @@ public interface CqService {
 
   /**
    * Retruns all the cqs on a given region.
-   * 
+   *
    */
   public abstract Collection<? extends InternalCqQuery> getAllCqs(String regionName)
       throws CqException;
@@ -129,7 +129,7 @@ public interface CqService {
 
   /**
    * Called directly on server side.
-   * 
+   *
    * @param cqName
    * @param clientProxyId
    * @throws CqException
@@ -144,14 +144,14 @@ public interface CqService {
 
   /**
    * Get statistics information for all CQs
-   * 
+   *
    * @return the CqServiceStatistics
    */
   public abstract CqServiceStatistics getCqStatistics();
 
   /**
    * Server side method.
-   * 
+   *
    * @param clientProxyId
    * @throws CqException
    */
@@ -159,7 +159,7 @@ public interface CqService {
 
   /**
    * Returns all the CQs registered by the client.
-   * 
+   *
    * @param clientProxyId
    * @return CQs registered by the client.
    */
@@ -167,7 +167,7 @@ public interface CqService {
 
   /**
    * Returns all the durable client CQs registered by the client.
-   * 
+   *
    * @param clientProxyId
    * @return CQs registered by the client.
    */
@@ -176,7 +176,7 @@ public interface CqService {
 
   /**
    * Invokes the CqListeners for the given CQs.
-   * 
+   *
    * @param cqs list of cqs with the cq operation from the Server.
    * @param messageType base operation
    * @param key
@@ -209,7 +209,7 @@ public interface CqService {
 
   /**
    * Called directly on server side.
-   * 
+   *
    * @param cqName
    * @param clientId
    * @throws CqException
@@ -218,7 +218,7 @@ public interface CqService {
 
   /**
    * Called directly on the server side.
-   * 
+   *
    * @param cqState new state
    * @param cQuery
    */
@@ -231,7 +231,7 @@ public interface CqService {
   /**
    * Executes the given CqQuery, if the CqQuery for that name is not there it registers the one and
    * executes. This is called on the Server.
-   * 
+   *
    * @param cqName
    * @param queryString
    * @param cqState
@@ -251,7 +251,7 @@ public interface CqService {
 
   /**
    * Server side method. Closes non-durable CQs for the given client proxy id.
-   * 
+   *
    * @param clientProxyId
    * @throws CqException
    */

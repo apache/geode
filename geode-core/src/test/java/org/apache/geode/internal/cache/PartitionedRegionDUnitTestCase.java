@@ -73,7 +73,7 @@ public class PartitionedRegionDUnitTestCase extends JUnit4CacheTestCase {
 
   /**
    * Sets the loglevel for the provided log writer
-   * 
+   *
    * @param l the {@link LogWriter}
    * @param logLevl the new log level as specified in {@link LogWriterImpl}
    * @return the old log level
@@ -122,9 +122,9 @@ public class PartitionedRegionDUnitTestCase extends JUnit4CacheTestCase {
   /**
    * This function creates multiple partition regions in a VM. The name of the Partition Region will
    * be PRPrefix+index (index starts from startIndexForRegion and ends to endIndexForRegion)
-   * 
+   *
    * @param PRPrefix : Used in the name of the Partition Region
-   * 
+   *
    *        These indices Represents range of the Partition Region
    */
   public CacheSerializableRunnable createMultiplePartitionRegion(final String PRPrefix,
@@ -137,9 +137,9 @@ public class PartitionedRegionDUnitTestCase extends JUnit4CacheTestCase {
   /**
    * This function creates multiple partition regions in a VM. The name of the Partition Region will
    * be PRPrefix+index (index starts from startIndexForRegion and ends to endIndexForRegion)
-   * 
+   *
    * @param PRPrefix : Used in the name of the Partition Region
-   * 
+   *
    *        These indices Represents range of the Partition Region
    * @param startIndexForRegion :
    * @param endIndexForRegion

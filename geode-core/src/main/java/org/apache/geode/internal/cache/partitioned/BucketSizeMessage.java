@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * A message used to determine the number of bytes a Bucket consumes.
- * 
+ *
  * @since GemFire 5.0
  */
 
@@ -72,7 +72,7 @@ public class BucketSizeMessage extends PartitionMessage {
 
   /**
    * Sends a BucketSize message to determine the number of bytes the bucket consumes
-   * 
+   *
    * @param recipient the member that the contains keys/value message is sent to
    * @param r the PartitionedRegion that contains the bucket
    * @param bucketId the identity of the bucket whose size should be returned.
@@ -163,7 +163,7 @@ public class BucketSizeMessage extends PartitionMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -225,7 +225,7 @@ public class BucketSizeMessage extends PartitionMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class BucketSizeResponse extends ReplyProcessor21 {

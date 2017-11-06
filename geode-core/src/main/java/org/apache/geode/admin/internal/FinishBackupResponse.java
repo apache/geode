@@ -27,7 +27,7 @@ import org.apache.geode.internal.admin.remote.AdminResponse;
 /**
  * The reply for a {@link FinishBackupRequest}. The reply contains the persistent ids of the disk
  * stores that were backed up on this member.
- * 
+ *
  *
  */
 public class FinishBackupResponse extends AdminResponse {

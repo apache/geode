@@ -17,7 +17,7 @@ package org.apache.geode.cache.lucene;
 
 /**
  * An interface which stores a single result obtained by executing a Lucene query.
- * 
+ *
  */
 public interface LuceneResultStruct<K, V> {
 
@@ -46,4 +46,3 @@ public interface LuceneResultStruct<K, V> {
    */
   public float getScore();
 }
-

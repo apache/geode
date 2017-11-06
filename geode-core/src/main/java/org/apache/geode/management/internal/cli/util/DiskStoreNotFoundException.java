@@ -21,7 +21,7 @@ import org.apache.geode.GemFireException;
  * The DiskStoreNotFoundException is a GemFireException class indicating that a disk store by name
  * could not be found on a member specified by name!
  * </p>
- * 
+ *
  * @see org.apache.geode.GemFireException
  * @since GemFire 7.0
  */

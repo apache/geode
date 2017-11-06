@@ -20,6 +20,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
@@ -39,13 +43,9 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 /**
  * This class tests the response of GemFire to various occurrences of {@link VirtualMachineError}
- * 
+ *
  * @since GemFire 5.1
  */
 @Category(DistributedTest.class)
@@ -54,7 +54,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   static final String REGION_NAME = "SystemFailureDUnitTest";
   static final Scope SCOPE = Scope.DISTRIBUTED_ACK;
 
-  volatile static Object newValue, oldValue;
+  static volatile Object newValue, oldValue;
 
   @Test
   public void testNullFailure() {
@@ -199,10 +199,10 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   /**
    * This class can never be successfully loaded.
-   * 
+   *
    */
   static class SickoClass {
-    static private boolean threeCardMonte() {
+    private static boolean threeCardMonte() {
       return true;
     }
 
@@ -238,13 +238,13 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
   }
 
-  static protected final AtomicInteger listenerCount = new AtomicInteger(0);
+  protected static final AtomicInteger listenerCount = new AtomicInteger(0);
 
-  static protected Integer getListenerCount() {
+  protected static Integer getListenerCount() {
     return new Integer(listenerCount.get());
   }
 
-  static private final Runnable listener1 = new Runnable() {
+  private static final Runnable listener1 = new Runnable() {
     public void run() {
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
       listenerCount.addAndGet(1);
@@ -381,7 +381,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
   }
 
-  static protected volatile ArrayList peskyMemory;
+  protected static volatile ArrayList peskyMemory;
 
   private Object doExec(String method) {
     Host host = Host.getHost(0);
@@ -420,7 +420,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     sub.create(name, new Integer(0), sub.getCache().getDistributedSystem().getDistributedMember());
   }
 
-  static private final GenericListener listener_stackOverflow = new GenericListener() {
+  private static final GenericListener listener_stackOverflow = new GenericListener() {
     /**
      * gratuitous and stupid recursion
      */
@@ -451,7 +451,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
   };
 
-  static private final GenericListener listener_persistentOutOfMemory = new GenericListener() {
+  private static final GenericListener listener_persistentOutOfMemory = new GenericListener() {
     /**
      * Allocate objects until death
      */
@@ -495,7 +495,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
   };
 
-  static private final GenericListener listener_memoryMonitor = new GenericListener() {
+  private static final GenericListener listener_memoryMonitor = new GenericListener() {
 
     /**
      * Allocate objects until we are chronically low, but don't generate OutOfMemoryError
@@ -562,7 +562,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
   };
 
-  static private final GenericListener listener_internalError = new GenericListener() {
+  private static final GenericListener listener_internalError = new GenericListener() {
     /**
      * not really any good way to convince Java to do this, so I'm just gonna throw it directly.
      */
@@ -577,7 +577,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
   };
 
-  static private final GenericListener listener_unknownError = new GenericListener() {
+  private static final GenericListener listener_unknownError = new GenericListener() {
 
     /**
      * Not actually used in current JRE?
@@ -593,7 +593,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     }
   };
 
-  static private final GenericListener listener_error = new GenericListener() {
+  private static final GenericListener listener_error = new GenericListener() {
     private void forceError() {
       new SickoClass();
     }
@@ -607,11 +607,11 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
   /**
    * Set a listener that generates some sort of error
-   * 
+   *
    * @param which makes it test dependent
    * @return the listener
    */
-  static private GenericListener getListener(String which) {
+  private static GenericListener getListener(String which) {
     GenericListener listener;
     if (which.equals("testStackOverflow")) {
       listener = listener_stackOverflow;
@@ -654,7 +654,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   /**
    * Sets a listener based on the test, and then (attempts to) create an entry in this test's region
    * with the given name
-   * 
+   *
    * @param name the test we are running
    */
   protected static void createEntry(String name) throws CacheException {
@@ -689,7 +689,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
     /**
      * is called when an object is newly loaded into cache.
-     * 
+     *
      * @param oevt the ObjectEvent object representing the source object of the event.
      */
     public void afterCreate(EntryEvent oevt) {
@@ -698,7 +698,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
     /**
      * is called when an object is invalidated.
-     * 
+     *
      * @param oevt the ObjectEvent object representing the source object of the event.
      */
     public void afterInvalidate(EntryEvent oevt) {
@@ -707,7 +707,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
     /**
      * is called when an object is destroyed.
-     * 
+     *
      * @param oevt the ObjectEvent object representing the source object of the event.
      */
     public void afterDestroy(EntryEvent oevt) {
@@ -716,7 +716,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
     /**
      * is called when an object is replaced.
-     * 
+     *
      * @param oevt the ObjectEvent object representing the source object of the event.
      */
     public void afterUpdate(EntryEvent oevt) {
@@ -725,7 +725,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
     /**
      * is called when a region is invalidated.
-     * 
+     *
      * @param revt a RegionEvent to represent the source region.
      * @throws CacheException if any error occurs.
      */
@@ -735,7 +735,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
 
     /**
      * is called when a region is destroyed.
-     * 
+     *
      * @param revt a RegionEvent to represent the source region.
      * @throws CacheException if any error occurs.
      */

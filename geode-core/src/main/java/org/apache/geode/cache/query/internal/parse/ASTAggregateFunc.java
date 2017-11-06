@@ -21,7 +21,7 @@ import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.QCompiler;
 
 /**
- * 
+ *
  *
  */
 public class ASTAggregateFunc extends GemFireAST {

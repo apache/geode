@@ -22,10 +22,10 @@ import org.apache.geode.internal.DataSerializableFixedID;
 /**
  * The member that originated an update that is stored in the version information of a region entry,
  * or in the regions version vector.
- * 
+ *
  * A VersionMember could either be an InternalDistributedMember (for an in memory region), or a UUID
  * (for a persistent region).
- * 
+ *
  * VersionMembers should implement equals and hashcode.
  */
 public interface VersionSource<T> extends DataSerializableFixedID, Comparable<T> {

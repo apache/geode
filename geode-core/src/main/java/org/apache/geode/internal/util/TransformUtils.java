@@ -30,7 +30,7 @@ public class TransformUtils {
   /**
    * Transforms PersistentMemberIDs to a user friendly log entry.
    */
-  public final static Transformer<Map.Entry<PersistentMemberID, Set<Integer>>, String> persistentMemberEntryToLogEntryTransformer =
+  public static final Transformer<Map.Entry<PersistentMemberID, Set<Integer>>, String> persistentMemberEntryToLogEntryTransformer =
       new Transformer<Map.Entry<PersistentMemberID, Set<Integer>>, String>() {
         @Override
         public String transform(Map.Entry<PersistentMemberID, Set<Integer>> entry) {
@@ -53,7 +53,7 @@ public class TransformUtils {
   /**
    * Transforms PersistentMemberIDs to a user friendly log entry.
    */
-  public final static Transformer<PersistentMemberID, String> persistentMemberIdToLogEntryTransformer =
+  public static final Transformer<PersistentMemberID, String> persistentMemberIdToLogEntryTransformer =
       new Transformer<PersistentMemberID, String>() {
         @Override
         public String transform(PersistentMemberID memberId) {
@@ -94,7 +94,7 @@ public class TransformUtils {
   /**
    * This is a simple file to file name transformer.
    */
-  public final static Transformer<File, String> fileNameTransformer =
+  public static final Transformer<File, String> fileNameTransformer =
       new Transformer<File, String>() {
         public String transform(File file) {
           return file.getName();
@@ -103,7 +103,7 @@ public class TransformUtils {
 
   /**
    * Transforms a collection of one data type into another.
-   * 
+   *
    * @param from a collection of data to be transformed.
    * @param to a collection to contain the transformed data.
    * @param transformer transforms the data.
@@ -118,10 +118,10 @@ public class TransformUtils {
   /**
    * Transforms a collection of one data type into another and returns a map using the transformed
    * type as the key and the original type as the value.
-   * 
+   *
    * @param from a collection of data to be transformed.
    * @param transformer transforms the data.
-   * 
+   *
    * @return a Map of transformed values that are keys to the original values.
    */
   public static <T1, T2> Map<T2, T1> transformAndMap(Collection<T1> from,

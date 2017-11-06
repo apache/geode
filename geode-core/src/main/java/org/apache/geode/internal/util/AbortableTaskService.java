@@ -37,7 +37,7 @@ public class AbortableTaskService {
     /**
      * Invoked to execute the task. The task implementation should periodically check the aborted
      * flag and take appropriate action.
-     * 
+     *
      * @param aborted set to true when the task has been aborted
      */
     void runOrAbort(AtomicBoolean aborted);
@@ -55,7 +55,7 @@ public class AbortableTaskService {
 
   /**
    * Executes the task using the embedded executor.
-   * 
+   *
    * @param task the task to execute
    */
   public void execute(AbortableTask task) {

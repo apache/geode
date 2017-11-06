@@ -77,6 +77,7 @@ import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionShortcut;
@@ -85,7 +86,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
-import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
@@ -138,7 +138,7 @@ import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests 7.0 cache.xml feature : Fixed Partitioning.
- * 
+ *
  * @since GemFire 6.6
  */
 public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
@@ -2698,7 +2698,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   /**
    * Test EnableSubscriptionConflation region attribute
-   * 
+   *
    * @since GemFire 5.7
    */
   @Test
@@ -2829,7 +2829,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   /**
    * Tests that a region created with a named attributes has the correct attributes.
-   * 
+   *
    * This tests currently fails due to (what seem to me as) limitations in the XML generator and the
    * comparison of the XML. I have run this test by hand and looked at the generated XML and there
    * were no significant problems, however because of the limitations, I am disabling this test, but
@@ -3111,7 +3111,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   /**
    * Tests multiple cache listeners on one region
-   * 
+   *
    * @since GemFire 5.0
    */
   @Test
@@ -3195,7 +3195,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   /**
    * Tests multiple transaction listeners
-   * 
+   *
    * @since GemFire 5.0
    */
   @Test
@@ -3673,7 +3673,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   /**
    * Test EnableBridgeConflation region attribute
-   * 
+   *
    * @since GemFire 4.2
    */
   @Test
@@ -3688,7 +3688,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   /**
    * Test EnableAsyncConflation region attribute
-   * 
+   *
    * @since GemFire 4.2
    */
   @Test

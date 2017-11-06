@@ -805,7 +805,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * Returns an event for listener notification. The event's operation may be altered to conform to
    * the ConcurrentMap implementation specification. If the returned value is not == to the event
    * parameter then the caller is responsible for releasing it.
-   * 
+   *
    * @param event the original event
    * @return the original event or a new event having a change in operation
    */
@@ -953,7 +953,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /**
    * process a QueryMessage netsearch response
-   * 
+   *
    * @param versionTag TODO
    */
   protected synchronized void incomingResponse(Object obj, long lastModifiedTime, boolean isPresent,

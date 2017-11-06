@@ -232,7 +232,7 @@ public class AvailablePort {
 
   /**
    * Test to see if a given port is available port on all interfaces on this host.
-   * 
+   *
    * @param port
    * @return true of if the port is free on all interfaces
    */
@@ -460,7 +460,7 @@ public class AvailablePort {
    *
    */
   public static class Keeper implements Serializable {
-    private transient final ServerSocket ss;
+    private final transient ServerSocket ss;
     private final int port;
 
     public Keeper(ServerSocket ss, int port) {

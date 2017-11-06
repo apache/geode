@@ -14,19 +14,19 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 import java.io.PrintStream;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * A log writer for security related logs. This will prefix all messages with "security-" in the
  * level part of log-line for easy recognition and filtering if required. Intended usage is in all
  * places where security related logging (authentication, authorization success and failure of
  * clients and peers) as well as for security callbacks.
- * 
+ *
  * This class extends the {@link ManagerLogWriter} to add the security prefix feature mentioned
  * above.
- * 
+ *
  * @since GemFire 5.5
  */
 public class SecurityManagerLogWriter extends ManagerLogWriter {

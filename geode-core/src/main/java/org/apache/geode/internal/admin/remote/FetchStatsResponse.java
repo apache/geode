@@ -14,11 +14,6 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Statistics;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem.StatisticsVisitor;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -26,6 +21,11 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Statistics;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem.StatisticsVisitor;
 import org.apache.geode.distributed.internal.membership.*;
 
 /**
@@ -125,7 +125,7 @@ public class FetchStatsResponse extends AdminResponse {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -134,4 +134,3 @@ public class FetchStatsResponse extends AdminResponse {
   }
 
 }
-

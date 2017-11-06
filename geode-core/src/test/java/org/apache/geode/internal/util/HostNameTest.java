@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -29,8 +29,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)

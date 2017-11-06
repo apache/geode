@@ -17,14 +17,14 @@ package org.apache.geode.internal.cache.control;
 
 /**
  * Provides notification of {@link org.apache.geode.cache.Cache} resource management events.
- * 
+ *
  * @since GemFire 6.0
  */
 public interface ResourceListener<T extends ResourceEvent> {
   /**
    * Invoked when a {@link ResourceEvent resource event} occurs. Implementation of this method
    * should be light weight.
-   * 
+   *
    * @param event the resource event
    */
   public void onEvent(T event);

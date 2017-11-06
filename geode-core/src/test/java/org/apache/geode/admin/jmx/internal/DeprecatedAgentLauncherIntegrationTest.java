@@ -104,7 +104,7 @@ public class DeprecatedAgentLauncherIntegrationTest {
   /**
    * Test to verify fix for TRAC #44658.
    * <p>
-   * 
+   *
    * TRAC #44658: Agent ignores 'property-file' command line option (regression in 6.6.2)
    */
   @Test

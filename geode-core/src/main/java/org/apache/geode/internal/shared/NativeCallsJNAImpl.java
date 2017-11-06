@@ -15,12 +15,21 @@
 
 package org.apache.geode.internal.shared;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.process.signal.Signal;
-import org.apache.geode.internal.shared.NativeCalls.RehashServerOnSIGHUP;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.sun.jna.Callback;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Library;
@@ -33,30 +42,22 @@ import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
-import java.net.SocketException;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.process.signal.Signal;
+import org.apache.geode.internal.shared.NativeCalls.RehashServerOnSIGHUP;
 
 
 /**
  * Implementation of {@link NativeCalls} interface that encapsulates native C calls via JNA. To
  * obtain an instance of JNA based implementation for the current platform, use
  * {@link NativeCallsJNAImpl#getInstance()}.
- * 
+ *
  * BridJ is supposed to be cleaner, faster but it does not support Solaris/SPARC yet and its not a
  * mature library yet, so not using it. Can revisit once this changes.
- * 
+ *
  * @since GemFire 8.0
  */
 public class NativeCallsJNAImpl {
@@ -648,7 +649,7 @@ public class NativeCallsJNAImpl {
     /**
      * Get the file store type of a path. for example, /dev/sdd1(store name) /w2-gst-dev40d(mount
      * point) ext4(type)
-     * 
+     *
      * @param path
      * @return file store type
      */
@@ -720,7 +721,7 @@ public class NativeCallsJNAImpl {
       return false;
     }
 
-    public final static String[] FallocateFileSystems = {"ext4", "xfs", "btrfs", "ocfs2"};
+    public static final String[] FallocateFileSystems = {"ext4", "xfs", "btrfs", "ocfs2"};
 
     @Override
     protected boolean hasFallocate(String path) {

@@ -24,7 +24,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
  * Domain object used for Data Commands Functions
- * 
+ *
  */
 public class DataCommandRequest implements Serializable {
 

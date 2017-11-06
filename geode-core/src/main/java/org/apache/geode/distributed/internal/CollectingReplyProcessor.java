@@ -14,16 +14,16 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
 /**
  * This reply processor collects all of the exceptions/results from the ReplyMessages it receives
- * 
+ *
  *
  */
 public class CollectingReplyProcessor<T> extends ReplyProcessor21 {

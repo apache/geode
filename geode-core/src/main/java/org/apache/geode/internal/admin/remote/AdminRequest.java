@@ -17,7 +17,6 @@
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
-// import org.apache.geode.internal.*;
 import java.io.DataOutput;
 import java.io.IOException;
 
@@ -28,8 +27,6 @@ import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
-// import java.util.*;
-// import java.net.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;

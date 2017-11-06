@@ -14,11 +14,12 @@
  */
 package org.apache.geode.sequence;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+
+import javax.swing.*;
 
 /**
  * Created by IntelliJ IDEA. User: dan Date: Oct 28, 2010 Time: 10:30:40 PM To change this template

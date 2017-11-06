@@ -22,7 +22,7 @@ import org.apache.geode.cache.control.RebalanceOperation;
  *
  * <p>
  * This exception only occurs when a transaction involves partitioned regions.
- * 
+ *
  * @since GemFire 6.6
  */
 public class TransactionDataRebalancedException extends TransactionException {

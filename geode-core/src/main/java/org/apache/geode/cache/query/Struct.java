@@ -15,7 +15,6 @@
 
 package org.apache.geode.cache.query;
 
-// import java.util.*;
 import org.apache.geode.cache.query.types.StructType;
 
 /**
@@ -42,7 +41,7 @@ public interface Struct {
 
   /**
    * Get the values in this struct
-   * 
+   *
    * @return the array of values
    */
   public Object[] getFieldValues();

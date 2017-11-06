@@ -198,7 +198,7 @@ public class AttributeDescriptor {
 
   /**
    * reads field value from a PdxInstance
-   * 
+   *
    * @param target
    * @return the value of the field from PdxInstance
    * @throws NameNotFoundException
@@ -309,4 +309,3 @@ public class AttributeDescriptor {
 
 
 }
-

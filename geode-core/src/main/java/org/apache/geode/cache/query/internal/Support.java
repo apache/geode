@@ -15,8 +15,8 @@
 
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 

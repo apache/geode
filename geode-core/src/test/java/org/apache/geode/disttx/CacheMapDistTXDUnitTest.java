@@ -14,18 +14,16 @@
  */
 package org.apache.geode.disttx;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache30.CacheMapTxnDUnitTest;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 
 /**

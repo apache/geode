@@ -28,6 +28,10 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.beanutils.ConvertUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
@@ -35,25 +39,22 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.CliJsonSerializable;
 import org.apache.geode.management.internal.cli.result.CliJsonSerializableFactory;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This class contains utility methods for JSON (http://www.json.org/) which is used by classes used
  * for the Command Line Interface (CLI).
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class JsonUtil {
 
   /**
    * Converts given JSON String in to a Map. Refer http://www.json.org/ to construct a JSON format.
-   * 
+   *
    * @param jsonString jsonString to be converted in to a Map.
    * @return a Map created from
-   * 
+   *
    * @throws IllegalArgumentException if the specified JSON string can not be converted in to a Map
    */
   public static Map<String, String> jsonToMap(String jsonString) {
@@ -76,7 +77,7 @@ public class JsonUtil {
 
   /**
    * Converts given Map in to a JSON string representing a Map. Refer http://www.json.org/ for more.
-   * 
+   *
    * @param properties a Map of Strings to be converted in to JSON String
    * @return a JSON string representing the specified Map.
    */
@@ -87,7 +88,7 @@ public class JsonUtil {
   /**
    * Converts given Object in to a JSON string representing an Object. Refer http://www.json.org/
    * for more.
-   * 
+   *
    * @param object an Object to be converted in to JSON String
    * @return a JSON string representing the specified object.
    */
@@ -99,7 +100,7 @@ public class JsonUtil {
    * Converts given Object in to a JSON string representing an Object. If object contains an
    * attribute which itself is another object it will be displayed as className if its json
    * representation exceeds the length
-   * 
+   *
    * @param object an Object to be converted in to JSON String
    * @return a JSON string representing the specified object.
    */
@@ -138,10 +139,10 @@ public class JsonUtil {
   /**
    * Converts given JSON String in to a Object. Refer http://www.json.org/ to construct a JSON
    * format.
-   * 
+   *
    * @param jsonString jsonString to be converted in to a Map.
    * @return an object constructed from given JSON String
-   * 
+   *
    * @throws IllegalArgumentException if the specified JSON string can not be converted in to an
    *         Object
    */
@@ -241,7 +242,7 @@ public class JsonUtil {
 
   /**
    * This is used in Put command this method uses HashSet as default implementation
-   * 
+   *
    * @param value
    * @param parameterType
    * @return setValue

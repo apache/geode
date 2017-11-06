@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Gathers together a number of {@link StatisticDescriptor statistics} into one logical type.

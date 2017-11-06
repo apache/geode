@@ -51,7 +51,7 @@ import org.apache.geode.management.ManagementException;
 
 /**
  * DistributionHelper solves the following problems
- * 
+ *
  * a) Handles proxy creation when Management node comes up b) Handles proxy creation when a member
  * joins c) Remove proxies when a member leaves or node stops being management node. d) Takes care
  * to create resources like hidden regions for MBean and notification federation.
@@ -93,7 +93,7 @@ public class LocalManager extends Manager {
 
   /**
    * Managed Node side resources are created
-   * 
+   *
    * Management Region : its a Replicated NO_ACK region Notification Region : its a Replicated Proxy
    * NO_ACK region
    */
@@ -304,7 +304,7 @@ public class LocalManager extends Manager {
    * This task is responsible for pushing data to the hidden region. It is executed in a single
    * thread from Executors.newSingleThreadScheduledExecutor(); Only one thread will be responsible
    * for pushing the data to the hidden region.
-   * 
+   *
    * (Note however that if this single thread terminates due to a failure during execution prior to
    * shutdown, a new one will take its place if needed to execute subsequent tasks.) Tasks are
    * guaranteed to execute sequentially, and no more than one task will be active at any given time.

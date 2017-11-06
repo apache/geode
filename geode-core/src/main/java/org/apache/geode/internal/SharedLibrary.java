@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLDecoder;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
-
-import java.io.File;
-import java.net.URL;
-import java.net.URLDecoder;
 
 /**
  * The class puts in one place the code that will determine the name of the GemFire shared library.
@@ -33,7 +33,7 @@ public class SharedLibrary {
    * A suffix added on to distinguish between the Linux and Solaris library names since they reside
    * in the same directory.
    */
-  private final static String SOLARIS_LIBRARY_SUFFIX = "_sol";
+  private static final String SOLARIS_LIBRARY_SUFFIX = "_sol";
 
   private static final boolean is64Bit;
   private static final int referenceSize;
@@ -210,7 +210,7 @@ public class SharedLibrary {
    * Returns the size in bytes of a C pointer in this shared library, returns 4 for a 32 bit shared
    * library, and 8 for a 64 bit shared library . This method makes a native call, so you can't use
    * it to determine which library to load .
-   * 
+   *
    */
   public static int pointerSizeBytes() {
     return SmHelper.pointerSizeBytes();
@@ -218,7 +218,7 @@ public class SharedLibrary {
 
   /**
    * Accessor method for the is64Bit flag
-   * 
+   *
    * @return returns a boolean indicating if the 64bit native library was loaded.
    * @since GemFire 5.1
    */

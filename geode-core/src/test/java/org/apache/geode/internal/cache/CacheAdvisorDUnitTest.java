@@ -14,15 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +22,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -51,6 +47,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the use of CacheDistributionAdvisor in createSubRegion
@@ -283,7 +282,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * coverage for bug 34255
-   * 
+   *
    * @since GemFire 5.0
    */
   @Test
@@ -293,7 +292,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * coverage for bug 34255
-   * 
+   *
    * @since GemFire 5.0
    */
   @Test

@@ -18,7 +18,7 @@ import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the average of distinct values for replicated region based queries.
- * 
+ *
  *
  */
 public class AvgDistinct extends SumDistinct {

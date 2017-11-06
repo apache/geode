@@ -33,7 +33,7 @@ public class IndexInvalidException extends GemFireException {
 
   /**
    * Construct an instance of IndexInvalidException
-   * 
+   *
    * @param msg the error message
    */
   public IndexInvalidException(String msg) {
@@ -42,7 +42,7 @@ public class IndexInvalidException extends GemFireException {
 
   /**
    * Construct an instance of IndexInvalidException
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause
    */
@@ -53,7 +53,7 @@ public class IndexInvalidException extends GemFireException {
 
   /**
    * Construct an instance of IndexInvalidException
-   * 
+   *
    * @param cause a Throwable cause
    */
   public IndexInvalidException(Throwable cause) {

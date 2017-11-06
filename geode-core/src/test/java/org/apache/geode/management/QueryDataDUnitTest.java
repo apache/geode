@@ -81,7 +81,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 /**
  * Distributed tests for {@link DistributedSystemMXBean#queryData(String, String, int)}.
  * </p>
- * 
+ *
  * <pre>
  * Test Basic Json Strings for Partitioned Regions
  * Test Basic Json Strings for Replicated Regions

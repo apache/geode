@@ -94,7 +94,7 @@ public class DestroyIndexFunction extends FunctionAdapter implements InternalEnt
   }
 
   /***
-   * 
+   *
    * @param name
    * @param queryService
    * @return true if the index was found and removed/false if the index was not found.

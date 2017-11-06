@@ -14,8 +14,9 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.cache.query.Query;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
+
+import org.apache.geode.cache.query.Query;
 
 /**
  * Factory for configuring a Lucene query. Use this factory to set parameters of the query such as
@@ -90,7 +91,7 @@ public interface LuceneQueryFactory {
    * Here's an example of using this method to create a range query on an integer field called
    * "age."
    * </p>
-   * 
+   *
    * <pre>
    * {@code
    *   LuceneQuery query = factory.create("index", "region", index -> IntPoint.newRangeQuery("age", 20, 30))

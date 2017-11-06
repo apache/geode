@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 /**
  * Exports snapshot data directly to the supplied {@link ExportSink}. All data is assumed to be
  * local so snapshot data is obtained directly by iterating over the {@link Region#entrySet()}.
- * 
+ *
  *
  * @param <K> the key type
  * @param <V> the value type

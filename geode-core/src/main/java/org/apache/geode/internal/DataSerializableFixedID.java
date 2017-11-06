@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.*;
-
 import java.io.*;
+
+import org.apache.geode.*;
 
 /**
  * An interface that implements data serialization for internal GemFire product classes that have a
@@ -61,11 +61,11 @@ public interface DataSerializableFixedID extends SerializationVersions {
   /*
    * In the class to be serialized, add public FOO(DataInput in) throws IOException,
    * ClassNotFoundException { fromData(in); }
-   * 
+   *
    * public int getDSFID() { return FOO; }
-   * 
+   *
    * In DataSerializableFixedId, allocate an ID for the class public static final byte FOO = -54;
-   * 
+   *
    * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
    */
   public static final short FINAL_CHECK_PASSED_MESSAGE = -158;
@@ -842,7 +842,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * the getSerializationVersions array of the implementing class. e.g. if msg format changed in
    * version 80, create toDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
    * array and copy previous toData contents to this newly created toDataPre_GFE_X_X_X_X() method.
-   * 
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
   public void toData(DataOutput out) throws IOException;
@@ -856,7 +856,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * version 80, create fromDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
    * array and copy previous fromData contents to this newly created fromDataPre_GFE_X_X_X_X()
    * method.
-   * 
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */

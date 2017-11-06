@@ -35,7 +35,7 @@ import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * 
+ *
  *
  */
 public class ServerFunctionExecutor extends AbstractExecution {
@@ -284,7 +284,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.
    * cache.execute.Function, java.util.Set)

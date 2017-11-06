@@ -39,7 +39,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class DestroyRegion extends BaseCommand {
 
-  private final static DestroyRegion singleton = new DestroyRegion();
+  private static final DestroyRegion singleton = new DestroyRegion();
 
   public static Command getCommand() {
     return singleton;

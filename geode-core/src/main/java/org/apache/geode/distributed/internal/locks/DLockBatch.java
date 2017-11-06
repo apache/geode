@@ -16,6 +16,7 @@
 package org.apache.geode.distributed.internal.locks;
 
 import java.util.*;
+
 import org.apache.geode.distributed.internal.membership.*;
 
 /**
@@ -35,10 +36,9 @@ public interface DLockBatch {
 
   /**
    * Specifies the lock grantor id that granted this lock batch.
-   * 
+   *
    * @param lockGrantorId the lock grantor id that granted this lock batch
    */
   public void grantedBy(LockGrantorId lockGrantorId);
 
 }
-

@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -23,7 +23,6 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -50,6 +49,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
@@ -101,9 +101,9 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    * The test starts two clients who register interest in "ALL_KEYS" but close without unregistering
    * the same. The test then verifies that the server cleans up the register interest artifacts of
    * these clients properly.
-   * 
+   *
    * See bug #47619
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -123,9 +123,9 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    * The test starts two clients who register interest in a list keys but close without
    * unregistering the same. The test then verifies that the server cleans up the register interest
    * artifacts of these clients properly.
-   * 
+   *
    * See bug #47619
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -145,9 +145,9 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    * The test starts two clients who register interest with regular expression "[a-z]*[0-9]" but
    * close without unregistering the same. The test then verifies that the server cleans up the
    * register interest artifacts of these clients properly.
-   * 
+   *
    * See bug #47619
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -168,9 +168,9 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    * receiving updates as invalidates. One of the clients later unregisters its interests in the
    * list of keys. Server then does some puts on the keys. The test then verifies that the server
    * does send these updates to the second client while first client sees no events.
-   * 
+   *
    * See bug #47717
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -195,9 +195,9 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
    * with the regular expression. Server then does some puts on the keys. The test then verifies
    * that the server does send these updates to the second client while the first client sees no
    * events.
-   * 
+   *
    * See bug #47717
-   * 
+   *
    * @throws Exception
    */
   @Test

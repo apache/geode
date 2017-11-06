@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.List;
+
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -22,12 +24,10 @@ import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 
-import java.util.List;
-
 /**
  * This is helper class used by CacheFactory to pass the cache configuration values to cache
  * creation code.
- * 
+ *
  * @since GemFire 6.6
  */
 public class CacheConfig {

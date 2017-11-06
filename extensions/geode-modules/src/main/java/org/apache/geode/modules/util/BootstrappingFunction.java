@@ -14,6 +14,9 @@
  */
 package org.apache.geode.modules.util;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
@@ -25,9 +28,6 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-
-import java.util.List;
-import java.util.Set;
 
 public class BootstrappingFunction implements Function, MembershipListener {
 

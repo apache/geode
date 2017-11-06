@@ -21,7 +21,7 @@ import java.io.ObjectInput;
 /**
  * An extension to {@link ObjectInput} that implements {@link VersionedDataStream} wrapping given
  * {@link ObjectInput} for a stream coming from a different product version.
- * 
+ *
  * @since GemFire 7.1
  */
 public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
@@ -31,7 +31,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
 
   /**
    * Creates a VersionedObjectInput that wraps the specified underlying ObjectInput.
-   * 
+   *
    * @param in the specified {@link ObjectInput}
    * @param version the product version that serialized object on the given {@link ObjectInput}
    */

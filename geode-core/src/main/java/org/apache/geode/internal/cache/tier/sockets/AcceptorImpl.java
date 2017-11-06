@@ -95,7 +95,7 @@ import org.apache.geode.internal.util.ArrayUtils;
 /**
  * Implements the acceptor thread on the bridge server. Accepts connections from the edge and starts
  * up threads to process requests from these.
- * 
+ *
  * @since GemFire 2.0.2
  */
 @SuppressWarnings("deprecation")
@@ -274,7 +274,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * The ip address or host name this acceptor is to bind to; <code>null</code> or "" indicates it
    * will listen on all local addresses.
-   * 
+   *
    * @since GemFire 5.7
    */
   private final String bindHostName;
@@ -314,7 +314,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * Initializes this acceptor thread to listen for connections on the given port.
-   * 
+   *
    * @param port The port on which this acceptor listens for connections. If <code>0</code>, a
    *        random port will be chosen.
    * @param bindHostName The ip address or host name this acceptor listens on for connections. If
@@ -680,7 +680,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * This system property is only used if max-threads == 0. This is for 5.0.2 backwards
    * compatibility.
-   * 
+   *
    * @deprecated since 5.1 use cache-server max-threads instead
    */
   @Deprecated
@@ -689,13 +689,13 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * This system property is only used if max-threads == 0. This is for 5.0.2 backwards
    * compatibility.
-   * 
+   *
    * @deprecated since 5.1 use cache-server max-threads instead
    */
   @Deprecated
-  private final static int DEPRECATED_SELECTOR_POOL_SIZE =
+  private static final int DEPRECATED_SELECTOR_POOL_SIZE =
       Integer.getInteger("BridgeServer.SELECTOR_POOL_SIZE", 16).intValue();
-  private final static int HANDSHAKE_POOL_SIZE = Integer
+  private static final int HANDSHAKE_POOL_SIZE = Integer
       .getInteger("BridgeServer.HANDSHAKE_POOL_SIZE", HANDSHAKER_DEFAULT_POOL_SIZE).intValue();
 
   @Override
@@ -827,7 +827,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * Ensure that the CachedRegionHelper and ServerConnection classes get loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {
@@ -1189,7 +1189,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * The work loop of this acceptor
-   * 
+   *
    * @see #accept
    */
   public void run() {
@@ -1704,7 +1704,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   /**
    * Gets the address that this bridge server can be contacted on from external processes.
-   * 
+   *
    * @since GemFire 5.7
    */
   public String getExternalAddress() {
@@ -1738,7 +1738,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * This method finds a client notifier and returns it. It is used to propagate interest
    * registrations to other servers
-   * 
+   *
    * @return the instance that provides client notification
    */
   @Override

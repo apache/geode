@@ -21,7 +21,7 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 /**
  * NewLIFOClockHand holds the behavior for LIFO logic , Overwriting getLRUEntry() to return most
  * recently added Entry
- * 
+ *
  * @since GemFire 5.7
  */
 

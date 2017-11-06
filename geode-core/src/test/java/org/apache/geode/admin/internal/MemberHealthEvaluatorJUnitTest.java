@@ -26,9 +26,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
-import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

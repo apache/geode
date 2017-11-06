@@ -28,15 +28,16 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.distributed.OplogCancelledException;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
+import org.apache.geode.internal.cache.Oplog.OplogDiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
-import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
-import org.apache.geode.internal.cache.Oplog.OplogDiskEntry;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -47,7 +48,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * An oplog used for overflow-only regions. For regions that are persistent (i.e. they can be
  * recovered) see {@link Oplog}.
- * 
+ *
  * @since GemFire prPersistSprint2
  */
 class OverflowOplog implements CompactableOplog, Flushable {
@@ -101,7 +102,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
   /**
    * A copy constructor used for creating a new oplog based on the previous Oplog. This constructor
    * is invoked only from the function switchOplog
-   * 
+   *
    * @param oplogId integer identifying the new oplog
    * @param dirHolder The directory in which to create new Oplog
    */
@@ -235,7 +236,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * Returns the unserialized bytes and bits for the given Entry. If Oplog is destroyed while
    * querying, then the DiskRegion is queried again to obatin the value This method should never get
    * invoked for an entry which has been destroyed
-   * 
+   *
    * @since GemFire 3.2.1
    * @param id The DiskId for the entry @param offset The offset in this OpLog where the entry is
    *        present. @param faultingIn @param bitOnly boolean indicating whether to extract just the
@@ -310,7 +311,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * only. As such, it bypasses the buffer and goes directly to the disk. This is not a thread safe
    * function , in the sense, it is possible that by the time the OpLog is queried , data might move
    * HTree with the oplog being destroyed
-   * 
+   *
    * @param id A DiskId object for which the value on disk will be fetched
    */
   public BytesAndBits getNoBuffer(DiskRegion dr, DiskId id) {
@@ -391,7 +392,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * Destroys this oplog. First it will call close which will cleanly close all Async threads. The
    * deletion of lock files will be taken care of by the close. Close will also take care of
    * deleting the files if it is overflow only mode
-   * 
+   *
    */
   public void destroy() {
     if (!this.closed) {
@@ -406,7 +407,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
 
   /**
    * A check to confirm that the oplog has been closed because of the cache being closed
-   * 
+   *
    */
   private void checkClosed() {
     this.parent.getCancelCriterion().checkCancelInProgress(null);
@@ -453,7 +454,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * Modified the code so as to reuse the already created ByteBuffer during transition. Minimizing
    * the synchronization allowing multiple put operations for different entries to proceed
    * concurrently for asynch mode
-   * 
+   *
    * @param entry DiskEntry object representing the current Entry
    * @param value byte array representing the value
    * @return true if modify was done; false if this file did not have room
@@ -501,7 +502,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * the switch to the next oplog. This function enables us to reuse the byte buffer which got
    * created for an oplog which no longer permits us to use itself. It will also take acre of
    * compaction if required
-   * 
+   *
    * @param entry DiskEntry object representing the current Entry
    * @return true if modify was done; false if this file did not have room
    */
@@ -568,7 +569,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
 
   /**
    * Removes the key/value pair with the given id on disk.
-   * 
+   *
    * @param entry DiskEntry object on which remove operation is called
    */
   public void remove(DiskRegion dr, DiskEntry entry) {
@@ -592,7 +593,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * A helper function which identifies whether to record a removal of entry in the current oplog or
    * to make the switch to the next oplog. This function enables us to reuse the byte buffer which
    * got created for an oplog which no longer permits us to use itself.
-   * 
+   *
    * @param entry DiskEntry object representing the current Entry
    */
   private void basicRemove(DiskRegion dr, DiskEntry entry)
@@ -677,7 +678,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
 
   /**
    * Method to be used only for testing
-   * 
+   *
    * @param ch Object to replace the channel in the Oplog.crf
    * @return original channel object
    */
@@ -736,7 +737,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * asynch write because the fault in operations can clash with the asynch writing. Write the
    * specified bytes to the oplog. Note that since extending a file is expensive this code will
    * possibly write OPLOG_EXTEND_SIZE zero bytes to reduce the number of times the file is extended.
-   * 
+   *
    *
    * @return The long offset at which the data present in the ByteBuffer gets written to
    */
@@ -868,7 +869,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
 
   /**
    * Extracts the Value byte array & UserBit from the OpLog
-   * 
+   *
    * @param offsetInOplog The starting position from which to read the data in the opLog
    * @param bitOnly boolean indicating whether the value needs to be extracted along with the
    *        UserBit or not.
@@ -956,7 +957,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
 
   /**
    * Helper function for the test
-   * 
+   *
    * @return FileChannel object representing the Oplog
    */
   FileChannel getFileChannel() {
@@ -972,7 +973,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * The current size of Oplog. It may be less than the actual Oplog file size ( in case of asynch
    * writing as it also takes into account data present in asynch buffers which will get flushed in
    * course of time o
-   * 
+   *
    * @return long value indicating the current size of the oplog.
    */
   long getOplogSize() {
@@ -1344,7 +1345,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    * oplog being compacted. Attempt is made to retrieve the value from in memory , if available,
    * else from asynch buffers ( if asynch mode is enabled), else from the Oplog being compacted. It
    * is invoked from switchOplog as well as OplogCompactor's compact function.
-   * 
+   *
    * @param entry DiskEntry being compacted referencing the Oplog being compacted
    * @param wrapper Object of type BytesAndBitsForCompactor. The data if found is set in the wrapper
    *        Object. The wrapper Object also contains the user bit associated with the entry
@@ -1401,7 +1402,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
   /**
    * Extracts the Value byte array & UserBit from the OpLog and inserts it in the wrapper Object of
    * type BytesAndBitsForCompactor which is passed
-   * 
+   *
    * @param offsetInOplog The starting position from which to read the data in the opLog
    * @param bitOnly boolean indicating whether the value needs to be extracted along with the
    *        UserBit or not.

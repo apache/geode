@@ -33,9 +33,6 @@ import static org.junit.Assert.fail;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,7 +43,10 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 @Category(DistributedTest.class)
 public class ResumeGatewaySenderCommandDUnitTest {
@@ -267,13 +267,13 @@ public class ResumeGatewaySenderCommandDUnitTest {
      * String group = "SenderGroup1"; Properties props = new Properties(); props.setProperty(GROUPS,
      * group); server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port); server2 =
      * locatorServerStartupRule.startServerVM(4, props, locator1Port);
-     * 
+     *
      * props.setProperty(GROUPS, "SenderGroup1, SenderGroup2"); server3 =
      * locatorServerStartupRule.startServerVM(5, props, locator1Port);
-     * 
+     *
      * props.setProperty(GROUPS, "SenderGroup2"); server4 =
      * locatorServerStartupRule.startServerVM(6, props, locator1Port);
-     * 
+     *
      * props.setProperty(GROUPS, "SenderGroup3"); server5 =
      * locatorServerStartupRule.startServerVM(7, props, locator1Port);
      */

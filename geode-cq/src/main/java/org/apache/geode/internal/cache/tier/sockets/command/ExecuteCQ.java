@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.operations.ExecuteCQOperationContext;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.Query;
@@ -35,10 +40,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.util.Set;
 
 public class ExecuteCQ extends BaseCQCommand {
   protected static final Logger logger = LogService.getLogger();

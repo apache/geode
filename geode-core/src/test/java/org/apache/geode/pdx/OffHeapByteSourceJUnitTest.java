@@ -18,12 +18,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.offheap.OffHeapStoredObject;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.NullOffHeapMemoryStats;
 import org.apache.geode.internal.offheap.NullOutOfOffHeapMemoryListener;
-import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
-import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.offheap.OffHeapStoredObject;
 import org.apache.geode.internal.offheap.SlabImpl;
+import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.OffHeapByteSource;

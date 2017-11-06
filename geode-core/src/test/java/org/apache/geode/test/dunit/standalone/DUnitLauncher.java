@@ -459,7 +459,7 @@ public class DUnitLauncher {
   private static class DUnitHost extends Host {
     private static final long serialVersionUID = -8034165624503666383L;
 
-    private transient final VM debuggingVM;
+    private final transient VM debuggingVM;
 
     private transient ProcessManager processManager;
 

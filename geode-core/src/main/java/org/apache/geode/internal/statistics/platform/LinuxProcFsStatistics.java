@@ -14,15 +14,16 @@
  */
 package org.apache.geode.internal.statistics.platform;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.logging.log4j.Logger;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class LinuxProcFsStatistics {
   private enum CPU {
@@ -91,7 +92,7 @@ public class LinuxProcFsStatistics {
    * get the statistics for the specified process. ( pid_rssSize, pid_imageSize ) vsize is assumed
    * to be in units of kbytes System property gemfire.statistics.pagesSize can be used to configure
    * pageSize. This is the mem_unit member of the struct returned by sysinfo()
-   * 
+   *
    */
   public static void refreshProcess(int pid, int[] ints, long[] longs, double[] doubles) { // TODO:
                                                                                            // was
@@ -231,7 +232,7 @@ public class LinuxProcFsStatistics {
 
   /**
    * Returns the available system memory (free + cached).
-   * 
+   *
    * @param logger the logger
    * @return the available memory in bytes
    */
@@ -581,7 +582,7 @@ public class LinuxProcFsStatistics {
    * Count the number of files in /proc that do not represent processes. This value is cached to
    * make counting the number of running process a cheap operation. The assumption is that the
    * contents of /proc will not change on a running system.
-   * 
+   *
    * @return the files in /proc that do NOT match /proc/[0-9]*
    */
   private static int getNumberOfNonProcessProcFiles() {

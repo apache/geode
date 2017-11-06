@@ -20,9 +20,10 @@ import static org.apache.geode.distributed.internal.DefaultPropertiesGenerator.g
 import static org.apache.geode.internal.lang.SystemUtils.getClassPath;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,10 +33,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class DefaultPropertiesGeneratorIntegrationTest {

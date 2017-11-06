@@ -32,7 +32,7 @@ import org.apache.geode.i18n.StringId;
  * }
  * }
  * </code>
- * 
+ *
  * @since GemFire 6.0
  */
 public class LocalizedStrings {

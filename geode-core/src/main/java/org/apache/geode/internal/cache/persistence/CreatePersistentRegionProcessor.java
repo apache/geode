@@ -40,9 +40,9 @@ public class CreatePersistentRegionProcessor extends CreateRegionProcessor {
   /**
    * Returns the member id of the member who has the latest copy of the persistent region. This may
    * be the local member ID if this member has the latest known copy.
-   * 
+   *
    * This method will block until the latest member is online.
-   * 
+   *
    * @throws ConflictingPersistentDataException if there are active members which are not based on
    *         the state that is persisted in this member.
    */

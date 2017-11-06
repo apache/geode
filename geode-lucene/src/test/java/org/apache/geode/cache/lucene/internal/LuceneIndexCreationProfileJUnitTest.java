@@ -14,14 +14,16 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.CopyHelper;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.lucene.DummyLuceneSerializer;
-import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
-import org.apache.geode.test.junit.categories.UnitTest;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -33,16 +35,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.lucene.DummyLuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)

@@ -37,12 +37,12 @@ import org.apache.geode.internal.security.SecurityService;
 /**
  * Represents a request for (full) value of a given event from ha container
  * (client-messages-region).
- * 
+ *
  * @since GemFire 6.1
  */
 public class RequestEventValue extends BaseCommand {
 
-  private final static RequestEventValue singleton = new RequestEventValue();
+  private static final RequestEventValue singleton = new RequestEventValue();
 
   public static Command getCommand() {
     return singleton;

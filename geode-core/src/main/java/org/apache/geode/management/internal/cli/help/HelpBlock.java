@@ -14,12 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.help;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  *

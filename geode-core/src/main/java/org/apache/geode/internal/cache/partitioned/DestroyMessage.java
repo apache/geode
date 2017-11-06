@@ -61,14 +61,14 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
  * A class that specifies a destroy operation.
- * 
+ *
  * Note: The reason for different classes for Destroy and Invalidate is to prevent sending an extra
  * bit for every DestroyMessage to differentiate an invalidate versus a destroy. The assumption is
  * that these operations are used frequently, if they are not then it makes sense to fold the
  * destroy and the invalidate into the same message and use an extra bit to differentiate
- * 
+ *
  * @since GemFire 5.0
- * 
+ *
  */
 public class DestroyMessage extends PartitionMessageWithDirectReply {
 
@@ -163,7 +163,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   /**
    * send a notification-only message to a set of listeners. The processor id is passed with the
    * message for reply message processing. This method does not wait on the processor.
-   * 
+   *
    * @param cacheOpReceivers receivers of associated bucket CacheOperationMessage
    * @param adjunctRecipients receivers that must get the event
    * @param filterRoutingInfo client routing information
@@ -186,7 +186,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   /**
    * Sends a DestroyMessage {@link org.apache.geode.cache.Region#destroy(Object)}message to the
    * recipient
-   * 
+   *
    * @param recipient the recipient of the message
    * @param r the PartitionedRegion for which the destroy was performed
    * @param event the event causing this message
@@ -417,7 +417,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
 
   /**
    * Assists the toString method in reporting the contents of this message
-   * 
+   *
    * @see PartitionMessage#toString()
    * @param buff
    */
@@ -569,7 +569,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.distributed.internal.ReplyMessage#getInlineProcess()
      */
     @Override

@@ -16,7 +16,7 @@ package org.apache.geode.cache;
 
 /**
  * This is the superclass for all Exceptions that may be thrown by a GemFire transaction.
- * 
+ *
  * @since GemFire 6.5
  */
 public class TransactionException extends CacheException {

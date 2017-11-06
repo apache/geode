@@ -79,12 +79,6 @@ import com.sun.jna.Platform;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.query.internal.InternalQueryService;
-import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
-import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
-import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
-import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -139,7 +133,10 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.InternalQueryService;
+import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache.server.CacheServer;
@@ -180,6 +177,7 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
+import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.cache.execute.util.FindRestEnabledServersFunction;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
@@ -200,6 +198,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
+import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
@@ -217,6 +216,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -438,7 +438,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * conflict resolver for WAN, if any
-   * 
+   *
    * GuardedBy {@link #allGatewayHubsLock}
    */
   private GatewayConflictResolver gatewayConflictResolver;
@@ -499,7 +499,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * DistributedLockService for GatewaySenders. Remains null until the first GatewaySender is
    * created. Destroyed by GemFireCache when closing the cache.
-   * 
+   *
    * GuardedBy gatewayLockServiceLock
    */
   private volatile DistributedLockService gatewayLockService;
@@ -578,7 +578,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * {@link ExtensionPoint} support.
-   * 
+   *
    * @since GemFire 8.1
    */
   private final SimpleExtensionPoint<Cache> extensionPoint = new SimpleExtensionPoint<>(this, this);
@@ -609,14 +609,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * kernel data, shared memory, and memory-mapped files. All mapped pages are guaranteed to be
    * resident in RAM when the call returns successfully; the pages are guaranteed to stay in RAM
    * until later unlocked.
-   * 
+   *
    * @param flags MCL_CURRENT 1 - Lock all pages which are currently mapped into the address space
    *        of the process.
-   * 
+   *
    *        MCL_FUTURE 2 - Lock all pages which will become mapped into the address space of the
    *        process in the future. These could be for instance new pages required by a growing heap
    *        and stack as well as new memory mapped files or shared memory regions.
-   * 
+   *
    * @return 0 if success, non-zero if error and errno set
    */
   private static native int mlockall(int flags);
@@ -692,7 +692,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Returns an existing instance. If a cache does not exist throws a cache closed exception.
-   * 
+   *
    * @return the existing cache
    * @throws CacheClosedException if an existing cache can not be found.
    */
@@ -802,7 +802,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Creates a new instance of GemFireCache and populates it according to the {@code cache.xml}, if
    * appropriate.
-   * 
+   *
    * @param typeRegistry: currently only unit tests set this parameter to a non-null value
    */
   private GemFireCacheImpl(boolean isClient, PoolFactory pf, InternalDistributedSystem system,
@@ -982,7 +982,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Used by Hydra tests to get handle of Rest Agent
-   * 
+   *
    * @return RestAgent
    */
   @Override
@@ -1382,7 +1382,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @throws RegionExistsException If the declarative caching XML file describes a region that
    *         already exists (including the root region).
    * @throws GatewayException If a {@code GatewayException} is thrown while initializing the cache.
-   * 
+   *
    * @see #loadCacheXml
    */
   private void initializeDeclarativeCache()
@@ -1998,7 +1998,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Gets or lazily creates the GatewaySender distributed lock service.
-   * 
+   *
    * @return the GatewaySender distributed lock service
    */
   @Override
@@ -2784,7 +2784,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Get the list of all instances of properties for Declarables with the given class name.
-   * 
+   *
    * @param className Class name of the declarable
    * @return List of all instances of properties found for the given declarable
    */
@@ -2803,7 +2803,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Get the properties for the given declarable.
-   * 
+   *
    * @param declarable The declarable
    * @return Properties found for the given declarable
    */
@@ -2825,7 +2825,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * All entry and region operations should be using this time rather than
    * System.currentTimeMillis(). Specially all version stamps/tags must be populated with this
    * timestamp.
-   * 
+   *
    * @return distributed cache time.
    */
   @Override
@@ -3923,7 +3923,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Returns List of GatewaySender (excluding the senders for internal use)
-   * 
+   *
    * @return List List of GatewaySender objects
    */
   @Override
@@ -3939,7 +3939,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Returns List of all GatewaySenders (including the senders for internal use)
-   * 
+   *
    * @return List List of GatewaySender objects
    */
   @Override
@@ -4485,7 +4485,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Returns the QueryMonitor instance based on system property MAX_QUERY_EXECUTION_TIME.
-   * 
+   *
    * @since GemFire 6.0
    */
   @Override
@@ -5148,7 +5148,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Add to the map of declarable properties. Any properties that exactly match existing properties
    * for a class in the list will be discarded (no duplicate Properties allowed).
-   * 
+   *
    * @param mapOfNewDeclarableProps Map of the declarable properties to add
    */
   public void addDeclarableProperties(final Map<Declarable, Properties> mapOfNewDeclarableProps) {

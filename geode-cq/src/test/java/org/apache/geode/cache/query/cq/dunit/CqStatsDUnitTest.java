@@ -237,7 +237,7 @@ public class CqStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ and CQ Service Statistics
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -317,7 +317,7 @@ public class CqStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ Service Statistics
-   * 
+   *
    * @throws Exception
    */
   @Test

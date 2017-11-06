@@ -35,7 +35,7 @@ import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 
 /**
  * Used to represent an enum value as a PdxInstance
- * 
+ *
  * @since GemFire 6.6.2
  */
 public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
@@ -96,7 +96,7 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     return getFieldNames().contains(fieldName);
   }
 
-  static private final List<String> fieldNames;
+  private static final List<String> fieldNames;
   static {
     ArrayList<String> tmp = new ArrayList<String>(2);
     tmp.add("name");

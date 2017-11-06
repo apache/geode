@@ -13,23 +13,23 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.tier.sockets;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
+
 /**
  * Adds one more object type which indicates that the key is not present at the server.
- * 
+ *
  * [bruce] THIS CLASS IS OBSOLETE AS OF V7.0. It is replaced with VersionedObjectList
- * 
+ *
  *
  */
 public class ObjectPartList651 extends ObjectPartList {

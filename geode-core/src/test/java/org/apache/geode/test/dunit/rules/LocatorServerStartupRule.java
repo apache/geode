@@ -128,7 +128,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   /**
    * Starts a locator instance with the given configuration properties inside
    * {@code getHost(0).getVM(index)}.
-   * 
+   *
    * @return VM locator vm
    */
   public MemberVM startLocatorVM(int index, Properties specifiedProperties) throws Exception {

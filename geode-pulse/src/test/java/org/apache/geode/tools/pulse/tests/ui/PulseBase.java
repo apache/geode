@@ -67,9 +67,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.geode.tools.pulse.tests.JMXProperties;
-import org.apache.geode.tools.pulse.tests.PulseTestLocators;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -80,11 +83,9 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.List;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.tests.JMXProperties;
+import org.apache.geode.tools.pulse.tests.PulseTestLocators;
 
 /**
  * If you try to run the Pulse UI Tests through your IDE without forking enabled, you will see

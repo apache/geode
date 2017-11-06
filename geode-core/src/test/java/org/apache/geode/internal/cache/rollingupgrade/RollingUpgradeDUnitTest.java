@@ -14,7 +14,25 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -32,23 +50,6 @@ import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * RollingUpgrade dunit tests are distributed among subclasses of RollingUpgradeDUnitTest to avoid
@@ -57,12 +58,12 @@ import java.util.Properties;
  * This test will not run properly in eclipse at this point due to having to bounce vms Currently,
  * bouncing vms is necessary because we are starting gemfire with different class loaders and the
  * class loaders are lingering (possibly due to daemon threads - the vm itself is still running)
- * 
+ *
  * Note: to run in eclipse, I had to copy over the jg-magic-map.txt file into my GEMFIRE_OUTPUT
  * location, in the same directory as #MagicNumberReader otherwise the two systems were unable to
  * talk to one another due to one using a magic number and the other not. Also turnOffBounce will
  * need to be set to true so that bouncing a vm doesn't lead to a NPE.
- * 
+ *
  * @author jhuynh
  */
 
@@ -364,13 +365,13 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
   /*
    * @param rollServer
-   * 
+   *
    * @param createRegionMethod
-   * 
+   *
    * @param regionName
-   * 
+   *
    * @param locatorPorts if null, uses dunit locator
-   * 
+   *
    * @throws Exception
    */
   private void rollServerToCurrentAndCreateRegion(VM rollServer, String shortcutName,
@@ -1010,7 +1011,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Starts a locator with given configuration.
-   * 
+   *
    * @param props TODO
    */
   public static void startLocator(final String serverHostName, final int port,
@@ -1049,7 +1050,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Get the port that the standard dunit locator is listening on.
-   * 
+   *
    * @return
    */
   public static String getDUnitLocatorAddress() {
@@ -1057,4 +1058,3 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   }
 
 }
-

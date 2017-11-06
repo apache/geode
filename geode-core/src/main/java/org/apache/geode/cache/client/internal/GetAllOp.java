@@ -37,7 +37,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Does a region getAll on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class GetAllOp {
@@ -47,7 +47,7 @@ public class GetAllOp {
   /**
    * Does a region getAll on a server using connections from the given pool to communicate with the
    * server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the getAll on
    * @param keys list of keys to get

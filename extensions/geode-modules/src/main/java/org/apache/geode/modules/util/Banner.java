@@ -14,13 +14,13 @@
  */
 package org.apache.geode.modules.util;
 
-import org.apache.geode.internal.GemFireVersion;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
+
+import org.apache.geode.internal.GemFireVersion;
 
 public class Banner {
 

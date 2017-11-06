@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -70,6 +69,7 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -80,7 +80,7 @@ import org.apache.geode.management.membership.ClientMembershipListener;
 /**
  * An implementation of the{@code CacheServer} interface that delegates most of the heavy lifting to
  * an {@link Acceptor}.
- * 
+ *
  * @since GemFire 4.0
  */
 @SuppressWarnings("deprecation")
@@ -104,14 +104,14 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * The advisor used by this cache server.
-   * 
+   *
    * @since GemFire 5.7
    */
   private volatile CacheServerAdvisor advisor;
 
   /**
    * The monitor used to monitor load on this bridge server and distribute load to the locators
-   * 
+   *
    * @since GemFire 5.7
    */
   private volatile LoadMonitor loadMonitor;
@@ -128,7 +128,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * Needed because this guy is an advisee
-   * 
+   *
    * @since GemFire 5.7
    */
   private int serialNumber; // changed on each start
@@ -398,7 +398,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * Gets the address that this bridge server can be contacted on from external processes.
-   * 
+   *
    * @since GemFire 5.7
    */
   public String getExternalAddress() {
@@ -526,7 +526,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * Test method used to access the internal acceptor
-   * 
+   *
    * @return the internal acceptor
    */
   @Override
@@ -558,7 +558,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * create client subscription
-   * 
+   *
    * @return client subscription name
    * @since GemFire 5.7
    */
@@ -654,7 +654,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * Generates the name for the client subscription using the given id.
-   * 
+   *
    * @return String
    * @since GemFire 5.7
    */
@@ -690,7 +690,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * Returns the underlying{@code InternalDistributedSystem} connection.
-   * 
+   *
    * @return the underlying{@code InternalDistributedSystem}
    */
   @Override
@@ -708,7 +708,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return getName();
   }
 
-  private final static AtomicInteger profileSN = new AtomicInteger();
+  private static final AtomicInteger profileSN = new AtomicInteger();
 
   private static int createSerialNumber() {
     return profileSN.incrementAndGet();
@@ -763,7 +763,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   /**
    * Registers a new{@code InterestRegistrationListener} with the set of
    * {@code InterestRegistrationListener}s.
-   * 
+   *
    * @param listener The{@code InterestRegistrationListener} to register
    * @throws IllegalStateException if the BridgeServer has not been started
    * @since GemFire 5.8Beta
@@ -780,9 +780,9 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   /**
    * Unregisters an existing{@code InterestRegistrationListener} from the set of
    * {@code InterestRegistrationListener}s.
-   * 
+   *
    * @param listener The{@code InterestRegistrationListener} to unregister
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   @Override
@@ -792,9 +792,9 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   /**
    * Returns a read-only set of{@code InterestRegistrationListener}s registered with this notifier.
-   * 
+   *
    * @return a read-only set of{@code InterestRegistrationListener}s registered with this notifier
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   @Override

@@ -27,7 +27,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * This JUnit tests concurrent rolling and normal region operations put,get,clear,destroy in both
  * sync and async mode
- * 
+ *
  * A region operation is done on the same key that is about to be rolled or has just been rolled and
  * the region operation is verified to have been correctly executed.
  */
@@ -38,9 +38,9 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
 
   /**
    * A put is done on the same entry before flushing that entry
-   * 
+   *
    * The test ensures that put is not done twice by using a alreadyComeHere boolean.
-   * 
+   *
    * @param region
    */
   void putBeforeFlush(final Region region) {
@@ -70,9 +70,9 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
   /**
    * a single get is done on the entry about to be flushed. multiple gets are avoided by the
    * alreadyComeHere boolean
-   * 
-   * 
-   * 
+   *
+   *
+   *
    * @param region
    */
   void getBeforeFlush(final Region region) {
@@ -99,7 +99,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
 
   /**
    * the entry which is about to be flushed is deleted
-   * 
+   *
    * @param region
    */
   void delBeforeFlush(final Region region) {
@@ -145,7 +145,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
    * region is closed before going to be flushed The region is going to be closed in a separate
    * thread. A 3000 ms wait is done to ensure that the separate thread has successfully closed the
    * region
-   * 
+   *
    * @param region
    */
   void closeBeforeFlush(final Region region) {
@@ -189,7 +189,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
   /**
    * A region close is done after flush is over. The close is done in a separate thread and a 3000
    * ms wait is put to ensure that the separate thread has closed the region
-   * 
+   *
    * @param region
    */
   void closeAfterFlush(final Region region) {

@@ -14,15 +14,16 @@
  */
 package org.apache.geode.cache.lucene.test;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.*;
+
+import org.apache.lucene.document.Document;
+
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
-import org.apache.lucene.document.Document;
-
-import java.util.*;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * A Test LuceneSerializer that takes properties during construction (init)

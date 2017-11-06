@@ -16,9 +16,10 @@ package org.apache.geode.internal.lang;
 
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class SystemPropertyHelperJUnitTest {

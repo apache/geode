@@ -15,16 +15,17 @@
 
 package org.apache.geode.modules.session.internal.common;
 
-import org.apache.geode.cache.Declarable;
-import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.util.CacheListenerAdapter;
-
 import java.util.Properties;
+
 import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 
 public class SessionExpirationCacheListener extends CacheListenerAdapter<String, HttpSession>
     implements Declarable {

@@ -20,8 +20,8 @@
 
 package org.apache.geode.cache.query.data;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 /**
  *

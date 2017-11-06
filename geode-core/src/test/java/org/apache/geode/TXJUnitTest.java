@@ -30,7 +30,6 @@ import java.util.Set;
 
 import javax.transaction.Synchronization;
 
-import org.apache.geode.cache.util.TxEventTestUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -81,6 +80,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
+import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -5745,11 +5745,11 @@ public class TXJUnitTest {
     }
   }
 
-  private final static int LRUENTRY_NULL = 0;
-  private final static int LRUENTRY_STRING = 1;
-  private final static int LRUENTRY_INTEGER = 2;
-  private final static int LRUENTRY_LONG = 3;
-  private final static int LRUENTRY_DOUBLE = 4;
+  private static final int LRUENTRY_NULL = 0;
+  private static final int LRUENTRY_STRING = 1;
+  private static final int LRUENTRY_INTEGER = 2;
+  private static final int LRUENTRY_LONG = 3;
+  private static final int LRUENTRY_DOUBLE = 4;
 
   private static void assertLRUEntries(Set entries, int size, String keyPrefix, int instanceId) {
     assertEquals(size, entries.size());
@@ -6781,7 +6781,7 @@ public class TXJUnitTest {
 
   /**
    * make sure that we do not expose BucketRegion on transactionListener events
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -6813,7 +6813,7 @@ public class TXJUnitTest {
 
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -6843,7 +6843,7 @@ public class TXJUnitTest {
 
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -6871,7 +6871,7 @@ public class TXJUnitTest {
 
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -6926,7 +6926,7 @@ public class TXJUnitTest {
 
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -6975,7 +6975,7 @@ public class TXJUnitTest {
 
   /**
    * make sure that we throw an UnsupportedOperationInTransactionException
-   * 
+   *
    * @throws Exception
    */
   @Test

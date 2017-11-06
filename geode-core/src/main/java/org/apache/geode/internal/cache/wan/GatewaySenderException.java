@@ -28,7 +28,7 @@ public class GatewaySenderException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewaySenderException</code> with the specified
    * detail message.
-   * 
+   *
    * @param msg the detail message
    */
   public GatewaySenderException(String msg) {
@@ -38,7 +38,7 @@ public class GatewaySenderException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewaySenderException</code> with the specified
    * detail message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -49,7 +49,7 @@ public class GatewaySenderException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewaySenderException</code> with the specified
    * cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public GatewaySenderException(Throwable cause) {

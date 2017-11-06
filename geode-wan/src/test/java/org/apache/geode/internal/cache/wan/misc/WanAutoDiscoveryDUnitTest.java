@@ -14,17 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import org.apache.geode.test.dunit.IgnoredException;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -35,6 +25,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -43,7 +37,12 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class WanAutoDiscoveryDUnitTest extends WANTestBase {
@@ -82,7 +81,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
    * causes other below tests to fail. In this test, VM1 is throwing IncompatibleSystemException
    * after startInitLocator. I think, after throwing this exception, locator is not stopped properly
    * and hence other tests are failing.
-   * 
+   *
    * @throws Exception
    */
   @Ignore
@@ -104,7 +103,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   /**
    * Test to validate that multiple locators added on LN site and multiple locators on Ny site
    * recognizes each other
-   * 
+   *
    * @throws Exception
    */
   @Test

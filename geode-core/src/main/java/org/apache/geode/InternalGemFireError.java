@@ -13,16 +13,16 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode;
 
 /**
  * Indicates that serious error has occurred within the GemFire system.
- * 
+ *
  * This is similar to {@link AssertionError}, but these errors are always enabled in a GemFire
  * system.
- * 
+ *
  * @since GemFire 5.5
  * @see AssertionError
  */
@@ -30,7 +30,7 @@ public class InternalGemFireError extends Error {
   private static final long serialVersionUID = 6390043490679349593L;
 
   /**
-   * 
+   *
    */
   public InternalGemFireError() {
     // TODO Auto-generated constructor stub

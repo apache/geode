@@ -14,8 +14,9 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import org.apache.geode.management.GatewaySenderMXBean;
 import javax.management.NotificationBroadcasterSupport;
+
+import org.apache.geode.management.GatewaySenderMXBean;
 
 public class GatewaySenderMBean extends NotificationBroadcasterSupport
     implements GatewaySenderMXBean {

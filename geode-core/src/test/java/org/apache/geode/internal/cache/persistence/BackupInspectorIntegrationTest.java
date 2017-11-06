@@ -23,12 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests for the BackupInspector.

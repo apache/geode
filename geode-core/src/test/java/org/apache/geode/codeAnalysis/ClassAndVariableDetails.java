@@ -28,7 +28,7 @@ import org.apache.geode.codeAnalysis.decode.CompiledField;
 /**
  * A class used to store the names of dataserializable classes and the sizes of their
  * toData/fromData methods.
- * 
+ *
  *
  */
 public class ClassAndVariableDetails implements Comparable {

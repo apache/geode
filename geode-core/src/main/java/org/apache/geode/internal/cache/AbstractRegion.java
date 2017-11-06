@@ -195,7 +195,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   /**
    * True if this region uses off-heap memory; otherwise false (default)
-   * 
+   *
    * @since Geode 1.0
    */
   protected boolean offHeap;
@@ -275,7 +275,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   /**
    * Unit test constructor. DO NOT USE!
-   * 
+   *
    * @since GemFire 8.1
    * @deprecated For unit testing only. Use
    *             {@link #AbstractRegion(InternalCache, RegionAttributes, String, InternalRegionArguments)}
@@ -384,7 +384,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * SingleWriteSingleReadRegionQueue.SingleReadWriteMetaRegion to return false as the event
    * propagation from those regions do not need EventID objects. This method is made abstract to
    * directly use it in clear operations. (clear and localclear)
-   * 
+   *
    * @return boolean indicating whether to generate eventID or not
    */
   abstract boolean generateEventID();
@@ -457,7 +457,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   /**
    * Return a cache loader if this region has one. Note if region's loader is used to implement
    * bridge then null is returned.
-   * 
+   *
    * @since GemFire 5.7
    */
   CacheLoader basicGetLoader() {
@@ -467,7 +467,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   /**
    * Return a cache writer if this region has one. Note if region's writer is used to implement
    * bridge then null is returned.
-   * 
+   *
    * @since GemFire 5.7
    */
   public CacheWriter basicGetWriter() {
@@ -823,7 +823,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   /**
    * Use ONLY imSync for IndexManager get and set.
-   * 
+   *
    * @return {@link IndexManager} lock.
    */
   public Object getIMSync() {
@@ -935,7 +935,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   /**
    * We wrap RegionMembershipListeners in a container when adding them at runtime, so that we can
    * properly initialize their membership set prior to delivering events to them.
-   * 
+   *
    * @param listener a cache listener to be added to the region
    */
   private CacheListener wrapRegionMembershipListener(CacheListener listener) {
@@ -1652,7 +1652,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   /**
    * Returns the pool this region is using or null if it does not have one or the pool does not
    * exist.
-   * 
+   *
    * @since GemFire 5.7
    */
   private PoolImpl getPool() {

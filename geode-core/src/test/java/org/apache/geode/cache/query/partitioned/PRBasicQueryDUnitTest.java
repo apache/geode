@@ -14,16 +14,11 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
+import static org.apache.geode.cache.query.Utils.*;
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.cache.query.Utils.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -41,11 +36,14 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This tests creates partition regions with 1 Datastore & 1 Accessor node, firing a simple query
  * and validating the ResultSet size and Contents.
- * 
+ *
  */
 @Category(DistributedTest.class)
 public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
@@ -53,7 +51,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
 {
   /**
    * constructor
-   * 
+   *
    * @param name
    */
 
@@ -67,7 +65,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
     }
   }
 
-  private final static int MAX_SYNC_WAIT = 30 * 1000;
+  private static final int MAX_SYNC_WAIT = 30 * 1000;
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
@@ -83,7 +81,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates a PR Accessor and Data Store with redundantCopies = 0. 2. Populates the region with
    * test data. 3. Fires a query on accessor VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -150,7 +148,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * Populates the region with test data. 3. Fires a query on accessor VM and verifies the result.
    * 4. Shuts down the caches, then restarts them asynchronously 5. Attempt the query while the
    * regions are being recovered
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -266,7 +264,7 @@ public class PRBasicQueryDUnitTest extends PartitionedRegionDUnitTestCase
    * Populates the region with test data. 3. Fires a query on accessor VM and verifies the result.
    * 4. Shuts down the caches, then restarts them asynchronously, but don't restart the child region
    * 5. Attempt the query while the region offline because of the missing child region
-   * 
+   *
    * @throws Exception
    */
   @SuppressWarnings("rawtypes")

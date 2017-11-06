@@ -96,7 +96,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
  * The startLocator() methods provide a way to start all three services in one call. Otherwise, the
  * services can be started independently {@code  locator = createLocator();
  * locator.startPeerLocation(); locator.startDistributeSystem();}
- * 
+ *
  * @since GemFire 4.0
  */
 public class InternalLocator extends Locator implements ConnectListener {
@@ -249,7 +249,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * Create a locator that listens on a given port. This locator will not have peer or server
    * location services available until they are started by calling startServerLocation or
    * startPeerLocation on the locator object.
-   * 
+   *
    * @param port the tcp/ip port to listen on
    * @param logFile the file that log messages should be written to
    * @param stateFile the file that state should be read from / written to for recovery
@@ -290,7 +290,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * Creates a distribution locator that runs in this VM on the given port and bind address.
    * <p>
    * This is for internal use only as it does not create a distributed system unless told to do so.
-   * 
+   *
    * @param port the tcp/ip port to listen on
    * @param logFile the file that log messages should be written to
    * @param logger a log writer that should be used (logFile parameter is ignored)
@@ -362,7 +362,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /***
    * Determines if this VM is a locator which must ignore a shutdown.
-   * 
+   *
    * @return true if this VM is a locator which should ignore a shutdown , false if it is a normal
    *         member.
    */
@@ -386,7 +386,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /**
    * Creates a new {@code Locator} with the given port, log file, logger, and bind address.
-   * 
+   *
    * @param port the tcp/ip port to listen on
    * @param logF the file that log messages should be written to
    * @param stateF the file that state should be read from / written to for recovery
@@ -590,7 +590,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * For backward-compatibility we retain this method
    * <p>
    * TODO: parameters peerLocator and serverLocator and b1 are never used
-   * 
+   *
    * @deprecated use a form of the method that does not have peerLocator/serverLocator parameters
    */
   @Deprecated
@@ -631,7 +631,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * Start a distributed system whose life cycle is managed by this locator. When the locator is
    * stopped, this distributed system will be disconnected. If a distributed system already exists,
    * this method will have no affect.
-   * 
+   *
    * @since GemFire 5.7
    */
   private void startDistributedSystem() throws UnknownHostException {
@@ -728,7 +728,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * End the initialization of the locator. This method should be called once the location services
    * and distributed system are started.
-   * 
+   *
    * @param distributedSystem The distributed system to use for the statistics.
    *
    * @since GemFire 5.7
@@ -754,7 +754,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * Start server location services in this locator. Server location can only be started once there
    * is a running distributed system.
-   * 
+   *
    * @param distributedSystem The distributed system which the server location services should use.
    *        If null, the method will try to find an already connected distributed system.
    *
@@ -805,7 +805,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /**
    * Stop this locator
-   * 
+   *
    * @param stopForReconnect - stopping for distributed system reconnect
    * @param waitForDisconnect - wait up to 60 seconds for the locator to completely stop
    */
@@ -936,7 +936,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /**
    * Waits for a locator to be told to stop.
-   * 
+   *
    * @throws InterruptedException thrown if the thread is interrupted
    */
   public void waitToStop() throws InterruptedException {
@@ -1004,7 +1004,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * succeeds. It will then wait for the system to finish reconnecting before returning. If quorum
    * checks are not being done this merely waits for the distributed system to reconnect and then
    * starts location services.
-   * 
+   *
    * @return true if able to reconnect the locator to the new distributed system
    */
   private boolean attemptReconnect() throws InterruptedException, IOException {
@@ -1139,7 +1139,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * Return the port on which the locator is actually listening. If called before the locator has
    * actually started, this method will return null.
-   * 
+   *
    * @return the port the locator is listening on or null if it has not yet been started
    */
   @Override
@@ -1342,7 +1342,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * Returns collection of locator strings representing every locator instance hosted by this
    * member.
-   * 
+   *
    * @see #getLocators()
    */
   public static Collection<String> getLocatorStrings() {

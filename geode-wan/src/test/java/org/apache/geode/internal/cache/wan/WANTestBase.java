@@ -42,7 +42,38 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -126,36 +157,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
-import org.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Category(DistributedTest.class)
 public class WANTestBase extends JUnit4DistributedTestCase {
@@ -2568,7 +2569,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   /**
    * To be used only for ParallelGatewaySender.
-   * 
+   *
    * @param senderId Id of the ParallelGatewaySender
    * @param numQueueEntries Expected number of ParallelGatewaySenderQueue entries
    */
@@ -2598,7 +2599,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   /**
    * To be used only for ParallelGatewaySender.
-   * 
+   *
    * @param senderId Id of the ParallelGatewaySender
    */
   public static int getPRQLocalSize(String senderId) {
@@ -3321,7 +3322,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   /**
    * Test methods for sender operations
-   * 
+   *
    * @param senderId
    */
   public static void verifySenderPausedState(String senderId) {

@@ -14,17 +14,6 @@
  */
 package org.apache.geode.pdx.internal;
 
-import org.apache.geode.CancelException;
-import org.apache.geode.cache.RegionService;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
-import org.apache.geode.pdx.*;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
-import org.apache.logging.log4j.Logger;
-
 import java.io.Externalizable;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -37,6 +26,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import org.apache.geode.pdx.*;
+import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+
 /**
  * The core of auto serialization which is used in both aspect and reflection-based
  * auto-serialization. This simple manager class is a singleton which tracks the relevant fields for
@@ -44,7 +45,7 @@ import java.util.regex.Pattern;
  * instance of ReflectionBasedAutoSerializer will have its own instance of this class. We allow
  * instances of this class to be found so that tests can access internal apis that are not exposed
  * on the public ReflectionBasedAutoSerializer.
- * 
+ *
  * @since GemFire 6.6
  */
 
@@ -173,9 +174,9 @@ public class AutoSerializableManager {
   /*
    * Helper method to determine whether the class of a given object is a class which we are
    * interested in (de)serializing.
-   * 
+   *
    * @param obj
-   * 
+   *
    * @return true if the object should be considered for serialization or false otherwise
    */
   private boolean isRelevant(Class<?> clazz) {
@@ -225,7 +226,7 @@ public class AutoSerializableManager {
   /*
    * Helper method to determine whether a class has a default constructor. That's needed so that it
    * can be re-instantiated by PDX on de-serialization.
-   * 
+   *
    */
   private boolean hasValidConstructor(Class<?> clazz, Pattern matchedPattern) {
     if (unsafe != null && !USE_CONSTRUCTOR) {
@@ -285,7 +286,7 @@ public class AutoSerializableManager {
   }
 
   /**
-   * Returns true if a non-static private method with given signature defined by given class, or
+   * Returns true if a non-private static method with given signature defined by given class, or
    * false if none found.
    */
   private static boolean getPrivateMethod(Class cl, String name, Class[] argTypes,
@@ -356,7 +357,7 @@ public class AutoSerializableManager {
   /**
    * Given a class, figure out which fields we're interested in serializing. The class' entire
    * hierarchy will be traversed and used. Transients and statics will be ignored.
-   * 
+   *
    * @param clazz the <code>Class</code> we're interested in
    * @return a list of fields to be used when this class is (de)serialized
    */
@@ -645,7 +646,7 @@ public class AutoSerializableManager {
     unsafe = tmp;
   }
 
-  public static abstract class PdxFieldWrapper {
+  public abstract static class PdxFieldWrapper {
     private final FieldWrapper field;
     private final String fieldName;
     private final boolean transformValue;
@@ -1939,7 +1940,7 @@ public class AutoSerializableManager {
 
   /**
    * Given an object, use its class to determine which fields are to be used when (de)serializing.
-   * 
+   *
    * @param obj the object whose class we're interested in
    * @return a list of fields to be used when this object's class is (de)serialized
    */
@@ -1949,7 +1950,7 @@ public class AutoSerializableManager {
 
   /**
    * Using the given PdxWriter, write out the relevant fields for the object instance passed in.
-   * 
+   *
    * @param writer the <code>PdxWriter</code> to use when writing the object
    * @param obj the object to serialize
    * @return <code>true</code> if the object was serialized, <code>false</code> otherwise
@@ -1977,7 +1978,7 @@ public class AutoSerializableManager {
 
   /**
    * Using the given PdxWriter, write out the fields which have been passed in.
-   * 
+   *
    * @param writer the <code>PdxWriter</code> to use when writing the object
    * @param obj the object to serialize
    * @param autoClassInfo a <code>List</code> of <code>Field</code>s which are to be written out
@@ -2025,7 +2026,7 @@ public class AutoSerializableManager {
 
   /**
    * Using the given PdxReader, recreate the given object.
-   * 
+   *
    * @param reader the <code>PdxReader</code> to use when reading the object
    * @param clazz the class of the object to re-create
    */
@@ -2050,7 +2051,7 @@ public class AutoSerializableManager {
 
   /**
    * Add a new class pattern / identity-field pattern tuple
-   * 
+   *
    * @param classPattern the class pattern
    * @param fieldPattern the pattern to identify a field as an identity field within the given class
    *        pattern
@@ -2062,11 +2063,11 @@ public class AutoSerializableManager {
   /**
    * Return the identity patterns. The patterns are returned as a <code>List</code> of
    * <code>String</code> arrays of size 2 - essentially a tuple of the form
-   * 
+   *
    * <pre>
    *   (classPattern, identityPattern)
    * </pre>
-   * 
+   *
    * @return the identity patterns
    */
   public List<String[]> getIdentityPatterns() {
@@ -2075,7 +2076,7 @@ public class AutoSerializableManager {
 
   /**
    * Add a new class pattern / exclude-field pattern tuple
-   * 
+   *
    * @param classPattern the class pattern
    * @param fieldPattern the pattern to exclude a field from serialization within the given class
    *        pattern
@@ -2087,11 +2088,11 @@ public class AutoSerializableManager {
   /**
    * Return the exclude patterns. The patterns are returned as a <code>List</code> of
    * <code>String</code> arrays of size 2 - essentially a tuple of the form
-   * 
+   *
    * <pre>
    *   (classPattern, excludePattern)
    * </pre>
-   * 
+   *
    * @return the exclude patterns
    */
   public List<String[]> getExcludePatterns() {
@@ -2100,13 +2101,13 @@ public class AutoSerializableManager {
 
   /*
    * Helper method which determines whether a given field matches a set of class/field patterns.
-   * 
+   *
    * @param field the <code>Field</code> to consider
-   * 
+   *
    * @param field the className which references this field
-   * 
+   *
    * @param matches a map containing the
-   * 
+   *
    * @param
    */
   private boolean fieldMatches(Field field, String className, List<String[]> matches) {

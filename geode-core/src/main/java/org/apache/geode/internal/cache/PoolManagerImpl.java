@@ -52,7 +52,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 public class PoolManagerImpl {
   private static final Logger logger = LogService.getLogger();
 
-  private final static PoolManagerImpl impl = new PoolManagerImpl(true);
+  private static final PoolManagerImpl impl = new PoolManagerImpl(true);
 
   public static PoolManagerImpl getPMI() {
     PoolManagerImpl result = CacheCreation.getCurrentPoolManager();
@@ -89,7 +89,7 @@ public class PoolManagerImpl {
   /**
    * Creates a new {@link PoolFactory pool factory}, which is used to configure and create new
    * {@link Pool}s.
-   * 
+   *
    * @return the new pool factory
    */
   public PoolFactory createFactory() {
@@ -99,7 +99,7 @@ public class PoolManagerImpl {
   /**
    * Find by name an existing connection pool returning the existing pool or <code>null</code> if it
    * does not exist.
-   * 
+   *
    * @param name the name of the connection pool
    * @return the existing connection pool or <code>null</code> if it does not exist.
    */
@@ -139,7 +139,7 @@ public class PoolManagerImpl {
 
   /**
    * This is called by {@link PoolImpl#create}
-   * 
+   *
    * @throws IllegalStateException if a pool with same name is already registered.
    */
   public void register(Pool pool) {
@@ -164,7 +164,7 @@ public class PoolManagerImpl {
 
   /**
    * This is called by {@link Pool#destroy(boolean)}
-   * 
+   *
    * @return true if pool unregistered from cache; false if someone else already did it
    */
   public boolean unregister(Pool pool) {

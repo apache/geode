@@ -17,13 +17,14 @@ package org.apache.geode.security;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
 import javax.naming.NamingException;
 
 import org.apache.geode.GemFireException;
 
 /**
  * The base class for all org.apache.geode.security package related exceptions.
- * 
+ *
  * @since GemFire 5.5
  */
 public class GemFireSecurityException extends GemFireException {

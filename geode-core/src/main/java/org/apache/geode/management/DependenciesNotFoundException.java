@@ -18,7 +18,7 @@ import org.apache.geode.GemFireException;
 
 /**
  * Indicates that required dependencies were not found in the ClassPath.
- * 
+ *
  * @since GemFire 7.0
  */
 public class DependenciesNotFoundException extends GemFireException {
@@ -29,7 +29,7 @@ public class DependenciesNotFoundException extends GemFireException {
    *
    * Note that the detail message associated with <code>cause</code> is <i>not</i> automatically
    * incorporated in this runtime exception's detail message.
-   * 
+   *
    * @param message The detail message.
    * @param cause The cause of this exception or <code>null</code> if the cause is unknown.
    */
@@ -39,7 +39,7 @@ public class DependenciesNotFoundException extends GemFireException {
 
   /**
    * Constructs a new DependenciesNotFoundException with the specified detail message.
-   * 
+   *
    * @param message The detail message.
    */
   public DependenciesNotFoundException(String message) {

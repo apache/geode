@@ -24,6 +24,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -35,24 +47,13 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * DiskRegionTestingBase: This class is extended to write more JUnit tests for Disk Regions.
  * <p>
  * All disk region unit tests extend this base class , common method to be used in all tests are
  * present here.
- * 
+ *
  * @since GemFire 5.1
  */
 public abstract class DiskRegionTestingBase {
@@ -234,7 +235,7 @@ public abstract class DiskRegionTestingBase {
 
   /**
    * clears and closes the region
-   * 
+   *
    */
   protected void closeDown() {
     try {

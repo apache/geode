@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.web.shell.support;
 
 import java.lang.reflect.Proxy;
+
 import javax.management.ObjectName;
 
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
@@ -22,7 +23,7 @@ import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 /**
  * The HttpMBeanProxyFactory class is an abstract factory for creating
  * <p/>
- * 
+ *
  * @see java.lang.reflect.Proxy
  * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker
  * @since GemFire 8.0

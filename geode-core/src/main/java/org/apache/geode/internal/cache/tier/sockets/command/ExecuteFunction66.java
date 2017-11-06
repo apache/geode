@@ -68,7 +68,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteFunction66 extends BaseCommand {
 
-  private final static ExecuteFunction66 singleton = new ExecuteFunction66();
+  private static final ExecuteFunction66 singleton = new ExecuteFunction66();
 
   protected static volatile boolean ASYNC_TX_WARNING_ISSUED = false;
 

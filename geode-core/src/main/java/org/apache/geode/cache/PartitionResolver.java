@@ -42,7 +42,7 @@ package org.apache.geode.cache;
  * &nbsp &nbsp private String tradeID;<br>
  * &nbsp &nbsp private Month month ;<br>
  * &nbsp &nbsp private Year year ;<br>
- * 
+ *
  * &nbsp &nbsp public TradingKey(){ } <br>
  * &nbsp &nbsp public TradingKey(Month month, Year year){<br>
  * &nbsp &nbsp &nbsp &nbsp this.month = month;<br>
@@ -52,12 +52,12 @@ package org.apache.geode.cache;
  * &nbsp &nbsp &nbsp &nbsp return this.month + this.year;<br>
  * &nbsp &nbsp }<br>
  * }<br>
- * 
+ *
  * In the example above, all trade entries with the same month and year are guaranteed to be
  * colocated.
  * </p>
- * 
- * 
+ *
+ *
  * @since GemFire 6.0
  */
 public interface PartitionResolver<K, V> extends CacheCallback {
@@ -73,7 +73,7 @@ public interface PartitionResolver<K, V> extends CacheCallback {
 
   /**
    * Returns the name of the PartitionResolver
-   * 
+   *
    * @return String name
    */
   public String getName();

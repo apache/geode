@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -70,6 +69,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({DistributedTest.class, SerializationTest.class})
 public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {

@@ -47,7 +47,7 @@ import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 
 /**
  * The in-memory index storage
- * 
+ *
  * @since GemFire 8.0
  */
 public class MemoryIndexStore implements IndexStore {
@@ -251,7 +251,7 @@ public class MemoryIndexStore implements IndexStore {
   /**
    * Find the old key by traversing the forward map in case of in-place update modification If not
    * found it means the value object was modified with same value. So oldKey is same as newKey.
-   * 
+   *
    * @return oldKey
    */
   private Object getOldKey(Object newKey, RegionEntry entry) throws TypeMismatchException {
@@ -566,7 +566,7 @@ public class MemoryIndexStore implements IndexStore {
 
   private class MemoryIndexStoreKeyIterator implements Iterator<IndexStoreEntry> {
 
-    final private Map valuesToEntriesMap;
+    private final Map valuesToEntriesMap;
     private Object currKey;
     private Iterator<Map.Entry> mapIterator;
 
@@ -845,4 +845,3 @@ public class MemoryIndexStore implements IndexStore {
   }
 
 }
-

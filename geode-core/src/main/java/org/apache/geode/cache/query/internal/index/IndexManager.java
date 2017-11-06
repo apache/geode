@@ -144,7 +144,7 @@ public class IndexManager {
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_THRESHOLD_PROP, "100"));
   public static final int INDEX_ELEMARRAY_SIZE =
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_SIZE_PROP, "5"));
-  public final static AtomicLong SAFE_QUERY_TIME = new AtomicLong(0);
+  public static final AtomicLong SAFE_QUERY_TIME = new AtomicLong(0);
   public static boolean ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION = true;
   /** The NULL constant */
   public static final Object NULL = new NullToken();
@@ -179,7 +179,7 @@ public class IndexManager {
    * timings, this allows us to calculate the correct results for a query but, reevaluate more
    * aggressively. But the large hiccup will eventually be rolled off as time is always increasing
    * This is a fix for #47475
-   * 
+   *
    * @param operationTime the last modified time from version tag
    */
   public static boolean setIndexBufferTime(long operationTime, long currentCacheTime) {
@@ -208,7 +208,7 @@ public class IndexManager {
    * This is to fix bug 47475, where references to region entries can be held by the executing query
    * either directly or indirectly (iterators can hold references for next) but the values
    * underneath could change.
-   * 
+   *
    * Small amounts of false positives are ok as it will have a slight impact on performance
    */
   public static boolean needsRecalculation(long queryStartTime, long lastModifiedTime) {
@@ -236,7 +236,7 @@ public class IndexManager {
 
   /**
    * The Region this IndexManager is associated with
-   * 
+   *
    * @return the Region for this IndexManager
    */
   public Region getRegion() {
@@ -253,7 +253,7 @@ public class IndexManager {
   // @todo need more specific list of exceptions
   /**
    * Create an index that can be used when executing queries.
-   * 
+   *
    * @param indexName the name of this index, used for statistics collection
    * @param indexType the type of index
    * @param origIndexedExpression the expression to index on, a function dependent on region entries
@@ -522,7 +522,7 @@ public class IndexManager {
    * synchronization is needed while obtaining Array of Indexes as similar to what we have used
    * during index updates. This function will get the exact index , if available, else will return
    * null
-   * 
+   *
    * @param indexType the type of index
    * @param definitions the String array containing the required defintions of the fromClause of the
    *        index
@@ -580,10 +580,10 @@ public class IndexManager {
 
   /**
    * Asif : Returns the best available Index based on the available iterators in the Group
-   * 
+   *
    * TODO: Asif :Check if synchronization is needed while obtaining Array of Indexes as similar to
    * what we have used during index updates
-   * 
+   *
    * @param indexType Primary or Range Index
    * @param definitions String array containing the canonicalized definitions of the Iterators of
    *        the Group
@@ -786,7 +786,7 @@ public class IndexManager {
   /**
    * Get a collection of all the indexes. If the IndexType is specified returns only the matching
    * indexes.
-   * 
+   *
    * @param indexType the type of indexes to get. Currently must be Indexable.FUNCTIONAL_SORTED
    * @return the collection of indexes for the specified region and type
    */
@@ -813,7 +813,7 @@ public class IndexManager {
 
   /**
    * Get a collection of all the indexes managed by IndexManager
-   * 
+   *
    * @return the collection of indexes on the specified region
    */
   public Collection getIndexes() {
@@ -822,7 +822,7 @@ public class IndexManager {
 
   /**
    * Remove the specified index.
-   * 
+   *
    * @param index the Index to remove
    */
   public void removeIndex(Index index) {
@@ -971,7 +971,7 @@ public class IndexManager {
 
   /**
    * Callback for IndexManager to update indexes Called from AbstractRegionMap.
-   * 
+   *
    * @param entry the RegionEntry being updated
    * @param action action to be taken (IndexManager.ADD_ENTRY, IndexManager.UPDATE_ENTRY,
    *        IndexManager.REMOVE_ENTRY)
@@ -1218,7 +1218,7 @@ public class IndexManager {
    * recreate is in progress. This is required as recreate does NOT lock region entries before index
    * update and hence might cause inconsistencies in index if concurrent region entry operations are
    * going on.
-   * 
+   *
    */
   private void recreateAllIndexesForRegion() {
 
@@ -1252,7 +1252,7 @@ public class IndexManager {
 
   /**
    * Wait for index initialization before entry create, update, invalidate or destroy operation.
-   * 
+   *
    * Note: If the region has a disk region then we should wait for index initialization before
    * getting region entry lock to avoid deadlock (#44431).
    */
@@ -1309,7 +1309,7 @@ public class IndexManager {
   /**
    * Removes indexes for a destroyed bucket region from the list of bucket indexes in the
    * {@link PartitionedIndex}.
-   * 
+   *
    * @param prRegion the partition region that this bucket belongs to
    */
   public void removeBucketIndexes(PartitionedRegion prRegion) throws QueryException {
@@ -1362,7 +1362,7 @@ public class IndexManager {
    * Asif : This function is used exclusively by Index Manager. It gets the unique Iterator name for
    * a Iterator definition, if it already exists, else creates a unqiue name & also stores it in a
    * map for subsequent use
-   * 
+   *
    * @param definition String containing definition of the iterator
    * @return String containing the name of the Iterator
    */
@@ -1394,7 +1394,7 @@ public class IndexManager {
   /**
    * Asif : Given a definition returns the canonicalized iterator name for the definition. If the
    * definition does not exist , null is returned
-   * 
+   *
    * @return String
    */
   public String getCanonicalizedIteratorName(String definition) {

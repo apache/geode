@@ -15,12 +15,6 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,6 +25,12 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 
 /**
  * Abstract implementation for attributes. Should be sub-classed to provide differing

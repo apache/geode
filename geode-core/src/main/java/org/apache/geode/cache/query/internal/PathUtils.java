@@ -193,7 +193,7 @@ public class PathUtils {
   /**
    * Collects all the compiled values in the path , starting from the self at position 0 in the
    * returned List
-   * 
+   *
    * @param expr
    * @return List of CompiledValues ( includes the RuntimeIterator)
    * @throws TypeMismatchException

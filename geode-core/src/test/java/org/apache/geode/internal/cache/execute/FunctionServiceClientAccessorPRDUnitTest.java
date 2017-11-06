@@ -14,9 +14,10 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
 
 /**
  * Tests function execution with a client accessing a single member with a PR using onRegion calls.

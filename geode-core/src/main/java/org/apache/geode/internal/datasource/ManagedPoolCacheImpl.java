@@ -31,7 +31,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * This class implements a connection pool for Managed connection. Extends the AbstractPoolCache to
  * inherit the pool bahavior.
- * 
+ *
  */
 public class ManagedPoolCacheImpl extends AbstractPoolCache {
 
@@ -57,7 +57,7 @@ public class ManagedPoolCacheImpl extends AbstractPoolCache {
 
   /**
    * Creates a new connection for the managed connection pool.
-   * 
+   *
    * @return the managed connection from the EIS as ManagedConnection object.
    * @throws PoolException
    */
@@ -80,7 +80,7 @@ public class ManagedPoolCacheImpl extends AbstractPoolCache {
 
   /**
    * Destroys the underline physical connection to EIS.
-   * 
+   *
    * @param connectionObject connection Object.
    */
   @Override

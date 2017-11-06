@@ -84,7 +84,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
   protected int messageTimeToLive;
   /**
    * The groups this server belongs to. Use <code>getGroups</code> to read.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected String[] groups;
@@ -93,13 +93,13 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   /**
    * The ip address or host name that this server is to listen on.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected String bindAddress;
   /**
    * The ip address or host name that will be given to clients so they can connect to this server
-   * 
+   *
    * @since GemFire 5.7
    */
   protected String hostnameForClients;
@@ -175,7 +175,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
       /**
        * Method to create & send the ClientMembershipMessage to admin members. The message is sent
        * only if there are any admin members in the distribution system.
-       * 
+       *
        * @param event describes a change in client membership
        * @param type type of event - one of ClientMembershipMessage.JOINED,
        *        ClientMembershipMessage.LEFT, ClientMembershipMessage.CRASHED

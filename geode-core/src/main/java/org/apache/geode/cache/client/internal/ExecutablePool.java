@@ -20,14 +20,14 @@ import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Provides methods to execute AbstractOp instances on a client pool.
- * 
+ *
  * @since GemFire 5.7
  */
 public interface ExecutablePool {
   /**
    * Execute the given op on the servers that this pool connects to. This method is responsible for
    * retrying the op if an attempt fails. It will only execute it once and on one server.
-   * 
+   *
    * @param op the operation to execute
    * @return the result of execution if any; null if not
    * @since GemFire 5.7
@@ -37,7 +37,7 @@ public interface ExecutablePool {
   /**
    * Execute the given op on the servers that this pool connects to. This method is responsible for
    * retrying the op if an attempt fails. It will only execute it once and on one server.
-   * 
+   *
    * @param op the operation to execute
    * @return the result of execution if any; null if not
    * @since GemFire 5.7
@@ -48,7 +48,7 @@ public interface ExecutablePool {
    * Execute the given op on all the servers that have server-to-client queues for this pool The
    * last exception from any server will be thrown if the op fails. The op is executed with the
    * primary first, followed by the backups.
-   * 
+   *
    * @param op the operation to execute.
    * @throws NoSubscriptionServersAvailableException if we have no queue server
    * @throws SubscriptionNotEnabledException If the pool does not have queues enabled
@@ -60,7 +60,7 @@ public interface ExecutablePool {
    * Execute the given op on all the servers that have server-to-client queues for this pool. The op
    * will be executed on all backups, and then the primary. This method will block until a primary
    * is available.
-   * 
+   *
    * @param op the operation to execute
    * @return The result from the primary server.
    * @throws NoSubscriptionServersAvailableException if we have no queue server
@@ -72,7 +72,7 @@ public interface ExecutablePool {
 
   /**
    * Execute the given op on the given server.
-   * 
+   *
    * @param server the server to do the execution on
    * @param op the operation to execute
    * @return the result of execution if any; null if not
@@ -81,7 +81,7 @@ public interface ExecutablePool {
 
   /**
    * Execute the given op on the given server.
-   * 
+   *
    * @param server the server to do the execution on
    * @param op the operation to execute
    * @param accessed true if the connection is accessed by this execute
@@ -92,7 +92,7 @@ public interface ExecutablePool {
 
   /**
    * Execute the given op on the given connection.
-   * 
+   *
    * @param con the connection to do the execution on
    * @param op the operation to execute
    * @return the result of execution if any; null if not
@@ -101,7 +101,7 @@ public interface ExecutablePool {
 
   /**
    * Execute the given op on the given connection.
-   * 
+   *
    * @param con the connection to do the execution on
    * @param op the operation to execute
    * @param timeoutFatal true if a timeout exception should be treated as a fatal one
@@ -111,7 +111,7 @@ public interface ExecutablePool {
 
   /**
    * Execute the given op on the current primary server.
-   * 
+   *
    * @param op the operation to execute
    * @return the result of execution if any; null if not
    */
@@ -127,7 +127,7 @@ public interface ExecutablePool {
   /**
    * The calling thread will connect to only one server for executing all ops until it calls
    * {@link #releaseServerAffinity()}
-   * 
+   *
    * @param allowFailover true if we want to failover to another server when the first server is
    *        unreachable. Affinity to the new server will be maintained
    * @since GemFire 6.6
@@ -136,7 +136,7 @@ public interface ExecutablePool {
 
   /**
    * Release the server affinity established by {@link #setupServerAffinity(boolean)}
-   * 
+   *
    * @since GemFire 6.6
    */
   public void releaseServerAffinity();
@@ -144,7 +144,7 @@ public interface ExecutablePool {
   /**
    * When server affinity is enabled by this thread, returns the server against which all ops in
    * this thread are performed
-   * 
+   *
    * @return location of the affinity server
    * @since GemFire 6.6
    * @see ExecutablePool#setupServerAffinity(boolean)
@@ -154,7 +154,7 @@ public interface ExecutablePool {
   /**
    * All subsequent operations by this thread will be performed on the given ServerLocation. Used
    * for resuming suspended transactions.
-   * 
+   *
    * @param serverLocation
    * @since GemFire 6.6
    */

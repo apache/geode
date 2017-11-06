@@ -52,9 +52,9 @@ import org.apache.geode.internal.offheap.annotations.Released;
 /**
  * This region is being implemented to suppress distribution of puts and to allow localDestroys on
  * mirrored regions.
- * 
+ *
  * @since GemFire 4.3
- * 
+ *
  */
 public class HARegion extends DistributedRegion {
   private static final Logger logger = LogService.getLogger();
@@ -106,7 +106,7 @@ public class HARegion extends DistributedRegion {
 
   /**
    * Updates never distributed from buckets.
-   * 
+   *
    * @since GemFire 5.7
    */
   @Override
@@ -121,7 +121,7 @@ public class HARegion extends DistributedRegion {
 
   /**
    * void implementation over-riding the method to allow localDestroy on mirrored regions
-   * 
+   *
    * @param event
    */
   @Override
@@ -133,7 +133,7 @@ public class HARegion extends DistributedRegion {
   /**
    * Overriding this method so as to allow expiry action of local invalidate even if the scope is
    * distributed mirrored.
-   * 
+   *
    * <p>
    * author Asif
    */
@@ -168,7 +168,7 @@ public class HARegion extends DistributedRegion {
    * Before invalidating , check if the entry being invalidated has a key as Long . If yes check if
    * the key is still present in availableIDs . If yes remove & allow invalidation to proceed. But
    * if the key (Long)is absent do not allow invalidation to proceed.
-   * 
+   *
    * <p>
    * author Asif
    */
@@ -239,9 +239,9 @@ public class HARegion extends DistributedRegion {
   }
 
   /**
-   * 
+   *
    * Returns an instance of HARegion after it has properly initialized
-   * 
+   *
    * @param regionName name of the region to be created
    * @param cache the cache that owns this region
    * @param ra attributes of the region
@@ -286,7 +286,7 @@ public class HARegion extends DistributedRegion {
   /**
    * This method is used to set the HARegionQueue owning the HARegion. It is set after the
    * HARegionQueue is properly constructed
-   * 
+   *
    * @param hrq The owning HARegionQueue instance
    */
   public void setOwner(HARegionQueue hrq) {
@@ -309,7 +309,7 @@ public class HARegion extends DistributedRegion {
   /**
    * This method is overriden so as to make isOriginRemote true always so that the operation is
    * never propagated to other nodes
-   * 
+   *
    * @see org.apache.geode.internal.cache.AbstractRegion#destroyRegion()
    */
   @Override
@@ -347,7 +347,7 @@ public class HARegion extends DistributedRegion {
    * @return the deserialized value
    * @see LocalRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object,
    *      boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
-   * 
+   *
    */
   @Override
   protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface txState,
@@ -448,7 +448,7 @@ public class HARegion extends DistributedRegion {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.LocalRegion#getEventState()
    */
   @Override
@@ -462,9 +462,9 @@ public class HARegion extends DistributedRegion {
   /*
    * Record cache event state for a potential initial image provider. This is used to install event
    * state when the sender is selected as initial image provider.
-   * 
+   *
    * @param sender
-   * 
+   *
    * @param eventState
    */
   @Override
@@ -507,7 +507,7 @@ public class HARegion extends DistributedRegion {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.apache.geode.internal.cache.CacheDistributionAdvisor#adviseInitialImage(org.apache.geode.
      * internal.cache.CacheDistributionAdvisor.InitialImageAdvice)
@@ -554,7 +554,7 @@ public class HARegion extends DistributedRegion {
 
       /*
        * (non-Javadoc)
-       * 
+       *
        * @see
        * org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile#fromData(java.io.
        * DataInput)
@@ -569,7 +569,7 @@ public class HARegion extends DistributedRegion {
 
       /*
        * (non-Javadoc)
-       * 
+       *
        * @see org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile#toData(java.io.
        * DataOutput)
        */

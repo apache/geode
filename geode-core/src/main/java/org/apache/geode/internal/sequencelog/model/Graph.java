@@ -44,7 +44,7 @@ public class Graph {
 
   /**
    * Add an edge to this graph.
-   * 
+   *
    * @param timestamp
    * @param edgeName
    * @param source

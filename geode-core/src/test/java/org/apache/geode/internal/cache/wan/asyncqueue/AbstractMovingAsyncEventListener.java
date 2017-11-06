@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
-import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.distributed.DistributedMember;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Created by dan on 5/10/17.

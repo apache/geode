@@ -14,31 +14,12 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-// import org.apache.geode.admin.AdminException;
-// import org.apache.geode.admin.DistributionLocator;
+import javax.management.ObjectName;
+import javax.management.modelmbean.ModelMBean;
+
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.Assert;
-
-// import org.apache.commons.modeler.ManagedBean;
-// import org.apache.commons.modeler.AttributeInfo;
-
-// import java.util.Date;
-// import java.util.Set;
-
-// import javax.management.Attribute;
-// import javax.management.AttributeList;
-// import javax.management.Descriptor;
-// import javax.management.JMException;
-// import javax.management.MBeanServer;
-// import javax.management.MalformedObjectNameException;
-// import javax.management.Notification;
-// import javax.management.NotificationListener;
-import javax.management.ObjectName;
-// import javax.management.modelmbean.DescriptorSupport;
-import javax.management.modelmbean.ModelMBean;
-// import javax.management.modelmbean.ModelMBeanAttributeInfo;
 
 /**
  * Provides MBean support for managing a distribution locator.
@@ -180,4 +161,3 @@ public class DistributionLocatorJmxImpl
   public void cleanupResource() {}
 
 }
-

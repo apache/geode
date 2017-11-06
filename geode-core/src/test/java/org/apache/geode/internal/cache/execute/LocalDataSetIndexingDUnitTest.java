@@ -14,14 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.io.Serializable;
@@ -32,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -76,10 +72,13 @@ import org.apache.geode.internal.cache.functions.LocalDataSetFunction;
 import org.apache.geode.internal.cache.lru.HeapLRUCapacityController;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * 
- * 
+ *
+ *
  */
 @Category(DistributedTest.class)
 public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
@@ -289,12 +288,12 @@ class RegionValue implements Serializable, Comparable<RegionValue> {
 /*
  * 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35
  * 36 37 38 39
- * 
+ *
  * 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
- * 
+ *
  * 5 10 15 20 - 4 buckets
- * 
+ *
  * 5, 2, 7, 4
- * 
+ *
  * Result : 5, 13, 2, 10 , 18 , 7, 15, 4, 12, 20
  */

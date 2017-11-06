@@ -17,7 +17,7 @@ package org.apache.geode.internal.offheap;
 /**
  * Basic contract for a heap that manages off heap memory. Any MemoryChunks allocated from a heap
  * are returned to that heap when freed.
- * 
+ *
  * @since Geode 1.0
  */
 public interface MemoryAllocator {
@@ -31,7 +31,7 @@ public interface MemoryAllocator {
   /**
    * Allocates off heap memory for the given data and returns a StoredObject that is backed by this
    * allocated memory and that contains the data.
-   * 
+   *
    * @param data the bytes of the data to put in the allocated StoredObject
    * @param isSerialized true if data contains a serialized object; false if it is an actual byte
    *        array.
@@ -44,7 +44,7 @@ public interface MemoryAllocator {
   /**
    * Allocates off heap memory for the given data and returns a StoredObject that is backed by this
    * allocated memory and that contains the data and keeps a reference to the original heap data.
-   * 
+   *
    * @param data the bytes of the data to put in the allocated StoredObject
    * @param isSerialized true if data contains a serialized object; false if it is an actual byte
    *        array.

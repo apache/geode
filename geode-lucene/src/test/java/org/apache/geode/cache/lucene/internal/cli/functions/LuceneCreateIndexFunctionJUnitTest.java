@@ -22,15 +22,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;

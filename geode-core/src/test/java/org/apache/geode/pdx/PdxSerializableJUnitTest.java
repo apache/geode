@@ -21,6 +21,30 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.CopyHelper;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -47,29 +71,6 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxSerializableJUnitTest {
@@ -1407,7 +1408,7 @@ public class PdxSerializableJUnitTest {
 
     /**
      * Init fields using base as appropriate, but does not initialize aQueryObject field.
-     * 
+     *
      * @param base The base value for all fields. Fields are all set to a value using base as
      *        appropriate.
      * @param useNulls If true, fill in nulls for those fields that can be set to null (to test null
@@ -1494,7 +1495,7 @@ public class PdxSerializableJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override
@@ -1725,7 +1726,7 @@ public class PdxSerializableJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.pdx.PdxSerializable#toData(org.apache.geode. pdx.PdxWriter)
      */
     public void toData(PdxWriter out) {
@@ -1734,7 +1735,7 @@ public class PdxSerializableJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.pdx.PdxSerializable#fromData(org.apache.geode .pdx.PdxReader)
      */
     public void fromData(PdxReader in) {

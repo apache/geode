@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache;
 
+import java.util.*;
+
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.*;
 
 /**
  * Provides information on presence or absence of a <code>Region</code>'s required roles.
@@ -108,4 +108,3 @@ public class RequiredRoles {
   }
 
 }
-

@@ -64,7 +64,7 @@ public class PersistentMemberManager {
 
   /**
    * Add a new revocation listener
-   * 
+   *
    * @param listener The revocation listener
    * @param recoveredRevokedMembers a set of members which the listener knows have been revoked
    */
@@ -157,7 +157,7 @@ public class PersistentMemberManager {
 
   /**
    * Prepare the revoke of a persistent id.
-   * 
+   *
    * @param pattern the pattern to revoke
    * @param dm the distribution manager
    * @param sender the originator of the prepare

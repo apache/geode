@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.web.io.MultipartFileResourceAdapter;
  * The ConvertUtils class is a support class for performing conversions used by the GemFire web
  * application and REST interface.
  * <p/>
- * 
+ *
  * @see org.apache.geode.management.internal.cli.CliUtil
  * @since GemFire 8.0
  */
@@ -43,7 +43,7 @@ public abstract class ConvertUtils {
    * bytes followed by the byte content of the file, for all files being transmitted by Gfsh to the
    * GemFire Manager.
    * <p/>
-   * 
+   *
    * @param fileData a 2 dimensional byte array of files names and file content.
    * @return an array of Spring Resource objects encapsulating the details (name and content) of
    *         each file being transmitted by Gfsh to the GemFire Manager.
@@ -81,7 +81,7 @@ public abstract class ConvertUtils {
    * each MultipartFile. The 2-dimensional byte array format is used by Gfsh and the GemFire Manager
    * to transmit file data.
    * <p/>
-   * 
+   *
    * @param files an array of Spring MultipartFile objects to convert into the 2-dimensional byte
    *        array format.
    * @return a 2-dimensional byte array containing the content of each MultipartFile.
@@ -106,7 +106,7 @@ public abstract class ConvertUtils {
    * Resource. The 2-dimensional byte array format is used by Gfsh and the GemFire Manager to
    * transmit file data.
    * <p/>
-   * 
+   *
    * @param resources an array of Spring Resource objects to convert into the 2-dimensional byte
    *        array format.
    * @return a 2-dimensional byte array containing the content of each Resource.

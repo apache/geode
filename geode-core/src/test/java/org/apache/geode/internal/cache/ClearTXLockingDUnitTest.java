@@ -24,6 +24,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.JUnitSoftAssertions;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheFactory;
@@ -44,23 +51,16 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-import org.apache.logging.log4j.Logger;
-import org.assertj.core.api.JUnitSoftAssertions;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 /**
  * Test class to verify proper locking interaction between transactions and the CLEAR region
  * operation.
- * 
+ *
  * GEODE-1740: It was observed that operations performed within a transaction were not holding
  * region modification locks for the duration of commit processing. This lock is used to ensure
  * region consistency during CLEAR processing. By not holding the lock for the duration of commit
  * processing, a window was opened that allowed region operations such as clear to occur in
  * mid-commit.
- * 
+ *
  * The fix for GEODE-1740 was to acquire and hold read locks for any region involved in the commit.
  * This forces CLEAR to wait until commit processing is complete.
  */

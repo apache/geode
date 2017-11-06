@@ -27,8 +27,8 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Class IPAddressUtil This is utility class for checking whether ip address is versions i.e. IPv4
  * or IPv6 address
- * 
- * 
+ *
+ *
  * @since GemFire version 7.0.1
  */
 public class IPAddressUtil {

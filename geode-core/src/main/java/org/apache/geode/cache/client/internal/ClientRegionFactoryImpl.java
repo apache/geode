@@ -36,7 +36,7 @@ import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 
 /**
  * The distributed system will always default to a loner on a client.
- * 
+ *
  * @since GemFire 6.5
  */
 

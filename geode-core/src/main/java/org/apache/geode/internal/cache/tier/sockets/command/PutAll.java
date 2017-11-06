@@ -49,7 +49,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class PutAll extends BaseCommand {
 
-  private final static PutAll singleton = new PutAll();
+  private static final PutAll singleton = new PutAll();
 
 
   public static Command getCommand() {

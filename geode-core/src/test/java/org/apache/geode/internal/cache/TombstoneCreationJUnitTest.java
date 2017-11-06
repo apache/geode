@@ -14,6 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.net.InetAddress;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -23,16 +34,6 @@ import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryHeap;
 import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryHeapObjectKey;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import java.net.InetAddress;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 @Category(IntegrationTest.class)
 public class TombstoneCreationJUnitTest {
@@ -82,7 +83,7 @@ public class TombstoneCreationJUnitTest {
    * In bug #47868 a thread puts a REMOVED_PHASE1 entry in the map but is unable to lock the entry
    * before a Destroy thread gets it. The Destroy thread did not apply its operation but threw an
    * EntryNotFoundException. It is supposed to create a Tombstone.
-   * 
+   *
    * @throws Exception
    */
   @Test

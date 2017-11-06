@@ -20,24 +20,24 @@ import org.apache.geode.*;
  * Statistics related to the statistic sampler.
  */
 public class StatSamplerStats {
-  public final static String SAMPLE_COUNT = "sampleCount"; // int
-  public final static String SAMPLE_TIME = "sampleTime"; // long
-  public final static String DELAY_DURATION = "delayDuration"; // int
-  public final static String STAT_RESOURCES = "statResources"; // int
-  public final static String JVM_PAUSES = "jvmPauses"; // int
-  public final static String SAMPLE_CALLBACKS = "sampleCallbacks"; // int
-  public final static String SAMPLE_CALLBACK_ERRORS = "sampleCallbackErrors"; // int
-  public final static String SAMPLE_CALLBACK_DURATION = "sampleCallbackDuration"; // long
+  public static final String SAMPLE_COUNT = "sampleCount"; // int
+  public static final String SAMPLE_TIME = "sampleTime"; // long
+  public static final String DELAY_DURATION = "delayDuration"; // int
+  public static final String STAT_RESOURCES = "statResources"; // int
+  public static final String JVM_PAUSES = "jvmPauses"; // int
+  public static final String SAMPLE_CALLBACKS = "sampleCallbacks"; // int
+  public static final String SAMPLE_CALLBACK_ERRORS = "sampleCallbackErrors"; // int
+  public static final String SAMPLE_CALLBACK_DURATION = "sampleCallbackDuration"; // long
 
-  private final static StatisticsType samplerType;
-  private final static int sampleCountId;
-  private final static int sampleTimeId;
-  private final static int delayDurationId;
-  private final static int statResourcesId;
-  private final static int jvmPausesId;
-  private final static int sampleCallbacksId;
-  private final static int sampleCallbackErrorsId;
-  private final static int sampleCallbackDurationId;
+  private static final StatisticsType samplerType;
+  private static final int sampleCountId;
+  private static final int sampleTimeId;
+  private static final int delayDurationId;
+  private static final int statResourcesId;
+  private static final int jvmPausesId;
+  private static final int sampleCallbacksId;
+  private static final int sampleCallbackErrorsId;
+  private static final int sampleCallbackDurationId;
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     samplerType = f.createType("StatSampler", "Stats on the statistic sampler.",

@@ -32,7 +32,7 @@ import org.apache.geode.cache.query.types.*;
 
 /**
  * Implementation of CollectionType
- * 
+ *
  * @since GemFire 4.0
  */
 public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType {

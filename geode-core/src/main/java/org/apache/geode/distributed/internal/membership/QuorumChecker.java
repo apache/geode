@@ -18,14 +18,14 @@ package org.apache.geode.distributed.internal.membership;
 /**
  * A QuorumChecker is created after a forced-disconnect in order to probe the network to see if
  * there is a quorum of members that can be contacted.
- * 
+ *
  *
  */
 public interface QuorumChecker {
 
   /**
    * Check to see if a quorum of the old members are reachable
-   * 
+   *
    * @param timeoutMS time to wait for responses, in milliseconds
    */
   public boolean checkForQuorum(long timeoutMS) throws InterruptedException;

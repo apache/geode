@@ -14,17 +14,17 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Specifies how access to the region is affected when one or more required roles are lost. A role
  * is lost when it is are offline and no longer present in the system membership. The
  * <code>LossAction</code> is specified when configuring a region's
  * {@link org.apache.geode.cache.MembershipAttributes}.
- * 
+ *
  * @deprecated this feature is scheduled to be removed
  */
 public class LossAction implements Serializable {
@@ -128,7 +128,7 @@ public class LossAction implements Serializable {
 
   /**
    * Returns a string representation for this loss action.
-   * 
+   *
    * @return the name of this loss action
    */
   @Override
@@ -137,4 +137,3 @@ public class LossAction implements Serializable {
   }
 
 }
-

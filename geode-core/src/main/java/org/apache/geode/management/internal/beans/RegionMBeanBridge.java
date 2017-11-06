@@ -380,7 +380,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return float
    */
   public float getPutLocalRate() {
@@ -389,7 +389,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return float
    */
   public float getPutRemoteRate() {
@@ -398,7 +398,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return long
    */
   public long getPutRemoteAvgLatency() {
@@ -407,7 +407,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return long
    */
   public long getPutRemoteLatency() {
@@ -416,7 +416,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getActualRedundancy() {
@@ -425,7 +425,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getAvgBucketSize() {
@@ -434,7 +434,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getBucketCount() {
@@ -447,7 +447,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getNumBucketsWithoutRedundancy() {
@@ -456,7 +456,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getPrimaryBucketCount() {
@@ -465,7 +465,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getTotalBucketSize() {
@@ -474,7 +474,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return list of fixed PR attributes
    */
   public FixedPartitionAttributesData[] listFixedPartitionAttributes() {
@@ -483,7 +483,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return list of PR attributes
    */
   public PartitionAttributesData listPartitionAttributes() {

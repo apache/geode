@@ -13,24 +13,17 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.partitioned;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import static org.apache.geode.cache.query.Utils.*;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import parReg.query.unittest.NewPortfolio;
 import util.TestException;
 
@@ -68,6 +61,10 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  *
@@ -110,7 +107,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -371,7 +368,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -455,7 +452,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -535,7 +532,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -610,7 +607,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -695,7 +692,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -775,7 +772,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -850,7 +847,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -931,7 +928,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1010,7 +1007,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1485,7 +1482,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test

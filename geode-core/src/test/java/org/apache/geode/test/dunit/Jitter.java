@@ -31,10 +31,10 @@ class Jitter {
   protected Jitter() {}
 
   /**
-   * Returns an adjusted interval from <code>minimum()</code to 
+   * Returns an adjusted interval from <code>minimum()</code to
    * <code>intervalMillis</code> milliseconds. If jittering is disabled then the value returned will
    * be equal to intervalMillis.
-   * 
+   *
    * @param intervalMillis
    * @return adjust milliseconds to use as interval for WaitCriteria polling
    */
@@ -57,11 +57,11 @@ class Jitter {
   /**
    * If jittering is enabled then returns a jittered interval up to a maximum of
    * <code>intervalMillis</code> milliseconds, inclusive.
-   * 
+   *
    * If jittering is disabled then returns <code>intervalMillis</code>.
-   * 
+   *
    * The result is bounded by 50 ms as a minimum and 5000 ms as a maximum.
-   * 
+   *
    * @param ms total amount of time to wait
    * @return randomized interval we should wait
    */

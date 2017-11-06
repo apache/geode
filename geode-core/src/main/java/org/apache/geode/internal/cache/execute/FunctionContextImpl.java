@@ -24,14 +24,14 @@ import org.apache.geode.cache.execute.ResultSender;
 
 /**
  * Context available to application functions which is passed from GemFire to {@link Function}. <br>
- * 
+ *
  * For data dependent functions refer to {@link RegionFunctionContext}
- * 
- * 
+ *
+ *
  * @since GemFire 6.0
- * 
+ *
  * @see RegionFunctionContextImpl
- * 
+ *
  */
 public class FunctionContextImpl implements FunctionContext {
 
@@ -62,7 +62,7 @@ public class FunctionContextImpl implements FunctionContext {
   /**
    * Returns the arguments provided to this function execution. These are the arguments specified by
    * caller using {@link Execution#setArguments(Object)}
-   * 
+   *
    * @return the arguments or null if there are no arguments
    */
   public Object getArguments() {
@@ -71,7 +71,7 @@ public class FunctionContextImpl implements FunctionContext {
 
   /**
    * Get the identifier of the running function used for logging and administration purposes
-   * 
+   *
    * @return String uniquely identifying this running instance
    * @see Function#getId()
    */

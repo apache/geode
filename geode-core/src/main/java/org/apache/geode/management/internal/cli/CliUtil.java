@@ -498,7 +498,7 @@ public class CliUtil {
 
   /**
    * Returns a set of all the members of the distributed system excluding locators.
-   * 
+   *
    * @param cache
    */
   @SuppressWarnings("unchecked")
@@ -509,7 +509,7 @@ public class CliUtil {
 
   /**
    * Returns a set of all the members of the distributed system including locators.
-   * 
+   *
    * @param cache
    */
   @SuppressWarnings("unchecked")
@@ -525,7 +525,7 @@ public class CliUtil {
 
   /***
    * Executes a function with arguments on a set of members , ignores the departed members.
-   * 
+   *
    * @param function Function to be executed.
    * @param args Arguments passed to the function, pass null if you wish to pass no arguments to the
    *        function.
@@ -596,7 +596,7 @@ public class CliUtil {
 
   /**
    * this finds the member that hosts all the regions passed in.
-   * 
+   *
    * @param regions
    * @param cache
    * @param returnAll: if true, returns all matching members, otherwise, returns only one.

@@ -93,7 +93,7 @@ public interface EnableLRU {
 
   /**
    * Returns the id of the "greedyReturns" statistic for this LRU algorith'ms statistics
-   * 
+   *
    * @return the id
    */
   public int getGreedyReturnsStatId();
@@ -112,4 +112,3 @@ public interface EnableLRU {
   public boolean lruLimitExceeded(LRUStatistics lruStatistics, DiskRegionView drv);
 
 }
-

@@ -30,4 +30,3 @@ public abstract class VMThinLRURegionEntry extends AbstractLRURegionEntry {
     super(context, value);
   }
 }
-

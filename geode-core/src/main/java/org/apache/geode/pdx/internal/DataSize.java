@@ -16,7 +16,7 @@ package org.apache.geode.pdx.internal;
 
 /**
  * This is a helper class that defines the size of the primitive java types.
- * 
+ *
  * @since GemFire 6.6
  */
 public class DataSize {

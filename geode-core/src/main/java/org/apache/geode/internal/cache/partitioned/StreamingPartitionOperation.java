@@ -214,7 +214,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
 
     /**
      * Waits for the response from the {@link PartitionMessage}'s recipient
-     * 
+     *
      * @throws CacheException if the recipient threw a cache exception during message processing
      * @throws QueryException if the recipient threw a query exception
      * @throws RegionDestroyedException if the peer has closed its copy of the region
@@ -315,7 +315,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     }
   }
 
-  public static abstract class StreamingPartitionMessage extends PartitionMessage {
+  public abstract static class StreamingPartitionMessage extends PartitionMessage {
     // the following transient fields are used for passing extra data to the sendReply method
     transient HeapDataOutputStream outStream = null;
     transient int replyMsgNum = 0;
@@ -338,7 +338,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     /**
      * send a reply message. This is in a method so that subclasses can override the reply message
      * type
-     * 
+     *
      * @see PutMessage#sendReply
      */
     @Override
@@ -361,7 +361,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
 
     /**
      * An operation upon the messages partitioned region
-     * 
+     *
      * @param dm the manager that received the message
      * @param pr the partitioned region that should be modified
      * @return true if a reply message should be sent

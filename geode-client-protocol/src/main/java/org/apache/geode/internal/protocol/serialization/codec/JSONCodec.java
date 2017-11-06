@@ -15,10 +15,10 @@
 package org.apache.geode.internal.protocol.serialization.codec;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.internal.protocol.serialization.SerializationType;
 import org.apache.geode.internal.protocol.serialization.TypeCodec;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
 public class JSONCodec implements TypeCodec<PdxInstance> {

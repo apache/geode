@@ -14,14 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 
 public class ToUpperResultCollector implements ResultCollector {
 

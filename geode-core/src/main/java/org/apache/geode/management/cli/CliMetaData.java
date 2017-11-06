@@ -74,7 +74,7 @@ public @interface CliMetaData {
 
   /**
    * String used as a separator when multiple values for a command are specified
-   * 
+   *
    * @deprecated since 1.2, Command methods may override both the delimiter and the escape through
    *             spring shell's {@code splittingRegex} option context
    */

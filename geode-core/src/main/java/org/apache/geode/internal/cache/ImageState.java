@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 
 /**
  * State object used during getInitialImage Locked during clean up of destroyed tokens.
- * 
+ *
  */
 public interface ImageState /* extends Lock */ {
 

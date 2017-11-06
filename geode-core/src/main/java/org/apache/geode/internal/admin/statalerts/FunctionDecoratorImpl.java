@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
@@ -26,7 +26,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
 /**
  * Implementation of {@link StatAlertDefinition}, which defines function Function to be applied on
  * all the statistic Threshold is valid for value evaluated by function
- * 
+ *
  */
 public class FunctionDecoratorImpl extends BaseDecoratorImpl {
   private static final long serialVersionUID = -4857857489413081553L;

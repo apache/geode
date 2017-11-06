@@ -19,10 +19,10 @@ package org.apache.geode.distributed.internal;
  * SizeableRunnable is a Runnable with a size. It implements the Sizeable interface for use in
  * QueuedExecutors using a ThrottlingMemLinkedBlockingQueue.
  * <p>
- * 
+ *
  * Instances/subclasses must provide the run() method to complete the Runnable interface.
  * <p>
- * 
+ *
  * @since GemFire 5.0
  */
 

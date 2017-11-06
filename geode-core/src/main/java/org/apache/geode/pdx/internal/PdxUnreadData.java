@@ -64,7 +64,7 @@ public class PdxUnreadData implements PdxUnreadFields {
   /**
    * Returns the PdxType to use when serializing this unread data. Returns null if we don't know
    * what this type is yet.
-   * 
+   *
    * @return the PdxType to use when serializing this unread data.
    */
   public PdxType getSerializedType() {

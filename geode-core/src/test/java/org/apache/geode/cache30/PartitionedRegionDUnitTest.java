@@ -414,7 +414,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
     /**
      * Accessed via reflection
-     * 
+     *
      * @return true if poison found
      */
     public static boolean poisonFound() {
@@ -520,4 +520,3 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     assertTrue("Hash mismatch not found", success);
   }
 }
-

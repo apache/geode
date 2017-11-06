@@ -50,7 +50,7 @@ public abstract class BackupInspector {
 
   /**
    * Returns a BackupInspector for a member's backup directory.
-   * 
+   *
    * @param backupDir a member's backup directory.
    * @return a new BackupInspector.
    * @throws IOException the backup directory was malformed.
@@ -65,7 +65,7 @@ public abstract class BackupInspector {
 
   /**
    * Creates a new BackupInspector.
-   * 
+   *
    * @param backupDir a a previous backup for a member.
    * @throws IOException an error occurred while parsing the restore script.
    */
@@ -97,7 +97,7 @@ public abstract class BackupInspector {
 
   /**
    * Searches for the incremental backup marker and parses the incremental portion.
-   * 
+   *
    * @param reader restore file reader.
    */
   private void parseRestoreFile(final BufferedReader reader) throws IOException {
@@ -129,7 +129,7 @@ public abstract class BackupInspector {
 
   /**
    * Returns the restore script line that restores a particular operation log file.
-   * 
+   *
    * @param oplogFileName an operation log file.
    */
   public String getScriptLineForOplogFile(final String oplogFileName) {
@@ -146,28 +146,28 @@ public abstract class BackupInspector {
 
   /**
    * Returns the restore script for the backup.
-   * 
+   *
    * @param backupDir a member's backup directory.
    */
   protected abstract File getRestoreFile(final File backupDir);
 
   /**
    * Returns the copyTo operation log file path for an operation log file name.
-   * 
+   *
    * @param oplogFileName an operation log file.
    */
   public abstract String getCopyToForOplogFile(final String oplogFileName);
 
   /**
    * Returns the copy from operation log file path for an operation log file name.
-   * 
+   *
    * @param oplogFileName an operation log file.
    */
   public abstract String getCopyFromForOplogFile(final String oplogFileName);
 
   /**
    * Parses out operation log data from the incremental backup portion of the restore script.
-   * 
+   *
    * @param reader restore file reader.
    */
   protected abstract void parseOplogLines(final BufferedReader reader) throws IOException;

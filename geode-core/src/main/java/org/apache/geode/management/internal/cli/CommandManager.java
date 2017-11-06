@@ -46,7 +46,7 @@ import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 /**
  *
  * this only takes care of loading all available command markers and converters from the application
- * 
+ *
  * @since GemFire 7.0
  */
 public class CommandManager {

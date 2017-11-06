@@ -27,12 +27,12 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Disk region perf test for Persist only with Async writes and Buffer. Set Rolling oplog to true
  * and setMaxOplogSize to 10240
- * 
+ *
  * If more than some number of files are open, an Exception is thrown. This ia JDK 1.4 bug. This
  * test should be run after transition to JDK 1.5 to verify that the bug does not exceed.
- * 
+ *
  * The disk properties will ensure that very many oplog files are created.
- * 
+ *
  * This test is currently not being executed and is marked with an underscore
  */
 @Category(IntegrationTest.class)

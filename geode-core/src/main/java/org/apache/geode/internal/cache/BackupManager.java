@@ -181,7 +181,7 @@ public class BackupManager implements MembershipListener {
   /**
    * Returns the memberId directory for this member in the baseline. The memberId may have changed
    * if this member has been restarted since the last backup.
-   * 
+   *
    * @param baselineParentDir parent directory of last backup.
    * @return null if the baseline for this member could not be located.
    */
@@ -206,7 +206,7 @@ public class BackupManager implements MembershipListener {
    * Performs a sanity check on the baseline directory for incremental backups. If a baseline
    * directory exists for the member and there is no INCOMPLETE_BACKUP_FILE file then return the
    * data stores directory for this member.
-   * 
+   *
    * @param baselineParentDir a previous backup directory. This is used with the incremental backup
    *        option. May be null if the user specified a full backup.
    * @return null if the backup is to be a full backup otherwise return the data store directory in
@@ -494,7 +494,7 @@ public class BackupManager implements MembershipListener {
 
   /**
    * Copies user deployed jars to the backup directory.
-   * 
+   *
    * @param backupDir The backup directory for this member.
    * @throws IOException one or more of the jars did not successfully copy.
    */

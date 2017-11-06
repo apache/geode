@@ -21,7 +21,7 @@ package org.apache.geode.cache;
  * <p>
  * Note that if you wish to refer to an implementation of this interface in XML, the implementation
  * must also implement the Declarable interface.
- * 
+ *
  *
  */
 public interface CustomExpiry<K, V> extends CacheCallback {
@@ -31,7 +31,7 @@ public interface CustomExpiry<K, V> extends CacheCallback {
    * region should be used.
    * <p>
    * The entry parameter should not be used after this method invocation completes.
-   * 
+   *
    * @param entry the entry to calculate the expiration for
    * @return the expiration to be used, null if the region's defaults should be used.
    */

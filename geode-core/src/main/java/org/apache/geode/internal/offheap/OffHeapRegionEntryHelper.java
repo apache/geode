@@ -16,12 +16,12 @@ package org.apache.geode.internal.offheap;
 
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
-import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -30,7 +30,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * The class just has static methods that operate on instances of {@link OffHeapRegionEntry}. It
  * allows common code to be shared for all the classes we have that implement
  * {@link OffHeapRegionEntry}.
- * 
+ *
  * @since Geode 1.0
  */
 public class OffHeapRegionEntryHelper {
@@ -77,7 +77,7 @@ public class OffHeapRegionEntryHelper {
   /**
    * This method may release the object stored at ohAddress if the result needs to be decompressed
    * and the decompress parameter is true. This decompressed result will be on the heap.
-   * 
+   *
    * @param ohAddress OFF_HEAP_ADDRESS
    * @param decompress true if off-heap value should be decompressed before returning
    * @param context used for decompression
@@ -287,7 +287,7 @@ public class OffHeapRegionEntryHelper {
   /**
    * Returns the bytes encoded in the given address. Note that compressed addresses are not
    * supported by this method.
-   * 
+   *
    * @throws UnsupportedOperationException if the address has compressed data
    */
   static byte[] decodeUncompressedAddressToBytes(long addr) {
@@ -367,7 +367,7 @@ public class OffHeapRegionEntryHelper {
    * value returned is 're' decompressed into another off-heap location, then 're' will be
    * Unretained but the new, decompressed value will be Retained. Therefore, whichever is returned
    * (the value at the address in 're' or the decompressed value) it will have been Retained.
-   * 
+   *
    * @return possible OFF_HEAP_OBJECT (caller must release)
    */
   @Retained

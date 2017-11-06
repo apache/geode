@@ -34,7 +34,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Distribution message for dropping client from blacklist.
- * 
+ *
  * @since GemFire 6.0
  *
  */

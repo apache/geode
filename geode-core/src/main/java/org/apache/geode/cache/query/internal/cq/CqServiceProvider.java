@@ -14,14 +14,14 @@
  */
 package org.apache.geode.cache.query.internal.cq;
 
-import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+
+import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
 
 public class CqServiceProvider {
 

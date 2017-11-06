@@ -13,8 +13,6 @@
  */
 package org.apache.geode.internal.hll;
 
-import org.apache.geode.redis.internal.executor.hll.Varint;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -32,6 +30,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import org.apache.geode.redis.internal.executor.hll.Varint;
 
 
 /**

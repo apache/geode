@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
  * This message is sent to a member to make it attempt to become primary. This message is sent at
  * the end of PRHARedundancyProvider .createBucketAtomically, because the buckets created during
  * that time do not volunteer for primary until receiving this message.
- * 
+ *
  */
 public class EndBucketCreationMessage extends PartitionMessage {
 
@@ -53,9 +53,9 @@ public class EndBucketCreationMessage extends PartitionMessage {
 
   /**
    * Sends a message to make the recipient primary for the bucket.
-   * 
+   *
    * @param acceptedMembers
-   * 
+   *
    * @param newPrimary the member to to become primary
    * @param pr the PartitionedRegion of the bucket
    * @param bid the bucket to become primary for
