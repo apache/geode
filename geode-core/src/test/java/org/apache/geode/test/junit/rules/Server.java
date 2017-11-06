@@ -14,13 +14,9 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 
 public interface Server extends Member {
-
-  Cache getCache();
-
   CacheServer getServer();
 
   int getEmbeddedLocatorPort();

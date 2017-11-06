@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -65,6 +66,13 @@ public class MemberVM implements Member {
 
   public Member getMember() {
     return member;
+  }
+
+  /**
+   * this should only be called inside the vm
+   */
+  public Cache getCache() {
+    return getMember().getCache();
   }
 
   @Override

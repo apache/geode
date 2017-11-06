@@ -17,6 +17,5 @@ package org.apache.geode.test.junit.rules;
 import org.apache.geode.distributed.internal.InternalLocator;
 
 public interface Locator extends Member {
-
   InternalLocator getLocator();
 }

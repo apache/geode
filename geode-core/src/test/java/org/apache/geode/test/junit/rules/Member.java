@@ -17,7 +17,10 @@ package org.apache.geode.test.junit.rules;
 import java.io.File;
 import java.io.Serializable;
 
+import org.apache.geode.cache.Cache;
+
 public interface Member extends Serializable {
+  Cache getCache();
 
   File getWorkingDir();
 

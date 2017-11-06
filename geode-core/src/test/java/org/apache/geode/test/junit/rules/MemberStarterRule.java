@@ -24,10 +24,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.TemporaryFolder;
 
@@ -35,6 +37,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -218,6 +222,23 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     if (logFile) {
       properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath());
     }
+  }
+
+  public DistributedRegionMXBean getRegionMBean(String regionName) {
+    return getManagementService().getDistributedRegionMXBean(regionName);
+  }
+
+  public ManagementService getManagementService(){
+    ManagementService managementService = ManagementService.getExistingManagementService(getCache());
+    if(managementService == null){
+      throw new IllegalStateException("Management service is not available on this member");
+    }
+    return managementService;
+  }
+
+  public void waitTillRegionIsReadyOnServers(String regionName, int serverCount){
+    await().atMost(2, TimeUnit.SECONDS).until(()->getRegionMBean(regionName) != null);
+    await().atMost(2, TimeUnit.SECONDS).until(()->getRegionMBean(regionName).getMembers().length == serverCount);
   }
 
   abstract void stopMember();
