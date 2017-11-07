@@ -923,7 +923,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-recovery-delay </span></td>
-<td>Delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes. The default (value of -1) indicates that redundancy will not be recovered after a a failure.</td>
+<td>Delay in milliseconds that existing members will wait after a member crashes before restoring this region's redundancy on the remaining members. The default value (-1) indicates that redundancy will not be recovered after a failure.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -933,7 +933,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-startup-recovery-delay </span></td>
-<td>Delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members will not trigger redundancy recovery.</td>
+<td>Delay in milliseconds that new members will wait before assuming their share of cluster-level redundancy. This allows time for multiple regions to start before the redundancy workload is parceled out to the new members. A value of -1 indicates that adding new members will not trigger redundancy recovery.</td>
 <td>The default is to recover redundancy immediately when a new member is added.</td>
 </tr>
 <tr class="even">
