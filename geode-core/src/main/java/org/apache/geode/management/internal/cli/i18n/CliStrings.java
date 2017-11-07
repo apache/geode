@@ -2033,9 +2033,10 @@ public class CliStrings {
   public static final String SHOW_METRICS__CATEGORY__HELP =
       "Categories available based upon the parameters specified are:\n"
           + "- no parameters specified: cluster, cache, diskstore, query\n"
-          + "- region specified: cluster, region, partition, diskstore, callback, eviction\n"
-          + "- member specified: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution, offheap\n"
-          + "- member and region specified: region, partition, diskstore, callback, eviction";
+          + "- region specified: callback, cluster, diskstore, eviction, partition, region\n"
+          + "- member specified: communication, diskstore, distribution, eviction, function, jvm, lock, member, offheap, region, serialization, transaction\n"
+          + "- member and port specified: cacheserver, communication, diskstore, distribution, eviction, function, jvm, lock, member, notification, offheap, query, region, serialization, transaction\n"
+          + "- member and region specified: callback, diskstore, eviction, partition, region";
   public static final String SHOW_METRICS__FILE = "file";
   public static final String SHOW_METRICS__FILE__HELP =
       "Name of the file to which metrics will be written.";

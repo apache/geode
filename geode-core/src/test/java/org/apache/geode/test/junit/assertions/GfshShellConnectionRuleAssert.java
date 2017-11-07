@@ -17,8 +17,6 @@ package org.apache.geode.test.junit.assertions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
@@ -130,7 +128,7 @@ public class GfshShellConnectionRuleAssert
   public GfshShellConnectionRuleAssert tableHasColumnWithExactValuesInExactOrder(String header,
       Object... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
-    Object content = resultContentJSON.get(header);
+    Object content = getColumnContent(header, resultContentJSON);
 
     if (content == null) {
       failWithMessage(
@@ -166,7 +164,7 @@ public class GfshShellConnectionRuleAssert
   public GfshShellConnectionRuleAssert tableHasColumnWithExactValuesInAnyOrder(String header,
       Object... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
-    Object content = resultContentJSON.get(header);
+    Object content = getColumnContent(header, resultContentJSON);
 
     if (content == null) {
       failWithMessage("Command result did not contain a table with column header <" + header + ">: "
@@ -186,7 +184,7 @@ public class GfshShellConnectionRuleAssert
   public GfshShellConnectionRuleAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
-    Object content = resultContentJSON.get(header);
+    Object content = getColumnContent(header, resultContentJSON);
 
     if (content == null) {
       failWithMessage("Command result did not contain a table with column header <" + header + ">: "
@@ -206,6 +204,38 @@ public class GfshShellConnectionRuleAssert
     }
 
     return this;
+  }
+
+  /**
+   * Verifies that each of the actual values in the column with the given header contains at least
+   * one of the expectedValues.
+   */
+  public GfshShellConnectionRuleAssert tableHasColumnOnlyWithValues(String header,
+      String... expectedValues) {
+    GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
+    Object content = getColumnContent(header, resultContentJSON);
+
+    if (content == null) {
+      failWithMessage("Command result did not contain a table with column header <" + header + ">: "
+          + resultContentJSON.toString());
+    }
+
+    Object[] actualValues = toArray((JSONArray) content);
+    assertThat(actualValues).containsOnly(expectedValues);
+    return this;
+  }
+
+  private Object getColumnContent(String header, GfJsonObject resultContentJSON) {
+    if (resultContentJSON.get(header) != null) {
+      return resultContentJSON.get(header);
+    }
+    try {
+      // Sometimes, the output is buried in a most questionable way.
+      return resultContentJSON.getJSONObject("__sections__-0").getJSONObject("__tables__-0")
+          .getJSONObject("content").get(header);
+    } catch (NullPointerException ignored) {
+    }
+    return null;
   }
 
   public GfshShellConnectionRuleAssert hasResult() {
