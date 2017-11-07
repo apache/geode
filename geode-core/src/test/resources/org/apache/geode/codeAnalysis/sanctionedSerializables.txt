@@ -341,7 +341,6 @@ org/apache/geode/internal/cache/tier/sockets/CacheClientNotifier$2,false,this$0:
 org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher$1,true,0,this$0:org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher
 org/apache/geode/internal/cache/tier/sockets/ClientTombstoneMessage$TOperation,false
 org/apache/geode/internal/cache/tier/sockets/MessageTooLargeException,true,-8970585803331525833
-org/apache/geode/internal/cache/tier/sockets/ServiceLoadingFailureException,false
 org/apache/geode/internal/cache/tier/sockets/UnregisterAllInterest,true,5026160621257178459
 org/apache/geode/internal/cache/tx/TransactionalOperation$ServerRegionOperation,false
 org/apache/geode/internal/cache/versions/ConcurrentCacheModificationException,true,2316928221010347462
@@ -480,7 +479,7 @@ org/apache/geode/management/internal/cli/domain/EvictionAttributesInfo,true,1,ev
 org/apache/geode/management/internal/cli/domain/FixedPartitionAttributesInfo,true,1,isPrimary:boolean,numBuckets:int,partitionName:java/lang/String
 org/apache/geode/management/internal/cli/domain/IndexDetails,true,-2198907141534201288,fromClause:java/lang/String,indexName:java/lang/String,indexStatisticsDetails:org/apache/geode/management/internal/cli/domain/IndexDetails$IndexStatisticsDetails,indexType:org/apache/geode/cache/query/IndexType,indexedExpression:java/lang/String,isValid:boolean,memberId:java/lang/String,memberName:java/lang/String,projectionAttributes:java/lang/String,regionName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/management/internal/cli/domain/IndexDetails$IndexStatisticsDetails,false,numberOfKeys:java/lang/Long,numberOfUpdates:java/lang/Long,numberOfValues:java/lang/Long,totalUpdateTime:java/lang/Long,totalUses:java/lang/Long
-org/apache/geode/management/internal/cli/domain/IndexInfo,true,1,indexName:java/lang/String,indexType:org/apache/geode/cache/query/IndexType,indexedExpression:java/lang/String,regionPath:java/lang/String
+org/apache/geode/management/internal/cli/domain/IndexInfo,true,1,ifExists:boolean,indexName:java/lang/String,indexType:org/apache/geode/cache/query/IndexType,indexedExpression:java/lang/String,regionPath:java/lang/String
 org/apache/geode/management/internal/cli/domain/MemberConfigurationInfo,false,cacheAttributes:java/util/Map,cacheServerAttributes:java/util/List,gfePropsRuntime:java/util/Map,gfePropsSetFromFile:java/util/Map,gfePropsSetUsingApi:java/util/Map,gfePropsSetWithDefaults:java/util/Map,jvmInputArguments:java/util/List,pdxAttributes:java/util/Map,systemProperties:java/util/Properties
 org/apache/geode/management/internal/cli/domain/MemberInformation,true,1,cacheServerList:java/util/List,cacheXmlFilePath:java/lang/String,clientCount:int,cpuUsage:double,groups:java/lang/String,heapUsage:java/lang/String,host:java/lang/String,hostedRegions:java/util/Set,id:java/lang/String,initHeapSize:java/lang/String,isServer:boolean,locatorBindAddress:java/lang/String,locatorPort:int,locators:java/lang/String,logFilePath:java/lang/String,maxHeapSize:java/lang/String,name:java/lang/String,offHeapMemorySize:java/lang/String,processId:java/lang/String,serverBindAddress:java/lang/String,statArchiveFilePath:java/lang/String,workingDirPath:java/lang/String
 org/apache/geode/management/internal/cli/domain/MemberResult,true,1,errorMessage:java/lang/String,exceptionMessage:java/lang/String,isSuccessful:boolean,memberNameOrId:java/lang/String,opPossible:boolean,successMessage:java/lang/String
@@ -509,7 +508,7 @@ org/apache/geode/management/internal/cli/functions/DataCommandFunction,true,1,op
 org/apache/geode/management/internal/cli/functions/DeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/DescribeDiskStoreFunction,false
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunction,true,1
-org/apache/geode/management/internal/cli/functions/DestroyIndexFunction,true,1
+org/apache/geode/management/internal/cli/functions/DestroyIndexFunction,true,-868082551095130315
 org/apache/geode/management/internal/cli/functions/ExportConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportDataFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportLogsFunction,true,1

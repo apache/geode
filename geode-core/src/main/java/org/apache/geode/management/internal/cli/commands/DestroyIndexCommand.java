@@ -26,8 +26,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.StringUtils;
@@ -42,6 +40,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -56,19 +55,16 @@ public class DestroyIndexCommand implements GfshCommand {
   public Result destroyIndex(
       @CliOption(key = CliStrings.DESTROY_INDEX__NAME, unspecifiedDefaultValue = "",
           help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
-
       @CliOption(key = CliStrings.DESTROY_INDEX__REGION, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESTROY_INDEX__REGION__HELP) final String regionPath,
-
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_INDEX__MEMBER__HELP) final String[] memberNameOrID,
-
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group) {
-
-    Result result;
+          help = CliStrings.DESTROY_INDEX__GROUP__HELP) final String[] group,
+      @CliOption(key = CliStrings.IFEXISTS, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false", help = CliStrings.IFEXISTS_HELP) boolean ifExists) {
 
     if (StringUtils.isBlank(indexName) && StringUtils.isBlank(regionPath)
         && ArrayUtils.isEmpty(group) && ArrayUtils.isEmpty(memberNameOrID)) {
@@ -81,6 +77,7 @@ public class DestroyIndexCommand implements GfshCommand {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
     }
     IndexInfo indexInfo = new IndexInfo(indexName, regionName);
+    indexInfo.setIfExists(ifExists);
     Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
 
     if (targetMembers.isEmpty()) {
@@ -88,17 +85,30 @@ public class DestroyIndexCommand implements GfshCommand {
     }
 
     ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
-    List<Object> funcResults = (List<Object>) rc.getResult();
+    List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
     Set<String> successfulMembers = new TreeSet<>();
     Map<String, Set<String>> indexOpFailMap = new HashMap<>();
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-    for (Object funcResult : funcResults) {
-      if (!(funcResult instanceof CliFunctionResult)) {
-        continue;
+
+    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
+    final String errorPrefix = "ERROR:";
+
+    for (CliFunctionResult cliFunctionResult : funcResults) {
+      boolean success = cliFunctionResult.isSuccessful();
+
+      tabularResultData.accumulate("Member", cliFunctionResult.getMemberIdOrName());
+      tabularResultData.accumulate("Status",
+          (success ? "" : errorPrefix) + cliFunctionResult.getMessage());
+
+      if (success) {
+        if (xmlEntity.get() == null) {
+          xmlEntity.set(cliFunctionResult.getXmlEntity());
+        }
+      } else {
+        tabularResultData.setStatus(Result.Status.ERROR);
       }
-      CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
 
       if (cliFunctionResult.isSuccessful()) {
         successfulMembers.add(cliFunctionResult.getMemberIdOrName());
@@ -116,54 +126,8 @@ public class DestroyIndexCommand implements GfshCommand {
         indexOpFailMap.put(exceptionMessage, failedMembers);
       }
     }
-    if (!successfulMembers.isEmpty()) {
-      InfoResultData infoResult = ResultBuilder.createInfoResultData();
-      if (StringUtils.isNotBlank(indexName)) {
-        if (StringUtils.isNotBlank(regionPath)) {
-          infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__ON__REGION__SUCCESS__MSG,
-              indexName, regionPath));
-        } else {
-          infoResult.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__SUCCESS__MSG, indexName));
-        }
-      } else {
-        if (StringUtils.isNotBlank(regionPath)) {
-          infoResult.addLine(CliStrings
-              .format(CliStrings.DESTROY_INDEX__ON__REGION__ONLY__SUCCESS__MSG, regionPath));
-        } else {
-          infoResult.addLine(CliStrings.DESTROY_INDEX__ON__MEMBERS__ONLY__SUCCESS__MSG);
-        }
-      }
-      int num = 0;
-      for (String memberId : successfulMembers) {
-        infoResult.addLine(CliStrings.format(
-            CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
-      }
-      result = ResultBuilder.buildResult(infoResult);
-    } else {
-      ErrorResultData erd = ResultBuilder.createErrorResultData();
-      if (StringUtils.isNotBlank(indexName)) {
-        erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__FAILURE__MSG, indexName));
-      } else {
-        erd.addLine("Indexes could not be destroyed for following reasons");
-      }
+    Result result = ResultBuilder.buildResult(tabularResultData);
 
-      Set<String> exceptionMessages = indexOpFailMap.keySet();
-
-      for (String exceptionMessage : exceptionMessages) {
-        erd.addLine(CliStrings.format(CliStrings.DESTROY_INDEX__REASON_MESSAGE, exceptionMessage));
-        erd.addLine(CliStrings.DESTROY_INDEX__EXCEPTION__OCCURRED__ON);
-
-        Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
-        int num = 0;
-
-        for (String memberId : memberIds) {
-          erd.addLine(CliStrings.format(
-              CliStrings.format(CliStrings.DESTROY_INDEX__NUMBER__AND__MEMBER, ++num, memberId)));
-        }
-        erd.addLine("");
-      }
-      result = ResultBuilder.buildResult(erd);
-    }
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), group));
