@@ -167,7 +167,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * check to see if the cache is closing
    */
   public boolean checkCacheClosing(DistributionManager dm) {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = dm.getCache();
     return cache == null || cache.isClosed();
   }
 
@@ -307,7 +307,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
   InternalCache getCache(final DistributionManager dm) {
-    return (InternalCache) CacheFactory.getInstance(dm.getSystem());
+    return dm.getCache();
   }
 
   /**
