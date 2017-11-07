@@ -63,16 +63,18 @@ public class CreateDefinedIndexCommandDUnitTest {
     server3 = locatorServerStartupRule.startServerVM(3, server3Properties);
 
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand("clear defined indexes", "Index definitions successfully cleared");
+    gfsh.executeAndAssertThat("clear defined indexes").statusIsSuccess()
+        .containsOutput("Index definitions successfully cleared");
   }
 
   @Test
   public void noDefinitions() {
-    gfsh.executeAndVerifyCommand("create defined indexes", "No indexes defined");
+    gfsh.executeAndAssertThat("create defined indexes").statusIsSuccess()
+        .containsOutput("No indexes defined");
   }
 
   @Test
-  public void nonexistentRegions() {
+  public void nonexistentRegion() {
     String regionName = testName.getMethodName();
 
     MemberVM.invokeInEveryMember(() -> {
@@ -80,9 +82,12 @@ public class CreateDefinedIndexCommandDUnitTest {
       assertThat(cache.getRegion(regionName)).isNull();
     }, server1, server2, server3);
 
-    gfsh.executeAndVerifyCommand("define index --name=index_" + regionName
-        + " --expression=value1 --region=" + regionName + "1", "Index successfully defined");
-    gfsh.executeAndVerifyCommandError("create defined indexes", "RegionNotFoundException");
+    gfsh.executeAndAssertThat("define index --name=index_" + regionName
+        + " --expression=value1 --region=" + regionName + "1").statusIsSuccess()
+        .containsOutput("Index successfully defined");
+
+    gfsh.executeAndAssertThat("create defined indexes").statusIsError()
+        .containsOutput("RegionNotFoundException");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -99,14 +104,15 @@ public class CreateDefinedIndexCommandDUnitTest {
     String index1Name = "index_" + region1Name;
     String index2Name = "index_" + region2Name;
 
-    gfsh.executeAndVerifyCommand("create region --name=" + region1Name + " --type=REPLICATE",
-        "Region \"/" + region1Name + "\" created on \"server-1\"",
-        "Region \"/" + region1Name + "\" created on \"server-2\"",
-        "Region \"/" + region1Name + "\" created on \"server-3\"");
-    gfsh.executeAndVerifyCommand("create region --name=" + region2Name + " --type=REPLICATE",
-        "Region \"/" + region2Name + "\" created on \"server-1\"",
-        "Region \"/" + region2Name + "\" created on \"server-2\"",
-        "Region \"/" + region2Name + "\" created on \"server-3\"");
+    gfsh.executeAndAssertThat("create region --name=" + region1Name + " --type=REPLICATE")
+        .statusIsSuccess().containsOutput("Region \"/" + region1Name + "\" created on \"server-1\"")
+        .containsOutput("Region \"/" + region1Name + "\" created on \"server-2\"")
+        .containsOutput("Region \"/" + region1Name + "\" created on \"server-3\"");
+
+    gfsh.executeAndAssertThat("create region --name=" + region2Name + " --type=REPLICATE")
+        .statusIsSuccess().containsOutput("Region \"/" + region2Name + "\" created on \"server-1\"")
+        .containsOutput("Region \"/" + region2Name + "\" created on \"server-2\"")
+        .containsOutput("Region \"/" + region2Name + "\" created on \"server-3\"");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -114,13 +120,16 @@ public class CreateDefinedIndexCommandDUnitTest {
       assertThat(cache.getRegion(region2Name)).isNotNull();
     }, server1, server2, server3);
 
-    gfsh.executeAndVerifyCommand(
-        "define index --name=" + index1Name + " --expression=value1 --region=" + region1Name,
-        "Index successfully defined");
-    gfsh.executeAndVerifyCommand(
-        "define index --name=" + index2Name + " --expression=value2 --region=" + region2Name,
-        "Index successfully defined");
-    gfsh.executeAndVerifyCommand("create defined indexes", "Indexes successfully created");
+    gfsh.executeAndAssertThat(
+        "define index --name=" + index1Name + " --expression=value1 --region=" + region1Name)
+        .statusIsSuccess().containsOutput("Index successfully defined");
+
+    gfsh.executeAndAssertThat(
+        "define index --name=" + index2Name + " --expression=value2 --region=" + region2Name)
+        .statusIsSuccess().containsOutput("Index successfully defined");
+
+    gfsh.executeAndAssertThat("create defined indexes").statusIsSuccess()
+        .containsOutput("Indexes successfully created");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -145,18 +154,21 @@ public class CreateDefinedIndexCommandDUnitTest {
   }
 
   @Test
-  public void multipleIndexesOnMultipleRegionsGroupWide() {
+  public void multipleIndexesOnMultipleRegionsInMemberGroup() {
     String region1Name = testName.getMethodName() + "1";
     String region2Name = testName.getMethodName() + "2";
     String index1Name = "index_" + region1Name;
     String index2Name = "index_" + region2Name;
 
-    gfsh.executeAndVerifyCommand(
-        "create region --name=" + region1Name + " --type=REPLICATE --group=group1",
-        "Region \"/" + region1Name + "\" created on \"server-3\"");
-    gfsh.executeAndVerifyCommand(
-        "create region --name=" + region2Name + " --type=REPLICATE --group=group1",
-        "Region \"/" + region2Name + "\" created on \"server-3\"");
+    gfsh.executeAndAssertThat(
+        "create region --name=" + region1Name + " --type=REPLICATE --group=group1")
+        .statusIsSuccess()
+        .containsOutput("Region \"/" + region1Name + "\" created on \"server-3\"");
+
+    gfsh.executeAndAssertThat(
+        "create region --name=" + region2Name + " --type=REPLICATE --group=group1")
+        .statusIsSuccess()
+        .containsOutput("Region \"/" + region2Name + "\" created on \"server-3\"");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
@@ -170,14 +182,16 @@ public class CreateDefinedIndexCommandDUnitTest {
       assertThat(cache.getRegion(region2Name)).isNotNull();
     }, server3);
 
-    gfsh.executeAndVerifyCommand(
-        "define index --name=" + index1Name + " --expression=value1 --region=" + region1Name,
-        "Index successfully defined");
-    gfsh.executeAndVerifyCommand(
-        "define index --name=" + index2Name + " --expression=value2 --region=" + region2Name,
-        "Index successfully defined");
-    gfsh.executeAndVerifyCommand("create defined indexes --group=group1",
-        "Indexes successfully created");
+    gfsh.executeAndAssertThat(
+        "define index --name=" + index1Name + " --expression=value1 --region=" + region1Name)
+        .statusIsSuccess().containsOutput("Index successfully defined");
+
+    gfsh.executeAndAssertThat(
+        "define index --name=" + index2Name + " --expression=value1 --region=" + region2Name)
+        .statusIsSuccess().containsOutput("Index successfully defined");
+
+    gfsh.executeAndAssertThat("create defined indexes --group=group1").statusIsSuccess()
+        .containsOutput("Indexes successfully created");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.serverStarter.getCache();
