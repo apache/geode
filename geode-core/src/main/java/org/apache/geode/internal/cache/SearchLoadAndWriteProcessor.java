@@ -1271,7 +1271,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   private int getSearchTimeout() {
-    return region.getCache().getSearchTimeout(); // CacheFactory.getInstance(((DistributedRegion)this.region).getSystem()).getSearchTimeout();
+    return region.getCache().getSearchTimeout();
   }
 
   private void resetResults() {
@@ -1504,7 +1504,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       try {
         // check to see if we would have to wait on initialization latch (if global)
         // if so abort and reply with null
-        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache cache = dm.getCache();
         if (cache.isGlobalRegionInitializing(this.regionName)) {
           replyWithNull(dm);
           if (logger.isDebugEnabled()) {
@@ -1513,8 +1513,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           return;
         }
 
-        LocalRegion region =
-            (LocalRegion) CacheFactory.getInstance(dm.getSystem()).getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) dm.getCache().getRegion(this.regionName);
         Object o = null;
 
         if (region != null) {
@@ -1850,8 +1849,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        LocalRegion region =
-            (LocalRegion) CacheFactory.getInstance(dm.getSystem()).getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) dm.getCache().getRegion(this.regionName);
         if (region != null) {
           setClearCountReference(region);
           try {
@@ -2210,7 +2208,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = dm.getCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
@@ -2467,7 +2465,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = dm.getCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
