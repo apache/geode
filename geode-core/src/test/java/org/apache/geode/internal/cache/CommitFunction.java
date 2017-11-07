@@ -73,7 +73,7 @@ public class CommitFunction implements Function {
   }
 
   public void execute(FunctionContext context) {
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = context.getCache();
     TXId txId = null;
     try {
       txId = (TXId) context.getArguments();
