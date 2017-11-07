@@ -63,7 +63,6 @@ public class CacheRule extends DistributedExternalResource {
   private final boolean disconnectAfter;
   private final List<VM> createCacheInVMs;
   private final Properties config;
-  private final Properties systemProperties;
 
   public static Builder builder() {
     return new Builder();
@@ -75,19 +74,18 @@ public class CacheRule extends DistributedExternalResource {
     this.disconnectAfter = builder.disconnectAfter;
     this.createCacheInVMs = builder.createCacheInVMs;
     this.config = builder.config;
-    this.systemProperties = builder.systemProperties;
   }
 
   @Override
   protected void before() {
     if (createCacheInAll) {
-      invoker().invokeInEveryVMAndController(() -> createCache(config, systemProperties));
+      invoker().invokeInEveryVMAndController(() -> createCache(config));
     } else {
       if (createCache) {
-        createCache(config, systemProperties);
+        createCache(config);
       }
       for (VM vm : createCacheInVMs) {
-        vm.invoke(() -> createCache(config, systemProperties));
+        vm.invoke(() -> createCache(config));
       }
     }
   }
@@ -110,8 +108,7 @@ public class CacheRule extends DistributedExternalResource {
     return cache.getInternalDistributedSystem();
   }
 
-  private static void createCache(final Properties config, final Properties systemProperties) {
-    System.getProperties().putAll(systemProperties);
+  private static void createCache(final Properties config) {
     cache = (InternalCache) new CacheFactory(config).create();
   }
 
@@ -144,7 +141,6 @@ public class CacheRule extends DistributedExternalResource {
     private boolean disconnectAfter;
     private List<VM> createCacheInVMs = new ArrayList<>();
     private Properties config = new Properties();
-    private Properties systemProperties = new Properties();
 
     public Builder() {
       config.setProperty(LOCATORS, getLocators());
@@ -196,16 +192,6 @@ public class CacheRule extends DistributedExternalResource {
 
     public Builder addConfig(final Properties config) {
       this.config.putAll(config);
-      return this;
-    }
-
-    public Builder addSystemProperty(final String key, final String value) {
-      this.systemProperties.put(key, value);
-      return this;
-    }
-
-    public Builder addSystemProperties(final Properties config) {
-      this.systemProperties.putAll(config);
       return this;
     }
 
