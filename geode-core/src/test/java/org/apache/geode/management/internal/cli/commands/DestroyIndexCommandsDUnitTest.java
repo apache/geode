@@ -67,7 +67,7 @@ public class DestroyIndexCommandsDUnitTest {
   }
 
   private static void createRegionAndIndex() throws Exception {
-    Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+    Cache cache = LocatorServerStartupRule.getCache();
     RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
     Region region = factory.create(REGION_1);
 
@@ -83,12 +83,12 @@ public class DestroyIndexCommandsDUnitTest {
             "Destroyed all indexes on region REGION1", "Destroyed all indexes on region REGION1");
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes()).isEmpty();
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes()).isEmpty();
     });
 
@@ -105,12 +105,12 @@ public class DestroyIndexCommandsDUnitTest {
             "Destroyed index INDEX1 on region REGION1", "Destroyed index INDEX1 on region REGION1");
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
     });
 
@@ -132,12 +132,12 @@ public class DestroyIndexCommandsDUnitTest {
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed all indexes");
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes()).isEmpty();
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(2);
     });
 
@@ -153,12 +153,12 @@ public class DestroyIndexCommandsDUnitTest {
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed index INDEX1");
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(2);
     });
 
@@ -180,12 +180,12 @@ public class DestroyIndexCommandsDUnitTest {
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed index INDEX1");
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(2);
     });
 
