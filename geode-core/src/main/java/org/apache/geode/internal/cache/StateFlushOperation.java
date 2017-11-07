@@ -311,11 +311,9 @@ public class StateFlushOperation {
       if (region != null) {
         return region;
       }
-      // set the init level requirement so that we don't hang in CacheFactory.getInstance() (bug
-      // 36175)
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = dm.getCache();
         Region r = gfc.getRegionByPathForProcessing(this.regionPath);
         if (r instanceof DistributedRegion) {
           region = (DistributedRegion) r;
@@ -328,11 +326,9 @@ public class StateFlushOperation {
 
     /** returns a set of all DistributedRegions for allRegions processing */
     private Set<DistributedRegion> getAllRegions(DistributionManager dm) {
-      // set the init level requirement so that we don't hang in CacheFactory.getInstance() (bug
-      // 36175)
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache cache = dm.getCache();
         Set<DistributedRegion> result = new HashSet();
         for (LocalRegion r : cache.getAllRegions()) {
           // it's important not to check if the cache is closing, so access
