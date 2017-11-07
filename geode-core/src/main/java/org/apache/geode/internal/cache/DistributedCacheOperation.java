@@ -1063,7 +1063,7 @@ public abstract class DistributedCacheOperation {
 
     protected LocalRegion getLocalRegionForProcessing(DistributionManager dm) {
       Assert.assertTrue(this.regionPath != null, "regionPath was null");
-      InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+      InternalCache gfc = dm.getCache();
       return gfc.getRegionByPathForProcessing(this.regionPath);
     }
 
@@ -1078,7 +1078,6 @@ public abstract class DistributedCacheOperation {
 
       EntryLogger.setSource(this.getSender(), "p2p");
       boolean resetOldLevel = true;
-      // do this before CacheFactory.getInstance for bug 33471
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
         if (dm.getDMType() == DistributionManager.ADMIN_ONLY_DM_TYPE) {
