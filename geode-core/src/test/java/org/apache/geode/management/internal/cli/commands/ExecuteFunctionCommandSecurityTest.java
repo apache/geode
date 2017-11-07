@@ -76,7 +76,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
       FunctionService.registerFunction(new ReadFunction());
       FunctionService.registerFunction(new WriteFunction());
 
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(REPLICATED_REGION);
       cache.createRegionFactory(RegionShortcut.PARTITION).create(PARTITIONED_REGION);
     }));

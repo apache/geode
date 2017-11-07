@@ -67,7 +67,7 @@ public class DescribeConfigCommandDUnitTest {
     }
 
     server0.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       InternalDistributedSystem system = cache.getInternalDistributedSystem();
       DistributionConfig config = system.getConfig();
       config.setArchiveFileSizeLimit(1000);

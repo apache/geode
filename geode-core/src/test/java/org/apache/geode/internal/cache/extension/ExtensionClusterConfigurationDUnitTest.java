@@ -18,8 +18,6 @@ import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
-import java.io.Serializable;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -88,7 +86,7 @@ public class ExtensionClusterConfigurationDUnitTest {
     // Verify the config creation on this member
     MemberVM newMember = locatorServerStartupRule.startServerVM(2, locator.getPort());
     newMember.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       assertNotNull(cache);
 
       Region<?, ?> region1 = cache.getRegion(REPLICATE_REGION);
@@ -143,7 +141,7 @@ public class ExtensionClusterConfigurationDUnitTest {
     // Verify the config creation on this member
     MemberVM newMember = locatorServerStartupRule.startServerVM(2, locator.getPort());
     newMember.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       assertNotNull(cache);
 
       Region<?, ?> region1 = cache.getRegion(REPLICATE_REGION);

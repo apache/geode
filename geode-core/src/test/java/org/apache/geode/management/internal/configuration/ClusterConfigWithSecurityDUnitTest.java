@@ -79,7 +79,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
     // the second locator should inherit the first locator's security props
     locator1.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.locatorStarter.getLocator();
+      InternalLocator locator = LocatorServerStartupRule.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties clusterConfigProps = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(clusterConfigProps.getProperty(SECURITY_MANAGER))
@@ -99,7 +99,7 @@ public class ClusterConfigWithSecurityDUnitTest {
         .statusIsSuccess();
 
     locator0.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.locatorStarter.getLocator();
+      InternalLocator locator = LocatorServerStartupRule.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties properties = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(properties.getProperty(MCAST_PORT)).isEqualTo("0");
@@ -121,7 +121,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
     // cluster config specifies a security-manager so integrated security should be enabled
     server.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       Properties properties = cache.getDistributedSystem().getSecurityProperties();
       assertThat(properties.getProperty(SECURITY_MANAGER))
           .isEqualTo(SimpleTestSecurityManager.class.getName());

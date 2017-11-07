@@ -92,7 +92,7 @@ public class ClusterConfig implements Serializable {
 
     // verify info exists in memory
     locatorVM.invoke(() -> {
-      InternalLocator internalLocator = LocatorServerStartupRule.locatorStarter.getLocator();
+      InternalLocator internalLocator = LocatorServerStartupRule.getLocator();
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
 
       // verify no extra configs exist in memory

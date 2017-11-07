@@ -17,14 +17,12 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION1;
 import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_RETURN_ARGS;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.util.Strings;
-import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,8 +37,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -71,7 +67,7 @@ public class FunctionCommandsDUnitTest {
     server2 = lsRule.startServerVM(2, locator.getPort());
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
 
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -86,7 +82,7 @@ public class FunctionCommandsDUnitTest {
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       Region region = dataRegionFactory.create(REGION_ONE);
@@ -103,7 +99,7 @@ public class FunctionCommandsDUnitTest {
     registerFunction(new TestFunction(true, TEST_FUNCTION_RETURN_ARGS), locator, server1, server2);
 
     locator.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.locatorStarter.getLocator().getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       ManagementService managementService = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 

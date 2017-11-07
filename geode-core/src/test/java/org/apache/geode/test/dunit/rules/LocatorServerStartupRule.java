@@ -30,7 +30,10 @@ import java.util.stream.IntStream;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.Locator;
@@ -52,12 +55,19 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   /**
    * This is only available in each Locator/Server VM, not in the controller (test) VM.
    */
-  public static ServerStarterRule serverStarter;
+  public static MemberStarterRule memberStarter;
 
-  /**
-   * This is only available in each Locator/Server VM, not in the controller (test) VM.
-   */
-  public static LocatorStarterRule locatorStarter;
+  public static InternalCache getCache() {
+    return memberStarter.getCache();
+  }
+
+  public static InternalLocator getLocator() {
+    return ((LocatorStarterRule) memberStarter).getLocator();
+  }
+
+  public static CacheServer getServer() {
+    return ((ServerStarterRule) memberStarter).getServer();
+  }
 
   private DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
@@ -141,7 +151,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
     VM locatorVM = getVM(index);
     Locator locator = locatorVM.invoke(() -> {
-      locatorStarter = new LocatorStarterRule();
+      memberStarter = new LocatorStarterRule();
+      LocatorStarterRule locatorStarter = (LocatorStarterRule) memberStarter;
       if (useTempWorkingDir()) {
         File workingDirFile = createWorkingDirForMember(name);
         locatorStarter.withWorkingDir(workingDirFile);
@@ -191,7 +202,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
     VM serverVM = getVM(index);
     Server server = serverVM.invoke(() -> {
-      serverStarter = new ServerStarterRule();
+      memberStarter = new ServerStarterRule();
+      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
       if (useTempWorkingDir()) {
         File workingDirFile = createWorkingDirForMember(name);
         serverStarter.withWorkingDir(workingDirFile);
@@ -230,7 +242,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
     VM serverVM = getVM(index);
     Server server = serverVM.invoke(() -> {
-      serverStarter = new ServerStarterRule();
+      memberStarter = new ServerStarterRule();
+      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
       if (useTempWorkingDir()) {
         File workingDirFile = createWorkingDirForMember(name);
         serverStarter.withWorkingDir(workingDirFile);
@@ -282,13 +295,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   public static void stopMemberInThisVM() {
-    if (serverStarter != null) {
-      serverStarter.after();
-      serverStarter = null;
-    }
-    if (locatorStarter != null) {
-      locatorStarter.after();
-      locatorStarter = null;
+    if (memberStarter != null) {
+      memberStarter.after();
+      memberStarter = null;
     }
   }
 

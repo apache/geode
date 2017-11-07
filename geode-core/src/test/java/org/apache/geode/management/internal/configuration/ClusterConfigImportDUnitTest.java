@@ -69,7 +69,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     String regionName = "regionA";
     server1.invoke(() -> {
       // this region will be created on both servers, but we should only be getting the name once.
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
 

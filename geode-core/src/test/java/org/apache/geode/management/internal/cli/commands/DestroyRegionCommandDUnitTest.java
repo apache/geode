@@ -74,7 +74,7 @@ public class DestroyRegionCommandDUnitTest {
   @Test
   public void testDestroyDistributedRegion() {
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
       factory.create("Customer");
 
@@ -106,7 +106,7 @@ public class DestroyRegionCommandDUnitTest {
   @Test
   public void testDestroyLocalRegions() {
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       factory.setScope(Scope.LOCAL);
       factory.create("Customer");
@@ -118,7 +118,7 @@ public class DestroyRegionCommandDUnitTest {
         .containsOutput("destroyed successfully");
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("Customer")).isNull();
     }, server1, server2, server3);
   }
@@ -126,7 +126,7 @@ public class DestroyRegionCommandDUnitTest {
   @Test
   public void testDestroyLocalAndDistributedRegions() {
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
       factory.create("Customer");
       factory.create("Customer_2");
@@ -134,7 +134,7 @@ public class DestroyRegionCommandDUnitTest {
     }, server1, server2);
 
     server3.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       factory.setScope(Scope.LOCAL);
       factory.create("Customer");
@@ -154,7 +154,7 @@ public class DestroyRegionCommandDUnitTest {
         .containsOutput("destroyed successfully");
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("Customer")).isNull();
       assertThat(cache.getRegion("Customer_2")).isNull();
       assertThat(cache.getRegion("Customer_3")).isNull();
@@ -175,7 +175,7 @@ public class DestroyRegionCommandDUnitTest {
 
     // make sure region does exists
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("Customer")).isNotNull();
     }, server1, server2, server3);
 
@@ -197,7 +197,7 @@ public class DestroyRegionCommandDUnitTest {
 
     // make sure region does not exist
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("Customer")).isNull();
     }, server1, server2, server3);
   }

@@ -122,4 +122,14 @@ public class MemberVM implements Member {
   public static void invokeInEveryMember(SerializableRunnableIF runnableIF, MemberVM... members) {
     Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
   }
+
+  /**
+   * this should called on a locatorVM or a serverVM with jmxManager enabled
+   */
+  public void waitTillRegionsAreReadyOnServers(String regionPath, int serverCount) {
+    vm.invoke(() -> {
+      LocatorServerStartupRule.memberStarter.waitTillRegionIsReadyOnServers(regionPath,
+          serverCount);
+    });
+  }
 }

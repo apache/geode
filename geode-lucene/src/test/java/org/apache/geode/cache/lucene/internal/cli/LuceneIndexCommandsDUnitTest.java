@@ -18,7 +18,6 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.apache.geode.test.dunit.Assert.assertArrayEquals;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -663,8 +662,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   private void createIndex() {
     serverVM.invoke(() -> {
-      LuceneService luceneService =
-          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
       Map<String, Analyzer> fieldAnalyzers = new HashMap();
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
@@ -676,8 +674,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   private void createIndexWithoutRegion() {
     serverVM.invoke(() -> {
-      LuceneService luceneService =
-          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
       Map<String, Analyzer> fieldAnalyzers = new HashMap();
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
@@ -720,7 +717,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   private static Cache getCache() {
-    return LocatorServerStartupRule.serverStarter.getCache();
+    return LocatorServerStartupRule.getCache();
   }
 
   protected class TestObject implements Serializable {

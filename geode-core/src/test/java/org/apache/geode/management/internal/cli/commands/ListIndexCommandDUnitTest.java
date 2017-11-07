@@ -15,8 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +52,7 @@ public class ListIndexCommandDUnitTest {
     server = lsRule.startServerVM(1, locator.getPort());
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       Region region = factory.create(REGION_1);
 

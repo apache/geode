@@ -92,7 +92,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     props.setProperty(GROUPS, groupName);
     serverVM = startupRule.startServerVM(1, props, locator.getPort());
     serverVM.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       Region parReg =
           createPartitionedRegion(partitionedRegionName, cache, String.class, Stock.class);
       parReg.put("VMW", new Stock("VMW", 98));
@@ -148,7 +148,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     serverVM = startupRule.startServerVM(1, props, locator.getPort());
 
     serverVM.invoke(() -> {
-      InternalCache restartedCache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache restartedCache = LocatorServerStartupRule.getCache();
       assertNotNull(restartedCache);
       Region region = restartedCache.getRegion(partitionedRegionName);
       assertNotNull(region);

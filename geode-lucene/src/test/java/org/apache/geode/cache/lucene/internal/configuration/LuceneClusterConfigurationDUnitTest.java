@@ -83,8 +83,7 @@ public class LuceneClusterConfigurationDUnitTest {
     // configuration.
     MemberVM vm2 = ls.startServerVM(2, locator.getPort());
     vm2.invoke(() -> {
-      LuceneService luceneService =
-          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] {"field1", "field2", "field3"}, index);
@@ -108,8 +107,7 @@ public class LuceneClusterConfigurationDUnitTest {
     // configuration.
     MemberVM vm2 = ls.startServerVM(2, locator.getPort());
     vm2.invoke(() -> {
-      LuceneService luceneService =
-          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       String[] fields = new String[] {"field1", "field2", "field3"};
@@ -139,8 +137,7 @@ public class LuceneClusterConfigurationDUnitTest {
     // configuration.
     MemberVM vm2 = ls.startServerVM(2, locator.getPort());
     vm2.invoke(() -> {
-      LuceneService luceneService =
-          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       String[] fields = new String[] {"field1", "field2", "field3"};
@@ -242,7 +239,7 @@ public class LuceneClusterConfigurationDUnitTest {
 
   private SerializableRunnableIF verifyClusterConfiguration(boolean verifyIndexesExist) {
     return () -> {
-      InternalLocator internalLocator = LocatorServerStartupRule.locatorStarter.getLocator();
+      InternalLocator internalLocator = LocatorServerStartupRule.getLocator();
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
       Configuration config = sc.getConfiguration(ClusterConfigurationService.CLUSTER_CONFIG);
       String xmlContent = config.getCacheXmlContent();
