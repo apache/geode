@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,32 +22,45 @@ import java.util.Set;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CreateDefinedIndexesFunction extends FunctionAdapter implements InternalEntity {
-
   private static final long serialVersionUID = 1L;
 
   @Override
+  public String getId() {
+    return CreateDefinedIndexesFunction.class.getName();
+  }
+
+  XmlEntity createXmlEntity(final String regionName) {
+    return new XmlEntity(CacheXml.REGION, "name", regionName);
+  }
+
+  @Override
   public void execute(FunctionContext context) {
-    String memberId = null;
-    List<Index> indexes = null;
     Cache cache;
+    String memberId = null;
+
     try {
       cache = context.getCache();
-      memberId = cache.getDistributedSystem().getDistributedMember().getId();
       QueryService queryService = cache.getQueryService();
+      memberId = cache.getDistributedSystem().getDistributedMember().getId();
       Set<IndexInfo> indexDefinitions = (Set<IndexInfo>) context.getArguments();
+
       for (IndexInfo indexDefinition : indexDefinitions) {
         String indexName = indexDefinition.getIndexName();
-        String indexedExpression = indexDefinition.getIndexedExpression();
         String regionPath = indexDefinition.getRegionPath();
+        String indexedExpression = indexDefinition.getIndexedExpression();
+
         if (indexDefinition.getIndexType() == IndexType.PRIMARY_KEY) {
           queryService.defineKeyIndex(indexName, indexedExpression, regionPath);
         } else if (indexDefinition.getIndexType() == IndexType.HASH) {
@@ -55,8 +69,33 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
           queryService.defineIndex(indexName, indexedExpression, regionPath);
         }
       }
-      indexes = queryService.createDefinedIndexes();
-      context.getResultSender().lastResult(new CliFunctionResult(memberId));
+
+      List<Index> indexes = queryService.createDefinedIndexes();
+
+      // One XmlEntity per region.
+      ResultSender sender = context.getResultSender();
+      List<String> processedRegions = new ArrayList<>();
+      List<CliFunctionResult> functionResults = new ArrayList<>();
+
+      for (Index index : indexes) {
+        String regionName = index.getRegion().getName();
+
+        if (!processedRegions.contains(regionName)) {
+          XmlEntity xmlEntity = createXmlEntity(regionName);
+          functionResults.add(new CliFunctionResult(memberId, xmlEntity));
+          processedRegions.add(regionName);
+        }
+      }
+
+      int resultsSize = functionResults.size();
+
+      if (resultsSize > 0) {
+        for (int i = 0; i < resultsSize - 1; i++) {
+          sender.sendResult(functionResults.get(i));
+        }
+
+        sender.lastResult(functionResults.get(resultsSize - 1));
+      }
     } catch (MultiIndexCreationException e) {
       StringBuffer sb = new StringBuffer();
       sb.append("Index creation failed for indexes: ").append("\n");
@@ -71,10 +110,4 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, exceptionMessage));
     }
   }
-
-  @Override
-  public String getId() {
-    return CreateDefinedIndexesFunction.class.getName();
-  }
-
 }
