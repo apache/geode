@@ -344,7 +344,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // get the region from the path, but do NOT wait on initialization,
         // otherwise we could have a distributed deadlock
 
-        InternalCache cache = dm.getCache();
+        InternalCache cache = dm.getExistingCache();
 
         // Fix for bug 42051 - Discover any regions that are in the process
         // of being destroyed
