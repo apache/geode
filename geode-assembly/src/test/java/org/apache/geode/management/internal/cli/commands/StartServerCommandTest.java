@@ -17,10 +17,17 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.util.HashSet;
@@ -29,12 +36,20 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(UnitTest.class)
 public class StartServerCommandTest {
@@ -140,5 +155,55 @@ public class StartServerCommandTest {
     }
     assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
         expectedCommandLineElements.isEmpty());
+  }
+
+  private static final String FAKE_HOSTNAME = "someFakeHostname";
+
+  @Rule
+  public GfshParserRule commandRule = new GfshParserRule();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  private StartServerCommand spy;
+
+  @Before
+  public void before() throws Exception {
+    spy = Mockito.spy(StartServerCommand.class);
+    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
+  }
+
+  @Test
+  public void startServerWorksWithNoOptions() throws Exception {
+    thrown.expect(NullPointerException.class);
+    commandRule.executeCommandWithInstance(spy, "start server");
+
+    ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
+    verify(spy).createStartServerCommandLine(any(), any(), any(), gemfirePropertiesCaptor.capture(),
+        any(), any(), any(), any(), any(), any());
+
+    Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
+    assertThat(gemfireProperties).containsKey(USE_CLUSTER_CONFIGURATION);
+    assertThat(gemfireProperties.get(USE_CLUSTER_CONFIGURATION)).isEqualTo("true");
+  }
+
+  @Test
+  public void startServerRespectsJmxManagerHostnameForClients() throws Exception {
+    String startServerCommand = new CommandStringBuilder("start server")
+        .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
+
+    thrown.expect(NullPointerException.class);
+    commandRule.executeCommandWithInstance(spy, startServerCommand);
+
+    ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
+    verify(spy).createStartServerCommandLine(any(), any(), any(), gemfirePropertiesCaptor.capture(),
+        any(), any(), any(), any(), any(), any());
+
+    Properties gemfireProperties = gemfirePropertiesCaptor.getValue();
+    assertThat(gemfireProperties).containsKey(JMX_MANAGER_HOSTNAME_FOR_CLIENTS);
+    assertThat(gemfireProperties.get(JMX_MANAGER_HOSTNAME_FOR_CLIENTS)).isEqualTo(FAKE_HOSTNAME);
   }
 }

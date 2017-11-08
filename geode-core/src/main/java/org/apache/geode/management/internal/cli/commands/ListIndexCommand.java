@@ -23,9 +23,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
@@ -48,20 +46,8 @@ public class ListIndexCommand implements GfshCommand {
   public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
       specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats) {
-    try {
-      return toTabularResult(getIndexListing(), showStats);
-    } catch (FunctionInvocationTargetException ignore) {
-      return ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.LIST_INDEX));
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      getCache().getLogger().error(t);
-      return ResultBuilder.createGemFireErrorResult(
-          String.format(CliStrings.LIST_INDEX__ERROR_MESSAGE, toString(t, isDebugging())));
-    }
+
+    return toTabularResult(getIndexListing(), showStats);
   }
 
   private Result toTabularResult(final List<IndexDetails> indexDetailsList,

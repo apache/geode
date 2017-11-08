@@ -287,6 +287,8 @@ org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
 org/apache/geode/internal/AvailablePort$Keeper
 org/apache/geode/admin/internal/BackupStatusImpl
 org/apache/geode/management/internal/BackupStatusImpl
+org/apache/geode/management/internal/cli/exceptions/DiskStoreNotFoundException
+org/apache/geode/management/internal/cli/exceptions/MemberNotFoundException
 org/apache/geode/management/internal/cli/exceptions/UserErrorException
 org/apache/geode/pdx/JSONFormatter$states
 org/apache/geode/internal/memcached/Command

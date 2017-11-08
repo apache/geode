@@ -12,22 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.exceptions;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+/**
+ * The DiskStoreNotFoundException is a GemFireException class indicating that a disk store by name
+ * could not be found on a member specified by name!
+ * </p>
+ *
+ * @see org.apache.geode.GemFireException
+ * @since GemFire 7.0
+ */
 
-public class IndexNotFoundException extends Exception {
+public class DiskStoreNotFoundException extends UserErrorException {
+  private static final long serialVersionUID = -5184836041554948093L;
 
-  private static final long serialVersionUID = 1L;
-  final String indexName;
-  final String message;
+  public DiskStoreNotFoundException() {}
 
-  public IndexNotFoundException(final String indexName) {
-    this.indexName = indexName;
-    this.message = CliStrings.format("Index \" {0} \" not found", indexName);
+  public DiskStoreNotFoundException(final String message) {
+    super(message);
   }
 
-  public String getMessage() {
-    return this.message;
+  public DiskStoreNotFoundException(final Throwable cause) {
+    super(cause);
   }
+
+  public DiskStoreNotFoundException(final String message, final Throwable cause) {
+    super(message, cause);
+  }
+
 }
