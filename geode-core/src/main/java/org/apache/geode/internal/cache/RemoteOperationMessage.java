@@ -307,7 +307,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
   InternalCache getCache(final DistributionManager dm) {
-    return dm.getCache();
+    return dm.getExistingCache();
   }
 
   /**
