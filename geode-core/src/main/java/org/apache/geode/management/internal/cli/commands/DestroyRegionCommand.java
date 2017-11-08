@@ -26,8 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.RegionDestroyFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -45,10 +43,10 @@ public class DestroyRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.DESTROY_REGION__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.DESTROY_REGION__REGION__HELP) String regionPath,
       @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists) {
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists)
+      throws Throwable {
 
     // regionPath should already be converted to have "/" in front of it.
-    Result result;
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     Set<DistributedMember> regionMembersList = findMembersForRegion(getCache(), regionPath);
@@ -63,45 +61,40 @@ public class DestroyRegionCommand implements GfshCommand {
       }
     }
 
-    CliFunctionResult destroyRegionResult;
-
     ResultCollector<?, ?> resultCollector =
-        CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
+        executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
     List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
-    String message =
-        CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED, regionPath, "");
 
-    // Only if there is an error is this set to false
-    boolean isRegionDestroyed = true;
-    for (CliFunctionResult aResultsList : resultsList) {
-      destroyRegionResult = aResultsList;
-      if (destroyRegionResult.isSuccessful()) {
-        xmlEntity.set(destroyRegionResult.getXmlEntity());
-      } else if (destroyRegionResult.getThrowable() != null) {
-        Throwable t = destroyRegionResult.getThrowable();
-        LogWrapper.getInstance().info(t.getMessage(), t);
-        message = CliStrings.format(
-            CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1, regionPath,
-            t.getMessage());
-        isRegionDestroyed = false;
+    // destroy is called on each member, if any error happens in any one of the member, we should
+    // deem the destroy not successful.
+    String errorMessage = null;
+    for (CliFunctionResult functionResult : resultsList) {
+      if (functionResult.isSuccessful()) {
+        xmlEntity.set(functionResult.getXmlEntity());
       } else {
-        message = CliStrings.format(
-            CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
-            regionPath, destroyRegionResult.getMessage());
-        isRegionDestroyed = false;
+        if (functionResult.getThrowable() != null) {
+          throw functionResult.getThrowable();
+        }
+        if (functionResult.getMessage() != null) {
+          errorMessage = functionResult.getMessage();
+        } else {
+          errorMessage = "Destroy failed on one member";
+        }
+        // if any error occurred, break out without looking further
+        break;
       }
     }
-    if (isRegionDestroyed) {
-      result = ResultBuilder.createInfoResult(message);
-    } else {
-      result = ResultBuilder.createUserErrorResult(message);
+
+    if (errorMessage != null) {
+      return ResultBuilder.createGemFireErrorResult(errorMessage);
     }
 
+    Result result =
+        ResultBuilder.createInfoResult(String.format("\"%s\" destroyed successfully.", regionPath));
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));
     }
-
     return result;
   }
 }
