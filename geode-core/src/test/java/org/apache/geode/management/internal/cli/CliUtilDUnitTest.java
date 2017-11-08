@@ -31,6 +31,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -88,7 +89,7 @@ public class CliUtilDUnitTest {
     locator.invoke(() -> {
       // can't pass in both group and names
       assertThatThrownBy(() -> CliUtil.findMembers("group1".split(","), "member1".split(",")))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(UserErrorException.class);
 
       // finds all servers
       members = CliUtil.findMembers(null, null);
