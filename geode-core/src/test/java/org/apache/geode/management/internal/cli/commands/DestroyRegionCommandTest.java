@@ -15,23 +15,31 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.assertions.CommandResultAssert;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -43,36 +51,82 @@ public class DestroyRegionCommandTest {
 
   private DestroyRegionCommand command;
   private CommandResult result;
+  private CliFunctionResult result1, result2;
 
   @Before
   public void before() throws Exception {
     command = spy(DestroyRegionCommand.class);
     doReturn(mock(InternalCache.class)).when(command).getCache();
+
+    ResultCollector collector = mock(ResultCollector.class);
+    doReturn(collector).when(command).executeFunction(any(), any(), any(Set.class));
+
+    List<CliFunctionResult> functionResults = new ArrayList<>();
+    doReturn(functionResults).when(collector).getResult();
+    result1 = mock(CliFunctionResult.class);
+    result2 = mock(CliFunctionResult.class);
+    functionResults.add(result1);
+    functionResults.add(result2);
   }
 
   @Test
   public void invalidRegion() throws Exception {
-    result = parser.executeCommandWithInstance(command, "destroy region");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("Invalid command");
+    parser.executeAndAssertThat(command, "destroy region").statusIsError()
+        .containsOutput("Invalid command");
 
-    result = parser.executeCommandWithInstance(command, "destroy region --name=");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("Invalid command");
+    parser.executeAndAssertThat(command, "destroy region --name=").statusIsError()
+        .containsOutput("Invalid command");
 
-    result = parser.executeCommandWithInstance(command, "destroy region --name=/");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("Invalid command");
+    parser.executeAndAssertThat(command, "destroy region --name=/").statusIsError()
+        .containsOutput("Invalid command");
   }
 
   @Test
   public void whenNoRegionIsFoundOnAnyMembers() throws Exception {
     doReturn(Collections.emptySet()).when(command).findMembersForRegion(any(), any());
-    result = parser.executeCommandWithInstance(command, "destroy region --name=test");
-    new CommandResultAssert(result).statusIsError()
+    parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
         .containsOutput("Could not find a Region with Region path");
 
-    result = parser.executeCommandWithInstance(command, "destroy region --name=test --if-exists");
-    new CommandResultAssert(result).statusIsSuccess();
+    parser.executeAndAssertThat(command, "destroy region --name=test --if-exists")
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void multipleResultReturnedWithOneError() throws Exception {
+    // mock this to pass the member search call
+    doReturn(Collections.singleton(DistributedMember.class)).when(command)
+        .findMembersForRegion(any(), any());
+    when(result1.isSuccessful()).thenReturn(true);
+    when(result1.getMessage()).thenReturn("result1 message");
+    when(result1.getXmlEntity()).thenReturn(mock(XmlEntity.class));
+
+    when(result2.isSuccessful()).thenReturn(false);
+    when(result2.getMessage()).thenReturn("result2 message");
+
+    parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
+        .containsOutput("result2 message");
+
+    // verify that xmlEntiry returned by the result1 is not saved to Cluster config
+    verify(command, never()).persistClusterConfiguration(any(), any());
+  }
+
+  @Test
+  public void multipleResultReturnedWithOneException() throws Exception {
+    // mock this to pass the member search call
+    doReturn(Collections.singleton(DistributedMember.class)).when(command)
+        .findMembersForRegion(any(), any());
+    when(result1.isSuccessful()).thenReturn(true);
+    when(result1.getMessage()).thenReturn("result1 message");
+    when(result1.getXmlEntity()).thenReturn(mock(XmlEntity.class));
+
+    when(result2.isSuccessful()).thenReturn(false);
+    when(result2.getThrowable()).thenReturn(new IllegalArgumentException("something happened"));
+
+    assertThatThrownBy(
+        () -> parser.executeCommandWithInstance(command, "destroy region --name=test"))
+            .isInstanceOf(IllegalArgumentException.class);
+
+    // verify that xmlEntiry returned by the result1 is not saved to Cluster config
+    verify(command, never()).persistClusterConfiguration(any(), any());
   }
 }

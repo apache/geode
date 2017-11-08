@@ -85,7 +85,7 @@ public class StartVsdCommand implements GfshCommand {
     } catch (Throwable t) {
       SystemFailure.checkFailure();
       return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_VSD__ERROR_MESSAGE, toString(t, false)));
+          String.format(CliStrings.START_VSD__ERROR_MESSAGE, t.getMessage()));
     }
   }
 

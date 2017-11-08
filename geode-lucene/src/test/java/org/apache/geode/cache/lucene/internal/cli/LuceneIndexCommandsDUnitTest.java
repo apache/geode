@@ -416,7 +416,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "notAnIndex");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(REGION_NAME);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError().containsOutput(REGION_NAME);
   }
 
   @Test
@@ -553,7 +553,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "EFG");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(getRegionNotFoundErrorMessage("/region"));
   }
 

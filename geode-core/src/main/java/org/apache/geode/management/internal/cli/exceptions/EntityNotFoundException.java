@@ -13,35 +13,34 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.util;
+package org.apache.geode.management.internal.cli.exceptions;
 
 import org.apache.geode.GemFireException;
 
-/**
- * The DiskStoreNotFoundException is a GemFireException class indicating that a disk store by name
- * could not be found on a member specified by name!
- * </p>
- *
- * @see org.apache.geode.GemFireException
- * @since GemFire 7.0
- */
-// TODO this GemFireException should be moved to a more appropriate package!
-@SuppressWarnings("unused")
-public class DiskStoreNotFoundException extends GemFireException {
-  private static final long serialVersionUID = -5184836041554948093L;
+public class EntityNotFoundException extends GemFireException {
 
-  public DiskStoreNotFoundException() {}
+  private boolean statusOK;
 
-  public DiskStoreNotFoundException(final String message) {
+  public EntityNotFoundException() {}
+
+  public EntityNotFoundException(String message) {
     super(message);
   }
 
-  public DiskStoreNotFoundException(final Throwable cause) {
+  public EntityNotFoundException(String message, boolean statusOK) {
+    super(message);
+    this.statusOK = statusOK;
+  }
+
+  public EntityNotFoundException(Throwable cause) {
     super(cause);
   }
 
-  public DiskStoreNotFoundException(final String message, final Throwable cause) {
+  public EntityNotFoundException(String message, Throwable cause) {
     super(message, cause);
   }
 
+  public boolean isStatusOK() {
+    return statusOK;
+  }
 }

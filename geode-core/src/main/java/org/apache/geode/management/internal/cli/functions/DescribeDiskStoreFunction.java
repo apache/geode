@@ -40,7 +40,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
-import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 
 /**
  * The DescribeDiskStoreFunction class is an implementation of a GemFire Function used to collect
@@ -120,7 +120,7 @@ public class DescribeDiskStoreFunction extends FunctionAdapter implements Intern
           context.getResultSender().lastResult(diskStoreDetails);
         } else {
           context.getResultSender()
-              .sendException(new DiskStoreNotFoundException(
+              .sendException(new EntityNotFoundException(
                   String.format("A disk store with name (%1$s) was not found on member (%2$s).",
                       diskStoreName, memberName)));
         }
