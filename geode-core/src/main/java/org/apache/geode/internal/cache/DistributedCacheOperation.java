@@ -1063,7 +1063,7 @@ public abstract class DistributedCacheOperation {
 
     protected LocalRegion getLocalRegionForProcessing(DistributionManager dm) {
       Assert.assertTrue(this.regionPath != null, "regionPath was null");
-      InternalCache gfc = dm.getCache();
+      InternalCache gfc = dm.getExistingCache();
       return gfc.getRegionByPathForProcessing(this.regionPath);
     }
 
