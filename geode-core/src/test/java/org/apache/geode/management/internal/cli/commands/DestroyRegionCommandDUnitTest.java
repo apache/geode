@@ -16,16 +16,10 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -41,8 +35,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -71,6 +63,15 @@ public class DestroyRegionCommandDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
+  @After
+  public void after() throws Exception {
+    // destroy regions
+    gfsh.execute("destroy region --name=/Customer --if-exists");
+    gfsh.execute("destroy region --name=/Order --if-exists");
+    gfsh.execute("destroy region --name=/Customer_2 --if-exists");
+    gfsh.execute("destroy region --name=/Customer_3 --if-exists");
+  }
+
   @Test
   public void testDestroyDistributedRegion() {
     MemberVM.invokeInEveryMember(() -> {
@@ -84,8 +85,8 @@ public class DestroyRegionCommandDUnitTest {
       factory.create("Order");
     }, server1, server2);
 
-    locator.invoke(() -> waitForRegionMBeanCreation("/Customer", 2));
-    locator.invoke(() -> waitForRegionMBeanCreation("/Order", 2));
+    locator.waitTillRegionsAreReadyOnServers("/Customer", 2);
+    locator.waitTillRegionsAreReadyOnServers("/Order", 2);
 
     // Test unable to destroy with co-location
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
@@ -112,7 +113,7 @@ public class DestroyRegionCommandDUnitTest {
       factory.create("Customer");
     }, server1, server2, server3);
 
-    locator.invoke(() -> waitForRegionMBeanCreation("/Customer", 3));
+    locator.waitTillRegionsAreReadyOnServers("/Customer", 3);
 
     gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()
         .containsOutput("destroyed successfully");
@@ -142,9 +143,9 @@ public class DestroyRegionCommandDUnitTest {
       factory.create("Customer_3");
     });
 
-    locator.invoke(() -> waitForRegionMBeanCreation("/Customer", 3));
-    locator.invoke(() -> waitForRegionMBeanCreation("/Customer_2", 3));
-    locator.invoke(() -> waitForRegionMBeanCreation("/Customer_3", 3));
+    locator.waitTillRegionsAreReadyOnServers("/Customer", 3);
+    locator.waitTillRegionsAreReadyOnServers("/Customer_2", 3);
+    locator.waitTillRegionsAreReadyOnServers("/Customer_3", 3);
 
     gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()
         .containsOutput("destroyed successfully");
@@ -200,19 +201,5 @@ public class DestroyRegionCommandDUnitTest {
       Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("Customer")).isNull();
     }, server1, server2, server3);
-  }
-
-  private static void waitForRegionMBeanCreation(String regionPath, int mbeanCount) {
-    waitAtMost(5, TimeUnit.SECONDS).until(() -> {
-      try {
-        MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-        String queryExp =
-            MessageFormat.format(ManagementConstants.OBJECTNAME__REGION_MXBEAN, regionPath, "*");
-        ObjectName queryExpON = new ObjectName(queryExp);
-        return mbeanServer.queryNames(queryExpON, null).size() == mbeanCount;
-      } catch (MalformedObjectNameException mone) {
-        throw new RuntimeException(mone);
-      }
-    });
   }
 }
