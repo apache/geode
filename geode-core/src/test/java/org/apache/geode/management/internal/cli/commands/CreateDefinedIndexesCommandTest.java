@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,7 +62,7 @@ public class CreateDefinedIndexesCommandTest {
     IndexDefinition.indexDefinitions.clear();
     resultCollector = mock(ResultCollector.class);
     command = spy(CreateDefinedIndexesCommand.class);
-    doReturn(resultCollector).when(command).createIndexesOnMembers(any());
+    doReturn(resultCollector).when(command).executeFunction(any(), any(), any(Set.class));
   }
 
   @Test

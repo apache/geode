@@ -79,7 +79,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
     String regionName = testName.getMethodName();
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion(regionName)).isNull();
     }, server1, server2, server3);
 
@@ -91,7 +91,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .containsOutput("RegionNotFoundException");
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
 
       assertThat(queryService.getIndexes().isEmpty()).isTrue();
@@ -116,7 +116,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .containsOutput("Region \"/" + region2Name + "\" created on \"server-3\"");
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion(region1Name)).isNotNull();
       assertThat(cache.getRegion(region2Name)).isNotNull();
     }, server1, server2, server3);
@@ -133,7 +133,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .containsOutput("Indexes successfully created");
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
       Region region1 = cache.getRegion(region1Name);
       Region region2 = cache.getRegion(region2Name);
@@ -172,13 +172,13 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .containsOutput("Region \"/" + region2Name + "\" created on \"server-3\"");
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion(region1Name)).isNull();
       assertThat(cache.getRegion(region2Name)).isNull();
     }, server1, server2);
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion(region1Name)).isNotNull();
       assertThat(cache.getRegion(region2Name)).isNotNull();
     }, server3);
@@ -195,7 +195,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .containsOutput("Indexes successfully created");
 
     MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
       Region region1 = cache.getRegion(region1Name);
       Region region2 = cache.getRegion(region2Name);

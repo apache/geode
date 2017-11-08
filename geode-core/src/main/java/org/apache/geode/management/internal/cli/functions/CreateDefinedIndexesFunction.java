@@ -95,19 +95,28 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
         }
 
         sender.lastResult(functionResults.get(resultsSize - 1));
+      } else {
+        // If we reach this point, it means that the QueryService returned an empty list without
+        // throwing any exceptions. It should never happen, the check is just to be on the safer
+        // side and make sure the function returns.
+        sender.lastResult(new CliFunctionResult(memberId, false,
+            "Index creation failed. Check logs for errors."));
       }
-    } catch (MultiIndexCreationException e) {
+    } catch (MultiIndexCreationException multiIndexCreationException) {
       StringBuffer sb = new StringBuffer();
       sb.append("Index creation failed for indexes: ").append("\n");
-      for (Map.Entry<String, Exception> failedIndex : e.getExceptionsMap().entrySet()) {
+      for (Map.Entry<String, Exception> failedIndex : multiIndexCreationException.getExceptionsMap()
+          .entrySet()) {
         sb.append(failedIndex.getKey()).append(" : ").append(failedIndex.getValue().getMessage())
             .append("\n");
       }
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, sb.toString()));
-    } catch (Exception e) {
+      context.getResultSender()
+          .lastResult(new CliFunctionResult(memberId, multiIndexCreationException, sb.toString()));
+    } catch (Exception exception) {
       String exceptionMessage = CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE,
-          e.getClass().getName(), e.getMessage());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, exceptionMessage));
+          exception.getClass().getName(), exception.getMessage());
+      context.getResultSender()
+          .lastResult(new CliFunctionResult(memberId, exception, exceptionMessage));
     }
   }
 }

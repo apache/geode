@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -62,7 +60,7 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
     Result result;
-    List<XmlEntity> xmlEntities = Collections.synchronizedList(new ArrayList<XmlEntity>());
+    List<XmlEntity> xmlEntities = new ArrayList<>();
 
     if (IndexDefinition.indexDefinitions.isEmpty()) {
       final InfoResultData infoResult = ResultBuilder.createInfoResultData();
@@ -77,7 +75,8 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      final ResultCollector<?, ?> rc = createIndexesOnMembers(targetMembers);
+      final ResultCollector<?, ?> rc = executeFunction(createDefinedIndexesFunction,
+          IndexDefinition.indexDefinitions, targetMembers);
 
       final List<Object> funcResults = (List<Object>) rc.getResult();
       final Set<String> successfulMembers = new TreeSet<>();
@@ -152,19 +151,11 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
 
-    if (!xmlEntities.isEmpty()) {
-      for (XmlEntity xmlEntity : xmlEntities) {
-        persistClusterConfiguration(result,
-            () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
-
-      }
+    for (XmlEntity xmlEntity : xmlEntities) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
     }
 
     return result;
-  }
-
-  ResultCollector<?, ?> createIndexesOnMembers(Set<DistributedMember> targetMembers) {
-    return CliUtil.executeFunction(createDefinedIndexesFunction, IndexDefinition.indexDefinitions,
-        targetMembers);
   }
 }
