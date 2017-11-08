@@ -85,7 +85,12 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(0);
+    assertThat(results.size()).isEqualTo(1);
+    Object firstResult = results.get(0);
+    assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
+    assertThat(((CliFunctionResult) firstResult).isSuccessful()).isTrue();
+    assertThat(((CliFunctionResult) firstResult).getMessage()).isNotEmpty();
+    assertThat(((CliFunctionResult) firstResult).getMessage()).contains("No indexes defined");
   }
 
   @Test
@@ -98,7 +103,12 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(0);
+    assertThat(results.size()).isEqualTo(1);
+    Object firstResult = results.get(0);
+    assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
+    assertThat(((CliFunctionResult) firstResult).isSuccessful()).isTrue();
+    assertThat(((CliFunctionResult) firstResult).getMessage()).isNotEmpty();
+    assertThat(((CliFunctionResult) firstResult).getMessage()).contains("No indexes defined");
   }
 
   @Test

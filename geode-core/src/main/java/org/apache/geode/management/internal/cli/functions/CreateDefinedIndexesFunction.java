@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,9 +50,11 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
   public void execute(FunctionContext context) {
     Cache cache;
     String memberId = null;
+    boolean lastResultSent = Boolean.FALSE;
 
     try {
       cache = context.getCache();
+      ResultSender sender = context.getResultSender();
       QueryService queryService = cache.getQueryService();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       Set<IndexInfo> indexDefinitions = (Set<IndexInfo>) context.getArguments();
@@ -71,9 +74,7 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
       }
 
       List<Index> indexes = queryService.createDefinedIndexes();
-
-      // One XmlEntity per region.
-      ResultSender sender = context.getResultSender();
+      // Build the results with one XmlEntity per region.
       List<String> processedRegions = new ArrayList<>();
       List<CliFunctionResult> functionResults = new ArrayList<>();
 
@@ -87,20 +88,22 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
         }
       }
 
-      int resultsSize = functionResults.size();
+      for (Iterator<CliFunctionResult> iterator = functionResults.iterator(); iterator.hasNext();) {
+        CliFunctionResult cliFunctionResult = iterator.next();
 
-      if (resultsSize > 0) {
-        for (int i = 0; i < resultsSize - 1; i++) {
-          sender.sendResult(functionResults.get(i));
+        if (iterator.hasNext()) {
+          sender.sendResult(cliFunctionResult);
+        } else {
+          sender.lastResult(cliFunctionResult);
+          lastResultSent = Boolean.TRUE;
         }
+      }
 
-        sender.lastResult(functionResults.get(resultsSize - 1));
-      } else {
-        // If we reach this point, it means that the QueryService returned an empty list without
-        // throwing any exceptions. It should never happen, the check is just to be on the safer
-        // side and make sure the function returns.
-        sender.lastResult(new CliFunctionResult(memberId, false,
-            "Index creation failed. Check logs for errors."));
+      if (!lastResultSent) {
+        // No indexes were created and no exceptions were thrown during the process.
+        // We still need to make sure the function returns to the caller.
+        sender.lastResult(
+            new CliFunctionResult(memberId, true, CliStrings.DEFINE_INDEX__FAILURE__MSG));
       }
     } catch (MultiIndexCreationException multiIndexCreationException) {
       StringBuffer sb = new StringBuffer();
