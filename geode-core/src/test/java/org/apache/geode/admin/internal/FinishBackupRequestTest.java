@@ -17,6 +17,7 @@ package org.apache.geode.admin.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -145,7 +146,7 @@ public class FinishBackupRequestTest {
   public void sendShouldInvokeProcessLocally() throws Exception {
     finishBackupRequest.send();
 
-    verify(replyProcessor, times(1)).process(any(AdminResponse.class));
+    verify(replyProcessor, times(1)).process(any(AdminResponse.class), eq(false));
   }
 
   @Test
@@ -173,7 +174,7 @@ public class FinishBackupRequestTest {
   public void repliesWithFinishBackupResponse() throws Exception {
     finishBackupRequest.send();
 
-    verify(replyProcessor, times(1)).process(any(FinishBackupResponse.class));
+    verify(replyProcessor, times(1)).process(any(FinishBackupResponse.class), eq(false));
   }
 
   @Test
@@ -182,7 +183,7 @@ public class FinishBackupRequestTest {
 
     finishBackupRequest.send();
 
-    verify(replyProcessor, times(1)).process(any(AdminFailureResponse.class));
+    verify(replyProcessor, times(1)).process(any(AdminFailureResponse.class), eq(false));
   }
 
   @Test

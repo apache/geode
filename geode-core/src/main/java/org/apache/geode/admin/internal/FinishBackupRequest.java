@@ -105,7 +105,7 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
     // adding local member to the results
     response.setSender(dm.getDistributionManagerId());
-    replyProcessor.process(response);
+    replyProcessor.process(response, false);
     return replyProcessor.getResults();
   }
 
@@ -155,7 +155,7 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
   static class FinishBackupReplyProcessor extends AdminMultipleReplyProcessor {
 
-    private Map<DistributedMember, Set<PersistentID>> results =
+    private final Map<DistributedMember, Set<PersistentID>> results =
         Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
     FinishBackupReplyProcessor(DM dm, Collection initMembers) {
@@ -188,11 +188,6 @@ public class FinishBackupRequest extends CliLegacyMessage {
         }
       }
       super.process(message, warn);
-    }
-
-    @Override
-    protected InternalDistributedMember[] getMembers() {
-      return super.getMembers();
     }
 
     Map<DistributedMember, Set<PersistentID>> getResults() {

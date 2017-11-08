@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
@@ -80,7 +81,7 @@ public class FlushToDiskRequest extends CliLegacyMessage {
     }
 
     response.setSender(dm.getDistributionManagerId());
-    replyProcessor.process(response);
+    replyProcessor.process(response, false);
   }
 
   @Override
@@ -107,6 +108,11 @@ public class FlushToDiskRequest extends CliLegacyMessage {
     @Override
     protected boolean stopBecauseOfExceptions() {
       return false;
+    }
+
+    @Override
+    protected void process(DistributionMessage message, boolean warn) {
+      super.process(message, warn);
     }
   }
 }

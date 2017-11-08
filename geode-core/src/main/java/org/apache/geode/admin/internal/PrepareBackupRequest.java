@@ -90,7 +90,7 @@ public class PrepareBackupRequest extends CliLegacyMessage {
     }
 
     response.setSender(dm.getDistributionManagerId());
-    replyProcessor.process(response);
+    replyProcessor.process(response, false);
     return replyProcessor.getResults();
   }
 
@@ -124,7 +124,7 @@ public class PrepareBackupRequest extends CliLegacyMessage {
 
   static class PrepareBackupReplyProcessor extends AdminMultipleReplyProcessor {
 
-    private Map<DistributedMember, Set<PersistentID>> results =
+    private final Map<DistributedMember, Set<PersistentID>> results =
         Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
     PrepareBackupReplyProcessor(DM dm, Collection initMembers) {

@@ -17,6 +17,7 @@ package org.apache.geode.admin.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -121,7 +122,7 @@ public class FlushToDiskRequestTest {
   public void sendShouldInvokeProcessLocally() throws Exception {
     flushToDiskRequest.send();
 
-    verify(replyProcessor, times(1)).process(any(AdminResponse.class));
+    verify(replyProcessor, times(1)).process(any(AdminResponse.class), eq(false));
   }
 
   @Test
@@ -148,7 +149,7 @@ public class FlushToDiskRequestTest {
   public void repliesWithFinishBackupResponse() throws Exception {
     flushToDiskRequest.send();
 
-    verify(replyProcessor, times(1)).process(any(FlushToDiskResponse.class));
+    verify(replyProcessor, times(1)).process(any(FlushToDiskResponse.class), eq(false));
   }
 
   @Test
