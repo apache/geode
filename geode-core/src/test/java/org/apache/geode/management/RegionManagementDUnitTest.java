@@ -68,7 +68,6 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Distributed tests for {@link RegionMXBean}.
@@ -217,7 +216,6 @@ public class RegionManagementDUnitTest implements Serializable {
    * asynchronously.
    */
   @Test
-  @Category(FlakyTest.class) // GEODE-1930
   public void testRegionAggregate() throws Exception {
     createManagersAndThenMembers();
 
@@ -247,7 +245,6 @@ public class RegionManagementDUnitTest implements Serializable {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-3335
   public void testNavigationAPIS() throws Exception {
     createManagersAndThenMembers();
 
@@ -299,7 +296,6 @@ public class RegionManagementDUnitTest implements Serializable {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-1930
   public void testLruStats() throws Exception {
     createMembersAndThenManagers();
     for (VM memberVM : this.memberVMs) {
@@ -407,7 +403,8 @@ public class RegionManagementDUnitTest implements Serializable {
       ManagementService service = getManagementService();
       assertThat(service.getDistributedSystemMXBean()).isNotNull();
 
-      awaitMemberCount(4);
+      // With the DUnit framework there is a locator, a manager and 3 members
+      awaitMemberCount(5);
 
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       assertThat(distributedSystemMXBean.listDistributedRegionObjectNames()).hasSize(2);
@@ -520,7 +517,7 @@ public class RegionManagementDUnitTest implements Serializable {
     assertThat(fixedPartitionAttributesData).isNotNull();
     assertThat(fixedPartitionAttributesData).hasSize(3);
 
-    for (int i = 0; i < fixedPartitionAttributesData.length; i++) {
+    for (FixedPartitionAttributesData aFixedPartitionAttributesData : fixedPartitionAttributesData) {
       // TODO: add real assertions
       // LogWriterUtils.getLogWriter().info("<ExpectedString> Fixed PR Data is " +
       // fixedPartitionAttributesData[i] + "</ExpectedString> ");
@@ -971,7 +968,7 @@ public class RegionManagementDUnitTest implements Serializable {
         assertThat(fixedPrData).isNotNull();
         assertThat(fixedPrData).hasSize(3);
 
-        for (int i = 0; i < fixedPrData.length; i++) {
+        for (FixedPartitionAttributesData aFixedPrData : fixedPrData) {
           // TODO: add real assertions
           // LogWriterUtils.getLogWriter().info("<ExpectedString> Remote PR Data is " +
           // fixedPrData[i] + "</ExpectedString> ");
