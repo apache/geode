@@ -73,7 +73,7 @@ public class MembershipFlushRequest extends PooledDistributionMessage implements
       // get the region from the path, but do NOT wait on initialization,
       // otherwise we could have a distributed deadlock
 
-      Cache cache = CacheFactory.getInstance(dm.getSystem());
+      Cache cache = dm.getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(this.regionPath);
       if (region != null && region.getRegionAdvisor().isInitialized()) {
         ProxyBucketRegion[] proxyBuckets = region.getRegionAdvisor().getProxyBucketArray();
