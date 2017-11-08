@@ -24,7 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -33,10 +32,8 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -50,14 +47,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -136,182 +129,6 @@ public class GfshCommandJUnitTest {
         defaultGfshCommand.convertDefaultValue(StringUtils.SPACE, "testing"));
     assertEquals("tested",
         defaultGfshCommand.convertDefaultValue(CliMetaData.ANNOTATION_DEFAULT_VALUE, "tested"));
-  }
-
-  @Test
-  public void testGetMemberWithMatchingMemberId() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final DistributedSystem mockDistributedSystem =
-        mockContext.mock(DistributedSystem.class, "DistributedSystem");
-
-    final DistributedMember mockMemberSelf = createMockMember("S", "Self");
-    final DistributedMember mockMemberOne = createMockMember("1", "One");
-    final DistributedMember mockMemberTwo = createMockMember("2", "Two");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMembers();
-        will(returnValue(CollectionUtils.asSet(mockMemberOne, mockMemberTwo)));
-        oneOf(mockCache).getDistributedSystem();
-        will(returnValue(mockDistributedSystem));
-        oneOf(mockDistributedSystem).getDistributedMember();
-        will(returnValue(mockMemberSelf));
-      }
-    });
-
-    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
-
-    assertSame(mockMemberTwo, commands.getMember("2"));
-  }
-
-  @Test
-  public void testGetMemberWithMatchingMemberName() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final DistributedSystem mockDistributedSystem =
-        mockContext.mock(DistributedSystem.class, "DistributedSystem");
-
-    final DistributedMember mockMemberSelf = createMockMember("S", "Self");
-    final DistributedMember mockMemberOne = createMockMember("1", "One");
-    final DistributedMember mockMemberTwo = createMockMember("2", "Two");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMembers();
-        will(returnValue(CollectionUtils.asSet(mockMemberOne, mockMemberTwo)));
-        oneOf(mockCache).getDistributedSystem();
-        will(returnValue(mockDistributedSystem));
-        oneOf(mockDistributedSystem).getDistributedMember();
-        will(returnValue(mockMemberSelf));
-      }
-    });
-
-    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
-
-    assertSame(mockMemberOne, commands.getMember("One"));
-  }
-
-  @Test
-  public void testGetMemberWithMatchingMemberNameCaseInsensitive() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final DistributedSystem mockDistributedSystem =
-        mockContext.mock(DistributedSystem.class, "DistributedSystem");
-
-    final DistributedMember mockMemberSelf = createMockMember("S", "Self");
-    final DistributedMember mockMemberOne = createMockMember("1", "One");
-    final DistributedMember mockMemberTwo = createMockMember("2", "Two");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMembers();
-        will(returnValue(CollectionUtils.asSet(mockMemberOne, mockMemberTwo)));
-        oneOf(mockCache).getDistributedSystem();
-        will(returnValue(mockDistributedSystem));
-        oneOf(mockDistributedSystem).getDistributedMember();
-        will(returnValue(mockMemberSelf));
-      }
-    });
-
-    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
-
-    assertSame(mockMemberSelf, commands.getMember("self"));
-  }
-
-  @Test(expected = MemberNotFoundException.class)
-  public void testGetMemberThrowsMemberNotFoundException() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final DistributedSystem mockDistributedSystem =
-        mockContext.mock(DistributedSystem.class, "DistributedSystem");
-
-    final DistributedMember mockMemberSelf = createMockMember("S", "Self");
-    final DistributedMember mockMemberOne = createMockMember("1", "One");
-    final DistributedMember mockMemberTwo = createMockMember("2", "Two");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMembers();
-        will(returnValue(CollectionUtils.asSet(mockMemberOne, mockMemberTwo)));
-        oneOf(mockCache).getDistributedSystem();
-        will(returnValue(mockDistributedSystem));
-        oneOf(mockDistributedSystem).getDistributedMember();
-        will(returnValue(mockMemberSelf));
-      }
-    });
-
-    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
-
-    try {
-      commands.getMember("zero");
-    } catch (MemberNotFoundException expected) {
-      assertEquals(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, "zero"),
-          expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test
-  public void testGetMembers() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final DistributedSystem mockDistributedSystem =
-        mockContext.mock(DistributedSystem.class, "DistributedSystem");
-
-    final DistributedMember mockMemberSelf = createMockMember("S", "Self");
-    final DistributedMember mockMemberOne = createMockMember("1", "One");
-    final DistributedMember mockMemberTwo = createMockMember("2", "Two");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMembers();
-        will(returnValue(CollectionUtils.asSet(mockMemberOne, mockMemberTwo)));
-        oneOf(mockCache).getDistributedSystem();
-        will(returnValue(mockDistributedSystem));
-        oneOf(mockDistributedSystem).getDistributedMember();
-        will(returnValue(mockMemberSelf));
-      }
-    });
-
-    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
-
-    final Set<DistributedMember> expectedMembers =
-        CollectionUtils.asSet(mockMemberOne, mockMemberTwo, mockMemberSelf);
-    final Set<DistributedMember> actualMembers = commands.getAllMembers(mockCache);
-
-    assertNotNull(actualMembers);
-    assertEquals(expectedMembers.size(), actualMembers.size());
-    assertTrue(actualMembers.containsAll(expectedMembers));
-  }
-
-  @Test
-  public void testGetMembersContainsOnlySelf() {
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final DistributedSystem mockDistributedSystem =
-        mockContext.mock(DistributedSystem.class, "DistributedSystem");
-    final DistributedMember mockMemberSelf = createMockMember("S", "Self");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockCache).getMembers();
-        will(returnValue(Collections.emptySet()));
-        oneOf(mockCache).getDistributedSystem();
-        will(returnValue(mockDistributedSystem));
-        oneOf(mockDistributedSystem).getDistributedMember();
-        will(returnValue(mockMemberSelf));
-      }
-    });
-
-    final GfshCommand commands = createAbstractCommandsSupport(mockCache);
-
-    final Set<DistributedMember> expectedMembers = CollectionUtils.asSet(mockMemberSelf);
-    final Set<DistributedMember> actualMembers = commands.getAllMembers(mockCache);
-
-    assertNotNull(actualMembers);
-    assertEquals(expectedMembers.size(), actualMembers.size());
-    assertTrue(actualMembers.containsAll(expectedMembers));
   }
 
   @Test

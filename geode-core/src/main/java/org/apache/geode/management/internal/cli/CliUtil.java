@@ -60,6 +60,7 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -288,7 +289,7 @@ public class CliUtil {
     }
 
     if ((members.length > 0) && (groups.length > 0)) {
-      throw new IllegalArgumentException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
+      throw new UserErrorException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
     }
 
     if (members.length == 0 && groups.length == 0) {
@@ -300,7 +301,7 @@ public class CliUtil {
     for (String memberNameOrId : members) {
       for (DistributedMember member : membersToConsider) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equals(member.getName())) {
+            || memberNameOrId.equalsIgnoreCase(member.getName())) {
           matchingMembers.add(member);
         }
       }
@@ -324,7 +325,7 @@ public class CliUtil {
       Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
       for (DistributedMember member : memberSet) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equals(member.getName())) {
+            || memberNameOrId.equalsIgnoreCase(member.getName())) {
           memberFound = member;
           break;
         }

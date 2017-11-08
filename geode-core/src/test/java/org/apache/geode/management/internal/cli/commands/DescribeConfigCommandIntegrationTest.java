@@ -14,8 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -27,30 +26,29 @@ import org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
-public class DescribeConfigCommandJUnitTest {
+public class DescribeConfigCommandIntegrationTest {
   private static final String[] EXPECTED_BASE_CONFIGURATION_DATA = {"Configuration of member :",
       "JVM command line arguments", "GemFire properties defined using the API"};
 
   private static final String[] EXPECTED_EXPANDED_CONFIGURATION_DATA =
       {"Cache attributes", "GemFire properties using default values"};
 
-  @Rule
-  public ServerStarterRule server = new ServerStarterRule().withJMXManager().withName("server")
-      .withRegion(RegionShortcut.PARTITION, "region").withAutoStart();
+  @ClassRule
+  public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
+      .withName("server").withRegion(RegionShortcut.PARTITION, "region").withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshShellConnectionRule gfsh =
+      new GfshShellConnectionRule(server::getJmxPort, PortType.jmxManager);
 
   @Test
   public void describeConfig() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
     gfsh.executeAndAssertThat("describe config --member=" + server.getName()).statusIsSuccess()
         .containsOutput(EXPECTED_BASE_CONFIGURATION_DATA);
   }
 
   @Test
   public void describeConfigAndShowDefaults() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
     gfsh.executeAndAssertThat("describe config --hide-defaults=false --member=" + server.getName())
         .statusIsSuccess().containsOutput(EXPECTED_BASE_CONFIGURATION_DATA)
         .containsOutput(EXPECTED_EXPANDED_CONFIGURATION_DATA);
@@ -58,6 +56,7 @@ public class DescribeConfigCommandJUnitTest {
 
   @Test
   public void describeConfigWhenNotConnected() throws Exception {
+    gfsh.disconnect();
     gfsh.executeAndAssertThat("describe config --member=" + server.getName()).statusIsError()
         .containsOutput("was found but is not currently available");
   }
@@ -65,19 +64,8 @@ public class DescribeConfigCommandJUnitTest {
   @Test
   public void describeConfigOnInvalidMember() throws Exception {
     String invalidMemberName = "invalid-member-name";
-    String expectedErrorString = String.format("Member \"%s\" not found", invalidMemberName);
-
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
+    String expectedErrorString = String.format("Member %s could not be found", invalidMemberName);
     gfsh.executeAndAssertThat("describe config --member=" + invalidMemberName).statusIsError()
-        .containsOutput(expectedErrorString);
-  }
-
-  @Test
-  public void describeConfigWithoutMemberName() throws Exception {
-    String expectedErrorString = "You should specify option ";
-
-    gfsh.connectAndVerify(server.getJmxPort(), PortType.jmxManager);
-    gfsh.executeAndAssertThat("describe config").statusIsError()
         .containsOutput(expectedErrorString);
   }
 }

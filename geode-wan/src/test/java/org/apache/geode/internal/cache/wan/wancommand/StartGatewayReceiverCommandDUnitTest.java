@@ -91,17 +91,8 @@ public class StartGatewayReceiverCommandDUnitTest {
     final DistributedMember vm1Member = (DistributedMember) server1.invoke(getMemberIdCallable());
     String command = CliStrings.START_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "="
         + vm1Member.getId() + " --" + CliStrings.GROUP + "=RG1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter()
-          .info("testStartGatewayReceiver_ErrorConditions stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-      assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
-    } else {
-      fail("testStartGatewayReceiver_ErrorConditions failed as did not get CommandResult");
-    }
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
   }
 
   @Test

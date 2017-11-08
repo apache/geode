@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_MEMBER;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -46,8 +45,8 @@ public class DescribeMembersCommandDUnitTest {
   @Test
   public void describeInvalidMember() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=foo").statusIsSuccess()
-        .containsOutput("Member \"foo\" not found");
+    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=foo").statusIsError()
+        .containsOutput("Member foo could not be found");
   }
 
   @Test

@@ -88,19 +88,12 @@ public class StopGatewaySenderCommandDUnitTest {
 
     server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
 
-    final DistributedMember server1DM = (DistributedMember) server1.invoke(getMemberIdCallable());
+    final DistributedMember server1DM = server1.invoke(getMemberIdCallable());
     String command = CliStrings.STOP_GATEWAYSENDER + " --" + CliStrings.STOP_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + server1DM.getId() + " --" + CliStrings.GROUP
         + "=SenderGroup1";
-    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testStopGatewaySender stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-      assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
-    } else {
-      fail("testStopGatewaySender failed as did not get CommandResult");
-    }
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
   }
 
   @Test

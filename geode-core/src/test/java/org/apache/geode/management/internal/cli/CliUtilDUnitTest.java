@@ -77,6 +77,10 @@ public class CliUtilDUnitTest {
         .statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=group2Region --group=group2 --type=REPLICATE")
         .statusIsSuccess();
+
+    locator.waitTillRegionsAreReadyOnServers("/commonRegion", 4);
+    locator.waitTillRegionsAreReadyOnServers("/group1Region", 2);
+    locator.waitTillRegionsAreReadyOnServers("/group2Region", 2);
   }
 
   @Test
@@ -99,6 +103,10 @@ public class CliUtilDUnitTest {
       members = CliUtil.findMembers(null, "member1,member3".split(","));
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member3");
 
+      // find multiple members
+      members = CliUtil.findMembers(null, "MembER1,member3".split(","));
+      assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member3");
+
       // find only one group
       members = CliUtil.findMembers("group1".split(","), null);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2");
@@ -107,6 +115,14 @@ public class CliUtilDUnitTest {
       members = CliUtil.findMembers("group1,group2".split(","), null);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
           "member4");
+    });
+  }
+
+  public void getMember() throws Exception {
+    locator.invoke(() -> {
+      assertThat(CliUtil.getDistributedMemberByNameOrId("notValidName")).isNull();
+      assertThat(CliUtil.getDistributedMemberByNameOrId("member1").getName()).isEqualTo("member1");
+      assertThat(CliUtil.getDistributedMemberByNameOrId("MembER1").getName()).isEqualTo("member1");
     });
   }
 

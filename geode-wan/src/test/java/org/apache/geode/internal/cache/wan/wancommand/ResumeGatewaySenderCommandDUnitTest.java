@@ -89,21 +89,12 @@ public class ResumeGatewaySenderCommandDUnitTest {
 
     server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
 
-    final DistributedMember vm1Member = (DistributedMember) server1.invoke(getMemberIdCallable());
+    final DistributedMember vm1Member = server1.invoke(getMemberIdCallable());
     String command = CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId() + " --" + CliStrings.GROUP
         + "=SenderGroup1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter()
-          .info("testResumeGatewaySender_ErrorConditions stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-      assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
-    } else {
-      fail("testPauseGatewaySender failed as did not get CommandResult");
-    }
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
   }
 
   @Test
@@ -262,21 +253,6 @@ public class ResumeGatewaySenderCommandDUnitTest {
 
     Integer locator1Port = locatorSite1.getPort();
 
-    // setup servers in Site #1
-    /*
-     * String group = "SenderGroup1"; Properties props = new Properties(); props.setProperty(GROUPS,
-     * group); server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port); server2 =
-     * locatorServerStartupRule.startServerVM(4, props, locator1Port);
-     *
-     * props.setProperty(GROUPS, "SenderGroup1, SenderGroup2"); server3 =
-     * locatorServerStartupRule.startServerVM(5, props, locator1Port);
-     *
-     * props.setProperty(GROUPS, "SenderGroup2"); server4 =
-     * locatorServerStartupRule.startServerVM(6, props, locator1Port);
-     *
-     * props.setProperty(GROUPS, "SenderGroup3"); server5 =
-     * locatorServerStartupRule.startServerVM(7, props, locator1Port);
-     */
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
     server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
     server3 = startServerWithGroups(5, "SenderGroup1, SenderGroup2", locator1Port);
