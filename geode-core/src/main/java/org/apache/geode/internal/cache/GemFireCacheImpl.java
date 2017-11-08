@@ -676,7 +676,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /** Map of Futures used to track Regions that are being reinitialized */
   private final ConcurrentMap reinitializingRegions = new ConcurrentHashMap();
 
-  /** Returns the last created instance of GemFireCache */
+  /**
+   * Returns the last created instance of GemFireCache
+   *
+   * @deprecated: use DM.getCache instead
+   */
+  @Deprecated
   public static GemFireCacheImpl getInstance() {
     return instance;
   }
@@ -695,7 +700,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *
    * @return the existing cache
    * @throws CacheClosedException if an existing cache can not be found.
+   * @deprecated use DM.getExistingCache instead.
    */
+  @Deprecated
   public static GemFireCacheImpl getExisting() {
     final GemFireCacheImpl result = instance;
     if (result != null && !result.isClosing) {
@@ -715,7 +722,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @param reason the reason an existing cache is being requested.
    * @return the existing cache
    * @throws CacheClosedException if an existing cache can not be found.
+   * @deprecated use DM.getExistingCache instead.
    */
+  @Deprecated
   public static GemFireCacheImpl getExisting(String reason) {
     GemFireCacheImpl result = getInstance();
     if (result == null) {

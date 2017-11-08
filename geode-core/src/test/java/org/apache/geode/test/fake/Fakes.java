@@ -98,6 +98,7 @@ public class Fakes {
     when(distributionManager.getSystem()).thenReturn(system);
     when(distributionManager.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(distributionManager.getCache()).thenReturn(cache);
+    when(distributionManager.getExistingCache()).thenReturn(cache);
 
     return cache;
   }

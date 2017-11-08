@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
@@ -464,7 +466,22 @@ public interface DM extends ReplySender {
 
   int getDMType();
 
+  /**
+   * The returned cache will be null if the cache does not yet exist. Note that the returned cache
+   * may be one that is already closed. Callers of GemFireCacheImpl.getInstance() should try to use
+   * this method.
+   */
   InternalCache getCache();
+
+  /**
+   * Returns an existing non-closed cache associated with this DM. Callers of
+   * CacheFactory.getAnyInstance(), CacheFactory.getInstance(DistributedSystem) or
+   * GemFireCacheImpl.getExisting() should try to use this method.
+   *
+   * @throws CacheClosedException if a cache has not yet been associated with this DM or it has been
+   *         {@link Cache#isClosed closed}.
+   */
+  InternalCache getExistingCache();
 
   void setCache(InternalCache instance);
 }
