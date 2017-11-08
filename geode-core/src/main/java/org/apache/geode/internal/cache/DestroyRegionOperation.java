@@ -298,7 +298,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
       // shared region, since another cache may
       // have already destroyed it in shared memory, in which our listeners
       // still need to be called and java region object cleaned up.
-      InternalCache cache = dm.getCache();
+      InternalCache cache = dm.getExistingCache();
 
       // only get the region while holding the appropriate destroy lock.
       // this prevents us from getting a "stale" region
