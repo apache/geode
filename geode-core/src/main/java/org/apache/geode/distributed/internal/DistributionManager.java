@@ -3939,7 +3939,7 @@ public class DistributionManager implements DM {
   /* -----------------------------Health Monitor------------------------------ */
   private final ConcurrentMap hmMap = new ConcurrentHashMap();
 
-  private InternalCache cache;
+  private volatile InternalCache cache;
 
   /**
    * Returns the health monitor for this distribution manager and owner.

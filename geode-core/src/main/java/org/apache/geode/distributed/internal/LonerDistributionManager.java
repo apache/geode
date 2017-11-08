@@ -1249,7 +1249,7 @@ public class LonerDistributionManager implements DM {
   }
 
   private final Stopper stopper = new Stopper();
-  private InternalCache cache;
+  private volatile InternalCache cache;
 
   public CancelCriterion getCancelCriterion() {
     return stopper;
