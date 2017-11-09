@@ -28,15 +28,13 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
-import org.apache.geode.internal.cache.BackupManager;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -46,23 +44,41 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * A request to from an admin VM to all non admin members to start a backup. In the prepare phase of
  * the backup, the members will suspend bucket destroys to make sure buckets aren't missed during
  * the backup.
- *
- *
  */
 public class PrepareBackupRequest extends CliLegacyMessage {
   private static final Logger logger = LogService.getLogger();
 
-  public PrepareBackupRequest() {
+  private final DM dm;
+  private final PrepareBackupReplyProcessor replyProcessor;
 
+  public PrepareBackupRequest() {
+    super();
+    this.dm = null;
+    this.replyProcessor = null;
+  }
+
+  private PrepareBackupRequest(DM dm, Set<InternalDistributedMember> recipients) {
+    this(dm, recipients, new PrepareBackupReplyProcessor(dm, recipients));
+  }
+
+  PrepareBackupRequest(DM dm, Set<InternalDistributedMember> recipients,
+      PrepareBackupReplyProcessor replyProcessor) {
+    this.dm = dm;
+    setRecipients(recipients);
+    this.replyProcessor = replyProcessor;
+    this.msgId = this.replyProcessor.getProcessorId();
   }
 
   public static Map<DistributedMember, Set<PersistentID>> send(DM dm, Set recipients) {
-    PrepareBackupRequest request = new PrepareBackupRequest();
-    request.setRecipients(recipients);
+    PrepareBackupRequest request = new PrepareBackupRequest(dm, recipients);
+    return request.send();
+  }
 
-    PrepareBackupReplyProcessor replyProcessor = new PrepareBackupReplyProcessor(dm, recipients);
-    request.msgId = replyProcessor.getProcessorId();
-    dm.putOutgoing(request);
+  Map<DistributedMember, Set<PersistentID>> send() {
+    dm.putOutgoing(this);
+
+    AdminResponse response = createResponse(dm);
+
     try {
       replyProcessor.waitForReplies();
     } catch (ReplyException e) {
@@ -70,44 +86,48 @@ public class PrepareBackupRequest extends CliLegacyMessage {
         throw e;
       }
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.warn(e.getMessage(), e);
     }
-    AdminResponse response = request.createResponse((DistributionManager) dm);
+
     response.setSender(dm.getDistributionManagerId());
-    replyProcessor.process(response);
-    return replyProcessor.results;
+    replyProcessor.process(response, false);
+    return replyProcessor.getResults();
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
+    HashSet<PersistentID> persistentIds;
+    try {
+      persistentIds = prepareForBackup(dm);
+    } catch (IOException e) {
+      logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
+      return AdminFailureResponse.create(getSender(), e);
+    }
+    return new PrepareBackupResponse(getSender(), persistentIds);
+  }
+
+  HashSet<PersistentID> prepareForBackup(DM dm) throws IOException {
     InternalCache cache = dm.getCache();
     HashSet<PersistentID> persistentIds;
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      try {
-        BackupManager manager = cache.startBackup(getSender());
-        persistentIds = manager.prepareForBackup();
-      } catch (IOException e) {
-        logger.error(
-            LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), e);
-        return AdminFailureResponse.create(dm, getSender(), e);
-      }
+      persistentIds = cache.startBackup(getSender()).prepareForBackup();
     }
-
-
-    return new PrepareBackupResponse(this.getSender(), persistentIds);
+    return persistentIds;
   }
 
+  @Override
   public int getDSFID() {
     return PREPARE_BACKUP_REQUEST;
   }
 
-  private static class PrepareBackupReplyProcessor extends AdminMultipleReplyProcessor {
-    Map<DistributedMember, Set<PersistentID>> results =
+  static class PrepareBackupReplyProcessor extends AdminMultipleReplyProcessor {
+
+    private final Map<DistributedMember, Set<PersistentID>> results =
         Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
-    public PrepareBackupReplyProcessor(DM dm, Collection initMembers) {
+    PrepareBackupReplyProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
 
@@ -117,18 +137,18 @@ public class PrepareBackupRequest extends CliLegacyMessage {
     }
 
     @Override
-    protected void process(DistributionMessage msg, boolean warn) {
-      if (msg instanceof PrepareBackupResponse) {
-        final HashSet<PersistentID> persistentIds =
-            ((PrepareBackupResponse) msg).getPersistentIds();
+    protected void process(DistributionMessage message, boolean warn) {
+      if (message instanceof PrepareBackupResponse) {
+        HashSet<PersistentID> persistentIds = ((PrepareBackupResponse) message).getPersistentIds();
         if (persistentIds != null && !persistentIds.isEmpty()) {
-          results.put(msg.getSender(), persistentIds);
+          results.put(message.getSender(), persistentIds);
         }
       }
-      super.process(msg, warn);
+      super.process(message, warn);
     }
 
-
-
+    Map<DistributedMember, Set<PersistentID>> getResults() {
+      return results;
+    }
   }
 }

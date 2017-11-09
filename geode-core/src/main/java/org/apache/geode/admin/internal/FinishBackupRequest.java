@@ -32,14 +32,13 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -48,34 +47,52 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 /**
  * A request send from an admin VM to all of the peers to indicate that that should complete the
  * backup operation.
- *
- *
  */
 public class FinishBackupRequest extends CliLegacyMessage {
   private static final Logger logger = LogService.getLogger();
 
+  private final DM dm;
+  private final FinishBackupReplyProcessor replyProcessor;
   private File targetDir;
   private File baselineDir;
   private boolean abort;
 
   public FinishBackupRequest() {
     super();
+    this.dm = null;
+    this.replyProcessor = null;
   }
 
-  public FinishBackupRequest(File targetDir, File baselineDir, boolean abort) {
+  private FinishBackupRequest(DM dm, Set<InternalDistributedMember> recipients, File targetDir,
+      File baselineDir, boolean abort) {
+    this(dm, recipients, new FinishBackupReplyProcessor(dm, recipients), targetDir, baselineDir,
+        abort);
+  }
+
+  FinishBackupRequest(DM dm, Set<InternalDistributedMember> recipients,
+      FinishBackupReplyProcessor replyProcessor, File targetDir, File baselineDir, boolean abort) {
+    this.dm = dm;
     this.targetDir = targetDir;
     this.baselineDir = baselineDir;
     this.abort = abort;
+    setRecipients(recipients);
+    this.replyProcessor = replyProcessor;
+    this.msgId = this.replyProcessor.getProcessorId();
   }
 
   public static Map<DistributedMember, Set<PersistentID>> send(DM dm, Set recipients,
       File targetDir, File baselineDir, boolean abort) {
-    FinishBackupRequest request = new FinishBackupRequest(targetDir, baselineDir, abort);
-    request.setRecipients(recipients);
+    FinishBackupRequest request =
+        new FinishBackupRequest(dm, recipients, targetDir, baselineDir, abort);
+    return request.send();
+  }
 
-    FinishBackupReplyProcessor replyProcessor = new FinishBackupReplyProcessor(dm, recipients);
-    request.msgId = replyProcessor.getProcessorId();
-    dm.putOutgoing(request);
+  Map<DistributedMember, Set<PersistentID>> send() {
+    dm.putOutgoing(this);
+
+    // invokes doBackup and releases BackupLock
+    AdminResponse response = createResponse(dm);
+
     try {
       replyProcessor.waitForReplies();
     } catch (ReplyException e) {
@@ -83,33 +100,39 @@ public class FinishBackupRequest extends CliLegacyMessage {
         throw e;
       }
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      logger.warn(e.getMessage(), e);
     }
-    AdminResponse response = request.createResponse((DistributionManager) dm);
+
+    // adding local member to the results
     response.setSender(dm.getDistributionManagerId());
-    replyProcessor.process(response);
-    return replyProcessor.results;
+    replyProcessor.process(response, false);
+    return replyProcessor.getResults();
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
+    HashSet<PersistentID> persistentIds;
+    try {
+      persistentIds = doBackup(dm);
+    } catch (IOException e) {
+      logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
+      return AdminFailureResponse.create(getSender(), e);
+    }
+    return new FinishBackupResponse(getSender(), persistentIds);
+  }
+
+  private HashSet<PersistentID> doBackup(DM dm) throws IOException {
     InternalCache cache = dm.getCache();
     HashSet<PersistentID> persistentIds;
     if (cache == null || cache.getBackupManager() == null) {
-      persistentIds = new HashSet<PersistentID>();
+      persistentIds = new HashSet<>();
     } else {
-      try {
-        persistentIds = cache.getBackupManager().doBackup(targetDir, baselineDir, abort);
-      } catch (IOException e) {
-        logger.error(
-            LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), e);
-        return AdminFailureResponse.create(dm, getSender(), e);
-      }
+      persistentIds = cache.getBackupManager().doBackup(targetDir, baselineDir, abort);
     }
-
-    return new FinishBackupResponse(this.getSender(), persistentIds);
+    return persistentIds;
   }
 
+  @Override
   public int getDSFID() {
     return FINISH_BACKUP_REQUEST;
   }
@@ -130,11 +153,12 @@ public class FinishBackupRequest extends CliLegacyMessage {
     DataSerializer.writeBoolean(abort, out);
   }
 
-  private static class FinishBackupReplyProcessor extends AdminMultipleReplyProcessor {
-    Map<DistributedMember, Set<PersistentID>> results =
+  static class FinishBackupReplyProcessor extends AdminMultipleReplyProcessor {
+
+    private final Map<DistributedMember, Set<PersistentID>> results =
         Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
-    public FinishBackupReplyProcessor(DM dm, Collection initMembers) {
+    FinishBackupReplyProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
 
@@ -142,8 +166,6 @@ public class FinishBackupRequest extends CliLegacyMessage {
     protected boolean stopBecauseOfExceptions() {
       return false;
     }
-
-
 
     @Override
     protected int getAckWaitThreshold() {
@@ -158,17 +180,18 @@ public class FinishBackupRequest extends CliLegacyMessage {
     }
 
     @Override
-    protected void process(DistributionMessage msg, boolean warn) {
-      if (msg instanceof FinishBackupResponse) {
-        final HashSet<PersistentID> persistentIds = ((FinishBackupResponse) msg).getPersistentIds();
+    protected void process(DistributionMessage message, boolean warn) {
+      if (message instanceof FinishBackupResponse) {
+        HashSet<PersistentID> persistentIds = ((FinishBackupResponse) message).getPersistentIds();
         if (persistentIds != null && !persistentIds.isEmpty()) {
-          results.put(msg.getSender(), persistentIds);
+          results.put(message.getSender(), persistentIds);
         }
       }
-      super.process(msg, warn);
+      super.process(message, warn);
     }
 
-
-
+    Map<DistributedMember, Set<PersistentID>> getResults() {
+      return results;
+    }
   }
 }

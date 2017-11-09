@@ -341,7 +341,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
           DistributionMessageObserver.setInstance(null);
           IOException exception = new IOException("Backup in progess");
           AdminFailureResponse response =
-              AdminFailureResponse.create(dm, message.getSender(), exception);
+              AdminFailureResponse.create(message.getSender(), exception);
           response.setMsgId(((PrepareBackupRequest) message).getMsgId());
           dm.putOutgoing(response);
           throw new RuntimeException("Stop processing");

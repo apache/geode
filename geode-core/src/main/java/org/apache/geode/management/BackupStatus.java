@@ -19,14 +19,11 @@ import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.internal.cache.BackupUtil;
 
 /**
- * The status of a backup operation, returned by
- * {@link BackupUtil#backupAllMembers(DM, java.io.File,java.io.File)}.
+ * The status of a backup operation.
  *
- * @since GemFire 6.5
+ * @since Geode 1.4
  */
 public interface BackupStatus {
 

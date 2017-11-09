@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,52 +22,66 @@ import java.util.concurrent.locks.ReentrantLock;
  * A lock used for the backup process. This is a reentrant lock that provides a "backup" mode, where
  * the lock is held by a "backup thread" which can be assigned later than the time we lock.
  *
- * We need this because our backup process is two phase. In the first phase we aquire the lock and
+ * <p>
+ * We need this because our backup process is two phase. In the first phase we acquire the lock and
  * in the second phase we actually do the backup. During the second phase we need to reenter the
  * lock and release it with a different thread.
- *
  */
 public class BackupLock extends ReentrantLock {
 
-  private final ThreadLocal<Boolean> isBackupThread = new ThreadLocal<Boolean>();
-  boolean isBackingUp;
-  Condition backupDone = super.newCondition();
+  private final ThreadLocal<Boolean> isBackupThread = new ThreadLocal<>();
+  private boolean isBackingUp;
+  private Condition backupDone = super.newCondition();
 
   // test hook
-  private BackupLockTestHook hook = null;
+  private final AtomicReference<BackupLockTestHook> hook = new AtomicReference<>();
 
   public interface BackupLockTestHook {
     /**
      * Test hook called before the wait for backup to complete
      */
-    public void beforeWaitForBackupCompletion();
+    void beforeWaitForBackupCompletion();
   }
 
   public void setBackupLockTestHook(BackupLockTestHook testHook) {
-    hook = testHook;
+    hook.set(testHook);
   }
 
-  public void lockForBackup() {
+  void lockForBackup() {
     super.lock();
     isBackingUp = true;
     super.unlock();
   }
 
-  public void setBackupThread() {
+  void setBackupThread() {
     isBackupThread.set(true);
   }
 
-  public void unlockForBackup() {
+  void unlockForBackup() {
     super.lock();
     isBackingUp = false;
-    isBackupThread.set(false);
+    isBackupThread.remove();
     backupDone.signalAll();
     super.unlock();
   }
 
-  public boolean isCurrentThreadDoingBackup() {
+  boolean isCurrentThreadDoingBackup() {
     Boolean result = isBackupThread.get();
     return (result != null) && result;
+  }
+
+  /**
+   * For testing only
+   */
+  boolean isBackingUp() {
+    return isBackingUp;
+  }
+
+  /**
+   * For testing only
+   */
+  boolean hasThreadLocal() {
+    return isBackupThread.get() != null;
   }
 
   @Override
@@ -80,7 +95,6 @@ public class BackupLock extends ReentrantLock {
 
   /**
    * Acquire this lock, waiting for a backup to finish the first phase.
-   *
    */
   @Override
   public void lock() {
@@ -89,8 +103,9 @@ public class BackupLock extends ReentrantLock {
     if (!isCurrentThreadDoingBackup()) {
       super.lock();
       while (isBackingUp) {
-        if (hook != null) {
-          hook.beforeWaitForBackupCompletion();
+        BackupLockTestHook testHook = hook.get();
+        if (testHook != null) {
+          testHook.beforeWaitForBackupCompletion();
         }
         backupDone.awaitUninterruptibly();
       }
