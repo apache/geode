@@ -41,13 +41,12 @@ public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements Logo
 
   public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
-    logger.debug("Invoked #LogoutHandler ...");
-    GemFireAuthentication gemauthentication = (GemFireAuthentication) authentication;
-    if (gemauthentication != null) {
-      Repository.get().logoutUser(gemauthentication.getName());
-      logger.info("#LogoutHandler : Closing GemFireAuthentication JMX Connection...");
+
+    if (authentication != null) {
+      Repository.get().logoutUser(authentication.getName());
+      logger.info("#LogoutHandler: GemFireAuthentication JMX Connection Closed.");
     }
+
     super.onLogoutSuccess(request, response, authentication);
   }
-
 }
