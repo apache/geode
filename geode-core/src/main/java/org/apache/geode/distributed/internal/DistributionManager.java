@@ -53,6 +53,7 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
@@ -3939,7 +3940,7 @@ public class DistributionManager implements DM {
   /* -----------------------------Health Monitor------------------------------ */
   private final ConcurrentMap hmMap = new ConcurrentHashMap();
 
-  private InternalCache cache;
+  private volatile InternalCache cache;
 
   /**
    * Returns the health monitor for this distribution manager and owner.
@@ -4819,5 +4820,20 @@ public class DistributionManager implements DM {
   @Override
   public InternalCache getCache() {
     return this.cache;
+  }
+
+  @Override
+  public InternalCache getExistingCache() {
+    InternalCache result = this.cache;
+    if (result == null) {
+      throw new CacheClosedException(
+          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+    }
+    result.getCancelCriterion().checkCancelInProgress(null);
+    if (result.isClosed()) {
+      throw result.getCacheClosedException(
+          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+    }
+    return result;
   }
 }
