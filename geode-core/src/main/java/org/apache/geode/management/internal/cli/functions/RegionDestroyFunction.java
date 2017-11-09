@@ -66,6 +66,9 @@ public class RegionDestroyFunction implements Function, InternalEntity {
       XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
       context.getResultSender().lastResult(new CliFunctionResult("", xmlEntity, regionPath));
 
+    } catch (IllegalStateException ex) {
+      // user is trying to destroy something that can't destroyed.
+      context.getResultSender().lastResult(new CliFunctionResult("", false, ex.getMessage()));
     } catch (Exception ex) {
       context.getResultSender()
           .lastResult(new CliFunctionResult("", ex, "failed to destroy " + regionPath));

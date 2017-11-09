@@ -90,7 +90,7 @@ public class DestroyRegionCommand implements GfshCommand {
     }
 
     Result result =
-        ResultBuilder.createInfoResult(String.format("\"$s\" destroyed successfully.", regionPath));
+        ResultBuilder.createInfoResult(String.format("\"%s\" destroyed successfully.", regionPath));
     if (xmlEntity.get() != null) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));

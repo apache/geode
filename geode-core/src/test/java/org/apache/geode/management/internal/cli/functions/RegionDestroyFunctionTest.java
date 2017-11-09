@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.InternalCache;
@@ -75,5 +77,21 @@ public class RegionDestroyFunctionTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMessage()).contains("SUCCESS");
+  }
+
+  @Test
+  public void illegalStateExceptionWillNotThrowExceptionToCommand() throws Exception {
+    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
+    Region region = mock(Region.class);
+    when(cache.getRegion(any())).thenReturn(region);
+    doThrow(new IllegalStateException("message")).when(region).destroyRegion();
+
+    function.execute(context);
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+    assertThat(result.isSuccessful()).isFalse();
+    // will not populate the exception in the result, but only preserve the message
+    assertThat(result.getThrowable()).isNull();
+    assertThat(result.getMessage()).isEqualTo("message");
   }
 }
