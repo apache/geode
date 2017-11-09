@@ -47,7 +47,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Repository.class)
 @PowerMockRunnerDelegate(Parameterized.class)
-@PowerMockIgnore({"javax.management.*", "javax.security.*"})
+@PowerMockIgnore({"javax.management.*", "javax.security.*", "*.UnitTest"})
 public class LogoutHandlerUnitTest {
   private Repository repository;
   private LogoutHandler handler;
