@@ -1300,8 +1300,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         PartitionedRegion pr = (PartitionedRegion) r;
         BucketRegion br = pr.getBucketRegion(entryOp.key);
         Set bucketOwners = br.getBucketOwners();
-        InternalDistributedMember thisMember =
-            GemFireCacheImpl.getExisting().getDistributionManager().getId();
+        InternalDistributedMember thisMember = this.r.getDistributionManager().getId();
         if (bucketOwners.contains(thisMember)) {
           return;
         }
