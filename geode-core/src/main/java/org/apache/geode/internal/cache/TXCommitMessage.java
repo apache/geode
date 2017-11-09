@@ -604,7 +604,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     // it needs to default to false because we don't want to fire listeners on pr replicates
     try {
       TXRmtEvent txEvent = null;
-      final Cache cache = dm.getCache();
+      final Cache cache = dm.getExistingCache();
       if (cache == null) {
         addProcessingException(new CacheClosedException());
         // return ... this cache is closed so we can't do anything.
