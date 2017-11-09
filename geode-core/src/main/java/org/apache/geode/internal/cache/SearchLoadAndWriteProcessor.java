@@ -1504,7 +1504,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       try {
         // check to see if we would have to wait on initialization latch (if global)
         // if so abort and reply with null
-        InternalCache cache = dm.getCache();
+        InternalCache cache = dm.getExistingCache();
         if (cache.isGlobalRegionInitializing(this.regionName)) {
           replyWithNull(dm);
           if (logger.isDebugEnabled()) {
@@ -1513,7 +1513,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           return;
         }
 
-        LocalRegion region = (LocalRegion) dm.getCache().getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(this.regionName);
         Object o = null;
 
         if (region != null) {
@@ -1849,7 +1849,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        LocalRegion region = (LocalRegion) dm.getCache().getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(this.regionName);
         if (region != null) {
           setClearCountReference(region);
           try {
@@ -2208,7 +2208,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = dm.getCache();
+        InternalCache gfc = dm.getExistingCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
@@ -2465,7 +2465,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = dm.getCache();
+        InternalCache gfc = dm.getExistingCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
