@@ -29,7 +29,6 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
@@ -48,47 +47,33 @@ public class ShowLogCommand implements GfshCommand {
       @CliOption(key = CliStrings.SHOW_LOG_LINE_NUM, unspecifiedDefaultValue = "0",
           help = CliStrings.SHOW_LOG_LINE_NUM_HELP) int numberOfLines) {
     Result result;
-    try {
-      InternalCache cache = getCache();
 
-      DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-      if (targetMember == null) {
-        ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(memberNameOrId + " " + CliStrings.SHOW_LOG_MSG_MEMBER_NOT_FOUND);
-        return (ResultBuilder.buildResult(errorResultData));
-      }
+    InternalCache cache = getCache();
+    DistributedMember targetMember = getMember(memberNameOrId);
+    MemberMXBean targetMemberMXBean = getMemberMxBean(cache, targetMember);
 
-      MemberMXBean targetMemberMXBean = getMemberMxBean(cache, targetMember);
-
-      if (numberOfLines > ManagementConstants.MAX_SHOW_LOG_LINES) {
-        numberOfLines = ManagementConstants.MAX_SHOW_LOG_LINES;
-      }
-      if (numberOfLines == 0 || numberOfLines < 0) {
-        numberOfLines = ManagementConstants.DEFAULT_SHOW_LOG_LINES;
-      }
-      InfoResultData resultData = ResultBuilder.createInfoResultData();
-      if (targetMemberMXBean != null) {
-        String log = targetMemberMXBean.showLog(numberOfLines);
-        if (log != null) {
-          resultData.addLine(log);
-        } else {
-          resultData.addLine(CliStrings.SHOW_LOG_NO_LOG);
-        }
-      } else {
-        ErrorResultData errorResultData =
-            ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                .addLine(memberNameOrId + CliStrings.SHOW_LOG_MSG_MEMBER_NOT_FOUND);
-        return (ResultBuilder.buildResult(errorResultData));
-      }
-
-      result = ResultBuilder.buildResult(resultData);
-
-    } catch (Exception e) {
-      result = ResultBuilder
-          .createGemFireErrorResult(CliStrings.SHOW_LOG_ERROR + CliUtil.stackTraceAsString(e));
+    if (numberOfLines > ManagementConstants.MAX_SHOW_LOG_LINES) {
+      numberOfLines = ManagementConstants.MAX_SHOW_LOG_LINES;
     }
-    return result;
+    if (numberOfLines == 0 || numberOfLines < 0) {
+      numberOfLines = ManagementConstants.DEFAULT_SHOW_LOG_LINES;
+    }
+    InfoResultData resultData = ResultBuilder.createInfoResultData();
+    if (targetMemberMXBean != null) {
+      String log = targetMemberMXBean.showLog(numberOfLines);
+      if (log != null) {
+        resultData.addLine(log);
+      } else {
+        resultData.addLine(CliStrings.SHOW_LOG_NO_LOG);
+      }
+    } else {
+      ErrorResultData errorResultData =
+          ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
+              .addLine(memberNameOrId + CliStrings.SHOW_LOG_MSG_MEMBER_NOT_FOUND);
+      return (ResultBuilder.buildResult(errorResultData));
+    }
+
+    return ResultBuilder.buildResult(resultData);
   }
 
   public MemberMXBean getMemberMxBean(InternalCache cache, DistributedMember targetMember) {

@@ -155,8 +155,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
 
     String output = gfsh.getGfshOutput();
-    assertThat(output).contains("Member not found");
-
+    assertThat(output).contains("Member NotAValidMember could not be found");
   }
 
   private static boolean allMembersAreConnected() {

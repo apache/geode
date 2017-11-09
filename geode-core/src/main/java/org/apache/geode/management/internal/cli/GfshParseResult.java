@@ -128,4 +128,9 @@ public class GfshParseResult extends ParseResult {
     }
     return null;
   }
+
+  @Override
+  public String toString() {
+    return this.userInput;
+  }
 }

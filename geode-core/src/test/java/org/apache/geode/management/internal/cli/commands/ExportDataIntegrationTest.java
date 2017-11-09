@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,8 +94,8 @@ public class ExportDataIntegrationTest {
         .addOption(CliStrings.MEMBER, invalidMemberName)
         .addOption(CliStrings.EXPORT_DATA__REGION, TEST_REGION_NAME)
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(invalidMemberCommand);
-    assertThat(gfsh.getGfshOutput()).contains("Member " + invalidMemberName + " not found");
+    gfsh.executeAndAssertThat(invalidMemberCommand)
+        .containsOutput("Member " + invalidMemberName + " could not be found");
   }
 
   @Test
@@ -125,15 +124,6 @@ public class ExportDataIntegrationTest {
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeCommand(missingRegionCommand);
-    assertThat(gfsh.getGfshOutput()).contains("You should specify option");
-  }
-
-  @Test
-  public void testMissingMember() throws Exception {
-    String missingMemberCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
-        .addOption(CliStrings.EXPORT_DATA__REGION, TEST_REGION_NAME)
-        .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(missingMemberCommand);
     assertThat(gfsh.getGfshOutput()).contains("You should specify option");
   }
 

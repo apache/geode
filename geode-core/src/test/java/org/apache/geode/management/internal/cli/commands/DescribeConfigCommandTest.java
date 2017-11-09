@@ -15,15 +15,24 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class GatewayCommandsUtils {
-  public static void accumulateStartResult(TabularResultData resultData, String member,
-      String Status, String message) {
-    if (member != null) {
-      resultData.accumulate("Member", member);
-    }
-    resultData.accumulate("Result", Status);
-    resultData.accumulate("Message", message);
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
+
+
+@Category(UnitTest.class)
+public class DescribeConfigCommandTest {
+
+  @ClassRule
+  public static GfshParserRule parser = new GfshParserRule();
+
+  @Test
+  public void describeConfigWithoutMemberName() throws Exception {
+    assertThat(parser.parse("describe config")).isNull();
   }
 }

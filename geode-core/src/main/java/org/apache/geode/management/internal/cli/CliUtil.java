@@ -34,8 +34,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
@@ -62,7 +60,7 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.cli.functions.MembersForRegionFunction;
+import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -291,7 +289,7 @@ public class CliUtil {
     }
 
     if ((members.length > 0) && (groups.length > 0)) {
-      throw new IllegalArgumentException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
+      throw new UserErrorException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
     }
 
     if (members.length == 0 && groups.length == 0) {
@@ -303,7 +301,7 @@ public class CliUtil {
     for (String memberNameOrId : members) {
       for (DistributedMember member : membersToConsider) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equals(member.getName())) {
+            || memberNameOrId.equalsIgnoreCase(member.getName())) {
           matchingMembers.add(member);
         }
       }
@@ -327,7 +325,7 @@ public class CliUtil {
       Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
       for (DistributedMember member : memberSet) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equals(member.getName())) {
+            || memberNameOrId.equalsIgnoreCase(member.getName())) {
           memberFound = member;
           break;
         }
@@ -690,54 +688,6 @@ public class CliUtil {
     buffer.append("[").append(p.getProxyID()).append(":port=").append(p.getRemotePort())
         .append(":primary=").append(p.isPrimary()).append("]");
     return buffer.toString();
-  }
-
-  public static Set<DistributedMember> getMembersForeRegionViaFunction(InternalCache cache,
-      String regionPath, boolean returnAll) {
-    try {
-      Set<DistributedMember> regionMembers = new HashSet<>();
-      MembersForRegionFunction membersForRegionFunction = new MembersForRegionFunction();
-      FunctionService.registerFunction(membersForRegionFunction);
-      Set<DistributedMember> targetMembers = CliUtil.getAllMembers(cache);
-      List<?> resultList = (List<?>) CliUtil
-          .executeFunction(membersForRegionFunction, regionPath, targetMembers).getResult();
-
-      for (Object object : resultList) {
-        try {
-          if (object instanceof Exception) {
-            LogWrapper.getInstance().warning(
-                "Exception in getMembersForeRegionViaFunction " + ((Throwable) object).getMessage(),
-                ((Throwable) object));
-            continue;
-          } else if (object instanceof Throwable) {
-            LogWrapper.getInstance().warning(
-                "Exception in getMembersForeRegionViaFunction " + ((Throwable) object).getMessage(),
-                ((Throwable) object));
-            continue;
-          }
-          if (object != null) {
-            Map<String, String> memberDetails = (Map<String, String>) object;
-            for (Entry<String, String> entry : memberDetails.entrySet()) {
-              Set<DistributedMember> dsMems = CliUtil.getAllMembers(cache);
-              for (DistributedMember mem : dsMems) {
-                if (mem.getId().equals(entry.getKey())) {
-                  regionMembers.add(mem);
-                  if (!returnAll) {
-                    return regionMembers;
-                  }
-                }
-              }
-            }
-          }
-        } catch (Exception ex) {
-          LogWrapper.getInstance().warning("getMembersForeRegionViaFunction exception " + ex);
-        }
-      }
-      return regionMembers;
-    } catch (Exception e) {
-      LogWrapper.getInstance().warning("getMembersForeRegionViaFunction exception " + e);
-      return null;
-    }
   }
 
 }

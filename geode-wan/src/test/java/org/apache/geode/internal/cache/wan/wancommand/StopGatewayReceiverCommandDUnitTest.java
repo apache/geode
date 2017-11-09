@@ -91,19 +91,11 @@ public class StopGatewayReceiverCommandDUnitTest {
 
     server1.invoke(() -> createReceiver(locator1Port));
 
-    final DistributedMember server1DM = (DistributedMember) server1.invoke(getMemberIdCallable());
+    final DistributedMember server1DM = server1.invoke(getMemberIdCallable());
     String command = CliStrings.STOP_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "="
         + server1DM.getId() + " --" + CliStrings.GROUP + "=RG1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter()
-          .info("testStopGatewayReceiver_ErrorConditions stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-      assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
-    } else {
-      fail("testStopGatewayReceiver_ErrorConditions failed as did not get CommandResult");
-    }
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
   }
 
   @Test

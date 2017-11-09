@@ -56,11 +56,7 @@ public class ExportDataCommand implements GfshCommand {
           help = CliStrings.EXPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
     getSecurityService().authorize(Resource.DATA, Operation.READ, regionName);
-    final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-    if (targetMember == null) {
-      return ResultBuilder.createUserErrorResult(
-          CliStrings.format(CliStrings.EXPORT_DATA__MEMBER__NOT__FOUND, memberNameOrId));
-    }
+    final DistributedMember targetMember = getMember(memberNameOrId);
 
     Optional<Result> validationResult = validatePath(filePath, dirPath, parallel);
     if (validationResult.isPresent()) {

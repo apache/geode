@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -117,32 +116,31 @@ public interface GfshCommand extends CommandMarker {
     return Gfsh.getCurrentInstance();
   }
 
-  @SuppressWarnings("deprecated")
-  default DistributedMember getMember(final InternalCache cache, final String memberName) {
-    for (final DistributedMember member : getMembers(cache)) {
-      if (memberName.equalsIgnoreCase(member.getName())
-          || memberName.equalsIgnoreCase(member.getId())) {
-        return member;
-      }
-    }
+  /**
+   * this either returns a non-null member or throw an exception if member is not found.
+   */
+  default DistributedMember getMember(final String memberName) {
+    DistributedMember member = CliUtil.getDistributedMemberByNameOrId(memberName);
 
-    throw new MemberNotFoundException(
-        CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
+    if (member == null) {
+      throw new MemberNotFoundException(
+          CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
+    }
+    return member;
   }
 
   /**
-   * Gets all members in the GemFire distributed system/cache.
-   *
-   * @param cache the GemFire cache.
-   * @return all members in the GemFire distributed system/cache.
-   * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.internal.cache.InternalCache)
-   * @deprecated use CliUtil.getAllMembers(org.apache.geode.cache.Cache) instead
+   * Gets all members in the GemFire distributed system/cache, including locators
    */
-  @Deprecated
-  default Set<DistributedMember> getMembers(final InternalCache cache) {
-    Set<DistributedMember> members = new HashSet<>(cache.getMembers());
-    members.add(cache.getDistributedSystem().getDistributedMember());
-    return members;
+  default Set<DistributedMember> getAllMembers(final InternalCache cache) {
+    return CliUtil.getAllMembers(cache);
+  }
+
+  /**
+   * Get All members, exclusing locators
+   */
+  default Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
+    return CliUtil.getAllNormalMembers(cache);
   }
 
   default Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {

@@ -57,11 +57,7 @@ public class ImportDataCommand implements GfshCommand {
 
     getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionName);
 
-    final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-    if (targetMember == null) {
-      return ResultBuilder.createUserErrorResult(
-          CliStrings.format(CliStrings.IMPORT_DATA__MEMBER__NOT__FOUND, memberNameOrId));
-    }
+    final DistributedMember targetMember = getMember(memberNameOrId);
 
     Optional<Result> validationResult = validatePath(filePath, dirPath, parallel);
     if (validationResult.isPresent()) {

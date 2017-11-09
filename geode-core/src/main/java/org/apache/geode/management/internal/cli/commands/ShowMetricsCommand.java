@@ -43,7 +43,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -78,11 +77,7 @@ public class ShowMetricsCommand implements GfshCommand {
     Result result;
     DistributedMember member = null;
     if (memberNameOrId != null) {
-      member = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-      if (member == null) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberNameOrId));
-      }
+      member = getMember(memberNameOrId);
     }
 
     if (regionName != null) {

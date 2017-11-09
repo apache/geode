@@ -79,29 +79,13 @@ public class PauseGatewaySenderCommandDUnitTest {
 
   @Test
   public void testPauseGatewaySender_ErrorConditions() throws Exception {
-
-    Integer locator1Port = locatorSite1.getPort();
-
-    // setup servers in Site #1
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
-    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-
-    final DistributedMember vm1Member = (DistributedMember) server1.invoke(getMemberIdCallable());
+    server1 = locatorServerStartupRule.startServerVM(3, locatorSite1.getPort());
+    final DistributedMember vm1Member = server1.invoke(getMemberIdCallable());
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --" + CliStrings.PAUSE_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId() + " --" + CliStrings.GROUP
         + "=SenderGroup1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    if (cmdResult != null) {
-      String strCmdResult = cmdResult.toString();
-      getLogWriter().info("testPauseGatewaySender stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-      assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
-    } else {
-      fail("testPauseGatewaySender failed as did not get CommandResult");
-    }
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
   }
 
   /**
@@ -120,7 +104,7 @@ public class PauseGatewaySenderCommandDUnitTest {
     server1.invoke(() -> startSender("ln"));
     server1.invoke(() -> verifySenderState("ln", true, false));
 
-    final DistributedMember vm1Member = (DistributedMember) server1.invoke(getMemberIdCallable());
+    final DistributedMember vm1Member = server1.invoke(getMemberIdCallable());
     pause(10000);
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --" + CliStrings.PAUSE_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId();

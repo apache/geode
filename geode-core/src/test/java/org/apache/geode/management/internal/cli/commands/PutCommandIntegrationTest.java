@@ -15,12 +15,21 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.management.internal.cli.dto.Car;
+import org.apache.geode.management.internal.cli.dto.Key;
+import org.apache.geode.management.internal.cli.dto.Key1;
+import org.apache.geode.management.internal.cli.dto.ObjectWithCharAttr;
+import org.apache.geode.management.internal.cli.dto.Value;
+import org.apache.geode.management.internal.cli.dto.Value2;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -39,16 +48,81 @@ public class PutCommandIntegrationTest {
   public static RuleChain chain = RuleChain.outerRule(server).around(gfsh);
 
 
+  @After
+  public void after() throws Exception {
+    // clear the region after each test
+    server.getCache().getRegion("testRegion").clear();
+  }
+
   @Test
   public void putWithoutSlash() throws Exception {
     gfsh.executeAndAssertThat("put --region=testRegion --key=key1 --value=value1")
         .statusIsSuccess();
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value1");
   }
 
 
   @Test
   public void putWithSlash() throws Exception {
     gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value1")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value1");
+  }
+
+  @Test
+  // Bug : 51587 : GFSH command failing when ; is present in either key or value in put operation
+  public void putWithSemicoln() throws Exception {
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1;key1 --value=value1;value1")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1;key1"))
+        .isEqualTo("value1;value1");
+  }
+
+  @Test
+  public void putIfAbsent() throws Exception {
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value1")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value2 --skip-if-exists")
         .statusIsSuccess();
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value1");
+  }
+
+  @Test
+  public void putWithSimpleJson() throws Exception {
+    gfsh.executeAndAssertThat(
+        "put --region=testRegion --key=('key':'1') --value=('value':'1') " + "--key-class="
+            + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName())
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+  }
+
+  @Test
+  public void putWithComplicatedJson() throws Exception {
+    String keyJson = "('id':'1','name':'name1')";
+    String stateJson =
+        "('stateName':'State1','population':10,'capitalCity':'capital1','areaInSqKm':100)";
+    String carJson =
+        "\"('attributes':?map,'make':'make1','model':'modle1','colors':?list,'attributeSet':?set)\"";
+
+    // put the state json
+    String command =
+        "put --region=testRegion --key=" + keyJson + " --value=" + stateJson + " --key-class="
+            + Key1.class.getCanonicalName() + " --value-class=" + Value2.class.getCanonicalName();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    // put the car json
+    String list = "['red','white','blue']";
+    String set = "['red','white','blue']";
+    String map = "{'power':'90hp'}";
+    String valueJson = carJson.replaceAll("\\?list", list);
+    valueJson = valueJson.replaceAll("\\?set", set);
+    valueJson = valueJson.replaceAll("\\?map", map);
+    command = "put --region=testRegion --key=" + keyJson + " --value=" + valueJson + " --key-class="
+        + Key1.class.getCanonicalName() + " --value-class=" + Car.class.getCanonicalName();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    // put with json with single character field
+    command = "put --region=testRegion --key-class=" + ObjectWithCharAttr.class.getCanonicalName()
+        + " --value=456 --key=('name':'hesdfdsfy2','t':456,'c':'d')";
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 }

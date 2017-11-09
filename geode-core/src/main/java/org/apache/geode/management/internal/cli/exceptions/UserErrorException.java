@@ -14,22 +14,24 @@
  */
 package org.apache.geode.management.internal.cli.exceptions;
 
-public abstract class CliException extends Exception {
+import org.apache.geode.GemFireException;
+
+public class UserErrorException extends GemFireException {
   private static final long serialVersionUID = -7603040667204839200L;
 
-  public CliException() {
+  public UserErrorException() {
     this(null, null);
   }
 
-  public CliException(String message) {
+  public UserErrorException(String message) {
     this(message, null);
   }
 
-  public CliException(Throwable cause) {
+  public UserErrorException(Throwable cause) {
     super(null, cause);
   }
 
-  public CliException(String message, Throwable cause) {
+  public UserErrorException(String message, Throwable cause) {
     super(message, cause);
   }
 }

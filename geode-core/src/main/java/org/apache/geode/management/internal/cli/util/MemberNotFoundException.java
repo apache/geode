@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import org.apache.geode.GemFireException;
+import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 
 /**
  * The MemberNotFoundException is a GemFirException indicating that a member by name could not be
@@ -27,7 +27,7 @@ import org.apache.geode.GemFireException;
  */
 // TODO this GemFireException should be moved to a more appropriate package!
 @SuppressWarnings("unused")
-public class MemberNotFoundException extends GemFireException {
+public class MemberNotFoundException extends UserErrorException {
   private static final long serialVersionUID = 5686788909239181174L;
 
   public MemberNotFoundException() {}

@@ -13,17 +13,29 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.management.internal.cli.dto;
 
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import java.io.Serializable;
 
-public class GatewayCommandsUtils {
-  public static void accumulateStartResult(TabularResultData resultData, String member,
-      String Status, String message) {
-    if (member != null) {
-      resultData.accumulate("Member", member);
+public class Key implements Serializable {
+  private int key;
+
+  public int getKey() {
+    return key;
+  }
+
+  public void setKey(int id) {
+    this.key = id;
+  }
+
+  public boolean equals(Object other) {
+    if (!(other instanceof Key)) {
+      return false;
     }
-    resultData.accumulate("Result", Status);
-    resultData.accumulate("Message", message);
+    return ((Key) other).key == this.key;
+  }
+
+  public int hashCode() {
+    return key;
   }
 }

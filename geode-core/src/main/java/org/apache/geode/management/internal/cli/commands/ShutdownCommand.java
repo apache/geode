@@ -63,7 +63,6 @@ public class ShutdownCommand implements GfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.INCLUDE_LOCATORS_HELP) boolean shutdownLocators) {
     try {
-
       if (userSpecifiedTimeout < Integer.parseInt(DEFAULT_TIME_OUT)) {
         return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN__MSG__IMPROPER_TIMEOUT);
       }
@@ -82,7 +81,7 @@ public class ShutdownCommand implements GfshCommand {
 
       String managerName = cache.getJmxManagerAdvisor().getDistributionManager().getId().getId();
 
-      final DistributedMember manager = CliUtil.getDistributedMemberByNameOrId(managerName);
+      final DistributedMember manager = getMember(managerName);
 
       dataNodes.remove(manager);
 

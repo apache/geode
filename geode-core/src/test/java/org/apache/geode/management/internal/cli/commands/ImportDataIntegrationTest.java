@@ -128,7 +128,8 @@ public class ImportDataIntegrationTest {
         .addOption(CliStrings.IMPORT_DATA__REGION, TEST_REGION_NAME)
         .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeCommand(invalidMemberCommand);
-    assertThat(gfsh.getGfshOutput()).contains("Member " + invalidMemberName + " not found");
+    assertThat(gfsh.getGfshOutput())
+        .contains("Member " + invalidMemberName + " could not be found");
   }
 
   @Test
@@ -149,24 +150,6 @@ public class ImportDataIntegrationTest {
     gfsh.executeCommand(invalidFileCommand);
     assertThat(gfsh.getGfshOutput())
         .contains("Invalid file type, the file extension must be \".gfd\"");
-  }
-
-  @Test
-  public void testMissingRegion() throws Exception {
-    String missingRegionCommand = new CommandStringBuilder(CliStrings.IMPORT_DATA)
-        .addOption(CliStrings.MEMBER, server.getName())
-        .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(missingRegionCommand);
-    assertThat(gfsh.getGfshOutput()).contains("You should specify option");
-  }
-
-  @Test
-  public void testMissingMember() throws Exception {
-    String missingMemberCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
-        .addOption(CliStrings.IMPORT_DATA__REGION, TEST_REGION_NAME)
-        .addOption(CliStrings.IMPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(missingMemberCommand);
-    assertThat(gfsh.getGfshOutput()).contains("You should specify option");
   }
 
   @Test

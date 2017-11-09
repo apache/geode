@@ -53,7 +53,7 @@ public class PutCommand implements GfshCommand {
       @CliOption(key = {CliStrings.PUT__VALUEKLASS},
           help = CliStrings.PUT__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = {CliStrings.PUT__PUTIFABSENT}, help = CliStrings.PUT__PUTIFABSENT__HELP,
-          unspecifiedDefaultValue = "false") boolean putIfAbsent) {
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean putIfAbsent) {
 
     InternalCache cache = getCache();
     cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath);
