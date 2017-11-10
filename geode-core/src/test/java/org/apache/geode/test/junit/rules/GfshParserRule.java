@@ -34,6 +34,7 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {
 
@@ -79,6 +80,11 @@ public class GfshParserRule extends ExternalResource {
 
     return (CommandResult) ReflectionUtils.invokeMethod(parseResult.getMethod(), instance,
         parseResult.getArguments());
+  }
+
+  public <T> CommandResultAssert executeAndAssertThat(T instance, String command){
+    CommandResult result = executeCommandWithInstance(instance, command);
+    return new CommandResultAssert(result);
   }
 
   public CommandCandidate complete(String command) {
