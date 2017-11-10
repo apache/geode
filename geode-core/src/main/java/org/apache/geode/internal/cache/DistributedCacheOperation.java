@@ -1289,11 +1289,24 @@ public abstract class DistributedCacheOperation {
      */
     protected void dispatchElidedEvent(LocalRegion rgn, EntryEventImpl ev) {
       if (logger.isDebugEnabled()) {
-        logger.debug("dispatching elided event: {}", ev);
+        logger.debug("GGG:dispatching elided event: {}", ev, new Exception());
       }
       ev.isConcurrencyConflict(true);
       rgn.generateLocalFilterRouting(ev);
       rgn.notifyBridgeClients(ev);
+      rgn.notifyGatewaySender(getOperation(ev), ev);
+    }
+
+    private EnumListenerEvent getOperation(EntryEventImpl ev) {
+      if (ev.getOperation().isInvalidate()) {
+        return EnumListenerEvent.AFTER_INVALIDATE;
+      } else if (ev.getOperation().isDestroy()) {
+        return EnumListenerEvent.AFTER_DESTROY;
+      } else if (ev.getOperation().isUpdate()) {
+        return EnumListenerEvent.AFTER_UPDATE;
+      } else {
+        return EnumListenerEvent.AFTER_CREATE;
+      }
     }
 
     protected abstract InternalCacheEvent createEvent(DistributedRegion rgn)

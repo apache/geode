@@ -95,9 +95,6 @@ public class DestroyOperation extends DistributedCacheOperation {
 
       } catch (EntryNotFoundException e) {
         dispatchElidedEvent(rgn, ev);
-        if (!ev.isConcurrencyConflict()) {
-          rgn.notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, ev);
-        }
         throw e;
       } catch (CacheWriterException e) {
         throw new Error(

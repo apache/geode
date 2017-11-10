@@ -291,6 +291,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
             if (o != null && o instanceof GatewaySenderEventImpl) {
               GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
               EventWrapper unprocessedEvent = this.unprocessedEvents.remove(ge.getEventId());
+              if (unprocessedEvent != null && ge.isConcurrencyConflict) {
+                logger.info(
+                    "GGG:secondary after removed by handleFailover:" + unprocessedEvent + ":" + ge);
+              }
               if (unprocessedEvent != null) {
                 unprocessedEvent.event.release();
                 if (this.unprocessedEvents.isEmpty()) {
@@ -379,6 +383,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (m != null) {
         for (EventWrapper ew : m.values()) {
           GatewaySenderEventImpl gatewayEvent = ew.event;
+          logger.info("GGG:releaseUnprocessedEvents:" + gatewayEvent);
           gatewayEvent.release();
         }
         this.unprocessedEvents = null;
@@ -632,6 +637,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         return;
       // now we can safely use the unprocessedEvents field
       EventWrapper ew = this.unprocessedEvents.remove(gatewayEvent.getEventId());
+      if (ew != null && gatewayEvent.isConcurrencyConflict) {
+        logger.info("GGG:secondary after removed by destroy listener:" + ew + ":" + gatewayEvent);
+      }
+
       if (ew != null) {
         ew.event.release();
         statistics.incUnprocessedEventsRemovedByPrimary();
@@ -651,8 +660,16 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         return;
       // now we can safely use the unprocessedEvents field
       EventWrapper ew = this.unprocessedEvents.remove(gatewayEvent.getEventId());
+      if (ew != null && gatewayEvent.isConcurrencyConflict) {
+        logger.info("GGG:secondary after removed by create listener:" + ew + ":" + gatewayEvent,
+            new Exception());
+      }
 
       if (ew == null) {
+        if (gatewayEvent.isConcurrencyConflict) {
+          logger.info("GGG:secondary before add to by create listener:" + gatewayEvent,
+              new Exception());
+        }
         // first time for the event
         if (logger.isTraceEnabled()) {
           logger.trace("{}: fromPrimary event {} : {}->{} added to unprocessed token map",
@@ -711,8 +728,14 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       // @todo add an assertion that !getPrimary()
       // now we can safely use the unprocessedEvents field
       Long v = this.unprocessedTokens.remove(gatewayEvent.getEventId());
+      if (v != null && gatewayEvent.isConcurrencyConflict) {
+        logger.info("GGG:secondary after removed token:" + v + ":" + gatewayEvent);
+      }
 
       if (v == null) {
+        if (gatewayEvent.isConcurrencyConflict) {
+          logger.info("GGG:secondary before add to:" + gatewayEvent, new Exception());
+        }
         // first time for the event
         if (logger.isTraceEnabled()) {
           logger.trace("{}: fromSecondary event {}:{}->{} added from unprocessed events map",

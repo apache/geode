@@ -518,12 +518,17 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
               // version is < 7.0.1, especially to prevent another loop over events.
               if (!sendUpdateVersionEvents
                   && event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
-                if (isTraceEnabled) {
-                  logger.trace(
-                      "Update Event Version event: {} removed from Gateway Sender queue: {}", event,
-                      sender);
-                }
+                logger.debug("Update Event Version event: {} removed from Gateway Sender queue: {}",
+                    event, sender);
 
+                itr.remove();
+                statistics.incEventsNotQueued();
+                continue;
+              }
+              if (((GatewaySenderEventImpl) event).isConcurrencyConflict) {
+                if (isDebugEnabled) {
+                  logger.debug("primary should ignore the concurrency conflict event:" + event);
+                }
                 itr.remove();
                 statistics.incEventsNotQueued();
                 continue;
