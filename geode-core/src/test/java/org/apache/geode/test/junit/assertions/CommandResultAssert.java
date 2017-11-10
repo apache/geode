@@ -17,8 +17,6 @@ package org.apache.geode.test.junit.assertions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
@@ -27,14 +25,17 @@ import org.json.JSONArray;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
 
-public class GfshShellConnectionRuleAssert
-    extends AbstractAssert<GfshShellConnectionRuleAssert, GfshShellConnectionRuleExecution> {
-  public GfshShellConnectionRuleAssert(GfshShellConnectionRule gfsh, CommandResult commandResult) {
-    super(new GfshShellConnectionRuleExecution(gfsh, commandResult),
-        GfshShellConnectionRuleAssert.class);
+public class CommandResultAssert
+    extends AbstractAssert<CommandResultAssert, CommandResultExecution> {
+
+  public CommandResultAssert(CommandResult commandResult) {
+    super(new CommandResultExecution(commandResult.toJson(), commandResult), CommandResultAssert.class);
+  }
+
+  public CommandResultAssert(String output, CommandResult commandResult) {
+    super(new CommandResultExecution(output, commandResult), CommandResultAssert.class);
   }
 
   /**
@@ -57,8 +58,8 @@ public class GfshShellConnectionRuleAssert
    * <code> containsKeyValuePair("Key Class", "java.lang.String"); </code>
    * </pre>
    */
-  public GfshShellConnectionRuleAssert containsKeyValuePair(String key, String value) {
-    assertThat(actual.getGfshOutput()).containsPattern(key + "\\s+: " + value);
+  public CommandResultAssert containsKeyValuePair(String key, String value) {
+    assertThat(actual.getOutput()).containsPattern(key + "\\s+: " + value);
 
     return this;
   }
@@ -66,9 +67,9 @@ public class GfshShellConnectionRuleAssert
   /**
    * Verifies the gfsh output contains the given output
    */
-  public GfshShellConnectionRuleAssert containsOutput(String... expectedOutputs) {
+  public CommandResultAssert containsOutput(String... expectedOutputs) {
     for (String expectedOutput : expectedOutputs) {
-      assertThat(actual.getGfshOutput()).contains(expectedOutput);
+      assertThat(actual.getOutput()).contains(expectedOutput);
     }
 
     return this;
@@ -77,9 +78,9 @@ public class GfshShellConnectionRuleAssert
   /**
    * Verifies the gfsh output does not contain the given output
    */
-  public GfshShellConnectionRuleAssert doesNotContainOutput(String... expectedOutputs) {
+  public CommandResultAssert doesNotContainOutput(String... expectedOutputs) {
     for (String expectedOutput : expectedOutputs) {
-      assertThat(actual.getGfshOutput()).doesNotContain(expectedOutput);
+      assertThat(actual.getOutput()).doesNotContain(expectedOutput);
     }
 
     return this;
@@ -88,9 +89,9 @@ public class GfshShellConnectionRuleAssert
   /**
    * Verifies that gfsh executed with status OK
    */
-  public GfshShellConnectionRuleAssert statusIsSuccess() {
+  public CommandResultAssert statusIsSuccess() {
     CommandResult result = actual.getCommandResult();
-    Assertions.assertThat(result.getStatus()).describedAs(actual.getGfsh().getGfshOutput())
+    Assertions.assertThat(result.getStatus()).describedAs(actual.getOutput())
         .isEqualTo(Result.Status.OK);
 
     return this;
@@ -99,9 +100,9 @@ public class GfshShellConnectionRuleAssert
   /**
    * Verifies that gfsh executed with status ERROR
    */
-  public GfshShellConnectionRuleAssert statusIsError() {
+  public CommandResultAssert statusIsError() {
     CommandResult result = actual.getCommandResult();
-    Assertions.assertThat(result.getStatus()).describedAs(actual.getGfsh().getGfshOutput())
+    Assertions.assertThat(result.getStatus()).describedAs(actual.getOutput())
         .isEqualTo(Result.Status.ERROR);
 
     return this;
@@ -127,7 +128,7 @@ public class GfshShellConnectionRuleAssert
    * </code>
    * </pre>
    */
-  public GfshShellConnectionRuleAssert tableHasColumnWithExactValuesInExactOrder(String header,
+  public CommandResultAssert tableHasColumnWithExactValuesInExactOrder(String header,
       Object... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
     Object content = resultContentJSON.get(header);
@@ -163,7 +164,7 @@ public class GfshShellConnectionRuleAssert
    * <code> tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region2", "/region1"); </code>
    * </pre>
    */
-  public GfshShellConnectionRuleAssert tableHasColumnWithExactValuesInAnyOrder(String header,
+  public CommandResultAssert tableHasColumnWithExactValuesInAnyOrder(String header,
       Object... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
     Object content = resultContentJSON.get(header);
@@ -183,7 +184,7 @@ public class GfshShellConnectionRuleAssert
    * Verifies that each of the actual values in the column with the given header contains at least
    * one of the expectedValues.
    */
-  public GfshShellConnectionRuleAssert tableHasColumnWithValuesContaining(String header,
+  public CommandResultAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
     Object content = resultContentJSON.get(header);
@@ -208,13 +209,13 @@ public class GfshShellConnectionRuleAssert
     return this;
   }
 
-  public GfshShellConnectionRuleAssert hasResult() {
+  public CommandResultAssert hasResult() {
     containsKeyValuePair("Result", "true");
 
     return this;
   }
 
-  public GfshShellConnectionRuleAssert hasNoResult() {
+  public CommandResultAssert hasNoResult() {
     containsKeyValuePair("Result", "false");
 
     return this;

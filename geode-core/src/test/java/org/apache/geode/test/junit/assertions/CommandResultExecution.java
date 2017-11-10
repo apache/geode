@@ -15,28 +15,21 @@
 package org.apache.geode.test.junit.assertions;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 
-public class GfshShellConnectionRuleExecution {
-  private GfshShellConnectionRule gfsh;
+public class CommandResultExecution {
   private CommandResult commandResult;
+  private String output;
 
-  public GfshShellConnectionRuleExecution(GfshShellConnectionRule gfsh,
-      CommandResult commandResult) {
-
-    this.gfsh = gfsh;
+  public CommandResultExecution(String output, CommandResult commandResult) {
+    this.output = output;
     this.commandResult = commandResult;
-  }
-
-  public GfshShellConnectionRule getGfsh() {
-    return gfsh;
   }
 
   public CommandResult getCommandResult() {
     return commandResult;
   }
 
-  public String getGfshOutput() {
-    return gfsh.getGfshOutput();
+  public String getOutput() {
+    return output;
   }
 }

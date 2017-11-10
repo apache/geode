@@ -59,7 +59,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.assertions.GfshShellConnectionRuleAssert;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -461,8 +461,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "field1:jon~");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field1");
 
-    GfshShellConnectionRuleAssert assertion =
-        gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    CommandResultAssert assertion = gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     try {
       assertion.tableHasColumnWithExactValuesInExactOrder("key", "A", "B", "C", "D");
