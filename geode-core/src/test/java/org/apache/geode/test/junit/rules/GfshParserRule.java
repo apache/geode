@@ -82,7 +82,7 @@ public class GfshParserRule extends ExternalResource {
         parseResult.getArguments());
   }
 
-  public <T> CommandResultAssert executeAndAssertThat(T instance, String command){
+  public <T> CommandResultAssert executeAndAssertThat(T instance, String command) {
     CommandResult result = executeCommandWithInstance(instance, command);
     return new CommandResultAssert(result);
   }
