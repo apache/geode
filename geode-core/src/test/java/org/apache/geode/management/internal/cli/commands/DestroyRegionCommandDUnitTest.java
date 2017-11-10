@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -61,15 +60,6 @@ public class DestroyRegionCommandDUnitTest {
   @Before
   public void before() throws Exception {
     gfsh.connectAndVerify(locator);
-  }
-
-  @After
-  public void after() throws Exception {
-    // destroy regions
-    gfsh.execute("destroy region --name=/Customer --if-exists");
-    gfsh.execute("destroy region --name=/Order --if-exists");
-    gfsh.execute("destroy region --name=/Customer_2 --if-exists");
-    gfsh.execute("destroy region --name=/Customer_3 --if-exists");
   }
 
   @Test

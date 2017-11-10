@@ -43,10 +43,10 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -142,8 +142,8 @@ public class DiskStoreCommandsJUnitTest {
     assertEquals(expectedDiskStoredDetails, actualDiskStoreDetails);
   }
 
-  @Test(expected = DiskStoreNotFoundException.class)
-  public void testGetDiskStoreDescriptionThrowsDiskStoreNotFoundException() {
+  @Test(expected = EntityNotFoundException.class)
+  public void testGetDiskStoreDescriptionThrowsEntityNotFoundException() {
     final String diskStoreName = "mockDiskStore";
     final String memberId = "mockMember";
 
@@ -159,7 +159,7 @@ public class DiskStoreCommandsJUnitTest {
         oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
-        will(throwException(new DiskStoreNotFoundException("expected")));
+        will(throwException(new EntityNotFoundException("expected")));
       }
     });
 
@@ -168,7 +168,7 @@ public class DiskStoreCommandsJUnitTest {
 
     try {
       describeCommand.getDiskStoreDescription(memberId, diskStoreName);
-    } catch (DiskStoreNotFoundException expected) {
+    } catch (EntityNotFoundException expected) {
       assertEquals("expected", expected.getMessage());
       throw expected;
     }
