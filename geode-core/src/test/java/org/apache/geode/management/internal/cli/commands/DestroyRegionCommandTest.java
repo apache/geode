@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -52,11 +53,22 @@ public class DestroyRegionCommandTest {
 
   private DestroyRegionCommand command;
   private CommandResult result;
+  private CliFunctionResult result1, result2;
 
   @Before
   public void before() throws Exception {
     command = spy(DestroyRegionCommand.class);
     doReturn(mock(InternalCache.class)).when(command).getCache();
+
+    ResultCollector collector = mock(ResultCollector.class);
+    doReturn(collector).when(command).executeFunction(any(), any(), any(Set.class));
+
+    List<CliFunctionResult> functionResults = new ArrayList<>();
+    doReturn(functionResults).when(collector).getResult();
+    result1 = mock(CliFunctionResult.class);
+    result2 = mock(CliFunctionResult.class);
+    functionResults.add(result1);
+    functionResults.add(result2);
   }
 
   @Test
@@ -89,17 +101,6 @@ public class DestroyRegionCommandTest {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any(), any());
-
-    ResultCollector collector = mock(ResultCollector.class);
-    doReturn(collector).when(command).executeFunction(any(), any(), any(Set.class));
-
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    doReturn(functionResults).when(collector).getResult();
-    CliFunctionResult result1 = mock(CliFunctionResult.class);
-    CliFunctionResult result2 = mock(CliFunctionResult.class);
-    functionResults.add(result1);
-    functionResults.add(result2);
-
     when(result1.isSuccessful()).thenReturn(true);
     when(result1.getMessage()).thenReturn("result1 message");
     when(result1.getXmlEntity()).thenReturn(mock(XmlEntity.class));
@@ -110,6 +111,27 @@ public class DestroyRegionCommandTest {
     result = parser.executeCommandWithInstance(command, "destroy region --name=test");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString()).contains("result2 message");
+
+
+    // verify that xmlEntiry returned by the result1 is not saved to Cluster config
+    verify(command, never()).persistClusterConfiguration(any(), any());
+  }
+
+  @Test
+  public void multipleResultReturnedWithOneException() throws Exception {
+    // mock this to pass the member search call
+    doReturn(Collections.singleton(DistributedMember.class)).when(command)
+        .findMembersForRegion(any(), any());
+    when(result1.isSuccessful()).thenReturn(true);
+    when(result1.getMessage()).thenReturn("result1 message");
+    when(result1.getXmlEntity()).thenReturn(mock(XmlEntity.class));
+
+    when(result2.isSuccessful()).thenReturn(false);
+    when(result2.getThrowable()).thenReturn(new IllegalArgumentException("something happened"));
+
+    assertThatThrownBy(
+        () -> parser.executeCommandWithInstance(command, "destroy region --name=test"))
+            .isInstanceOf(IllegalArgumentException.class);
 
     // verify that xmlEntiry returned by the result1 is not saved to Cluster config
     verify(command, never()).persistClusterConfiguration(any(), any());

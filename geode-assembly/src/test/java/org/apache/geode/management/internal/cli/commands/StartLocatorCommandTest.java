@@ -35,13 +35,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -55,16 +53,18 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(UnitTest.class)
 public class StartLocatorCommandTest {
-  private StartLocatorCommand locatorCommands;
+  private static final String FAKE_HOSTNAME = "someFakeHostname";
+  @Rule
+  public GfshParserRule commandRule = new GfshParserRule();
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  private StartLocatorCommand spy;
 
   @Before
   public void setup() {
-    locatorCommands = new StartLocatorCommand();
-  }
-
-  @After
-  public void tearDown() {
-    locatorCommands = null;
+    spy = Mockito.spy(StartLocatorCommand.class);
+    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
   }
 
   @Test
@@ -74,7 +74,7 @@ public class StartLocatorCommandTest {
         StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
             .concat(File.pathSeparator).concat(System.getProperty("java.class.path"))
             .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
-    String actualClasspath = locatorCommands.getLocatorClasspath(true, userClasspath);
+    String actualClasspath = spy.getLocatorClasspath(true, userClasspath);
     assertEquals(expectedClasspath, actualClasspath);
   }
 
@@ -89,8 +89,8 @@ public class StartLocatorCommandTest {
     gemfireProperties.setProperty(HTTP_SERVICE_PORT, "8089");
     gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
 
-    String[] commandLineElements = locatorCommands.createStartLocatorCommandLine(locatorLauncher,
-        null, null, gemfireProperties, null, false, new String[0], null, null);
+    String[] commandLineElements = spy.createStartLocatorCommandLine(locatorLauncher, null, null,
+        gemfireProperties, null, false, new String[0], null, null);
 
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
@@ -158,25 +158,6 @@ public class StartLocatorCommandTest {
       // http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionXX.html
       commandLine.add("-XXexitOnOutOfMemory");
     }
-  }
-
-  private static final String FAKE_HOSTNAME = "someFakeHostname";
-
-  @Rule
-  public GfshParserRule commandRule = new GfshParserRule();
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  private StartLocatorCommand spy;
-
-  @Before
-  public void before() throws Exception {
-    spy = Mockito.spy(StartLocatorCommand.class);
-    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
   }
 
   @Test

@@ -34,13 +34,11 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -53,16 +51,20 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(UnitTest.class)
 public class StartServerCommandTest {
-  private StartServerCommand serverCommands;
+  private static final String FAKE_HOSTNAME = "someFakeHostname";
+
+  @Rule
+  public GfshParserRule commandRule = new GfshParserRule();
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  private StartServerCommand spy;
 
   @Before
-  public void setup() {
-    serverCommands = new StartServerCommand();
-  }
-
-  @After
-  public void tearDown() {
-    serverCommands = null;
+  public void before() throws Exception {
+    spy = Mockito.spy(StartServerCommand.class);
+    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
   }
 
   @Test
@@ -71,7 +73,7 @@ public class StartServerCommandTest {
     String expectedClasspath =
         StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
             .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
-    String actualClasspath = serverCommands.getServerClasspath(false, userClasspath);
+    String actualClasspath = spy.getServerClasspath(false, userClasspath);
     assertEquals(expectedClasspath, actualClasspath);
   }
 
@@ -83,8 +85,8 @@ public class StartServerCommandTest {
         .setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f)
         .setSocketBufferSize(1024 * 1024).setMessageTimeToLive(93).build();
 
-    String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
-        null, new Properties(), null, false, new String[0], false, null, null);
+    String[] commandLineElements = spy.createStartServerCommandLine(serverLauncher, null, null,
+        new Properties(), null, false, new String[0], false, null, null);
 
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
@@ -124,8 +126,8 @@ public class StartServerCommandTest {
     gemfireProperties.setProperty(HTTP_SERVICE_PORT, "8080");
     gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
 
-    String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
-        null, gemfireProperties, null, false, new String[0], false, null, null);
+    String[] commandLineElements = spy.createStartServerCommandLine(serverLauncher, null, null,
+        gemfireProperties, null, false, new String[0], false, null, null);
 
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
@@ -155,25 +157,6 @@ public class StartServerCommandTest {
     }
     assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
         expectedCommandLineElements.isEmpty());
-  }
-
-  private static final String FAKE_HOSTNAME = "someFakeHostname";
-
-  @Rule
-  public GfshParserRule commandRule = new GfshParserRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-
-  private StartServerCommand spy;
-
-  @Before
-  public void before() throws Exception {
-    spy = Mockito.spy(StartServerCommand.class);
-    doReturn(mock(Gfsh.class)).when(spy).getGfsh();
   }
 
   @Test
