@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache.entries;
 
 
-import org.apache.geode.internal.cache.AbstractDiskLRURegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 
 /**

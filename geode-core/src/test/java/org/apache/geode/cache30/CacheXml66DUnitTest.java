@@ -15,7 +15,13 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -112,7 +118,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.functions.TestFunction;
-import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheTransactionManagerCreation;
@@ -2210,7 +2215,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     assertEquals(ea.getAlgorithm(), EvictionAlgorithm.LRU_MEMORY);
     assertEquals(ea.getAction(), EvictionAction.OVERFLOW_TO_DISK);
-    assertEquals(ea.getMaximum(), MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES);
+    assertEquals(ea.getMaximum(), EvictionAttributes.DEFAULT_MEMORY_MAXIMUM);
   }
 
   @Test

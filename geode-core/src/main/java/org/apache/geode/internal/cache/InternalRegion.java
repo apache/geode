@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.internal.index.IndexManager;
@@ -110,6 +113,12 @@ public interface InternalRegion<K, V>
 
   void invokeInvalidateCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
       final boolean callDispatchListenerEvent);
+
+  long getEvictions();
+
+  Region createSubregion(String subregionName, RegionAttributes attrs,
+      InternalRegionArguments internalRegionArgs)
+      throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException;
 
   void addCacheServiceProfile(CacheServiceProfile profile);
 

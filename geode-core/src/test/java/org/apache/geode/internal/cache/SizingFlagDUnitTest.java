@@ -44,9 +44,7 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
@@ -767,13 +765,13 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
   }
 
   private long getSizeFromEvictionStats(LocalRegion region) {
-    long result = region.getEvictionController().getLRUHelper().getStats().getCounter();
+    long result = region.getEvictionController().getStatistics().getCounter();
     // region.getCache().getLogger().info("DEBUG evictionSize=" + result);
     return result;
   }
 
   private long getEvictions(LocalRegion region) {
-    return region.getEvictionController().getLRUHelper().getStats().getEvictions();
+    return region.getEvictionController().getStatistics().getEvictions();
   }
 
   private void setDeltaRecalculatesSize(VM vm, final boolean shouldSizeChange) {

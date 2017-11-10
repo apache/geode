@@ -1,3 +1,5 @@
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -25,7 +27,7 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -69,7 +71,7 @@ public class VersionedThinDiskRegionEntryHeapLongKey extends VersionedThinDiskRe
   private int regionVersionLowBytes;
   private byte entryVersionHighByte;
   private byte distributedSystemId;
-  // ----------------------------------------- key code -------------------------------------------
+  // --------------------------------------- key fields -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private final long key;
 
@@ -129,7 +131,7 @@ public class VersionedThinDiskRegionEntryHeapLongKey extends VersionedThinDiskRe
   }
 
   @Override
-  public int updateAsyncEntrySize(final EnableLRU capacityController) {
+  public int updateAsyncEntrySize(final EvictionController evictionController) {
     throw new IllegalStateException("should never be called");
   }
 

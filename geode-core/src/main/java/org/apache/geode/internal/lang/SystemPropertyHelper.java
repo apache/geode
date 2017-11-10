@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.lang;
 
+import java.util.Optional;
+
 /**
  * The SystemPropertyHelper class is an helper class for accessing system properties used in geode.
  * The method name to get the system property should be the same as the system property name.
@@ -24,6 +26,10 @@ package org.apache.geode.internal.lang;
 public class SystemPropertyHelper {
   private static final String GEODE_PREFIX = "geode.";
   private static final String GEMFIRE_PREFIX = "gemfire.";
+
+  public static final String EVICTION_SCAN_MAX_THREADS = "EvictionScanMaxThreads";
+
+  public static final String EVICTION_SCAN_THRESHOLD_PERCENT = "EvictionScanThresholdPercent";
 
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
@@ -38,6 +44,19 @@ public class SystemPropertyHelper {
       return Boolean.getBoolean(GEODE_PREFIX + name);
     }
     return Boolean.getBoolean(GEMFIRE_PREFIX + name);
+  }
+
+  public static Optional<Integer> getProductIntegerProperty(String name) {
+    Integer propertyValue = Integer.getInteger(GEODE_PREFIX + name);
+    if (propertyValue == null) {
+      propertyValue = Integer.getInteger(GEMFIRE_PREFIX + name);
+    }
+
+    if (propertyValue != null) {
+      return Optional.of(propertyValue);
+    } else {
+      return Optional.empty();
+    }
   }
 
   /**

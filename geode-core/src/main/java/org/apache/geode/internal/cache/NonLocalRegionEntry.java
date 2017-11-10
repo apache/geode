@@ -31,18 +31,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.CachedDeserializable;
-import org.apache.geode.internal.cache.CachedDeserializableFactory;
-import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
-import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.RegionClearedException;
-import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -237,7 +227,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   /** update the value held in this non-local region entry */
-  public void setCachedValue(Object newValue) {
+  void setCachedValue(Object newValue) {
     this.value = newValue;
   }
 
@@ -250,7 +240,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   @Override
-  public void setRecentlyUsed() {
+  public void setRecentlyUsed(RegionEntryContext context) {
     throw new UnsupportedOperationException(
         LocalizedStrings.PartitionedRegion_NOT_APPROPRIATE_FOR_PARTITIONEDREGIONNONLOCALREGIONENTRY
             .toLocalizedString());
@@ -558,8 +548,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public void returnToPool() {
-    // TODO Auto-generated method stub
-
+    // nothing
   }
 
   @Override
@@ -572,14 +561,12 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public boolean isCacheListenerInvocationInProgress() {
-    // TODO Auto-generated method stub
     return false;
   }
 
   @Override
   public void setCacheListenerInvocationInProgress(boolean isListenerInvoked) {
-    // TODO Auto-generated method stub
-
+    // nothing
   }
 
   @Override
@@ -596,22 +583,17 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   @Override
-  public void setInUseByTransaction(boolean inUseByTransaction) {
-    // nothing
-  }
-
-  @Override
   public void incRefCount() {
     // nothing
   }
 
   @Override
-  public void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
+  public void decRefCount(EvictionList lruList, InternalRegion region) {
     // nothing
   }
 
   @Override
-  public void resetRefCount(NewLRUClockHand lruList) {
+  public void resetRefCount(EvictionList lruList) {
     // nothing
   }
 

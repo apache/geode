@@ -142,7 +142,7 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   public void persistConflictingTag(InternalRegion region, VersionTag tag) {
     // only persist region needs to persist conflict tag
     Helper.updateVersionOnly(this, region, tag);
-    setRecentlyUsed();
+    setRecentlyUsed(region);
   }
 
   /**

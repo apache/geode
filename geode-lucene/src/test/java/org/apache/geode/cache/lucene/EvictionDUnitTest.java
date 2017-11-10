@@ -131,7 +131,7 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   protected void raiseFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getHeapEvictor().testAbortAfterLoopCount = 1;
+    ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(1);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "0");
 
@@ -145,7 +145,7 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   protected void cleanUpAfterFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getHeapEvictor().testAbortAfterLoopCount = Integer.MAX_VALUE;
+    ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(Integer.MAX_VALUE);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
     System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance");
   }

@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.entries.DiskEntry.Helper.readRawValue;
 
 import java.io.File;
@@ -83,8 +85,8 @@ import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
-import org.apache.geode.internal.cache.lru.LRUAlgorithm;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -3913,7 +3915,8 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  private final HashMap<String, LRUStatistics> prlruStatMap = new HashMap<String, LRUStatistics>();
+  private final HashMap<String, EvictionStatistics> prlruStatMap =
+      new HashMap<String, EvictionStatistics>();
 
   /**
    * Lock used to synchronize access to the init file. This is a lock rather than a synchronized
@@ -3925,16 +3928,16 @@ public class DiskStoreImpl implements DiskStore {
     return backupLock;
   }
 
-  LRUStatistics getOrCreatePRLRUStats(PlaceHolderDiskRegion dr) {
+  EvictionStatistics getOrCreatePRLRUStats(PlaceHolderDiskRegion dr) {
     String prName = dr.getPrName();
-    LRUStatistics result = null;
+    EvictionStatistics result = null;
     synchronized (this.prlruStatMap) {
       result = this.prlruStatMap.get(prName);
       if (result == null) {
         EvictionAttributesImpl ea = dr.getEvictionAttributes();
-        LRUAlgorithm ec = ea.createEvictionController(null, dr.getOffHeap());
+        EvictionController ec = ea.createEvictionController(null, dr.getOffHeap());
         StatisticsFactory sf = cache.getDistributedSystem();
-        result = ec.getLRUHelper().initStats(dr, sf);
+        result = ec.initStats(dr, sf);
         this.prlruStatMap.put(prName, result);
       }
     }
@@ -3942,12 +3945,12 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   /**
-   * If we have recovered a bucket earlier for the given pr then we will have an LRUStatistics to
-   * return for it. Otherwise return null.
+   * If we have recovered a bucket earlier for the given pr then we will have an EvictionStatistics
+   * to return for it. Otherwise return null.
    */
-  LRUStatistics getPRLRUStats(PartitionedRegion pr) {
+  EvictionStatistics getPRLRUStats(PartitionedRegion pr) {
     String prName = pr.getFullPath();
-    LRUStatistics result = null;
+    EvictionStatistics result = null;
     synchronized (this.prlruStatMap) {
       result = this.prlruStatMap.get(prName);
     }
