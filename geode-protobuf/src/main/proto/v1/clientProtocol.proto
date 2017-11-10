@@ -35,18 +35,17 @@ message Message {
 }
 
 message Request {
-    CallbackArguments callbackArg = 1;
     oneof requestAPI {
-        PutRequest putRequest = 2;
-        GetRequest getRequest = 3;
-        PutAllRequest putAllRequest = 4;
-        GetAllRequest getAllRequest = 5;
-        RemoveRequest removeRequest = 6;
-        RemoveAllRequest removeAllRequest = 7;
+        PutRequest putRequest = 10;
+        GetRequest getRequest = 11;
+        PutAllRequest putAllRequest = 12;
+        GetAllRequest getAllRequest = 13;
+        RemoveRequest removeRequest = 14;
+        RemoveAllRequest removeAllRequest = 15;
 
-        GetAvailableServersRequest getAvailableServersRequest = 42;
-        GetRegionNamesRequest getRegionNamesRequest = 43;
-        GetRegionRequest getRegionRequest = 44;
+        GetAvailableServersRequest getAvailableServersRequest = 40;
+        GetRegionNamesRequest getRegionNamesRequest = 41;
+        GetRegionRequest getRegionRequest = 42;
 
         AuthenticationRequest authenticationRequest = 100;
         HandshakeRequest handshakeRequest = 101;
@@ -55,21 +54,21 @@ message Request {
 
 message Response {
     oneof responseAPI {
-        PutResponse putResponse = 2;
-        GetResponse getResponse = 3;
-        PutAllResponse putAllResponse = 4;
-        GetAllResponse getAllResponse = 5;
-        RemoveResponse removeResponse = 6;
-        RemoveAllResponse removeAllResponse = 7;
+        PutResponse putResponse = 10;
+        GetResponse getResponse = 11;
+        PutAllResponse putAllResponse = 12;
+        GetAllResponse getAllResponse = 13;
+        RemoveResponse removeResponse = 14;
+        RemoveAllResponse removeAllResponse = 15;
 
-        ErrorResponse errorResponse = 13;
-
-        GetAvailableServersResponse getAvailableServersResponse = 42;
-        GetRegionNamesResponse getRegionNamesResponse = 43;
-        GetRegionResponse getRegionResponse = 44;
+        GetAvailableServersResponse getAvailableServersResponse = 40;
+        GetRegionNamesResponse getRegionNamesResponse = 41;
+        GetRegionResponse getRegionResponse = 42;
 
         AuthenticationResponse authenticationResponse = 100;
         HandshakeResponse handshakeResponse = 101;
+
+        ErrorResponse errorResponse = 1000;
     }
 }
 
