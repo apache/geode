@@ -72,7 +72,7 @@ public class StartJVisualVMCommand implements GfshCommand {
     } catch (Throwable t) {
       SystemFailure.checkFailure();
       return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_JVISUALVM__ERROR_MESSAGE, toString(t, false)));
+          String.format(CliStrings.START_JVISUALVM__ERROR_MESSAGE, t.getMessage()));
     }
   }
 

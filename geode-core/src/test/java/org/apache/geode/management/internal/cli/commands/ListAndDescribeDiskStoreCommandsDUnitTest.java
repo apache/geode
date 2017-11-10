@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Properties;
@@ -100,9 +101,8 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
 
     assertNotNull(commandResult);
     assertEquals(Result.Status.ERROR, commandResult.getStatus());
-    assertEquals(
-        "A disk store with name (badDiskStoreName) was not found on member (producerServer).",
-        toString(commandResult));
+    assertThat(toString(commandResult)).contains(
+        "A disk store with name (badDiskStoreName) was not found on member (producerServer).");
   }
 
   private static String toString(final Result result) {

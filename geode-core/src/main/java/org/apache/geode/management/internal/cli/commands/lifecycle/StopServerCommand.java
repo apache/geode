@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.lang.StringUtils;
@@ -47,73 +46,61 @@ public class StopServerCommand implements GfshCommand {
       @CliOption(key = CliStrings.STOP_SERVER__PID,
           help = CliStrings.STOP_SERVER__PID__HELP) final Integer pid,
       @CliOption(key = CliStrings.STOP_SERVER__DIR,
-          help = CliStrings.STOP_SERVER__DIR__HELP) final String workingDirectory) {
+          help = CliStrings.STOP_SERVER__DIR__HELP) final String workingDirectory)
+      throws Exception {
     ServerLauncher.ServerState serverState;
 
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (!isConnectedAndReady()) {
-          return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
-        }
-
-        final MemberMXBean serverProxy = getMemberMXBean(member);
-
-        if (serverProxy != null) {
-          if (!serverProxy.isServer()) {
-            throw new IllegalStateException(CliStrings
-                .format(CliStrings.STOP_SERVER__MEMBER_IS_NOT_SERVER_ERROR_MESSAGE, member));
-          }
-
-          serverState = ServerLauncher.ServerState.fromJson(serverProxy.status());
-          serverProxy.shutDownMember();
-        } else {
-          return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.STOP_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
-        }
-
-      } else {
-        final ServerLauncher serverLauncher =
-            new ServerLauncher.Builder().setCommand(ServerLauncher.Command.STOP)
-                .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
-
-        serverState = serverLauncher.status();
-        serverLauncher.stop();
+    if (StringUtils.isNotBlank(member)) {
+      if (!isConnectedAndReady()) {
+        return ResultBuilder.createUserErrorResult(CliStrings
+            .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
       }
 
-      if (AbstractLauncher.Status.ONLINE.equals(serverState.getStatus())) {
-        getGfsh().logInfo(
-            String.format(CliStrings.STOP_SERVER__STOPPING_SERVER_MESSAGE,
-                serverState.getWorkingDirectory(), serverState.getServiceLocation(),
-                serverState.getMemberName(), serverState.getPid(), serverState.getLogFile()),
-            null);
+      final MemberMXBean serverProxy = getMemberMXBean(member);
 
-        StopWatch stopWatch = new StopWatch(true);
-        while (serverState.isVmWithProcessIdRunning()) {
-          Gfsh.print(".");
-          if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
-            break;
-          }
-          synchronized (this) {
-            TimeUnit.MILLISECONDS.timedWait(this, 500);
-          }
+      if (serverProxy != null) {
+        if (!serverProxy.isServer()) {
+          throw new IllegalStateException(CliStrings
+              .format(CliStrings.STOP_SERVER__MEMBER_IS_NOT_SERVER_ERROR_MESSAGE, member));
         }
 
-        return ResultBuilder.createInfoResult(StringUtils.EMPTY);
+        serverState = ServerLauncher.ServerState.fromJson(serverProxy.status());
+        serverProxy.shutDownMember();
       } else {
-        return ResultBuilder.createUserErrorResult(serverState.toString());
+        return ResultBuilder.createUserErrorResult(CliStrings
+            .format(CliStrings.STOP_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
       }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STOP_SERVER__GENERAL_ERROR_MESSAGE, toString(t, getGfsh().getDebug())));
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
+
+    } else {
+      final ServerLauncher serverLauncher =
+          new ServerLauncher.Builder().setCommand(ServerLauncher.Command.STOP)
+              .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
+
+      serverState = serverLauncher.status();
+      serverLauncher.stop();
+    }
+
+    if (AbstractLauncher.Status.ONLINE.equals(serverState.getStatus())) {
+      getGfsh().logInfo(
+          String.format(CliStrings.STOP_SERVER__STOPPING_SERVER_MESSAGE,
+              serverState.getWorkingDirectory(), serverState.getServiceLocation(),
+              serverState.getMemberName(), serverState.getPid(), serverState.getLogFile()),
+          null);
+
+      StopWatch stopWatch = new StopWatch(true);
+      while (serverState.isVmWithProcessIdRunning()) {
+        Gfsh.print(".");
+        if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
+          break;
+        }
+        synchronized (this) {
+          TimeUnit.MILLISECONDS.timedWait(this, 500);
+        }
+      }
+
+      return ResultBuilder.createInfoResult(StringUtils.EMPTY);
+    } else {
+      return ResultBuilder.createUserErrorResult(serverState.toString());
     }
   }
 
