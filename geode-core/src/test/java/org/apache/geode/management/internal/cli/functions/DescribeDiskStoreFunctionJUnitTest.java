@@ -59,7 +59,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
-import org.apache.geode.management.internal.cli.exceptions.DiskStoreNotFoundException;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -614,7 +614,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
   }
 
   @Test
-  public void testExecuteThrowingDiskStoreNotFoundException() throws Exception {
+  public void testExecuteThrowingEntityNotFoundException() throws Exception {
     final String diskStoreName = "testDiskStore";
     final String memberId = "mockMemberId";
     final String memberName = "mockMemberName";
@@ -653,7 +653,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     String expected = String.format("A disk store with name (%1$s) was not found on member (%2$s).",
         diskStoreName, memberName);
     assertThatThrownBy(() -> testResultSender.getResults())
-        .isInstanceOf(DiskStoreNotFoundException.class).hasMessage(expected);
+        .isInstanceOf(EntityNotFoundException.class).hasMessage(expected);
   }
 
   @Test

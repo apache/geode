@@ -19,6 +19,7 @@ import org.springframework.shell.event.ParseResult;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.NotAuthorizedException;
@@ -45,6 +46,12 @@ public class CommandExecutor {
       throw e;
     } catch (UserErrorException e) {
       return ResultBuilder.createUserErrorResult(e.getMessage());
+    } catch (EntityNotFoundException e) {
+      if (e.isStatusOK()) {
+        return ResultBuilder.createInfoResult("Skipping: " + e.getMessage());
+      } else {
+        return ResultBuilder.createUserErrorResult(e.getMessage());
+      }
     } catch (Exception e) {
       logger.error("Could not execute \"" + parseResult + "\".", e);
       return ResultBuilder.createGemFireErrorResult(

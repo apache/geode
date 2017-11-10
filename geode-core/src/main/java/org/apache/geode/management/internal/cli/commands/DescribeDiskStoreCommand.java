@@ -28,7 +28,7 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
-import org.apache.geode.management.internal.cli.exceptions.DiskStoreNotFoundException;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -65,8 +65,8 @@ public class DescribeDiskStoreCommand implements GfshCommand {
 
     if (result instanceof DiskStoreDetails) { // disk store details in hand...
       return (DiskStoreDetails) result;
-    } else if (result instanceof DiskStoreNotFoundException) { // bad disk store name...
-      throw (DiskStoreNotFoundException) result;
+    } else if (result instanceof EntityNotFoundException) { // bad disk store name...
+      throw (EntityNotFoundException) result;
     } else { // unknown and unexpected return type...
       final Throwable cause = (result instanceof Throwable ? (Throwable) result : null);
 

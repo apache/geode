@@ -15,29 +15,32 @@
 
 package org.apache.geode.management.internal.cli.exceptions;
 
-/**
- * The MemberNotFoundException is a GemFirException indicating that a member by name could not be
- * found in the GemFire distributed system.
- * </p>
- *
- * @see org.apache.geode.GemFireException
- * @since GemFire 7.0
- */
-public class MemberNotFoundException extends UserErrorException {
-  private static final long serialVersionUID = 5686788909239181174L;
+import org.apache.geode.GemFireException;
 
-  public MemberNotFoundException() {}
+public class EntityNotFoundException extends GemFireException {
 
-  public MemberNotFoundException(final String message) {
+  private boolean statusOK;
+
+  public EntityNotFoundException() {}
+
+  public EntityNotFoundException(String message) {
     super(message);
   }
 
-  public MemberNotFoundException(final Throwable cause) {
+  public EntityNotFoundException(String message, boolean statusOK) {
+    super(message);
+    this.statusOK = statusOK;
+  }
+
+  public EntityNotFoundException(Throwable cause) {
     super(cause);
   }
 
-  public MemberNotFoundException(final String message, final Throwable cause) {
+  public EntityNotFoundException(String message, Throwable cause) {
     super(message, cause);
   }
 
+  public boolean isStatusOK() {
+    return statusOK;
+  }
 }

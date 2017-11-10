@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.exceptions.MemberNotFoundException;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -79,7 +79,7 @@ public class GfshCommandJUnitTest {
   @Test
   public void getMember() throws Exception {
     doReturn(null).when(command).findMember("test");
-    assertThatThrownBy(() -> command.getMember("test")).isInstanceOf(MemberNotFoundException.class);
+    assertThatThrownBy(() -> command.getMember("test")).isInstanceOf(EntityNotFoundException.class);
   }
 
   @Test
@@ -87,7 +87,7 @@ public class GfshCommandJUnitTest {
     String[] members = {"member"};
     doReturn(Collections.emptySet()).when(command).findMembers(members, null);
     assertThatThrownBy(() -> command.getMembers(members, null))
-        .isInstanceOf(MemberNotFoundException.class);
+        .isInstanceOf(EntityNotFoundException.class);
   }
 
   @Test
@@ -95,6 +95,6 @@ public class GfshCommandJUnitTest {
     String[] members = {"member"};
     doReturn(Collections.emptySet()).when(command).findMembersIncludingLocators(members, null);
     assertThatThrownBy(() -> command.getMembersIncludingLocators(members, null))
-        .isInstanceOf(MemberNotFoundException.class);
+        .isInstanceOf(EntityNotFoundException.class);
   }
 }

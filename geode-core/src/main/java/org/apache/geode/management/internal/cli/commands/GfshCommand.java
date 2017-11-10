@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.exceptions.MemberNotFoundException;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -94,7 +94,7 @@ public interface GfshCommand extends CommandMarker {
     DistributedMember member = findMember(memberName);
 
     if (member == null) {
-      throw new MemberNotFoundException(
+      throw new EntityNotFoundException(
           CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
     }
     return member;
@@ -138,7 +138,7 @@ public interface GfshCommand extends CommandMarker {
   default Set<DistributedMember> getMembers(String[] groups, String[] members) {
     Set<DistributedMember> matchingMembers = findMembers(groups, members);
     if (matchingMembers.size() == 0) {
-      throw new MemberNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      throw new EntityNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
     return matchingMembers;
   }
@@ -156,7 +156,7 @@ public interface GfshCommand extends CommandMarker {
   default Set<DistributedMember> getMembersIncludingLocators(String[] groups, String[] members) {
     Set<DistributedMember> matchingMembers = findMembersIncludingLocators(groups, members);
     if (matchingMembers.size() == 0) {
-      throw new MemberNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      throw new EntityNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
     return matchingMembers;
   }
