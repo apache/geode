@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.assertions.GfshShellConnectionRuleAssert;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 /**
  * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
@@ -238,9 +238,9 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     return result;
   }
 
-  public GfshShellConnectionRuleAssert executeAndAssertThat(String command) {
+  public CommandResultAssert executeAndAssertThat(String command) {
     CommandResult commandResult = executeCommand(command);
-    return new GfshShellConnectionRuleAssert(this, commandResult);
+    return new CommandResultAssert(gfsh.outputString, commandResult);
   }
 
 

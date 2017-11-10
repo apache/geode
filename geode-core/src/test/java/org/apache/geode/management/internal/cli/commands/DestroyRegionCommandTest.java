@@ -31,6 +31,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -68,9 +69,10 @@ public class DestroyRegionCommandTest {
   public void whenNoRegionIsFoundOnAnyMembers() throws Exception {
     doReturn(Collections.emptySet()).when(command).findMembersForRegion(any(), any());
     result = parser.executeCommandWithInstance(command, "destroy region --name=test");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    new CommandResultAssert(result).statusIsError()
+        .containsOutput("Could not find a Region with Region path");
 
     result = parser.executeCommandWithInstance(command, "destroy region --name=test --if-exists");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    new CommandResultAssert(result).statusIsSuccess();
   }
 }
