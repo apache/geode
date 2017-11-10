@@ -31,7 +31,8 @@ public class CommandResultAssert
     extends AbstractAssert<CommandResultAssert, CommandResultExecution> {
 
   public CommandResultAssert(CommandResult commandResult) {
-    super(new CommandResultExecution(commandResult.toJson(), commandResult), CommandResultAssert.class);
+    super(new CommandResultExecution(commandResult.toJson(), commandResult),
+        CommandResultAssert.class);
   }
 
   public CommandResultAssert(String output, CommandResult commandResult) {
