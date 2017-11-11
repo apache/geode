@@ -245,7 +245,7 @@ public class CountLRUEviction extends AbstractEvictionController implements Decl
 
   @Override
   public String getStatisticsName() {
-    return "EvictionStatistics";
+    return "LRUStatistics";
   }
 
   @Override
