@@ -59,7 +59,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
-public class ListAndDescribeRegionDUnitTest implements Serializable {
+public class DescribeRegionDUnitTest implements Serializable {
   private static final String REGION1 = "region1";
   private static final String REGION2 = "region2";
   private static final String REGION3 = "region3";
@@ -69,6 +69,15 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
   private static final String PR1 = "PR1";
   private static final String LOCALREGIONONMANAGER = "LocalRegionOnManager";
 
+  private static final String LOCATOR_NAME = "Locator";
+  private static final String SERVER1_NAME = "Server-1";
+  private static final String SERVER2_NAME = "Server-2";
+  private static final String GROUP1_NAME = "G1";
+  private static final String GROUP2_NAME = "G2";
+  private static final String GROUP3_NAME = "G3";
+  private static final String PART1_NAME = "Par1";
+  private static final String PART2_NAME = "Par2";
+
   @ClassRule
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
@@ -77,14 +86,14 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
 
   @BeforeClass
   public static void setupSystem() throws Exception {
-    final Properties locatorProps = createProperties("Locator", "G3");
+    final Properties locatorProps = createProperties(LOCATOR_NAME, GROUP3_NAME);
     MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
 
-    final Properties managerProps = createProperties("Manager", "G1");
+    final Properties managerProps = createProperties(SERVER1_NAME, GROUP1_NAME);
     managerProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
     MemberVM manager = lsRule.startServerVM(1, managerProps, locator.getPort());
 
-    final Properties serverProps = createProperties("Server", "G2");
+    final Properties serverProps = createProperties(SERVER2_NAME, GROUP2_NAME);
     MemberVM server = lsRule.startServerVM(2, serverProps, locator.getPort());
 
     manager.invoke(() -> {
@@ -97,7 +106,8 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
       dataRegionFactory.setEvictionAttributes(ea);
       dataRegionFactory.setEnableAsyncConflation(true);
 
-      FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par1", true);
+      FixedPartitionAttributes fpa =
+          FixedPartitionAttributes.createFixedPartition(PART1_NAME, true);
       PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(100)
           .setRecoveryDelay(2).setTotalMaxMemory(200).setRedundantCopies(1)
           .addFixedPartitionAttributes(fpa).create();
@@ -117,7 +127,7 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
       dataRegionFactory.setEvictionAttributes(ea);
       dataRegionFactory.setEnableAsyncConflation(true);
 
-      FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par2", 4);
+      FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition(PART2_NAME, 4);
       PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(150)
           .setRecoveryDelay(4).setTotalMaxMemory(200).setRedundantCopies(1)
           .addFixedPartitionAttributes(fpa).create();
@@ -131,46 +141,7 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
   }
 
   @Test
-  public void listAllRegions() throws Exception {
-    String listRegions = new CommandStringBuilder(LIST_REGION).toString();
-    gfshCommandRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
-        LOCALREGIONONMANAGER, REGION1, REGION2, REGION3);
-  }
-
-  @Test
-  public void listRegionsOnManager() throws Exception {
-    String listRegions =
-        new CommandStringBuilder(LIST_REGION).addOption(MEMBER, "Manager").toString();
-    gfshCommandRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
-        LOCALREGIONONMANAGER);
-  }
-
-  @Test
-  public void listRegionsOnServer() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
-    csb.addOption(MEMBER, "Server");
-    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
-        REGION1, REGION2, REGION3, SUBREGION1A);
-  }
-
-  @Test
-  public void listRegionsInGroup1() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
-    csb.addOption(GROUP, "G1");
-    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
-        LOCALREGIONONMANAGER);
-  }
-
-  @Test
-  public void listRegionsInGroup2() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
-    csb.addOption(GROUP, "G2");
-    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
-        REGION1, REGION2, REGION3, SUBREGION1A);
-  }
-
-  @Test
-  public void describeRegionsOnManager() throws Exception {
+  public void describeRegionsOnServer2() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, PR1);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
@@ -178,35 +149,31 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
   }
 
   @Test
-  public void describeRegionsOnServer() throws Exception {
+  public void describeRegionsOnServer1() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, LOCALREGIONONMANAGER);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(LOCALREGIONONMANAGER, "Manager");
+        .containsOutput(LOCALREGIONONMANAGER, SERVER1_NAME);
   }
 
   /**
    * Asserts that a describe region command issued on a region with compression returns the correct
    * non default region attribute for compression and the correct codec value.
    */
-  @Category(FlakyTest.class) // GEODE-1033: HeadlesssGFSH, random port, Snappy dependency
   @Test
   public void describeRegionWithCompressionCodec() throws Exception {
     final String regionName = "compressedRegion";
     VM vm = Host.getHost(0).getVM(1);
 
     // Create compressed region
-    vm.invoke(() -> {
-      createCompressedRegion(regionName);
-    });
+    vm.invoke(() -> createCompressedRegion(regionName));
 
     // Test the describe command; look for compression
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, regionName);
     String commandString = csb.toString();
-    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(
-        regionName, RegionAttributesNames.COMPRESSOR,
-        RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
+    gfshCommandRule.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(regionName,
+        RegionAttributesNames.COMPRESSOR, RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
 
     // Destroy compressed region
     vm.invoke(() -> {
