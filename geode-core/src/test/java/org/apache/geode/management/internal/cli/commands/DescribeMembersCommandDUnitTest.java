@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class DescribeMembersCommandDUnitTest {
@@ -34,7 +34,7 @@ public class DescribeMembersCommandDUnitTest {
   private static MemberVM locator;
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
   public static void setup() throws Exception {

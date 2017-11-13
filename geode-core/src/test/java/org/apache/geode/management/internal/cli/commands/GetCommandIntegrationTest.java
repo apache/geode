@@ -37,7 +37,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
@@ -47,8 +47,8 @@ public class GetCommandIntegrationTest {
   private static ServerStarterRule server =
       new ServerStarterRule().withJMXManager().withAutoStart();
 
-  private static GfshShellConnectionRule gfsh =
-      new GfshShellConnectionRule(server::getJmxPort, GfshShellConnectionRule.PortType.jmxManager);
+  private static GfshCommandRule gfsh =
+      new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @ClassRule
   public static RuleChain chain = RuleChain.outerRule(server).around(gfsh);

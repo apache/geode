@@ -26,7 +26,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
@@ -36,7 +36,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   private String group2Jar;
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {

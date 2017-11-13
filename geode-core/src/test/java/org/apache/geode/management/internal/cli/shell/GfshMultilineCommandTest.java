@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
@@ -37,11 +37,11 @@ public class GfshMultilineCommandTest {
 
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void testMultiLineCommand() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     // Execute a command
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MEMBER);
     csb.addOption(GROUP, "nogroup");

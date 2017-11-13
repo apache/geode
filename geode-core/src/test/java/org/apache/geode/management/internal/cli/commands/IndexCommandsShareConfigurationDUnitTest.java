@@ -51,13 +51,13 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class IndexCommandsShareConfigurationDUnitTest {
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
@@ -86,7 +86,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
 
     locator = startupRule.startLocatorVM(0, locatorProps);
 
-    gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
     Properties props = new Properties();
     props.setProperty(GROUPS, groupName);

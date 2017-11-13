@@ -22,7 +22,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
@@ -32,11 +32,11 @@ public class AlterRegionCommandIntegrationTest {
       new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "REPLICATED");
 
   @ClassRule
-  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
   public static void before() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test

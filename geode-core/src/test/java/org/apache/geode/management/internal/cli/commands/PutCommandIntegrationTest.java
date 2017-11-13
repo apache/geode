@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.dto.ObjectWithCharAttr;
 import org.apache.geode.management.internal.cli.dto.Value;
 import org.apache.geode.management.internal.cli.dto.Value2;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
@@ -41,8 +41,8 @@ public class PutCommandIntegrationTest {
   private static ServerStarterRule server =
       new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "testRegion");
 
-  private static GfshShellConnectionRule gfsh =
-      new GfshShellConnectionRule(server::getJmxPort, GfshShellConnectionRule.PortType.jmxManager);
+  private static GfshCommandRule gfsh =
+      new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @ClassRule
   public static RuleChain chain = RuleChain.outerRule(server).around(gfsh);

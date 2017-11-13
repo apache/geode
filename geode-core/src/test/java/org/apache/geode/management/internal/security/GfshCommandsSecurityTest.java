@@ -35,7 +35,7 @@ import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, SecurityTest.class})
@@ -46,8 +46,8 @@ public class GfshCommandsSecurityTest {
           .withRegion(RegionShortcut.REPLICATE_PERSISTENT, "persistentRegion");
 
   @Rule
-  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
-      serverStarter::getJmxPort, GfshShellConnectionRule.PortType.jmxManager);
+  public GfshCommandRule gfshConnection =
+      new GfshCommandRule(serverStarter::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

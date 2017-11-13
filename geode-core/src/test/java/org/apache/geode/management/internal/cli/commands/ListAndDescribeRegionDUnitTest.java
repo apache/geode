@@ -56,7 +56,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ListAndDescribeRegionDUnitTest implements Serializable {
@@ -73,7 +73,7 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @ClassRule
-  public static GfshShellConnectionRule gfshShellConnectionRule = new GfshShellConnectionRule();
+  public static GfshCommandRule gfshCommandRule = new GfshCommandRule();
 
   @BeforeClass
   public static void setupSystem() throws Exception {
@@ -127,13 +127,13 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
       createRegionsWithSubRegions();
     });
 
-    gfshShellConnectionRule.connectAndVerify(locator);
+    gfshCommandRule.connectAndVerify(locator);
   }
 
   @Test
   public void listAllRegions() throws Exception {
     String listRegions = new CommandStringBuilder(LIST_REGION).toString();
-    gfshShellConnectionRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
+    gfshCommandRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
         LOCALREGIONONMANAGER, REGION1, REGION2, REGION3);
   }
 
@@ -141,7 +141,7 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
   public void listRegionsOnManager() throws Exception {
     String listRegions =
         new CommandStringBuilder(LIST_REGION).addOption(MEMBER, "Manager").toString();
-    gfshShellConnectionRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
+    gfshCommandRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
         LOCALREGIONONMANAGER);
   }
 
@@ -149,39 +149,39 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
   public void listRegionsOnServer() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(MEMBER, "Server");
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(PR1, REGION1, REGION2, REGION3, SUBREGION1A);
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
+        REGION1, REGION2, REGION3, SUBREGION1A);
   }
 
   @Test
   public void listRegionsInGroup1() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, "G1");
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(PR1, LOCALREGIONONMANAGER);
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
+        LOCALREGIONONMANAGER);
   }
 
   @Test
   public void listRegionsInGroup2() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, "G2");
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(PR1, REGION1, REGION2, REGION3, SUBREGION1A);
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
+        REGION1, REGION2, REGION3, SUBREGION1A);
   }
 
   @Test
   public void describeRegionsOnManager() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, PR1);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(PR1, "Server");
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
+        "Server");
   }
 
   @Test
   public void describeRegionsOnServer() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, LOCALREGIONONMANAGER);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput(LOCALREGIONONMANAGER, "Manager");
   }
 
@@ -204,7 +204,7 @@ public class ListAndDescribeRegionDUnitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, regionName);
     String commandString = csb.toString();
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(
         regionName, RegionAttributesNames.COMPRESSOR,
         RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
 

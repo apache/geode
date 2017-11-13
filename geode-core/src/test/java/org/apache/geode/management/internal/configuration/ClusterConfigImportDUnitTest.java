@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
@@ -50,7 +50,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   private MemberVM locatorVM;
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {

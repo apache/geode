@@ -48,7 +48,7 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
 @Category(DistributedTest.class)
@@ -58,7 +58,7 @@ public class LuceneClusterConfigurationDUnitTest {
   public LocatorServerStartupRule ls = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   private MemberVM locator = null;
 
