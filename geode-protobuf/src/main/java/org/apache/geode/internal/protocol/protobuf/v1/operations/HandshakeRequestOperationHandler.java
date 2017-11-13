@@ -34,6 +34,7 @@ import org.apache.geode.internal.protocol.state.exception.ConnectionStateExcepti
 public class HandshakeRequestOperationHandler implements
     OperationHandler<ConnectionAPI.HandshakeRequest, ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> {
   private static final Logger logger = LogManager.getLogger();
+  private final VersionValidator validator = new VersionValidator();
 
   @Override
   public Result<ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> process(
@@ -47,11 +48,9 @@ public class HandshakeRequestOperationHandler implements
       return Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
     }
 
-    boolean handshakeSucceeded = false;
-    // Require an exact match with our version of the protobuf code for this implementation
-    if (request.getMajorVersion() == ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE
-        && request.getMinorVersion() == ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE) {
-      handshakeSucceeded = true;
+    final boolean handshakeSucceeded =
+        validator.isValid(request.getMajorVersion(), request.getMinorVersion());
+    if (handshakeSucceeded) {
       ConnectionStateProcessor nextStateProcessor = stateProcessor.handshakeSucceeded();
       messageExecutionContext.setConnectionStateProcessor(nextStateProcessor);
     }
