@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
-public class ShowMetricsCommandJUnitTest {
+public class ShowMetricsCommandIntegrationTest {
   private static final Logger logger = LogService.getLogger();
   private static final String REGION_NAME = "test-region";
   private static final String MEMBER_NAME = "testServer";

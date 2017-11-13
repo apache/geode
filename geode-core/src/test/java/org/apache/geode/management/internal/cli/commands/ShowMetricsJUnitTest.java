@@ -27,7 +27,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(UnitTest.class)
-public class ShowMetricsOptionDependencyJUnitTest {
+public class ShowMetricsJUnitTest {
 
   @Rule
   public GfshParserRule parser = new GfshParserRule();
