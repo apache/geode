@@ -108,9 +108,8 @@ public class ShowMetricsCommand implements GfshCommand {
           help = CliStrings.SHOW_METRICS__REGION__HELP) String regionName,
       @CliOption(key = {CliStrings.SHOW_METRICS__FILE},
           help = CliStrings.SHOW_METRICS__FILE__HELP) String export_to_report_to,
-      // TODO(prhomberg): If I change this to Integer, do I have to change it elsewhere too?
       @CliOption(key = {CliStrings.SHOW_METRICS__CACHESERVER__PORT},
-          help = CliStrings.SHOW_METRICS__CACHESERVER__PORT__HELP) String cacheServerPortString,
+          help = CliStrings.SHOW_METRICS__CACHESERVER__PORT__HELP) Integer rawCacheServerPort,
       @CliOption(key = {CliStrings.SHOW_METRICS__CATEGORY},
           help = CliStrings.SHOW_METRICS__CATEGORY__HELP) String[] categories) {
 
@@ -126,10 +125,7 @@ public class ShowMetricsCommand implements GfshCommand {
       resultData =
           getDistributedRegionMetrics(regionName, export_to_report_to, categories, csvBuilder);
     } else if (memberNameOrId != null) {
-      int cacheServerPort = -1;
-      if (cacheServerPortString != null) {
-        cacheServerPort = Integer.parseInt(cacheServerPortString);
-      }
+      int cacheServerPort = rawCacheServerPort == null ? -1 : rawCacheServerPort;
       resultData =
           getMemberMetrics(member, export_to_report_to, categories, cacheServerPort, csvBuilder);
     } else {

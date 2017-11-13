@@ -44,10 +44,6 @@ public class ShowMetricsInterceptor extends AbstractCliAroundInterceptor {
     String member = parseResult.getParamValueAsString(CliStrings.MEMBER);
     String[] categoryArgs = (String[]) parseResult.getParamValue(CliStrings.SHOW_METRICS__CATEGORY);
 
-    if (StringUtils.isNotEmpty(port) && !StringUtils.isNumeric(port)) {
-      return ResultBuilder.createUserErrorResult("Invalid port: " + port);
-    }
-
     if (regionName != null && port != null) {
       return ResultBuilder.createUserErrorResult(
           CliStrings.SHOW_METRICS__CANNOT__USE__REGION__WITH__CACHESERVERPORT);
