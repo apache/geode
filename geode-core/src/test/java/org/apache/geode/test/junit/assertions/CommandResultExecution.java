@@ -12,22 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.exceptions;
+package org.apache.geode.test.junit.assertions;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 
-public class IndexNotFoundException extends Exception {
+public class CommandResultExecution {
+  private CommandResult commandResult;
+  private String output;
 
-  private static final long serialVersionUID = 1L;
-  final String indexName;
-  final String message;
-
-  public IndexNotFoundException(final String indexName) {
-    this.indexName = indexName;
-    this.message = CliStrings.format("Index \" {0} \" not found", indexName);
+  public CommandResultExecution(String output, CommandResult commandResult) {
+    this.output = output;
+    this.commandResult = commandResult;
   }
 
-  public String getMessage() {
-    return this.message;
+  public CommandResult getCommandResult() {
+    return commandResult;
+  }
+
+  public String getOutput() {
+    return output;
   }
 }
