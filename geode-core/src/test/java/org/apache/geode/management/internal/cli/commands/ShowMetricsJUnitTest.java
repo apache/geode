@@ -56,6 +56,7 @@ public class ShowMetricsJUnitTest {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
     CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=abc");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("Invalid port");
+    // When relying on Spring's converters, any command that does not parse is "Invalid"
+    assertThat(result.getContent().toString()).contains("Invalid command");
   }
 }
