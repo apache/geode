@@ -288,7 +288,7 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
 
     } finally {
       invokeRunnableInVMs(true, invokeStopLocator(), locator);
-      invokeRunnableInVMs(true, invokeCloseCache(), server2, server3, client);
+      invokeRunnableInVMs(true, invokeCloseCache(), client, server2, server3);
     }
   }
 
@@ -309,6 +309,93 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
         subscriptionEnabled));
     rollClient.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
     return rollClient;
+  }
+
+  @Test
+  public void luceneQueryReturnsCorrectResultsAfterClientAndServersAreRolledOverAllBucketsCreated()
+      throws Exception {
+    // This test verifies the upgrade from lucene 6 to 7 doesn't cause any issues. Without any
+    // changes to accomodate this upgrade, this test will fail with an IndexFormatTooNewException.
+    //
+    // The main sequence in this test that causes the failure is:
+    //
+    // - start two servers with old version using Lucene 6
+    // - roll one server to new version server using Lucene 7
+    // - do puts into primary buckets in new server which creates entries in the fileAndChunk region
+    // with Lucene 7 format
+    // - stop the new version server which causes the old version server to become primary for those
+    // buckets
+    // - do a query which causes the IndexFormatTooNewException to be thrown
+    final Host host = Host.getHost(0);
+    VM locator = host.getVM(oldVersion, 0);
+    VM server1 = host.getVM(oldVersion, 1);
+    VM server2 = host.getVM(oldVersion, 2);
+    VM client = host.getVM(oldVersion, 3);
+
+    final String regionName = "aRegion";
+    String regionType = "partitionedRedundant";
+    RegionShortcut shortcut = RegionShortcut.PARTITION_REDUNDANT;
+
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] locatorPorts = new int[] {ports[0]};
+    int[] csPorts = new int[] {ports[1], ports[2]};
+
+    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+
+    String hostName = NetworkUtils.getServerHostName(host);
+    String[] hostNames = new String[] {hostName};
+    String locatorString = getLocatorString(locatorPorts);
+
+    try {
+      // Start locator, servers and client in old version
+      locator.invoke(
+          invokeStartLocator(hostName, locatorPorts[0], getLocatorPropertiesPre91(locatorString)));
+      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
+      invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server1);
+      invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server2);
+      invokeRunnableInVMs(
+          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts, false),
+          client);
+
+      // Create the index on the servers
+      server1.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
+      server2.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
+
+      // Create the region on the servers and client
+      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut.name()), server1, server2);
+      invokeRunnableInVMs(invokeCreateClientRegion(regionName, ClientRegionShortcut.PROXY), client);
+
+      // Put objects on the client so that each bucket is created
+      int numObjects = 113;
+      putSerializableObject(client, regionName, 0, numObjects);
+
+      // Execute a query on the client and verify the results. This also waits until flushed.
+      client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));
+
+      // Roll the locator and server 1 to current version
+      locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
+          locatorString);
+      server1 = rollServerToCurrentAndCreateRegion(server1, regionType, null, shortcut.name(),
+          regionName, locatorPorts);
+
+      // Execute a query on the client and verify the results. This also waits until flushed.
+      client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));
+
+      // Put some objects on the client. This will update the document to the latest lucene version
+      putSerializableObject(client, regionName, 0, numObjects);
+
+      // Execute a query on the client and verify the results. This also waits until flushed.
+      client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));
+
+      // Close server 1 cache. This will force server 2 (old version) to become primary
+      invokeRunnableInVMs(true, invokeCloseCache(), server1);
+
+      // Execute a query on the client and verify the results
+      client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));
+    } finally {
+      invokeRunnableInVMs(true, invokeStopLocator(), locator);
+      invokeRunnableInVMs(true, invokeCloseCache(), client, server2);
+    }
   }
 
   private CacheSerializableRunnable invokeCreateClientRegion(final String regionName,
@@ -489,15 +576,22 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
 
   private void putSerializableObjectAndVerifyLuceneQueryResult(VM putter, String regionName,
       int expectedRegionSize, int start, int end, VM... vms) throws Exception {
+    // do puts
+    putSerializableObject(putter, regionName, start, end);
+
+    // verify present in others
+    verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
+  }
+
+  private void putSerializableObject(VM putter, String regionName, int start, int end)
+      throws Exception {
     for (int i = start; i < end; i++) {
       Class aClass = Thread.currentThread().getContextClassLoader()
           .loadClass("org.apache.geode.cache.query.data.Portfolio");
       Constructor portfolioConstructor = aClass.getConstructor(int.class);
       Object serializableObject = portfolioConstructor.newInstance(i);
-      putter.invoke(invokePut(regionName, "" + i, serializableObject));
+      putter.invoke(invokePut(regionName, i, serializableObject));
     }
-    // verify present in others
-    verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
   }
 
   private void waitForRegionToHaveExpectedSize(String regionName, int expectedRegionSize) {
