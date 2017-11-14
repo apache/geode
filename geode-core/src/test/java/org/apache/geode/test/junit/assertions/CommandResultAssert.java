@@ -132,7 +132,7 @@ public class CommandResultAssert
   public CommandResultAssert tableHasColumnWithExactValuesInExactOrder(String header,
       Object... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
-    Object content = resultContentJSON.get(header);
+    Object content = getColumnContent(header, resultContentJSON);
 
     if (content == null) {
       failWithMessage(
@@ -168,7 +168,7 @@ public class CommandResultAssert
   public CommandResultAssert tableHasColumnWithExactValuesInAnyOrder(String header,
       Object... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
-    Object content = resultContentJSON.get(header);
+    Object content = getColumnContent(header, resultContentJSON);
 
     if (content == null) {
       failWithMessage("Command result did not contain a table with column header <" + header + ">: "
@@ -188,7 +188,7 @@ public class CommandResultAssert
   public CommandResultAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
     GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
-    Object content = resultContentJSON.get(header);
+    Object content = getColumnContent(header, resultContentJSON);
 
     if (content == null) {
       failWithMessage("Command result did not contain a table with column header <" + header + ">: "
@@ -208,6 +208,38 @@ public class CommandResultAssert
     }
 
     return this;
+  }
+
+
+  /**
+   * Verifies that each of the actual values in the column with the given header contains at least
+   * one of the expectedValues.
+   */
+  public CommandResultAssert tableHasColumnOnlyWithValues(String header, String... expectedValues) {
+    GfJsonObject resultContentJSON = actual.getCommandResult().getContent();
+    Object content = getColumnContent(header, resultContentJSON);
+
+    if (content == null) {
+      failWithMessage("Command result did not contain a table with column header <" + header + ">: "
+          + resultContentJSON.toString());
+    }
+
+    Object[] actualValues = toArray((JSONArray) content);
+    assertThat(actualValues).containsOnly(expectedValues);
+    return this;
+  }
+
+  private Object getColumnContent(String header, GfJsonObject resultContentJSON) {
+    if (resultContentJSON.get(header) != null) {
+      return resultContentJSON.get(header);
+    }
+    try {
+      // Sometimes, the output is buried in a most questionable way.
+      return resultContentJSON.getJSONObject("__sections__-0").getJSONObject("__tables__-0")
+          .getJSONObject("content").get(header);
+    } catch (NullPointerException ignored) {
+    }
+    return null;
   }
 
   public CommandResultAssert hasResult() {

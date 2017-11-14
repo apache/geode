@@ -131,7 +131,7 @@ public class ShowMetricsDUnitTest {
   public void testShowMetricsMember() throws Exception {
     gfsh.executeAndAssertThat(
         "show metrics --member=" + server.getName() + " --port=" + server.getPort())
-        .statusIsSuccess().containsOutput("Member Metrics").containsOutput("cache-server");
+        .statusIsSuccess().containsOutput("Member Metrics").containsOutput("cacheserver");
   }
 
   @Test
@@ -141,7 +141,7 @@ public class ShowMetricsDUnitTest {
 
     gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --port="
         + server.getPort() + " --file=" + output.getAbsolutePath()).statusIsSuccess()
-        .containsOutput("Member Metrics").containsOutput("cache-server")
+        .containsOutput("Member Metrics").containsOutput("cacheserver")
         .containsOutput("Member metrics exported to " + output.getAbsolutePath());
 
     assertThat(output).exists();

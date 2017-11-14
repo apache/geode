@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +27,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(UnitTest.class)
-public class ShowMetricsCommandJUnitTest {
+public class ShowMetricsJUnitTest {
 
   @Rule
   public GfshParserRule parser = new GfshParserRule();
@@ -57,6 +56,7 @@ public class ShowMetricsCommandJUnitTest {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
     CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=abc");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("Invalid port");
+    // When relying on Spring's converters, any command that does not parse is "Invalid"
+    assertThat(result.getContent().toString()).contains("Invalid command");
   }
 }
