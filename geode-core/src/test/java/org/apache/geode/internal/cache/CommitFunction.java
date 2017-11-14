@@ -73,8 +73,7 @@ public class CommitFunction implements Function {
   }
 
   public void execute(FunctionContext context) {
-    Cache cache = context.getCache();
-    cache.getCancelCriterion().checkCancelInProgress(null);
+    Cache cache = CacheFactory.getAnyInstance();
     TXId txId = null;
     try {
       txId = (TXId) context.getArguments();
