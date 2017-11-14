@@ -18,6 +18,10 @@ language: java
 jdk:
   - oraclejdk8
 
+# Update _JAVA_OPTIONS environment variable
+before_script:
+  - export _JAVA_OPTIONS='-Xmx1024m -Xms512m'
+
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 
