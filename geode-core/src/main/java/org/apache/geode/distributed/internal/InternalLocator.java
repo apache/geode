@@ -602,31 +602,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         s);
   }
 
-  class SharedConfigurationRunnable implements Runnable {
-
-    private final InternalLocator locator = InternalLocator.this;
-
-    @Override
-    public void run() {
-      try {
-        if (this.locator.sharedConfig == null) {
-          // locator.sharedConfig will already be created in case of auto-reconnect
-          this.locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
-        }
-        this.locator.sharedConfig.initSharedConfiguration(this.locator.loadFromSharedConfigDir());
-        this.locator.installSharedConfigDistribution();
-        logger.info(
-            "Cluster configuration service start up completed successfully and is now running ....");
-      } catch (CancelException | LockServiceDestroyedException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Cluster configuration start up was cancelled", e);
-        }
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-      }
-    }
-  }
-
   /**
    * Start a distributed system whose life cycle is managed by this locator. When the locator is
    * stopped, this distributed system will be disconnected. If a distributed system already exists,
@@ -722,7 +697,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     startJmxManagerLocationService(internalCache);
 
-    startSharedConfigurationService(internalCache);
+    startSharedConfigurationService();
   }
 
   /**
@@ -1089,19 +1064,13 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.myCache = newCache;
       this.myDs.setDependentLocator(this);
       logger.info("Locator restart: initializing TcpServer");
-      if (isSharedConfigurationEnabled()) {
-        this.sharedConfig = new ClusterConfigurationService(newCache);
-      }
+
       this.server.restarting(newSystem, newCache, this.sharedConfig);
       if (this.productUseLog.isClosed()) {
         this.productUseLog.reopen();
       }
       this.productUseLog.monitorUse(newSystem);
-      this.isSharedConfigurationStarted = true;
-      if (isSharedConfigurationEnabled()) {
-        ExecutorService es = newCache.getDistributionManager().getThreadPool();
-        es.execute(new SharedConfigurationRunnable());
-      }
+      startSharedConfigurationService();
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
@@ -1378,20 +1347,41 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
   }
 
-  private void startSharedConfigurationService(InternalCache internalCache) {
+  private void startSharedConfigurationService() {
     installSharedConfigHandler();
 
-    if (this.config.getEnableClusterConfiguration() && !this.isSharedConfigurationStarted) {
-      if (!isDedicatedLocator()) {
-        logger.info("Cluster configuration service not enabled as it is only supported "
-            + "in dedicated locators");
-        return;
-      }
-
-      ExecutorService es = internalCache.getDistributionManager().getThreadPool();
-      es.execute(new SharedConfigurationRunnable());
-    } else {
+    if (!config.getEnableClusterConfiguration()) {
       logger.info("Cluster configuration service is disabled");
+      return;
+    }
+
+    if (isSharedConfigurationStarted) {
+      logger.info("Cluster configuration service is already started.");
+      return;
+    }
+
+    if (!isDedicatedLocator()) {
+      logger.info("Cluster configuration service not enabled as it is only supported "
+          + "in dedicated locators");
+      return;
+    }
+
+    try {
+      if (this.locator.sharedConfig == null) {
+        // locator.sharedConfig will already be created in case of auto-reconnect
+        this.locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
+      }
+      this.locator.sharedConfig.initSharedConfiguration(this.locator.loadFromSharedConfigDir());
+      this.locator.installSharedConfigDistribution();
+      logger.info(
+          "Cluster configuration service start up completed successfully and is now running ....");
+      isSharedConfigurationStarted = true;
+    } catch (CancelException | LockServiceDestroyedException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Cluster configuration start up was cancelled", e);
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
     }
   }
 
