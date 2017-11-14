@@ -232,7 +232,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(new SerializableCallable("fetch entry and validate") {
       public Object call() throws Exception {
         final Long[] expirationTimeMillis = new Long[1];
-        int expirationSeconds = 15;
+        int expirationSeconds = 1;
 
         LocalRegion r = (LocalRegion) basicGetCache().getRegion(name);
         AttributesMutator mutator = r.getAttributesMutator();
@@ -245,17 +245,13 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
           }
         });
 
-        // fetch the entry from the server and make sure it doesn't expire early
-        if (!r.containsKey(key)) {
-          r.get(key);
-        }
-
         final long expirationTime = System.currentTimeMillis() + (expirationSeconds * 1000);
+        // Set the expiration time on the client entry.
+        r.get(key);
 
-        Awaitility.await("waiting for object to expire").atMost(expirationSeconds * 2, SECONDS)
-            .until(() -> {
-              return expirationTimeMillis[0] != null;
-            });
+        Awaitility.await("waiting for object to expire").atMost(30, SECONDS).until(() -> {
+          return expirationTimeMillis[0] != null;
+        });
 
         disconnectFromDS();
 
