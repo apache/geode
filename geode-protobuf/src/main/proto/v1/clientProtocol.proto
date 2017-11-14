@@ -23,7 +23,7 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 import "google/protobuf/any.proto";
 import "v1/region_API.proto";
-import "v1/server_API.proto";
+import "v1/locator_API.proto";
 import "v1/basicTypes.proto";
 import "v1/connection_API.proto";
 
