@@ -56,12 +56,11 @@ public class ClusterConfig implements Serializable {
     Collections.addAll(this.groups, configGroups);
   }
 
-  public String getMaxLogFileSize() {
+  public Set<String> getMaxLogFileSizes() {
     if (this.groups.size() == 0) {
-      return null;
+      return Collections.emptySet();
     }
-    ConfigGroup lastGroupAdded = this.groups.get(this.groups.size() - 1);
-    return lastGroupAdded.getMaxLogFileSize();
+    return this.groups.stream().map(ConfigGroup::getMaxLogFileSize).collect(toSet());
   }
 
   public List<String> getJarNames() {
@@ -153,9 +152,9 @@ public class ClusterConfig implements Serializable {
         assertThat(cache.getRegion(region)).isNotNull();
       }
 
-      if (StringUtils.isNotBlank(this.getMaxLogFileSize())) {
+      if (this.getMaxLogFileSizes().size() > 0) {
         Properties props = cache.getDistributedSystem().getProperties();
-        assertThat(props.getProperty(LOG_FILE_SIZE_LIMIT)).isEqualTo(this.getMaxLogFileSize());
+        assertThat(this.getMaxLogFileSizes()).contains(props.getProperty(LOG_FILE_SIZE_LIMIT));
       }
 
       for (String jar : this.getJarNames()) {

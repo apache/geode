@@ -20,16 +20,17 @@ import static java.util.stream.Collectors.toList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -38,19 +39,19 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
+import org.apache.geode.management.internal.configuration.functions.GetClusterConfigurationFunction;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 
 public class ClusterConfigurationLoader {
@@ -64,7 +65,7 @@ public class ClusterConfigurationLoader {
    * @param cache Cache of this member
    * @param response {@link ConfigurationResponse} received from the locators
    */
-  public static void deployJarsReceivedFromClusterConfiguration(Cache cache,
+  public void deployJarsReceivedFromClusterConfiguration(Cache cache,
       ConfigurationResponse response) throws IOException, ClassNotFoundException {
     logger.info("Requesting cluster configuration");
     if (response == null) {
@@ -100,18 +101,14 @@ public class ClusterConfigurationLoader {
 
   /***
    * Apply the cache-xml cluster configuration on this member
-   *
-   * @param cache Cache created for this member
-   * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
-   * @param config this member's config.
    */
-  public static void applyClusterXmlConfiguration(Cache cache, ConfigurationResponse response,
-      DistributionConfig config) {
+  public void applyClusterXmlConfiguration(Cache cache, ConfigurationResponse response,
+      String groupList) {
     if (response == null || response.getRequestedConfiguration().isEmpty()) {
       return;
     }
 
-    List<String> groups = getGroups(config);
+    Set<String> groups = getGroups(groupList);
     Map<String, Configuration> requestedConfiguration = response.getRequestedConfiguration();
 
     List<String> cacheXmlContentList = new LinkedList<String>();
@@ -157,13 +154,13 @@ public class ClusterConfigurationLoader {
    * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
    * @param config this member's config
    */
-  public static void applyClusterPropertiesConfiguration(ConfigurationResponse response,
+  public void applyClusterPropertiesConfiguration(ConfigurationResponse response,
       DistributionConfig config) {
     if (response == null || response.getRequestedConfiguration().isEmpty()) {
       return;
     }
 
-    List<String> groups = getGroups(config);
+    Set<String> groups = getGroups(config.getGroups());
     Map<String, Configuration> requestedConfiguration = response.getRequestedConfiguration();
 
     final Properties runtimeProps = new Properties();
@@ -175,13 +172,23 @@ public class ClusterConfigurationLoader {
       runtimeProps.putAll(clusterConfiguration.getGemfireProperties());
     }
 
+    final Properties groupProps = new Properties();
+
     // then apply the group config
     for (String group : groups) {
       Configuration groupConfiguration = requestedConfiguration.get(group);
       if (groupConfiguration != null) {
-        runtimeProps.putAll(groupConfiguration.getGemfireProperties());
+        for (Map.Entry<Object, Object> e : groupConfiguration.getGemfireProperties().entrySet()) {
+          if (groupProps.containsKey(e.getKey())) {
+            logger.warn("Conflicting property {} from group {}", e.getKey(), group);
+          } else {
+            groupProps.put(e.getKey(), e.getValue());
+          }
+        }
       }
     }
+
+    runtimeProps.putAll(groupProps);
 
     Set<Object> attNames = runtimeProps.keySet();
     for (Object attNameObj : attNames) {
@@ -202,72 +209,47 @@ public class ClusterConfigurationLoader {
    *
    * This will request the group config this server belongs plus the "cluster" config
    *
-   * @param config this member's configuration.
    * @return {@link ConfigurationResponse}
    */
-  public static ConfigurationResponse requestConfigurationFromLocators(DistributionConfig config,
-      List<String> locatorList)
+  public ConfigurationResponse requestConfigurationFromLocators(String groupList,
+      Set<InternalDistributedMember> locatorList)
       throws ClusterConfigurationNotAvailableException, UnknownHostException {
-    List<String> groups = ClusterConfigurationLoader.getGroups(config);
-    ConfigurationRequest request = new ConfigurationRequest();
 
-    request.addGroups(ClusterConfigurationService.CLUSTER_CONFIG);
-    for (String group : groups) {
-      request.addGroups(group);
-    }
-
-    request.setNumAttempts(10);
+    Set<String> groups = getGroups(groupList);
+    GetClusterConfigurationFunction function = new GetClusterConfigurationFunction();
 
     ConfigurationResponse response = null;
-    // Try talking to all the locators in the list
-    // to get the shared configuration.
-
-    TcpClient client = new TcpClient();
-
-    for (String locatorInfo : locatorList) {
-      DistributionLocatorId dlId = new DistributionLocatorId(locatorInfo);
-      String ipaddress = dlId.getBindAddress();
-      InetAddress locatorInetAddress = null;
-
-      if (StringUtils.isNotBlank(ipaddress)) {
-        locatorInetAddress = InetAddress.getByName(ipaddress);
+    for (InternalDistributedMember locator : locatorList) {
+      ResultCollector resultCollector =
+          FunctionService.onMember(locator).setArguments(groups).execute(function);
+      Object result = ((ArrayList) resultCollector.getResult()).get(0);
+      if (result instanceof ConfigurationResponse) {
+        response = (ConfigurationResponse) result;
+        break;
       } else {
-        locatorInetAddress = dlId.getHost().getAddress();
-      }
-
-      int port = dlId.getPort();
-
-      try {
-        response = (ConfigurationResponse) client.requestToServer(locatorInetAddress, port, request,
-            10000);
-      } catch (UnknownHostException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        // TODO Log
-        e.printStackTrace();
-      } catch (ClassNotFoundException e) {
-        e.printStackTrace();
+        logger.error("Received invalid result from {}: {}", locator.toString(), result);
+        if (result instanceof Throwable) {
+          // log the stack trace.
+          logger.error(result.toString(), result);
+        }
       }
     }
-    // if the response is null , that means Shared Configuration service is not installed on the
-    // locator
-    // and hence it returns null
 
-    if (response == null || response.failedToGetSharedConfig()) {
+    // if the response is null
+    if (response == null) {
       throw new ClusterConfigurationNotAvailableException(
-          LocalizedStrings.Launcher_Command_FAILED_TO_GET_SHARED_CONFIGURATION.toLocalizedString());
+          "Unable to retrieve cluster configuration from the locator.");
     }
 
     return response;
   }
 
-  private static List<String> getGroups(DistributionConfig config) {
-    String groupString = config.getGroups();
-    List<String> groups = new ArrayList<String>();
-    if (StringUtils.isNotBlank(groupString)) {
-      groups.addAll((Arrays.asList(groupString.split(","))));
+  Set<String> getGroups(String groupString) {
+    if (StringUtils.isBlank(groupString)) {
+      return new HashSet<>();
     }
-    return groups;
+
+    return (Arrays.stream(groupString.split(",")).collect(Collectors.toSet()));
   }
 
 }
