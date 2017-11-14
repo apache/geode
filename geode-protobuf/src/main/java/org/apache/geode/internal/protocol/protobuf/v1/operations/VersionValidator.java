@@ -31,7 +31,6 @@ public class VersionValidator {
   }
 
   public boolean isValid(int majorVersion, int minorVersion) {
-    // Require an exact match with our version of the protobuf code for this implementation
     if (majorVersion != ConnectionAPI.MajorVersions.INVALID_MAJOR_VERSION_VALUE
         && majorVersion == this.majorVersion) {
       if (minorVersion != ConnectionAPI.MinorVersions.INVALID_MINOR_VERSION_VALUE
