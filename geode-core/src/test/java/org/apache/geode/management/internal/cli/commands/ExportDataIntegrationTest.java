@@ -35,7 +35,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
@@ -50,7 +50,7 @@ public class ExportDataIntegrationTest {
       .withRegion(RegionShortcut.PARTITION, TEST_REGION_NAME).withEmbeddedLocator();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
@@ -61,8 +61,7 @@ public class ExportDataIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(),
-        GfshShellConnectionRule.PortType.locator);
+    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     region = server.getCache().getRegion(TEST_REGION_NAME);
     loadRegion("value");
     Path basePath = tempDir.getRoot().toPath();

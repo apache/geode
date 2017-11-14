@@ -52,7 +52,7 @@ import org.apache.geode.test.junit.assertions.CommandResultAssert;
  * you can use this as Rule:
  *
  * <pre>
- * {@literal @}Rule GfshShellConnectionRule rule = new GfshShellConnectionRule();
+ * {@literal @}Rule GfshCommandRule rule = new GfshCommandRule();
  * </pre>
  *
  * then after you connect to a locator, you don't have to call disconnect() or close() at all, since
@@ -62,13 +62,13 @@ import org.apache.geode.test.junit.assertions.CommandResultAssert;
  * Or as a ClassRule:
  *
  * <pre>
- * {@literal @}ClassRule GfshShellConnectionRule rule = new GfshShellConnectionRule();
+ * {@literal @}ClassRule GfshCommandRule rule = new GfshCommandRule();
  * </pre>
  *
  * When using as a ClassRule, if you call connect in a test, you will need to call disconnect after
  * the test as well. See NetstatDUnitTest for example.
  */
-public class GfshShellConnectionRule extends DescribedExternalResource {
+public class GfshCommandRule extends DescribedExternalResource {
 
   private Supplier<Integer> portSupplier;
   private PortType portType = PortType.jmxManager;
@@ -78,7 +78,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
   private File workingDir;
 
-  public GfshShellConnectionRule() {
+  public GfshCommandRule() {
     try {
       temporaryFolder.create();
     } catch (IOException e) {
@@ -86,7 +86,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     }
   }
 
-  public GfshShellConnectionRule(Supplier<Integer> portSupplier, PortType portType) {
+  public GfshCommandRule(Supplier<Integer> portSupplier, PortType portType) {
     this();
     this.portType = portType;
     this.portSupplier = portSupplier;

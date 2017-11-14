@@ -18,8 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -44,7 +44,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
@@ -65,7 +65,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
   public static LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
   @ClassRule
-  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @Parameterized.Parameter
   public static boolean useHttp;

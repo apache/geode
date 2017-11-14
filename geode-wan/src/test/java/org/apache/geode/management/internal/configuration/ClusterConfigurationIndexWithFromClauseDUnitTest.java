@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -51,7 +51,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfshShellConnectionRule = new GfshShellConnectionRule();
+  public GfshCommandRule gfshCommandRule = new GfshCommandRule();
 
   private MemberVM locator = null;
 
@@ -65,12 +65,12 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
   public void indexCreatedWithEntrySetInFromClauseMustPersist(RegionShortcut regionShortcut)
       throws Exception {
     MemberVM vm1 = lsRule.startServerVM(1, locator.getPort());
-    gfshShellConnectionRule.connectAndVerify(locator);
+    gfshCommandRule.connectAndVerify(locator);
     createRegionUsingGfsh(REGION_NAME, regionShortcut, null);
     createIndexUsingGfsh("\"" + REGION_NAME + ".entrySet() z\"", "z.key", INDEX_NAME);
     String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
     lsRule.stopVM(1);
     lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
@@ -78,8 +78,8 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
 
   private void verifyIndexRecreated(String indexName) throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_INDEX);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
-    String resultAsString = gfshShellConnectionRule.getGfshOutput();
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    String resultAsString = gfshCommandRule.getGfshOutput();
     assertTrue(resultAsString.contains(indexName));
   }
 
@@ -89,7 +89,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, expression);
     csb.addOption(CliStrings.CREATE_INDEX__REGION, regionName);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 
   private void createRegionUsingGfsh(String regionName, RegionShortcut regionShortCut, String group)
@@ -98,6 +98,6 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
     csb.addOptionWithValueCheck(CliStrings.GROUP, group);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 }

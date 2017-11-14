@@ -37,7 +37,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ShowMissingDiskStoresDUnitTest {
@@ -55,7 +55,7 @@ public class ShowMissingDiskStoresDUnitTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -126,7 +126,7 @@ public class ShowMissingDiskStoresDUnitTest {
     return restart;
   }
 
-  private void checkAsyncResults(AsyncInvocation ai, GfshShellConnectionRule gfsh, int secsToWait)
+  private void checkAsyncResults(AsyncInvocation ai, GfshCommandRule gfsh, int secsToWait)
       throws Exception {
     try {
       Awaitility.await().atLeast(secsToWait, TimeUnit.SECONDS).until(() -> ai.isDone());
@@ -142,7 +142,7 @@ public class ShowMissingDiskStoresDUnitTest {
     System.out.println(result);
   }
 
-  private void putUsingGfsh(GfshShellConnectionRule gfsh, String regionName, int key, String val)
+  private void putUsingGfsh(GfshCommandRule gfsh, String regionName, int key, String val)
       throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.PUT)
         .addOption(CliStrings.PUT__KEY, Integer.toString(key)).addOption(CliStrings.PUT__VALUE, val)

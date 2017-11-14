@@ -21,8 +21,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
@@ -38,8 +38,7 @@ public class DescribeConfigCommandIntegrationTest {
       .withName("server").withRegion(RegionShortcut.PARTITION, "region").withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfsh =
-      new GfshShellConnectionRule(server::getJmxPort, PortType.jmxManager);
+  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
 
   @Test
   public void describeConfig() throws Exception {

@@ -61,7 +61,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
@@ -70,7 +70,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
@@ -88,7 +88,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   public void connect(MemberVM serverVM) throws Exception {
-    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test

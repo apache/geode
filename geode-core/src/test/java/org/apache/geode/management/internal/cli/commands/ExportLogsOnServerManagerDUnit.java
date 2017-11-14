@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
 @Category(DistributedTest.class)
@@ -41,12 +41,12 @@ public class ExportLogsOnServerManagerDUnit {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Test
   public void testExportWithOneServer() throws Exception {
     MemberVM server0 = lsRule.startServerAsJmxManager(0);
-    gfshConnector.connect(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfshConnector.connect(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();
 
     String message = gfshConnector.getGfshOutput();
@@ -64,8 +64,7 @@ public class ExportLogsOnServerManagerDUnit {
   public void testExportWithPeerLocator() throws Exception {
     MemberVM server0 = lsRule.startServerAsEmbededLocator(0);
     lsRule.startServerVM(1, server0.getEmbeddedLocatorPort());
-    gfshConnector.connect(server0.getEmbeddedLocatorPort(),
-        GfshShellConnectionRule.PortType.locator);
+    gfshConnector.connect(server0.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();
 
     String message = gfshConnector.getGfshOutput();

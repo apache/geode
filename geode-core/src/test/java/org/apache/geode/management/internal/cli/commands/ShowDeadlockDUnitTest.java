@@ -40,7 +40,7 @@ import org.apache.geode.test.concurrent.FileBasedCountDownLatch;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 /**
  * Distributed tests for show deadlock command in {@link ShowDeadlockCommand}.
@@ -65,7 +65,7 @@ public class ShowDeadlockDUnitTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void setup() throws Exception {

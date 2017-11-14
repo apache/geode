@@ -18,13 +18,13 @@ package org.apache.geode.management.internal.cli.commands;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Server;
 
 @Category(IntegrationTest.class)
 public class IndexCommandOverHttpTest extends IndexCommandsIntegrationTest {
   @Override
   public void connect(Server server) throws Exception {
-    gfsh.connectAndVerify(server.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    gfsh.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);
   }
 }

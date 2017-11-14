@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class CliUtilDUnitTest {
@@ -44,7 +44,7 @@ public class CliUtilDUnitTest {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @ClassRule
-  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   private static MemberVM locator;
   private static Set<DistributedMember> members;

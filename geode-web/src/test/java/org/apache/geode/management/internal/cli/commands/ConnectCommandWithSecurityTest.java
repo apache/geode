@@ -22,7 +22,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(IntegrationTest.class)
@@ -33,26 +33,26 @@ public class ConnectCommandWithSecurityTest {
       new LocatorStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void connectToLocator() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "clusterRead", "clusterRead");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "clusterRead",
+        "clusterRead");
     gfsh.executeAndAssertThat("list members").statusIsSuccess();
   }
 
   @Test
   public void connectOverJmx() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager,
+    gfsh.secureConnectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "clusterRead", "clusterRead");
     gfsh.executeAndAssertThat("list members").statusIsSuccess();
   }
 
   @Test
   public void connectOverHttp() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
-        "clusterRead", "clusterRead");
+    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http, "clusterRead",
+        "clusterRead");
     gfsh.executeAndAssertThat("list members").statusIsSuccess();
   }
 }

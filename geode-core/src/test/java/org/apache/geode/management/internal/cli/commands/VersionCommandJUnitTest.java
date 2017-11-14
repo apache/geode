@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(IntegrationTest.class)
@@ -49,7 +49,7 @@ public class VersionCommandJUnitTest {
   public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   @Parameters({"version", "version --full=false"})

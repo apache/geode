@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -36,7 +36,7 @@ import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExecuteFunctionCommandWithSecurityDUnitTest {
@@ -44,7 +44,7 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private static MemberVM locator;
 

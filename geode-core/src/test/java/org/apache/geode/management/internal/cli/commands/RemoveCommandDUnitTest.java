@@ -39,7 +39,7 @@ import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class RemoveCommandDUnitTest implements Serializable {
@@ -51,7 +51,7 @@ public class RemoveCommandDUnitTest implements Serializable {
   public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private transient MemberVM locator;
   private transient MemberVM server1;
