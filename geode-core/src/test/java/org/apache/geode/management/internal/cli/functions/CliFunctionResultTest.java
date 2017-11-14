@@ -12,27 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.Serializable;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class GatewaySenderDestroyFunctionArgs implements Serializable {
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-  private static final long serialVersionUID = 3848480256348119530L;
-  private String id;
-  private boolean ifExists;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 
-  public GatewaySenderDestroyFunctionArgs(String id, boolean ifExists) {
-    this.id = id;
-    this.ifExists = ifExists;
-  }
+@Category(UnitTest.class)
+public class CliFunctionResultTest {
 
-  public String getId() {
-    return id;
-  }
+  private CliFunctionResult result;
 
-  public boolean isIfExists() {
-    return ifExists;
+  @Test
+  public void getErrorMessage() throws Exception {
+    result = new CliFunctionResult("memberName", false, "message");
+    assertThat(result.getErrorMessage()).isEqualTo("message");
+
+    result = new CliFunctionResult("memberName", new Exception("exception message"), "message");
+    assertThat(result.getErrorMessage()).isEqualTo("message");
+
+    result = new CliFunctionResult("memberName", new Exception("exception message"), null);
+    assertThat(result.getErrorMessage()).isEqualTo("exception message");
   }
 }

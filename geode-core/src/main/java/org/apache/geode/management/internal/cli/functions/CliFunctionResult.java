@@ -117,6 +117,20 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     return (String) this.serializables[0];
   }
 
+  public String getErrorMessage() {
+    // if message is not null, use that
+    if (getMessage() != null) {
+      return getMessage();
+    }
+
+    // otherwise use exception's message
+    if (throwable != null) {
+      return throwable.getMessage();
+    }
+
+    return null;
+  }
+
   public Serializable[] getSerializables() {
     return this.serializables;
   }
