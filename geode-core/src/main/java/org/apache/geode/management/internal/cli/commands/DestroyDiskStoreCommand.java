@@ -65,28 +65,19 @@ public class DestroyDiskStoreCommand implements GfshCommand {
 
       AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
       for (CliFunctionResult result : results) {
-        if (result.getThrowable() != null) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Result", "ERROR: " + result.getThrowable().getClass().getName()
-              + ": " + result.getThrowable().getMessage());
-          accumulatedData = true;
-          tabularData.setStatus(Result.Status.ERROR);
-        } else if (result.getMessage() != null) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Result", result.getMessage());
-          accumulatedData = true;
-
+        if (result.isSuccessful()) {
           if (xmlEntity.get() == null) {
             xmlEntity.set(result.getXmlEntity());
           }
+        } else {
+          tabularData.setStatus(Result.Status.ERROR);
         }
-      }
-
-      if (!accumulatedData) {
-        return ResultBuilder.createInfoResult("No matching disk stores found.");
+        tabularData.accumulate("Member", result.getMemberIdOrName());
+        tabularData.accumulate("Result", result.getMessage());
       }
 
       Result result = ResultBuilder.buildResult(tabularData);
+
       if (xmlEntity.get() != null) {
         persistClusterConfiguration(result,
             () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), groups));

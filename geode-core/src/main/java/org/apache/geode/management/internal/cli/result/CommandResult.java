@@ -17,12 +17,16 @@ package org.apache.geode.management.internal.cli.result;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -605,6 +609,28 @@ public class CommandResult implements Result {
     return gfJsonObject.getJSONObject(ResultData.RESULT_CONTENT);
   }
 
+  /**
+   * The intent is that this method should be able to handle both ResultData as well as
+   * CompositeResultData
+   *
+   * @return the extracted GfJsonObject table
+   */
+  public GfJsonObject getTableContent() {
+    GfJsonObject topLevelContent = getContent();
+    GfJsonObject sectionObject = topLevelContent.getJSONObject("__sections__-0");
+    // This means we're just dealing with a regular ResultData object
+    if (sectionObject == null) {
+      return topLevelContent;
+    }
+
+    GfJsonObject tableContent = sectionObject.getJSONObject("__tables__-0");
+    if (tableContent == null) {
+      return topLevelContent;
+    }
+
+    return tableContent.getJSONObject("content");
+  }
+
   public String getFooter() {
     return getFooter(gfJsonObject);
   }
@@ -625,7 +651,6 @@ public class CommandResult implements Result {
 
   public int hashCode() {
     return this.gfJsonObject.hashCode(); // any arbitrary constant will do
-
   }
 
   @Override
@@ -647,5 +672,25 @@ public class CommandResult implements Result {
 
   public void setFileToDownload(Path fileToDownload) {
     this.fileToDownload = fileToDownload;
+  }
+
+  public List<String> getColumnValues(int section, String columnName) {
+    JSONObject sectionObject = (JSONObject) getContent().get("__sections__-" + section);
+    JSONArray content = sectionObject.getJSONObject("__tables__-0").getJSONObject("content")
+        .getJSONArray(columnName);
+
+    String[] actualValues = toArray(content);
+
+    return Arrays.asList(actualValues);
+  }
+
+  private String[] toArray(JSONArray array) {
+    String[] values = new String[array.length()];
+
+    for (int i = 0; i < array.length(); i++) {
+      values[i] = (String) array.get(i);
+    }
+
+    return values;
   }
 }

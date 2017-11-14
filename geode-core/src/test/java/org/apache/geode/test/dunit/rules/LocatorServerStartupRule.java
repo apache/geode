@@ -218,6 +218,40 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return setMember(index, new MemberVM(server, serverVM, useTempWorkingDir()));
   }
 
+  public void startServerVMAsync(int index) {
+    startServerVMAsync(index, new Properties(), -1);
+  }
+
+  public void startServerVMAsync(int index, int locatorPort) {
+    startServerVMAsync(index, new Properties(), locatorPort);
+  }
+
+  public void startServerVMAsync(int index, Properties specifiedProperties, int locatorPort) {
+    assert members.get(index) != null;
+
+    Properties properties = new Properties();
+    properties.putAll(specifiedProperties);
+
+    String defaultName = "server-" + index;
+    properties.putIfAbsent(NAME, defaultName);
+    String name = properties.getProperty(NAME);
+
+    VM serverVM = getVM(index);
+    serverVM.invokeAsync(() -> {
+      memberStarter = new ServerStarterRule();
+      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
+      if (useTempWorkingDir()) {
+        File workingDirFile = createWorkingDirForMember(name);
+        serverStarter.withWorkingDir(workingDirFile);
+      }
+      if (logFile) {
+        serverStarter.withLogFile();
+      }
+      serverStarter.withProperties(properties).withConnectionToLocator(locatorPort).withAutoStart();
+      serverStarter.before();
+    });
+  }
+
   public MemberVM startServerAsJmxManager(int index) throws IOException {
     return startServerAsJmxManager(index, new Properties());
   }
