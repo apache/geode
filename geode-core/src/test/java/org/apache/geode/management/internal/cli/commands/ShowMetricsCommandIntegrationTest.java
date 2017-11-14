@@ -32,8 +32,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
@@ -48,7 +48,7 @@ public class ShowMetricsCommandIntegrationTest {
           .withName(MEMBER_NAME).withJMXManager().withEmbeddedLocator().withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void everyCategoryHasAUseCase() throws Exception {
