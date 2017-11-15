@@ -14,15 +14,14 @@
  */
 package org.apache.geode.cache.query.internal.parse;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.StringReader;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-
-import static org.assertj.core.api.Assertions.fail;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * TODO: class created to fix GEODE-3938. Add more tests for other queries, parameters, etc.
@@ -37,12 +36,8 @@ public class OQLParserTest {
     OQLLexer lexer = new OQLLexer(new StringReader(oqlSource));
     OQLParser parser = new OQLParser(lexer);
 
-    try {
-      parser.queryProgram();
-      assertThat(parser.getAST()).isNotNull();
-    } catch (Exception exception) {
-      fail("Unexpected Exception, the query grammar is correct.", exception);
-    }
+    parser.queryProgram();
+    assertThat(parser.getAST()).isNotNull();
   }
 
   @Test
@@ -51,11 +46,7 @@ public class OQLParserTest {
     OQLLexer lexer = new OQLLexer(new StringReader(oqlSource));
     OQLParser parser = new OQLParser(lexer);
 
-    try {
-      parser.queryProgram();
-      assertThat(parser.getAST()).isNotNull();
-    } catch (Exception exception) {
-      fail("Unexpected Exception, the query grammar is correct.", exception);
-    }
+    parser.queryProgram();
+    assertThat(parser.getAST()).isNotNull();
   }
 }
