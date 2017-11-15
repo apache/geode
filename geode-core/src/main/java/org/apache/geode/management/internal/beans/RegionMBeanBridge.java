@@ -145,6 +145,13 @@ public class RegionMBeanBridge<K, V> {
     this.regAttrs = region.getAttributes();
 
     this.isStatisticsEnabled = regAttrs.getStatisticsEnabled();
+    if (isStatisticsEnabled) {
+      try {
+        region.getStatistics();
+      } catch (UnsupportedOperationException e) {
+        this.isStatisticsEnabled = false;
+      }
+    }
 
     this.regionAttributesData = RegionMBeanCompositeDataFactory.getRegionAttributesData(regAttrs);
     this.membershipAttributesData =
