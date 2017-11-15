@@ -597,7 +597,7 @@ public class CliUtil {
    *
    * @param regions
    * @param cache
-   * @param returnAll: if true, returns all matching members, otherwise, returns only one.
+   * @param returnAll if true, returns all matching members, otherwise, returns only one.
    */
   public static Set<DistributedMember> getQueryRegionsAssociatedMembers(Set<String> regions,
       final InternalCache cache, boolean returnAll) {
