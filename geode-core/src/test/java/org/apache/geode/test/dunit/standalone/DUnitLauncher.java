@@ -481,9 +481,18 @@ public class DUnitLauncher {
       addHost(this);
     }
 
+    /**
+     * this will not bounce VM to a different version. It will only get the current running VM or
+     * launch a new one if not already launched.
+     */
     @Override
     public VM getVM(int n) {
-      return getVM(VersionManager.CURRENT_VERSION, n);
+      if (n < getVMCount()) {
+        VM current = super.getVM(n);
+        return getVM(current.getVersion(), n);
+      } else {
+        return getVM(VersionManager.CURRENT_VERSION, n);
+      }
     }
 
     @Override

@@ -727,9 +727,9 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   public void doTestPutAndGetMixedServers(String objectType, boolean partitioned, String oldVersion)
       throws Exception {
     final Host host = Host.getHost(0);
-    VM currentServer1 = host.getVM(0);
+    VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
     VM oldServerAndLocator = host.getVM(oldVersion, 1);
-    VM currentServer2 = host.getVM(2);
+    VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
     VM oldServer2 = host.getVM(oldVersion, 3);
 
     String regionName = "aRegion";
@@ -796,9 +796,9 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   public void doTestQueryMixedServers(boolean partitioned, String oldVersion) throws Exception {
     final Host host = Host.getHost(0);
-    VM currentServer1 = host.getVM(0);
+    VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
     VM oldServer = host.getVM(oldVersion, 1);
-    VM currentServer2 = host.getVM(2);
+    VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
     VM oldServerAndLocator = host.getVM(oldVersion, 3);
 
     String regionName = "cqs";
@@ -846,9 +846,9 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   public void doTestTracePRQuery(boolean partitioned, String oldVersion) throws Exception {
     final Host host = Host.getHost(0);
-    VM currentServer1 = host.getVM(0);
+    VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
     VM oldServer = host.getVM(oldVersion, 1);
-    VM currentServer2 = host.getVM(2);
+    VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
     VM oldServerAndLocator = host.getVM(oldVersion, 3);
 
     String regionName = "cqs";
@@ -892,9 +892,9 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   public void doTestCreateIndexes(boolean createMultiIndexes, boolean partitioned,
       String oldVersion) throws Exception {
     final Host host = Host.getHost(0);
-    final VM currentServer1 = host.getVM(0);
+    final VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
     final VM oldServer = host.getVM(oldVersion, 1);
-    final VM currentServer2 = host.getVM(2);
+    final VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
     final VM oldServerAndLocator = host.getVM(oldVersion, 3);
 
     String regionName = "cqs";
@@ -1035,8 +1035,8 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     VM oldLocator = host.getVM(oldVersion, 0);
     VM oldServer = host.getVM(oldVersion, 1);
-    VM currentServer1 = host.getVM(2);
-    VM currentServer2 = host.getVM(3);
+    VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
+    VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
 
     int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
     String hostName = NetworkUtils.getServerHostName(host);
@@ -1091,7 +1091,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     VM locator = host.getVM(oldVersion, 0);
     VM server1 = host.getVM(oldVersion, 1);
-    VM server2 = host.getVM(2);
+    VM server2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
     VM client = host.getVM(oldVersion, 3);
 
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
@@ -1266,7 +1266,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) throws Exception {
     // Roll the server
     oldServer.invoke(invokeCloseCache());
-    VM rollServer = Host.getHost(0).getVM(oldServer.getId());
+    VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
     rollServer.invoke(invokeCreateCache(locatorPorts == null ? getSystemPropertiesPost71()
         : getSystemPropertiesPost71(locatorPorts)));
     rollServer.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
@@ -1276,7 +1276,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   private VM rollClientToCurrent(VM oldClient, String[] hostNames, int[] locatorPorts,
       boolean subscriptionEnabled) throws Exception {
     oldClient.invoke(invokeCloseCache());
-    VM rollClient = Host.getHost(0).getVM(oldClient.getId());
+    VM rollClient = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldClient.getId());
     rollClient.invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts,
         subscriptionEnabled));
     rollClient.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
@@ -1342,7 +1342,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       final String testName, final String locatorString) throws Exception {
     // Roll the locator
     rollLocator.invoke(invokeStopLocator());
-    VM newLocator = Host.getHost(0).getVM(rollLocator.getId());
+    VM newLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, rollLocator.getId());
     newLocator.invoke(invokeStartLocator(serverHostName, port, testName,
         getLocatorProperties91AndAfter(locatorString)));
     return newLocator;
