@@ -26,7 +26,6 @@ import java.util.Vector;
 import java.util.zip.DataFormatException;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -616,14 +615,18 @@ public class CommandResult implements Result {
    * @return the extracted GfJsonObject table
    */
   public GfJsonObject getTableContent() {
+    return getTableContent(0, 0);
+  }
+
+  public GfJsonObject getTableContent(int sectionIdx, int tableIdx) {
     GfJsonObject topLevelContent = getContent();
-    GfJsonObject sectionObject = topLevelContent.getJSONObject("__sections__-0");
+    GfJsonObject sectionObject = topLevelContent.getJSONObject("__sections__-" + sectionIdx);
     // This means we're just dealing with a regular ResultData object
     if (sectionObject == null) {
       return topLevelContent;
     }
 
-    GfJsonObject tableContent = sectionObject.getJSONObject("__tables__-0");
+    GfJsonObject tableContent = sectionObject.getJSONObject("__tables__-" + tableIdx);
     if (tableContent == null) {
       return topLevelContent;
     }
@@ -674,21 +677,17 @@ public class CommandResult implements Result {
     this.fileToDownload = fileToDownload;
   }
 
-  public List<String> getColumnValues(int section, String columnName) {
-    JSONObject sectionObject = (JSONObject) getContent().get("__sections__-" + section);
-    JSONArray content = sectionObject.getJSONObject("__tables__-0").getJSONObject("content")
-        .getJSONArray(columnName);
-
-    String[] actualValues = toArray(content);
-
+  public List<Object> getColumnValues(String columnName) {
+    Object[] actualValues =
+        toArray(getTableContent().getInternalJsonObject().getJSONArray(columnName));
     return Arrays.asList(actualValues);
   }
 
-  private String[] toArray(JSONArray array) {
-    String[] values = new String[array.length()];
+  private Object[] toArray(JSONArray array) {
+    Object[] values = new Object[array.length()];
 
     for (int i = 0; i < array.length(); i++) {
-      values[i] = (String) array.get(i);
+      values[i] = array.get(i);
     }
 
     return values;

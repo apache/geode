@@ -107,14 +107,14 @@ public class DiskStoreCommandsDUnitTest {
     server2.invoke(LocatorServerStartupRule::stopMemberInThisVM);
 
     props.setProperty("log-file", "");
-    rule.startServerVMAsync(1, props, locator.getPort());
+    rule.startServerVMAsync(server1.getVM().getId(), props, locator.getPort());
 
     locator.waitTillDiskstoreIsReady(DISKSTORE, 1);
 
     gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
         .containsOutput("Missing Disk Stores", "No missing colocated region found");
 
-    List<String> diskstoreIDs = gfsh.getCommandResult().getColumnValues(0, "Disk Store ID");
+    List<Object> diskstoreIDs = gfsh.getCommandResult().getColumnValues("Disk Store ID");
     assertThat(diskstoreIDs.size()).isEqualTo(1);
 
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
@@ -150,7 +150,7 @@ public class DiskStoreCommandsDUnitTest {
 
     server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
 
-    String diskDirs = new File(server1.getWorkingDir(), "diskstore").getAbsolutePath();
+    String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     gfsh.executeAndAssertThat(
         "validate offline-disk-store --name=" + DISKSTORE + " --disk-dirs=" + diskDirs)
         .statusIsSuccess()
@@ -178,7 +178,7 @@ public class DiskStoreCommandsDUnitTest {
 
     server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
 
-    String diskDirs = new File(server1.getWorkingDir(), "diskstore").getAbsolutePath();
+    String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     File exportDir = tempDir.newFolder();
     gfsh.executeAndAssertThat("export offline-disk-store --name=" + DISKSTORE + " --disk-dirs="
         + diskDirs + " --dir=" + exportDir.getAbsolutePath()).statusIsSuccess()
@@ -249,7 +249,7 @@ public class DiskStoreCommandsDUnitTest {
 
     createDiskStoreAndRegion(locator, 1);
 
-    String diskDirs = new File(server1.getWorkingDir(), "diskstore").getAbsolutePath();
+    String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     gfsh.executeAndAssertThat(
         String.format("alter disk-store --name=%s --region=%s --disk-dirs=%s --concurrency-level=5",
             DISKSTORE, REGION_1, diskDirs))
@@ -284,7 +284,7 @@ public class DiskStoreCommandsDUnitTest {
     });
 
     String backupDir = tempDir.newFolder().getCanonicalPath();
-    String diskDirs = new File(server1.getWorkingDir(), "diskstore").getAbsolutePath();
+    String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     gfsh.executeAndAssertThat(
         String.format("backup disk-store --dir=%s --baseline-dir=%s", diskDirs, backupDir))
         .statusIsSuccess()
