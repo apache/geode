@@ -40,7 +40,7 @@ public abstract class CliLegacyMessage extends AdminRequest {
     } catch (Exception ex) {
       logger.error(
           LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), ex);
-      response = AdminFailureResponse.create(dm, this.getSender(), ex);
+      response = AdminFailureResponse.create(this.getSender(), ex);
 
     }
     if (response != null) { // cancellations result in null response
@@ -51,5 +51,4 @@ public abstract class CliLegacyMessage extends AdminRequest {
           LocalizedStrings.AdminRequest_RESPONSE_TO__0__WAS_CANCELLED, this.getClass().getName()));
     }
   }
-
 }

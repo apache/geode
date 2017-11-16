@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.matchprocessor.ImplementingClassMatchProcessor;
 
 /**
  * Utility class to scan class-path & load classes.
@@ -28,18 +29,26 @@ import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
  * @since GemFire 7.0
  */
 public class ClasspathScanLoadHelper {
-  public static Set<Class<?>> scanPackageForClassesImplementing(String packageToScan,
-      Class<?> implementedInterface) {
-    Set<Class<?>> classesImplementing = new HashSet<>();
-    new FastClasspathScanner(packageToScan)
-        .matchClassesImplementing(implementedInterface, classesImplementing::add).scan();
+
+  public static <T> Set<Class<? extends T>> scanClasspathForClassesImplementing(
+      Class<T> implementedInterface, String... packageSpec) {
+    return scanPackageForClassesImplementing(implementedInterface, packageSpec);
+  }
+
+  public static <T> Set<Class<? extends T>> scanPackageForClassesImplementing(
+      Class<T> implementedInterface, String... packageSpec) {
+    Set<Class<? extends T>> classesImplementing = new HashSet<>();
+    ImplementingClassMatchProcessor<T> matchProcessor = classesImplementing::add;
+
+    new FastClasspathScanner(packageSpec)
+        .matchClassesImplementing(implementedInterface, matchProcessor).scan();
 
     return classesImplementing.stream().filter(ClasspathScanLoadHelper::isInstantiable)
         .collect(toSet());
   }
 
-  private static boolean isInstantiable(Class<?> klass) {
-    int modifiers = klass.getModifiers();
+  private static <T> boolean isInstantiable(Class<T> classToInstantiate) {
+    int modifiers = classToInstantiate.getModifiers();
 
     return !Modifier.isAbstract(modifiers) && !Modifier.isInterface(modifiers)
         && Modifier.isPublic(modifiers);

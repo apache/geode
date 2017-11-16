@@ -22,10 +22,10 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
-
 
 /**
  * A message that is sent in response to a {@link LicenseInfoRequest}.
@@ -33,15 +33,12 @@ import org.apache.geode.internal.logging.LogService;
 public class LicenseInfoResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();
 
-  // instance variables
   private Properties p;
 
-
   /**
-   * Returns a <code>LicenseInfoResponse</code> that will be returned to the specified recipient.
+   * Returns a {@code LicenseInfoResponse} that will be returned to the specified recipient.
    */
-  public static LicenseInfoResponse create(DistributionManager dm,
-      InternalDistributedMember recipient) {
+  public static LicenseInfoResponse create(DM dm, InternalDistributedMember recipient) {
     LicenseInfoResponse m = new LicenseInfoResponse();
     m.setRecipient(recipient);
     m.p = new Properties();

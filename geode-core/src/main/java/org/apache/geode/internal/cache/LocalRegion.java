@@ -2051,6 +2051,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
    *
    * @since GemFire 3.2
    */
+  @Override
   public DiskRegion getDiskRegion() {
     return this.diskRegion;
   }

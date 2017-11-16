@@ -87,7 +87,7 @@ public class ShutdownAllRequest extends AdminRequest {
           if (logger.isDebugEnabled()) {
             logger.debug("caught exception while processing shutdownAll locally", ex);
           }
-          response = AdminFailureResponse.create(dism, myId, ex);
+          response = AdminFailureResponse.create(myId, ex);
         }
         response.setSender(myId);
         replyProcessor.process(response);
@@ -173,7 +173,7 @@ public class ShutdownAllRequest extends AdminRequest {
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     boolean isToShutdown = hasCache();
     if (isToShutdown) {
       boolean isSuccess = false;

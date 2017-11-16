@@ -27,7 +27,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.SyncFailedException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
@@ -54,7 +53,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -83,6 +81,7 @@ import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
@@ -687,6 +686,10 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
+  public Object getLock() {
+    return lock;
+  }
+
   public void replaceIncompatibleEntry(DiskRegionView dr, DiskEntry old, DiskEntry repl) {
     boolean useNextOplog = false;
     // No need to get the backup lock prior to synchronizing (correct lock order) since the
@@ -1160,7 +1163,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Otherwise, for windows the actual file length does not match with the File size obtained from
    * the File object
    */
-  File getOplogFile() throws SyncFailedException, IOException {
+  File getOplogFileForTest() throws IOException {
     // @todo check callers for drf
     // No need to get the backup lock prior to synchronizing (correct lock order) since the
     // synchronized block does not attempt to get the backup lock (incorrect lock order)
@@ -1172,13 +1175,21 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
+  public File getCrfFile() {
+    return this.crf.f;
+  }
+
+  public File getDrfFile() {
+    return this.drf.f;
+  }
+
   /**
    * Given a set of Oplog file names return a Set of the oplog files that match those names that are
    * managed by this Oplog.
    *
    * @param oplogFileNames a Set of operation log file names.
    */
-  Set<String> gatherMatchingOplogFiles(Set<String> oplogFileNames) {
+  public Set<String> gatherMatchingOplogFiles(Set<String> oplogFileNames) {
     Set<String> matchingFiles = new HashSet<>();
 
     // CRF match?
@@ -1212,7 +1223,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @return a map of baslineline oplog files to copy. May be empty if total current set for this
    *         oplog does not match the baseline.
    */
-  Map<File, File> mapBaseline(Collection<File> baselineOplogFiles) {
+  public Map<File, File> mapBaseline(Collection<File> baselineOplogFiles) {
     // Map of baseline oplog file name to oplog file
     Map<String, File> baselineOplogMap =
         TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
@@ -4224,7 +4235,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  private File getKrfFile() {
+  public File getKrfFile() {
     return new File(this.diskFile.getPath() + KRF_FILE_EXT);
   }
 
@@ -5751,23 +5762,6 @@ public class Oplog implements CompactableOplog, Flushable {
     deleteFile(this.drf);
   }
 
-  public void copyTo(File targetDir) throws IOException {
-    if (this.crf.f != null && this.crf.f.exists()) {
-      FileUtils.copyFileToDirectory(this.crf.f, targetDir);
-    }
-    if (this.drf.f.exists()) {
-      FileUtils.copyFileToDirectory(this.drf.f, targetDir);
-    }
-
-    // this krf existence check fixes 45089
-    // TODO: should we wait for the async KRF creation to finish by calling this.finishKrf?
-    if (getParent().getDiskInitFile().hasKrf(this.oplogId)) {
-      if (this.getKrfFile().exists()) {
-        FileUtils.copyFileToDirectory(this.getKrfFile(), targetDir);
-      }
-    }
-  }
-
   /**
    * Returns "crf" or "drf".
    */
@@ -5830,7 +5824,7 @@ public class Oplog implements CompactableOplog, Flushable {
     return this.crf.channel;
   }
 
-  DirectoryHolder getDirectoryHolder() {
+  public DirectoryHolder getDirectoryHolder() {
     return this.dirHolder;
   }
 
@@ -7759,7 +7753,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  void finishKrf() {
+  public void finishKrf() {
     createKrf(false);
   }
 

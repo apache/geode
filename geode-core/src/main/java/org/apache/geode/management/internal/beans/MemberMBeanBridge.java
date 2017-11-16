@@ -63,7 +63,6 @@ import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.cache.BackupManager;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskDirectoryStats;
@@ -74,6 +73,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
@@ -338,8 +338,7 @@ public class MemberMBeanBridge {
 
     this.config = system.getConfig();
     try {
-      this.commandProcessor =
-          new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService());
+      this.commandProcessor = new OnlineCommandProcessor(cache.getSecurityService());
     } catch (Exception e) {
       commandServiceInitError = e.getMessage();
       logger.info(LogMarker.CONFIG, "Command processor could not be initialized. {}",

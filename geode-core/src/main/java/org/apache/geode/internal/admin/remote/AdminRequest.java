@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -134,7 +135,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
       cpMgr.jumpToModifiedClassLoader(modifiedClasspath);
       response = createResponse(dm);
     } catch (Exception ex) {
-      response = AdminFailureResponse.create(dm, this.getSender(), ex);
+      response = AdminFailureResponse.create(this.getSender(), ex);
     } finally {
       cpMgr.revertToOldClassLoader();
     }
@@ -150,7 +151,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   /**
    * Must return a proper response to this request.
    */
-  protected abstract AdminResponse createResponse(DistributionManager dm);
+  protected abstract AdminResponse createResponse(DM dm);
 
   @Override
   public void toData(DataOutput out) throws IOException {
