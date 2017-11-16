@@ -732,6 +732,13 @@ public class EntryEventImpl
       if (ov == null) {
         return null;
       } else if (ov == Token.NOT_AVAILABLE) {
+        if (getReadOldValueFromDisk()) {
+          try {
+            ov = this.region.getValueInVMOrDiskWithoutFaultIn(getKey());
+          } catch (EntryNotFoundException ex) {
+            ov = null;
+          }
+        }
         return AbstractRegion.handleNotAvailable(ov);
       }
       boolean doCopyOnRead = getRegion().isCopyOnRead();
@@ -759,6 +766,21 @@ public class EntryEventImpl
       iae.initCause(i);
       throw iae;
     }
+  }
+
+  /**
+   * If true then when getOldValue is called if the NOT_AVAILABLE is found then an attempt will be
+   * made to read the old value from disk without faulting it in. Should only be set to true when
+   * product is calling a method on a CacheWriter.
+   */
+  private boolean readOldValueFromDisk;
+
+  public boolean getReadOldValueFromDisk() {
+    return this.readOldValueFromDisk;
+  }
+
+  public void setReadOldValueFromDisk(boolean v) {
+    this.readOldValueFromDisk = v;
   }
 
   /**
