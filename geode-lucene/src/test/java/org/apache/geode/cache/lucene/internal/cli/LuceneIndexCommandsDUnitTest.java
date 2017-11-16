@@ -78,7 +78,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   @Rule
   public SerializableTestName testName = new SerializableTestName();
 
-  private MemberVM serverVM;
+  protected MemberVM serverVM;
 
   @Before
   public void before() throws Exception {
@@ -154,24 +154,26 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
 
   @Test
-  public void createIndexShouldCreateANewIndex() throws Exception {
+  public void createIndexShouldCreateANewIndex() {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
+
+    serverVM.invoke(() -> createRegion());
 
     serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertArrayEquals(new String[] {"field1", "field2", "field3"}, index.getFieldNames());
     });
   }
 
   @Test
-  public void createIndexWithAnalyzersShouldCreateANewIndex() throws Exception {
+  public void createIndexWithAnalyzersShouldCreateANewIndex() {
     List<String> analyzerNames = new ArrayList<>();
     analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
     analyzerNames.add(KeywordAnalyzer.class.getCanonicalName());
@@ -183,11 +185,14 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, String.join(",", analyzerNames));
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
+
+    serverVM.invoke(() -> createRegion());
+
 
     serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
       assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
@@ -197,7 +202,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   @Test
-  public void createIndexWithALuceneSerializerShouldCreateANewIndex() throws Exception {
+  public void createIndexWithALuceneSerializerShouldCreateANewIndex() {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -205,11 +210,14 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER,
         PrimitiveSerializer.class.getCanonicalName());
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
+
+    serverVM.invoke(() -> createRegion());
+
 
     serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertThat(index.getLuceneSerializer()).isInstanceOf(PrimitiveSerializer.class);
     });
@@ -217,7 +225,6 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Test
   public void createIndexShouldNotAcceptBadIndexOrRegionNames() {
-    // CommandStringBuilder csb;
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "\'__\'");
@@ -252,7 +259,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   @Test
-  public void createIndexShouldTrimAnalyzerNames() throws Exception {
+  public void createIndexShouldTrimAnalyzerNames() {
     List<String> analyzerNames = new ArrayList<>();
     analyzerNames.add(StandardAnalyzer.class.getCanonicalName());
     analyzerNames.add(KeywordAnalyzer.class.getCanonicalName());
@@ -265,11 +272,14 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER,
         "\"org.apache.lucene.analysis.standard.StandardAnalyzer, org.apache.lucene.analysis.core.KeywordAnalyzer, org.apache.lucene.analysis.standard.StandardAnalyzer\"");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
+
+    serverVM.invoke(() -> createRegion());
+
 
     serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
       assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
@@ -297,8 +307,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   @Test
-  public void createIndexWithWhitespaceOrDefaultKeywordAnalyzerShouldUseStandardAnalyzer()
-      throws Exception {
+  public void createIndexWithWhitespaceOrDefaultKeywordAnalyzerShouldUseStandardAnalyzer() {
     // Test whitespace analyzer name
     String analyzerList = StandardAnalyzer.class.getCanonicalName() + ",     ,"
         + KeywordAnalyzer.class.getCanonicalName();
@@ -308,7 +317,8 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, "'" + analyzerList + "'");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
 
     // Test empty analyzer name
     analyzerList =
@@ -319,7 +329,8 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, analyzerList);
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
 
     // Test keyword analyzer name
     analyzerList = StandardAnalyzer.class.getCanonicalName() + ",DEFAULT,"
@@ -330,7 +341,8 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, analyzerList);
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput("Successfully created lucene index");
 
     serverVM.invoke(() -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
@@ -655,7 +667,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
         .containsOutput(expectedOutput);
   }
 
-  private void createRegion() {
+  protected void createRegion() {
     getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
   }
 
@@ -715,7 +727,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
         new Object[] {regionPath});
   }
 
-  private static Cache getCache() {
+  protected static Cache getCache() {
     return LocatorServerStartupRule.getCache();
   }
 

@@ -14,8 +14,12 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +35,8 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.distributed.DistributedSystem;
@@ -52,7 +56,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
   FunctionContext context;
   ResultSender resultSender;
   CliFunctionResult expectedResult;
-  private LuceneIndexFactory factory;
+  private LuceneIndexFactoryImpl factory;
 
   @Before
   public void prepare() {
@@ -61,7 +65,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     member = ds.getDistributedMember().getId();
     service = mock(InternalLuceneService.class);
     when(cache.getService(InternalLuceneService.class)).thenReturn(service);
-    factory = mock(LuceneIndexFactory.class);
+    factory = mock(LuceneIndexFactoryImpl.class);
     when(service.createIndexFactory()).thenReturn(factory);
 
     context = mock(FunctionContext.class);
@@ -94,7 +98,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     verify(factory).addField(eq("field1"), isA(StandardAnalyzer.class));
     verify(factory).addField(eq("field2"), isA(KeywordAnalyzer.class));
     verify(factory).addField(eq("field3"), isA(StandardAnalyzer.class));
-    verify(factory).create(eq("index1"), eq("/region1"));
+    verify(factory).create(eq("index1"), eq("/region1"), eq(false));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -116,7 +120,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     verify(factory).addField(eq("field1"));
     verify(factory).addField(eq("field2"));
     verify(factory).addField(eq("field3"));
-    verify(factory).create(eq("index1"), eq("/region1"));
+    verify(factory).create(eq("index1"), eq("/region1"), eq(false));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -140,7 +144,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
     verify(factory).addField(eq("field2"));
     verify(factory).addField(eq("field3"));
     verify(factory).setLuceneSerializer(isA(PrimitiveSerializer.class));
-    verify(factory).create(eq("index1"), eq("/region1"));
+    verify(factory).create(eq("index1"), eq("/region1"), eq(false));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());
