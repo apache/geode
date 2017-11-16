@@ -29,8 +29,7 @@ import org.apache.geode.test.junit.runners.SuiteRunner;
  */
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(SuiteRunner.class)
-@Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class,
-    ListAndDescribeDiskStoreCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
+@Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class, QueueCommandsDUnitTest.class,
     ShellCommandsDUnitTest.class, ShowStackTraceDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
