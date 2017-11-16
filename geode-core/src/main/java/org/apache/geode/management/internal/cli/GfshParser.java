@@ -57,10 +57,14 @@ public class GfshParser extends SimpleParser {
       add(command);
     }
 
-    for (Converter<?> converter : commandManager.getConverters()) {
+    for (Converter converter : commandManager.getConverters()) {
       if (converter.getClass().isAssignableFrom(ArrayConverter.class)) {
         ArrayConverter arrayConverter = (ArrayConverter) converter;
-        arrayConverter.setConverters(new HashSet<>(commandManager.getConverters()));
+        HashSet<Converter<?>> converters = new HashSet<>();
+        for (Converter c : commandManager.getConverters()) {
+          converters.add(c);
+        }
+        arrayConverter.setConverters(converters);
       }
       add(converter);
     }
