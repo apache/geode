@@ -729,20 +729,11 @@ public class EntryEventImpl
       }
       @Unretained
       Object ov = basicGetOldValue();
-      if (ov == null) {
-        return null;
-      } else if (ov == Token.NOT_AVAILABLE) {
-        if (getReadOldValueFromDisk()) {
-          try {
-            ov = this.region.getValueInVMOrDiskWithoutFaultIn(getKey());
-          } catch (EntryNotFoundException ex) {
-            ov = null;
-          }
-        }
-        return AbstractRegion.handleNotAvailable(ov);
+      if (ov == Token.NOT_AVAILABLE) {
+        ov = handleNotAvailableOldValue(ov);
       }
-      boolean doCopyOnRead = getRegion().isCopyOnRead();
       if (ov != null) {
+        boolean doCopyOnRead = getRegion().isCopyOnRead();
         if (ov instanceof CachedDeserializable) {
           return callWithOffHeapLock((CachedDeserializable) ov, oldValueCD -> {
             if (doCopyOnRead) {
@@ -766,6 +757,20 @@ public class EntryEventImpl
       iae.initCause(i);
       throw iae;
     }
+  }
+
+  private Object handleNotAvailableOldValue(Object oldValue) {
+    if (getReadOldValueFromDisk()) {
+      try {
+        oldValue = this.region.getValueInVMOrDiskWithoutFaultIn(getKey());
+      } catch (EntryNotFoundException ex) {
+        oldValue = null;
+      }
+    }
+    if (oldValue == Token.NOT_AVAILABLE) {
+      oldValue = AbstractRegion.handleNotAvailable(oldValue);
+    }
+    return oldValue;
   }
 
   /**
