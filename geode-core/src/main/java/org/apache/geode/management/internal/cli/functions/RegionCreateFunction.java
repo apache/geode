@@ -24,6 +24,7 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -36,6 +37,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalEntity;
@@ -202,6 +204,11 @@ public class RegionCreateFunction implements Function, InternalEntity {
 
     EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();
     if (evictionAttributes != null) {
+      ObjectSizer sizer = evictionAttributes.getObjectSizer();
+      if (sizer != null && !(sizer instanceof Declarable)) {
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
+      }
       factory.setEvictionAttributes(evictionAttributes);
     }
 

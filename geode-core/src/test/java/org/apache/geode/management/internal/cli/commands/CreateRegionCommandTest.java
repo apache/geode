@@ -125,15 +125,6 @@ public class CreateRegionCommandTest {
   }
 
   @Test
-  public void invalidEvictionSizerWithoutMemory() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --eviction-object-sizer=abc --eviction-action=local-destroy");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString())
-        .contains("eviction-object-sizer cannot be specified without eviction-max-memory");
-  }
-
-  @Test
   public void templateRegionAttributesNotAvailable() throws Exception {
     doReturn(null).when(command).getRegionAttributes(eq(cache), any());
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());

@@ -869,7 +869,7 @@ public class CliStrings {
       "Activates LRU eviction based on the region's memory usage specified by this value.";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT = "eviction-entry-count";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT__HELP =
-      "Activates LRU eviction based on the region's entry count specified by this value.";
+      "Activates LRU eviction based on the region's entry count specified by this value (in megabytes).";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER = "eviction-object-sizer";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER__HELP =
       "A custom class which implements ObjectSizer in order to perform max memory eviction.";
@@ -1067,6 +1067,9 @@ public class CliStrings {
 
   public static final String CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_WITHOUT_MAX_MEMORY =
       "eviction-object-sizer cannot be specified without eviction-max-memory";
+
+  public static final String CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE =
+      "eviction-object-sizer must implement both ObjectSizer and Declarable interfaces";
 
   /* debug command */
   public static final String DEBUG = "debug";

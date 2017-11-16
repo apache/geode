@@ -19,7 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -42,14 +43,13 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category(DistributedTest.class)
 public class CreateRegionCommandDUnitTest {
 
-  MemberVM locator;
-  MemberVM server;
+  private static MemberVM locator, server;
 
-  @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  @ClassRule
+  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TestName testName = new SerializableTestName();
@@ -57,8 +57,8 @@ public class CreateRegionCommandDUnitTest {
   @Rule
   public TemporaryFolder tmpDir = new TemporaryFolder();
 
-  @Before
-  public void before() throws Exception {
+  @BeforeClass
+  public static void before() throws Exception {
     locator = lsRule.startLocatorVM(0);
     server = lsRule.startServerVM(1, locator.getPort());
 
