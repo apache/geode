@@ -35,8 +35,7 @@ public class MemberCommandService extends CommandService {
   public MemberCommandService(InternalCache cache) throws CommandServiceException {
     this.cache = cache;
     try {
-      this.onlineCommandProcessor = new OnlineCommandProcessor(
-          cache.getDistributedSystem().getProperties(), cache.getSecurityService());
+      this.onlineCommandProcessor = new OnlineCommandProcessor(cache.getSecurityService());
     } catch (Exception e) {
       throw new CommandServiceException("Could not load commands.", e);
     }
