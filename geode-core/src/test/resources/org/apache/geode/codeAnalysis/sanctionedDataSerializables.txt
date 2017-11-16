@@ -2,15 +2,11 @@ org/apache/geode/admin/RegionSubRegionSnapshot,2
 fromData,62,2a2bb80023b500082a2bb900240100b5000b2a2bb80025b500052ab40005b9002601004d2cb9002701009900132cb900280100c000292ab6001ba7ffeab1
 toData,30,2ab400082bb800202b2ab4000bb9002102002ab40005c000032bb80022b1
 
-org/apache/geode/admin/internal/FinishBackupRequest,2
+org/apache/geode/internal/cache/backup/FinishBackupRequest,2
 fromData,33,2a2bb700292a2bb8002ab500022a2bb8002ab500032a2bb8002bb6002cb50004b1
 toData,33,2a2bb7002d2ab400022bb8002e2ab400032bb8002e2ab40004b8002f2bb80030b1
 
-org/apache/geode/admin/internal/FinishBackupResponse,2
-fromData,14,2a2bb700042a2bb80005b50003b1
-toData,14,2a2bb700062ab400032bb80007b1
-
-org/apache/geode/admin/internal/PrepareBackupResponse,2
+org/apache/geode/internal/cache/backup/BackupResponse,2
 fromData,14,2a2bb700042a2bb80005b50003b1
 toData,14,2a2bb700062ab400032bb80007b1
 

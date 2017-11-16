@@ -727,7 +727,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short FINISH_BACKUP_REQUEST = 2114;
   public static final short FINISH_BACKUP_RESPONSE = 2115;
   public static final short PREPARE_BACKUP_REQUEST = 2116;
-  public static final short PREPARE_BACKUP_RESPONSE = 2117;
+  public static final short BACKUP_RESPONSE = 2117;
   public static final short COMPACT_REQUEST = 2118;
   public static final short COMPACT_RESPONSE = 2119;
   public static final short FLOW_CONTROL_PERMIT_MESSAGE = 2120;

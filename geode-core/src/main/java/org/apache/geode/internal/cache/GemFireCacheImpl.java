@@ -134,9 +134,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
-import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.QueryMonitor;
-import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache.server.CacheServer;
@@ -174,6 +172,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
@@ -679,7 +678,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Returns the last created instance of GemFireCache
    *
-   * @deprecated: use DM.getCache instead
+   * @deprecated use DM.getCache instead
    */
   @Deprecated
   public static GemFireCacheImpl getInstance() {

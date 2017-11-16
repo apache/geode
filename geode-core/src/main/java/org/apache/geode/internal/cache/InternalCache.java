@@ -52,6 +52,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;

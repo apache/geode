@@ -1213,7 +1213,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           }
 
           @Override
-          public void beforeSendMessage(DistributionManager dm, DistributionMessage msg) {}
+          public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {}
         });
       }
     });
