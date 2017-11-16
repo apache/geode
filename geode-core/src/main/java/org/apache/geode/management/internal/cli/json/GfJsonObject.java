@@ -305,6 +305,11 @@ public class GfJsonObject {
     return jsonObject.keys();
   }
 
+  /**
+   * this returns the column size
+   *
+   * @return
+   */
   public int size() {
     return jsonObject.length();
   }

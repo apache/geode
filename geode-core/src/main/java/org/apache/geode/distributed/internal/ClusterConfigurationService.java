@@ -653,12 +653,11 @@ public class ClusterConfigurationService {
     FileUtils.writeStringToFile(xmlFile, configuration.getCacheXmlContent(), "UTF-8");
   }
 
-  // TODO: return value is never used
-  private boolean lockSharedConfiguration() {
+  public boolean lockSharedConfiguration() {
     return this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, -1, -1);
   }
 
-  private void unlockSharedConfiguration() {
+  public void unlockSharedConfiguration() {
     this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
   }
 
