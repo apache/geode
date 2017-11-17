@@ -625,6 +625,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private Map<String, ConfigSource> sourceMap =
       Collections.synchronizedMap(new HashMap<String, ConfigSource>());
 
+  protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
+
   /**
    * "off-heap-memory-size" with value of "" or "<size>[g|m]"
    */
@@ -757,6 +759,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.redisPort = other.getRedisPort();
     this.redisBindAddress = other.getRedisBindAddress();
     this.redisPassword = other.getRedisPassword();
+    this.userCommandPackages = other.getUserCommandPackages();
 
     // following added for 8.0
     this.enableSharedConfiguration = other.getEnableClusterConfiguration();
@@ -1831,6 +1834,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     return this.asyncMaxQueueSize;
   }
 
+  public String getUserCommandPackages() {
+    return this.userCommandPackages;
+  }
+
   public int getHttpServicePort() {
     return this.httpServicePort;
   }
@@ -1853,6 +1860,10 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   public void setStartDevRestApi(boolean value) {
     this.startDevRestApi = value;
+  }
+
+  public void setUserCommandPackages(String value) {
+    this.userCommandPackages = value;
   }
 
   public boolean getDeltaPropagation() {
@@ -3002,8 +3013,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(sslTrustStore, that.sslTrustStore)
         .append(sslTrustStorePassword, that.sslTrustStorePassword)
         .append(locatorSSLAlias, that.locatorSSLAlias).append(sslDefaultAlias, that.sslDefaultAlias)
-        .append(sourceMap, that.sourceMap).append(offHeapMemorySize, that.offHeapMemorySize)
-        .append(shiroInit, that.shiroInit).isEquals();
+        .append(sourceMap, that.sourceMap).append(userCommandPackages, that.userCommandPackages)
+        .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
+        .isEquals();
   }
 
   /**
@@ -3071,8 +3083,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(sslCiphers).append(sslRequireAuthentication).append(sslKeyStore)
         .append(sslKeyStoreType).append(sslKeyStorePassword).append(sslTrustStore)
         .append(sslTrustStorePassword).append(sslWebServiceRequireAuthentication)
-        .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap).append(offHeapMemorySize)
-        .append(lockMemory).append(shiroInit).append(modifiable).toHashCode();
+        .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
+        .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
+        .append(modifiable).toHashCode();
   }
 
   /**

@@ -1018,6 +1018,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(GROUPS,
         "A comma separated list of all the groups this member belongs to." + " Defaults to \"\".");
 
+    m.put(USER_COMMAND_PACKAGES,
+        "A comma separated list of the names of the packages containing classes that implement user commands.");
+
     m.put(JMX_MANAGER,
         "If true then this member is willing to be a jmx manager. Defaults to false except on a locator.");
     m.put(JMX_MANAGER_START,

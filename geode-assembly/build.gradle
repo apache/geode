@@ -198,12 +198,14 @@ def cp = {
         it.contains('snappy') ||
         it.contains('jgroups') ||
         it.contains('netty') ||
+
         // dependencies from geode-lucene
         it.contains('lucene-analyzers-common') ||
         it.contains('lucene-core') ||
         it.contains('lucene-queries') ||
         it.contains('lucene-queryparser') ||
         it.contains('lucene-analyzers-phonetic') ||
+
         // dependencies from geode-protobuf
         it.contains('protobuf-java')
       }
