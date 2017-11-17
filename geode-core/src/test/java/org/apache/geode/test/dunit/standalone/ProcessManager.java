@@ -25,8 +25,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.InetAddress;
-import java.nio.file.Files;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -40,7 +38,6 @@ import org.apache.commons.io.FileUtils;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 
 /**
@@ -192,6 +189,8 @@ public class ProcessManager {
 
       String mainClasses = buildDir + "classes" + separator + "main";
       dunitClasspath = removeFromPath(dunitClasspath, mainClasses);
+
+      dunitClasspath = removeFromPath(dunitClasspath, "geode-core/out/production");
 
       String mainResources = buildDir + "resources" + separator + "main";
       dunitClasspath = removeFromPath(dunitClasspath, mainResources);
