@@ -2969,7 +2969,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getLocalRegion());
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVMOrDisk, needToSetOldValue);
+          event.setOldValue(oldValueInVMOrDisk, true);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
         }
@@ -2985,7 +2985,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVM, needToSetOldValue);
+          event.setOldValue(oldValueInVM);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVM);
         }

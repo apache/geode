@@ -888,8 +888,9 @@ public class EntryEventImpl
   private void basicSetOldValue(@Unretained(ENTRY_EVENT_OLD_VALUE) Object v) {
     @Released
     final Object curOldValue = this.oldValue;
-    if (v == curOldValue)
+    if (v == curOldValue) {
       return;
+    }
     if (this.offHeapOk && mayHaveOffHeapReferences()) {
       if (ReferenceCountHelper.trackReferenceCounts()) {
         OffHeapHelper.releaseAndTrackOwner(curOldValue, new OldValueOwner());
@@ -903,9 +904,9 @@ public class EntryEventImpl
 
   @Released(ENTRY_EVENT_OLD_VALUE)
   private void retainAndSetOldValue(@Retained(ENTRY_EVENT_OLD_VALUE) Object v) {
-    if (v == this.oldValue)
+    if (v == this.oldValue) {
       return;
-
+    }
     if (isOffHeapReference(v)) {
       StoredObject so = (StoredObject) v;
       if (ReferenceCountHelper.trackReferenceCounts()) {
@@ -1824,24 +1825,23 @@ public class EntryEventImpl
     tx.setCallbackArgument(getCallbackArgument());
   }
 
-  /** @return false if entry doesn't exist */
-  public boolean setOldValueFromRegion() {
+  public void setOldValueFromRegion() {
     try {
       RegionEntry re = this.region.getRegionEntry(getKey());
-      if (re == null)
-        return false;
+      if (re == null) {
+        return;
+      }
       ReferenceCountHelper.skipRefCountTracking();
       Object v = re.getValueRetain(this.region, true);
       ReferenceCountHelper.unskipRefCountTracking();
       try {
-        return setOldValue(v);
+        setOldValue(v);
       } finally {
         if (mayHaveOffHeapReferences()) {
           OffHeapHelper.releaseWithNoTracking(v);
         }
       }
     } catch (EntryNotFoundException ignore) {
-      return false;
     }
   }
 
@@ -1854,11 +1854,8 @@ public class EntryEventImpl
     basicSetOldValue(Token.DESTROYED);
   }
 
-  /**
-   * @return false if value 'v' indicates that entry does not exist
-   */
-  public boolean setOldValue(Object v) {
-    return setOldValue(v, false);
+  public void setOldValue(Object v) {
+    setOldValue(v, false);
   }
 
 
@@ -1868,18 +1865,19 @@ public class EntryEventImpl
    * @return false if value 'v' indicates that entry does not exist
    */
   public boolean setOldValue(Object v, boolean force) {
-    if (v == null || Token.isRemoved(v)) {
+    if (Token.isRemoved(v)) {
       return false;
     } else {
-      if (Token.isInvalid(v)) {
+      if (v == null) {
+        v = Token.NOT_AVAILABLE;
+      } else if (Token.isInvalid(v)) {
         v = null;
       } else {
         if (force || (this.region instanceof HARegion) // fix for bug 37909
         ) {
           // set oldValue to "v".
         } else if (EVENT_OLD_VALUE) {
-          // TODO Rusty add compression support here
-          // set oldValue to "v".
+          // TODO add compression support here set oldValue to "v".
         } else {
           v = Token.NOT_AVAILABLE;
         }
