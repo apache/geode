@@ -678,15 +678,9 @@ public class CreateRegionCommand implements GfshCommand {
             .createUserErrorResult(CliStrings.CREATE_REGION__MSG__MISSING_EVICTION_ACTION);
       }
 
-      if (evictionSizer != null) {
-        if (maxEntry != null) {
-          return ResultBuilder.createUserErrorResult(
-              CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT);
-        }
-        if (maxMemory == null) {
-          return ResultBuilder.createUserErrorResult(
-              CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_WITHOUT_MAX_MEMORY);
-        }
+      if (evictionSizer != null && maxEntry != null) {
+        return ResultBuilder.createUserErrorResult(
+            CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT);
       }
 
       if (evictionAction != null
