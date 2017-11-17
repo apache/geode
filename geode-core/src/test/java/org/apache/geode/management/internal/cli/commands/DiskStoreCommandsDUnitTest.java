@@ -238,33 +238,6 @@ public class DiskStoreCommandsDUnitTest {
     assertThat(diskStoreExistsInClusterConfig(locator)).isFalse();
   }
 
-  @Test
-  public void testAlterDiskStore() throws Exception {
-    Properties props = new Properties();
-    props.setProperty("groups", GROUP);
-    MemberVM locator = rule.startLocatorVM(0);
-    MemberVM server1 = rule.startServerVM(1, props, locator.getPort());
-
-    gfsh.connectAndVerify(locator);
-
-    createDiskStoreAndRegion(locator, 1);
-
-    String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
-    gfsh.executeAndAssertThat(
-        String.format("alter disk-store --name=%s --region=%s --disk-dirs=%s --concurrency-level=5",
-            DISKSTORE, REGION_1, diskDirs))
-        .statusIsError().containsOutput("Could not lock");
-
-    server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
-
-    gfsh.executeAndAssertThat(String.format(
-        "alter disk-store --name=%s --region=%s --disk-dirs=%s --concurrency-level=5 --initial-capacity=6 --lru-action=local-destroy --compressor=%s --enable-statistics=true",
-        DISKSTORE, REGION_1, diskDirs, SnappyCompressor.class.getName())).statusIsSuccess()
-        .containsOutput("concurrencyLevel=16", "concurrencyLevel=5", "initialCapacity=16",
-            "initialCapacity=6", "lruAction=overflow-to-disk", "lruAction=local-destroy",
-            "compressor=none", "compressor=" + SnappyCompressor.class.getName(),
-            "statisticsEnabled=false", "statisticsEnabled=true");
-  }
 
   @Test
   public void testBackupDiskStore() throws Exception {
