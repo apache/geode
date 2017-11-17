@@ -146,8 +146,8 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void postSetUp() throws Exception {
     host = Host.getHost(0);
-    server1 = host.getVM(2);
-    server2 = host.getVM(3);
+    server1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
+    server2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
   }
 
   int initServerCache(boolean notifyBySub) {
@@ -1409,7 +1409,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     }
     if (isHA) {
       // add another server for HA scenario
-      initServerCache(true, host.getVM(1), true);
+      initServerCache(true, host.getVM(VersionManager.CURRENT_VERSION, 1), true);
     }
     String rName = "/" + REGION_NAME1;
     String prName = "/" + PR_REGION_NAME;
