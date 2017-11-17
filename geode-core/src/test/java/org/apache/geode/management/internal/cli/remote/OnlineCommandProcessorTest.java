@@ -21,6 +21,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,6 +36,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class OnlineCommandProcessorTest {
 
+  Properties properties;
   SecurityService securityService;
   CommandExecutor executor;
   OnlineCommandProcessor onlineCommandProcessor;
@@ -41,12 +44,13 @@ public class OnlineCommandProcessorTest {
 
   @Before
   public void before() {
+    properties = new Properties();
     securityService = mock(SecurityService.class);
     executor = mock(CommandExecutor.class);
     result = mock(Result.class);
     when(executor.execute(any())).thenReturn(result);
 
-    onlineCommandProcessor = new OnlineCommandProcessor(securityService, executor);
+    onlineCommandProcessor = new OnlineCommandProcessor(properties, securityService, executor);
   }
 
 

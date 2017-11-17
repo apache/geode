@@ -30,6 +30,7 @@ public class StatusLocatorRealGfshTest {
   @Test
   public void statusLocatorSucceedsWhenConnected() throws Exception {
     GfshScript.of("start locator --name=locator1").execute(gfshRule);
+
     GfshScript.of("connect", "status locator --name=locator1").execute(gfshRule);
   }
 
