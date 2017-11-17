@@ -36,7 +36,6 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 // GEODE-1897 Users should be able to configure eviction through gfsh
 @Category(AcceptanceTest.class)
 public class ConfigureEvictionThroughGfsh {
-  private File jarToDeploy;
 
   @Rule
   public GfshRule gfsh = new GfshRule();
@@ -155,22 +154,24 @@ public class ConfigureEvictionThroughGfsh {
 
   }
 
-  @Before
-  public void setup() throws IOException {
-    jarToDeploy = new File(gfsh.getTemporaryFolder().getRoot(), "ourJar.jar");
+
+  private File createJar() throws IOException {
+    File jarToDeploy = new File(gfsh.getTemporaryFolder().getRoot(), "ourJar.jar");
 
     String classContents =
         "import org.apache.geode.cache.util.ObjectSizer; import org.apache.geode.cache.Declarable;public class MySizer implements ObjectSizer, Declarable { public int sizeof(Object o) { return 10; } }";
 
     JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJar(jarToDeploy, classContents);
+
+    return jarToDeploy;
   }
 
   @Test
   public void ConfigureEvictionByObjectSizer() throws Exception {
     GfshExecution execution = GfshScript
         .of("start locator --name=locator", "start server --name=server", "sleep --time=1",
-            "deploy --jar=" + jarToDeploy.getAbsolutePath(),
+            "deploy --jar=" + createJar().getAbsolutePath(),
             "create region --name=region1 --eviction-action=local-destroy --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE",
             "create region --name=region2 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE",
             "create region --name=region3 --eviction-action=overflow-to-disk --eviction-max-memory=1000 --eviction-object-sizer=MySizer --type=REPLICATE_PERSISTENT",
