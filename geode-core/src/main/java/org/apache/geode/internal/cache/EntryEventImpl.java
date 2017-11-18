@@ -728,10 +728,7 @@ public class EntryEventImpl
         return null;
       }
       @Unretained
-      Object ov = basicGetOldValue();
-      if (ov == Token.NOT_AVAILABLE) {
-        ov = handleNotAvailableOldValue(ov);
-      }
+      Object ov = handleNotAvailableOldValue();
       if (ov != null) {
         boolean doCopyOnRead = getRegion().isCopyOnRead();
         if (ov instanceof CachedDeserializable) {
@@ -759,18 +756,29 @@ public class EntryEventImpl
     }
   }
 
-  private Object handleNotAvailableOldValue(Object oldValue) {
+  /**
+   * returns the old value after handling one this is NOT_AVAILABLE. If the old value is
+   * NOT_AVAILABLE then it may try to read it from disk. If it can't read an unavailable old value
+   * from disk then it will return null instead of NOT_AVAILABLE.
+   */
+  @Unretained(ENTRY_EVENT_OLD_VALUE)
+  private Object handleNotAvailableOldValue() {
+    @Unretained
+    Object result = basicGetOldValue();
+    if (result != Token.NOT_AVAILABLE) {
+      return result;
+    }
     if (getReadOldValueFromDisk()) {
       try {
-        oldValue = this.region.getValueInVMOrDiskWithoutFaultIn(getKey());
+        result = this.region.getValueInVMOrDiskWithoutFaultIn(getKey());
       } catch (EntryNotFoundException ex) {
-        oldValue = null;
+        result = null;
       }
     }
-    if (oldValue == Token.NOT_AVAILABLE) {
-      oldValue = AbstractRegion.handleNotAvailable(oldValue);
+    if (result == Token.NOT_AVAILABLE) {
+      result = AbstractRegion.handleNotAvailable(result);
     }
-    return oldValue;
+    return result;
   }
 
   /**
@@ -1860,31 +1868,35 @@ public class EntryEventImpl
 
 
   /**
-   * @param force true if the old value should be forcibly set, used for HARegions, methods like
-   *        putIfAbsent, etc., where the old value must be available.
-   * @return false if value 'v' indicates that entry does not exist
+   * @param force true if the old value should be forcibly set, methods like putIfAbsent, etc.,
+   *        where the old value must be available.
    */
-  public boolean setOldValue(Object v, boolean force) {
+  public void setOldValue(Object v, boolean force) {
     if (Token.isRemoved(v)) {
-      return false;
-    } else {
-      if (v == null) {
-        v = Token.NOT_AVAILABLE;
-      } else if (Token.isInvalid(v)) {
-        v = null;
-      } else {
-        if (force || (this.region instanceof HARegion) // fix for bug 37909
-        ) {
-          // set oldValue to "v".
-        } else if (EVENT_OLD_VALUE) {
-          // TODO add compression support here set oldValue to "v".
-        } else {
-          v = Token.NOT_AVAILABLE;
-        }
-      }
-      retainAndSetOldValue(v);
+      return;
+    }
+    if (Token.isInvalid(v)) {
+      v = null;
+    } else if (shouldOldValueBeUnavailable(v, force)) {
+      v = Token.NOT_AVAILABLE;
+    }
+    retainAndSetOldValue(v);
+  }
+
+  private boolean shouldOldValueBeUnavailable(Object v, boolean force) {
+    if (v == null) {
       return true;
     }
+    if (force) {
+      return false;
+    }
+    if (EVENT_OLD_VALUE) {
+      return false;
+    }
+    if (this.region instanceof HARegion) {
+      return false;
+    }
+    return true;
   }
 
   /**

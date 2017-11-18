@@ -58,12 +58,12 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   @Test
-  public void getOldValueInCacheWriterReturnsNullOnEvictedEntry() {
+  public void getOldValueInCacheWriterReturnsValueOfEvictedEntry() {
     doTest(false);
   }
 
   @Test
-  public void getOldValueWithTransactionInCacheWriterReturnsNullOnEvictedEntry() {
+  public void getOldValueWithTransactionInCacheWriterReturnsValueOfEvictedEntry() {
     doTest(true);
   }
 

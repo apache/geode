@@ -838,8 +838,9 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       if (inTokenMode && event.hasOldValue()) {
         proceed = true;
       } else {
-        proceed = event.setOldValue(curValue, curValue instanceof GatewaySenderEventImpl)
-            || removeRecoveredEntry || forceDestroy || region.getConcurrencyChecksEnabled()
+        event.setOldValue(curValue, curValue instanceof GatewaySenderEventImpl);
+        proceed = region.getConcurrencyChecksEnabled() || removeRecoveredEntry || forceDestroy
+            || !Token.isRemoved(curValue)
             || (event.getOperation() == Operation.REMOVE && (curValue == null
                 || curValue == Token.LOCAL_INVALID || curValue == Token.INVALID));
       }
