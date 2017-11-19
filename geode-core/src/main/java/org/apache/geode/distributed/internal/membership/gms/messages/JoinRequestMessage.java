@@ -22,6 +22,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 public class JoinRequestMessage extends HighPriorityDistributionMessage {
@@ -29,6 +30,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private Object credentials;
   private int failureDetectionPort = -1;
   private int requestId;
+  private long member_timeout;
 
   public JoinRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
       Object credentials, int fdPort, int requestId) {
@@ -70,7 +72,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public String toString() {
     return getShortClassName() + "(" + memberID
         + (credentials == null ? ")" : "; with credentials)") + " failureDetectionPort:"
-        + failureDetectionPort;
+        + failureDetectionPort + "member_timeout:" + member_timeout;
   }
 
   @Override
@@ -87,6 +89,9 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     // if this is a mcast join request
     out.writeBoolean(getMulticast());
     out.writeInt(requestId);
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_120) >= 0) {
+      out.writeLong(member_timeout);
+    }
   }
 
   @Override
@@ -96,6 +101,9 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
     setMulticast(in.readBoolean());
     requestId = in.readInt();
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_120) >= 0) {
+      member_timeout = in.readLong();
+    }
   }
 
   public int getFailureDetectionPort() {
@@ -126,5 +134,13 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     if (requestId != other.requestId)
       return false;
     return true;
+  }
+
+  public long getMember_timeout() {
+    return member_timeout;
+  }
+
+  public void setMember_timeout(long member_timeout) {
+    this.member_timeout = member_timeout;
   }
 }

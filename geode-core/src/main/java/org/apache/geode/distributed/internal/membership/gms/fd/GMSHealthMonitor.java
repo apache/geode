@@ -550,7 +550,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   boolean doTCPCheckMember(InternalDistributedMember suspectMember, Socket clientSocket) {
     try {
       if (clientSocket.isConnected()) {
-        clientSocket.setSoTimeout((int) services.getConfig().getMemberTimeout());
+        clientSocket.setSoTimeout(
+            (int) currentView.getMembersTimeout().get(suspectMember.getName()).intValue());
         InputStream in = clientSocket.getInputStream();
         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
         GMSMember gmbr = (GMSMember) suspectMember.getNetMember();
