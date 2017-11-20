@@ -17,12 +17,15 @@ package org.apache.geode.test.junit.assertions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 
@@ -178,6 +181,48 @@ public class CommandResultAssert
     Object[] actualValues = toArray((JSONArray) content);
     assertThat(actualValues).containsExactlyInAnyOrder(expectedValues);
 
+    return this;
+  }
+
+
+
+  public CommandResultAssert tableHasRowWithValues(String... headersThenValues)
+      throws GfJsonException {
+    assertThat(headersThenValues.length % 2)
+        .describedAs("You need to pass even number of parameters.").isEqualTo(0);
+
+    int numberOfColumn = headersThenValues.length / 2;
+
+    String[] headers = Arrays.copyOfRange(headersThenValues, 0, numberOfColumn);
+    String[] expectedValues =
+        Arrays.copyOfRange(headersThenValues, numberOfColumn, headersThenValues.length);
+
+    GfJsonObject content = actual.getCommandResult().getContent();
+    Map<String, Object[]> allValues = new HashMap<>();
+    int numberOfRows = -1;
+    for (String header : headers) {
+      Object[] values = toArray((JSONArray) getColumnContent(header, content));
+      if (numberOfRows > 0) {
+        assertThat(values.length).isEqualTo(numberOfRows);
+      }
+      numberOfRows = values.length;
+      allValues.put(header, values);
+    }
+
+    for (int rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
+      Object[] rowValues = new Object[headers.length];
+      for (int columnIndex = 0; columnIndex < headers.length; columnIndex++) {
+        rowValues[columnIndex] = allValues.get(headers[columnIndex])[rowIndex];
+      }
+
+      // check if entire row is equal, but if not, continue to next row
+      if (Arrays.deepEquals(expectedValues, rowValues)) {
+        return this;
+      }
+    }
+
+    // did not find any matching rows, then this would pass only if we do not pass in any values
+    assertThat(headersThenValues.length).isEqualTo(0);
     return this;
   }
 

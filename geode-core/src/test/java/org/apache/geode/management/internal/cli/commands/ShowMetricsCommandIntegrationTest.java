@@ -45,10 +45,10 @@ public class ShowMetricsCommandIntegrationTest {
   @ClassRule
   public static ServerStarterRule server =
       new ServerStarterRule().withRegion(RegionShortcut.REPLICATE, REGION_NAME)
-          .withName(MEMBER_NAME).withJMXManager().withEmbeddedLocator().withAutoStart();
+          .withName(MEMBER_NAME).withJMXManager().withAutoStart();
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
 
   @Test
   public void everyCategoryHasAUseCase() throws Exception {
@@ -68,6 +68,7 @@ public class ShowMetricsCommandIntegrationTest {
 
   @Test
   public void commandFailsWhenNotConnected() throws Exception {
+    gfsh.disconnect();
     gfsh.executeAndAssertThat("show metrics")
         .containsOutput("was found but is not currently available");
   }
@@ -80,9 +81,7 @@ public class ShowMetricsCommandIntegrationTest {
         ShowMetricsInterceptor.getValidCategoriesAsStrings(true, true, false);
     // Blank lines are permitted for grouping.
     expectedCategories.add("");
-    logger.info("Expecting categories: " + String.join(", ", expectedCategories));
 
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).tableHasColumnOnlyWithValues("Category",
         expectedCategories.toArray(new String[0]));
   }
@@ -97,7 +96,6 @@ public class ShowMetricsCommandIntegrationTest {
     expectedCategories.add("");
     logger.info("Expecting categories: " + String.join(", ", expectedCategories));
 
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).tableHasColumnOnlyWithValues("Category",
         expectedCategories.toArray(new String[0]));
   }
@@ -112,7 +110,6 @@ public class ShowMetricsCommandIntegrationTest {
     expectedCategories.add("");
     logger.info("Expecting categories: " + String.join(", ", expectedCategories));
 
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).tableHasColumnOnlyWithValues("Category",
         expectedCategories.toArray(new String[0]));
   }
@@ -127,7 +124,6 @@ public class ShowMetricsCommandIntegrationTest {
     expectedCategories.add("");
     logger.info("Expecting categories: " + String.join(", ", expectedCategories));
 
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).tableHasColumnOnlyWithValues("Category",
         expectedCategories.toArray(new String[0]));
   }
@@ -142,7 +138,6 @@ public class ShowMetricsCommandIntegrationTest {
     expectedCategories.add("");
     logger.info("Expecting categories: " + String.join(", ", expectedCategories));
 
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).tableHasColumnOnlyWithValues("Category",
         expectedCategories.toArray(new String[0]));
   }
@@ -152,7 +147,6 @@ public class ShowMetricsCommandIntegrationTest {
     String cmd =
         "show metrics --categories=\"cluster,cache,some_invalid_category,another_invalid_category\"";
 
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).containsOutput("Invalid Categories")
         .containsOutput("some_invalid_category").containsOutput("another_invalid_category")
         .doesNotContainOutput("cache").doesNotContainOutput("cluster");
@@ -164,8 +158,16 @@ public class ShowMetricsCommandIntegrationTest {
     List<String> expectedCategories = Arrays.asList("cluster", "cache", "");
     logger.info("Expecting categories: " + String.join(", ", expectedCategories));
 
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).tableHasColumnOnlyWithValues("Category",
         expectedCategories.toArray(new String[0]));
+  }
+
+  @Test
+  public void getRegionMetricsForPartitionedRegionWithStatistics() throws Exception {
+    String cmd = "create region --name=region2 --type=PARTITION --enable-statistics";
+    gfsh.executeAndAssertThat(cmd).statusIsSuccess();
+    String cmd2 = "show metrics --member=" + MEMBER_NAME + " --region=region2";
+    gfsh.executeAndAssertThat(cmd2).statusIsSuccess().tableHasRowWithValues("Category", "Metric",
+        "Value", "", "missCount", "-1");
   }
 }
