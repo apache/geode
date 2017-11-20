@@ -291,4 +291,20 @@ public class DiskStoreCommandsDUnitTest {
         .tableHasColumnWithExactValuesInAnyOrder("Member", "locator-0", "server-1");
   }
 
+  @Test
+  public void destroyDiskStoreIsIdempotent() throws Exception {
+    MemberVM locator = rule.startLocatorVM(0);
+    MemberVM server1 = rule.startServerVM(1, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+
+    gfsh.executeAndAssertThat(
+        String.format("create disk-store --name=%s --dir=%s", DISKSTORE, DISKSTORE))
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(String.format("destroy disk-store --name=%s --if-exists", DISKSTORE))
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(String.format("destroy disk-store --name=%s --if-exists", DISKSTORE))
+        .statusIsSuccess();
+  }
 }
