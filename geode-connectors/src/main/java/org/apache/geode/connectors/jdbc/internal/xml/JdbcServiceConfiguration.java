@@ -54,7 +54,7 @@ public class JdbcServiceConfiguration implements Extension<Cache> {
     InternalCache internalCache = (InternalCache) target;
     InternalJdbcConnectorService service =
         internalCache.getService(InternalJdbcConnectorService.class);
-    connections.forEach(connection -> service.addOrUpdateConnectionConfig(connection));
+    connections.forEach(connection -> service.createConnectionConfig(connection));
     mappings.forEach(mapping -> service.addOrUpdateRegionMapping(mapping));
   }
 }

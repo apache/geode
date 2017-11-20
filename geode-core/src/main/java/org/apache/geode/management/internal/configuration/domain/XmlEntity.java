@@ -148,6 +148,42 @@ public class XmlEntity implements VersionedDataSerializable {
     initializeSearchString(parentKey, parentValue, childPrefix, childKey, childValue);
   }
 
+  public XmlEntity(final String parentType, final String childPrefix, final String childNamespace,
+      final String childType) {
+    this.parentType = parentType;
+    this.type = childType;
+    this.childPrefix = childPrefix;
+    this.childNamespace = childNamespace;
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("//").append(this.parentType);
+    sb.append("/").append(childPrefix).append(':').append(this.type);
+    this.searchString = sb.toString();
+    this.xmlDefinition = parseXmlForDefinition();
+  }
+
+  private String parseXmlForDefinition() {
+    final Cache cache = CacheFactory.getAnyInstance();
+
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+    CacheXmlGenerator.generate(cache, printWriter, true, false, false);
+    printWriter.close();
+    InputSource inputSource = new InputSource(new StringReader(stringWriter.toString()));
+    try {
+      Document document = XmlUtils.getDocumentBuilder().parse(inputSource);
+      Node element = document.getElementsByTagNameNS(childNamespace, type).item(0);
+      if (null != element) {
+        return XmlUtils.elementToString(element);
+      }
+    } catch (Exception e) {
+      throw new InternalGemFireError("Could not parse XML when creating XMLEntity", e);
+    }
+    logger.warn("No XML definition could be found with name={} and attributes={}", type,
+        attributes);
+    return null;
+  }
+
   private void initializeSearchString(final String parentKey, final String parentValue,
       final String childPrefix, final String childKey, final String childValue) {
     StringBuffer sb = new StringBuffer();
@@ -206,7 +242,6 @@ public class XmlEntity implements VersionedDataSerializable {
    * @since GemFire 8.1
    */
   private String loadXmlDefinition(final String xmlDocument) {
-    final Cache cache = CacheFactory.getAnyInstance();
     try {
       InputSource inputSource = new InputSource(new StringReader(xmlDocument));
       return loadXmlDefinition(XmlUtils.getDocumentBuilder().parse(inputSource));
@@ -226,16 +261,16 @@ public class XmlEntity implements VersionedDataSerializable {
    * @throws TransformerFactoryConfigurationError
    * @since GemFire 8.1
    */
-  private String loadXmlDefinition(final Document document)
+  public String loadXmlDefinition(final Document document)
       throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
-    final Cache cache = CacheFactory.getAnyInstance();
-
     this.searchString = createQueryString(prefix, type, attributes);
     logger.info("XmlEntity:searchString: {}", this.searchString);
 
     if (document != null) {
       XPathContext xpathContext = new XPathContext();
       xpathContext.addNamespace(prefix, namespace);
+      xpathContext.addNamespace(childPrefix, childNamespace); // TODO: wrap this line with
+                                                              // conditional
       // Create an XPathContext here
       Node element = XmlUtils.querySingleElement(document, this.searchString, xpathContext);
       // Must copy to preserve namespaces.

@@ -99,7 +99,7 @@ class ConnectionManager {
 
   // package protected for testing purposes only
   Connection getSQLConnection(ConnectionConfiguration config) throws SQLException {
-    return DriverManager.getConnection(config.getUrl(), config.getUser(), config.getPassword());
+    return DriverManager.getConnection(config.getUrl(), config.getConnectionProperties());
   }
 
   private synchronized Connection getNewConnection(ConnectionConfiguration config) {

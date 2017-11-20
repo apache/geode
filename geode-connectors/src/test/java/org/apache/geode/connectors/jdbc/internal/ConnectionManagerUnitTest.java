@@ -233,7 +233,7 @@ public class ConnectionManagerUnitTest {
 
   private ConnectionConfiguration getTestConnectionConfig(String name, String url, String user,
       String password) {
-    ConnectionConfiguration config = new ConnectionConfiguration(name, url, user, password);
+    ConnectionConfiguration config = new ConnectionConfiguration(name, url, user, password, null);
     return config;
   }
 

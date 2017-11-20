@@ -19,6 +19,8 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.FIELD_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PARAMETERS;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PARAMS_DELIMITER;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PASSWORD;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_CLASS;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PRIMARY_KEY_IN_VALUE;
@@ -30,6 +32,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -43,8 +46,10 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
 
 public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
+
+  public static final String PREFIX = "jdbc";
+
   private static final AttributesImpl EMPTY = new AttributesImpl();
-  static final String PREFIX = "jdbc";
 
   private final Collection<ConnectionConfiguration> connections;
   private final Collection<RegionMapping> mappings;
@@ -97,6 +102,7 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
     XmlGeneratorUtils.addAttribute(attributes, URL, config.getUrl());
     XmlGeneratorUtils.addAttribute(attributes, USER, config.getUser());
     XmlGeneratorUtils.addAttribute(attributes, PASSWORD, config.getPassword());
+    XmlGeneratorUtils.addAttribute(attributes, PARAMETERS, createParametersString(config));
     XmlGeneratorUtils.emptyElement(handler, PREFIX, ElementType.CONNECTION.getTypeName(),
         attributes);
   }
@@ -126,5 +132,20 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
       XmlGeneratorUtils.emptyElement(handler, PREFIX, ElementType.FIELD_MAPPING.getTypeName(),
           fieldAttributes);
     }
+  }
+
+  private String createParametersString(ConnectionConfiguration config) {
+    Properties properties = config.getConnectionProperties();
+    StringBuilder stringBuilder = new StringBuilder();
+    for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+      Object key = entry.getKey();
+      if (!key.equals(USER) && !key.equals(PASSWORD)) {
+        if (stringBuilder.length() > 0) {
+          stringBuilder.append(",");
+        }
+        stringBuilder.append(key).append(PARAMS_DELIMITER).append(entry.getValue());
+      }
+    }
+    return stringBuilder.toString();
   }
 }

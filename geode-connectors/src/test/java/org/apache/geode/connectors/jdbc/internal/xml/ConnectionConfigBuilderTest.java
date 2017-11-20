@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -36,11 +37,14 @@ public class ConnectionConfigBuilderTest {
   @Test
   public void createsObjectWithCorrectValues() {
     ConnectionConfigBuilder builder = new ConnectionConfigBuilder();
-    builder.withName("name").withUrl("url").withUser("user").withPassword("password");
+    builder.withName("name").withUrl("url").withUser("user").withPassword("password")
+        .withParameters(new String[] {"param1:value1", "param2:value2"});
     ConnectionConfiguration config = builder.build();
     assertThat(config.getName()).isEqualTo("name");
     assertThat(config.getUrl()).isEqualTo("url");
     assertThat(config.getUser()).isEqualTo("user");
     assertThat(config.getPassword()).isEqualTo("password");
+    assertThat(config.getConnectionProperties()).containsEntry("param1", "value1")
+        .containsEntry("param2", "value2");
   }
 }

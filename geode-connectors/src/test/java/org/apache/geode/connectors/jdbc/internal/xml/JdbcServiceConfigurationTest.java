@@ -118,8 +118,8 @@ public class JdbcServiceConfigurationTest {
 
     configuration.onCreate(cache, cache);
 
-    verify(service, times(1)).addOrUpdateConnectionConfig(connection1);
-    verify(service, times(1)).addOrUpdateConnectionConfig(connection2);
+    verify(service, times(1)).createConnectionConfig(connection1);
+    verify(service, times(1)).createConnectionConfig(connection2);
   }
 
   @Test

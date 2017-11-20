@@ -48,8 +48,14 @@ class RegionMappingBuilder {
     return this;
   }
 
+  // TODO: delete withPrimaryKeyInValue(String)
   RegionMappingBuilder withPrimaryKeyInValue(String primaryKeyInValue) {
     this.primaryKeyInValue = Boolean.parseBoolean(primaryKeyInValue);
+    return this;
+  }
+
+  RegionMappingBuilder withPrimaryKeyInValue(boolean primaryKeyInValue) {
+    this.primaryKeyInValue = primaryKeyInValue;
     return this;
   }
 

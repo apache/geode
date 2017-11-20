@@ -14,18 +14,30 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public class ConnectionConfiguration {
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+public class ConnectionConfiguration implements Serializable {
+  private static final Object USER = "user";
+  private static final Object PASSWORD = "password";
 
   private final String name;
   private final String url;
   private final String user;
   private final String password;
+  private final Map<String, String> parameters;
 
-  public ConnectionConfiguration(String name, String url, String user, String password) {
+  public ConnectionConfiguration(String name, String url, String user, String password,
+      Map<String, String> parameters) {
     this.name = name;
     this.url = url;
     this.user = user;
     this.password = password;
+    this.parameters =
+        parameters == null ? new HashMap<>() : Collections.unmodifiableMap(parameters);
   }
 
   public String getName() {
@@ -42,6 +54,19 @@ public class ConnectionConfiguration {
 
   public String getPassword() {
     return password;
+  }
+
+  public Properties getConnectionProperties() {
+    Properties properties = new Properties();
+
+    properties.putAll(parameters);
+    if (user != null) {
+      properties.put(USER, user);
+    }
+    if (password != null) {
+      properties.put(PASSWORD, password);
+    }
+    return properties;
   }
 
   @Override
@@ -64,7 +89,10 @@ public class ConnectionConfiguration {
     if (user != null ? !user.equals(that.user) : that.user != null) {
       return false;
     }
-    return password != null ? password.equals(that.password) : that.password == null;
+    if (password != null ? !password.equals(that.password) : that.password != null) {
+      return false;
+    }
+    return parameters != null ? parameters.equals(that.parameters) : that.parameters == null;
   }
 
   @Override
@@ -73,12 +101,13 @@ public class ConnectionConfiguration {
     result = 31 * result + (url != null ? url.hashCode() : 0);
     result = 31 * result + (user != null ? user.hashCode() : 0);
     result = 31 * result + (password != null ? password.hashCode() : 0);
+    result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
     return result;
   }
 
   @Override
   public String toString() {
     return "ConnectionConfiguration{" + "name='" + name + '\'' + ", url='" + url + '\'' + ", user='"
-        + user + '\'' + ", password='" + password + '\'' + '}';
+        + user + '\'' + ", password='" + password + '\'' + ", parameters=" + parameters + '}';
   }
 }

@@ -14,18 +14,17 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.extension.Extension;
+public class ConnectionConfigExistsException extends RuntimeException {
 
-public interface InternalJdbcConnectorService extends Extension<Cache>, CacheService {
+  public ConnectionConfigExistsException() {
+    super();
+  }
 
-  void createConnectionConfig(ConnectionConfiguration config)
-      throws ConnectionConfigExistsException;
+  public ConnectionConfigExistsException(String message) {
+    super(message);
+  }
 
-  void addOrUpdateRegionMapping(RegionMapping mapping);
-
-  ConnectionConfiguration getConnectionConfig(String connectionName);
-
-  RegionMapping getMappingForRegion(String regionName);
+  public ConnectionConfigExistsException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -38,7 +38,7 @@ public class TestConfigService {
 
     JdbcConnectorService service = new JdbcConnectorService();
     service.init(cache);
-    service.addOrUpdateConnectionConfig(createConnectionConfig());
+    service.createConnectionConfig(createConnectionConfig());
     service.addOrUpdateRegionMapping(createRegionMapping());
     return service;
   }
@@ -49,6 +49,6 @@ public class TestConfigService {
   }
 
   private static ConnectionConfiguration createConnectionConfig() {
-    return new ConnectionConfiguration(CONNECTION_CONFIG_NAME, CONNECTION_URL, null, null);
+    return new ConnectionConfiguration(CONNECTION_CONFIG_NAME, CONNECTION_URL, null, null, null);
   }
 }

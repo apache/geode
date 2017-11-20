@@ -12,37 +12,52 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.xml;
+package org.apache.geode.connectors.jdbc.internal;
 
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PARAMS_DELIMITER;
 
-class ConnectionConfigBuilder {
+import java.util.HashMap;
+import java.util.Map;
+
+public class ConnectionConfigBuilder {
+
   private String name;
   private String url;
   private String user;
   private String password;
+  private Map<String, String> parameters = new HashMap<>();
 
-  ConnectionConfigBuilder withName(String name) {
+  public ConnectionConfigBuilder withName(String name) {
     this.name = name;
     return this;
   }
 
-  ConnectionConfigBuilder withUrl(String url) {
+  public ConnectionConfigBuilder withUrl(String url) {
     this.url = url;
     return this;
   }
 
-  ConnectionConfigBuilder withUser(String user) {
+  public ConnectionConfigBuilder withUser(String user) {
     this.user = user;
     return this;
   }
 
-  ConnectionConfigBuilder withPassword(String password) {
+  public ConnectionConfigBuilder withPassword(String password) {
     this.password = password;
     return this;
   }
 
-  ConnectionConfiguration build() {
-    return new ConnectionConfiguration(name, url, user, password);
+  public ConnectionConfigBuilder withParameters(String[] params) {
+    for (String param : params) {
+      String[] keyValuePair = param.split(PARAMS_DELIMITER);
+      if (keyValuePair.length == 2) {
+        parameters.put(keyValuePair[0], keyValuePair[1]);
+      }
+    }
+    return this;
+  }
+
+  public ConnectionConfiguration build() {
+    return new ConnectionConfiguration(name, url, user, password, parameters);
   }
 }

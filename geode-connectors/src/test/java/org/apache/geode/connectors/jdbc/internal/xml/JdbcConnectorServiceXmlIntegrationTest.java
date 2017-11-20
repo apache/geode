@@ -30,6 +30,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
@@ -82,11 +83,12 @@ public class JdbcConnectorServiceXmlIntegrationTest {
   private void configureService() {
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
     config1 = new ConnectionConfigBuilder().withName("connection1").withUrl("url1")
-        .withUser("username1").withPassword("secret1").build();
+        .withUser("username1").withPassword("secret1")
+        .withParameters(new String[] {"param1:value1", "param2:value2"}).build();
     config2 = new ConnectionConfigBuilder().withName("connection2").withUrl("url2")
         .withUser("username2").withPassword("secret2").build();
-    service.addOrUpdateConnectionConfig(config1);
-    service.addOrUpdateConnectionConfig(config2);
+    service.createConnectionConfig(config1);
+    service.createConnectionConfig(config2);
 
     RegionMappingBuilder regionMappingBuilder1 = new RegionMappingBuilder()
         .withRegionName("regionName1").withPdxClassName("pdxClassName1").withTableName("tableName1")

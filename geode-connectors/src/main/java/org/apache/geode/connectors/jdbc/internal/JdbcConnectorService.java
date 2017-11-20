@@ -32,18 +32,24 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   private volatile InternalCache cache;
   private boolean registered;
 
+  @Override
   public ConnectionConfiguration getConnectionConfig(String connectionName) {
     return connectionsByName.get(connectionName);
   }
 
+  @Override
   public RegionMapping getMappingForRegion(String regionName) {
     return mappingsByRegion.get(regionName);
   }
 
   @Override
-  public void addOrUpdateConnectionConfig(ConnectionConfiguration config) {
+  public void createConnectionConfig(ConnectionConfiguration config) {
     registerAsExtension();
-    connectionsByName.put(config.getName(), config);
+    ConnectionConfiguration existing = connectionsByName.putIfAbsent(config.getName(), config);
+    if (existing != null) {
+      throw new ConnectionConfigExistsException(
+          "ConnectionConfiguration " + config.getName() + " exists");
+    }
   }
 
   @Override

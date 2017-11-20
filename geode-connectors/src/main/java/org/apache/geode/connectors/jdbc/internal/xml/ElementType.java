@@ -19,11 +19,12 @@ import java.util.Stack;
 import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 
-enum ElementType {
+public enum ElementType {
   CONNECTION_SERVICE("connector-service") {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
@@ -54,7 +55,16 @@ enum ElementType {
           .withUrl(attributes.getValue(JdbcConnectorServiceXmlParser.URL))
           .withUser(attributes.getValue(JdbcConnectorServiceXmlParser.USER))
           .withPassword(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD));
+      addParameters(connectionConfig,
+          attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS));
       stack.push(connectionConfig);
+    }
+
+    private void addParameters(ConnectionConfigBuilder connectionConfig, String value) {
+      if (value == null) {
+        return;
+      }
+      connectionConfig.withParameters(value.split(","));
     }
 
     @Override
@@ -120,7 +130,7 @@ enum ElementType {
     throw new IllegalArgumentException("Invalid type '" + typeName + "'");
   }
 
-  String getTypeName() {
+  public String getTypeName() {
     return typeName;
   }
 

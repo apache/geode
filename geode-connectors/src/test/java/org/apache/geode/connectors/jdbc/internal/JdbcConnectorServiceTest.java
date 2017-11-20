@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +55,7 @@ public class JdbcConnectorServiceTest {
   public void returnsCorrectConfig() {
     ConnectionConfiguration config = mock(ConnectionConfiguration.class);
     when(config.getName()).thenReturn(TEST_CONFIG_NAME);
-    service.addOrUpdateConnectionConfig(config);
+    service.createConnectionConfig(config);
 
     assertThat(service.getConnectionConfig(TEST_CONFIG_NAME)).isSameAs(config);
   }
@@ -63,7 +64,7 @@ public class JdbcConnectorServiceTest {
   public void doesNotReturnConfigWithDifferentName() {
     ConnectionConfiguration config = mock(ConnectionConfiguration.class);
     when(config.getName()).thenReturn("theOtherConfig");
-    service.addOrUpdateConnectionConfig(config);
+    service.createConnectionConfig(config);
 
     assertThat(service.getConnectionConfig(TEST_CONFIG_NAME)).isNull();
   }
@@ -84,5 +85,18 @@ public class JdbcConnectorServiceTest {
     service.addOrUpdateRegionMapping(mapping);
 
     assertThat(service.getMappingForRegion(TEST_REGION_NAME)).isNull();
+  }
+
+  @Test
+  public void createConnectionConfig_throwsIfConnectionExists() {
+    ConnectionConfiguration config = mock(ConnectionConfiguration.class);
+    when(config.getName()).thenReturn(TEST_CONFIG_NAME);
+    service.createConnectionConfig(config);
+
+    ConnectionConfiguration config2 = mock(ConnectionConfiguration.class);
+    when(config2.getName()).thenReturn(TEST_CONFIG_NAME);
+
+    assertThatThrownBy(() -> service.createConnectionConfig(config2))
+        .isInstanceOf(ConnectionConfigExistsException.class).hasMessageContaining(TEST_CONFIG_NAME);
   }
 }
