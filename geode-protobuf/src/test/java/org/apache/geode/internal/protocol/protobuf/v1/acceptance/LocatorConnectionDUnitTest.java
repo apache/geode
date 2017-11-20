@@ -40,7 +40,7 @@ import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageExcept
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.ServerAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -223,7 +223,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
     assertEquals(ClientProtocol.Response.ResponseAPICase.GETAVAILABLESERVERSRESPONSE,
         messageResponse.getResponseAPICase());
-    ServerAPI.GetAvailableServersResponse getAvailableServersResponse =
+    LocatorAPI.GetAvailableServersResponse getAvailableServersResponse =
         messageResponse.getGetAvailableServersResponse();
     assertEquals(1, getAvailableServersResponse.getServersCount());
   }
