@@ -137,4 +137,12 @@ public class MemberVM implements Member {
     vm.invoke(() -> LocatorServerStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
         serverCount));
   }
+
+  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
+    vm.invoke(() -> {
+      LocatorServerStartupRule.memberStarter.waitTillAsyncEventQueuesAreReadyOnServers(queueId,
+          serverCount);
+    });
+  }
+
 }

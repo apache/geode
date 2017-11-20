@@ -43,6 +43,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
@@ -205,9 +206,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       if (properties.containsKey(NAME)) {
         name = properties.getProperty(NAME);
       } else {
-        if (this instanceof ServerStarterRule)
+        if (this instanceof ServerStarterRule) {
           name = "server";
-        else {
+        } else {
           name = "locator";
         }
       }
@@ -261,6 +262,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public void waitTillDiskStoreIsReady(String diskstoreName, int serverCount) {
     await().atMost(30, TimeUnit.SECONDS)
         .until(() -> getDiskStoreCount(diskstoreName) == serverCount);
+  }
+
+  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
+    await().atMost(2, TimeUnit.SECONDS).until(
+        () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId).size() == serverCount);
   }
 
   abstract void stopMember();

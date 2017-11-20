@@ -183,4 +183,8 @@ public interface GfshCommand extends CommandMarker {
   default Set<DistributedMember> findAnyMembersForRegion(InternalCache cache, String regionPath) {
     return CliUtil.getRegionAssociatedMembers(regionPath, cache, false);
   }
+
+  default Set<DistributedMember> findMembersWithAsyncEventQueue(String queueId) {
+    return CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId);
+  }
 }
