@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -122,9 +121,9 @@ public class DestroyRegionCommandTest {
     when(result2.isSuccessful()).thenReturn(false);
     when(result2.getThrowable()).thenReturn(new IllegalArgumentException("something happened"));
 
-    assertThatThrownBy(
-        () -> parser.executeCommandWithInstance(command, "destroy region --name=test"))
-            .isInstanceOf(IllegalArgumentException.class);
+    parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
+        .containsOutput("something happened");
+
 
     // verify that xmlEntiry returned by the result1 is not saved to Cluster config
     verify(command, never()).persistClusterConfiguration(any(), any());

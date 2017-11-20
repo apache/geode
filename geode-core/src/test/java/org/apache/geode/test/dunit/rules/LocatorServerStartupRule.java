@@ -16,6 +16,7 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -182,6 +183,12 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   public MemberVM startServerVM(int index, int locatorPort) throws IOException {
     return startServerVM(index, new Properties(), locatorPort);
+  }
+
+  public MemberVM startServerVM(int index, String group, int locatorPort) throws IOException {
+    Properties properties = new Properties();
+    properties.put(GROUPS, group);
+    return startServerVM(index, properties, locatorPort);
   }
 
   public MemberVM startServerVM(int index, Properties properties) throws IOException {

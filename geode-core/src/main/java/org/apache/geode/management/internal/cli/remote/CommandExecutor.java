@@ -34,9 +34,15 @@ import org.apache.geode.security.NotAuthorizedException;
 public class CommandExecutor {
   private Logger logger = LogService.getLogger();
 
+  // used by the product
   public Object execute(ParseResult parseResult) {
+    return execute(null, parseResult);
+  }
+
+  // used by the GfshParserRule to pass in a mock command
+  public Object execute(Object command, ParseResult parseResult) {
     try {
-      Object result = invokeCommand(parseResult);
+      Object result = invokeCommand(command, parseResult);
 
       if (result == null) {
         return ResultBuilder.createGemFireErrorResult("Command returned null: " + parseResult);
@@ -83,9 +89,12 @@ public class CommandExecutor {
     }
   }
 
-  protected Object invokeCommand(ParseResult parseResult) {
-    return ReflectionUtils.invokeMethod(parseResult.getMethod(), parseResult.getInstance(),
+  protected Object invokeCommand(Object command, ParseResult parseResult) {
+    // if no command instance is passed in, use the one in the parseResult
+    if (command == null) {
+      command = parseResult.getInstance();
+    }
+    return ReflectionUtils.invokeMethod(parseResult.getMethod(), command,
         parseResult.getArguments());
   }
-
 }
