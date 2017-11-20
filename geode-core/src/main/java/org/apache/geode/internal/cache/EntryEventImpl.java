@@ -775,9 +775,7 @@ public class EntryEventImpl
         result = null;
       }
     }
-    if (result == Token.NOT_AVAILABLE) {
-      result = AbstractRegion.handleNotAvailable(result);
-    }
+    result = AbstractRegion.handleNotAvailable(result);
     return result;
   }
 
@@ -2180,6 +2178,7 @@ public class EntryEventImpl
           DataSerializer.writeObjectAsByteArray(cd.getValue(), out);
         }
       } else {
+        ov = AbstractRegion.handleNotAvailable(ov);
         DataSerializer.writeObject(ov, out);
       }
     }
