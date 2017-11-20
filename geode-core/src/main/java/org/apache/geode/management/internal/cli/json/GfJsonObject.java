@@ -167,6 +167,11 @@ public class GfJsonObject {
     if (opt instanceof GfJsonObject) {
       return (GfJsonObject) opt;
     }
+
+    if (opt == null) {
+      return null;
+    }
+
     return new GfJsonObject(opt);
   }
 

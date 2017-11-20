@@ -28,9 +28,11 @@ import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedSystem;
@@ -39,6 +41,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
@@ -241,9 +244,23 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public abstract InternalCache getCache();
 
   public void waitTillRegionIsReadyOnServers(String regionName, int serverCount) {
-    await().atMost(2, TimeUnit.SECONDS).until(() -> getRegionMBean(regionName) != null);
-    await().atMost(2, TimeUnit.SECONDS)
+    await().atMost(30, TimeUnit.SECONDS).until(() -> getRegionMBean(regionName) != null);
+    await().atMost(30, TimeUnit.SECONDS)
         .until(() -> getRegionMBean(regionName).getMembers().length == serverCount);
+  }
+
+  private long getDiskStoreCount(String diskStoreName) {
+    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
+    Map<String, String[]> diskstores = dsMXBean.listMemberDiskstore();
+    long count =
+        diskstores.values().stream().filter(x -> ArrayUtils.contains(x, diskStoreName)).count();
+
+    return count;
+  }
+
+  public void waitTillDiskStoreIsReady(String diskstoreName, int serverCount) {
+    await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> getDiskStoreCount(diskstoreName) == serverCount);
   }
 
   abstract void stopMember();

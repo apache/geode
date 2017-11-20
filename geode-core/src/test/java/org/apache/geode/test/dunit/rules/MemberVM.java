@@ -132,4 +132,9 @@ public class MemberVM implements Member {
           serverCount);
     });
   }
+
+  public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
+    vm.invoke(() -> LocatorServerStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
+        serverCount));
+  }
 }

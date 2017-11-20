@@ -77,6 +77,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   private IgnoredException ignoredException;
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
   private File workingDir;
+  private CommandResult commandResult;
 
   public GfshCommandRule() {
     try {
@@ -235,11 +236,12 @@ public class GfshCommandRule extends DescribedExternalResource {
       }
     }
     System.out.println("Command result for <" + command + ">: \n" + gfsh.outputString);
+    commandResult = result;
     return result;
   }
 
   public CommandResultAssert executeAndAssertThat(String command) {
-    CommandResult commandResult = executeCommand(command);
+    commandResult = executeCommand(command);
     return new CommandResultAssert(gfsh.outputString, commandResult);
   }
 
@@ -264,5 +266,9 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public enum PortType {
     locator, jmxManager, http
+  }
+
+  public CommandResult getCommandResult() {
+    return commandResult;
   }
 }
