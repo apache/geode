@@ -48,7 +48,8 @@ public class CacheWriterGetOldValueIntegrationTest {
   }
 
   private void createCache() {
-    cache = (GemFireCacheImpl) new CacheFactory().set("locators", "").create();
+    cache =
+        (GemFireCacheImpl) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
   }
 
   @After
