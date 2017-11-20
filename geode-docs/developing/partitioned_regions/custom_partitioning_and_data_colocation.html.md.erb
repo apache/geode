@@ -52,7 +52,7 @@ You name specific members as primary and secondary hosts of each partition.
     Fixed partitioning has these requirements and caveats:
 
     -   <%=vars.product_name%> cannot rebalance fixed partition region data, because it cannot move the buckets around among the host members. You must carefully consider your expected data loads for the partitions you create.
-    -   With fixed partitioning, the region configuration is different between host members. Each member identifies the named partitions it hosts, and whether it is hosting the primary copy or a secondary copy. You then program fixed partition resolver to return the partition id, so the entry is placed on the right members. Only one member can be primary for a particular partition name, and that member cannot be the partition's secondary.
+    -   With fixed partitioning, the region configuration is different between host members. Each member identifies the named partitions it hosts, and whether it is hosting the primary copy or a secondary copy. You then program a fixed-partition resolver to return the partition id, so the entry is placed on the right members. Only one member can be primary for a particular partition name, and that member cannot be the partition's secondary.
 
 ## <a id="custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8" class="no-quick-link"></a>Data Colocation Between Regions
 

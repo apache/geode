@@ -24,7 +24,7 @@ Additionally, the physical location of the key-value pair
 is abstracted away from the application.
 You can change these policies for a partitioned region by providing
 your own partition resolver.
-The partitioning can go farther with a fixed partition resolver
+The partitioning can go further with a fixed-partition resolver
 that specifies which members host which data buckets.
 
 <a id="custom_partition_region_data__section_CF05CE974C9C4AF78430DA55601D2158"></a>
@@ -33,8 +33,9 @@ If you are both colocating region data and custom partitioning,
 all colocated regions must use the same custom partitioning mechanism.
 See [Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html#colocating_partitioned_region_data).
 
-2 steps described: implementing. configuring. based on which resolver is
-used.
+The two steps of implementing the interface
+and configuring the regions are described.
+These steps differ based on which partition resolver is used.
 
 **Implementing Standard Partitioning**
 
@@ -249,7 +250,7 @@ Use one of these methods:
 -   If your colocated data is in a server system,
 add the `PartitionResolver` implementation class to the `CLASSPATH`
 of your Java clients. 
-For Java single hop access to work,
+For Java single-hop access to work,
 the resolver class needs to have a zero-argument constructor,
 and the resolver class must not have any state;
 the `init` method is included in this restriction.
@@ -291,13 +292,13 @@ the `init` method is included in this restriction.
 
 -  For colocated data, add the `StringPrefixPartitionResolver`
 implementation class to the `CLASSPATH` of your Java clients.
-The resolver will work with Java single hop clients.
+The resolver will work with Java single-hop clients.
 
 **Configuring Fixed Partitioning**
 
--  Set the fixed partition attributes for each member.
+-  Set the fixed-partition attributes for each member.
 
-    These attributes define the data stored for the region by the member and must be different for different members. See `org.apache.geode.cache.FixedPartitionAttributes` for definitions of the attributes. Define each `partition-name` in your data host members for the region. For each partition name, in the member you want to host the primary copy, define it with `is-primary` set to `true`. In every member you want to host the secondary copy, define it with `is-primary` set to `false` (the default). The number of secondaries must match the number of redundant copies you have defined for the region. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
+    These attributes define the data stored for the region by the member and must be different for different members. See `org.apache.geode.cache.FixedPartitionAttributes` for definitions of the attributes. Define each `partition-name` in your data-host members for the region. For each partition name, in the member you want to host the primary copy, define it with `is-primary` set to `true`. In every member you want to host the secondary copy, define it with `is-primary` set to `false` (the default). The number of secondaries must match the number of redundant copies you have defined for the region. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
 
     **Note:**
     Buckets for a partition are hosted only by the members that have defined the partition name in their `FixedPartitionAttributes`.
@@ -350,7 +351,7 @@ The resolver will work with Java single hop clients.
 -   If your colocated data is in a server system,
 add the class that implements the `FixedPartitionResolver` interface
 to the `CLASSPATH` of your Java clients.
-For Java single hop access to work,
+For Java single-hop access to work,
 the resolver class needs to have a zero-argument constructor,
 and the resolver class must not have any state;
 the `init` method is included in this restriction.
