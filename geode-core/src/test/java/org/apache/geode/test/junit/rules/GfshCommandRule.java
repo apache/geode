@@ -216,7 +216,7 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public CommandResult executeCommand(String command) {
     gfsh.executeCommand(command);
-    CommandResult result = null;
+    CommandResult result;
     try {
       result = (CommandResult) gfsh.getResult();
     } catch (InterruptedException e) {
@@ -262,6 +262,10 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public File getWorkingDir() {
     return workingDir;
+  }
+
+  public void setTimeout(long timeoutInSeconds) {
+    gfsh.setTimeout(timeoutInSeconds);
   }
 
   public enum PortType {
