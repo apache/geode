@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -60,7 +61,8 @@ public class ClusterConfig implements Serializable {
     if (this.groups.size() == 0) {
       return Collections.emptySet();
     }
-    return this.groups.stream().map(ConfigGroup::getMaxLogFileSize).collect(toSet());
+    return this.groups.stream().map(ConfigGroup::getMaxLogFileSize).filter(Objects::nonNull)
+        .collect(toSet());
   }
 
   public List<String> getJarNames() {
