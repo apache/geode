@@ -204,9 +204,9 @@ Configures a gateway sender to distribute region events to another <%=vars.produ
 <table>
 <caption><span class="tablecap">Table 4. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -229,14 +229,11 @@ Configures a gateway sender to distribute region events to another <%=vars.produ
 <tr class="odd">
 <td>order-policy</td>
 <td>When the <code class="ph codeph">dispatcher-threads</code> attribute is greater than 1, <code class="ph codeph">order-policy</code> configures the way in which multiple dispatcher threads process region events from a serial gateway queue or serial asynchronous event queue. This attribute can have one of the following values:
-<div class="p">
-<span class="keyword option">key</span>
-When distributing region events from the local queue, multiple dispatcher threads preserve the order of key updates.
-<span class="keyword option">thread</span>
-When distributing region events from the local queue, multiple dispatcher threads preserve the order in which a given thread added region events to the queue.
-<span class="keyword option">partition</span>
-When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote <%=vars.product_name%> site. For a distributed region, this means that all key updates delivered to the local gateway sender queue are distributed to the remote site in the same order.
-</div>
+<ul>
+<li><strong>key</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order of key updates.</li>
+<li><strong>thread</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which a given thread added region events to the queue.</li>
+<li><strong>partition</strong>. This option is valid for parallel event queues. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote <%=vars.product_name%> site. For a distributed region, this means that all key updates delivered to the local queue are distributed to the remote site in the same order.</li>
+</ul>
 <p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
 <td>key</td>
 </tr>
@@ -527,7 +524,8 @@ Configures a queue for sending region events to an AsyncEventListener implementa
 <li><strong>key</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order of key updates.</li>
 <li><strong>thread</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which a given thread added region events to the queue.</li>
 <li><strong>partition</strong>. This option is valid for parallel event queues. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote <%=vars.product_name%> site. For a distributed region, this means that all key updates delivered to the local queue are distributed to the remote site in the same order.</li>
-</ul></td>
+</ul>
+<p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
 <td>key</td>
 </tr>
 <tr class="even">
