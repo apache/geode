@@ -359,10 +359,10 @@ public class SystemManagementService extends BaseManagementService {
   }
 
   @Override
-  public Set<String> getAsyncEventQueueIds(DistributedMember member) {
+  public Set<ObjectName> getAsyncEventQueueMBeanNames(DistributedMember member) {
     Set<ObjectName> mBeanNames = this.queryMBeanNames(member);
     return mBeanNames.stream().filter(x -> "AsyncEventQueue".equals(x.getKeyProperty("service")))
-        .map(x -> x.getKeyProperty("queue")).collect(Collectors.toSet());
+        .collect(Collectors.toSet());
   }
 
   @Override

@@ -409,12 +409,16 @@ public class CliUtil {
 
   public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,
       String queueId) {
+    Set<DistributedMember> members = findMembers(null, null);
+    return members.stream().filter(m -> getAsyncEventQueueIds(cache, m).contains(queueId))
+        .collect(Collectors.toSet());
+  }
+
+  public static Set<String> getAsyncEventQueueIds(InternalCache cache, DistributedMember member) {
     SystemManagementService managementService =
         (SystemManagementService) ManagementService.getExistingManagementService(cache);
-    Set<DistributedMember> members = findMembers(null, null);
-    return members.stream()
-        .filter(m -> managementService.getAsyncEventQueueIds(m).contains(queueId))
-        .collect(Collectors.toSet());
+    return managementService.getAsyncEventQueueMBeanNames(member).stream()
+        .map(x -> x.getKeyProperty("queue")).collect(Collectors.toSet());
   }
 
   static class CustomFileFilter implements FileFilter {

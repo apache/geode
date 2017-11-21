@@ -483,11 +483,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
         getMemberNameOrId(member))));
   }
 
-  public static ObjectName getAsyncEventQueueMBeanName(String member, String queueId) {
-    return getObjectName((MessageFormat.format(OBJECTNAME__ASYNCEVENTQUEUE_MXBEAN, queueId,
-        makeCompliantName(member))));
-  }
-
   public static ObjectName getDistributedRegionMbeanName(String regionPath) {
     return getObjectName((MessageFormat.format(OBJECTNAME__DISTRIBUTEDREGION_MXBEAN,
         makeCompliantRegionPath(regionPath))));
