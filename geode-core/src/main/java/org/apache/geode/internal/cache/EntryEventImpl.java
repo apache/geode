@@ -891,7 +891,7 @@ public class EntryEventImpl
    * @param v the caller should have already retained this off-heap reference.
    */
   @Released(ENTRY_EVENT_OLD_VALUE)
-  private void basicSetOldValue(@Unretained(ENTRY_EVENT_OLD_VALUE) Object v) {
+  void basicSetOldValue(@Unretained(ENTRY_EVENT_OLD_VALUE) Object v) {
     @Released
     final Object curOldValue = this.oldValue;
     if (v == curOldValue) {
@@ -934,7 +934,7 @@ public class EntryEventImpl
   }
 
   @Unretained(ENTRY_EVENT_OLD_VALUE)
-  private Object basicGetOldValue() {
+  Object basicGetOldValue() {
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     Object result = this.oldValue;
     if (!this.offHeapOk && isOffHeapReference(result)) {
@@ -1512,6 +1512,9 @@ public class EntryEventImpl
   private static final boolean EVENT_OLD_VALUE =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-event-old-value");
 
+  protected boolean areOldValuesEnabled() {
+    return EVENT_OLD_VALUE;
+  }
 
   void putExistingEntry(final LocalRegion owner, RegionEntry entry) throws RegionClearedException {
     putExistingEntry(owner, entry, false, null);
@@ -1529,7 +1532,7 @@ public class EntryEventImpl
     // only set oldValue if it hasn't already been set to something
     if (this.oldValue == null) {
       if (!reentry.isInvalidOrRemoved()) {
-        if (requireOldValue || EVENT_OLD_VALUE || this.region instanceof HARegion // fix for bug
+        if (requireOldValue || areOldValuesEnabled() || this.region instanceof HARegion // fix for bug
                                                                                   // 37909
         ) {
           @Retained
@@ -1798,7 +1801,7 @@ public class EntryEventImpl
     if (Token.isInvalidOrRemoved(oldVal)) {
       oldVal = null;
     } else {
-      if (mustBeAvailable || oldVal == null || EVENT_OLD_VALUE) {
+      if (mustBeAvailable || oldVal == null || areOldValuesEnabled()) {
         // set oldValue to oldVal
       } else {
         oldVal = Token.NOT_AVAILABLE;
@@ -1870,7 +1873,7 @@ public class EntryEventImpl
    *        where the old value must be available.
    */
   public void setOldValue(Object v, boolean force) {
-    if (Token.isRemoved(v)) {
+    if (v == null || Token.isRemoved(v)) {
       return;
     }
     if (Token.isInvalid(v)) {
@@ -1882,13 +1885,10 @@ public class EntryEventImpl
   }
 
   private boolean shouldOldValueBeUnavailable(Object v, boolean force) {
-    if (v == null) {
-      return true;
-    }
     if (force) {
       return false;
     }
-    if (EVENT_OLD_VALUE) {
+    if (areOldValuesEnabled()) {
       return false;
     }
     if (this.region instanceof HARegion) {

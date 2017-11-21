@@ -378,7 +378,125 @@ public class EntryEventImplTest {
 
     verify(ovImporter).importOldObject(oldValue, true);
   }
+  
+  @Test
+  public void setOldValueUnforcedWithRemoveTokenDoesNotChangeOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(Token.REMOVED_PHASE1, false);
+    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+  }
+  
+  @Test
+  public void setOldValueForcedWithRemoveTokenDoesNotChangeOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(Token.REMOVED_PHASE1, true);
+    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+  }
 
+  @Test
+  public void setOldValueUnforcedWithInvalidTokenNullsOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(Token.INVALID, false);
+    assertEquals(null, e.basicGetOldValue());
+  }
+  
+  @Test
+  public void setOldValueForcedWithInvalidTokenNullsOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(Token.INVALID, true);
+    assertEquals(null, e.basicGetOldValue());
+  }
+  
+  @Test
+  public void setOldValueUnforcedWithNullDoesNotChangeOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(null, false);
+    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+  }
+
+  @Test
+  public void setOldValueForcedWithNullDoesNotChangeOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(null, true);
+    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+  }
+
+  @Test
+  public void setOldValueForcedWithNotAvailableTokenSetsOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(Token.NOT_AVAILABLE, true);
+    assertEquals(Token.NOT_AVAILABLE, e.basicGetOldValue());
+  }
+  
+  @Test
+  public void setOldValueUnforcedWithNotAvailableTokenSetsOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue(Token.NOT_AVAILABLE, false);
+    assertEquals(Token.NOT_AVAILABLE, e.basicGetOldValue());
+  }
+  
+  @Test
+  public void setOldUnforcedValueSetsOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue("oldValue", false);
+    assertEquals("oldValue", e.basicGetOldValue());
+  }
+  
+  @Test
+  public void setOldValueForcedSetsOldValue() {
+    LocalRegion region = mock(LocalRegion.class);
+    EntryEventImpl e = createEntryEvent(region, null);
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue("oldValue", true);
+    assertEquals("oldValue", e.basicGetOldValue());
+  }
+
+  @Test
+  public void setOldValueUnforcedWithDisabledSetsNotAvailable() {
+    EntryEventImpl e = new EntryEventImplWithOldValuesDisabled();
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue("oldValue", false);
+    assertEquals(Token.NOT_AVAILABLE, e.basicGetOldValue());
+  }
+ 
+  @Test
+  public void setOldValueForcedWithDisabledSetsOldValue() {
+    EntryEventImpl e = new EntryEventImplWithOldValuesDisabled();
+    String UNINITIALIZED = "Uninitialized";
+    e.basicSetOldValue(UNINITIALIZED);
+    e.setOldValue("oldValue", true);
+    assertEquals("oldValue", e.basicGetOldValue());
+  }
+ 
   @Test
   public void verifyExternalReadMethodsBlockedByRelease() throws InterruptedException {
     LocalRegion region = mock(LocalRegion.class);
@@ -536,6 +654,13 @@ public class EntryEventImplTest {
     if (!(e.getCachedDeserializedOld() instanceof IllegalStateException)) {
       fail("unexpected success of old getDeserializedValue. It returned "
           + e.getCachedDeserializedOld());
+    }
+  }
+
+  private static class EntryEventImplWithOldValuesDisabled extends EntryEventImpl {
+    @Override
+    protected boolean areOldValuesEnabled() {
+      return false;
     }
   }
 
