@@ -60,6 +60,7 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -404,6 +405,16 @@ public class CliUtil {
           CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
     }
     return result;
+  }
+
+  public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,
+      String queueId) {
+    SystemManagementService managementService =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    Set<DistributedMember> members = findMembers(null, null);
+    return members.stream()
+        .filter(m -> managementService.getAsyncEventQueueIds(m).contains(queueId))
+        .collect(Collectors.toSet());
   }
 
   static class CustomFileFilter implements FileFilter {
