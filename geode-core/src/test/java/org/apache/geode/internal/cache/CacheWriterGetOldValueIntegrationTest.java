@@ -17,9 +17,11 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +37,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -66,6 +69,35 @@ public class CacheWriterGetOldValueIntegrationTest {
   @Test
   public void getOldValueWithTransactionInCacheWriterReturnsValueOfEvictedEntry() {
     doTest(true);
+  }
+
+  @Test
+  public void doPutAll() {
+    PutAllCacheWriter<String, String> cw;
+    Region<String, String> r = createOverflowRegion();
+    put(r, "k1", "v1");
+    put(r, "k2", "v2");
+    cw = new PutAllCacheWriter<>();
+    r.getAttributesMutator().setCacheWriter(cw);
+    HashMap<String, String> putAllMap = new HashMap<>();
+    putAllMap.put("k1", "update1");
+    putAllMap.put("k2", "update2");
+    r.putAll(putAllMap);
+
+    assertThat(cw.getSeenEntries()).isEqualTo(this.expectedValues);
+  }
+
+  @Test
+  public void doRemoveAll() {
+    RemoveAllCacheWriter<String, String> cw;
+    Region<String, String> r = createOverflowRegion();
+    put(r, "k1", "v1");
+    put(r, "k2", "v2");
+    cw = new RemoveAllCacheWriter<>();
+    r.getAttributesMutator().setCacheWriter(cw);
+    r.removeAll(Arrays.asList("k1", "k2"));
+
+    assertThat(cw.getSeenEntries()).isEqualTo(this.expectedValues);
   }
 
   private void doTest(boolean useTx) {
@@ -194,6 +226,52 @@ public class CacheWriterGetOldValueIntegrationTest {
     @Override
     public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException {
       checkEvent(event);
+    }
+  }
+
+  private static class PutAllCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
+    private final HashMap<K, V> seenEntries = new HashMap<>();
+
+    public HashMap<K, V> getSeenEntries() {
+      return this.seenEntries;
+    }
+
+    @Override
+    public void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException {
+      fail("did not expect beforeCreate to be called by putAll");
+    }
+
+    @Override
+    public void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException {
+      seenEntries.put(event.getKey(), event.getOldValue());
+    }
+
+    @Override
+    public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException {
+      fail("did not expect beforeDestroy to be called by putAll");
+    }
+  }
+
+  private static class RemoveAllCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
+    private final HashMap<K, V> seenEntries = new HashMap<>();
+
+    public HashMap<K, V> getSeenEntries() {
+      return this.seenEntries;
+    }
+
+    @Override
+    public void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException {
+      fail("did not expect beforeCreate to be called by removeAll");
+    }
+
+    @Override
+    public void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException {
+      fail("did not expect beforeUpdate to be called by removeAll");
+    }
+
+    @Override
+    public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException {
+      seenEntries.put(event.getKey(), event.getOldValue());
     }
   }
 
