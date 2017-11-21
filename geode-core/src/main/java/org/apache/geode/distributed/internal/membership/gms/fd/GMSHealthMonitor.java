@@ -259,9 +259,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           return;
         }
 
-        long interval = memberTimeoutInMillis / GMSHealthMonitor.LOGICAL_INTERVAL;
+        long interval = neighbour.getMemberTimeout() / GMSHealthMonitor.LOGICAL_INTERVAL;
         long lastTS = currentTime - nextNeighborTS.getTime();
-        if (lastTS + interval >= memberTimeoutInMillis) {
+        if (lastTS + interval >= neighbour.getMemberTimeout()) {
           logger.trace("Checking member {} ", neighbour);
           // now do check request for this member;
           checkMember(neighbour);
@@ -472,7 +472,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       } else if (waitForResponse) {
         synchronized (pingResp) {
           if (pingResp.getResponseMsg() == null) {
-            pingResp.wait(memberTimeout);
+            // pingResp.wait(memberTimeout);
+            pingResp.wait(member.getMemberTimeout());
           }
           TimeStamp ts = memberTimeStamps.get(member);
           if (ts != null && ts.getTime() > startTime) {

@@ -92,6 +92,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /** The versions in which this message was modified */
   private static final Version[] dsfidVersions = new Version[] {Version.GFE_71, Version.GFE_90};
 
+  /** member-timeout of this member */
+  private long memberTimeout;
+
   private void defaultToCurrentHost() {
     netMbr.setProcessId(OSProcess.getId());
     try {
@@ -926,6 +929,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     short version = netMbr.getVersionOrdinal();
     Version.writeOrdinal(out, version, true);
+    out.writeLong(memberTimeout);
   }
 
   public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
@@ -971,6 +975,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
         .writeString(durableClientAttributes == null ? "" : durableClientAttributes.getId(), out);
     DataSerializer.writeInteger(Integer.valueOf(
         durableClientAttributes == null ? 300 : durableClientAttributes.getTimeout()), out);
+    out.writeLong(memberTimeout);
   }
 
 
@@ -1027,6 +1032,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     MemberAttributes attr = new MemberAttributes(dcPort, vmPid, vmKind, vmViewId, name, groups,
         durableClientAttributes);
     netMbr = MemberFactory.newNetMember(inetAddr, port, sbEnabled, elCoord, version, attr);
+    memberTimeout = in.readLong();
 
     Assert.assertTrue(netMbr.getVmKind() > 0);
     // Assert.assertTrue(getPort() > 0);
@@ -1072,6 +1078,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     MemberAttributes attr = new MemberAttributes(dcPort, vmPid, vmKind, vmViewId, name, groups,
         durableClientAttributes);
     netMbr = MemberFactory.newNetMember(inetAddr, port, sbEnabled, elCoord, version, attr);
+    memberTimeout = in.readLong();
 
     Assert.assertTrue(netMbr.getVmKind() > 0);
   }
@@ -1212,6 +1219,14 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     return dsfidVersions;
   }
 
+  public long getMemberTimeout() {
+    return memberTimeout;
+  }
+
+
+  public void setMemberTimeout(long memberTimeout) {
+    this.memberTimeout = memberTimeout;
+  }
 
   public static class InternalDistributedMemberWrapper {
     InternalDistributedMember mbr;
