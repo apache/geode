@@ -18,8 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<a id="cache_xml_cache"></a>
-
 
 This section documents the `cache.xml` sub-elements used for <%=vars.product_name%> server configuration. All elements are sub-elements of the `<cache>` element.
 
@@ -179,10 +177,224 @@ Set the `pool-name` attribute to set the name of the connection pool used by cli
 
 Specifies a region or disk store's disk directory.
 
-<a id="id_utn_c3p_wk__table_877FDB097F454F33AE90FB16FAD212AE"></a>
+| Attribute                 | Description                                                                              | Default                  |
+|---------------------------|------------------------------------------------------------------------------------------|--------------------------|
+| dir-size                  | Maximum amount of space to use for the disk store, in megabytes.                         | 214748364 (2 petabytes)  |
+
+
+<span class="tablecap">Table 3. &lt;disk-dir&gt; Attributes</span>
+
+**Example:**
+
+``` pre
+<disk-dir 
+    dir-size="20480">/host3/users/gf/memberA_DStore</disk-dir> 
+```
+
+## <a id="gateway-sender" class="no-quick-link"></a>&lt;gateway-sender&gt;
+
+Configures a gateway sender to distribute region events to another <%=vars.product_name%> site. See [Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system).
+
+**API:** `GatewaySender`
+
+<a id="gateway-sender__table_E3CCD986A16F4FE8B9C6BB0F70E90E2E"></a>
 
 <table>
-<caption><span class="tablecap">Table 3. &lt;disk-dir&gt; Attributes</span></caption>
+<caption><span class="tablecap">Table 4. Attributes</span></caption>
+<colgroup>
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Attribute</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>parallel</td>
+<td>Value of &quot;true&quot; or &quot;false&quot; that specifies the type of gateway sender that <%=vars.product_name%> creates.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td>dispatcher-threads</td>
+<td>Number of dispatcher threads that are used to process region events from a gateway sender queue or asynchronous event queue.</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td>order-policy</td>
+<td>When the <code class="ph codeph">dispatcher-threads</code> attribute is greater than 1, <code class="ph codeph">order-policy</code> configures the way in which multiple dispatcher threads process region events from a serial gateway queue or serial asynchronous event queue. This attribute can have one of the following values:
+<ul>
+<li><strong>key</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order of key updates.</li>
+<li><strong>thread</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which a given thread added region events to the queue.</li>
+<li><strong>partition</strong>. This option is valid for parallel event queues. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote <%=vars.product_name%> site. For a distributed region, this means that all key updates delivered to the local queue are distributed to the remote site in the same order.</li>
+</ul>
+<p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
+<td>key</td>
+</tr>
+<tr class="even">
+<td>id</td>
+<td>Unique identifier for the gateway sender, usually an identifier associated with a physical location. This attribute is required.</td>
+<td>null</td>
+</tr>
+<tr class="odd">
+<td>remote-distributed-system-id</td>
+<td>Integer that uniquely identifies the remote <%=vars.product_name%> cluster to which this gateway sender will send region events. This value corresponds to the <code class="ph codeph">distributed-system-id</code> property specified in locators for the remote cluster. This attribute is required.</td>
+<td>null</td>
+</tr>
+<tr class="even">
+<td>manual-start</td>
+<td><b>Deprecated.</b> Boolean value that specifies whether you need to manually start the gateway sender. If you supply a null value, the default value of false is used, and the gateway sender attempts to start automatically. <em>A manual start is likely to cause data loss, so manual start should never be used in a production system.</em></td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td>socket-buffer-size</td>
+<td>Size of the socket buffer that sends messages to remote sites. This size should match the size of the <code class="ph codeph">socket-buffer-size</code> attribute of remote gateway receivers that process region events.</td>
+<td>32768</td>
+</tr>
+<tr class="even">
+<td>socket-read-timeout</td>
+<td>Amount of time in milliseconds that the gateway sender will wait to receive an acknowledgment from a remote site. By default this is set to 0, which means there is no timeout. If you do set this timeout, you must set it to a minimum of 30000 (milliseconds). Setting it to a lower number will generate an error message and reset the value to the default of 0.</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>enable-batch-conflation</td>
+<td>Boolean value that determines whether <%=vars.product_name%> should conflate messages.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td>batch-size</td>
+<td>Maximum number of messages that a batch can contain.</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td>batch-time-interval</td>
+<td>Maximum number of milliseconds that can elapse between sending batches.</td>
+<td>1000</td>
+</tr>
+<tr class="even">
+<td>enable-persistence</td>
+<td>Boolean value that determines whether <%=vars.product_name%> persists the gateway queue.</td>
+<td>false</td>
+</tr>
+<tr class="odd">
+<td>disk-store-name</td>
+<td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td>disk-synchronous</td>
+<td>For regions that write to disk, boolean that specifies whether disk writes are done synchronously for the region.</td>
+<td>true</td>
+</tr>
+<tr class="odd">
+<td>maximum-queue-memory</td>
+<td>Maximum amount of memory in megabytes that the queue can consume before overflowing to disk.</td>
+<td>100 MB</td>
+</tr>
+<tr class="even">
+<td>alert-threshold</td>
+<td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before <%=vars.product_name%> logs an alert.</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+
+: <span class="tablecap">Table 4. Attributes</span>
+
+**Example:**
+
+``` pre
+<cache>
+  
+  <gateway-sender 
+    id="remoteA" 
+    parallel="true" 
+    remote-distributed-system-id="1"> 
+    <gateway-event-filter>
+      <class-name>org.apache.geode.util.SampleEventFilter</class-name>
+      <parameter 
+       name="param1">
+        <string>"value1"</string>
+      </parameter>
+    </gateway-event-filter>
+    <gateway-transport-filter>
+      <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
+      <parameter 
+       name="param1">
+        <string>"value1"</string>
+      </parameter>
+    </gateway-transport-filter>
+  </gateway-sender> 
+  ...
+</cache>
+```
+
+## <a id="gateway-event-filter" class="no-quick-link"></a>&lt;gateway-event-filter&gt;
+
+A GatewayEventFilter implementation determines whether a region event is placed in a gateway sender queue and/or whether an event in a gateway queue is distributed to a remote site. You can optionally add one or more GatewayEventFilter implementations to a gateway sender, either in the cache.xml configuration file or using the Java API.
+
+Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
+
+**Example:**
+
+``` pre
+<gateway-event-filter>
+      <class-name>org.apache.geode.util.SampleEventFilter</class-name>
+      <parameter name="param1">
+        <string>"value1"</string>
+      </parameter>
+</gateway-event-filter>
+```
+
+## <a id="gateway-event-substitution-filter" class="no-quick-link"></a>&lt;gateway-event-substitution-filter&gt;
+
+A GatewayEventSubstitutionFilter provides a way to specify a substitute value to be stored in the GatewayQueueEvent and enqueued in the RegionQueue. You can optionally add one GatewayEventSubstitutionFilter implementation to a gateway sender.
+
+Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
+
+**Example:**
+
+``` pre
+<gateway-event-substitution-filter>
+      <class-name>org.apache.geode.util.SampleEventSubstitutionFilter</class-name>
+      <parameter name="param1">
+        <string>"value1"</string>
+      </parameter>
+</gateway-event-substitution-filter>
+```
+
+## <a id="gateway-transport-filter" class="no-quick-link"></a>&lt;gateway-transport-filter&gt;
+
+Use a GatewayTransportFilter implementation to process the TCP stream that sends a batch of events that is distributed from one <%=vars.product_name%> cluster to another over a WAN. A GatewayTransportFilter is typically used to perform encryption or compression on the data that distributed. You install the same GatewayTransportFilter implementation on both a gateway sender and gateway receiver.
+
+Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
+
+**Example:**
+
+``` pre
+<gateway-transport-filter>
+      <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
+      <parameter 
+       name="param1">
+        <string>"value1"</string>
+      </parameter>
+</gateway-transport-filter>
+```
+
+## <a id="gateway-receiver" class="no-quick-link"></a>&lt;gateway-receiver&gt;
+
+Configures a gateway receiver to receive and apply region events that were distributed from another <%=vars.product_name%> site. You can only specify one gateway receiver on a member. See [Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system).
+
+**API:** `GatewayReceiverFactory`, `GatewayTransportFilter`
+
+<a id="gateway-receiver__table_430418178B3B4D94B0EEAB9A83E005CF"></a>
+
+<table>
+<caption><span class="tablecap">Table 5. Attributes</span></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -197,21 +409,97 @@ Specifies a region or disk store's disk directory.
 </thead>
 <tbody>
 <tr class="odd">
-<td>dir-size</td>
-<td>Maximum amount of space to use for the disk store, in megabytes.</td>
-<td>214748364
-<p>(2 petabytes)</p></td>
+<td>start-port</td>
+<td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
+<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<td>5000</td>
+</tr>
+<tr class="even">
+<td>end-port</td>
+<td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
+<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<td>5500</td>
+</tr>
+<tr class="odd">
+<td>bind-address</td>
+<td>Network address for connections from gateway senders in other sites. Specify the address as a literal string value.</td>
+<td> </td>
+</tr>
+<tr class="even">
+<td>hostname-for-senders</td>
+<td>Attribute where you can specify an IP address or hostname for gateway sender connections. If you configure hostname-for-senders, locators will use the provided hostname or IP address when instructing gateway senders on how to connect to gateway receivers. If you provide &quot;&quot; or null as the value, by default the gateway receiver's bind-address will be sent to clients.</td>
+<td> </td>
+</tr>
+<tr class="odd">
+<td>manual-start</td>
+<td>When set to false, the gateway receiver will automatically start when the receiver is created. If set to true, you must manually start the receiver.</td>
+<td>true</td>
+</tr>
+<tr class="even">
+<td>maximum-time-between-pings</td>
+<td>Integer value that specifies the time interval (in milliseconds) to use between pings to connected WAN sites. This value determines the maximum amount of time that can elapse before a remote WAN site is considered offline.</td>
+<td>60000</td>
+</tr>
+<tr class="odd">
+<td>socket-buffer-size</td>
+<td>An integer value that sets the buffer size (in bytes) of the socket connection for this gateway receiver. This value should match the <code class="ph codeph">socket-buffer-size</code> setting of gateway senders that connect to this receiver.</td>
+<td>32768</td>
 </tr>
 </tbody>
 </table>
 
-<span class="tablecap">Table 3. &lt;disk-dir&gt; Attributes</span>
+: <span class="tablecap">Table 5. Attributes</span>
 
 **Example:**
 
 ``` pre
-<disk-dir 
-    dir-size="20480">/host3/users/gf/memberA_DStore</disk-dir> 
+<cache>
+     <gateway-receiver start-port="1530" end-port="1551"> 
+    <gateway-transport-filter>>
+      <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
+      <parameter 
+       name="param1">
+        <string>"value1"</string>
+      </parameter>
+    </gateway-transport-filter>
+  </gateway-receiver>
+</cache>
+```
+
+## <a id="gateway-receiver_gateway-transport-filter" class="no-quick-link"></a>&lt;gateway-transport-filter&gt;
+
+Use a GatewayTransportFilter implementation to process the TCP stream that sends a batch of events that is distributed from one <%=vars.product_name%> cluster to another over a WAN. A GatewayTransportFilter is typically used to perform encryption or compression on the data that distributed. You install the same GatewayTransportFilter implementation on both a gateway sender and gateway receiver.
+
+Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
+
+**Example:**
+
+``` pre
+<gateway-transport-filter>
+      <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
+      <parameter 
+       name="param1">
+        <string>"value1"</string>
+      </parameter>
+</gateway-transport-filter>
+```
+
+## <a id="gateway-conflict-resolver" class="no-quick-link"></a>&lt;gateway-conflict-resolver&gt;
+
+An event-handler plug-in that is called in order to determine whether a potentially conflicting WAN update should be applied to the local cache. A GatewayConflictResolver is invoked if the current value in a cache entry was established by a different distributed system (with a different distributed-system-id) than an event that is attempting to modify the entry. It is not invoked if the event has the same distributed system ID as the event that last changed the entry. See [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542)
+
+Specify the Java class for the gateway conflict resolver plug-in and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
+
+**API:** `org.apache.geode.cache.util.GatewayConflictResolver`
+
+**Example:**
+
+``` pre
+<gateway-conflict-resolver>
+    <class-name>
+     myPackage.MyConflictResolver
+    </class-name>
+  </gateway-conflict-resolver>
 ```
 
 ## <a id="async-event-queue" class="no-quick-link"></a>&lt;async-event-queue&gt;
@@ -294,7 +582,8 @@ Configures a queue for sending region events to an AsyncEventListener implementa
 <li><strong>key</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order of key updates.</li>
 <li><strong>thread</strong>. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which a given thread added region events to the queue.</li>
 <li><strong>partition</strong>. This option is valid for parallel event queues. When distributing region events from the local queue, multiple dispatcher threads preserve the order in which region events were added to the local queue. For a partitioned region, this means that all region events delivered to a specific partition are delivered in the same order to the remote <%=vars.product_name%> site. For a distributed region, this means that all key updates delivered to the local queue are distributed to the remote site in the same order.</li>
-</ul></td>
+</ul>
+<p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
 <td>key</td>
 </tr>
 <tr class="even">
@@ -331,40 +620,6 @@ Configures a queue for sending region events to an AsyncEventListener implementa
    </async-event-queue>
     ...
 </cache>
-```
-
-## <a id="gateway-event-filter" class="no-quick-link"></a>&lt;gateway-event-filter&gt;
-
-A GatewayEventFilter implementation determines whether a region event is placed in a gateway sender queue and/or whether an event in a gateway queue is distributed to a remote site. You can optionally add one or more GatewayEventFilter implementations to an async event queue, either in the cache.xml configuration file or using the Java API.
-
-Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
-
-**Example:**
-
-``` pre
-<gateway-event-filter>
-      <class-name>org.apache.geode.util.SampleEventFilter</class-name>
-      <parameter name="param1">
-        <string>"value1"</string>
-      </parameter>
-</gateway-event-filter>
-```
-
-## <a id="gateway-event-substitution-filter" class="no-quick-link"></a>&lt;gateway-event-substitution-filter&gt;
-
-A GatewayEventSubstitutionFilter provides a way to specify a substitute value to be stored in the GatewayQueueEvent and enqueued in the RegionQueue. You can optionally add one GatewayEventSubstitutionFilter implementation to an async event queue.
-
-Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
-
-**Example:**
-
-``` pre
-<gateway-event-substitution-filter>
-      <class-name>org.apache.geode.util.SampleEventSubstitutionFilter</class-name>
-      <parameter name="param1">
-        <string>"value1"</string>
-      </parameter>
-</gateway-event-substitution-filter>
 ```
 
 ## <a id="async-event-listener" class="no-quick-link"></a>&lt;async-event-listener&gt;
@@ -513,10 +768,6 @@ The `cacheserver` process uses only `cache.xml` configuration. For application s
 </cache>
 ```
 
-## <a id="group" class="no-quick-link"></a>&lt;group&gt;
-
-Deprecated as of GemFire 7.0. Specify server groups in the gemfire.properties file. See [Organizing Servers Into Logical Member Groups](../../topologies_and_comm/cs_configuration/configure_servers_into_logical_groups.html).
-
 ## <a id="client-subscription" class="no-quick-link"></a>&lt;client-subscription&gt;
 
 Overflow specification for client subscription queues. Sets a capacity limit on the in-memory queue and specifies where to overflow when capacity is reached. By default no overflow is used. Specified in three parts:
@@ -532,7 +783,6 @@ Overflow specification for client subscription queues. Sets a capacity limit on 
 | eviction-policy    | How the capacity is calculated. The options are mem for memory use, entry for message count, and null for no overflow.                                                          | null               |
 | capacity           | Used if eviction-policy is not null. Specified in megabytes for mem and as a positive integer for entry.                                                                        | 1                  |
 | disk-store-name    | Used if eviction-policy is not null. Default: default disk store. If specified, the disk-store-name must specify a disk store that is already defined in the cache.             | default disk store |
-| overflow-directory | DEPRECATED as of GemFire version 6.5. See the `disk-store-name` attribute of the element [&lt;region-attributes&gt;](cache_xml.html#region-attributes). |                    |
 
 <span class="tablecap">Table 6. &lt;client-subscription&gt; Attributes</span>
 
@@ -2904,10 +3154,6 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 When nested within a `<region>` element, defines a subregion. See [Create and Access Data Subregions](../../basic_config/data_regions/managing_data_regions.html#data_regions__section_jn1_sry_5m) for restrictions on creating subregions. For example, you cannot create a partitioned subregion.
 
 See [&lt;region&gt;](cache_xml.html#region)
-
-## <a id="vm-root-region" class="no-quick-link"></a>&lt;vm-root-region&gt;
-
-DEPRECATED
 
 ## <a id="function-service" class="no-quick-link"></a>&lt;function-service&gt;
 
