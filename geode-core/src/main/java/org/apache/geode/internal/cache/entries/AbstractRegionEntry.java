@@ -839,9 +839,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         proceed = true;
       } else {
         event.setOldValue(curValue, curValue instanceof GatewaySenderEventImpl);
-        proceed = region.getConcurrencyChecksEnabled() 
-            || removeRecoveredEntry 
-            || forceDestroy
+        proceed = region.getConcurrencyChecksEnabled() || removeRecoveredEntry || forceDestroy
             || destroyShouldProceedBasedOnCurrentValue(curValue)
             || (event.getOperation() == Operation.REMOVE && (curValue == null
                 || curValue == Token.LOCAL_INVALID || curValue == Token.INVALID));
@@ -933,7 +931,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       return false;
     }
   }
-  
+
   private static boolean destroyShouldProceedBasedOnCurrentValue(Object curValue) {
     if (curValue == null) {
       return false;

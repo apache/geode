@@ -378,7 +378,7 @@ public class EntryEventImplTest {
 
     verify(ovImporter).importOldObject(oldValue, true);
   }
-  
+
   @Test
   public void setOldValueUnforcedWithRemoveTokenDoesNotChangeOldValue() {
     LocalRegion region = mock(LocalRegion.class);
@@ -388,7 +388,7 @@ public class EntryEventImplTest {
     e.setOldValue(Token.REMOVED_PHASE1, false);
     assertEquals(UNINITIALIZED, e.basicGetOldValue());
   }
-  
+
   @Test
   public void setOldValueForcedWithRemoveTokenDoesNotChangeOldValue() {
     LocalRegion region = mock(LocalRegion.class);
@@ -408,7 +408,7 @@ public class EntryEventImplTest {
     e.setOldValue(Token.INVALID, false);
     assertEquals(null, e.basicGetOldValue());
   }
-  
+
   @Test
   public void setOldValueForcedWithInvalidTokenNullsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
@@ -418,7 +418,7 @@ public class EntryEventImplTest {
     e.setOldValue(Token.INVALID, true);
     assertEquals(null, e.basicGetOldValue());
   }
-  
+
   @Test
   public void setOldValueUnforcedWithNullDoesNotChangeOldValue() {
     LocalRegion region = mock(LocalRegion.class);
@@ -448,7 +448,7 @@ public class EntryEventImplTest {
     e.setOldValue(Token.NOT_AVAILABLE, true);
     assertEquals(Token.NOT_AVAILABLE, e.basicGetOldValue());
   }
-  
+
   @Test
   public void setOldValueUnforcedWithNotAvailableTokenSetsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
@@ -458,7 +458,7 @@ public class EntryEventImplTest {
     e.setOldValue(Token.NOT_AVAILABLE, false);
     assertEquals(Token.NOT_AVAILABLE, e.basicGetOldValue());
   }
-  
+
   @Test
   public void setOldUnforcedValueSetsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
@@ -468,7 +468,7 @@ public class EntryEventImplTest {
     e.setOldValue("oldValue", false);
     assertEquals("oldValue", e.basicGetOldValue());
   }
-  
+
   @Test
   public void setOldValueForcedSetsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
@@ -487,7 +487,7 @@ public class EntryEventImplTest {
     e.setOldValue("oldValue", false);
     assertEquals(Token.NOT_AVAILABLE, e.basicGetOldValue());
   }
- 
+
   @Test
   public void setOldValueForcedWithDisabledSetsOldValue() {
     EntryEventImpl e = new EntryEventImplWithOldValuesDisabled();
@@ -496,7 +496,7 @@ public class EntryEventImplTest {
     e.setOldValue("oldValue", true);
     assertEquals("oldValue", e.basicGetOldValue());
   }
- 
+
   @Test
   public void verifyExternalReadMethodsBlockedByRelease() throws InterruptedException {
     LocalRegion region = mock(LocalRegion.class);

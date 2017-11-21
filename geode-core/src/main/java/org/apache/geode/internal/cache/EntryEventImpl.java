@@ -1532,8 +1532,9 @@ public class EntryEventImpl
     // only set oldValue if it hasn't already been set to something
     if (this.oldValue == null) {
       if (!reentry.isInvalidOrRemoved()) {
-        if (requireOldValue || areOldValuesEnabled() || this.region instanceof HARegion // fix for bug
-                                                                                  // 37909
+        if (requireOldValue || areOldValuesEnabled() || this.region instanceof HARegion // fix for
+                                                                                        // bug
+        // 37909
         ) {
           @Retained
           Object ov;
