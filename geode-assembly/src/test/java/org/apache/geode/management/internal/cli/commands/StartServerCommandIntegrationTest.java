@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -45,9 +44,6 @@ public class StartServerCommandIntegrationTest {
   @Rule
   public GfshParserRule commandRule = new GfshParserRule();
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-
   private StartServerCommand spy;
 
   @Before
@@ -58,7 +54,6 @@ public class StartServerCommandIntegrationTest {
 
   @Test
   public void startServerWorksWithNoOptions() throws Exception {
-    thrown.expect(NullPointerException.class);
     commandRule.executeCommandWithInstance(spy, "start server");
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
@@ -75,7 +70,6 @@ public class StartServerCommandIntegrationTest {
     String startServerCommand = new CommandStringBuilder("start server")
         .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
 
-    thrown.expect(NullPointerException.class);
     commandRule.executeCommandWithInstance(spy, startServerCommand);
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);

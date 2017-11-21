@@ -58,14 +58,14 @@ public class CommandExecutorTest {
 
   @Test
   public void returnsResultAsExpected() throws Exception {
-    doReturn(result).when(executor).invokeCommand(any());
+    doReturn(result).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(thisResult).isSameAs(result);
   }
 
   @Test
   public void testNullResult() throws Exception {
-    doReturn(null).when(executor).invokeCommand(any());
+    doReturn(null).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(thisResult.toString()).contains("Command returned null");
   }
@@ -73,7 +73,7 @@ public class CommandExecutorTest {
   @Test
   public void anyRuntimeExceptionGetsCaught() throws Exception {
     ;
-    doThrow(new RuntimeException("my message here")).when(executor).invokeCommand(any());
+    doThrow(new RuntimeException("my message here")).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
@@ -81,7 +81,8 @@ public class CommandExecutorTest {
 
   @Test
   public void notAuthorizedExceptionGetsThrown() throws Exception {
-    doThrow(new NotAuthorizedException("Not Authorized")).when(executor).invokeCommand(any());
+    doThrow(new NotAuthorizedException("Not Authorized")).when(executor).invokeCommand(any(),
+        any());
     assertThatThrownBy(() -> executor.execute(parseResult))
         .isInstanceOf(NotAuthorizedException.class);
   }
@@ -89,7 +90,8 @@ public class CommandExecutorTest {
   @Test
   public void anyIllegalArgumentExceptionGetsCaught() throws Exception {
     ;
-    doThrow(new IllegalArgumentException("my message here")).when(executor).invokeCommand(any());
+    doThrow(new IllegalArgumentException("my message here")).when(executor).invokeCommand(any(),
+        any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
@@ -98,7 +100,8 @@ public class CommandExecutorTest {
   @Test
   public void anyIllegalStateExceptionGetsCaught() throws Exception {
     ;
-    doThrow(new IllegalStateException("my message here")).when(executor).invokeCommand(any());
+    doThrow(new IllegalStateException("my message here")).when(executor).invokeCommand(any(),
+        any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
@@ -107,7 +110,7 @@ public class CommandExecutorTest {
   @Test
   public void anyUserErrorExceptionGetsCaught() throws Exception {
     ;
-    doThrow(new UserErrorException("my message here")).when(executor).invokeCommand(any());
+    doThrow(new UserErrorException("my message here")).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");
@@ -117,7 +120,7 @@ public class CommandExecutorTest {
   public void anyEntityNotFoundException_statusOK() throws Exception {
     ;
     doThrow(new EntityNotFoundException("my message here", true)).when(executor)
-        .invokeCommand(any());
+        .invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.OK);
     assertThat(thisResult.toString()).contains("Skipping: my message here");
@@ -126,7 +129,8 @@ public class CommandExecutorTest {
   @Test
   public void anyEntityNotFoundException_statusERROR() throws Exception {
     ;
-    doThrow(new EntityNotFoundException("my message here")).when(executor).invokeCommand(any());
+    doThrow(new EntityNotFoundException("my message here")).when(executor).invokeCommand(any(),
+        any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((CommandResult) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(thisResult.toString()).contains("my message here");

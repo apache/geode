@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -45,9 +44,6 @@ public class StartLocatorCommandIntegrationTest {
   @Rule
   public GfshParserRule commandRule = new GfshParserRule();
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-
   private StartLocatorCommand spy;
 
   @Before
@@ -58,7 +54,6 @@ public class StartLocatorCommandIntegrationTest {
 
   @Test
   public void startLocatorWorksWithNoOptions() throws Exception {
-    thrown.expect(NullPointerException.class);
     commandRule.executeCommandWithInstance(spy, "start locator");
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
@@ -75,7 +70,6 @@ public class StartLocatorCommandIntegrationTest {
     String startLocatorCommand = new CommandStringBuilder("start locator")
         .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
 
-    thrown.expect(NullPointerException.class);
     commandRule.executeCommandWithInstance(spy, startLocatorCommand);
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);

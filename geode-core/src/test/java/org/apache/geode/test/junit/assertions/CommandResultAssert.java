@@ -210,7 +210,8 @@ public class CommandResultAssert
   }
 
   public CommandResultAssert tableHasRowCount(String anyColumnHeader, int rowSize) {
-    assertThat(actual.getCommandResult().getColumnValues(anyColumnHeader)).isEqualTo(rowSize);
+    assertThat(actual.getCommandResult().getColumnValues(anyColumnHeader).size())
+        .isEqualTo(rowSize);
     return this;
   }
 
