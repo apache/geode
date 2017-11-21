@@ -380,23 +380,23 @@ public class EntryEventImplTest {
   }
 
   @Test
-  public void setOldValueUnforcedWithRemoveTokenDoesNotChangeOldValue() {
+  public void setOldValueUnforcedWithRemoveTokenChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
     e.setOldValue(Token.REMOVED_PHASE1, false);
-    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+    assertEquals(null, e.basicGetOldValue());
   }
 
   @Test
-  public void setOldValueForcedWithRemoveTokenDoesNotChangeOldValue() {
+  public void setOldValueForcedWithRemoveTokenChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
     e.setOldValue(Token.REMOVED_PHASE1, true);
-    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+    assertEquals(null, e.basicGetOldValue());
   }
 
   @Test
@@ -420,23 +420,23 @@ public class EntryEventImplTest {
   }
 
   @Test
-  public void setOldValueUnforcedWithNullDoesNotChangeOldValue() {
+  public void setOldValueUnforcedWithNullChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
     e.setOldValue(null, false);
-    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+    assertEquals(null, e.basicGetOldValue());
   }
 
   @Test
-  public void setOldValueForcedWithNullDoesNotChangeOldValue() {
+  public void setOldValueForcedWithNullChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
     e.setOldValue(null, true);
-    assertEquals(UNINITIALIZED, e.basicGetOldValue());
+    assertEquals(null, e.basicGetOldValue());
   }
 
   @Test
