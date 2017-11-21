@@ -161,7 +161,7 @@ public class LRUListWithAsyncSortingIntegrationTest {
   }
 
   private InternalRegion createRegion() throws Exception {
-    Cache cache = new CacheFactory().create();
+    Cache cache = new CacheFactory().set("locators", "").set("mcast-port", "0").create();
     return (InternalRegion) cache.createRegionFactory(RegionShortcut.PARTITION)
         .create(testName.getMethodName());
   }

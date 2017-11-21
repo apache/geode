@@ -69,7 +69,7 @@ public class LRUClearWithDiskRegionOpRegressionTest {
     String regionName = testName.getMethodName();
     File dir = temporaryFolder.newFolder(testName.getMethodName());
 
-    cache = (InternalCache) new CacheFactory().create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
 
     AttributesFactory<Integer, Integer> factory = new AttributesFactory();
 
