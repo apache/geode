@@ -217,6 +217,11 @@ public abstract class ManagementService {
   public abstract Set<ObjectName> queryMBeanNames(DistributedMember member);
 
   /**
+   * Returns the ids of the async event queues on this member
+   */
+  public abstract Set<ObjectName> getAsyncEventQueueMBeanNames(DistributedMember member);
+
+  /**
    * Returns an instance of an MBean. This is a reference to the MBean instance and not a
    * {@link ObjectInstance}.
    *

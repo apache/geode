@@ -31,6 +31,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -183,6 +184,35 @@ public class CliUtilDUnitTest {
     });
   }
 
+
+  @Test
+  public void getMembersWithQueueId() throws Exception {
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
+        + MyAsyncEventListener.class.getName()).statusIsSuccess();
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue2 --group=group2 --listener="
+        + MyAsyncEventListener.class.getName()).statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create async-event-queue --id=queue --listener=" + MyAsyncEventListener.class.getName())
+        .statusIsSuccess();
+
+    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 2);
+    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue2", 2);
+    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue", 4);
+
+    locator.invoke(() -> {
+      members =
+          CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue1");
+      assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2");
+
+      members =
+          CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue2");
+      assertThat(getNames(members)).containsExactlyInAnyOrder("member3", "member4");
+
+      members = CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue");
+      assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
+          "member4");
+    });
+  }
 
   private static Set<String> getNames(Set<DistributedMember> members) {
     return members.stream().map(DistributedMember::getName).collect(Collectors.toSet());

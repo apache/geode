@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -355,6 +356,13 @@ public class SystemManagementService extends BaseManagementService {
       }
       return federatingManager.findAllProxies(member);
     }
+  }
+
+  @Override
+  public Set<ObjectName> getAsyncEventQueueMBeanNames(DistributedMember member) {
+    Set<ObjectName> mBeanNames = this.queryMBeanNames(member);
+    return mBeanNames.stream().filter(x -> "AsyncEventQueue".equals(x.getKeyProperty("service")))
+        .collect(Collectors.toSet());
   }
 
   @Override
