@@ -409,7 +409,6 @@ import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.JmxManagerLocatorResponse;
 import org.apache.geode.management.internal.ManagerStartupMessage;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.pdx.internal.CheckTypeRegistryState;
 import org.apache.geode.pdx.internal.EnumId;
@@ -974,8 +973,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
         return Token.TOMBSTONE;
       case NULL_TOKEN:
         return readNullToken(in);
-      case CONFIGURATION_REQUEST:
-        return readConfigurationRequest(in);
       case CONFIGURATION_RESPONSE:
         return readConfigurationResponse(in);
       case PR_DESTROY_ON_DATA_STORE_MESSAGE:
@@ -1058,23 +1055,9 @@ public class DSFIDFactory implements DataSerializableFixedID {
     return serializable;
   }
 
-  private static DataSerializableFixedID readSnappyCompressedCachedDeserializable(DataInput in)
-      throws IOException, ClassNotFoundException {
-    DataSerializableFixedID serializable = new SnappyCompressedCachedDeserializable();
-    serializable.fromData(in);
-    return serializable;
-  }
-
   private static DataSerializableFixedID readNullToken(DataInput in)
       throws IOException, ClassNotFoundException {
     DataSerializableFixedID serializable = (NullToken) IndexManager.NULL;
-    serializable.fromData(in);
-    return serializable;
-  }
-
-  private static DataSerializableFixedID readConfigurationRequest(DataInput in)
-      throws IOException, ClassNotFoundException {
-    DataSerializableFixedID serializable = new ConfigurationRequest();
     serializable.fromData(in);
     return serializable;
   }

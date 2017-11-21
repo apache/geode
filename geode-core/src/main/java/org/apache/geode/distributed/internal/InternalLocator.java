@@ -77,9 +77,7 @@ import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
-import org.apache.geode.management.internal.configuration.handlers.ConfigurationRequestHandler;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
@@ -1172,8 +1170,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     private TcpServer tcpServer;
     private final LocatorMembershipListener locatorListener;
     private final InternalLocator internalLocator;
-    // GEODE-2253 test condition
-    private boolean hasWaitedForHandlerInitialization = false;
 
     PrimaryHandler(InternalLocator locator, LocatorMembershipListener listener) {
       this.locatorListener = listener;
@@ -1228,7 +1224,6 @@ public class InternalLocator extends Locator implements ConnectListener {
                 // always retry some number of times
                 locatorWaitTime = 30;
               }
-              this.hasWaitedForHandlerInitialization = true;
               giveup = System.currentTimeMillis() + locatorWaitTime * 1000;
               try {
                 Thread.sleep(1000);
@@ -1245,14 +1240,6 @@ public class InternalLocator extends Locator implements ConnectListener {
               + "either not enabled or is not ready to process requests",
           request.getClass().getSimpleName());
       return null;
-    }
-
-    /**
-     * GEODE-2253 test condition - has this handler waited for a subordinate handler to be
-     * installed?
-     */
-    public boolean hasWaitedForHandlerInitialization() {
-      return this.hasWaitedForHandlerInitialization;
     }
 
     @Override
@@ -1372,7 +1359,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         this.locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
       }
       this.locator.sharedConfig.initSharedConfiguration(this.locator.loadFromSharedConfigDir());
-      this.locator.installSharedConfigDistribution();
       logger.info(
           "Cluster configuration service start up completed successfully and is now running ....");
       isSharedConfigurationStarted = true;
@@ -1391,17 +1377,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         this.handler.addHandler(JmxManagerLocatorRequest.class,
             new JmxManagerLocator(internalCache));
       }
-    }
-  }
-
-  /**
-   * Creates and installs the handler {@link ConfigurationRequestHandler}
-   */
-  private void installSharedConfigDistribution() {
-    if (!this.handler.isHandled(ConfigurationRequest.class)) {
-      this.handler.addHandler(ConfigurationRequest.class,
-          new ConfigurationRequestHandler(this.sharedConfig));
-      logger.info("ConfigRequestHandler installed");
     }
   }
 

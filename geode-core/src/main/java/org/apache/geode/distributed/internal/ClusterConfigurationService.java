@@ -65,7 +65,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -80,7 +79,6 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.functions.UploadJarFunction;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
@@ -488,39 +486,31 @@ public class ClusterConfigurationService {
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the
    * requested shared configuration This method locks the ClusterConfigurationService
    */
-  public ConfigurationResponse createConfigurationResponse(final ConfigurationRequest configRequest)
-      throws LeaseExpiredException, IOException {
+  public ConfigurationResponse createConfigurationResponse(Set<String> groups) throws IOException {
+    ConfigurationResponse configResponse = null;
 
-    ConfigurationResponse configResponse = new ConfigurationResponse();
+    boolean isLocked = this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
+    try {
+      if (isLocked) {
+        configResponse = new ConfigurationResponse();
+        groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
+        logger.info("Building up configuration response with following configurations: {}", groups);
 
-    for (int i = 0; i < configRequest.getNumAttempts(); i++) {
-      boolean isLocked = this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
-      try {
-        if (isLocked) {
-          Set<String> groups = configRequest.getGroups();
-          groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
-          logger.info("Building up configuration response with following configurations: {}",
-              groups);
-
-          for (String group : groups) {
-            Configuration configuration = getConfiguration(group);
-            configResponse.addConfiguration(configuration);
-          }
-
-          Map<String, byte[]> jarNamesToJarBytes = getAllJarsFromThisLocator(groups);
-          String[] jarNames = jarNamesToJarBytes.keySet().stream().toArray(String[]::new);
-          byte[][] jarBytes = jarNamesToJarBytes.values().toArray(new byte[jarNames.length][]);
-
-          configResponse.addJarsToBeDeployed(jarNames, jarBytes);
-          configResponse.setFailedToGetSharedConfig(false);
-          return configResponse;
+        for (String group : groups) {
+          Configuration configuration = getConfiguration(group);
+          configResponse.addConfiguration(configuration);
         }
-      } finally {
-        this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
-      }
 
+        Map<String, byte[]> jarNamesToJarBytes = getAllJarsFromThisLocator(groups);
+        String[] jarNames = jarNamesToJarBytes.keySet().stream().toArray(String[]::new);
+        byte[][] jarBytes = jarNamesToJarBytes.values().toArray(new byte[jarNames.length][]);
+
+        configResponse.addJarsToBeDeployed(jarNames, jarBytes);
+        return configResponse;
+      }
+    } finally {
+      this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
     }
-    configResponse.setFailedToGetSharedConfig(true);
     return configResponse;
   }
 

@@ -570,6 +570,7 @@ org/apache/geode/management/internal/cli/util/LogFilter$LineFilterResult,false
 org/apache/geode/management/internal/cli/util/MemberInformation,true,1,cacheXmlFilePath:java/lang/String,cpuUsage:java/lang/String,groups:java/lang/String,heapUsage:java/lang/String,host:java/lang/String,id:java/lang/String,initHeapSize:java/lang/String,locatorBindAddress:java/lang/String,locatorPort:int,locators:java/lang/String,logFilePath:java/lang/String,maxHeapSize:java/lang/String,name:java/lang/String,processId:java/lang/String,serverBindAddress:java/lang/String,statArchiveFilePath:java/lang/String,workingDirPath:java/lang/String
 org/apache/geode/management/internal/cli/util/VisualVmNotFoundException,true,-8491645604829510102
 org/apache/geode/management/internal/configuration/domain/SharedConfigurationStatus,false
+org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
 org/apache/geode/management/internal/configuration/functions/UploadJarFunction,true,1
