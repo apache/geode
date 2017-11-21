@@ -1842,6 +1842,9 @@ public class EntryEventImpl
       }
       ReferenceCountHelper.skipRefCountTracking();
       Object v = re.getValueRetain(this.region, true);
+      if (v == null) {
+        v = Token.NOT_AVAILABLE;
+      }
       ReferenceCountHelper.unskipRefCountTracking();
       try {
         setOldValue(v);
@@ -1873,13 +1876,12 @@ public class EntryEventImpl
    *        where the old value must be available.
    */
   public void setOldValue(Object v, boolean force) {
-    if (v == null || Token.isRemoved(v)) {
-      return;
-    }
-    if (Token.isInvalid(v)) {
-      v = null;
-    } else if (shouldOldValueBeUnavailable(v, force)) {
-      v = Token.NOT_AVAILABLE;
+    if (v != null) {
+      if (Token.isInvalidOrRemoved(v)) {
+        v = null;
+      } else if (shouldOldValueBeUnavailable(v, force)) {
+        v = Token.NOT_AVAILABLE;
+      }
     }
     retainAndSetOldValue(v);
   }

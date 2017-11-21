@@ -2982,7 +2982,9 @@ public abstract class AbstractRegionMap implements RegionMap {
         Object oldValueInVM = re.getValueRetain(event.getLocalRegion(), true); // OFFHEAP: re
                                                                                // synced so can use
                                                                                // its ref.
-
+        if (oldValueInVM == null) {
+          oldValueInVM = Token.NOT_AVAILABLE;
+        }
         ReferenceCountHelper.unskipRefCountTracking();
         try {
           event.setOldValue(oldValueInVM);
