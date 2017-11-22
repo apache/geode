@@ -55,4 +55,10 @@ public final class ProtobufLocatorPipeline implements ClientProtocolProcessor {
   public void close() {
     this.statistics.clientDisconnected();
   }
+
+  @Override
+  public boolean socketProcessingIsFinished() {
+    // All locator connections are closed after one message, so this is not used
+    return false;
+  }
 }

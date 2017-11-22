@@ -68,6 +68,10 @@ public class GenericProtocolServerConnection extends ServerConnection {
       OutputStream outputStream = socket.getOutputStream();
 
       protocolProcessor.processMessage(inputStream, outputStream);
+
+      if (protocolProcessor.socketProcessingIsFinished()) {
+        this.setFlagProcessMessagesAsFalse();
+      }
     } catch (EOFException e) {
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);

@@ -200,6 +200,7 @@ public class AuthenticationIntegrationTest {
         errorResponse.getResponse().getResponseAPICase());
     assertEquals(AUTHENTICATION_FAILED.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+    verifyConnectionClosed();
   }
 
   @Test
@@ -246,6 +247,7 @@ public class AuthenticationIntegrationTest {
     ConnectionAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
+    verifyConnectionClosed();
   }
 
   @Test
@@ -265,6 +267,8 @@ public class AuthenticationIntegrationTest {
     ConnectionAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
+
+    verifyConnectionClosed();
   }
 
   @Test
@@ -296,6 +300,7 @@ public class AuthenticationIntegrationTest {
         errorResponse.getResponse().getResponseAPICase());
     assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+    verifyConnectionClosed();
   }
 
   @Test
@@ -316,6 +321,18 @@ public class AuthenticationIntegrationTest {
         errorResponse.getResponse().getResponseAPICase());
     assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+    verifyConnectionClosed();
+  }
+
+  private void verifyConnectionClosed() {
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      try {
+        assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
+        return true;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   private void createLegacyAuthCache(String authenticationProperty) {

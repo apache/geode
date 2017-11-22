@@ -20,19 +20,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.internal.protocol.state.ConnectionAuthenticatingStateProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.security.AuthenticationFailedException;
 
@@ -43,41 +40,26 @@ public class AuthenticationRequestOperationHandler implements
   @Override
   public Result<ConnectionAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> process(
       SerializationService serializationService, ConnectionAPI.AuthenticationRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, ConnectionStateException {
     ConnectionAuthenticatingStateProcessor stateProcessor;
 
-    try {
-      stateProcessor = messageExecutionContext.getConnectionStateProcessor().allowAuthentication();
-    } catch (ConnectionStateException e) {
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
-    }
+    // If authentication not allowed by this state this will throw a ConnectionStateException
+    stateProcessor = messageExecutionContext.getConnectionStateProcessor().allowAuthentication();
 
     Properties properties = new Properties();
     properties.putAll(request.getCredentialsMap());
 
     try {
-      messageExecutionContext.setConnectionStateProcessor(stateProcessor.authenticate(properties));
+      ConnectionStateProcessor nextState = stateProcessor.authenticate(properties);
+      messageExecutionContext.setConnectionStateProcessor(nextState);
       return Success
           .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(true).build());
-    } catch (IncompatibleAuthenticationMechanismsException e) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder().setError(
-          buildAndLogError(ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE, e.getMessage(), e))
-          .build());
     } catch (AuthenticationFailedException e) {
+      messageExecutionContext
+          .setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
       return Success
           .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(false).build());
     }
-  }
-
-  private BasicTypes.Error buildAndLogError(ProtocolErrorCode errorCode, String message,
-      Exception ex) {
-    if (ex == null) {
-      logger.warn(message);
-    } else {
-      logger.warn(message, ex);
-    }
-
-    return BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message)
-        .build();
   }
 }

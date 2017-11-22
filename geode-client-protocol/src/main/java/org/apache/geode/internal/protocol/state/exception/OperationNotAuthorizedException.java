@@ -12,12 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.security.exception;
+package org.apache.geode.internal.protocol.state.exception;
 
-import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 
-public class IncompatibleAuthenticationMechanismsException extends AuthenticationFailedException {
-  public IncompatibleAuthenticationMechanismsException(String message) {
-    super(message);
+public class OperationNotAuthorizedException extends ConnectionStateException {
+  public OperationNotAuthorizedException(ProtocolErrorCode errorCode, String errorMessage) {
+    super(errorCode, errorMessage);
   }
 }

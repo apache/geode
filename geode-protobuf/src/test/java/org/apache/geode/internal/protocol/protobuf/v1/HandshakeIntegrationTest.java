@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -111,6 +113,66 @@ public class HandshakeIntegrationTest {
   public void testInvalidMajorVersionBreaksConnection() throws Exception {
     outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
     outputStream.write(ConnectionAPI.MajorVersions.INVALID_MAJOR_VERSION_VALUE);
+
+    // Verify that connection is closed
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      try {
+        assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
+        return true;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  @Test
+  public void testInvalidMinorVersionBreaksConnectionAfterResponse() throws Exception {
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
+
+    ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
+                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+                .setMinorVersion(ConnectionAPI.MinorVersions.INVALID_MINOR_VERSION_VALUE)))
+        .build().writeDelimitedTo(outputStream);
+    ClientProtocol.Message handshakeResponse = protobufProtocolSerializer.deserialize(inputStream);
+    assertFalse(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+
+    // Verify that connection is closed
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      try {
+        assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
+        return true;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  @Test
+  public void testUnexpectedHandshakeFailsAndClosesConnection() throws Exception {
+    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
+
+    ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
+                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
+        .build().writeDelimitedTo(outputStream);
+    ClientProtocol.Message handshakeResponse = protobufProtocolSerializer.deserialize(inputStream);
+    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+
+    ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
+                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
+        .build().writeDelimitedTo(outputStream);
+    ClientProtocol.Message failingHandshake = protobufProtocolSerializer.deserialize(inputStream);
+    assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
+        failingHandshake.getResponse().getErrorResponse().getError().getErrorCode());
 
     // Verify that connection is closed
     Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {

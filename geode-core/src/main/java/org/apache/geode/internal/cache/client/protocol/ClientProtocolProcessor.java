@@ -42,4 +42,9 @@ public interface ClientProtocolProcessor extends AutoCloseable {
    */
   @Override
   void close();
+
+  /**
+   * Indicates that the associated connection should be closed
+   */
+  boolean socketProcessingIsFinished();
 }
