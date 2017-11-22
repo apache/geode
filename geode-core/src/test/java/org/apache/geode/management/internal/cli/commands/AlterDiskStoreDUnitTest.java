@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,7 +51,7 @@ public class AlterDiskStoreDUnitTest {
   private static MemberVM server1;
 
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule().withTempWorkingDir();
+  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -132,8 +131,7 @@ public class AlterDiskStoreDUnitTest {
   }
 
   private String getDiskDirPathString() throws IOException {
-    return startupRule.getWorkingDirRoot().toPath().resolve(diskDirName).toFile()
-        .getCanonicalPath();
+    return gfsh.getWorkingDir().toPath().resolve(diskDirName).toFile().getCanonicalPath();
   }
 
   private String commandWithRemoveAndNoOtherOption() throws IOException {
