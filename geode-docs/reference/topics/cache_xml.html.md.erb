@@ -350,6 +350,41 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </gateway-event-filter>
 ```
 
+## <a id="gateway-event-substitution-filter" class="no-quick-link"></a>&lt;gateway-event-substitution-filter&gt;
+
+A GatewayEventSubstitutionFilter provides a way to specify a substitute value to be stored in the GatewayQueueEvent and enqueued in the RegionQueue. You can optionally add one GatewayEventSubstitutionFilter implementation to a gateway sender.
+
+Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
+
+**Example:**
+
+``` pre
+<gateway-event-substitution-filter>
+      <class-name>org.apache.geode.util.SampleEventSubstitutionFilter</class-name>
+      <parameter name="param1">
+        <string>"value1"</string>
+      </parameter>
+</gateway-event-substitution-filter>
+```
+
+## <a id="gateway-transport-filter" class="no-quick-link"></a>&lt;gateway-transport-filter&gt;
+
+Use a GatewayTransportFilter implementation to process the TCP stream that sends a batch of events that is distributed from one <%=vars.product_name%> cluster to another over a WAN. A GatewayTransportFilter is typically used to perform encryption or compression on the data that distributed. You install the same GatewayTransportFilter implementation on both a gateway sender and gateway receiver.
+
+Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
+
+**Example:**
+
+``` pre
+<gateway-transport-filter>
+      <class-name>org.apache.geode.util.SampleTransportFilter</class-name>
+      <parameter 
+       name="param1">
+        <string>"value1"</string>
+      </parameter>
+</gateway-transport-filter>
+```
+
 ## <a id="gateway-receiver" class="no-quick-link"></a>&lt;gateway-receiver&gt;
 
 Configures a gateway receiver to receive and apply region events that were distributed from another <%=vars.product_name%> site. You can only specify one gateway receiver on a member. See [Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system).
