@@ -14,19 +14,20 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.Scanner;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class CacheXmlNotFoundRegressionTest {
