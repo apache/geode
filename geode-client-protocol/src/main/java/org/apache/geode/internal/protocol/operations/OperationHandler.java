@@ -19,6 +19,7 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
 /**
  * This interface is implemented by a object capable of handling request types 'Req' and returning
@@ -30,7 +31,11 @@ public interface OperationHandler<Req, Resp, ErrorResp> {
   /**
    * Decode the message, deserialize contained values using the serialization service, do the work
    * indicated on the provided cache, and return a response.
+   *
+   * @throws ConnectionStateException if the connection is in an invalid state for the operation in
+   *         question.
    */
   Result<Resp, ErrorResp> process(SerializationService serializationService, Req request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException;
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, ConnectionStateException;
 }

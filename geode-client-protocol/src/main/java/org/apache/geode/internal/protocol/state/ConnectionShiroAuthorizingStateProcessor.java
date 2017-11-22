@@ -21,6 +21,7 @@ import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.state.exception.OperationNotAuthorizedException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -42,7 +43,7 @@ public class ConnectionShiroAuthorizingStateProcessor implements ConnectionState
       securityService.authorize(operationContext.getAccessPermissionRequired());
     } catch (NotAuthorizedException e) {
       messageContext.getStatistics().incAuthorizationViolations();
-      throw new ConnectionStateException(ProtocolErrorCode.AUTHORIZATION_FAILED,
+      throw new OperationNotAuthorizedException(ProtocolErrorCode.AUTHORIZATION_FAILED,
           "The user is not authorized to complete this operation");
     } finally {
       threadState.restore();

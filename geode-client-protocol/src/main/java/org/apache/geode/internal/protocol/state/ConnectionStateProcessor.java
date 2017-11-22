@@ -58,4 +58,13 @@ public interface ConnectionStateProcessor {
     throw new ConnectionStateException(ProtocolErrorCode.UNSUPPORTED_OPERATION,
         "Requested operation not allowed at this time");
   }
+
+  /**
+   * This indicates whether this state is capable of receiving any more messages
+   *
+   * @return True if the socket should be closed
+   */
+  default boolean socketProcessingIsFinished() {
+    return false;
+  }
 }
