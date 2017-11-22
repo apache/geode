@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -31,6 +32,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.JarFileRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
+@Ignore("GEODE-4011 - test is polluting the environment")
 @Category(DistributedTest.class)
 public class ConcurrentDeployDUnitTest {
 
