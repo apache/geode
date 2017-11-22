@@ -32,16 +32,10 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category(IntegrationTest.class)
 public class AlterDiskStoreIntegrationTest {
   private static final String regionName = "region1";
-  private static final String memberName = "server";
   private static final String diskStoreName = "disk-store1";
 
   @Rule
-  public ServerStarterRule server =
-      new ServerStarterRule().withRegion(RegionShortcut.REPLICATE, regionName).withName(memberName)
-          .withWorkingDir().withJMXManager().withAutoStart();
-
-  @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void removeOptionMustBeUsedAlone() throws Exception {
@@ -61,7 +55,6 @@ public class AlterDiskStoreIntegrationTest {
   }
 
   private String getDiskDirPathString() throws IOException {
-    return server.getWorkingDir().getCanonicalPath();
+    return gfsh.getWorkingDir().getCanonicalPath();
   }
-
 }

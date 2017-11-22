@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 
 @Category(DistributedTest.class)
-public class AlterDiskStoreDUnitTest implements Serializable {
+public class AlterDiskStoreDUnitTest {
   private static final String regionName = "region1";
   private static final String diskStoreName = "disk-store1";
   private static final String diskDirName = "diskStoreDir";
