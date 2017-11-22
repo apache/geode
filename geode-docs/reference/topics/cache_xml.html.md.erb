@@ -18,8 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<a id="cache_xml_cache"></a>
-
 
 This section documents the `cache.xml` sub-elements used for <%=vars.product_name%> server configuration. All elements are sub-elements of the `<cache>` element.
 
@@ -352,7 +350,32 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </gateway-event-filter>
 ```
 
-. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
+## <a id="gateway-receiver" class="no-quick-link"></a>&lt;gateway-receiver&gt;
+
+Configures a gateway receiver to receive and apply region events that were distributed from another <%=vars.product_name%> site. You can only specify one gateway receiver on a member. See [Configuring a Multi-site (WAN) System](../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system).
+
+**API:** `GatewayReceiverFactory`, `GatewayTransportFilter`
+
+<a id="gateway-receiver__table_430418178B3B4D94B0EEAB9A83E005CF"></a>
+
+<table>
+<caption><span class="tablecap">Table 5. Attributes</span></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Attribute</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>start-port</td>
+<td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
 <p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5000</td>
 </tr>
@@ -562,40 +585,6 @@ Configures a queue for sending region events to an AsyncEventListener implementa
    </async-event-queue>
     ...
 </cache>
-```
-
-## <a id="gateway-event-filter" class="no-quick-link"></a>&lt;gateway-event-filter&gt;
-
-A GatewayEventFilter implementation determines whether a region event is placed in a gateway sender queue and/or whether an event in a gateway queue is distributed to a remote site. You can optionally add one or more GatewayEventFilter implementations to a gateway sender, either in the cache.xml configuration file or using the Java API.
-
-Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
-
-**Example:**
-
-``` pre
-<gateway-event-filter>
-      <class-name>org.apache.geode.util.SampleEventFilter</class-name>
-      <parameter name="param1">
-        <string>"value1"</string>
-      </parameter>
-</gateway-event-filter>
-```
-
-## <a id="gateway-event-substitution-filter" class="no-quick-link"></a>&lt;gateway-event-substitution-filter&gt;
-
-A GatewayEventSubstitutionFilter provides a way to specify a substitute value to be stored in the GatewayQueueEvent and enqueued in the RegionQueue. You can optionally add one GatewayEventSubstitutionFilter implementation to a gateway sender.
-
-Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
-
-**Example:**
-
-``` pre
-<gateway-event-substitution-filter>
-      <class-name>org.apache.geode.util.SampleEventSubstitutionFilter</class-name>
-      <parameter name="param1">
-        <string>"value1"</string>
-      </parameter>
-</gateway-event-substitution-filter>
 ```
 
 ## <a id="async-event-listener" class="no-quick-link"></a>&lt;async-event-listener&gt;
