@@ -110,6 +110,13 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
       throw new IllegalStateException(
           "Please specify either start port a value which is less than end port.");
     }
+
+    if ((this.cache.getGatewayReceivers() != null)
+        && (!this.cache.getGatewayReceivers().isEmpty())) {
+      throw new IllegalStateException(
+          LocalizedStrings.GatewayReceiver_ALREADY_EXISTS.toLocalizedString());
+    }
+
     GatewayReceiver recv = null;
     if (this.cache instanceof GemFireCacheImpl) {
       recv = new GatewayReceiverImpl(this.cache, this.startPort, this.endPort, this.timeBetPings,
