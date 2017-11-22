@@ -683,7 +683,10 @@ public class ReplyProcessor21 implements MembershipListener {
     if (stillWaiting()) {
       long timeout = getAckWaitThreshold() * 1000L;
       long timeSoFar = System.currentTimeMillis() - this.initTime;
-      long severeAlertTimeout = getAckSevereAlertThresholdMS();
+      final long severeAlertTimeout = getAckSevereAlertThresholdMS();
+      // only start SUSPECT processing if severe alerts are enabled
+      final boolean doSuspectProcessing =
+          isSevereAlertProcessingEnabled() && (severeAlertTimeout > 0);
       if (timeout <= 0) {
         timeout = Long.MAX_VALUE;
       }
@@ -695,25 +698,32 @@ public class ReplyProcessor21 implements MembershipListener {
         if (timedOut || !latch.await(timeout - timeSoFar - 1)) {
           this.dmgr.getCancelCriterion().checkCancelInProgress(null);
 
-          // only start SUSPECT processing if severe alerts are enabled
-          timeout(isSevereAlertProcessingEnabled() && (severeAlertTimeout > 0), false);
+          timeout(doSuspectProcessing, false);
 
           // If ack-severe-alert-threshold has been set, we now
           // wait for that period of time and then force the non-responding
           // members from the system. Then we wait indefinitely
-          if (isSevereAlertProcessingEnabled() && severeAlertTimeout > 0) {
-            boolean timedout;
+          if (doSuspectProcessing) {
+            boolean wasNotUnlatched;
             do {
               this.severeAlertTimerReset = false; // retry if this gets set by suspect processing
                                                   // (splitbrain requirement)
-              timedout = !latch.await(severeAlertTimeout);
-            } while (timedout && this.severeAlertTimerReset);
-            if (timedout) {
+              wasNotUnlatched = !latch.await(severeAlertTimeout);
+            } while (wasNotUnlatched && this.severeAlertTimerReset);
+            if (wasNotUnlatched) {
               this.dmgr.getCancelCriterion().checkCancelInProgress(null);
               timeout(false, true);
-              // for consistency, we must now wait for a membership view
-              // that ejects the removed members
-              latch.await();
+
+              long suspectProcessingErrorAlertTimeout = severeAlertTimeout * 3;
+              if (!latch.await(suspectProcessingErrorAlertTimeout)) {
+                long now = System.currentTimeMillis();
+                logger.fatal("Still waiting for suspect processing to complete after"
+                    + suspectProcessingErrorAlertTimeout + " milliseconds + (init time:"
+                    + this.initTime + ", now: " + now + ")");
+                // for consistency, we must now wait indefinitely for a membership view
+                // that ejects the removed members
+                latch.await();
+              }
             }
           } else {
             latch.await();
@@ -722,25 +732,23 @@ public class ReplyProcessor21 implements MembershipListener {
           logger.info(LocalizedMessage
               .create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1, shortName()));
         }
-      } else {
-        if (msecs > timeout) {
-          if (!latch.await(timeout)) {
-            timeout(isSevereAlertProcessingEnabled() && (severeAlertTimeout > 0), false);
-            // after timeout alert, wait remaining time
-            if (!latch.await(msecs - timeout)) {
-              logger.info(LocalizedMessage.create(
-                  LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_TIMING_OUT_AFTER_0_SEC,
-                  Long.valueOf(msecs / 1000)));
-              return false;
-            }
-            // Give an info message since timeout gave a warning.
+      } else if (msecs > timeout) {
+        if (!latch.await(timeout)) {
+          timeout(doSuspectProcessing, false);
+          // after timeout alert, wait remaining time
+          if (!latch.await(msecs - timeout)) {
             logger.info(LocalizedMessage.create(
-                LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1, shortName()));
-          }
-        } else {
-          if (!latch.await(msecs)) {
+                LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_TIMING_OUT_AFTER_0_SEC,
+                Long.valueOf(msecs / 1000)));
             return false;
           }
+          // Give an info message since timeout gave a warning.
+          logger.info(LocalizedMessage
+              .create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1, shortName()));
+        }
+      } else {
+        if (!latch.await(msecs)) {
+          return false;
         }
       }
     }
