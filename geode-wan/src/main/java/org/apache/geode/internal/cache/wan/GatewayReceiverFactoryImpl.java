@@ -113,8 +113,7 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
     if ((this.cache.getGatewayReceivers() != null)
         && (!this.cache.getGatewayReceivers().isEmpty())) {
-      throw new IllegalStateException(
-          LocalizedStrings.GatewayReceiver_ALREADY_EXISTS.toLocalizedString());
+      throw new IllegalStateException("A Gateway Receiver already exists on this member.");
     }
 
     GatewayReceiver recv = null;

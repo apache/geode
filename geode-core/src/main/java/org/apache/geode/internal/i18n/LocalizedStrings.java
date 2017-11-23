@@ -7713,8 +7713,6 @@ public class LocalizedStrings {
       new StringId(6664, "{0}: Providing synchronization event for key={1}; timestamp={2}: {3}");
   public static final StringId AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT =
       new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
-  public static final StringId GatewayReceiver_ALREADY_EXISTS =
-      new StringId(6665, "A Gateway Receiver already exists on this member.");
 
   /** Testing strings, messageId 90000-99999 **/
 

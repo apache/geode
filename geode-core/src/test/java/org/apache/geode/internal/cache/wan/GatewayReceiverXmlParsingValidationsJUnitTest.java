@@ -56,7 +56,7 @@ import org.apache.geode.util.test.TestUtil;
 @PrepareForTest(WANServiceProvider.class)
 @PowerMockRunnerDelegate(Parameterized.class)
 @PowerMockIgnore({"javax.management.*", "javax.security.*", "*.IntegrationTest"})
-public class GatewayReceiverXmlParsingValidationsTest {
+public class GatewayReceiverXmlParsingValidationsJUnitTest {
   private Cache cache;
   private GatewayReceiverFactory receiverFactory;
 
