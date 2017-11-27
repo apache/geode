@@ -103,6 +103,9 @@ public class TcpServer {
 
   private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
+  // Any value below this is not a valid gossip version, but may be a communication mode
+  private static final int MINIMUM_GOSSIP_VERSION = OLDGOSSIPVERSION;
+
   /**
    * For the new client-server protocol, which ignores the usual handshake mechanism.
    */
@@ -379,11 +382,11 @@ public class TcpServer {
               + (socket.getInetAddress().getHostAddress() + ":" + socket.getPort()), e);
           return;
         }
-        int gossipVersion = readGossipVersion(socket, input);
+        int gossipVersion = readGossipVersionOrCommunicationMode(socket, input);
 
         short versionOrdinal;
-        if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
-          if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
+        if (gossipVersion < MINIMUM_GOSSIP_VERSION) {
+          if (gossipVersion == PROTOBUF_CLIENT_SERVER_PROTOCOL
               && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
             try {
               int protocolVersion = input.readUnsignedByte();
@@ -400,11 +403,9 @@ public class TcpServer {
               }
             } catch (ServiceLoadingFailureException e) {
               log.error("There was an error looking up the client protocol service", e);
-              socket.close();
               throw new IOException("There was an error looking up the client protocol service", e);
             } catch (ServiceVersionNotFoundException e) {
               log.error("Unable to find service matching the client protocol version byte", e);
-              socket.close();
               throw new IOException(
                   "Unable to find service matching the client protocol version byte", e);
             }
@@ -527,11 +528,15 @@ public class TcpServer {
     socket.close();
   }
 
-  private int readGossipVersion(Socket sock, DataInputStream input) throws Exception {
+  private int readGossipVersionOrCommunicationMode(Socket sock, DataInputStream input)
+      throws Exception {
     // read the first byte & check for an improperly configured client pool trying
     // to contact a cache server
     int firstByte = input.readUnsignedByte();
     if (CommunicationMode.isValidMode(firstByte)) {
+      if (CommunicationMode.isValidLocatorMode(firstByte)) {
+        return firstByte;
+      }
       sock.getOutputStream().write(HandShake.REPLY_SERVER_IS_LOCATOR);
       throw new Exception("Improperly configured client detected - use addPoolLocator to "
           + "configure its locators instead of addPoolServer.");

@@ -73,7 +73,6 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     Socket socket = new Socket(host.getHostName(), locatorPort);
     DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-    dataOutputStream.writeInt(0);
     // Using the constant from AcceptorImpl to ensure that magic byte is the same
     dataOutputStream.writeByte(ProtobufClientServerProtocol.getModeNumber());
     dataOutputStream.writeByte(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
