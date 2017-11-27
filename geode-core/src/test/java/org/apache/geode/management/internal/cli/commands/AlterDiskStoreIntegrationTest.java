@@ -15,46 +15,41 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.IOException;
+import static org.mockito.Mockito.spy;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(IntegrationTest.class)
+@Category(UnitTest.class)
 public class AlterDiskStoreIntegrationTest {
-  private static final String regionName = "region1";
-  private static final String diskStoreName = "disk-store1";
-
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  public GfshParserRule gfsh = new GfshParserRule();
+
+  private GfshCommand command;
+
+  @Before
+  public void before() {
+    command = spy(AlterOfflineDiskStoreCommand.class);
+  }
 
   @Test
   public void removeOptionMustBeUsedAlone() throws Exception {
-    String commandString = commandWithRemoveAndOtherOption();
-    gfsh.executeAndAssertThat(commandString).statusIsError()
-        .containsOutput("Cannot use the --remove=true parameter with any other parameters");
-  }
-
-  private String commandWithRemoveAndOtherOption() throws IOException {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_DISK_STORE);
-    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, diskStoreName);
-    csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, regionName);
-    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, getDiskDirPathString());
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKSTORENAME, "diskStoreName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__REGIONNAME, "regionName");
+    csb.addOption(CliStrings.ALTER_DISK_STORE__DISKDIRS, "./someDirectory");
     csb.addOption(CliStrings.ALTER_DISK_STORE__CONCURRENCY__LEVEL, "5");
     csb.addOption(CliStrings.ALTER_DISK_STORE__REMOVE, "true");
-    return csb.toString();
-  }
+    String commandString = csb.toString();
 
-  private String getDiskDirPathString() throws IOException {
-    return gfsh.getWorkingDir().getCanonicalPath();
+    gfsh.executeAndAssertThat(command, commandString).statusIsError()
+        .containsOutput("Cannot use the --remove=true parameter with any other parameters");
   }
 }
