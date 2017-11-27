@@ -2917,9 +2917,11 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     if (writer != null && event.getOperation() != Operation.REMOVE
         && !event.inhibitAllNotifications()) {
       final long start = getCachePerfStats().startCacheWriterCall();
+      event.setReadOldValueFromDisk(true);
       try {
         writer.beforeDestroy(event);
       } finally {
+        event.setReadOldValueFromDisk(false);
         getCachePerfStats().endCacheWriterCall(start);
       }
       result = true;
@@ -3097,6 +3099,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     if (!isPutIfAbsentOrReplace && localWriter != null && !event.inhibitAllNotifications()) {
       final long start = getCachePerfStats().startCacheWriterCall();
       final boolean newEntry = event.getOperation().isCreate();
+      event.setReadOldValueFromDisk(true);
       try {
         if (!newEntry) {
           localWriter.beforeUpdate(event);
@@ -3104,6 +3107,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
           localWriter.beforeCreate(event);
         }
       } finally {
+        event.setReadOldValueFromDisk(false);
         getCachePerfStats().endCacheWriterCall(start);
       }
     }

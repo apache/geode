@@ -728,14 +728,9 @@ public class EntryEventImpl
         return null;
       }
       @Unretained
-      Object ov = basicGetOldValue();
-      if (ov == null) {
-        return null;
-      } else if (ov == Token.NOT_AVAILABLE) {
-        return AbstractRegion.handleNotAvailable(ov);
-      }
-      boolean doCopyOnRead = getRegion().isCopyOnRead();
+      Object ov = handleNotAvailableOldValue();
       if (ov != null) {
+        boolean doCopyOnRead = getRegion().isCopyOnRead();
         if (ov instanceof CachedDeserializable) {
           return callWithOffHeapLock((CachedDeserializable) ov, oldValueCD -> {
             if (doCopyOnRead) {
@@ -759,6 +754,44 @@ public class EntryEventImpl
       iae.initCause(i);
       throw iae;
     }
+  }
+
+  /**
+   * returns the old value after handling one this is NOT_AVAILABLE. If the old value is
+   * NOT_AVAILABLE then it may try to read it from disk. If it can't read an unavailable old value
+   * from disk then it will return null instead of NOT_AVAILABLE.
+   */
+  @Unretained(ENTRY_EVENT_OLD_VALUE)
+  private Object handleNotAvailableOldValue() {
+    @Unretained
+    Object result = basicGetOldValue();
+    if (result != Token.NOT_AVAILABLE) {
+      return result;
+    }
+    if (getReadOldValueFromDisk()) {
+      try {
+        result = this.region.getValueInVMOrDiskWithoutFaultIn(getKey());
+      } catch (EntryNotFoundException ex) {
+        result = null;
+      }
+    }
+    result = AbstractRegion.handleNotAvailable(result);
+    return result;
+  }
+
+  /**
+   * If true then when getOldValue is called if the NOT_AVAILABLE is found then an attempt will be
+   * made to read the old value from disk without faulting it in. Should only be set to true when
+   * product is calling a method on a CacheWriter.
+   */
+  private boolean readOldValueFromDisk;
+
+  public boolean getReadOldValueFromDisk() {
+    return this.readOldValueFromDisk;
+  }
+
+  public void setReadOldValueFromDisk(boolean v) {
+    this.readOldValueFromDisk = v;
   }
 
   /**
@@ -858,11 +891,12 @@ public class EntryEventImpl
    * @param v the caller should have already retained this off-heap reference.
    */
   @Released(ENTRY_EVENT_OLD_VALUE)
-  private void basicSetOldValue(@Unretained(ENTRY_EVENT_OLD_VALUE) Object v) {
+  void basicSetOldValue(@Unretained(ENTRY_EVENT_OLD_VALUE) Object v) {
     @Released
     final Object curOldValue = this.oldValue;
-    if (v == curOldValue)
+    if (v == curOldValue) {
       return;
+    }
     if (this.offHeapOk && mayHaveOffHeapReferences()) {
       if (ReferenceCountHelper.trackReferenceCounts()) {
         OffHeapHelper.releaseAndTrackOwner(curOldValue, new OldValueOwner());
@@ -876,9 +910,9 @@ public class EntryEventImpl
 
   @Released(ENTRY_EVENT_OLD_VALUE)
   private void retainAndSetOldValue(@Retained(ENTRY_EVENT_OLD_VALUE) Object v) {
-    if (v == this.oldValue)
+    if (v == this.oldValue) {
       return;
-
+    }
     if (isOffHeapReference(v)) {
       StoredObject so = (StoredObject) v;
       if (ReferenceCountHelper.trackReferenceCounts()) {
@@ -900,7 +934,7 @@ public class EntryEventImpl
   }
 
   @Unretained(ENTRY_EVENT_OLD_VALUE)
-  private Object basicGetOldValue() {
+  Object basicGetOldValue() {
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     Object result = this.oldValue;
     if (!this.offHeapOk && isOffHeapReference(result)) {
@@ -1478,6 +1512,9 @@ public class EntryEventImpl
   private static final boolean EVENT_OLD_VALUE =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-event-old-value");
 
+  protected boolean areOldValuesEnabled() {
+    return EVENT_OLD_VALUE;
+  }
 
   void putExistingEntry(final LocalRegion owner, RegionEntry entry) throws RegionClearedException {
     putExistingEntry(owner, entry, false, null);
@@ -1495,8 +1532,9 @@ public class EntryEventImpl
     // only set oldValue if it hasn't already been set to something
     if (this.oldValue == null) {
       if (!reentry.isInvalidOrRemoved()) {
-        if (requireOldValue || EVENT_OLD_VALUE || this.region instanceof HARegion // fix for bug
-                                                                                  // 37909
+        if (requireOldValue || areOldValuesEnabled() || this.region instanceof HARegion // fix for
+                                                                                        // bug
+        // 37909
         ) {
           @Retained
           Object ov;
@@ -1764,7 +1802,7 @@ public class EntryEventImpl
     if (Token.isInvalidOrRemoved(oldVal)) {
       oldVal = null;
     } else {
-      if (mustBeAvailable || oldVal == null || EVENT_OLD_VALUE) {
+      if (mustBeAvailable || oldVal == null || areOldValuesEnabled()) {
         // set oldValue to oldVal
       } else {
         oldVal = Token.NOT_AVAILABLE;
@@ -1797,24 +1835,26 @@ public class EntryEventImpl
     tx.setCallbackArgument(getCallbackArgument());
   }
 
-  /** @return false if entry doesn't exist */
-  public boolean setOldValueFromRegion() {
+  public void setOldValueFromRegion() {
     try {
       RegionEntry re = this.region.getRegionEntry(getKey());
-      if (re == null)
-        return false;
+      if (re == null) {
+        return;
+      }
       ReferenceCountHelper.skipRefCountTracking();
       Object v = re.getValueRetain(this.region, true);
+      if (v == null) {
+        v = Token.NOT_AVAILABLE;
+      }
       ReferenceCountHelper.unskipRefCountTracking();
       try {
-        return setOldValue(v);
+        setOldValue(v);
       } finally {
         if (mayHaveOffHeapReferences()) {
           OffHeapHelper.releaseWithNoTracking(v);
         }
       }
     } catch (EntryNotFoundException ignore) {
-      return false;
     }
   }
 
@@ -1827,39 +1867,37 @@ public class EntryEventImpl
     basicSetOldValue(Token.DESTROYED);
   }
 
-  /**
-   * @return false if value 'v' indicates that entry does not exist
-   */
-  public boolean setOldValue(Object v) {
-    return setOldValue(v, false);
+  public void setOldValue(Object v) {
+    setOldValue(v, false);
   }
 
 
   /**
-   * @param force true if the old value should be forcibly set, used for HARegions, methods like
-   *        putIfAbsent, etc., where the old value must be available.
-   * @return false if value 'v' indicates that entry does not exist
+   * @param force true if the old value should be forcibly set, methods like putIfAbsent, etc.,
+   *        where the old value must be available.
    */
-  public boolean setOldValue(Object v, boolean force) {
-    if (v == null || Token.isRemoved(v)) {
-      return false;
-    } else {
-      if (Token.isInvalid(v)) {
+  public void setOldValue(Object v, boolean force) {
+    if (v != null) {
+      if (Token.isInvalidOrRemoved(v)) {
         v = null;
-      } else {
-        if (force || (this.region instanceof HARegion) // fix for bug 37909
-        ) {
-          // set oldValue to "v".
-        } else if (EVENT_OLD_VALUE) {
-          // TODO Rusty add compression support here
-          // set oldValue to "v".
-        } else {
-          v = Token.NOT_AVAILABLE;
-        }
+      } else if (shouldOldValueBeUnavailable(v, force)) {
+        v = Token.NOT_AVAILABLE;
       }
-      retainAndSetOldValue(v);
-      return true;
     }
+    retainAndSetOldValue(v);
+  }
+
+  private boolean shouldOldValueBeUnavailable(Object v, boolean force) {
+    if (force) {
+      return false;
+    }
+    if (areOldValuesEnabled()) {
+      return false;
+    }
+    if (this.region instanceof HARegion) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -2143,6 +2181,7 @@ public class EntryEventImpl
           DataSerializer.writeObjectAsByteArray(cd.getValue(), out);
         }
       } else {
+        ov = AbstractRegion.handleNotAvailable(ov);
         DataSerializer.writeObject(ov, out);
       }
     }
