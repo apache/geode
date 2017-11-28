@@ -42,20 +42,21 @@ public class CreateConnectionCommand implements GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
   static final String CREATE_CONNECTION = "create jdbc-connection";
-  static final String CREATE_CONNECTION__HELP = "Create JDBC connection for JDBC Connector.";
+  static final String CREATE_CONNECTION__HELP =
+      "Create a connection for communicating with a database through JDBC.";
   static final String CREATE_CONNECTION__NAME = "name";
-  static final String CREATE_CONNECTION__NAME__HELP = "Name of the JDBC connection to be created.";
+  static final String CREATE_CONNECTION__NAME__HELP = "Name of the connection to be created.";
   static final String CREATE_CONNECTION__URL = "url";
-  static final String CREATE_CONNECTION__URL__HELP = "URL location for the database";
+  static final String CREATE_CONNECTION__URL__HELP = "URL location for the database.";
   static final String CREATE_CONNECTION__USER = "user";
   static final String CREATE_CONNECTION__USER__HELP =
-      "Name of user to use when connecting to the database";
+      "User name to use when connecting to database.";
   static final String CREATE_CONNECTION__PASSWORD = "password";
   static final String CREATE_CONNECTION__PASSWORD__HELP =
-      "Password of user to use when connecting to the database";
+      "Password to use when connecting to database.";
   static final String CREATE_CONNECTION__PARAMS = "params";
   static final String CREATE_CONNECTION__PARAMS__HELP =
-      "Comma delimited list of additional parameters to use when connecting to the database";
+      "Additional parameters to use when connecting to the database.";
 
   private static final String ERROR_PREFIX = "ERROR: ";
 
@@ -85,11 +86,12 @@ public class CreateConnectionCommand implements GfshCommand {
 
     Object resultCollectorResult = resultCollector.getResult();
 
-    List<CliFunctionResult> regionCreateResults = (List<CliFunctionResult>) resultCollectorResult;
+    List<CliFunctionResult> connectionCreateResults =
+        (List<CliFunctionResult>) resultCollectorResult;
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    for (CliFunctionResult regionCreateResult : regionCreateResults) {
+    for (CliFunctionResult regionCreateResult : connectionCreateResults) {
       boolean success = regionCreateResult.isSuccessful();
       tabularResultData.accumulate("Member", regionCreateResult.getMemberIdOrName());
       tabularResultData.accumulate("Status",

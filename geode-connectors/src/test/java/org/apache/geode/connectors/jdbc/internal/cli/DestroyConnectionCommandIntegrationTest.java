@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -30,10 +31,10 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class CreateConnectionCommandIntegrationTest {
+public class DestroyConnectionCommandIntegrationTest {
 
   private InternalCache cache;
-  private CreateConnectionCommand createConnectionCommand;
+  private DestroyConnectionCommand destroyConnectionCommand;
 
   private String name;
   private String url;
@@ -41,16 +42,21 @@ public class CreateConnectionCommandIntegrationTest {
   private String password;
   private String[] params;
 
+  private ConnectionConfiguration connectionConfig;
+
   @Before
   public void setup() throws Exception {
     cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    createConnectionCommand = new CreateConnectionCommand();
+    destroyConnectionCommand = new DestroyConnectionCommand();
 
     name = "name";
     url = "url";
     user = "user";
     password = "password";
     params = new String[] {"param1:value1", "param2:value2"};
+
+    connectionConfig = new ConnectionConfigBuilder().withName(name).withUrl(url).withUser(user)
+        .withPassword(password).withParameters(params).build();
   }
 
   @After
@@ -59,33 +65,25 @@ public class CreateConnectionCommandIntegrationTest {
   }
 
   @Test
-  public void createsConnectionConfigurationInService() throws Exception {
-    Result result = createConnectionCommand.createConnection(name, url, user, password, params);
+  public void destroysNamedConnection() throws Exception {
+    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    service.createConnectionConfig(connectionConfig);
+    assertThat(service.getConnectionConfig(name)).isSameAs(connectionConfig);
 
+    Result result = destroyConnectionCommand.destroyConnection(name);
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
-    ConnectionConfiguration connectionConfig = service.getConnectionConfig(name);
-
-    assertThat(connectionConfig).isNotNull();
-    assertThat(connectionConfig.getName()).isEqualTo(name);
-    assertThat(connectionConfig.getUrl()).isEqualTo(url);
-    assertThat(connectionConfig.getUser()).isEqualTo(user);
-    assertThat(connectionConfig.getPassword()).isEqualTo(password);
-    assertThat(connectionConfig.getConnectionProperties()).containsEntry("param1", "value1")
-        .containsEntry("param2", "value2");
+    assertThat(service.getConnectionConfig(name)).isNull();
   }
 
   @Test
-  public void createsConnectionOnceOnly() throws Exception {
-    createConnectionCommand.createConnection(name, url, user, password, params);
+  public void returnsErrorIfNamedConnectionNotFound() throws Exception {
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    assertThat(service.getConnectionConfig(name)).isNull();
 
-    ConnectionConfiguration connectionConfig = service.getConnectionConfig(name);
-
-    Result result = createConnectionCommand.createConnection(name, url, user, password, params);
+    Result result = destroyConnectionCommand.destroyConnection(name);
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
 
-    assertThat(service.getConnectionConfig(name)).isSameAs(connectionConfig);
+    assertThat(service.getConnectionConfig(name)).isNull();
   }
 }

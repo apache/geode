@@ -53,6 +53,12 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   }
 
   @Override
+  public void destroyConnectionConfig(String connectionName) {
+    registerAsExtension();
+    connectionsByName.remove(connectionName);
+  }
+
+  @Override
   public void addOrUpdateRegionMapping(RegionMapping mapping) {
     registerAsExtension();
     mappingsByRegion.put(mapping.getRegionName(), mapping);

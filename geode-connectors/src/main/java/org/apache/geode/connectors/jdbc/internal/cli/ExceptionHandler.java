@@ -12,22 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.extension.Extension;
+import org.apache.logging.log4j.Logger;
 
-public interface InternalJdbcConnectorService extends Extension<Cache>, CacheService {
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
-  void createConnectionConfig(ConnectionConfiguration config)
-      throws ConnectionConfigExistsException;
+class ExceptionHandler {
+  private static final Logger logger = LogService.getLogger();
 
-  void destroyConnectionConfig(String connectionName);
+  CliFunctionResult handleException(final String memberNameOrId, final String exceptionMsg,
+      final Exception e) {
+    if (e != null && logger.isDebugEnabled()) {
+      logger.debug(e.getMessage(), e);
+    }
+    if (exceptionMsg != null) {
+      return new CliFunctionResult(memberNameOrId, false, exceptionMsg);
+    }
 
-  void addOrUpdateRegionMapping(RegionMapping mapping);
-
-  ConnectionConfiguration getConnectionConfig(String connectionName);
-
-  RegionMapping getMappingForRegion(String regionName);
+    return new CliFunctionResult(memberNameOrId);
+  }
 }

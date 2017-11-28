@@ -97,7 +97,6 @@ class ConnectionManager {
         pdxTypeId);
   }
 
-  // package protected for testing purposes only
   Connection getSQLConnection(ConnectionConfiguration config) throws SQLException {
     return DriverManager.getConnection(config.getUrl(), config.getConnectionProperties());
   }

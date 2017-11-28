@@ -17,7 +17,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.xml.ElementType;
 import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlGenerator;
@@ -27,19 +26,20 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class CreateConnectionFunction implements Function<ConnectionConfiguration>, InternalEntity {
+public class DestroyConnectionFunction implements Function<String>, InternalEntity {
 
-  private static final String ID = CreateConnectionFunction.class.getName();
+  private static final String ID = DestroyConnectionFunction.class.getName();
 
   private final transient ExceptionHandler exceptionHandler;
 
-  public CreateConnectionFunction() {
+  public DestroyConnectionFunction() {
     this(new ExceptionHandler());
   }
 
-  private CreateConnectionFunction(ExceptionHandler exceptionHandler) {
+  private DestroyConnectionFunction(ExceptionHandler exceptionHandler) {
     this.exceptionHandler = exceptionHandler;
   }
 
@@ -54,24 +54,31 @@ public class CreateConnectionFunction implements Function<ConnectionConfiguratio
   }
 
   @Override
-  public void execute(FunctionContext<ConnectionConfiguration> context) {
+  public void execute(FunctionContext<String> context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
     InternalCache cache = (InternalCache) context.getCache();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
-    ConnectionConfiguration connectionConfig = context.getArguments();
+    String connectionName = context.getArguments();
 
     try {
       InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
-      service.createConnectionConfig(connectionConfig);
 
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.CACHE, JdbcConnectorServiceXmlGenerator.PREFIX,
-          JdbcConnectorServiceXmlParser.NAMESPACE, ElementType.CONNECTION_SERVICE.getTypeName());
+      if (service.getConnectionConfig(connectionName) == null) {
+        resultSender.lastResult(new CliFunctionResult(memberNameOrId, false,
+            CliStrings.format("Connection named \"{0}\" not found", connectionName)));
 
-      resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
-          "Created JDBC connection " + connectionConfig.getName() + " on " + memberNameOrId));
+      } else {
+        service.destroyConnectionConfig(connectionName);
+
+        XmlEntity xmlEntity = new XmlEntity(CacheXml.CACHE, JdbcConnectorServiceXmlGenerator.PREFIX,
+            JdbcConnectorServiceXmlParser.NAMESPACE, ElementType.CONNECTION_SERVICE.getTypeName());
+
+        resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
+            "Destroyed JDBC connection " + connectionName + " on " + memberNameOrId));
+      }
 
     } catch (Exception e) {
       String exceptionMsg = e.getMessage();

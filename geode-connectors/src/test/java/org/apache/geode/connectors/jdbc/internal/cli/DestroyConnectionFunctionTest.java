@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,7 +32,6 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.distributed.DistributedMember;
@@ -43,10 +41,12 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class CreateConnectionFunctionTest {
+public class DestroyConnectionFunctionTest {
 
-  private CreateConnectionFunction function;
-  private FunctionContext<ConnectionConfiguration> context;
+  private static final String connectionName = "connectionName";
+
+  private DestroyConnectionFunction function;
+  private FunctionContext<String> context;
   private ResultSender<Object> resultSender;
   private ConnectionConfiguration configuration;
   private InternalJdbcConnectorService service;
@@ -66,10 +66,10 @@ public class CreateConnectionFunctionTest {
     when(context.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);
-    when(context.getArguments()).thenReturn(configuration);
+    when(context.getArguments()).thenReturn(connectionName);
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
 
-    function = new CreateConnectionFunction();
+    function = new DestroyConnectionFunction();
   }
 
   @Test
@@ -83,22 +83,22 @@ public class CreateConnectionFunctionTest {
   }
 
   @Test
-  public void executeCreatesConnectionIfConfigNotFound() throws Exception {
-    function.execute(context);
-    verify(service, times(1)).createConnectionConfig(configuration);
-  }
-
-  @Test
-  public void executeReportsErrorIfConnectionConfigFound() throws Exception {
-    doThrow(ConnectionConfigExistsException.class).when(service)
-        .createConnectionConfig(eq(configuration));
-
+  public void executeReportsErrorIfConnectionConfigNotFound() throws Exception {
     function.execute(context);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
     assertThat(argument.getValue().getErrorMessage())
-        .contains(ConnectionConfigExistsException.class.getName());
+        .contains("Connection named \"" + connectionName + "\" not found");
+  }
+
+  @Test
+  public void executeDestroysIfConnectionConfigFound() throws Exception {
+    when(service.getConnectionConfig(eq(connectionName))).thenReturn(configuration);
+
+    function.execute(context);
+
+    verify(service, times(1)).destroyConnectionConfig(eq(connectionName));
   }
 
   @Test
@@ -106,6 +106,6 @@ public class CreateConnectionFunctionTest {
     Serializable original = function;
     Object copy = SerializationUtils.clone(original);
 
-    assertThat(copy).isNotSameAs(original).isInstanceOf(CreateConnectionFunction.class);
+    assertThat(copy).isNotSameAs(original).isInstanceOf(DestroyConnectionFunction.class);
   }
 }
