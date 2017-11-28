@@ -16,19 +16,37 @@
 FROM apachegeode/geode-build
 ENTRYPOINT []
 
-# Setup Google APT repository
-RUN apt-get update && \
-    apt-get install -y lsb-release && \
-    echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-    apt-get update && apt-get install -y google-cloud-sdk && \
-    apt-get clean
+# apt prerequisites for installing docker and gcloud
+RUN apt-get update
+RUN apt-get install -y apt-transport-https ca-certificates aptitude lsb-release jq unzip vim htop golang cgroupfs-mount
+RUN apt-key adv --keyserver hkp://pgp.mit.edu --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+# Setup APT repostories
+ADD docker.list /etc/apt/sources.list.d/
+RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+
+# Install docker and gcloud
+RUN apt-get update
+RUN apt-get purge lxc-docker
+RUN apt-get install -y docker-engine google-cloud-sdk && apt-get clean
 
 # For a CI tool, disable updates to gcloud since they'll be thrown away at end of run
 RUN gcloud config set core/disable_usage_reporting true && \
     gcloud config set component_manager/disable_update_check true && \
     gcloud config set metrics/environment github_docker_image
 
+# Install Tini and associated wrapper
+ADD https://github.com/krallin/tini/releases/download/v0.14.0/tini-static-amd64 /usr/local/bin/tini
+RUN chmod +x /usr/local/bin/tini
+ADD tini-wrapper.go .
+RUN go build -o /usr/local/bin/tini-wrapper ./tini-wrapper.go
+
+# Init script for docker inside our workers
+ADD ./initdocker /usr/local/bin/initdocker
+RUN chmod +x /usr/local/bin/initdocker
+
+# Cache gradle for performance
 ENV GRADLE_USER_HOME /usr/local/maven_files
 WORKDIR /tmp/work
 ADD cache_dependencies.sh cache_dependencies.sh
