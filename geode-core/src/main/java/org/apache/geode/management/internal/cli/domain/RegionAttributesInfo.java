@@ -170,15 +170,15 @@ public class RegionAttributesInfo implements Serializable {
     PartitionAttributes<?, ?> partitionAttributes = ra.getPartitionAttributes();
     EvictionAttributes evictionAttributes = ra.getEvictionAttributes();
 
-
-    if (partitionAttributes != null)
+    if (partitionAttributes != null) {
       partitionAttributesInfo = new PartitionAttributesInfo(partitionAttributes);
+    }
 
     if (evictionAttributes != null) {
       evictionAttributesInfo = new EvictionAttributesInfo(evictionAttributes);
 
     }
-    this.offHeap = ra.getOffHeap();
+    offHeap = ra.getOffHeap();
   }
 
 
@@ -305,7 +305,7 @@ public class RegionAttributesInfo implements Serializable {
   }
 
   public boolean getOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   @Override

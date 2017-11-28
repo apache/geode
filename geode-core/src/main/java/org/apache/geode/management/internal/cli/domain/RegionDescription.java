@@ -17,21 +17,15 @@ package org.apache.geode.management.internal.cli.domain;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 
 /***
  * Data class which contains description of a region and provides the aggregated view of the region
  * Used by describe region command
- *
- *
  */
 public class RegionDescription implements Serializable {
 
@@ -40,9 +34,7 @@ public class RegionDescription implements Serializable {
   private boolean isPartition;
   private boolean isPersistent;
   private boolean isReplicate;
-  private boolean haslocalDataStorage;
   private boolean isLocal = false;
-  private boolean isReplicatedProxy = false;;
   private boolean isAccessor = false;
 
 
@@ -55,9 +47,7 @@ public class RegionDescription implements Serializable {
   private Scope scope;
   private DataPolicy dataPolicy;
 
-  public RegionDescription() {
-
-  }
+  public RegionDescription() {}
 
   public DataPolicy getDataPolicy() {
     return this.dataPolicy;
@@ -70,14 +60,13 @@ public class RegionDescription implements Serializable {
   /**
    * Adds the RegionDescription per member to the aggregated view
    *
-   * @param regionDescPerMember
-   *
+   * @return boolean describing if description was successfully added
    */
   public boolean add(RegionDescriptionPerMember regionDescPerMember) {
     boolean isAdded = false;
 
     if (regionDescPerMemberMap == null) {
-      regionDescPerMemberMap = new HashMap<String, RegionDescriptionPerMember>();
+      regionDescPerMemberMap = new HashMap<>();
       regionDescPerMemberMap.put(regionDescPerMember.getHostingMember(), regionDescPerMember);
       this.scope = regionDescPerMember.getScope();
       this.dataPolicy = regionDescPerMember.getDataPolicy();
@@ -85,70 +74,53 @@ public class RegionDescription implements Serializable {
       isPartition = this.dataPolicy.withPartitioning();
       isPersistent = this.dataPolicy.withPersistence();
       isReplicate = this.dataPolicy.withReplication();
-      haslocalDataStorage = this.dataPolicy.withStorage();
       isLocal = this.scope.isLocal();
       isAccessor = regionDescPerMember.isAccessor();
       // COPY
-      this.cndRegionAttributes = new HashMap<String, String>();
+      this.cndRegionAttributes = new HashMap<>();
       this.cndRegionAttributes.putAll(regionDescPerMember.getNonDefaultRegionAttributes());
 
-      this.cndPartitionAttributes = new HashMap<String, String>();
+      this.cndPartitionAttributes = new HashMap<>();
       this.cndPartitionAttributes.putAll(regionDescPerMember.getNonDefaultPartitionAttributes());
 
-      this.cndEvictionAttributes = new HashMap<String, String>();
+      this.cndEvictionAttributes = new HashMap<>();
       this.cndEvictionAttributes.putAll(regionDescPerMember.getNonDefaultEvictionAttributes());
 
-      if (this.dataPolicy.equals(DataPolicy.EMPTY) && this.scope.equals(Scope.DISTRIBUTED_ACK)) {
-        isReplicatedProxy = true;
-      }
+      isAdded = true;
+    } else if (this.scope.equals(regionDescPerMember.getScope())
+        && this.name.equals(regionDescPerMember.getName())
+        && this.dataPolicy.equals(regionDescPerMember.getDataPolicy())
+        && this.isAccessor == regionDescPerMember.isAccessor()) {
 
-      // Don't have to show the scope for PR's
-
+      regionDescPerMemberMap.put(regionDescPerMember.getHostingMember(), regionDescPerMember);
+      findCommon(cndRegionAttributes, regionDescPerMember.getNonDefaultRegionAttributes());
+      findCommon(cndEvictionAttributes, regionDescPerMember.getNonDefaultEvictionAttributes());
+      findCommon(cndPartitionAttributes, regionDescPerMember.getNonDefaultPartitionAttributes());
 
       isAdded = true;
-    } else {
-      if (this.scope.equals(regionDescPerMember.getScope())
-          && this.name.equals(regionDescPerMember.getName())
-          && this.dataPolicy.equals(regionDescPerMember.getDataPolicy())
-          && this.isAccessor == regionDescPerMember.isAccessor()) {
-
-        regionDescPerMemberMap.put(regionDescPerMember.getHostingMember(), regionDescPerMember);
-        findCommon(cndRegionAttributes, regionDescPerMember.getNonDefaultRegionAttributes());
-        findCommon(cndEvictionAttributes, regionDescPerMember.getNonDefaultEvictionAttributes());
-        findCommon(cndPartitionAttributes, regionDescPerMember.getNonDefaultPartitionAttributes());
-
-        isAdded = true;
-      }
     }
     return isAdded;
   }
 
-  private void findCommon(Map<String, String> commonNdMap, Map<String, String> incomingNdMap) {
-    // First get the intersection of the both maps
+  /**
+   * Removes any key-value pairs from @commonValuesMap that do not agree with the respective
+   * key-value pairs of @additionalValuesMap
+   *
+   * @param commonValuesMap Common values map, whose key set will be reduced.
+   * @param additionalValuesMap Incoming values map, against which @commonValuesMap.
+   */
+  static void findCommon(Map<String, String> commonValuesMap,
+      Map<String, String> additionalValuesMap) {
 
-    Set<String> commonNdKeySet = commonNdMap.keySet();
-    Set<String> incomingNdKeySet = incomingNdMap.keySet();
+    Set<String> sharedKeySet = commonValuesMap.keySet();
+    sharedKeySet.retainAll(additionalValuesMap.keySet());
 
-    commonNdKeySet.retainAll(incomingNdKeySet);
-
-    // Now compare the values
-    // Take a copy of the set to avoid a CME
-    Iterator<String> commonKeysIter = (new HashSet<String>(commonNdKeySet)).iterator();
-
-    while (commonKeysIter.hasNext()) {
-      String attribute = commonKeysIter.next();
-      String commonNdValue = commonNdMap.get(attribute);
-      String incomingNdValue = incomingNdMap.get(attribute);
-
-      if (commonNdValue != null) {
-        if (!commonNdValue.equals(incomingNdValue)) {
-          // Remove it from the commonNdMa
-          commonNdMap.remove(attribute);
-        }
-      } else {
-        if (incomingNdValue != null) {
-          commonNdMap.remove(attribute);
-        }
+    for (String sharedKey : new HashSet<>(sharedKeySet)) {
+      String commonNdValue = commonValuesMap.get(sharedKey);
+      String incomingNdValue = additionalValuesMap.get(sharedKey);
+      if (commonNdValue != null && !commonNdValue.equals(incomingNdValue)
+          || commonNdValue == null && incomingNdValue != null) {
+        commonValuesMap.remove(sharedKey);
       }
     }
   }
@@ -190,25 +162,16 @@ public class RegionDescription implements Serializable {
     return this.isReplicate;
   }
 
-  public boolean hasLocalStorage() {
-    return this.haslocalDataStorage;
-  }
-
   public boolean isLocal() {
     return this.isLocal;
-  }
-
-  public boolean isReplicatedProxy() {
-    return this.isReplicatedProxy;
   }
 
   public boolean isAccessor() {
     return this.isAccessor;
   }
 
-
   /***
-   * Get
+   * Gets the common, non-default region attributes
    *
    * @return Map containing attribute name and its associated value
    */
@@ -217,7 +180,7 @@ public class RegionDescription implements Serializable {
   }
 
   /***
-   * Gets the common non-default Eviction Attributes
+   * Gets the common, non-default eviction attributes
    *
    * @return Map containing attribute name and its associated value
    */
@@ -226,7 +189,7 @@ public class RegionDescription implements Serializable {
   }
 
   /***
-   * Gets the common non-default PartitionAttributes
+   * Gets the common, non-default partition attributes
    *
    * @return Map containing attribute name and its associated value
    */
@@ -238,11 +201,13 @@ public class RegionDescription implements Serializable {
     return this.regionDescPerMemberMap;
   }
 
-
   public String toString() {
     StringBuilder sb = new StringBuilder();
 
     return sb.toString();
   }
 
+  public boolean isEmpty() {
+    return regionDescPerMemberMap == null || regionDescPerMemberMap.isEmpty();
+  }
 }

@@ -16,14 +16,13 @@ package org.apache.geode.management.internal.cli.functions;
 
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
 
-public class GetRegionDescriptionFunction extends FunctionAdapter implements InternalEntity {
+public class GetRegionDescriptionFunction implements Function, InternalEntity {
 
 
   private static final long serialVersionUID = 1L;

@@ -299,7 +299,7 @@ public class CreateRegionCommand implements GfshCommand {
         if (!specifiedGatewaySenders.isEmpty()) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
-              new Object[] {gatewaySenderIds}));
+              gatewaySenderIds));
         }
       }
     }
