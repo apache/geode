@@ -559,11 +559,6 @@ public class ClusterConfigurationService {
     return getConfigurationRegion().get(groupName);
   }
 
-  public Map<String, Configuration> getEntireConfiguration() {
-    Set<String> keys = getConfigurationRegion().keySet();
-    return getConfigurationRegion().getAll(keys);
-  }
-
   /**
    * Returns the path of Shared configuration directory
    *
@@ -680,7 +675,7 @@ public class ClusterConfigurationService {
    *
    * @return {@link Region} ConfigurationRegion, this should never be null
    */
-  private Region<String, Configuration> getConfigurationRegion() {
+  public Region<String, Configuration> getConfigurationRegion() {
     Region<String, Configuration> configRegion = this.cache.getRegion(CONFIG_REGION_NAME);
 
     try {

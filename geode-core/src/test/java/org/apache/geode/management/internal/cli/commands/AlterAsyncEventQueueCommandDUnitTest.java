@@ -81,8 +81,11 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
 
-    // restart server1
-    lsRule.stopVM(1);
+    // restart locator and server without clearing the file system
+    lsRule.stopVM(1, false);
+    lsRule.stopVM(0, false);
+
+    locator = lsRule.startLocatorVM(0);
     server1 = lsRule.startServerVM(1, "group1", locator.getPort());
     // verify that server1's queue is updated
     server1.invoke(() -> {

@@ -16,12 +16,12 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL__HELP;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE__HELP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS_HELP;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -33,13 +33,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -63,7 +63,7 @@ public class AlterAsyncEventQueueCommand implements GfshCommand {
   static final String COMMAND_HELP =
       "alter attributes of async-event-queue, needs rolling restart for new attributes to take effect. ";
   static final String ID_HELP = "Id of the async event queue to be changed.";
-  static final String BATCH_SIZE_HELP = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE__HELP;
+  static final String BATCH_SIZE_HELP = CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE__HELP;
   static final String BATCH_TIME_INTERVAL_HELP = CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL__HELP;
   static final String MAXIMUM_QUEUE_MEMORY_HELP =
       CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP;
@@ -94,9 +94,9 @@ public class AlterAsyncEventQueueCommand implements GfshCommand {
 
     TabularResultData tableData = ResultBuilder.createTabularResultData();
     try {
-      Map<String, Configuration> configurationMap = service.getEntireConfiguration();
-      for (String group : configurationMap.keySet()) {
-        Configuration config = configurationMap.get(group);
+      Region<String, Configuration> configRegion = service.getConfigurationRegion();
+      for (String group : configRegion.keySet()) {
+        Configuration config = configRegion.get(group);
         if (config.getCacheXmlContent() == null) {
           // skip to the next group
           continue;
@@ -132,6 +132,7 @@ public class AlterAsyncEventQueueCommand implements GfshCommand {
         if (xmlUpdated) {
           String newXml = XmlUtils.prettyXml(document.getFirstChild());
           config.setCacheXmlContent(newXml);
+          configRegion.put(group, config);
         }
       }
     } finally {

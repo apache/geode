@@ -96,7 +96,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     Result result;
     try {
-      for (Configuration config : sc.getEntireConfiguration().values()) {
+      for (Configuration config : sc.getConfigurationRegion().values()) {
         sc.writeConfigToFile(config);
       }
       ZipUtils.zipDirectory(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
@@ -162,7 +162,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       ClusterConfigurationService sc = locator.getSharedConfiguration();
 
       // backup the old config
-      for (Configuration config : sc.getEntireConfiguration().values()) {
+      for (Configuration config : sc.getConfigurationRegion().values()) {
         sc.writeConfigToFile(config);
       }
       sc.renameExistingSharedConfigDirectory();

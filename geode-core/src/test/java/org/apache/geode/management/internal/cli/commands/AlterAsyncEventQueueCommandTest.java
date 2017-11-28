@@ -28,8 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -40,6 +39,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
@@ -55,16 +55,27 @@ public class AlterAsyncEventQueueCommandTest {
 
   private AlterAsyncEventQueueCommand command;
   private ClusterConfigurationService service;
-  private Map<String, Configuration> configurationMap;
+  private Region<String, Configuration> configRegion;
 
   @Before
   public void before() throws Exception {
     command = spy(AlterAsyncEventQueueCommand.class);
     service = mock(ClusterConfigurationService.class);
     doReturn(service).when(command).getSharedConfiguration();
-    configurationMap = new HashMap<>();
-    when(service.getEntireConfiguration()).thenReturn(configurationMap);
+    configRegion = mock(Region.class);
+    when(service.getConfigurationRegion()).thenReturn(configRegion);
     when(service.lockSharedConfiguration()).thenReturn(true);
+
+    when(configRegion.keySet())
+        .thenReturn(Arrays.stream("group1,group2".split(",")).collect(Collectors.toSet()));
+    Configuration configuration1 = new Configuration("group1");
+    configuration1.setCacheXmlContent(getCacheXml("queue1"));
+    when(configRegion.get("group1")).thenReturn(configuration1);
+
+    Configuration configuration2 = new Configuration("group2");
+    configuration2.setCacheXmlContent(getCacheXml("queue2"));
+    when(configRegion.get("group2")).thenReturn(configuration2);
+
   }
 
   @Test
@@ -102,7 +113,7 @@ public class AlterAsyncEventQueueCommandTest {
   public void queueIdNotFoundInTheMap() throws Exception {
     Configuration configuration = new Configuration("group");
     configuration.setCacheXmlContent(getCacheXml("queue1", "queue2"));
-    configurationMap.put("group", configuration);
+    configRegion.put("group", configuration);
 
     gfsh.executeAndAssertThat(command, "alter async-event-queue --batch-size=100 --id=queue")
         .statusIsError().containsOutput("Can not find an async event queue");
@@ -120,14 +131,6 @@ public class AlterAsyncEventQueueCommandTest {
 
   @Test
   public void queueIdFoundInTheMap_updateBatchSize() throws Exception {
-    Configuration configuration = new Configuration("group1");
-    configuration.setCacheXmlContent(getCacheXml("queue1"));
-    configurationMap.put("group1", configuration);
-
-    configuration = new Configuration("group2");
-    configuration.setCacheXmlContent(getCacheXml("queue2"));
-    configurationMap.put("group2", configuration);
-
     gfsh.executeAndAssertThat(command, "alter async-event-queue --batch-size=100 --id=queue1")
         .statusIsSuccess().tableHasRowCount("Group", 1)
         .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
@@ -135,7 +138,7 @@ public class AlterAsyncEventQueueCommandTest {
 
     // verify that the xml is updated
     Element element =
-        findAsyncEventQueueElement(configurationMap.get("group1").getCacheXmlContent(), 0);
+        findAsyncEventQueueElement(configRegion.get("group1").getCacheXmlContent(), 0);
     assertThat(element.getAttribute(ID)).isEqualTo("queue1");
     assertThat(element.getAttribute(BATCH_SIZE)).isEqualTo("100");
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("");
@@ -147,14 +150,6 @@ public class AlterAsyncEventQueueCommandTest {
 
   @Test
   public void queueIdFoundInTheMap_updateBatchTimeInterval() throws Exception {
-    Configuration configuration = new Configuration("group1");
-    configuration.setCacheXmlContent(getCacheXml("queue1"));
-    configurationMap.put("group1", configuration);
-
-    configuration = new Configuration("group2");
-    configuration.setCacheXmlContent(getCacheXml("queue2"));
-    configurationMap.put("group2", configuration);
-
     gfsh.executeAndAssertThat(command,
         "alter async-event-queue --batch-time-interval=100 --id=queue1").statusIsSuccess()
         .tableHasRowCount("Group", 1)
@@ -163,7 +158,7 @@ public class AlterAsyncEventQueueCommandTest {
 
     // verify that the xml is updated
     Element element =
-        findAsyncEventQueueElement(configurationMap.get("group1").getCacheXmlContent(), 0);
+        findAsyncEventQueueElement(configRegion.get("group1").getCacheXmlContent(), 0);
     assertThat(element.getAttribute(ID)).isEqualTo("queue1");
     assertThat(element.getAttribute(BATCH_SIZE)).isEqualTo("");
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("100");
@@ -175,14 +170,6 @@ public class AlterAsyncEventQueueCommandTest {
 
   @Test
   public void queueIdFoundInTheMap_updateMaxMemory() throws Exception {
-    Configuration configuration = new Configuration("group1");
-    configuration.setCacheXmlContent(getCacheXml("queue1"));
-    configurationMap.put("group1", configuration);
-
-    configuration = new Configuration("group2");
-    configuration.setCacheXmlContent(getCacheXml("queue2"));
-    configurationMap.put("group2", configuration);
-
     gfsh.executeAndAssertThat(command, "alter async-event-queue --max-queue-memory=100 --id=queue1")
         .statusIsSuccess().tableHasRowCount("Group", 1)
         .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
@@ -190,7 +177,7 @@ public class AlterAsyncEventQueueCommandTest {
 
     // verify that the xml is updated
     Element element =
-        findAsyncEventQueueElement(configurationMap.get("group1").getCacheXmlContent(), 0);
+        findAsyncEventQueueElement(configRegion.get("group1").getCacheXmlContent(), 0);
     assertThat(element.getAttribute(ID)).isEqualTo("queue1");
     assertThat(element.getAttribute(BATCH_SIZE)).isEqualTo("");
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("");
@@ -202,9 +189,10 @@ public class AlterAsyncEventQueueCommandTest {
 
   @Test
   public void multipleQueuesInClusterConfig() throws Exception {
+    when(configRegion.keySet()).thenReturn(Collections.singleton("group"));
     Configuration configuration = new Configuration("group");
     configuration.setCacheXmlContent(getCacheXml("queue1", "queue2"));
-    configurationMap.put("group", configuration);
+    when(configRegion.get("group")).thenReturn(configuration);
 
     gfsh.executeAndAssertThat(command, "alter async-event-queue --batch-size=100 --id=queue1")
         .statusIsSuccess().tableHasRowCount("Group", 1)
@@ -212,15 +200,14 @@ public class AlterAsyncEventQueueCommandTest {
         .containsOutput("Please restart the servers");
 
     // verify that queue1's xml is updated
-    Element element =
-        findAsyncEventQueueElement(configurationMap.get("group").getCacheXmlContent(), 0);
+    Element element = findAsyncEventQueueElement(configRegion.get("group").getCacheXmlContent(), 0);
     assertThat(element.getAttribute(ID)).isEqualTo("queue1");
     assertThat(element.getAttribute(BATCH_SIZE)).isEqualTo("100");
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("");
     assertThat(element.getAttribute(MAX_QUEUE_MEMORY)).isEqualTo("");
 
     // verify that queue2's xml is untouched
-    element = findAsyncEventQueueElement(configurationMap.get("group").getCacheXmlContent(), 1);
+    element = findAsyncEventQueueElement(configRegion.get("group").getCacheXmlContent(), 1);
     assertThat(element.getAttribute(ID)).isEqualTo("queue2");
     assertThat(element.getAttribute(BATCH_SIZE)).isEqualTo("");
     assertThat(element.getAttribute(BATCH_TIME_INTERVAL)).isEqualTo("");
