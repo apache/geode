@@ -41,24 +41,28 @@ public class JdbcWriterTest {
   private EntryEvent<Object, Object> entryEvent;
   private PdxInstance pdxInstance;
   private SqlHandler sqlHandler;
+  private SerializedCacheValue<Object> serializedNewValue;
+  private RegionEvent<Object, Object> regionEvent;
+
+  private JdbcWriter<Object, Object> writer;
 
   @Before
   public void setUp() {
     entryEvent = mock(EntryEvent.class);
     pdxInstance = mock(PdxInstance.class);
-    SerializedCacheValue<Object> serializedNewValue = mock(SerializedCacheValue.class);
     sqlHandler = mock(SqlHandler.class);
+    serializedNewValue = mock(SerializedCacheValue.class);
+    regionEvent = mock(RegionEvent.class);
 
     when(entryEvent.getRegion()).thenReturn(mock(InternalRegion.class));
     when(entryEvent.getSerializedNewValue()).thenReturn(serializedNewValue);
     when(serializedNewValue.getDeserializedValue()).thenReturn(pdxInstance);
 
+    writer = new JdbcWriter<>(sqlHandler);
   }
 
   @Test
   public void beforeUpdateWithPdxInstanceWritesToSqlHandler() {
-    JdbcWriter<Object, Object> writer = new JdbcWriter<>(sqlHandler);
-
     writer.beforeUpdate(entryEvent);
 
     verify(sqlHandler, times(1)).write(any(), any(), any(), eq(pdxInstance));
@@ -66,16 +70,7 @@ public class JdbcWriterTest {
 
   @Test
   public void beforeUpdateWithoutPdxInstanceWritesToSqlHandler() {
-    EntryEvent<Object, Object> entryEvent = mock(EntryEvent.class);
-    Object value = new Object();
-    SerializedCacheValue<Object> serializedNewValue = mock(SerializedCacheValue.class);
-    SqlHandler sqlHander = mock(SqlHandler.class);
-
-    when(entryEvent.getRegion()).thenReturn(mock(InternalRegion.class));
-    when(entryEvent.getSerializedNewValue()).thenReturn(serializedNewValue);
-    when(serializedNewValue.getDeserializedValue()).thenReturn(value);
-
-    JdbcWriter<Object, Object> writer = new JdbcWriter<>(sqlHander);
+    when(serializedNewValue.getDeserializedValue()).thenReturn(new Object());
 
     assertThatThrownBy(() -> writer.beforeUpdate(entryEvent))
         .isInstanceOf(IllegalArgumentException.class);
@@ -83,8 +78,6 @@ public class JdbcWriterTest {
 
   @Test
   public void beforeCreateWithPdxInstanceWritesToSqlHandler() {
-    JdbcWriter<Object, Object> writer = new JdbcWriter<>(sqlHandler);
-
     writer.beforeCreate(entryEvent);
 
     verify(sqlHandler, times(1)).write(any(), any(), any(), eq(pdxInstance));
@@ -92,8 +85,6 @@ public class JdbcWriterTest {
 
   @Test
   public void beforeDestroyWithPdxInstanceWritesToSqlHandler() {
-    JdbcWriter<Object, Object> writer = new JdbcWriter<>(sqlHandler);
-
     writer.beforeDestroy(entryEvent);
 
     verify(sqlHandler, times(1)).write(any(), any(), any(), eq(pdxInstance));
@@ -101,8 +92,6 @@ public class JdbcWriterTest {
 
   @Test
   public void beforeRegionDestroyDoesNotWriteToSqlHandler() {
-    JdbcWriter<Object, Object> writer = new JdbcWriter<>(sqlHandler);
-
     writer.beforeRegionDestroy(mock(RegionEvent.class));
 
     verifyZeroInteractions(sqlHandler);
@@ -110,8 +99,6 @@ public class JdbcWriterTest {
 
   @Test
   public void beforeRegionClearDoesNotWriteToSqlHandler() {
-    JdbcWriter<Object, Object> writer = new JdbcWriter<>(sqlHandler);
-
     writer.beforeRegionClear(mock(RegionEvent.class));
 
     verifyZeroInteractions(sqlHandler);

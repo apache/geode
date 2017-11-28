@@ -38,9 +38,8 @@ public class RegionMappingBuilderTest {
 
   @Test
   public void createsMappingWithSpecifiedValues() {
-    RegionMappingBuilder builder = new RegionMappingBuilder();
-    RegionMapping regionMapping = builder.withTableName("tableName").withRegionName("regionName")
-        .withPrimaryKeyInValue("true").withPdxClassName("pdxClassName")
+    RegionMapping regionMapping = new RegionMappingBuilder().withTableName("tableName")
+        .withRegionName("regionName").withPrimaryKeyInValue("true").withPdxClassName("pdxClassName")
         .withConnectionConfigName("configName").withFieldToColumnMapping("fieldName", "columnName")
         .build();
 

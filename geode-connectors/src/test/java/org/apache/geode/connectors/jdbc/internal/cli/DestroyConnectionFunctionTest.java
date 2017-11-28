@@ -53,14 +53,12 @@ public class DestroyConnectionFunctionTest {
 
   @Before
   public void setUp() {
-    configuration = new ConnectionConfigBuilder().build();
-
-    context = mock(FunctionContext.class);
-    resultSender = mock(ResultSender.class);
     InternalCache cache = mock(InternalCache.class);
-    DistributedSystem system = mock(DistributedSystem.class);
+    context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
+    resultSender = mock(ResultSender.class);
     service = mock(InternalJdbcConnectorService.class);
+    DistributedSystem system = mock(DistributedSystem.class);
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
@@ -68,6 +66,8 @@ public class DestroyConnectionFunctionTest {
     when(system.getDistributedMember()).thenReturn(member);
     when(context.getArguments()).thenReturn(connectionName);
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+
+    configuration = new ConnectionConfigBuilder().build();
 
     function = new DestroyConnectionFunction();
   }
@@ -104,6 +104,7 @@ public class DestroyConnectionFunctionTest {
   @Test
   public void serializes() throws Exception {
     Serializable original = function;
+
     Object copy = SerializationUtils.clone(original);
 
     assertThat(copy).isNotSameAs(original).isInstanceOf(DestroyConnectionFunction.class);

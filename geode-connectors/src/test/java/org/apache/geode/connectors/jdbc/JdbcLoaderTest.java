@@ -20,6 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -31,14 +32,25 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class JdbcLoaderTest {
 
-  @Test
-  public void loadReadsFromSqlHandler() {
-    SqlHandler sqlHandler = mock(SqlHandler.class);
-    JdbcLoader<Object, Object> loader = new JdbcLoader<>(sqlHandler);
-    LoaderHelper loaderHelper = mock(LoaderHelper.class);
+  private SqlHandler sqlHandler;
+  private LoaderHelper loaderHelper;
+
+  private JdbcLoader<Object, Object> loader;
+
+  @Before
+  public void setUp() throws Exception {
+    sqlHandler = mock(SqlHandler.class);
+    loaderHelper = mock(LoaderHelper.class);
+
     when(loaderHelper.getRegion()).thenReturn(mock(InternalRegion.class));
-    loader.load(loaderHelper);
-    verify(sqlHandler, times(1)).read(any(), any());
+
+    loader = new JdbcLoader<>(sqlHandler);
   }
 
+  @Test
+  public void loadReadsFromSqlHandler() {
+    loader.load(loaderHelper);
+
+    verify(sqlHandler, times(1)).read(any(), any());
+  }
 }

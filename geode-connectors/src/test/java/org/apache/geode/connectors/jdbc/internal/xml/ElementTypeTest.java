@@ -52,17 +52,21 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ElementTypeTest {
-  private Stack<Object> stack = new Stack<>();
+
   private Attributes attributes;
   private CacheCreation cacheCreation;
   private ExtensionPoint<Cache> extensionPoint;
+  private Stack<Object> stack;
 
   @Before
   public void setup() {
     attributes = mock(Attributes.class);
     cacheCreation = mock(CacheCreation.class);
     extensionPoint = mock(ExtensionPoint.class);
+
     when(cacheCreation.getExtensionPoint()).thenReturn(extensionPoint);
+
+    stack = new Stack<>();
   }
 
   @Test
@@ -76,13 +80,14 @@ public class ElementTypeTest {
 
   @Test
   public void gettingElementTypeThatDoesNotExistThrowsException() {
-    assertThatThrownBy(() -> ElementType.getTypeFromName("non-existant element"))
+    assertThatThrownBy(() -> ElementType.getTypeFromName("non-existent element"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   public void startElementConnectionServiceThrowsWithoutCacheCreation() {
     stack.push(new Object());
+
     assertThatThrownBy(() -> CONNECTION_SERVICE.startElement(stack, attributes))
         .isInstanceOf(CacheXmlException.class);
   }
@@ -90,7 +95,9 @@ public class ElementTypeTest {
   @Test
   public void startElementConnectionService() {
     stack.push(cacheCreation);
+
     CONNECTION_SERVICE.startElement(stack, attributes);
+
     verify(extensionPoint, times(1)).addExtension(any(JdbcServiceConfiguration.class));
     assertThat(stack.peek()).isInstanceOf(JdbcServiceConfiguration.class);
   }
@@ -98,13 +105,16 @@ public class ElementTypeTest {
   @Test
   public void endElementConnectionService() {
     stack.push(new Object());
+
     CONNECTION_SERVICE.endElement(stack);
+
     assertThat(stack).isEmpty();
   }
 
   @Test
   public void startElementConnectionThrowsWithoutJdbcServiceConfiguration() {
     stack.push(new Object());
+
     assertThatThrownBy(() -> CONNECTION.startElement(stack, attributes))
         .isInstanceOf(CacheXmlException.class);
   }
@@ -113,15 +123,14 @@ public class ElementTypeTest {
   public void startElementConnection() {
     JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
     stack.push(serviceConfiguration);
-
     when(attributes.getValue(JdbcConnectorServiceXmlParser.NAME)).thenReturn("connectionName");
     when(attributes.getValue(JdbcConnectorServiceXmlParser.URL)).thenReturn("url");
     when(attributes.getValue(JdbcConnectorServiceXmlParser.USER)).thenReturn("username");
     when(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD)).thenReturn("secret");
 
     CONNECTION.startElement(stack, attributes);
-    ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
 
+    ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
     assertThat(config.getName()).isEqualTo("connectionName");
     assertThat(config.getUrl()).isEqualTo("url");
     assertThat(config.getUser()).isEqualTo("username");
@@ -144,15 +153,14 @@ public class ElementTypeTest {
   @Test
   public void startElementRegionMappingThrowsWithoutJdbcServiceConfiguration() {
     stack.push(new Object());
+
     assertThatThrownBy(() -> REGION_MAPPING.startElement(stack, attributes))
         .isInstanceOf(CacheXmlException.class);
   }
 
   @Test
   public void startElementRegionMapping() {
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-
+    stack.push(mock(JdbcServiceConfiguration.class));
     when(attributes.getValue(REGION)).thenReturn("region");
     when(attributes.getValue(CONNECTION_NAME)).thenReturn("connectionName");
     when(attributes.getValue(TABLE)).thenReturn("table");
@@ -185,6 +193,7 @@ public class ElementTypeTest {
   @Test
   public void startElementFieldMappingThrowsWithoutRegionMappingBuilder() {
     stack.push(new Object());
+
     assertThatThrownBy(() -> FIELD_MAPPING.startElement(stack, attributes))
         .isInstanceOf(CacheXmlException.class);
   }
@@ -197,8 +206,8 @@ public class ElementTypeTest {
     when(attributes.getValue(COLUMN_NAME)).thenReturn("columnName");
 
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
-    RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
 
+    RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
     assertThat(regionMapping.getColumnNameForField("fieldName")).isEqualTo("columnName");
   }
 

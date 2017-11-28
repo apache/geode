@@ -24,6 +24,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ColumnValueTest {
+
   private static final String COLUMN_NAME = "columnName";
   private static final Object VALUE = new Object();
 

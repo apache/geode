@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
@@ -30,7 +31,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
@@ -98,8 +98,8 @@ public class JdbcLoaderIntegrationTest {
 
   private Region<String, PdxInstance> createRegionWithJDBCLoader(String regionName) {
     JdbcLoader<String, PdxInstance> jdbcLoader = new JdbcLoader<>(createSqlHandler());
-    RegionFactory<String, PdxInstance> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    rf.setCacheLoader(jdbcLoader);
-    return rf.create(regionName);
+    RegionFactory<String, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
+    regionFactory.setCacheLoader(jdbcLoader);
+    return regionFactory.create(regionName);
   }
 }

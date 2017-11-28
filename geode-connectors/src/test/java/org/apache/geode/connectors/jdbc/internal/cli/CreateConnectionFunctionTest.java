@@ -45,22 +45,23 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class CreateConnectionFunctionTest {
 
-  private CreateConnectionFunction function;
-  private FunctionContext<ConnectionConfiguration> context;
-  private ResultSender<Object> resultSender;
   private ConnectionConfiguration configuration;
+  private FunctionContext<ConnectionConfiguration> context;
   private InternalJdbcConnectorService service;
+  private ResultSender<Object> resultSender;
+
+  private CreateConnectionFunction function;
 
   @Before
   public void setUp() {
-    configuration = new ConnectionConfigBuilder().build();
-
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     InternalCache cache = mock(InternalCache.class);
     DistributedSystem system = mock(DistributedSystem.class);
     DistributedMember member = mock(DistributedMember.class);
     service = mock(InternalJdbcConnectorService.class);
+
+    configuration = new ConnectionConfigBuilder().build();
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
@@ -85,6 +86,7 @@ public class CreateConnectionFunctionTest {
   @Test
   public void executeCreatesConnectionIfConfigNotFound() throws Exception {
     function.execute(context);
+
     verify(service, times(1)).createConnectionConfig(configuration);
   }
 
@@ -104,6 +106,7 @@ public class CreateConnectionFunctionTest {
   @Test
   public void serializes() throws Exception {
     Serializable original = function;
+
     Object copy = SerializationUtils.clone(original);
 
     assertThat(copy).isNotSameAs(original).isInstanceOf(CreateConnectionFunction.class);

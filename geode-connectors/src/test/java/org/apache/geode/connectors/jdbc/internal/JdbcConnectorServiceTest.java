@@ -29,15 +29,29 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class JdbcConnectorServiceTest {
+
   private static final String TEST_CONFIG_NAME = "testConfig";
   private static final String TEST_REGION_NAME = "testRegion";
 
-  private JdbcConnectorService service = new JdbcConnectorService();
+  private ConnectionConfiguration config;
+  private ConnectionConfiguration config2;
+  private RegionMapping mapping;
+
+  private JdbcConnectorService service;
 
   @Before
   public void setup() {
     InternalCache cache = mock(InternalCache.class);
+    config = mock(ConnectionConfiguration.class);
+    mapping = mock(RegionMapping.class);
+    config2 = mock(ConnectionConfiguration.class);
+
     when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
+    when(config.getName()).thenReturn(TEST_CONFIG_NAME);
+    when(config2.getName()).thenReturn(TEST_CONFIG_NAME);
+    when(mapping.getRegionName()).thenReturn(TEST_REGION_NAME);
+
+    service = new JdbcConnectorService();
     service.init(cache);
   }
 
@@ -53,8 +67,6 @@ public class JdbcConnectorServiceTest {
 
   @Test
   public void returnsCorrectConfig() {
-    ConnectionConfiguration config = mock(ConnectionConfiguration.class);
-    when(config.getName()).thenReturn(TEST_CONFIG_NAME);
     service.createConnectionConfig(config);
 
     assertThat(service.getConnectionConfig(TEST_CONFIG_NAME)).isSameAs(config);
@@ -62,7 +74,6 @@ public class JdbcConnectorServiceTest {
 
   @Test
   public void doesNotReturnConfigWithDifferentName() {
-    ConnectionConfiguration config = mock(ConnectionConfiguration.class);
     when(config.getName()).thenReturn("theOtherConfig");
     service.createConnectionConfig(config);
 
@@ -71,8 +82,6 @@ public class JdbcConnectorServiceTest {
 
   @Test
   public void returnsCorrectMapping() {
-    RegionMapping mapping = mock(RegionMapping.class);
-    when(mapping.getRegionName()).thenReturn(TEST_REGION_NAME);
     service.addOrUpdateRegionMapping(mapping);
 
     assertThat(service.getMappingForRegion(TEST_REGION_NAME)).isSameAs(mapping);
@@ -80,7 +89,6 @@ public class JdbcConnectorServiceTest {
 
   @Test
   public void doesNotReturnMappingForDifferentRegion() {
-    RegionMapping mapping = mock(RegionMapping.class);
     when(mapping.getRegionName()).thenReturn("theOtherMapping");
     service.addOrUpdateRegionMapping(mapping);
 
@@ -89,12 +97,7 @@ public class JdbcConnectorServiceTest {
 
   @Test
   public void createConnectionConfig_throwsIfConnectionExists() {
-    ConnectionConfiguration config = mock(ConnectionConfiguration.class);
-    when(config.getName()).thenReturn(TEST_CONFIG_NAME);
     service.createConnectionConfig(config);
-
-    ConnectionConfiguration config2 = mock(ConnectionConfiguration.class);
-    when(config2.getName()).thenReturn(TEST_CONFIG_NAME);
 
     assertThatThrownBy(() -> service.createConnectionConfig(config2))
         .isInstanceOf(ConnectionConfigExistsException.class).hasMessageContaining(TEST_CONFIG_NAME);

@@ -25,9 +25,11 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ConnectionConfigBuilderTest {
+
   @Test
   public void createsAllNullObjectIfNothingSet() {
     ConnectionConfiguration config = new ConnectionConfigBuilder().build();
+
     assertThat(config.getName()).isNull();
     assertThat(config.getUrl()).isNull();
     assertThat(config.getUser()).isNull();
@@ -36,10 +38,10 @@ public class ConnectionConfigBuilderTest {
 
   @Test
   public void createsObjectWithCorrectValues() {
-    ConnectionConfigBuilder builder = new ConnectionConfigBuilder();
-    builder.withName("name").withUrl("url").withUser("user").withPassword("password")
-        .withParameters(new String[] {"param1:value1", "param2:value2"});
-    ConnectionConfiguration config = builder.build();
+    ConnectionConfiguration config = new ConnectionConfigBuilder().withName("name").withUrl("url")
+        .withUser("user").withPassword("password")
+        .withParameters(new String[] {"param1:value1", "param2:value2"}).build();
+
     assertThat(config.getName()).isEqualTo("name");
     assertThat(config.getUrl()).isEqualTo("url");
     assertThat(config.getUser()).isEqualTo("user");

@@ -37,8 +37,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class JdbcServiceConfigurationTest {
 
-  private JdbcServiceConfiguration configuration;
-
   private InternalCache cache;
   private InternalJdbcConnectorService service;
   private ConnectionConfiguration connection1;
@@ -46,15 +44,17 @@ public class JdbcServiceConfigurationTest {
   private RegionMapping mapping1;
   private RegionMapping mapping2;
 
+  private JdbcServiceConfiguration configuration;
+
   @Before
   public void setUp() {
     connection1 = mock(ConnectionConfiguration.class);
     connection2 = mock(ConnectionConfiguration.class);
     mapping1 = mock(RegionMapping.class);
     mapping2 = mock(RegionMapping.class);
-
     service = mock(InternalJdbcConnectorService.class);
     cache = mock(InternalCache.class);
+
     when(cache.getService(InternalJdbcConnectorService.class)).thenReturn(service);
 
     configuration = new JdbcServiceConfiguration();
@@ -108,6 +108,7 @@ public class JdbcServiceConfigurationTest {
   @Test
   public void onCreateWithNoConnectionsOrMappings() {
     configuration.onCreate(cache, cache);
+
     verifyZeroInteractions(service);
   }
 

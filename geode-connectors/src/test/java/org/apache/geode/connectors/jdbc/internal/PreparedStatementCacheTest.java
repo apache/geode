@@ -14,6 +14,9 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import static org.apache.geode.cache.Operation.REGION_CLOSE;
+import static org.apache.geode.cache.Operation.UPDATE;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -27,18 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
-import org.apache.geode.cache.Operation;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class PreparedStatementCacheTest {
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   private PreparedStatementCache cache;
   private Connection connection;
@@ -48,35 +46,40 @@ public class PreparedStatementCacheTest {
   public void setup() throws SQLException {
     cache = new PreparedStatementCache();
     connection = mock(Connection.class);
+
     when(connection.prepareStatement(any())).thenReturn(mock(PreparedStatement.class));
+
     values.add(mock(ColumnValue.class));
   }
 
   @Test
   public void returnsSameStatementForIdenticalInputs() throws Exception {
-    cache.getPreparedStatement(connection, values, "table1", Operation.UPDATE, 1);
-    cache.getPreparedStatement(connection, values, "table1", Operation.UPDATE, 1);
+    cache.getPreparedStatement(connection, values, "table1", UPDATE, 1);
+    cache.getPreparedStatement(connection, values, "table1", UPDATE, 1);
+
     verify(connection, times(1)).prepareStatement(any());
   }
 
   @Test
   public void returnsDifferentStatementForNonIdenticalInputs() throws Exception {
-    cache.getPreparedStatement(connection, values, "table1", Operation.UPDATE, 1);
-    cache.getPreparedStatement(connection, values, "table2", Operation.UPDATE, 1);
+    cache.getPreparedStatement(connection, values, "table1", UPDATE, 1);
+    cache.getPreparedStatement(connection, values, "table2", UPDATE, 1);
+
     verify(connection, times(2)).prepareStatement(any());
   }
 
   @Test()
   public void throwsExceptionIfPreparingStatementFails() throws Exception {
     when(connection.prepareStatement(any())).thenThrow(SQLException.class);
-    thrown.expect(IllegalStateException.class);
-    cache.getPreparedStatement(connection, values, "table1", Operation.UPDATE, 1);
+
+    assertThatThrownBy(() -> cache.getPreparedStatement(connection, values, "table1", UPDATE, 1))
+        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   public void throwsExceptionIfInvalidOperationGiven() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    cache.getPreparedStatement(connection, values, "table1", Operation.REGION_CLOSE, 1);
-
+    assertThatThrownBy(
+        () -> cache.getPreparedStatement(connection, values, "table1", REGION_CLOSE, 1))
+            .isInstanceOf(IllegalArgumentException.class);
   }
 }

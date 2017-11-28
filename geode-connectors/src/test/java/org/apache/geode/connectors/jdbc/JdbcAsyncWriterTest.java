@@ -40,11 +40,15 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class JdbcAsyncWriterTest {
 
   private SqlHandler sqlHandler;
+  private InternalRegion<Object, Object> region;
+
   private JdbcAsyncWriter writer;
 
   @Before
   public void setup() {
     sqlHandler = mock(SqlHandler.class);
+    region = mock(InternalRegion.class);
+
     writer = new JdbcAsyncWriter(sqlHandler);
   }
 
@@ -87,7 +91,7 @@ public class JdbcAsyncWriterTest {
 
   private AsyncEvent createMockEvent() {
     AsyncEvent event = mock(AsyncEvent.class);
-    when(event.getRegion()).thenReturn(mock(InternalRegion.class));
+    when(event.getRegion()).thenReturn(region);
     return event;
   }
 }

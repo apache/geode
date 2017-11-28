@@ -90,7 +90,9 @@ public class DestroyConnectionCommandDUnitTest implements Serializable {
   private void createConnection() {
     InternalCache cache = LocatorServerStartupRule.getCache();
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+
     service.createConnectionConfig(new ConnectionConfigBuilder().withName(connectionName).build());
+
     assertThat(service.getConnectionConfig(connectionName)).isNotNull();
   }
 }

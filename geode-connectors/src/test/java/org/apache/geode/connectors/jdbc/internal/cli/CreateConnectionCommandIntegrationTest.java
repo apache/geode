@@ -43,14 +43,15 @@ public class CreateConnectionCommandIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    createConnectionCommand = new CreateConnectionCommand();
-
     name = "name";
     url = "url";
     user = "user";
     password = "password";
     params = new String[] {"param1:value1", "param2:value2"};
+
+    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+
+    createConnectionCommand = new CreateConnectionCommand();
   }
 
   @After

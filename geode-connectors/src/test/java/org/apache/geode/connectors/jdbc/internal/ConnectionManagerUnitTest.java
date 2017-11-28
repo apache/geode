@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -31,10 +32,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.pdx.PdxInstance;
@@ -42,51 +41,56 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ConnectionManagerUnitTest {
+
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
   private static final String CONFIG_NAME = "configName";
   private static final String KEY_COLUMN = "keyColumn";
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-
   private JdbcConnectorService configService;
   private ConnectionManager manager;
   private Connection connection;
-  private ConnectionConfiguration connectionConfig;
   private RegionMapping mapping;
-  private Object key = new Object();
-  private PdxInstance value = mock(PdxInstance.class);
 
+  private Object key;
+  private PdxInstance value;
+
+  private ConnectionConfiguration connectionConfig;
 
   @Before
   public void setup() throws Exception {
     configService = mock(JdbcConnectorService.class);
     manager = spy(new ConnectionManager(configService));
     connection = mock(Connection.class);
+    mapping = mock(RegionMapping.class);
+    value = mock(PdxInstance.class);
 
-    connectionConfig = getTestConnectionConfig("name", "url", null, null);
+    connectionConfig = new ConnectionConfiguration("name", "url", null, null, null);
+
+    when(mapping.getTableName()).thenReturn(TABLE_NAME);
     doReturn(connection).when(manager).getSQLConnection(connectionConfig);
 
-    mapping = mock(RegionMapping.class);
-    when(mapping.getTableName()).thenReturn(TABLE_NAME);
+    key = new Object();
   }
 
   @Test
   public void getsCorrectMapping() {
     manager.getMappingForRegion(REGION_NAME);
+
     verify(configService).getMappingForRegion(REGION_NAME);
   }
 
   @Test
   public void getsCorrectConnectionConfig() {
     manager.getConnectionConfig(CONFIG_NAME);
+
     verify(configService).getConnectionConfig(CONFIG_NAME);
   }
 
   @Test
   public void retrievesANewConnection() throws Exception {
     Connection returnedConnection = manager.getConnection(connectionConfig);
+
     assertThat(returnedConnection).isNotNull().isSameAs(connection);
   }
 
@@ -94,6 +98,7 @@ public class ConnectionManagerUnitTest {
   public void retrievesSameConnectionForSameConnectionConfig() throws Exception {
     Connection returnedConnection = manager.getConnection(connectionConfig);
     Connection secondReturnedConnection = manager.getConnection(connectionConfig);
+
     assertThat(returnedConnection).isNotNull().isSameAs(connection);
     assertThat(secondReturnedConnection).isNotNull().isSameAs(connection);
   }
@@ -102,11 +107,12 @@ public class ConnectionManagerUnitTest {
   public void retrievesDifferentConnectionForEachConfig() throws Exception {
     Connection secondConnection = mock(Connection.class);
     ConnectionConfiguration secondConnectionConfig =
-        getTestConnectionConfig("newName", "url", null, null);
+        new ConnectionConfiguration("newName", "url", null, null, null);
     doReturn(secondConnection).when(manager).getSQLConnection(secondConnectionConfig);
 
     Connection returnedConnection = manager.getConnection(connectionConfig);
     Connection secondReturnedConnection = manager.getConnection(secondConnectionConfig);
+
     assertThat(returnedConnection).isNotNull().isSameAs(connection);
     assertThat(secondReturnedConnection).isNotNull().isSameAs(secondConnection);
     assertThat(returnedConnection).isNotSameAs(secondReturnedConnection);
@@ -116,10 +122,11 @@ public class ConnectionManagerUnitTest {
   public void retrievesANewConnectionIfCachedOneIsClosed() throws Exception {
     manager.getConnection(connectionConfig);
     when(connection.isClosed()).thenReturn(true);
-
     Connection secondConnection = mock(Connection.class);
     doReturn(secondConnection).when(manager).getSQLConnection(connectionConfig);
+
     Connection secondReturnedConnection = manager.getConnection(connectionConfig);
+
     assertThat(secondReturnedConnection).isSameAs(secondConnection);
   }
 
@@ -127,126 +134,129 @@ public class ConnectionManagerUnitTest {
   public void closesAllConnections() throws Exception {
     Connection secondConnection = mock(Connection.class);
     ConnectionConfiguration secondConnectionConfig =
-        getTestConnectionConfig("newName", "url", null, null);
-
+        new ConnectionConfiguration("newName", "url", null, null, null);
     doReturn(secondConnection).when(manager).getSQLConnection(secondConnectionConfig);
     manager.getConnection(connectionConfig);
     manager.getConnection(secondConnectionConfig);
 
     manager.close();
+
     verify(connection).close();
     verify(secondConnection).close();
   }
 
   @Test
   public void returnsCorrectColumnForDestroy() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetadData();
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
     List<ColumnValue> columnValueList =
         manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.DESTROY);
+
     assertThat(columnValueList).hasSize(1);
     assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
   }
 
   @Test
   public void returnsCorrectColumnForGet() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetadData();
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true).thenReturn(false);
 
     List<ColumnValue> columnValueList =
         manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET);
+
     assertThat(columnValueList).hasSize(1);
     assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
   }
 
   @Test
   public void throwsExceptionIfTableHasCompositePrimaryKey() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetadData();
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(true);
 
-    thrown.expect(IllegalStateException.class);
-    manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET);
+    assertThatThrownBy(
+        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
+            .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   public void throwsExceptionWhenTwoTablesHasCaseInsensitiveSameName() throws Exception {
     DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    when(connection.getMetaData()).thenReturn(metadata);
     ResultSet resultSet = mock(ResultSet.class);
+    when(connection.getMetaData()).thenReturn(metadata);
+    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
     when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
     when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase());
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
 
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Duplicate tables that match region name");
-    manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET);
+    assertThatThrownBy(
+        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("Duplicate tables that match region name");
   }
 
   @Test
   public void throwsExceptionWhenDesiredTableNotFound() throws Exception {
     DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    when(connection.getMetaData()).thenReturn(metadata);
     ResultSet resultSet = mock(ResultSet.class);
+    when(connection.getMetaData()).thenReturn(metadata);
+    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     when(resultSet.getString("TABLE_NAME")).thenReturn("otherTable");
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
 
-    thrown.expect(IllegalStateException.class);
-    manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET);
+    assertThatThrownBy(
+        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
+            .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   public void throwsExceptionWhenNoPrimaryKeyInTable() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetadData();
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
     when(primaryKeys.next()).thenReturn(false);
 
-    thrown.expect(IllegalStateException.class);
-    manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET);
+    assertThatThrownBy(
+        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
+            .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   public void throwsExceptionWhenFailsToGetTableMetadata() throws Exception {
     when(connection.getMetaData()).thenThrow(SQLException.class);
 
-    thrown.expect(IllegalStateException.class);
-    manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET);
+    assertThatThrownBy(
+        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
+            .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   public void returnsCorrectColumnsForUpsertOperations() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetadData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
-
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
     String nonKeyColumn = "otherColumn";
     when(mapping.getColumnNameForField(KEY_COLUMN)).thenReturn(KEY_COLUMN);
     when(mapping.getColumnNameForField(nonKeyColumn)).thenReturn(nonKeyColumn);
+    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
     when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
 
     List<ColumnValue> columnValueList =
         manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.UPDATE);
+
     assertThat(columnValueList).hasSize(2);
     assertThat(columnValueList.get(0).getColumnName()).isEqualTo(nonKeyColumn);
     assertThat(columnValueList.get(1).getColumnName()).isEqualTo(KEY_COLUMN);
   }
 
-  private ConnectionConfiguration getTestConnectionConfig(String name, String url, String user,
-      String password) {
-    ConnectionConfiguration config = new ConnectionConfiguration(name, url, user, password, null);
-    return config;
-  }
-
-  private ResultSet getPrimaryKeysMetadData() throws SQLException {
+  private ResultSet getPrimaryKeysMetaData() throws SQLException {
     DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    when(connection.getMetaData()).thenReturn(metadata);
     ResultSet resultSet = mock(ResultSet.class);
-    when(resultSet.next()).thenReturn(true).thenReturn(false);
-    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
     ResultSet primaryKeys = mock(ResultSet.class);
+
+    when(connection.getMetaData()).thenReturn(metadata);
+    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
     when(metadata.getPrimaryKeys(any(), any(), anyString())).thenReturn(primaryKeys);
     when(primaryKeys.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
+
     return primaryKeys;
   }
 }

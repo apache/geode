@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,9 +28,31 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class RegionMappingTest {
 
+  private String name;
+  private String fieldName1;
+  private String columnName1;
+  private String fieldName2;
+  private String columnName2;
+
+  private Map<String, String> fieldMap;
+
+  private RegionMapping mapping;
+
+  @Before
+  public void setUp() {
+    name = "name";
+    fieldName1 = "myField1";
+    columnName1 = "myColumn1";
+    fieldName2 = "myField2";
+    columnName2 = "myColumn2";
+
+    fieldMap = new HashMap<>();
+
+    mapping = new RegionMapping(null, null, null, null, false, null);
+  }
+
   @Test
   public void initiatedWithNullValues() {
-    RegionMapping mapping = new RegionMapping(null, null, null, null, false, null);
     assertThat(mapping.getTableName()).isNull();
     assertThat(mapping.getRegionName()).isNull();
     assertThat(mapping.getConnectionConfigName()).isNull();
@@ -38,67 +61,63 @@ public class RegionMappingTest {
 
   @Test
   public void hasCorrectTableName() {
-    String name = "name";
-    RegionMapping mapping = new RegionMapping(null, null, name, null, false, null);
+    mapping = new RegionMapping(null, null, name, null, false, null);
+
     assertThat(mapping.getTableName()).isEqualTo(name);
   }
 
   @Test
   public void hasCorrectRegionName() {
-    String name = "name";
-    RegionMapping mapping = new RegionMapping(name, null, null, null, false, null);
+    mapping = new RegionMapping(name, null, null, null, false, null);
+
     assertThat(mapping.getRegionName()).isEqualTo(name);
   }
 
   @Test
   public void hasCorrectConfigName() {
-    String name = "name";
-    RegionMapping mapping = new RegionMapping(null, null, null, name, false, null);
+    mapping = new RegionMapping(null, null, null, name, false, null);
+
     assertThat(mapping.getConnectionConfigName()).isEqualTo(name);
   }
 
   @Test
   public void hasCorrectPdxClassName() {
-    String name = "name";
-    RegionMapping mapping = new RegionMapping(null, name, null, null, false, null);
+    mapping = new RegionMapping(null, name, null, null, false, null);
+
     assertThat(mapping.getPdxClassName()).isEqualTo(name);
   }
 
   @Test
   public void primaryKeyInValueSetCorrectly() {
-    RegionMapping mapping = new RegionMapping(null, null, null, null, true, null);
+    mapping = new RegionMapping(null, null, null, null, true, null);
+
     assertThat(mapping.isPrimaryKeyInValue()).isTrue();
   }
 
   @Test
   public void returnsFieldNameIfColumnNotMapped() {
-    String fieldName = "myField";
-    Map<String, String> fieldMap = new HashMap<>();
     fieldMap.put("otherField", "column");
-    RegionMapping mapping = new RegionMapping(null, null, null, null, true, fieldMap);
-    assertThat(mapping.getColumnNameForField(fieldName)).isEqualTo(fieldName);
+
+    mapping = new RegionMapping(null, null, null, null, true, fieldMap);
+
+    assertThat(mapping.getColumnNameForField(fieldName1)).isEqualTo(fieldName1);
   }
 
   @Test
   public void returnsMappedColumnNameForField() {
-    String fieldName = "myField";
-    String columnName = "myColumn";
-    Map<String, String> fieldMap = new HashMap<>();
-    fieldMap.put(fieldName, columnName);
-    RegionMapping mapping = new RegionMapping(null, null, null, null, true, fieldMap);
-    assertThat(mapping.getColumnNameForField(fieldName)).isEqualTo(columnName);
+    fieldMap.put(fieldName1, columnName1);
+
+    mapping = new RegionMapping(null, null, null, null, true, fieldMap);
+
+    assertThat(mapping.getColumnNameForField(fieldName1)).isEqualTo(columnName1);
   }
 
   @Test
   public void returnsAllMappings() {
-    String fieldName1 = "myField1";
-    String columnName1 = "myColumn1";
-    String fieldName2 = "myField2";
-    String columnName2 = "myColumn2";
-    Map<String, String> fieldMap = new HashMap<>();
     fieldMap.put(fieldName1, columnName1);
     fieldMap.put(fieldName2, columnName2);
-    RegionMapping mapping = new RegionMapping(null, null, null, null, true, fieldMap);
+
+    mapping = new RegionMapping(null, null, null, null, true, fieldMap);
 
     assertThat(mapping.getFieldToColumnMap().size()).isEqualTo(2);
     assertThat(mapping.getFieldToColumnMap()).containsOnlyKeys(fieldName1, fieldName2);

@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,9 +28,30 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class ConnectionConfigurationTest {
 
+  private String name;
+  private String url;
+  private String user;
+  private String password;
+  private Map<String, String> parameters;
+
+  private ConnectionConfiguration config;
+
+  @Before
+  public void setUp() {
+    name = "name";
+    url = "url";
+    user = "username";
+    password = "secret";
+
+    parameters = new HashMap<>();
+    parameters.put("param1", "value1");
+    parameters.put("param2", "value2");
+
+    config = new ConnectionConfiguration(null, null, null, null, null);
+  }
+
   @Test
   public void initiatedWithNullValues() {
-    ConnectionConfiguration config = new ConnectionConfiguration(null, null, null, null, null);
     assertThat(config.getName()).isNull();
     assertThat(config.getUrl()).isNull();
     assertThat(config.getUser()).isNull();
@@ -38,39 +60,36 @@ public class ConnectionConfigurationTest {
 
   @Test
   public void hasCorrectName() {
-    String name = "name";
-    ConnectionConfiguration config = new ConnectionConfiguration(name, null, null, null, null);
+    config = new ConnectionConfiguration(name, null, null, null, null);
+
     assertThat(config.getName()).isEqualTo(name);
   }
 
   @Test
   public void hasCorrectUrl() {
-    String url = "url";
-    ConnectionConfiguration config = new ConnectionConfiguration(null, url, null, null, null);
+    config = new ConnectionConfiguration(null, url, null, null, null);
+
     assertThat(config.getUrl()).isEqualTo(url);
   }
 
   @Test
   public void hasCorrectUser() {
-    String user = "user";
-    ConnectionConfiguration config = new ConnectionConfiguration(null, null, user, null, null);
+    config = new ConnectionConfiguration(null, null, user, null, null);
+
     assertThat(config.getUser()).isEqualTo(user);
   }
 
   @Test
   public void hasCorrectPassword() {
-    String password = "password";
-    ConnectionConfiguration config = new ConnectionConfiguration(null, null, null, password, null);
+    config = new ConnectionConfiguration(null, null, null, password, null);
+
     assertThat(config.getPassword()).isEqualTo(password);
   }
 
   @Test
   public void hasCorrectProperties() {
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("param1", "value1");
-    parameters.put("param2", "value2");
-    ConnectionConfiguration config =
-        new ConnectionConfiguration(null, null, "username", "secret", parameters);
+    config = new ConnectionConfiguration(null, null, "username", "secret", parameters);
+
     assertThat(config.getConnectionProperties()).containsEntry("user", "username")
         .containsEntry("password", "secret").containsEntry("param1", "value1")
         .containsEntry("param2", "value2");

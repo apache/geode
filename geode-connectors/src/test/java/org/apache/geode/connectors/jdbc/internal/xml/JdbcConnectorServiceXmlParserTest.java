@@ -36,17 +36,20 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class JdbcConnectorServiceXmlParserTest {
 
-  private Stack<Object> stack = new Stack<>();
   private Attributes attributes;
   private CacheCreation cacheCreation;
   private ExtensionPoint<Cache> extensionPoint;
+  private Stack<Object> stack;
 
   @Before
   public void setup() {
     attributes = mock(Attributes.class);
     cacheCreation = mock(CacheCreation.class);
     extensionPoint = mock(ExtensionPoint.class);
+
     when(cacheCreation.getExtensionPoint()).thenReturn(extensionPoint);
+
+    stack = new Stack<>();
   }
 
   @Test

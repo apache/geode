@@ -28,6 +28,7 @@ public class JdbcConnectorServiceXmlGeneratorTest {
   @Test
   public void returnsCorrectNamespace() {
     JdbcConnectorServiceXmlGenerator generator = new JdbcConnectorServiceXmlGenerator(null, null);
+
     assertThat(generator.getNamespaceUri()).isEqualTo(NAMESPACE);
   }
 }

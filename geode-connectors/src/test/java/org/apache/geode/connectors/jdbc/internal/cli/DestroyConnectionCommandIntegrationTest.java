@@ -33,30 +33,23 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class DestroyConnectionCommandIntegrationTest {
 
-  private InternalCache cache;
-  private DestroyConnectionCommand destroyConnectionCommand;
-
   private String name;
-  private String url;
-  private String user;
-  private String password;
-  private String[] params;
-
+  private InternalCache cache;
   private ConnectionConfiguration connectionConfig;
+
+  private DestroyConnectionCommand destroyConnectionCommand;
 
   @Before
   public void setup() throws Exception {
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    destroyConnectionCommand = new DestroyConnectionCommand();
-
     name = "name";
-    url = "url";
-    user = "user";
-    password = "password";
-    params = new String[] {"param1:value1", "param2:value2"};
 
-    connectionConfig = new ConnectionConfigBuilder().withName(name).withUrl(url).withUser(user)
-        .withPassword(password).withParameters(params).build();
+    String[] params = new String[] {"param1:value1", "param2:value2"};
+    connectionConfig = new ConnectionConfigBuilder().withName(name).withUrl("url").withUser("user")
+        .withPassword("password").withParameters(params).build();
+
+    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+
+    destroyConnectionCommand = new DestroyConnectionCommand();
   }
 
   @After
