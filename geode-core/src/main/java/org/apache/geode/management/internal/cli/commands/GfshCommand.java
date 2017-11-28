@@ -118,7 +118,7 @@ public interface GfshCommand extends CommandMarker {
   }
 
   /**
-   * Get All members, exclusing locators
+   * Get All members, excluding locators
    */
   default Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
     return CliUtil.getAllNormalMembers(cache);
