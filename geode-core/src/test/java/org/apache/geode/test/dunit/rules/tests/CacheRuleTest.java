@@ -227,10 +227,14 @@ public class CacheRuleTest {
 
     @Test
     public void createCacheInAll_createsCluster() throws Exception {
-      assertThat(cacheRule.getCache().getDistributionManager().getViewMembers()).hasSize(6);
-      for (int i = 0; i < Host.getHost(0).getVMCount(); i++) {
+      int vmCount = Host.getHost(0).getVMCount();
+
+      assertThat(cacheRule.getCache().getDistributionManager().getViewMembers())
+          .hasSize(vmCount + 2);
+      for (int i = 0; i < vmCount; i++) {
         Host.getHost(0).getVM(i).invoke(() -> {
-          assertThat(cacheRule.getCache().getDistributionManager().getViewMembers()).hasSize(6);
+          assertThat(cacheRule.getCache().getDistributionManager().getViewMembers())
+              .hasSize(vmCount + 2);
         });
       }
     }
