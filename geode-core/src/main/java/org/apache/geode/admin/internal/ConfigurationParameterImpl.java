@@ -254,21 +254,9 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
    */
   protected void setInternalState(String description, Object value, Class type,
       boolean userModifiable) {
-    if (description == null || description.length() == 0) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_CONFIGURATIONPARAMETER_DESCRIPTION_MUST_BE_SPECIFIED
-              .toLocalizedString());
-    }
     this.description = description;
     this.type = type;
     this.userModifiable = userModifiable;
-
-    if (value == null) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_UNABLE_TO_SET_0_TO_NULL_VALUE
-              .toLocalizedString(getName()));
-    }
-
     this.value = value;
   }
 

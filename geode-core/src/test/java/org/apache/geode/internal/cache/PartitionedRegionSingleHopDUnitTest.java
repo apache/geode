@@ -1749,7 +1749,9 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     replicatedRegion.putAll(map);
   }
 
-  static class MyFunctionAdapter extends FunctionAdapter {
+  static class MyFunctionAdapter extends FunctionAdapter implements DataSerializable {
+    public MyFunctionAdapter() {}
+
     @Override
     public String getId() {
       return "fid";
@@ -1781,6 +1783,14 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     @Override
     public boolean optimizeForWrite() {
       return true;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {}
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
     }
   }
 

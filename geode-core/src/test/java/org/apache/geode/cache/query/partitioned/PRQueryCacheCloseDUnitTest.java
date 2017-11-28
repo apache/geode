@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.data.PortfolioData;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.test.dunit.Assert;
@@ -44,15 +45,17 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 @Category(DistributedTest.class)
 public class PRQueryCacheCloseDUnitTest extends PartitionedRegionDUnitTestCase {
 
-  /**
-   * constructor *
-   *
-   * @param name
-   */
-
   public PRQueryCacheCloseDUnitTest() {
 
     super();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.**");
+    return properties;
   }
 
   public void setCacheInVMs(VM... vms) {

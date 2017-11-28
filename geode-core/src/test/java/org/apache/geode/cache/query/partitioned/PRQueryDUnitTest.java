@@ -39,6 +39,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
@@ -55,12 +56,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
 
 {
-  /**
-   * constructor *
-   *
-   * @param name
-   */
-
   public PRQueryDUnitTest() {
     super();
   }
@@ -70,6 +65,15 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
+  }
+
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 

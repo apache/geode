@@ -102,6 +102,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
       vms[i].invoke(
           new CacheSerializableRunnable("CacheAdvisorDUnitTest.testGenericAdvice;createRegion") {
             public void run2() throws CacheException {
+              final RegionAttributes attrs = new AttributesFactory().create();
               createRegion(rgnName, attrs);
             }
           });
@@ -232,17 +233,18 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
    * @param op needs to be one of the following: CACHE_CLOSE REGION_CLOSE REGION_LOCAL_DESTROY
    */
   private void basicTestClose(Operation op) throws Exception {
-    final RegionAttributes attrs = new AttributesFactory().create();
     final String rgnName = getUniqueName();
     for (int i = 0; i < vms.length; i++) {
       vms[i].invoke(
           new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose; createRegion") {
             public void run2() throws CacheException {
+              final RegionAttributes attrs = new AttributesFactory().create();
               createRegion(rgnName, attrs);
             }
           });
     }
 
+    final RegionAttributes attrs = new AttributesFactory().create();
     DistributedRegion rgn = (DistributedRegion) createRegion(rgnName, attrs);
     Set expected = new HashSet(Arrays.asList(ids));
     assertEquals(expected, rgn.getDistributionAdvisor().adviseGeneric());

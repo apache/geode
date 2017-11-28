@@ -87,6 +87,7 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.TxEventTestUtil;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -153,6 +154,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   @Override
   protected final void postTearDownRegionTestCase() throws Exception {
     CCRegion = null;
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache30.MultiVMRegionTestCase$DeltaValue");
+    return properties;
   }
 
   /**

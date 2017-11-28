@@ -93,6 +93,8 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
 
     m.processorId = processorId;
     if (exception != null) {
+      // logger.info("replying with exception {} of class {}", exception.getMessage(),
+      // exception.getClass());
       m.returnValue = exception;
       m.returnValueIsException = true;
     }

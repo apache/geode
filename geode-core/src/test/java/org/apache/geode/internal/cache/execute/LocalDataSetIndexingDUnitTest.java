@@ -61,6 +61,7 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.OSProcess;
@@ -97,6 +98,15 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
     dataStore1 = host.getVM(0);
     dataStore2 = host.getVM(1);
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
+    return result;
+  }
+
 
   @Test
   public void testLocalDataSetIndexing() {

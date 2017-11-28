@@ -14,9 +14,13 @@
  */
 package org.apache.geode.modules.util;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
@@ -29,7 +33,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-public class BootstrappingFunction implements Function, MembershipListener {
+public class BootstrappingFunction implements Function, MembershipListener, DataSerializable {
 
   private static final long serialVersionUID = 1856043174458190605L;
 
@@ -37,6 +41,8 @@ public class BootstrappingFunction implements Function, MembershipListener {
 
   private static final int TIME_TO_WAIT_FOR_CACHE =
       Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
+
+  public BootstrappingFunction() {}
 
   @Override
   public void execute(FunctionContext context) {
@@ -182,4 +188,10 @@ public class BootstrappingFunction implements Function, MembershipListener {
   @Override
   public void quorumLost(Set<InternalDistributedMember> internalDistributedMembers,
       List<InternalDistributedMember> internalDistributedMembers2) {}
+
+  @Override
+  public void toData(DataOutput out) throws IOException {}
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 }

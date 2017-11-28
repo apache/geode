@@ -85,8 +85,12 @@ public class RegionAccessException extends RegionRoleException {
   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
     out.defaultWriteObject();
     // transform roles to string names which are serializable...
-    Set roleNames = new HashSet(this.missingRoles.size());
-    for (Iterator iter = this.missingRoles.iterator(); iter.hasNext();) {
+    Set mr = this.missingRoles;
+    if (mr == null) {
+      mr = Collections.EMPTY_SET;
+    }
+    Set roleNames = new HashSet(mr.size());
+    for (Iterator iter = mr.iterator(); iter.hasNext();) {
       String name = ((Role) iter.next()).getName();
       roleNames.add(name);
     }
