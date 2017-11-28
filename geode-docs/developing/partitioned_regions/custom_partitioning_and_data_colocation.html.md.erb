@@ -31,28 +31,24 @@ This figure shows a region with customer data that is grouped into buckets by cu
 
 <img src="../../images_svg/custom_partitioned.svg" id="custom_partitioning_and_data_colocation__image_1D37D547D3244171BB9CADAEC88E7649" class="image" />
 
-With custom partitioning, you have two choices:
+With custom partitioning, you have three choices:
 
--   **Standard custom partitioning**. With standard partitioning, you group entries into buckets, but you do not specify where the buckets reside. <%=vars.product_name%> always keeps the entries in the buckets you have specified, but may move the buckets around for load balancing.
-The partition resolver provided with <%=vars.product_name%>
-at `org.apache.geode.cache.util.StringPrefixPartitionResolver`
+-   **Default string-based partition resolver**. A default partition
+resolver at `org.apache.geode.cache.util.StringPrefixPartitionResolver`
 groups entries into buckets based on a string portion of the key.
 All keys must be strings, specified with a syntax that includes
 a '|' character that delimits the string.
 The substring that precedes the '|' delimiter within the key
-will be returned by `getRoutingObject`.
--   **Fixed custom partitioning**. With fixed partitioning,
-you specify the exact member where each region entry resides.
-You assign an entry to a partition and then to a bucket within
-that partition.
-You name specific members as primary and secondary hosts of each partition.
+partitions the entry.  
+-   **Standard custom partitioning**. With standard partitioning, you group entries into buckets, but you do not specify where the buckets reside. <%=vars.product_name%> always keeps the entries in the buckets you have specified, but may move the buckets around for load balancing.
+-   **Fixed custom partitioning**. With fixed partitioning, you provide standard partitioning plus you specify the exact member where each data entry resides. You do this by assigning the data entry to a bucket and to a partition and by naming specific members as primary and secondary hosts of each partition.
 
     This gives you complete control over the locations of your primary and any secondary buckets for the region. This can be useful when you want to store specific data on specific physical machines or when you need to keep data close to certain hardware elements.
 
     Fixed partitioning has these requirements and caveats:
 
-    -   <%=vars.product_name%> cannot rebalance fixed partition region data, because it cannot move the buckets around among the host members. You must carefully consider your expected data loads for the partitions you create.
-    -   With fixed partitioning, the region configuration is different between host members. Each member identifies the named partitions it hosts, and whether it is hosting the primary copy or a secondary copy. You then program a fixed-partition resolver to return the partition id, so the entry is placed on the right members. Only one member can be primary for a particular partition name, and that member cannot be the partition's secondary.
+    -   <%=vars.product_name%> cannot rebalance fixed partition region data because it cannot move the buckets around among the host members. You must carefully consider your expected data loads for the partitions you create.
+    -   With fixed partitioning, the region configuration is different between host members. Each member identifies the named partitions it hosts, and whether it is hosting the primary copy or a secondary copy. You then program fixed partition resolver to return the partition id, so the entry is placed on the right members. Only one member can be primary for a particular partition name and that member cannot be the partition's secondary.
 
 ## <a id="custom_partitioning_and_data_colocation__section_D2C66951FE38426F9C05050D2B9028D8" class="no-quick-link"></a>Data Colocation Between Regions
 
