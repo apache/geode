@@ -26,12 +26,12 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
 /**
  * Marker interface to eviction controller that determines if LRU list maintenance is required.
  */
-public interface EvictionController extends CacheCallback {
+public interface EvictionController {
 
   /**
    * return the size of an entry or its worth when constraining the size of an LRU EntriesMap.
    */
-  int entrySize(Object key, Object value) throws IllegalArgumentException;
+  int entrySize(Object key, Object value);
 
   /**
    * return the limit for the accumulated entrySize which triggers disposal.

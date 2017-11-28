@@ -64,7 +64,7 @@ public class EvictionAttributesImpl extends EvictionAttributes
    * The Eviction Controller instance generated as a result of processing this instance Typically
    * used for any mutation operations
    */
-  private volatile EvictionController evictionController;
+  private volatile transient EvictionController evictionController;
 
   public EvictionAttributesImpl() {}
 

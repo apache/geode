@@ -14,13 +14,10 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import java.util.Properties;
-
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
@@ -31,49 +28,17 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
- * A {@code CapacityController} that will remove the least recently used (LRU) entry from a region
- * once the region reaches a certain capacity. The entry is locally destroyed when evicted by the
- * capacity controller.
- *
- * <p>
- * This is not supported as the capacity controller of a region with mirroring enabled.
- *
- * <p>
- * CountLRUEviction must be set in the RegionAttributes before the region is created. A Region with
- * CountLRUEviction set will throw an IllegalStateException if an attempt is made to replace the
- * Region's capacity controller. While the capacity controller cannot be replaced, it does support
- * changing the limit with the setMaximumEntries method.
- *
- * <p>
- * If you are using a {@code cache.xml} file to create a JCache region declaratively, you can
- * include the following to associate a {@code CountLRUEviction} with a region:
- *
- * <pre>
- *  &lt;region-attributes&gt;
- *    &lt;capacity-controller&gt;
- *      &lt;classname&gt;org.apache.geode.cache.LRUCapacityController&lt;/classname&gt;
- *      &lt;parameter name="maximum-entries"&gt;1000&lt;/parameter&gt;
- *    &lt;/capacity-controller&gt;
- *  &lt;/region-attributes&gt;
- * </pre>
- *
+ * A {@code CapacityController} that will evict an entry from a region
+ * once the region entry count reaches a certain capacity.
+ *  *
  * @since GemFire 2.0.2
  */
-public class CountLRUEviction extends AbstractEvictionController implements Declarable {
-
-  private static final long serialVersionUID = -4383074909189355938L;
+public class CountLRUEviction extends AbstractEvictionController {
 
   /**
    * The default maximum number of entries allowed by an LRU capacity controller is 900.
    */
   public static final int DEFAULT_MAXIMUM_ENTRIES = EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM;
-
-  /**
-   * The key for setting the maximum-entries property declaratively.
-   *
-   * @see #init
-   */
-  public static final String MAXIMUM_ENTRIES = "maximum-entries";
 
   protected static final StatisticsType statType;
 
@@ -179,30 +144,6 @@ public class CountLRUEviction extends AbstractEvictionController implements Decl
 
   ////////////////////// Instance Methods /////////////////////
 
-  /**
-   * Because an {@code LRUCapacityController} is {@link Declarable}, it can be initialized with
-   * properties. The {@link #MAXIMUM_ENTRIES "maximum-entries"} (case-sensitive) property can be
-   * used to specify the capacity allowed by this controller. Other properties in props are ignored.
-   * The {@link #EVICTION_ACTION "eviction-action"} property specifies the action to be taken when
-   * the region has reached its capacity.
-   *
-   * @throws NumberFormatException The {@code maximum-entries} property cannot be parsed as an
-   *         integer
-   * @throws IllegalArgumentException The value of the {@code eviction-action} property is not
-   *         recoginzed.
-   */
-  @Override
-  public void init(Properties props) throws NumberFormatException {
-    String prop = null;
-    if ((prop = props.getProperty(MAXIMUM_ENTRIES)) != null) {
-      this.maximumEntries = Integer.parseInt(prop);
-    }
-
-    if ((prop = props.getProperty(EVICTION_ACTION)) != null) {
-      setEvictionAction(EvictionAction.parseAction(prop));
-    }
-  }
-
   @Override
   public long getLimit() {
     return this.maximumEntries;
@@ -220,7 +161,7 @@ public class CountLRUEviction extends AbstractEvictionController implements Decl
    * All entries for the LRUCapacityController are considered to be of size 1.
    */
   @Override
-  public int entrySize(Object key, Object value) throws IllegalArgumentException {
+  public int entrySize(Object key, Object value) {
 
     if (Token.isRemoved(value) /* && (value != Token.TOMBSTONE) */) { // un-comment to make
                                                                       // tombstones visible

@@ -35,8 +35,8 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * A {@code HeapLRUController} controls the contents of {@link Region} based on the percentage of
- * memory that is currently being used. If the percentage of memory in use exceeds the given
- * percentage, then the least recently used entry of the region is evicted.
+ * the JVM heap that is currently being used. If the percentage of heap in use exceeds the given
+ * percentage, then one or more entries are evicted from the region.
  *
  * <p>
  * For heap regions: We have found that {@code HeapLRUController} is most useful on a JVM that is
@@ -50,8 +50,6 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * @since GemFire 3.2
  */
 public class HeapLRUController extends SizeLRUController {
-  private static final long serialVersionUID = 4970685814429530675L;
-
   /**
    * The default percentage of VM heap usage over which LRU eviction occurs
    */
@@ -125,7 +123,7 @@ public class HeapLRUController extends SizeLRUController {
    * As far as we're concerned all entries have the same size
    */
   @Override
-  public int entrySize(Object key, Object value) throws IllegalArgumentException {
+  public int entrySize(Object key, Object value) {
     // value is null only after eviction occurs. A change in size is
     // required for eviction stats, bug 30974
 

@@ -60,7 +60,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 3.2
  */
-abstract class AbstractEvictionController implements EvictionController, Serializable, Cloneable {
+abstract class AbstractEvictionController implements EvictionController {
 
   /**
    * The key for setting the {@code eviction-action} property of an
@@ -130,35 +130,6 @@ abstract class AbstractEvictionController implements EvictionController, Seriali
     // Synchronize with readObject/writeObject to avoid race
     // conditions with copy sharing. See bug 31047.
     return stats;
-  }
-
-  /**
-   * Releases resources obtained by this {@code AbstractEvictionController}
-   */
-  @Override
-  public void close() {
-    if (this.stats != null) {
-      if (bucketRegion != null) {
-        this.stats.incEvictions(bucketRegion.getEvictions() * -1);
-        this.stats.decrementCounter(bucketRegion.getCounter());
-        bucketRegion.close();
-      } else {
-        this.stats.close();
-      }
-    }
-  }
-
-  /**
-   * Returns a copy of this LRU-based eviction controller. This method is a artifact when capacity
-   * controllers were used on a {@code Region}
-   */
-  @Override
-  public Object clone() throws CloneNotSupportedException {
-    synchronized (this) {
-      AbstractEvictionController clone = (AbstractEvictionController) super.clone();
-      clone.stats = null;
-      return clone;
-    }
   }
 
   /**
