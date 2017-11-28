@@ -31,8 +31,6 @@ You can customize how <%=vars.product_name_long%> groups your partitioned region
 
 -   **[Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html)**
 
-    By default, <%=vars.product_name%> allocates the data locations for a partitioned region independent of the data locations for any other partitioned region. You can change this policy for any group of partitioned regions, so that cross-region, related data is all hosted by the same member.
-Colocation is required for some operations,
-and it increases performance for others by reducing the number of data
-accesses to entries that are hosted on other cluster members.
+    By default, <%=vars.product_name%> allocates the data locations for a partitioned region independent of the data locations for any other partitioned region. You can change this policy for any group of partitioned regions, so that cross-region, related data is all hosted by the same member. This colocation speeds queries and other operations that access data from the regions.
+
 
