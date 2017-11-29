@@ -125,7 +125,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
     // otherwise use exception's message
     if (throwable != null) {
-      return throwable.getMessage();
+      return throwable.getClass().getName() + ": " + throwable.getMessage();
     }
 
     return null;

@@ -37,6 +37,6 @@ public class CliFunctionResultTest {
     assertThat(result.getErrorMessage()).isEqualTo("message");
 
     result = new CliFunctionResult("memberName", new Exception("exception message"), null);
-    assertThat(result.getErrorMessage()).isEqualTo("exception message");
+    assertThat(result.getErrorMessage()).isEqualTo("java.lang.Exception: exception message");
   }
 }
