@@ -89,6 +89,7 @@ task createGeodeClasspathsFile  {
   addOldVersion('test110', '1.1.0', false)
   addOldVersion('test111', '1.1.1', false)
   addOldVersion('test120', '1.2.0', true)
+  addOldVersion('test130', '1.3.0', true)
 }
 
 
