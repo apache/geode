@@ -102,8 +102,8 @@ public class LRUClearWithDiskRegionOpRegressionTest {
         ((AbstractLRURegionMap) distributedRegion.entries).getEvictionController();
     assertThat(eviction).isNotNull();
 
-    EvictionStatistics evictionStatistics =
-        eviction.initStats(distributedRegion, cache.getDistributedSystem());
+    EvictionStatistics evictionStatistics = eviction.getStatistics();
+    assertThat(evictionStatistics).isNotNull();
 
     EvictionList evictionList = new TestLRUListWithAsyncSorting(evictionStatistics, null);
     ((AbstractLRURegionMap) distributedRegion.entries).setEvictionList(evictionList);

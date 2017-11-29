@@ -66,6 +66,7 @@ import org.apache.geode.DeltaSerializationException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.LogWriter;
+import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.cache.AttributesMutator;
@@ -175,6 +176,7 @@ import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
@@ -12103,6 +12105,19 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (evictionController != null) {
       evictionController.setLimit(maximum);
     }
+  }
+
+  @Override
+  public Statistics getEvictionStatistics() {
+    Statistics result = null;
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      EvictionStatistics es = evictionController.getStatistics();
+      if (es != null) {
+        result = es.getStats();
+      }
+    }
+    return result;
   }
 
 }
