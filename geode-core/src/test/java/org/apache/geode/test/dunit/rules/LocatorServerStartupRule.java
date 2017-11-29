@@ -301,10 +301,14 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   public void stopVM(int index) {
+    stopVM(index, true);
+  }
+
+  public void stopVM(int index, boolean cleanWorkingDir) {
     MemberVM member = members.get(index);
     // user has started a server/locator in this VM
     if (member != null) {
-      member.stopMember();
+      member.stopMember(cleanWorkingDir);
     }
     // user may have used this VM as a client VM
     else {
