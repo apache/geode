@@ -87,6 +87,11 @@ public class AlterAsyncEventQueueCommand implements GfshCommand {
     // may be shutdown, but we still need to update Cluster Configuration.
     ClusterConfigurationService service = getSharedConfiguration();
 
+    if (service == null) {
+      return ResultBuilder.createUserErrorResult("Cluster Configuration Service is not available. "
+          + "Please connect to a locator with running Cluster Configuration Service.");
+    }
+
     boolean locked = service.lockSharedConfiguration();
     if (!locked) {
       return ResultBuilder.createGemFireErrorResult("Unable to lock the cluster configuration.");
