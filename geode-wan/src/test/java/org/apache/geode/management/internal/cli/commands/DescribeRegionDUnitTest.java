@@ -14,9 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION__NAME;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+
+import java.util.Properties;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -33,12 +34,6 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -66,10 +61,35 @@ public class DescribeRegionDUnitTest {
 
   @BeforeClass
   public static void setupSystem() throws Exception {
-    MemberVM locator = lsRule.startLocatorVM(0);
-    MemberVM server1 = lsRule.startServerVM(1, "group1", locator.getPort());
-    MemberVM server2 = lsRule.startServerVM(2, "group2", locator.getPort());
+    Properties props = new Properties();
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    MemberVM sending_locator = lsRule.startLocatorVM(1, props);
 
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + sending_locator.getPort() + "]");
+    lsRule.startLocatorVM(2, props);
+
+    MemberVM server1 = lsRule.startServerVM(3, "group1", sending_locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(4, "group2", sending_locator.getPort());
+
+    configureServers(server1, server2);
+
+    gfsh.connectAndVerify(sending_locator);
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 "
+        + "--listener=org.apache.geode.internal.cache.wan.MyAsyncEventListener").statusIsSuccess();
+    gfsh.executeAndAssertThat("create gateway-sender --id=sender1 --remote-distributed-system-id=2")
+        .statusIsSuccess();
+    sending_locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
+    sending_locator.waitTilGatewaySendersAreReady(2);
+
+    gfsh.executeAndAssertThat(
+        "create region --name=region4 --type=REPLICATE --async-event-queue-id=queue1 --gateway-sender-id=sender1")
+        .statusIsSuccess();
+
+  }
+
+  @SuppressWarnings("deprecation")
+  private static void configureServers(MemberVM server1, MemberVM server2) {
     server1.invoke(() -> {
       final Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
@@ -110,65 +130,12 @@ public class DescribeRegionDUnitTest {
       dataRegionFactory.create(PR1);
       createRegionsWithSubRegions();
     });
-
-    gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 "
-        + "--listener=org.apache.geode.internal.cache.wan.MyAsyncEventListener").statusIsSuccess();
-
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
-    gfsh.executeAndAssertThat(
-        "create region --name=region4 --type=REPLICATE --async-event-queue-id=queue1")
-        .statusIsSuccess();
-
   }
 
   @Test
-  public void describeRegionOnBothServers() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
-    csb.addOption(DESCRIBE_REGION__NAME, PR1);
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1, "server-1",
-        "server-2");
-  }
-
-  @Test
-  public void describeLocalRegionOnlyOneServer1() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
-    csb.addOption(DESCRIBE_REGION__NAME, LOCAL_REGION);
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(LOCAL_REGION, "server-1").doesNotContainOutput("server-2");
-  }
-
-  /**
-   * Asserts that a describe region command issued on a region with compression returns the correct
-   * non default region attribute for compression and the correct codec value.
-   */
-  @Test
-  public void describeRegionWithCompressionCodec() throws Exception {
-    final String regionName = "compressedRegion";
-    VM vm = Host.getHost(0).getVM(1);
-
-    // Create compressed region
-    vm.invoke(() -> createCompressedRegion(regionName));
-
-    // Test the describe command; look for compression
-    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
-    csb.addOption(DESCRIBE_REGION__NAME, regionName);
-    String commandString = csb.toString();
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(regionName,
-        RegionAttributesNames.COMPRESSOR, RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
-
-    // Destroy compressed region
-    vm.invoke(() -> {
-      final Region region = CacheFactory.getAnyInstance().getRegion(regionName);
-      assertThat(region).isNotNull();
-      region.destroyRegion();
-    });
-  }
-
-  @Test
-  public void describeRegionWithAsyncEventQueue() throws Exception {
+  public void describeRegionWithGatewayAndAsyncEventQueue() throws Exception {
     gfsh.executeAndAssertThat("describe region --name=region4").statusIsSuccess()
-        .containsOutput("async-event-queue-id", "queue1");
+        .containsOutput("gateway-sender-id", "sender1", "async-event-queue-id", "queue1");
   }
 
   private static void createLocalRegion(final String regionName) {
@@ -176,20 +143,6 @@ public class DescribeRegionDUnitTest {
     // Create the data region
     RegionFactory<String, Integer> dataRegionFactory =
         cache.createRegionFactory(RegionShortcut.LOCAL);
-    dataRegionFactory.create(regionName);
-  }
-
-  /**
-   * Creates a region that uses compression on region entry values.
-   *
-   * @param regionName a unique region name.
-   */
-  private static void createCompressedRegion(final String regionName) {
-    final Cache cache = CacheFactory.getAnyInstance();
-
-    RegionFactory<String, Integer> dataRegionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE);
-    dataRegionFactory.setCompressor(SnappyCompressor.getDefaultInstance());
     dataRegionFactory.create(regionName);
   }
 
