@@ -319,7 +319,13 @@ public class ClusterConfigurationService {
         // will need the jars on file to upload to other locators. Need to update the jars
         // using a new copy of the Configuration so that the change listener will pick up the jar
         // name changes.
+        // The process happens in 2 phases to cater for the situation where an existing jar is only
+        // updated.
+
         Configuration configurationCopy = new Configuration(configuration);
+        configurationCopy.removeJarNames(jarNames);
+        configRegion.put(group, configurationCopy);
+
         configurationCopy.addJarNames(jarNames);
         configRegion.put(group, configurationCopy);
       }
@@ -352,6 +358,20 @@ public class ClusterConfigurationService {
         if (configuration == null) {
           break;
         }
+
+        for (String jarRemoved : jarNames) {
+          File jar = this.getPathToJarOnThisLocator(group, jarRemoved).toFile();
+          if (jar.exists()) {
+            try {
+              FileUtils.forceDelete(jar);
+            } catch (IOException e) {
+              logger.error(
+                  "Exception occurred while attempting to delete a jar from the filesystem: {}",
+                  jarRemoved, e);
+            }
+          }
+        }
+
         Configuration configurationCopy = new Configuration(configuration);
         configurationCopy.removeJarNames(jarNames);
         configRegion.put(group, configurationCopy);

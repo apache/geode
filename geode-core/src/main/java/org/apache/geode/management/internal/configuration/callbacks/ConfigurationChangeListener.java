@@ -41,46 +41,40 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
     this.sharedConfig = sharedConfig;
   }
 
+  // Don't process the event locally. The action of adding or removing a jar should already have
+  // been performed by DeployCommand or UndeployCommand.
   @Override
   public void afterUpdate(EntryEvent<String, Configuration> event) {
     super.afterUpdate(event);
-    addOrRemoveJarFromFilesystem(event);
+    if (event.isOriginRemote()) {
+      addOrRemoveJarFromFilesystem(event);
+    }
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Configuration> event) {
     super.afterCreate(event);
-    addOrRemoveJarFromFilesystem(event);
+    if (event.isOriginRemote()) {
+      addOrRemoveJarFromFilesystem(event);
+    }
   }
 
-  // when a new jar is added, if it does not exist in the current locator, download it from
-  // another locator.
-  // when a jar is removed, if it exists in the current locator, remove it.
+  // Here we first remove any jars which are not used anymore and then we re-add all of the
+  // necessary jars again. This may appear a bit blunt but it also accounts for the situation
+  // where a jar is only being updated - i.e. the name does not change, only the content.
   private void addOrRemoveJarFromFilesystem(EntryEvent<String, Configuration> event) {
     String group = event.getKey();
     Configuration newConfig = (Configuration) event.getNewValue();
     Configuration oldConfig = (Configuration) event.getOldValue();
     Set<String> newJars = newConfig.getJarNames();
     Set<String> oldJars = (oldConfig == null) ? new HashSet<>() : oldConfig.getJarNames();
-    Set<String> jarsAdded = new HashSet<>(newJars);
-    Set<String> jarsRemoved = new HashSet<>(oldJars);
 
-    jarsAdded.removeAll(oldJars);
+    Set<String> jarsRemoved = new HashSet<>(oldJars);
     jarsRemoved.removeAll(newJars);
 
-    if (!jarsAdded.isEmpty() && !jarsRemoved.isEmpty()) {
+    if (!newJars.isEmpty() && !jarsRemoved.isEmpty()) {
       throw new IllegalStateException(
           "We don't expect to have jars both added and removed in one event");
-    }
-
-    for (String jarAdded : jarsAdded) {
-      if (!jarExistsInFilesystem(group, jarAdded)) {
-        try {
-          sharedConfig.downloadJarFromOtherLocators(group, jarAdded);
-        } catch (Exception e) {
-          logger.error("Unable to add jar: " + jarAdded, e);
-        }
-      }
     }
 
     for (String jarRemoved : jarsRemoved) {
@@ -93,6 +87,14 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
               "Exception occurred while attempting to delete a jar from the filesystem: {}",
               jarRemoved, e);
         }
+      }
+    }
+
+    for (String jarAdded : newJars) {
+      try {
+        sharedConfig.downloadJarFromOtherLocators(group, jarAdded);
+      } catch (Exception e) {
+        logger.error("Unable to add jar: " + jarAdded, e);
       }
     }
   }

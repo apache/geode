@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -116,6 +117,31 @@ public class DeployCommandRedeployDUnitTest {
     server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
+  }
+
+  @Test
+  public void redeployJarsWithNewVersionsOfFunctionsAndMultipleLocators() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("locators", "localhost[" + locator.getPort() + "]");
+    MemberVM locator2 = lsRule.startLocatorVM(2, props);
+
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
+        .statusIsSuccess();
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
+
+
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion2.getCanonicalPath())
+        .statusIsSuccess();
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
+
+    server.stopMember(false);
+
+    lsRule.startServerVM(1, locator.getPort());
+
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
   }
 
   @Test
