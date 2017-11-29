@@ -79,9 +79,7 @@ public class MemoryLRUController extends SizeLRUController {
   private final boolean isOffHeap;
 
   /**
-   * Create an instance of the capacity controller with default settings. The default settings are 0
-   * {@code maximum-megabytes} and a default {@code sizer}, requiring either the {@link #init}
-   * method to be called, or the {@link #setMaximumMegabytes} method.
+   * Create an instance of the capacity controller with default settings.
    */
   public MemoryLRUController(Region region) {
     this(EvictionAttributes.DEFAULT_MEMORY_MAXIMUM, region);
