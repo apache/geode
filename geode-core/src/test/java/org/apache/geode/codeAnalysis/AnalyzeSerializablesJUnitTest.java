@@ -90,8 +90,6 @@ public class AnalyzeSerializablesJUnitTest {
   /** all loaded classes */
   private Map<String, CompiledClass> classes;
 
-  List<String> excludedClasses;
-
   private File expectedDataSerializablesFile;
   private String expectedSerializablesFileName =
       "sanctioned-" + getModuleName() + "-serializables.txt";
@@ -530,8 +528,9 @@ public class AnalyzeSerializablesJUnitTest {
     return result;
   }
 
-  private List<ClassAndVariables> findSerializables() {
+  private List<ClassAndVariables> findSerializables() throws IOException {
     List<ClassAndVariables> result = new ArrayList<>(2000);
+    List<String> excludedClasses = loadExcludedClasses(getResourceAsFile(EXCLUDED_CLASSES_TXT));
     System.out.println("excluded classes are " + excludedClasses);
     Set<String> setOfExclusions = new HashSet<>(excludedClasses);
     for (Map.Entry<String, CompiledClass> entry : this.classes.entrySet()) {
