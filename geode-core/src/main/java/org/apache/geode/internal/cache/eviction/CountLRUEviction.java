@@ -113,8 +113,7 @@ public class CountLRUEviction extends AbstractEvictionController {
    *        there are {@code capacity} entries in the region's primary buckets and redundant copies
    *        for this VM, this controller will remove the least recently used entry from the bucket
    *        in which the subsequent {@code put} takes place.
-   * @param evictionAction The action to perform upon the least recently used entry. See
-   *        {@link #EVICTION_ACTION}.
+   * @param evictionAction The action to perform upon the least recently used entry.
    */
   public CountLRUEviction(int maximumEntries, EvictionAction evictionAction, Region region) {
     super(evictionAction, region);
