@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -119,7 +120,7 @@ public class ReplyProcessor21 implements MembershipListener {
   /** Have we heard back from everyone? */
   private volatile boolean done;
 
-  protected boolean keeperCleanedUp;
+  private boolean keeperCleanedUp;
 
   /** Have we been aborted due to shutdown? */
   protected volatile boolean shutdown;
@@ -139,43 +140,35 @@ public class ReplyProcessor21 implements MembershipListener {
   protected final DM dmgr;
 
   /** Start time for replyWait stat, in nanos */
-  protected long statStart;
+  long statStart;
 
   /** Start time for ack-wait-threshold, in millis */
-  protected long initTime;
+  private long initTime;
 
   /**
    * whether this reply processor should perform severe-alert processing for the message being ack'd
    */
-  protected boolean severeAlertEnabled;
+  private boolean severeAlertEnabled;
 
   /**
    * whether the severe-alert timeout has been reset. This can happen if a member we're waiting for
    * is waiting on a suspect member, for instance.
    */
-  protected volatile boolean severeAlertTimerReset;
+  private volatile boolean severeAlertTimerReset;
 
   /**
    * whether this reply processor should shorten severe-alert processing due to another vm waiting
    * on this one. This is a thread-local so that lower level comm layers can tell that the interval
    * should be shortened
    */
-  public static final ThreadLocal SevereAlertShorten = new ThreadLocal() {
-    @Override
-    protected Object initialValue() {
-      return Boolean.FALSE;
-    }
-  };
+  private static final ThreadLocal<Boolean> SevereAlertShorten =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   /**
    * whether the next replyProcessor for the current thread should perform severe-alert processing
    */
-  private static ThreadLocal ForceSevereAlertProcessing = new ThreadLocal() {
-    @Override
-    protected Object initialValue() {
-      return Boolean.FALSE;
-    }
-  };
+  private static ThreadLocal<Boolean> ForceSevereAlertProcessing =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   ////////////////////// Static Methods /////////////////////
 
@@ -580,7 +573,7 @@ public class ReplyProcessor21 implements MembershipListener {
     }
   }
 
-  protected void postWait() {
+  private void postWait() {
     waiting = false;
     removeListener();
     final DM mgr = getDistributionManager();
@@ -588,25 +581,6 @@ public class ReplyProcessor21 implements MembershipListener {
     mgr.getCancelCriterion().checkCancelInProgress(null);
   }
 
-  // start waiting for replies without explicitly waiting for all of them using
-  // waitForReplies* methods; useful for streaming of results in function execution
-  public void startWait() {
-    if (!this.waiting && stillWaiting()) {
-      preWait();
-    }
-  }
-
-  // end waiting for replies without explicitly invoking waitForReplies*
-  // methods; useful for streaming of results in function execution
-  public void endWait(boolean doCleanup) {
-    try {
-      postWait();
-    } finally {
-      if (doCleanup) {
-        cleanup();
-      }
-    }
-  }
 
   /**
    * Wait a given number of milliseconds for the expected acks to be received. If <code>msecs</code>
@@ -674,7 +648,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param msecs the number of milliseconds to wait for replies
    * @return whether or not we received all of the replies in the given amount of time
    */
-  protected boolean basicWait(long msecs, StoppableCountDownLatch latch)
+  private boolean basicWait(long msecs, StoppableCountDownLatch latch)
       throws InterruptedException, ReplyException {
     if (Thread.interrupted()) {
       throw new InterruptedException();
@@ -717,13 +691,16 @@ public class ReplyProcessor21 implements MembershipListener {
               long suspectProcessingErrorAlertTimeout = severeAlertTimeout * 3;
               if (!latch.await(suspectProcessingErrorAlertTimeout)) {
                 long now = System.currentTimeMillis();
-                logger.fatal("Still waiting for suspect processing to complete after"
-                    + suspectProcessingErrorAlertTimeout + " milliseconds + (init time:"
-                    + this.initTime + ", now: " + now + ")");
-                // for consistency, we must now wait indefinitely for a membership view
-                // that ejects the removed members
-                latch.await();
+                long totalTimeElapsed = now - this.initTime;
+                logger.fatal("Still waiting for suspect processing to complete after an additional "
+                    + suspectProcessingErrorAlertTimeout + " milliseconds. Total of "
+                    + totalTimeElapsed + "milliseconds elapsed (init time:" + this.initTime
+                    + ", now: " + now + ")\nMembers: " + Arrays.toString(getMembers()));
               }
+
+              // for consistency, we must now wait indefinitely for a membership view
+              // that ejects the removed members
+              latch.await();
             }
           } else {
             latch.await();
@@ -1200,7 +1177,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * current thread to perform severe-alert processing.
    */
   public static boolean isSevereAlertProcessingForced() {
-    return ((Boolean) ForceSevereAlertProcessing.get()).booleanValue();
+    return (Boolean) ForceSevereAlertProcessing.get();
   }
 
 
@@ -1220,16 +1197,16 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
 
-  private static final ThreadLocal messageId = new ThreadLocal();
+  private static final ThreadLocal<Integer> messageId = new ThreadLocal<>();
 
-  private static final Integer VOID_RPID = Integer.valueOf(0);
+  private static final Integer VOID_RPID = 0;
 
   /**
    * Used by messages to store the id for the current message into a thread local. This allows the
    * comms layer to still send replies even when it can't deserialize a message.
    */
   public static void setMessageRPId(int id) {
-    messageId.set(Integer.valueOf(id));
+    messageId.set(id);
   }
 
   public static void initMessageRPId() {
@@ -1248,7 +1225,7 @@ public class ReplyProcessor21 implements MembershipListener {
     int result = 0;
     Object v = messageId.get();
     if (v != null) {
-      result = ((Integer) v).intValue();
+      result = (Integer) v;
     }
     return result;
   }
