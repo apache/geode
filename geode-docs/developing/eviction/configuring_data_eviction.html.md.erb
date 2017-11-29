@@ -43,7 +43,7 @@ Configure data eviction as follows. You do not need to perform these steps in th
 Create an LRU memory eviction controller with a maximum limit of 1000 MB. Use a custom class for measuring the size of each object in the region:
 
 ```
-gfsh>create region --type=REPLICATE --eviction-max-memory=1000 \
+gfsh>create region --name=myRegion --type=REPLICATE --eviction-max-memory=1000 \
 --eviction-action=overflow-to-disk --eviction-object-sizer=com.myLib.MySizer
 ```
 
@@ -57,7 +57,7 @@ gfsh>create region --name=myRegion --type=PARTITION --eviction-entry-count=512 \
 To configure a partitioned region for heap LRU eviction, first configure the resource manager on server startup, then create a region with eviction enabled:
 
 ```
-gfsh>start server --name Server1 --eviction-heap-percentage=80
+gfsh>start server --name=Server1 --eviction-heap-percentage=80
 ...
 gfsh>create region --type=PARTITION --eviction-enabled
 ```
