@@ -1561,8 +1561,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       impl.setOffHeap(true);
     }
 
-    this.evictionAttributes =
-        new EvictionAttributesImpl((EvictionAttributesImpl) attrs.getEvictionAttributes());
+    this.evictionAttributes = new EvictionAttributesImpl(attrs.getEvictionAttributes());
     if (attrs.getPartitionAttributes() != null && this.evictionAttributes != null
         && this.evictionAttributes.getAlgorithm().isLRUMemory()
         && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && this.evictionAttributes

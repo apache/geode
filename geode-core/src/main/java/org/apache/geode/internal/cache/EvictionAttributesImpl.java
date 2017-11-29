@@ -23,13 +23,8 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.EvictionAttributesMutator;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.eviction.CountLRUEviction;
-import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.eviction.HeapLRUController;
-import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 
 /**
  * Defines the attributes for configuring the eviction controller associated with a
@@ -59,18 +54,13 @@ public class EvictionAttributesImpl extends EvictionAttributes {
   public EvictionAttributesImpl() {}
 
   /**
-   * construct a new EvictionAttributes with the same characteristics as the given attributes, but
-   * not sharing the same evictionController.
-   *
-   * <p>
-   * author bruce
+   * copy constructor
    */
-  public EvictionAttributesImpl(EvictionAttributesImpl other) {
-    this.algorithm = other.algorithm;
-    this.sizer = other.sizer;
-    this.maximum = other.maximum;
-    this.action = other.action;
-    // this.evictionController = null;
+  public EvictionAttributesImpl(EvictionAttributes other) {
+    this.algorithm = other.getAlgorithm();
+    this.sizer = other.getObjectSizer();
+    this.maximum = other.getMaximum();
+    this.action = other.getAction();
   }
 
   public EvictionAttributesImpl setAlgorithm(EvictionAlgorithm algorithm) {
@@ -105,7 +95,7 @@ public class EvictionAttributesImpl extends EvictionAttributes {
   @Override
   public int getMaximum() {
     if (this.algorithm.isLRUHeap()) {
-      throw new UnsupportedOperationException("LRUHeap does not support a maximum");
+      return 0;
     }
     return this.maximum;
   }

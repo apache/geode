@@ -442,12 +442,13 @@ public abstract class EvictionAttributes implements DataSerializable {
       return false;
     }
     final EvictionAttributes other = (EvictionAttributes) obj;
-    if (!this.getAlgorithm().equals(other.getAlgorithm())
-        || !this.getAction().equals(other.getAction())) {
+    if (!getAlgorithm().equals(other.getAlgorithm())) {
       return false;
     }
-    // LRUHeap doesn't support maximum
-    if (!this.getAlgorithm().isLRUHeap() && this.getMaximum() != other.getMaximum()) {
+    if (!getAction().equals(other.getAction())) {
+      return false;
+    }
+    if (getMaximum() != other.getMaximum()) {
       return false;
     }
     return true;
@@ -455,11 +456,7 @@ public abstract class EvictionAttributes implements DataSerializable {
 
   @Override
   public int hashCode() {
-    if (getAlgorithm().isLRUHeap()) {
-      return getAlgorithm().hashCode();
-    } else {
-      return this.getAlgorithm().hashCode() ^ this.getMaximum();
-    }
+    return this.getAlgorithm().hashCode() ^ this.getMaximum();
   }
 
   @Override

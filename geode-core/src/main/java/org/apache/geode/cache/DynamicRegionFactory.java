@@ -587,7 +587,7 @@ public abstract class DynamicRegionFactory {
     AttributesFactory af = new AttributesFactory(rra);
     EvictionAttributes ev = rra.getEvictionAttributes();
     if (ev != null && ev.getAlgorithm().isLRU()) {
-      EvictionAttributes rev = new EvictionAttributesImpl((EvictionAttributesImpl) ev);
+      EvictionAttributes rev = new EvictionAttributesImpl(ev);
       af.setEvictionAttributes(rev);
     }
 

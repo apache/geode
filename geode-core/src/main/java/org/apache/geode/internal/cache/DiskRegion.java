@@ -137,15 +137,7 @@ public class DiskRegion extends AbstractDiskRegion {
     if (ra != null) {
       byte raLruAlgorithm = (byte) (ra.getEvictionAttributes().getAlgorithm().getValue());
       byte raLruAction = (byte) (ra.getEvictionAttributes().getAction().getValue());
-      int raLruLimit = 0;
-      if (!ra.getEvictionAttributes().getAlgorithm().isLRUHeap()) {
-        raLruLimit = ra.getEvictionAttributes().getMaximum();
-      }
-      // GemFireCache.getInstance().getLogger()
-      // .info("DEBUG isRecreated=" + isRecreated()
-      // + " raLruLimit=" + raLruLimit
-      // + " getLruLimit()=" + getLruLimit(),
-      // new RuntimeException("STACK"));
+      int raLruLimit = ra.getEvictionAttributes().getMaximum();
       if (isRecreated()) {
         // check to see if recovered config differs from current config
         if (raLruAlgorithm != getLruAlgorithm() || raLruAction != getLruAction()
