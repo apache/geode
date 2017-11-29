@@ -65,6 +65,7 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -110,7 +111,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     when(this.queueRegion.getCache()).thenReturn(this.cache);
     EvictionAttributesImpl ea = (EvictionAttributesImpl) EvictionAttributes
         .createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK);
-    EvictionController eviction = ea.createEvictionController(this.queueRegion, false);
+    EvictionController eviction = AbstractEvictionController.create(ea, false, this.queueRegion);
     eviction.initStats(this.queueRegion, this.cache.getDistributedSystem());
     when(this.queueRegion.getEvictionController()).thenReturn(eviction);
   }

@@ -19,6 +19,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -28,9 +29,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
- * A {@code CapacityController} that will evict an entry from a region
- * once the region entry count reaches a certain capacity.
- *  *
+ * A {@code CapacityController} that will evict an entry from a region once the region entry count
+ * reaches a certain capacity. *
+ *
  * @since GemFire 2.0.2
  */
 public class CountLRUEviction extends AbstractEvictionController {
@@ -73,8 +74,8 @@ public class CountLRUEviction extends AbstractEvictionController {
 
   /**
    * Creates an LRU capacity controller that allows the {@link #DEFAULT_MAXIMUM_ENTRIES default}
-   * maximum number of entries and the
-   * {@link org.apache.geode.cache.EvictionAction#DEFAULT_EVICTION_ACTION default} eviction action.
+   * maximum number of entries and the {@link EvictionAction#DEFAULT_EVICTION_ACTION default}
+   * eviction action.
    *
    * @see #CountLRUEviction(int,Region)
    */
@@ -153,8 +154,8 @@ public class CountLRUEviction extends AbstractEvictionController {
    * Indicate what kind of {@code AbstractEvictionController} this helper implements
    */
   @Override
-  public org.apache.geode.cache.EvictionAlgorithm getEvictionAlgorithm() {
-    return org.apache.geode.cache.EvictionAlgorithm.LRU_ENTRY;
+  public EvictionAlgorithm getEvictionAlgorithm() {
+    return EvictionAlgorithm.LRU_ENTRY;
   }
 
   /**
@@ -270,6 +271,6 @@ public class CountLRUEviction extends AbstractEvictionController {
   @Override
   public String toString() {
     return LocalizedStrings.LRUCapacityController_LRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_ENTRIES_AND_EVICTION_ACTION_1
-        .toLocalizedString(new Object[] {Long.valueOf(this.getLimit()), this.getEvictionAction()});
+        .toLocalizedString(getLimit(), getEvictionAction());
   }
 }

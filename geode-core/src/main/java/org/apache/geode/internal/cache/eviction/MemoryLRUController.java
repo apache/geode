@@ -18,6 +18,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
@@ -29,13 +30,12 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 
 /**
- * A {@code CapacityController} that will evict one more entries from a region
- * once the region reaches a certain byte {@linkplain #setMaximumMegabytes capacity}. Capacity is
- * determined by monitoring the size of entries. Capacity is specified in terms of
- * megabytes. GemFire uses an efficient algorithm to determine the amount of space a region entry
- * occupies in the JVM. However, this algorithm may not yield optimal results for all kinds of data.
- * The user may provide their own algorithm for determining the size of objects by implementing
- * an {@link ObjectSizer}.
+ * An {@code EvictionController} that will evict one more entries from a region once the region
+ * reaches a certain byte {@linkplain #setMaximumMegabytes capacity}. Capacity is determined by
+ * monitoring the size of entries. Capacity is specified in terms of megabytes. GemFire uses an
+ * efficient algorithm to determine the amount of space a region entry occupies in the JVM. However,
+ * this algorithm may not yield optimal results for all kinds of data. The user may provide their
+ * own algorithm for determining the size of objects by implementing an {@link ObjectSizer}.
  *
  * @since GemFire 2.0.2
  */
@@ -184,8 +184,8 @@ public class MemoryLRUController extends SizeLRUController {
    * Indicate what kind of {@code AbstractEvictionController} this helper implements
    */
   @Override
-  public org.apache.geode.cache.EvictionAlgorithm getEvictionAlgorithm() {
-    return org.apache.geode.cache.EvictionAlgorithm.LRU_MEMORY;
+  public EvictionAlgorithm getEvictionAlgorithm() {
+    return EvictionAlgorithm.LRU_MEMORY;
   }
 
 

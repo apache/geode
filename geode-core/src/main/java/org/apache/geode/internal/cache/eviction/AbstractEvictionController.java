@@ -17,13 +17,16 @@ package org.apache.geode.internal.cache.eviction;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -36,37 +39,55 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * <ul>
  * <li>If the capacity of a region is to be controlled by an LRU algorithm, then the region must be
- * <b>created</b> with {@link org.apache.geode.cache.EvictionAttributes}
+ * <b>created</b> with {@link EvictionAttributes}
  * <li>The eviction controller of a region governed by an LRU algorithm cannot be changed.</li>
  * <li>An LRU algorithm cannot be applied to a region after the region has been created.</li>
  * </ul>
  *
  * <p>
- * LRU algorithms also specify what {@linkplain org.apache.geode.cache.EvictionAction action} should
- * be performed upon the least recently used entry when the capacity is reached. Currently, there
- * are two supported actions: {@linkplain org.apache.geode.cache.EvictionAction#LOCAL_DESTROY
- * locally destroying} the entry (which is the
- * {@linkplain org.apache.geode.cache.EvictionAction#DEFAULT_EVICTION_ACTION default}), thus freeing
- * up space in the VM, and {@linkplain org.apache.geode.cache.EvictionAction#OVERFLOW_TO_DISK
- * overflowing} the value of the entry to disk.
+ * LRU algorithms also specify what {@linkplain EvictionAction action} should be performed upon the
+ * least recently used entry when the capacity is reached. Currently, there are two supported
+ * actions: {@linkplain EvictionAction#LOCAL_DESTROY locally destroying} the entry (which is the
+ * {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION default}), thus freeing up space in the VM,
+ * and {@linkplain EvictionAction#OVERFLOW_TO_DISK overflowing} the value of the entry to disk.
  *
  * <p>
- * {@link org.apache.geode.cache.EvictionAttributes Eviction controllers} that use an LRU algorithm
- * maintain certain region-dependent state (such as the maximum number of entries allowed in the
- * region). As a result, an instance of {@code AbstractEvictionController} cannot be shared among
- * multiple regions. Attempts to create a region with a LRU-based capacity controller that has
- * already been used to create another region will result in an {@link IllegalStateException} being
- * thrown.
+ * {@link EvictionAttributes Eviction controllers} that use an LRU algorithm maintain certain
+ * region-dependent state (such as the maximum number of entries allowed in the region). As a
+ * result, an instance of {@code AbstractEvictionController} cannot be shared among multiple
+ * regions. Attempts to create a region with a LRU-based capacity controller that has already been
+ * used to create another region will result in an {@link IllegalStateException} being thrown.
  *
  * @since GemFire 3.2
  */
-abstract class AbstractEvictionController implements EvictionController {
+public abstract class AbstractEvictionController implements EvictionController {
 
   /**
-   * The key for setting the {@code eviction-action} property of an
-   * {@code AbstractEvictionController}
+   * Create and return the appropriate eviction controller using the attributes provided.
    */
-  protected static final String EVICTION_ACTION = "eviction-action";
+  public static EvictionController create(EvictionAttributes evictionAttributes, boolean isOffHeap,
+      InternalRegion<?, ?> region) {
+    EvictionAlgorithm algorithm = evictionAttributes.getAlgorithm();
+    EvictionAction action = evictionAttributes.getAction();
+    ObjectSizer sizer = evictionAttributes.getObjectSizer();
+    int maximum = evictionAttributes.getMaximum();
+    if (algorithm == EvictionAlgorithm.LRU_HEAP) {
+      return new HeapLRUController(action, region, sizer);
+    }
+    if (algorithm == EvictionAlgorithm.LRU_MEMORY) {
+      return new MemoryLRUController(maximum, sizer, action, region, isOffHeap);
+    }
+    if (algorithm == EvictionAlgorithm.LRU_ENTRY) {
+      return new CountLRUEviction(maximum, action, region);
+    }
+    if (algorithm == EvictionAlgorithm.LIFO_MEMORY) {
+      return new MemoryLRUController(maximum, sizer, action, region, isOffHeap);
+    }
+    if (algorithm == EvictionAlgorithm.LIFO_ENTRY) {
+      return new CountLRUEviction(maximum, action, region);
+    }
+    throw new IllegalStateException("Unhandled algorithm " + algorithm);
+  }
 
   private static final int DESTROYS_LIMIT = 1000;
 
@@ -177,7 +198,7 @@ abstract class AbstractEvictionController implements EvictionController {
     setRegionName(region);
     InternalEvictionStatistics stats =
         new EvictionStatisticsImpl(statsFactory, getRegionName(), this);
-    stats.setLimit(AbstractEvictionController.this.getLimit());
+    stats.setLimit(getLimit());
     stats.setDestroysLimit(DESTROYS_LIMIT);
     setStatistics(stats);
     return stats;
@@ -236,6 +257,19 @@ abstract class AbstractEvictionController implements EvictionController {
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     synchronized (this) { // See bug 31047
       this.evictionAction = (EvictionAction) in.readObject();
+    }
+  }
+
+  @Override
+  public void close() {
+    if (this.stats != null) {
+      if (bucketRegion != null) {
+        this.stats.incEvictions(bucketRegion.getEvictions() * -1);
+        this.stats.decrementCounter(bucketRegion.getCounter());
+        bucketRegion.close();
+      } else {
+        this.stats.close();
+      }
     }
   }
 }

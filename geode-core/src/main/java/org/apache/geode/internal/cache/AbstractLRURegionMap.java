@@ -23,10 +23,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
 import org.apache.geode.internal.cache.eviction.CachedDeserializableValueWrapper;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
@@ -64,7 +66,8 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
 
   public abstract EvictionList getEvictionList();
 
-  protected EvictionController getEvictionController() {
+  @Override
+  public EvictionController getEvictionController() {
     return evictionController;
   }
 
@@ -77,16 +80,19 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   private void createEvictionController(Object owner, InternalRegionArguments internalRegionArgs) {
     EvictionAlgorithm evictionAlgorithm;
     EvictionController evictionController;
-    if (owner instanceof LocalRegion) {
-      evictionAlgorithm = ((LocalRegion) owner).getEvictionAttributes().getAlgorithm();
-      evictionController = ((LocalRegion) owner).getEvictionController();
+    if (owner instanceof InternalRegion) {
+      InternalRegion<?, ?> internalRegion = (InternalRegion<?, ?>) owner;
+      EvictionAttributes evictionAttributes = internalRegion.getEvictionAttributes();
+      evictionAlgorithm = evictionAttributes.getAlgorithm();
+      evictionController = AbstractEvictionController.create(evictionAttributes,
+          internalRegion.getOffHeap(), internalRegion);
     } else if (owner instanceof PlaceHolderDiskRegion) {
       PlaceHolderDiskRegion phdr = (PlaceHolderDiskRegion) owner;
       evictionAlgorithm = phdr.getActualLruAlgorithm();
       evictionController =
-          phdr.getEvictionAttributes().createEvictionController(null, phdr.getOffHeap());
+          AbstractEvictionController.create(phdr.getEvictionAttributes(), phdr.getOffHeap(), null);
     } else {
-      throw new IllegalStateException("expected LocalRegion or PlaceHolderDiskRegion");
+      throw new IllegalStateException("expected InternalRegion or PlaceHolderDiskRegion");
     }
 
     if (evictionAlgorithm.isLRUMemory()) {

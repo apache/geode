@@ -314,7 +314,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   public EvictionAttributesImpl getEvictionAttributes() {
     return new EvictionAttributesImpl().setAlgorithm(getActualLruAlgorithm())
-        .setAction(getActualLruAction()).internalSetMaximum(getLruLimit());
+        .setAction(getActualLruAction()).setMaximum(getLruLimit());
   }
 
   public byte getLruAlgorithm() {

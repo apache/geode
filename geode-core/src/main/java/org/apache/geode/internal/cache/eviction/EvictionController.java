@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
@@ -118,4 +117,6 @@ public interface EvictionController {
    * Set the limiting parameter used to determine when eviction is needed.
    */
   void setLimit(int maximum);
+
+  void close();
 }

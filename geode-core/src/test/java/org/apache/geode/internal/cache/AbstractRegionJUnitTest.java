@@ -674,5 +674,10 @@ public class AbstractRegionJUnitTest {
     public void addCacheServiceProfile(CacheServiceProfile profile) {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void setEvictionMaximum(int maximum) {
+      throw new UnsupportedOperationException();
+    }
   }
 }

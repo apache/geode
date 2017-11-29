@@ -39,11 +39,11 @@ abstract class SizeLRUController extends AbstractEvictionController {
     if (cdChangingForm) {
       object = ((CachedDeserializableValueWrapper) object).getValue();
     }
-    if (object == null || object == Token.INVALID || object == Token.LOCAL_INVALID || object == Token.DESTROYED
-        || object == Token.TOMBSTONE) {
+    if (object == null || object == Token.INVALID || object == Token.LOCAL_INVALID
+        || object == Token.DESTROYED || object == Token.TOMBSTONE) {
       return 0;
     }
-    
+
     int size;
     // Shouldn't we defer to the user's object sizer for these things?
     if (object instanceof byte[] || object instanceof String) {

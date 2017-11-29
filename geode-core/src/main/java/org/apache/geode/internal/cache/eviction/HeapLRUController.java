@@ -21,6 +21,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -115,8 +116,8 @@ public class HeapLRUController extends SizeLRUController {
    * Indicate what kind of {@code AbstractEvictionController} this helper implements
    */
   @Override
-  public org.apache.geode.cache.EvictionAlgorithm getEvictionAlgorithm() {
-    return org.apache.geode.cache.EvictionAlgorithm.LRU_HEAP;
+  public EvictionAlgorithm getEvictionAlgorithm() {
+    return EvictionAlgorithm.LRU_HEAP;
   }
 
   /**

@@ -87,6 +87,7 @@ import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
+import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
@@ -3937,7 +3938,7 @@ public class DiskStoreImpl implements DiskStore {
       result = this.prlruStatMap.get(prName);
       if (result == null) {
         EvictionAttributesImpl ea = dr.getEvictionAttributes();
-        EvictionController ec = ea.createEvictionController(null, dr.getOffHeap());
+        EvictionController ec = AbstractEvictionController.create(ea, dr.getOffHeap(), null);
         StatisticsFactory sf = cache.getDistributedSystem();
         result = ec.initStats(dr, sf);
         this.prlruStatMap.put(prName, result);

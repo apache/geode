@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyPr
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
@@ -2178,7 +2179,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   protected void closeCallbacksExceptListener() {
     // closeCacheCallback(getCacheLoader()); - fix bug 40228 - do NOT close loader
     closeCacheCallback(getCacheWriter());
-    closeCacheCallback(getEvictionController());
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      evictionController.close();
+    }
   }
 
   public long getTotalBytes() {

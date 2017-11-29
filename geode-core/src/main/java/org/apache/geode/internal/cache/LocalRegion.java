@@ -174,6 +174,7 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
@@ -7200,7 +7201,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   protected void closeCallbacksExceptListener() {
     closeCacheCallback(getCacheLoader());
     closeCacheCallback(getCacheWriter());
-    closeCacheCallback(getEvictionController());
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      evictionController.close();
+    }
   }
 
   /** This is only done when the cache is closed. */
@@ -12087,6 +12091,18 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public long getEvictions() {
     return this.entries.getEvictions();
+  }
+
+  public EvictionController getEvictionController() {
+    return getRegionMap().getEvictionController();
+  }
+
+  @Override
+  public void setEvictionMaximum(int maximum) {
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      evictionController.setLimit(maximum);
+    }
   }
 
 }

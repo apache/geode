@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -3924,6 +3925,11 @@ public abstract class AbstractRegionMap implements RegionMap {
   @Override
   public void incRecentlyUsed() {
     // nothing by default
+  }
+
+  @Override
+  public EvictionController getEvictionController() {
+    return null;
   }
 
   public interface ARMLockTestHook {

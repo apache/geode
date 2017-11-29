@@ -127,8 +127,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   private volatile CacheWriter cacheWriter;
 
-  private EvictionController evictionController;
-
   protected int entryIdleTimeout;
 
   private ExpirationAction entryIdleTimeoutExpirationAction;
@@ -225,6 +223,9 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected PartitionAttributes partitionAttributes;
 
   protected EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
+
+  protected EvictionAttributesMutator evictionAttributesMutator =
+      new EvictionAttributesMutatorImpl(this, this.evictionAttributes);
 
   /** The membership attributes defining required roles functionality */
   protected MembershipAttributes membershipAttributes;
@@ -1541,7 +1542,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * Returns true if this region can evict entries.
    */
   public boolean isEntryEvictionPossible() {
-    return this.evictionController != null;
+    return this.evictionAttributes != null && !this.evictionAttributes.getAlgorithm().isNone();
   }
 
   private void setAttributes(RegionAttributes attrs, String regionName,
@@ -1572,10 +1573,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       this.evictionAttributes.setMaximum(attrs.getPartitionAttributes().getLocalMaxMemory());
     }
 
-    if (this.evictionAttributes != null && !this.evictionAttributes.getAlgorithm().isNone()) {
-      setEvictionController(
-          this.evictionAttributes.createEvictionController(this, attrs.getOffHeap()));
-    }
     storeCacheListenersField(attrs.getCacheListeners());
     assignCacheLoader(attrs.getCacheLoader());
     assignCacheWriter(attrs.getCacheWriter());
@@ -1696,15 +1693,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public EvictionAttributesMutator getEvictionAttributesMutator() {
-    return this.evictionAttributes;
-  }
-
-  private void setEvictionController(EvictionController evictionController) {
-    this.evictionController = evictionController;
-  }
-
-  public EvictionController getEvictionController() {
-    return this.evictionController;
+    return this.evictionAttributesMutator;
   }
 
   /**
