@@ -29,6 +29,7 @@ import org.junit.runner.Description;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
+import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -95,6 +96,7 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   @Override
   protected void before(Description description) throws Throwable {
+    LogWrapper.close();
     workingDir = temporaryFolder.newFolder("gfsh_files");
     this.gfsh = new HeadlessGfsh(getClass().getName(), 30, workingDir.getAbsolutePath());
     ignoredException =
@@ -207,6 +209,7 @@ public class GfshCommandRule extends DescribedExternalResource {
     }
     gfsh.executeCommand("exit");
     gfsh.terminate();
+    LogWrapper.close();
     gfsh = null;
   }
 
