@@ -387,7 +387,6 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
             assertNotNull(pr);
             assertNull(pr.getDiskRegion());
-            assertNotNull(pr.getEvictionController());
 
             // assert over-flow behavior in local buckets and number of
             // entries
