@@ -21,19 +21,14 @@ import static org.apache.geode.cache.Scope.LOCAL;
 import static org.apache.geode.management.internal.cli.domain.RegionDescription.findCommon;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.commands.DescribeRegionCommand;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -60,8 +55,6 @@ public class RegionDescriptionJUnitTest {
   private static final String regValueB = "uniqueRegionValue_B";
 
   public static final String regionName = "mockRegion1";
-
-  private static final DescribeRegionCommand command = spy(DescribeRegionCommand.class);
 
   @Test
   public void findCommonRemovesUnsharedKeys() {
@@ -172,56 +165,6 @@ public class RegionDescriptionJUnitTest {
         .isEqualTo(mockA.getNonDefaultPartitionAttributes());
     assertThat(description.getCndRegionAttributes())
         .isEqualTo(mockA.getNonDefaultRegionAttributes());
-  }
-
-  @Test
-  public void simpleDescribeRegionCommandConsumesRegionDescriptionAsExpected() {
-    RegionDescriptionPerMember mockDescPerMember = getMockRegionDescriptionPerMember_A();
-    RegionDescription regionDescription = new RegionDescription();
-    regionDescription.add(mockDescPerMember);
-    CommandResult commandResult =
-        (CommandResult) command.buildDescriptionResult(regionName, regionDescription);
-    assertThat(commandResult.getStatus()).isEqualTo(Status.OK);
-    // We can't assert that the "Non-Default Attributes Specific To The Hosting Members" header is
-    // missing because Gfsh currently obfuscates portions of the underlying json that have empty
-    // "content" fields. We'll have to dig into the JSON to verify.
-    JSONObject shared = getSharedAttributedJson(commandResult);
-    JSONObject unique = getMemberSpecificAttributeJson(commandResult);
-    assertThat(shared.toString()).contains(evictionKeyShared, partKeyShared, regKeyShared,
-        evictionValueShared, partValueShared, regValueShared, evictionKeyA, partKeyA, regKeyA,
-        evictionValueA, partValueA, regValueA);
-    assertThat(unique.toString()).isEqualTo("{}");
-  }
-
-  @Test
-  public void compoundDescribeRegionCommandConsumesRegionDescriptionAsExpected() {
-    RegionDescriptionPerMember mockDescPerMemberA = getMockRegionDescriptionPerMember_A();
-    RegionDescriptionPerMember mockDescPerMemberB = getMockRegionDescriptionPerMember_B();
-    RegionDescription regionDescription = new RegionDescription();
-    regionDescription.add(mockDescPerMemberA);
-    regionDescription.add(mockDescPerMemberB);
-    CommandResult commandResult =
-        (CommandResult) command.buildDescriptionResult(regionName, regionDescription);
-    assertThat(commandResult.getStatus()).isEqualTo(Status.OK);
-    // We can't assert that the "Non-Default Attributes Specific To The Hosting Members" header is
-    // missing because Gfsh currently obfuscates portions of the underlying json that have empty
-    // "content" fields. We'll have to dig into the JSON to verify.
-    JSONObject shared = getSharedAttributedJson(commandResult);
-    JSONObject unique = getMemberSpecificAttributeJson(commandResult);
-    assertThat(shared.toString()).contains(evictionKeyShared, partKeyShared, regKeyShared,
-        evictionValueShared, partValueShared, regValueShared);
-    assertThat(unique.toString()).contains(evictionKeyA, evictionValueA, partKeyA, partValueA,
-        regKeyA, regValueA, evictionKeyB, evictionValueB, partKeyB, partValueB, regKeyB, regValueB);
-  }
-
-  private JSONObject getSharedAttributedJson(CommandResult commandResult) {
-    return commandResult.getContent().getInternalJsonObject().getJSONObject("__sections__-0")
-        .getJSONObject("__sections__-0").getJSONObject("__tables__-0").getJSONObject("content");
-  }
-
-  private JSONObject getMemberSpecificAttributeJson(CommandResult commandResult) {
-    return commandResult.getContent().getInternalJsonObject().getJSONObject("__sections__-0")
-        .getJSONObject("__sections__-1").getJSONObject("__tables__-0").getJSONObject("content");
   }
 
   private RegionDescriptionPerMember getMockRegionDescriptionPerMember_A() {

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,35 +36,32 @@ public class DescribeRegionIntegrationTest {
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()
       .withRegion(RegionShortcut.REPLICATE, REGION_NAME).withName(MEMBER_NAME)
-      .withProperty("groups", GROUP_NAME).withJMXManager().withEmbeddedLocator().withAutoStart();
+      .withProperty("groups", GROUP_NAME).withJMXManager().withAutoStart();
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
+
+  @Before
+  public void before(){
+    gfsh.setTimeout(2);
+  }
 
   @Test
   public void commandFailsWhenNotConnected() throws Exception {
+    gfsh.disconnect();
     gfsh.executeAndAssertThat("describe region").statusIsError()
         .containsOutput("was found but is not currently available");
   }
 
   @Test
-  public void commandFailsWithoutNameOption() throws Exception {
-    String cmd = "describe region";
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
-    gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("You should specify option");
-  }
-
-  @Test
   public void commandFailsWithBadNameOption() throws Exception {
     String cmd = "describe region --name=invalid-region-name";
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).statusIsError().containsOutput("invalid-region-name not found");
   }
 
   @Test
   public void commandSucceedsWithGoodNameOption() throws Exception {
     String cmd = "describe region --name=" + REGION_NAME;
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), PortType.locator);
     gfsh.executeAndAssertThat(cmd).statusIsSuccess().containsOutput("Name", "Data Policy",
         "Hosting Members");
   }

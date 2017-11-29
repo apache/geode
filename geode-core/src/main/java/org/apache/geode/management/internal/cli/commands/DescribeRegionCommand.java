@@ -54,11 +54,7 @@ public class DescribeRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.DESCRIBE_REGION__NAME, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESCRIBE_REGION__NAME__HELP, mandatory = true) String regionName) {
 
-    InternalCache cache = getCache();
-    ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(getRegionDescription, regionName, getAllNormalMembers(cache));
-
-    List<?> resultList = (List<?>) rc.getResult();
+    List<?> resultList = getFunctionResultFromMembers(regionName);
 
     // Log any errors received.
     resultList.stream().filter(Throwable.class::isInstance).map(Throwable.class::cast)
@@ -81,6 +77,14 @@ public class DescribeRegionCommand implements GfshCommand {
     }
 
     return buildDescriptionResult(regionName, regionDescription);
+  }
+
+  List<?> getFunctionResultFromMembers(String regionName) {
+    InternalCache cache = getCache();
+    ResultCollector<?, ?> rc =
+        executeFunction(getRegionDescription, regionName, getAllNormalMembers(cache));
+
+    return (List<?>) rc.getResult();
   }
 
   public Result buildDescriptionResult(String regionName, RegionDescription regionDescription) {
@@ -157,7 +161,7 @@ public class DescribeRegionCommand implements GfshCommand {
 
       List<FixedPartitionAttributesInfo> fpaList = regDescPerMem.getFixedPartitionAttributes();
 
-      if (!ndRa.isEmpty() || !ndEa.isEmpty() || !ndPa.isEmpty() || fpaList != null) {
+      if (!ndRa.isEmpty() || !ndEa.isEmpty() || !ndPa.isEmpty() || (fpaList != null && !fpaList.isEmpty())) {
         setHeader = true;
         boolean memberNameAdded;
         memberNameAdded = writeAttributesToTable(table,
