@@ -29,7 +29,7 @@ import org.apache.geode.cache.Scope;
  */
 public class RegionDescription implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 6461449275798378332L;
   private String name;
   private boolean isPartition;
   private boolean isPersistent;
@@ -37,11 +37,11 @@ public class RegionDescription implements Serializable {
   private boolean isLocal = false;
   private boolean isAccessor = false;
 
-
+  // COPY
   // Common Non Default Attributes
-  private Map<String, String> cndRegionAttributes;
-  private Map<String, String> cndPartitionAttributes;
-  private Map<String, String> cndEvictionAttributes;
+  private Map<String, String> cndRegionAttributes = new HashMap<>();
+  private Map<String, String> cndPartitionAttributes = new HashMap<>();
+  private Map<String, String> cndEvictionAttributes = new HashMap<>();
 
   private Map<String, RegionDescriptionPerMember> regionDescPerMemberMap = null;
   private Scope scope;
@@ -68,29 +68,23 @@ public class RegionDescription implements Serializable {
     if (regionDescPerMemberMap == null) {
       regionDescPerMemberMap = new HashMap<>();
       regionDescPerMemberMap.put(regionDescPerMember.getHostingMember(), regionDescPerMember);
-      this.scope = regionDescPerMember.getScope();
-      this.dataPolicy = regionDescPerMember.getDataPolicy();
-      this.name = regionDescPerMember.getName();
-      isPartition = this.dataPolicy.withPartitioning();
-      isPersistent = this.dataPolicy.withPersistence();
-      isReplicate = this.dataPolicy.withReplication();
-      isLocal = this.scope.isLocal();
+      scope = regionDescPerMember.getScope();
+      dataPolicy = regionDescPerMember.getDataPolicy();
+      name = regionDescPerMember.getName();
+      isPartition = dataPolicy.withPartitioning();
+      isPersistent = dataPolicy.withPersistence();
+      isReplicate = dataPolicy.withReplication();
+      isLocal = scope.isLocal();
       isAccessor = regionDescPerMember.isAccessor();
-      // COPY
-      this.cndRegionAttributes = new HashMap<>();
-      this.cndRegionAttributes.putAll(regionDescPerMember.getNonDefaultRegionAttributes());
-
-      this.cndPartitionAttributes = new HashMap<>();
-      this.cndPartitionAttributes.putAll(regionDescPerMember.getNonDefaultPartitionAttributes());
-
-      this.cndEvictionAttributes = new HashMap<>();
-      this.cndEvictionAttributes.putAll(regionDescPerMember.getNonDefaultEvictionAttributes());
+      cndRegionAttributes.putAll(regionDescPerMember.getNonDefaultRegionAttributes());
+      cndPartitionAttributes.putAll(regionDescPerMember.getNonDefaultPartitionAttributes());
+      cndEvictionAttributes.putAll(regionDescPerMember.getNonDefaultEvictionAttributes());
 
       isAdded = true;
-    } else if (this.scope.equals(regionDescPerMember.getScope())
-        && this.name.equals(regionDescPerMember.getName())
-        && this.dataPolicy.equals(regionDescPerMember.getDataPolicy())
-        && this.isAccessor == regionDescPerMember.isAccessor()) {
+    } else if (scope.equals(regionDescPerMember.getScope())
+        && name.equals(regionDescPerMember.getName())
+        && dataPolicy.equals(regionDescPerMember.getDataPolicy())
+        && isAccessor == regionDescPerMember.isAccessor()) {
 
       regionDescPerMemberMap.put(regionDescPerMember.getHostingMember(), regionDescPerMember);
       findCommon(cndRegionAttributes, regionDescPerMember.getNonDefaultRegionAttributes());

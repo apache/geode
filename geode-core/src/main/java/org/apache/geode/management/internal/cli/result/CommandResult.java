@@ -618,15 +618,28 @@ public class CommandResult implements Result {
     return getTableContent(0, 0);
   }
 
-  public GfJsonObject getTableContent(int sectionIdx, int tableIdx) {
+  /**
+   * Most frequently, only two index values are required: a section index followed by a table index.
+   * Some commands, such as 'describe region', may return command results with subsections, however.
+   * Include these in order, e.g., getTableContent(sectionIndex, subsectionIndex, tableIndex);
+   */
+  public GfJsonObject getTableContent(int... sectionAndTableIDs) {
     GfJsonObject topLevelContent = getContent();
-    GfJsonObject sectionObject = topLevelContent.getJSONObject("__sections__-" + sectionIdx);
-    // This means we're just dealing with a regular ResultData object
-    if (sectionObject == null) {
-      return topLevelContent;
+    // Most common is receiving exactly one section index and one table index.
+    // Some results, however, will have subsections before the table listings.
+    assert (sectionAndTableIDs.length >= 2);
+
+    GfJsonObject sectionObject = topLevelContent;
+    for (int i = 0; i < sectionAndTableIDs.length - 1; i++) {
+      int idx = sectionAndTableIDs[i];
+      sectionObject = sectionObject.getJSONObject("__sections__-" + idx);
+      if (sectionObject == null) {
+        return topLevelContent;
+      }
     }
 
-    GfJsonObject tableContent = sectionObject.getJSONObject("__tables__-" + tableIdx);
+    int tableId = sectionAndTableIDs[sectionAndTableIDs.length - 1];
+    GfJsonObject tableContent = sectionObject.getJSONObject("__tables__-" + tableId);
     if (tableContent == null) {
       return topLevelContent;
     }

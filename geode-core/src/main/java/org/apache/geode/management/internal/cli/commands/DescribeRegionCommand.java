@@ -20,16 +20,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.FixedPartitionAttributesInfo;
 import org.apache.geode.management.internal.cli.domain.RegionDescription;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
@@ -43,6 +44,8 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeRegionCommand implements GfshCommand {
+  public static final Logger logger = LogService.getLogger();
+
   private static final GetRegionDescriptionFunction getRegionDescription =
       new GetRegionDescriptionFunction();
 
@@ -54,15 +57,11 @@ public class DescribeRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.DESCRIBE_REGION__NAME, optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.DESCRIBE_REGION__NAME__HELP, mandatory = true) String regionName) {
 
-    InternalCache cache = getCache();
-    ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(getRegionDescription, regionName, getAllNormalMembers(cache));
-
-    List<?> resultList = (List<?>) rc.getResult();
+    List<?> resultList = getFunctionResultFromMembers(regionName);
 
     // Log any errors received.
     resultList.stream().filter(Throwable.class::isInstance).map(Throwable.class::cast)
-        .forEach(t -> LogWrapper.getInstance().info(t.getMessage(), t));
+        .forEach(t -> logger.info(t.getMessage(), t));
 
     // Aggregate PerMember data to to a single RegionDescription
     RegionDescription regionDescription = new RegionDescription();
@@ -81,6 +80,14 @@ public class DescribeRegionCommand implements GfshCommand {
     }
 
     return buildDescriptionResult(regionName, regionDescription);
+  }
+
+  List<?> getFunctionResultFromMembers(String regionName) {
+    InternalCache cache = getCache();
+    ResultCollector<?, ?> rc =
+        executeFunction(getRegionDescription, regionName, getAllNormalMembers(cache));
+
+    return (List<?>) rc.getResult();
   }
 
   public Result buildDescriptionResult(String regionName, RegionDescription regionDescription) {
@@ -157,7 +164,8 @@ public class DescribeRegionCommand implements GfshCommand {
 
       List<FixedPartitionAttributesInfo> fpaList = regDescPerMem.getFixedPartitionAttributes();
 
-      if (!ndRa.isEmpty() || !ndEa.isEmpty() || !ndPa.isEmpty() || fpaList != null) {
+      if (!ndRa.isEmpty() || !ndEa.isEmpty() || !ndPa.isEmpty()
+          || (fpaList != null && !fpaList.isEmpty())) {
         setHeader = true;
         boolean memberNameAdded;
         memberNameAdded = writeAttributesToTable(table,
@@ -172,8 +180,8 @@ public class DescribeRegionCommand implements GfshCommand {
     }
 
     if (setHeader) {
-      table.setHeader(CliStrings.format(
-          CliStrings.DESCRIBE_REGION__NONDEFAULT__PERMEMBERATTRIBUTES__HEADER, memberType));
+      table.setHeader(CliStrings
+          .format(CliStrings.DESCRIBE_REGION__NONDEFAULT__PERMEMBERATTRIBUTES__HEADER, memberType));
     }
 
     return ResultBuilder.buildResult(crd);
