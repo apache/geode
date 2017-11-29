@@ -122,9 +122,9 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
 
     } catch (CacheClosedException cce) {
       context.getResultSender().lastResult(new CliFunctionResult(memberId, false, null));
-    } catch (Exception th) {
-      logger.error("Could not create async event queue: {}", th.getMessage(), th);
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, th, null));
+    } catch (Exception e) {
+      logger.error("Could not create async event queue: {}", e.getMessage(), e);
+      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, null));
     }
   }
 

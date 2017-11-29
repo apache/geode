@@ -131,7 +131,7 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
         isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess()
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
         .tableHasRowCount("Member", 2)
         .tableHasRowWithValues("Member", "Result", "member1", "SUCCESS")
         .tableHasRowWithValues("Member", "Result", "member2", "SUCCESS");
@@ -154,7 +154,15 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
         isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess()
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted() // need to make
+                                                                                     // sure
+                                                                                     // failToPersist
+                                                                                     // flag is not
+                                                                                     // set, so that
+                                                                                     // we won't
+                                                                                     // print out
+                                                                                     // warning
+                                                                                     // messages.
         .tableHasRowCount("Member", 2)
         .tableHasRowWithValues("Member", "Result", "member1", "ERROR: failed")
         .tableHasRowWithValues("Member", "Result", "member2",
@@ -177,7 +185,7 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
         isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess()
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
         .tableHasRowCount("Member", 2)
         .tableHasRowWithValues("Member", "Result", "member1", "SUCCESS").tableHasRowWithValues(
             "Member", "Result", "member2", "ERROR: java.lang.RuntimeException: exception happened");
@@ -186,4 +194,20 @@ public class CreateAsyncEventQueueCommandTest {
     verify(service).addXmlEntity(xmlEntity, null);
   }
 
+  @Test
+  public void command_succeeded_but_no_cluster_config_service() throws Exception {
+    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
+
+    List<CliFunctionResult> functionResults = new ArrayList<>();
+    XmlEntity xmlEntity = mock(XmlEntity.class);
+    functionResults.add(new CliFunctionResult("member1", xmlEntity, "SUCCESS"));
+    doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
+        isA(Set.class));
+
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().failToPersist();
+
+    // addXmlEntity should not be called
+    verify(service, times(0)).addXmlEntity(xmlEntity, null);
+  }
 }

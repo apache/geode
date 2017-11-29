@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -32,6 +33,7 @@ import org.apache.geode.management.internal.cli.functions.AsyncEventQueueFunctio
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -123,7 +125,7 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
       throw new RuntimeException("No results received.");
     }
 
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     for (CliFunctionResult result : results) {
       if (!result.isSuccessful()) {
         tabularData.accumulate("Member", result.getMemberIdOrName());
@@ -132,16 +134,19 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
         tabularData.accumulate("Member", result.getMemberIdOrName());
         tabularData.accumulate("Result", result.getMessage());
 
-        // if one member is successful in creating the AEQ and CC is not updated yet,
-        // need to update the CC
-        if (result.isSuccessful() && xmlEntity == null) {
-          xmlEntity = result.getXmlEntity();
-          getSharedConfiguration().addXmlEntity(xmlEntity, groups);
+        // if one member is successful in creating the AEQ and xmlEntity is not set yet,
+        // save the xmlEntity that is to be persisted
+        if (result.isSuccessful() && xmlEntity.get() == null) {
+          xmlEntity.set(result.getXmlEntity());
         }
       }
     }
-
-    return ResultBuilder.buildResult(tabularData);
+    CommandResult commandResult = ResultBuilder.buildResult(tabularData);
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(commandResult,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
+    }
+    return commandResult;
   }
 
   List<CliFunctionResult> execute(Function function, Object args,

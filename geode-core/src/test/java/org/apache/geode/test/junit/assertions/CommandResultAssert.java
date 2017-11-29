@@ -101,6 +101,16 @@ public class CommandResultAssert
     return this;
   }
 
+  public CommandResultAssert failToPersist() {
+    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isTrue();
+    return this;
+  }
+
+  public CommandResultAssert persisted() {
+    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isFalse();
+    return this;
+  }
+
   /**
    * Verifies that gfsh executed with status ERROR
    */
