@@ -974,7 +974,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-eviction-max-memory</span></td>
-<td>Enables eviction, where the eviction policy is based on the amount of memory consumed, specified in megabytes.</td>
+<td>Enables eviction, where the eviction policy is based on the amount of memory consumed by the region, specified in megabytes.</td>
 <td></td>
 </tr>
 <tr>
@@ -985,11 +985,11 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <tbody>
 <tr class="odd">
 <td>local-destroy</td>
-<td>Entry is destroyed locally. Not available for replicated regions.</td>
+<td>Entry is destroyed locally. Use with caution - may lead to inconsistencies.</td>
 </tr>
 <tr class="even">
 <td>overflow-to-disk</td>
-<td>Entry is overflowed to disk and the value set to null in memory. For partitioned regions, this provides the most reliable read behavior across the region.</td>
+<td>Entry is overflowed to disk. For partitioned regions, this provides the most reliable read behavior across the region.</td>
 </tr>
 </tbody>
 </table>
