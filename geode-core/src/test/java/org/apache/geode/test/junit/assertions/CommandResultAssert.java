@@ -42,9 +42,10 @@ public class CommandResultAssert
     super(new CommandResultExecution(output, commandResult), CommandResultAssert.class);
   }
 
-  public CommandResult getCommandResult(){
+  public CommandResult getCommandResult() {
     return actual.getCommandResult();
   }
+
   /**
    * Verifies that the gfsh output contains the given key, value pair.
    *

@@ -15,15 +15,11 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.awaitility.Awaitility.await;
-
 import java.io.File;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 
-import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;

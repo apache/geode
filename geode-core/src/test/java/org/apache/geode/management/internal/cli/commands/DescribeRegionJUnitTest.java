@@ -96,21 +96,19 @@ public class DescribeRegionJUnitTest {
     partitionAttr.put("partKey", "partVal");
     regionAttr.put("regKey", "regVal");
 
-    RegionDescriptionPerMember descriptionPerMember
-        = createRegionDescriptionPerMember("mockA", evictionAttr, partitionAttr, regionAttr);
+    RegionDescriptionPerMember descriptionPerMember =
+        createRegionDescriptionPerMember("mockA", evictionAttr, partitionAttr, regionAttr);
     functionResults.add(descriptionPerMember);
 
-    CommandResultAssert
-        commandAssert =
-        gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName)
-            .statusIsSuccess()
+    CommandResultAssert commandAssert =
+        gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
     JSONObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
     JSONObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
 
-    assertThat(shared.toString())
-        .contains("regKey", "regVal", "evictKey", "evictVal", "partKey", "partVal");
+    assertThat(shared.toString()).contains("regKey", "regVal", "evictKey", "evictVal", "partKey",
+        "partVal");
     assertThat(unique.toString()).isEqualTo("{}");
   }
 
@@ -124,24 +122,22 @@ public class DescribeRegionJUnitTest {
     partitionAttr.put("partKey", "partVal");
     regionAttr.put("regKey", "regVal");
 
-    RegionDescriptionPerMember descriptionPerMemberA
-        = createRegionDescriptionPerMember("mockA", evictionAttr, partitionAttr, regionAttr);
-    RegionDescriptionPerMember descriptionPerMemberB
-        = createRegionDescriptionPerMember("mockB", evictionAttr, partitionAttr, regionAttr);
+    RegionDescriptionPerMember descriptionPerMemberA =
+        createRegionDescriptionPerMember("mockA", evictionAttr, partitionAttr, regionAttr);
+    RegionDescriptionPerMember descriptionPerMemberB =
+        createRegionDescriptionPerMember("mockB", evictionAttr, partitionAttr, regionAttr);
     functionResults.add(descriptionPerMemberA);
     functionResults.add(descriptionPerMemberB);
 
-    CommandResultAssert
-        commandAssert =
-        gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName)
-            .statusIsSuccess()
+    CommandResultAssert commandAssert =
+        gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
     JSONObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
     JSONObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
 
-    assertThat(shared.toString())
-        .contains("regKey", "regVal", "evictKey", "evictVal", "partKey", "partVal");
+    assertThat(shared.toString()).contains("regKey", "regVal", "evictKey", "evictVal", "partKey",
+        "partVal");
     assertThat(unique.toString()).isEqualTo("{}");
   }
 
@@ -163,26 +159,23 @@ public class DescribeRegionJUnitTest {
     partitionAttrB.put("sharedPartitionKey", "uniquePartitionValue_B");
     regionAttrB.put("uniqueRegionKey_B", "uniqueRegionValue_B");
 
-    RegionDescriptionPerMember descriptionPerMemberA
-        = createRegionDescriptionPerMember("mockA", evictionAttrA, partitionAttrA, regionAttrA);
-    RegionDescriptionPerMember descriptionPerMemberB
-        = createRegionDescriptionPerMember("mockB", evictionAttrB, partitionAttrB, regionAttrB);
+    RegionDescriptionPerMember descriptionPerMemberA =
+        createRegionDescriptionPerMember("mockA", evictionAttrA, partitionAttrA, regionAttrA);
+    RegionDescriptionPerMember descriptionPerMemberB =
+        createRegionDescriptionPerMember("mockB", evictionAttrB, partitionAttrB, regionAttrB);
     functionResults.add(descriptionPerMemberA);
     functionResults.add(descriptionPerMemberB);
 
-    CommandResultAssert
-        commandAssert =
-        gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName)
-            .statusIsSuccess();
+    CommandResultAssert commandAssert =
+        gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess();
 
     JSONObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
     JSONObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
 
     assertThat(shared.toString()).contains("Eviction", "sharedEvictionKey", "sharedEvictionValue");
-    assertThat(unique.toString())
-        .contains("sharedPartitionKey", "uniquePartitionValue_A", "uniqueRegionKey_A",
-            "uniqueRegionValue_A", "sharedPartitionKey", "uniquePartitionValue_B",
-            "uniqueRegionKey_B", "uniqueRegionValue_B");
+    assertThat(unique.toString()).contains("sharedPartitionKey", "uniquePartitionValue_A",
+        "uniqueRegionKey_A", "uniqueRegionValue_A", "sharedPartitionKey", "uniquePartitionValue_B",
+        "uniqueRegionKey_B", "uniqueRegionValue_B");
   }
 
   private JSONObject getSharedAttributedJson(CommandResult commandResult) {

@@ -161,7 +161,8 @@ public class DescribeRegionCommand implements GfshCommand {
 
       List<FixedPartitionAttributesInfo> fpaList = regDescPerMem.getFixedPartitionAttributes();
 
-      if (!ndRa.isEmpty() || !ndEa.isEmpty() || !ndPa.isEmpty() || (fpaList != null && !fpaList.isEmpty())) {
+      if (!ndRa.isEmpty() || !ndEa.isEmpty() || !ndPa.isEmpty()
+          || (fpaList != null && !fpaList.isEmpty())) {
         setHeader = true;
         boolean memberNameAdded;
         memberNameAdded = writeAttributesToTable(table,
@@ -176,8 +177,8 @@ public class DescribeRegionCommand implements GfshCommand {
     }
 
     if (setHeader) {
-      table.setHeader(CliStrings.format(
-          CliStrings.DESCRIBE_REGION__NONDEFAULT__PERMEMBERATTRIBUTES__HEADER, memberType));
+      table.setHeader(CliStrings
+          .format(CliStrings.DESCRIBE_REGION__NONDEFAULT__PERMEMBERATTRIBUTES__HEADER, memberType));
     }
 
     return ResultBuilder.buildResult(crd);

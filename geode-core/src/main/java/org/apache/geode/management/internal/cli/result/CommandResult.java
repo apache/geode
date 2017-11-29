@@ -618,6 +618,10 @@ public class CommandResult implements Result {
     return getTableContent(0, 0);
   }
 
+  // public GfJsonObject getTableContent(int a, int b, int... c){
+  //
+  // }
+
   public GfJsonObject getTableContent(int sectionIdx, int tableIdx) {
     GfJsonObject topLevelContent = getContent();
     GfJsonObject sectionObject = topLevelContent.getJSONObject("__sections__-" + sectionIdx);

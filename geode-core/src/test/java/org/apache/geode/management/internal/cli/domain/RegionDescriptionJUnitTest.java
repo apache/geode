@@ -69,8 +69,8 @@ public class RegionDescriptionJUnitTest {
     comparisonMap.put(evictionKeyShared, evictionValueShared);
     comparisonMap.put(partKeyShared, partValueShared);
     comparisonMap.put(regKeyShared, regValueShared);
-    commonMap.put(evictionKeyB, evictionValueB);
-    commonMap.put(regKeyA, regValueB);
+    comparisonMap.put(evictionKeyB, evictionValueB);
+    comparisonMap.put(regKeyB, regValueB);
 
     findCommon(commonMap, comparisonMap);
 
@@ -78,7 +78,7 @@ public class RegionDescriptionJUnitTest {
   }
 
   @Test
-  public void findCommonRemovesDisagreeingKeys() {
+  public void findCommonRemovesKeysWithDisagreeingValues() {
     Map<String, String> commonMap = new HashMap<>();
     commonMap.put(evictionKeyShared, evictionValueShared);
     commonMap.put(partKeyShared, partValueA);

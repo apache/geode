@@ -42,7 +42,7 @@ public class DescribeRegionIntegrationTest {
   public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
 
   @Before
-  public void before(){
+  public void before() {
     gfsh.setTimeout(2);
   }
 
