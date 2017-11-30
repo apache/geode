@@ -639,7 +639,7 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
-    public long getEvictions() {
+    public long getTotalEvictions() {
       throw new UnsupportedOperationException();
     }
 

@@ -2341,11 +2341,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     this.numEntriesInVM.addAndGet(delta);
   }
 
-  public void incEvictions(long delta) {
-    this.evictions.getAndAdd(delta);
+  @Override
+  public void incBucketEvictions() {
+    this.evictions.getAndAdd(1);
   }
 
-  public long getEvictions() {
+  public long getBucketEvictions() {
     return this.evictions.get();
   }
 

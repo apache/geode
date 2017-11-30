@@ -460,9 +460,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
                 }
                 stats.incEvictions();
                 if (_isOwnerALocalRegion()) {
-                  if (_getOwner() instanceof BucketRegion) {
-                    ((BucketRegion) _getOwner()).incEvictions(1);
-                  }
+                  _getOwner().incBucketEvictions();
                 }
                 if (isDebugEnabled_LRU) {
                   logger.trace(LogMarker.LRU, "evictions={}", stats.getEvictions());
@@ -499,9 +497,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
               }
               stats.incEvictions();
               if (_isOwnerALocalRegion()) {
-                if (_getOwner() instanceof BucketRegion) {
-                  ((BucketRegion) _getOwner()).incEvictions(1);
-                }
+                _getOwner().incBucketEvictions();
               }
               if (isDebugEnabled_LRU) {
                 logger.trace(LogMarker.LRU, "evictions={}", stats.getEvictions());
@@ -560,9 +556,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
         if (removalEntry != null) {
           evictedBytes = evictEntry(removalEntry, stats);
           if (evictedBytes != 0) {
-            if (_getOwner() instanceof BucketRegion) {
-              ((BucketRegion) _getOwner()).incEvictions(1);
-            }
+            _getOwner().incBucketEvictions();
             stats.incEvictions();
             if (isDebugEnabled_LRU) {
               logger.debug("evictions={}", stats.getEvictions());

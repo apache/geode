@@ -12091,8 +12091,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Returns the number of LRU evictions done by this region.
    */
   @Override
-  public long getEvictions() {
+  public long getTotalEvictions() {
     return this.entries.getEvictions();
+  }
+  
+  public void incBucketEvictions() {
+    // nothing needed by default
+    // override this method on BucketRegion
   }
 
   public long getEvictionCounter() {
