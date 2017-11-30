@@ -135,4 +135,6 @@ public interface InternalRegion<K, V>
    */
   Statistics getEvictionStatistics();
 
+  long getEvictionCounter();
+
 }

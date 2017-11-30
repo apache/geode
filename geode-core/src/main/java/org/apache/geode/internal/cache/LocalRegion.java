@@ -12100,6 +12100,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // override this method on BucketRegion
   }
 
+  @Override
   public long getEvictionCounter() {
     long result = 0L;
     EvictionController evictionController = getEvictionController();
