@@ -479,10 +479,7 @@ public class DistTXState extends TXState {
     this.updatingTxStateDuringPreCommit = updatingTxState;
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState setUpdatingTxStateDuringPreCommit incoming {} final {} ",
-          updatingTxState, this.updatingTxStateDuringPreCommit/* , new Throwable() */); // [DISTTX]
-                                                                                        // TODO:
-      // Remove
-      // throwable
+          updatingTxState, this.updatingTxStateDuringPreCommit);
     }
   }
 

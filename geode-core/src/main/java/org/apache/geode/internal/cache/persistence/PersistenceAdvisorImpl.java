@@ -846,7 +846,6 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
           if (previousAdvice != null && !previousAdvice.getReplicates().isEmpty()) {
             logger.info(
                 LocalizedMessage.create(LocalizedStrings.PersistenceAdvisorImpl_RETRYING_GII));
-            Thread.sleep(200);
             previousAdvice = null;
             continue;
           }

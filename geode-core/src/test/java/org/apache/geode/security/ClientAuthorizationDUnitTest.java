@@ -296,18 +296,6 @@ public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
     client2.invoke(() -> doGets(4, NO_EXCEPTION));
   }
 
-  // private Properties getSystemProperties(CredentialGenerator cGen) {
-  // Properties properties = cGen.getJavaProperties();
-  // if (Version.CURRENT_ORDINAL >= 75) {
-  // if (properties == null) {
-  // properties = new Properties();
-  // }
-  // properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-  // UsernamePrincipal.class.getName());
-  // }
-  // return properties;
-  // }
-
   @Test
   public void testPutsGetsWithFailover() {
     AuthzCredentialGenerator gen = getXmlAuthzGenerator();
