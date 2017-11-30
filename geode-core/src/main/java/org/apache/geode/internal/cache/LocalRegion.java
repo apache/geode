@@ -12094,7 +12094,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public long getTotalEvictions() {
     return this.entries.getEvictions();
   }
-  
+
   public void incBucketEvictions() {
     // nothing needed by default
     // override this method on BucketRegion
