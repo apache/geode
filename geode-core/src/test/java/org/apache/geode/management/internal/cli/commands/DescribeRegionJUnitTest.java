@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -37,6 +36,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -104,8 +104,8 @@ public class DescribeRegionJUnitTest {
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
-    JSONObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
-    JSONObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
+    GfJsonObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
+    GfJsonObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
 
     assertThat(shared.toString()).contains("regKey", "regVal", "evictKey", "evictVal", "partKey",
         "partVal");
@@ -133,8 +133,8 @@ public class DescribeRegionJUnitTest {
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
-    JSONObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
-    JSONObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
+    GfJsonObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
+    GfJsonObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
 
     assertThat(shared.toString()).contains("regKey", "regVal", "evictKey", "evictVal", "partKey",
         "partVal");
@@ -169,8 +169,8 @@ public class DescribeRegionJUnitTest {
     CommandResultAssert commandAssert =
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess();
 
-    JSONObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
-    JSONObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
+    GfJsonObject shared = getSharedAttributedJson(commandAssert.getCommandResult());
+    GfJsonObject unique = getMemberSpecificAttributeJson(commandAssert.getCommandResult());
 
     assertThat(shared.toString()).contains("Eviction", "sharedEvictionKey", "sharedEvictionValue");
     assertThat(unique.toString()).contains("sharedPartitionKey", "uniquePartitionValue_A",
@@ -178,13 +178,11 @@ public class DescribeRegionJUnitTest {
         "uniqueRegionKey_B", "uniqueRegionValue_B");
   }
 
-  private JSONObject getSharedAttributedJson(CommandResult commandResult) {
-    return commandResult.getContent().getInternalJsonObject().getJSONObject("__sections__-0")
-        .getJSONObject("__sections__-0").getJSONObject("__tables__-0").getJSONObject("content");
+  private GfJsonObject getSharedAttributedJson(CommandResult commandResult) {
+    return commandResult.getTableContent(0, 0, 0);
   }
 
-  private JSONObject getMemberSpecificAttributeJson(CommandResult commandResult) {
-    return commandResult.getContent().getInternalJsonObject().getJSONObject("__sections__-0")
-        .getJSONObject("__sections__-1").getJSONObject("__tables__-0").getJSONObject("content");
+  private GfJsonObject getMemberSpecificAttributeJson(CommandResult commandResult) {
+    return commandResult.getTableContent(0, 1, 0);
   }
 }
