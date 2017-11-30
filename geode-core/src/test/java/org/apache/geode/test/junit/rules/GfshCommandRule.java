@@ -74,6 +74,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   private Supplier<Integer> portSupplier;
   private PortType portType = PortType.jmxManager;
   private HeadlessGfsh gfsh = null;
+  private int gfshTimeout = 2;
   private boolean connected = false;
   private IgnoredException ignoredException;
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -98,7 +99,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   protected void before(Description description) throws Throwable {
     LogWrapper.close();
     workingDir = temporaryFolder.newFolder("gfsh_files");
-    this.gfsh = new HeadlessGfsh(getClass().getName(), 30, workingDir.getAbsolutePath());
+    this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
     ignoredException =
         addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
 
@@ -267,8 +268,12 @@ public class GfshCommandRule extends DescribedExternalResource {
     return workingDir;
   }
 
-  public void setTimeout(long timeoutInSeconds) {
-    gfsh.setTimeout(timeoutInSeconds);
+  public GfshCommandRule setTimeout(int timeoutInSeconds) {
+    this.gfshTimeout = timeoutInSeconds;
+    if (gfsh != null) {
+      gfsh.setTimeout(timeoutInSeconds);
+    }
+    return this;
   }
 
   public enum PortType {
