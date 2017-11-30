@@ -87,8 +87,8 @@ public class HeapLRUController extends SizeLRUController {
             f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"),});
   }
 
-  public HeapLRUController(EvictionAction evictionAction, Region region, ObjectSizer sizer) {
-    super(evictionAction, region, sizer);
+  public HeapLRUController(EvictionAction evictionAction, ObjectSizer sizer) {
+    super(evictionAction, sizer);
   }
 
   @Override

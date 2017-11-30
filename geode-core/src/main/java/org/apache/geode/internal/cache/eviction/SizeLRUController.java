@@ -25,8 +25,8 @@ abstract class SizeLRUController extends AbstractEvictionController {
 
   private ObjectSizer sizer;
 
-  SizeLRUController(EvictionAction evictionAction, Region region, ObjectSizer sizer) {
-    super(evictionAction, region);
+  SizeLRUController(EvictionAction evictionAction, ObjectSizer sizer) {
+    super(evictionAction);
     this.sizer = sizer;
   }
 

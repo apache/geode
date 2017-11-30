@@ -3938,7 +3938,7 @@ public class DiskStoreImpl implements DiskStore {
       result = this.prlruStatMap.get(prName);
       if (result == null) {
         EvictionAttributesImpl ea = dr.getEvictionAttributes();
-        EvictionController ec = AbstractEvictionController.create(ea, dr.getOffHeap(), null);
+        EvictionController ec = AbstractEvictionController.create(ea, dr.getOffHeap());
         StatisticsFactory sf = cache.getDistributedSystem();
         result = ec.initStats(dr, sf);
         this.prlruStatMap.put(prName, result);

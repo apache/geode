@@ -21,6 +21,7 @@ import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -156,11 +157,6 @@ class TestEvictionController implements EvictionController {
   }
 
   @Override
-  public void setBucketRegion(Region region) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  @Override
   public long getLimit() {
     throw new UnsupportedOperationException("Not implemented");
   }
@@ -172,6 +168,11 @@ class TestEvictionController implements EvictionController {
 
   @Override
   public void close() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  @Override
+  public void closeBucket(BucketRegion bucketRegion) {
     throw new UnsupportedOperationException("Not implemented");
   }
 }

@@ -18,7 +18,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
@@ -106,8 +106,6 @@ public interface EvictionController {
 
   boolean lruLimitExceeded(EvictionStatistics stats, DiskRegionView diskRegionView);
 
-  void setBucketRegion(Region region);
-
   /**
    * Returns the "limit" as defined by this LRU algorithm
    */
@@ -119,4 +117,7 @@ public interface EvictionController {
   void setLimit(int maximum);
 
   void close();
+
+  void closeBucket(BucketRegion bucketRegion);
+
 }

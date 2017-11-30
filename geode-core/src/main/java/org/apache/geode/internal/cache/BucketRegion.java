@@ -2181,7 +2181,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     closeCacheCallback(getCacheWriter());
     EvictionController evictionController = getEvictionController();
     if (evictionController != null) {
-      evictionController.close();
+      evictionController.closeBucket(this);
     }
   }
 

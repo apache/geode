@@ -26,7 +26,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -65,26 +64,26 @@ public abstract class AbstractEvictionController implements EvictionController {
   /**
    * Create and return the appropriate eviction controller using the attributes provided.
    */
-  public static EvictionController create(EvictionAttributes evictionAttributes, boolean isOffHeap,
-      InternalRegion<?, ?> region) {
+  public static EvictionController create(EvictionAttributes evictionAttributes,
+      boolean isOffHeap) {
     EvictionAlgorithm algorithm = evictionAttributes.getAlgorithm();
     EvictionAction action = evictionAttributes.getAction();
     ObjectSizer sizer = evictionAttributes.getObjectSizer();
     int maximum = evictionAttributes.getMaximum();
     if (algorithm == EvictionAlgorithm.LRU_HEAP) {
-      return new HeapLRUController(action, region, sizer);
+      return new HeapLRUController(action, sizer);
     }
     if (algorithm == EvictionAlgorithm.LRU_MEMORY) {
-      return new MemoryLRUController(maximum, sizer, action, region, isOffHeap);
+      return new MemoryLRUController(maximum, sizer, action, isOffHeap);
     }
     if (algorithm == EvictionAlgorithm.LRU_ENTRY) {
-      return new CountLRUEviction(maximum, action, region);
+      return new CountLRUEviction(maximum, action);
     }
     if (algorithm == EvictionAlgorithm.LIFO_MEMORY) {
-      return new MemoryLRUController(maximum, sizer, action, region, isOffHeap);
+      return new MemoryLRUController(maximum, sizer, action, isOffHeap);
     }
     if (algorithm == EvictionAlgorithm.LIFO_ENTRY) {
-      return new CountLRUEviction(maximum, action, region);
+      return new CountLRUEviction(maximum, action);
     }
     throw new IllegalStateException("Unhandled algorithm " + algorithm);
   }
@@ -101,8 +100,6 @@ public abstract class AbstractEvictionController implements EvictionController {
    */
   protected transient InternalEvictionStatistics stats;
 
-  protected BucketRegion bucketRegion;
-
   /** The region whose capacity is controller by this eviction controller */
   private transient volatile String regionName;
 
@@ -110,8 +107,7 @@ public abstract class AbstractEvictionController implements EvictionController {
    * Creates a new {@code AbstractEvictionController} with the given {@linkplain EvictionAction
    * eviction action}.
    */
-  protected AbstractEvictionController(EvictionAction evictionAction, Region region) {
-    bucketRegion = (BucketRegion) (region instanceof BucketRegion ? region : null);
+  protected AbstractEvictionController(EvictionAction evictionAction) {
     setEvictionAction(evictionAction);
   }
 
@@ -122,17 +118,6 @@ public abstract class AbstractEvictionController implements EvictionController {
    */
   @Override
   public abstract String toString();
-
-  /**
-   * Used to hook up a bucketRegion late during disk recovery.
-   */
-  @Override
-  public void setBucketRegion(Region region) {
-    if (region instanceof BucketRegion) {
-      this.bucketRegion = (BucketRegion) region;
-      this.bucketRegion.setLimit(getLimit());
-    }
-  }
 
   /**
    * Gets the action that is performed on the least recently used entry when it is evicted from the
@@ -186,9 +171,6 @@ public abstract class AbstractEvictionController implements EvictionController {
       throw new InternalGemFireException(
           LocalizedStrings.LRUAlgorithm_LRU_STATS_IN_EVICTION_CONTROLLER_INSTANCE_SHOULD_NOT_BE_NULL
               .toLocalizedString());
-    }
-    if (bucketRegion != null) {
-      return bucketRegion.getLimit();
     }
     return stats.getLimit();
   }
@@ -263,11 +245,15 @@ public abstract class AbstractEvictionController implements EvictionController {
   @Override
   public void close() {
     if (this.stats != null) {
-      if (bucketRegion != null) {
-        this.stats.decrementCounter(bucketRegion.getCounter());
-      } else {
-        this.stats.close();
-      }
+      this.stats.close();
     }
   }
+
+  @Override
+  public void closeBucket(BucketRegion bucketRegion) {
+    if (this.stats != null) {
+      this.stats.decrementCounter(bucketRegion.getCounter());
+    }
+  }
+
 }

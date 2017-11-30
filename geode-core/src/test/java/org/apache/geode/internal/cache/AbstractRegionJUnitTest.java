@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriterException;
@@ -677,6 +678,11 @@ public class AbstractRegionJUnitTest {
 
     @Override
     public void setEvictionMaximum(int maximum) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Statistics getEvictionStatistics() {
       throw new UnsupportedOperationException();
     }
   }

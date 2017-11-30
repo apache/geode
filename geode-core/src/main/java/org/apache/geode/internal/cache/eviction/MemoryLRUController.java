@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
@@ -81,8 +82,8 @@ public class MemoryLRUController extends SizeLRUController {
   /**
    * Create an instance of the capacity controller with default settings.
    */
-  public MemoryLRUController(Region region) {
-    this(EvictionAttributes.DEFAULT_MEMORY_MAXIMUM, region);
+  public MemoryLRUController() {
+    this(EvictionAttributes.DEFAULT_MEMORY_MAXIMUM);
   }
 
   /**
@@ -97,8 +98,8 @@ public class MemoryLRUController extends SizeLRUController {
    *        allowed in the region, collectively for its primary buckets and redundant copies for
    *        this VM. It can be different for the same region in different VMs.
    */
-  public MemoryLRUController(int megabytes, Region region) {
-    this(megabytes, null /* sizerImpl */, region);
+  public MemoryLRUController(int megabytes) {
+    this(megabytes, null /* sizerImpl */);
   }
 
   /**
@@ -115,8 +116,8 @@ public class MemoryLRUController extends SizeLRUController {
    * @param sizerImpl classname of a class that implements ObjectSizer, used to compute object sizes
    *        for MemLRU
    */
-  public MemoryLRUController(int megabytes, ObjectSizer sizerImpl, Region region) {
-    this(megabytes, sizerImpl, EvictionAction.DEFAULT_EVICTION_ACTION, region, false);
+  public MemoryLRUController(int megabytes, ObjectSizer sizerImpl) {
+    this(megabytes, sizerImpl, EvictionAction.DEFAULT_EVICTION_ACTION, false);
   }
 
   /**
@@ -135,8 +136,8 @@ public class MemoryLRUController extends SizeLRUController {
    * @param isOffHeap true if the region that owns this cc is stored off heap
    */
   public MemoryLRUController(int megabytes, ObjectSizer sizer, EvictionAction evictionAction,
-      Region region, boolean isOffHeap) {
-    super(evictionAction, region, sizer);
+      boolean isOffHeap) {
+    super(evictionAction, sizer);
     this.isOffHeap = isOffHeap;
     setMaximumMegabytes(megabytes);
   }
@@ -152,12 +153,13 @@ public class MemoryLRUController extends SizeLRUController {
           LocalizedStrings.MemLRUCapacityController_MEMLRUCONTROLLER_LIMIT_MUST_BE_POSTIVE_0
               .toLocalizedString(megabytes));
     }
-    this.limit = (megabytes) * ONE_MEG;
-    if (bucketRegion != null) {
-      bucketRegion.setLimit(this.limit);
-    } else if (this.stats != null) {
-      this.stats.setLimit(this.limit);
+    if (stats == null) {
+      throw new InternalGemFireException(
+          LocalizedStrings.LRUAlgorithm_LRU_STATS_IN_EVICTION_CONTROLLER_INSTANCE_SHOULD_NOT_BE_NULL
+              .toLocalizedString());
     }
+    this.limit = (megabytes) * ONE_MEG;
+    this.stats.setLimit(this.limit);
   }
 
   @Override

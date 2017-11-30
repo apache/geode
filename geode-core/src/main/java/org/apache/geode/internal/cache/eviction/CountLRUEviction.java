@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
@@ -76,11 +77,9 @@ public class CountLRUEviction extends AbstractEvictionController {
    * Creates an LRU capacity controller that allows the {@link #DEFAULT_MAXIMUM_ENTRIES default}
    * maximum number of entries and the {@link EvictionAction#DEFAULT_EVICTION_ACTION default}
    * eviction action.
-   *
-   * @see #CountLRUEviction(int,Region)
    */
-  public CountLRUEviction(Region region) {
-    this(DEFAULT_MAXIMUM_ENTRIES, EvictionAction.DEFAULT_EVICTION_ACTION, region);
+  public CountLRUEviction() {
+    this(DEFAULT_MAXIMUM_ENTRIES, EvictionAction.DEFAULT_EVICTION_ACTION);
   }
 
   /**
@@ -97,8 +96,8 @@ public class CountLRUEviction extends AbstractEvictionController {
    *        for this VM, this controller will remove the least recently used entry from the bucket
    *        in which the subsequent {@code put} takes place.
    */
-  public CountLRUEviction(int maximumEntries, Region region) {
-    this(maximumEntries, EvictionAction.DEFAULT_EVICTION_ACTION, region);
+  public CountLRUEviction(int maximumEntries) {
+    this(maximumEntries, EvictionAction.DEFAULT_EVICTION_ACTION);
   }
 
   /**
@@ -115,8 +114,8 @@ public class CountLRUEviction extends AbstractEvictionController {
    *        in which the subsequent {@code put} takes place.
    * @param evictionAction The action to perform upon the least recently used entry.
    */
-  public CountLRUEviction(int maximumEntries, EvictionAction evictionAction, Region region) {
-    super(evictionAction, region);
+  public CountLRUEviction(int maximumEntries, EvictionAction evictionAction) {
+    super(evictionAction);
     setMaximumEntries(maximumEntries);
   }
 
@@ -129,12 +128,13 @@ public class CountLRUEviction extends AbstractEvictionController {
       throw new IllegalArgumentException(
           LocalizedStrings.LRUCapacityController_MAXIMUM_ENTRIES_MUST_BE_POSITIVE
               .toLocalizedString());
-    this.maximumEntries = maximumEntries;
-    if (bucketRegion != null) {
-      bucketRegion.setLimit(this.maximumEntries);
-    } else if (this.stats != null) {
-      this.stats.setLimit(this.maximumEntries);
+    if (stats == null) {
+      throw new InternalGemFireException(
+          LocalizedStrings.LRUAlgorithm_LRU_STATS_IN_EVICTION_CONTROLLER_INSTANCE_SHOULD_NOT_BE_NULL
+              .toLocalizedString());
     }
+    this.maximumEntries = maximumEntries;
+    this.stats.setLimit(maximumEntries);
   }
 
   @Override

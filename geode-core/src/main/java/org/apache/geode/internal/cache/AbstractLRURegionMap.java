@@ -84,13 +84,13 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       InternalRegion<?, ?> internalRegion = (InternalRegion<?, ?>) owner;
       EvictionAttributes evictionAttributes = internalRegion.getEvictionAttributes();
       evictionAlgorithm = evictionAttributes.getAlgorithm();
-      evictionController = AbstractEvictionController.create(evictionAttributes,
-          internalRegion.getOffHeap(), internalRegion);
+      evictionController =
+          AbstractEvictionController.create(evictionAttributes, internalRegion.getOffHeap());
     } else if (owner instanceof PlaceHolderDiskRegion) {
       PlaceHolderDiskRegion phdr = (PlaceHolderDiskRegion) owner;
       evictionAlgorithm = phdr.getActualLruAlgorithm();
       evictionController =
-          AbstractEvictionController.create(phdr.getEvictionAttributes(), phdr.getOffHeap(), null);
+          AbstractEvictionController.create(phdr.getEvictionAttributes(), phdr.getOffHeap());
     } else {
       throw new IllegalStateException("expected InternalRegion or PlaceHolderDiskRegion");
     }
@@ -110,7 +110,6 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   public void changeOwner(LocalRegion r) {
     super.changeOwner(r);
     getEvictionList().setBucketRegion(r);
-    this.evictionController.setBucketRegion(r);
   }
 
   /**
