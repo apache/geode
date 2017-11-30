@@ -170,12 +170,12 @@ public interface GfshCommand extends CommandMarker {
     return CliUtil.getRegionAssociatedMembers(regionPath, cache, true);
   }
 
-  default ResultCollector<?, ?> executeFunction(final Function function, Object args,
+  default ResultCollector<?, ?> executeFunction(Function function, Object args,
       final Set<DistributedMember> targetMembers) {
     return CliUtil.executeFunction(function, args, targetMembers);
   }
 
-  default ResultCollector<?, ?> executeFunction(final Function function, Object args,
+  default ResultCollector<?, ?> executeFunction(Function function, Object args,
       final DistributedMember targetMember) {
     return executeFunction(function, args, Collections.singleton(targetMember));
   }

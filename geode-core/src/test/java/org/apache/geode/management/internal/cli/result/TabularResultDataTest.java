@@ -13,10 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.functions;
+package org.apache.geode.management.internal.cli.result;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -24,19 +25,27 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 
 @Category(UnitTest.class)
-public class CliFunctionResultTest {
+public class TabularResultDataTest {
 
-  private CliFunctionResult result;
+  TabularResultData data;
+
+  @Before
+  public void before() throws Exception {
+    data = new TabularResultData();
+  }
 
   @Test
-  public void getErrorMessage() throws Exception {
-    result = new CliFunctionResult("memberName", false, "message");
-    assertThat(result.getErrorMessage()).isEqualTo("message");
+  public void rowColumnSize() throws Exception {
+    data.accumulate("key", "value1");
+    assertThat(data.rowSize("key")).isEqualTo(1);
+    assertThat(data.columnSize()).isEqualTo(1);
 
-    result = new CliFunctionResult("memberName", new Exception("exception message"), "message");
-    assertThat(result.getErrorMessage()).isEqualTo("message");
+    data.accumulate("key", "value2");
+    assertThat(data.rowSize("key")).isEqualTo(2);
+    assertThat(data.columnSize()).isEqualTo(1);
 
-    result = new CliFunctionResult("memberName", new Exception("exception message"), null);
-    assertThat(result.getErrorMessage()).isEqualTo("java.lang.Exception: exception message");
+    data.accumulate("key1", "value1");
+    assertThat(data.rowSize("key1")).isEqualTo(1);
+    assertThat(data.columnSize()).isEqualTo(2);
   }
 }

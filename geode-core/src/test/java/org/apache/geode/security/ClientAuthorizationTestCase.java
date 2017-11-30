@@ -14,12 +14,32 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePort.*;
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Host.*;
-import static org.apache.geode.test.dunit.Wait.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.security.SecurityTestUtils.KEYS;
+import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NVALUES;
+import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
+import static org.apache.geode.security.SecurityTestUtils.VALUES;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.concatProperties;
+import static org.apache.geode.security.SecurityTestUtils.getCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocalValue;
+import static org.apache.geode.security.SecurityTestUtils.registerExpectedExceptions;
+import static org.apache.geode.security.SecurityTestUtils.waitForCondition;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +73,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePort.*;
+import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -113,13 +133,13 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
   private void setUpClientAuthorizationTestBase() throws Exception {
     Host host = getHost(0);
-    server1 = host.getVM(0);
-    server2 = host.getVM(1);
+    server1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
+    server2 = host.getVM(VersionManager.CURRENT_VERSION, 1);
     server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
     server2.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = false);
     if (VersionManager.isCurrentVersion(clientVersion)) {
-      client1 = host.getVM(2);
-      client2 = host.getVM(3);
+      client1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
+      client2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
     } else {
       client1 = host.getVM(clientVersion, 2);
       client2 = host.getVM(clientVersion, 3);

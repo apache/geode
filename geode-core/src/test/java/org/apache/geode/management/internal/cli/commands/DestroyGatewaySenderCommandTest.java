@@ -102,7 +102,8 @@ public class DestroyGatewaySenderCommandTest {
 
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     parser.executeAndAssertThat(command, "destroy gateway-sender --id=1").statusIsError()
-        .tableHasColumnWithValuesContaining("Status", "result1", "ERROR: something happened");
+        .tableHasColumnWithValuesContaining("Status", "result1",
+            "ERROR: java.lang.Exception: something happened");
 
   }
 }

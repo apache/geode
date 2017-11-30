@@ -681,7 +681,7 @@ See also [describe lucene index](describe.html#describe_lucene_index), [destroy 
 
 ``` pre
 create lucene index --name=value --region=value --field=value(,value)*
-  [--analyzer=value(,value)*] [--group=value(,value)*]
+  [--analyzer=value(,value)*] [--serializer=value] [--group=value(,value)*]
 ```
 
 **Parameters, create lucene index:**
@@ -692,6 +692,7 @@ create lucene index --name=value --region=value --field=value(,value)*
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
 | <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field of the region values that are referenced by the index. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`. |         |
 | <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer to extract terms from text. Use `DEFAULT` to specify the default analyzer.                                  |         |
+| <span class="keyword parmname">&#8209;&#8209;serializer</span>   | Fully qualified name of the class that implements the `LuceneSerializer` interface to be used with this index.     |         |
 | <span class="keyword parmname">\\-\\-group</span>      | The index will be created on all the members in the specified member groups.                     |         |
 
 
@@ -751,7 +752,8 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
     [--recovery-delay=value] [--redundant-copies=value]
     [--startup-recovery-delay=value] [--total-max-memory=value]
     [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)]
-    [--partition-resolver=value]
+    [--partition-resolver=value] [--eviction-enabled] [--eviction-entry-count=value]
+    [--eviction-max-memory=value] [--eviction-action=value] [--eviction-object-sizer=value]
 ```
 
 **Parameters, create region:**
@@ -960,6 +962,48 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <td><span class="keyword parmname">\-\-partition-resolver</span></td>
 <td>Specifies the full path to a custom partition resolver. To use the provided default partition resolver, specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code>.</td>
 <td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-enabled</span></td>
+<td>Enables eviction, where the eviction policy is controlled by the resource manager based on heap percentage.</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-entry-count</span></td>
+<td>Enables eviction, where the eviction policy is based on the number of entries in the region.</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-max-memory</span></td>
+<td>Enables eviction, where the eviction policy is based on the amount of memory consumed by the region, specified in megabytes.</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-action</span></td>
+<td>Action to take when the eviction threshold is reached.
+<div class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>local-destroy</td>
+<td>Entry is destroyed locally. Use with caution - may lead to inconsistencies.</td>
+</tr>
+<tr class="even">
+<td>overflow-to-disk</td>
+<td>Entry is overflowed to disk. For partitioned regions, this provides the most reliable read behavior across the region.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-object-sizer</span></td>
+<td>Specifies your implementation of the ObjectSizer interface to measure the size of objects in the region.
+The sizer applies only to heap and memory based eviction.</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
@@ -977,13 +1021,17 @@ create region --name=region2 --type=REPLICATE \
 org.apache.geode.examples.MyCacheListener2 \
 --group=Group1,Group2
 
-create region --name=region3 --type=PARTITION_PERSISTENT --redundant-copies=2 --total-max-memory=1000 \
---startup-recovery-delay=5 --total-num-buckets=100 --disk-store=DiskStore2 \
---cache-listener=org.apache.geode.examples.MyCacheListener3 \
+create region --name=region3 --type=PARTITION_PERSISTENT --redundant-copies=2 \
+--total-max-memory=1000 --startup-recovery-delay=5 --total-num-buckets=100 \
+--disk-store=DiskStore2 --cache-listener=org.apache.geode.examples.MyCacheListener3 \
 --group=Group2 
 
-create region --name=region4 --type=REPLICATE_PROXY --cache-listener=org.apache.geode.examples.MyCacheListener1 
---group=Group1,Group2
+create region --name=region4 --type=REPLICATE_PROXY \
+--cache-listener=org.apache.geode.examples.MyCacheListener1 --group=Group1,Group2
+
+create region --name=myRegion --type=REPLICATE --eviction-max-memory=100 \
+--eviction-action=overflow-to-disk --eviction-object-sizer=my.company.geode.MySizer
+
 ```
 
 **Sample Output:**
