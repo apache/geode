@@ -18,6 +18,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
 
@@ -25,7 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.rules.ExternalResource;
@@ -134,6 +137,14 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   public MemberVM startLocatorVM(int index) throws Exception {
     return startLocatorVM(index, new Properties());
+  }
+
+  public MemberVM startLocatorVM(int index, int... locatorPort) throws Exception {
+    Properties properties = new Properties();
+    String locators = Arrays.stream(locatorPort).mapToObj(i -> "localhost[" + i + "]")
+        .collect(Collectors.joining(","));
+    properties.setProperty(LOCATORS, locators);
+    return startLocatorVM(index, properties);
   }
 
   /**
