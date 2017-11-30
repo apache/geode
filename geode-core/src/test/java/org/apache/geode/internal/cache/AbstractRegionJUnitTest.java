@@ -685,5 +685,10 @@ public class AbstractRegionJUnitTest {
     public Statistics getEvictionStatistics() {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public long getEvictionCounter() {
+      throw new UnsupportedOperationException();
+    }
   }
 }
