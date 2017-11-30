@@ -542,12 +542,7 @@ public class MemberMBeanBridge {
     }
 
     LocalRegion l = (LocalRegion) region;
-    if (l.getEvictionController() != null) {
-      EvictionStatistics stats = l.getEvictionController().getStatistics();
-      if (stats != null) {
-        removeLRUStats(stats);
-      }
-    }
+    removeLRUStats(l.getEvictionStatistics());
 
     DiskRegion dr = l.getDiskRegion();
     if (dr != null) {
@@ -561,8 +556,10 @@ public class MemberMBeanBridge {
     regionMonitor.removePartitionStatistics(parStats.getStats());
   }
 
-  public void removeLRUStats(EvictionStatistics lruStats) {
-    regionMonitor.removeLRUStatistics(lruStats.getStats());
+  public void removeLRUStats(Statistics statistics) {
+    if (statistics != null) {
+      regionMonitor.removeLRUStatistics(statistics);
+    }
   }
 
   public void removeDirectoryStats(DiskDirectoryStats diskDirStats) {
