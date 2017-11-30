@@ -135,7 +135,7 @@ public abstract class AbstractRegionMap implements RegionMap {
       throw new IllegalStateException("expected LocalRegion or PlaceHolderDiskRegion");
     }
 
-    setEntryFactory(new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(
+    setEntryFactory(new RegionEntryFactoryBuilder().create(
         attr.statisticsEnabled, isLRU, isDisk, withVersioning, offHeap));
   }
 
