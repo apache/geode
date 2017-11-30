@@ -12094,7 +12094,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public long getEvictions() {
     return this.entries.getEvictions();
   }
-  
+
   public long getEvictionCounter() {
     long result = 0L;
     EvictionController evictionController = getEvictionController();

@@ -158,12 +158,6 @@ class EvictionStatisticsImpl implements InternalEvictionStatistics {
   }
 
   @Override
-  public void incEvictions(long delta) {
-    this.evictions.getAndAdd(delta);
-    stats.incLong(evictionsId, delta);
-  }
-
-  @Override
   public long getDestroys() {
     return this.destroys.get();
   }

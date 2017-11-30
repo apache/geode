@@ -264,9 +264,7 @@ public abstract class AbstractEvictionController implements EvictionController {
   public void close() {
     if (this.stats != null) {
       if (bucketRegion != null) {
-        this.stats.incEvictions(bucketRegion.getEvictions() * -1);
         this.stats.decrementCounter(bucketRegion.getCounter());
-        bucketRegion.close();
       } else {
         this.stats.close();
       }

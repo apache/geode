@@ -31,8 +31,6 @@ interface InternalEvictionStatistics extends EvictionStatistics {
 
   void decrementCounter(long delta);
 
-  void incEvictions(long delta);
-
   void incEvaluations(long evaluations);
 
   void incGreedyReturns(long greedyReturns);

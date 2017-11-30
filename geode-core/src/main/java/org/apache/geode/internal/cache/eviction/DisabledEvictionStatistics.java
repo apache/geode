@@ -49,11 +49,6 @@ class DisabledEvictionStatistics implements InternalEvictionStatistics {
   }
 
   @Override
-  public void incEvictions(long delta) {
-    // nothing
-  }
-
-  @Override
   public long getDestroys() {
     return 0;
   }
