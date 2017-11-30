@@ -1220,6 +1220,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_DEFAULT_ALIAS, "The default certificate alias to be used in a multi-key keystore");
     m.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION,
         "This property determines is the HTTP service with use mutual ssl authentication.");
+    m.put(VALIDATE_SERIALIZABLE_OBJECTS,
+        "If true checks incoming java serializable objects against a filter");
+    m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");
 
     dcAttDescriptions = Collections.unmodifiableMap(m);
 

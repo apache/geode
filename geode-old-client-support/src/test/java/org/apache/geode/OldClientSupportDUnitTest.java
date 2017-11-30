@@ -19,15 +19,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributedSystemService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -173,6 +179,12 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void oldClientObjectTranslatesToGeodeObject_javaSerialization() throws Exception {
+    Properties properties = new Properties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.ClientSerializableObjec");
+    DistributionConfig config = new DistributionConfigImpl(properties);
+    InternalDataSerializer.initialize(config, new ArrayList<DistributedSystemService>());
+
     com.gemstone.gemfire.ClientSerializableObject gemfireObject =
         new com.gemstone.gemfire.ClientSerializableObject();
     com.gemstone.gemfire.ClientSerializableObject subObject =

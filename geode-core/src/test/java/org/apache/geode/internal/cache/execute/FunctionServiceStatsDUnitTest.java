@@ -44,6 +44,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -1141,6 +1142,14 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
     member2.invoke(closeDistributedSystem);
     member3.invoke(closeDistributedSystem);
     member4.invoke(closeDistributedSystem);
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.MyFunctionExecutionException");
+    return properties;
   }
 
   /**

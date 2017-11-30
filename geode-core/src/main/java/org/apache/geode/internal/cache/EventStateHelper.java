@@ -50,7 +50,8 @@ public class EventStateHelper {
    * {@link RegionStateMessage#toData(DataOutput)} <br>
    */
   @SuppressWarnings("synthetic-access")
-  public static void toData(DataOutput dop, Map eventState, boolean isHARegion) throws IOException {
+  public static void dataSerialize(DataOutput dop, Map eventState, boolean isHARegion)
+      throws IOException {
     // For HARegionQueues, the event state map is uses different values
     // than a regular region :(
     InternalDistributedMember myId =
@@ -105,7 +106,7 @@ public class EventStateHelper {
    * {@link CreateRegionReplyMessage#fromData(DataInput)} <br>
    * {@link RegionStateMessage#fromData(DataInput)} <br>
    */
-  public static Map fromData(DataInput dip, boolean isHARegion)
+  public static Map deDataSerialize(DataInput dip, boolean isHARegion)
       throws IOException, ClassNotFoundException {
 
     InternalDistributedMember senderId = InternalDistributedMember.readEssentialData(dip);

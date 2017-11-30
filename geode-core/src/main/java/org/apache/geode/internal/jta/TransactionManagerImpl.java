@@ -895,7 +895,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     }
   }
 
-  static class GlobalTransactionComparator implements Comparator {
+  static class GlobalTransactionComparator implements Comparator, Serializable {
 
     /**
      * Sort the array in ascending order of expiration times

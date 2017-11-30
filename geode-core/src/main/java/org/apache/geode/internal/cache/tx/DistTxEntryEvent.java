@@ -110,6 +110,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     basicSetNewValue(DataSerializer.readObject(in));
 
     byte flags = DataSerializer.readByte(in);
+
     if ((flags & HAS_PUTALL_OP) != 0) {
       putAllFromData(in);
     }

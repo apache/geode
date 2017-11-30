@@ -29,6 +29,7 @@ import java.util.Iterator;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.*;
@@ -59,9 +60,6 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
   private static final String CUSTOMER = "Customer";
   private static final String ORDER = "Order";
 
-  /**
-   * @param name
-   */
   public TransactionsWithDeltaDUnitTest() {
     super();
   }
@@ -128,13 +126,15 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  static class Customer implements Delta, Serializable {
+  static class Customer implements Delta, DataSerializable {
     private int id;
     private String name;
     private boolean idChanged;
     private boolean nameChanged;
     private boolean fromDeltaCalled;
     private boolean toDeltaCalled;
+
+    public Customer() {}
 
     public Customer(int id, String name) {
       this.id = id;
@@ -216,6 +216,26 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
       boolean retVal = this.toDeltaCalled;
       this.toDeltaCalled = false;
       return retVal;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeInt(id);
+      out.writeUTF(name);
+      out.writeBoolean(idChanged);
+      out.writeBoolean(nameChanged);
+      out.writeBoolean(fromDeltaCalled);
+      out.writeBoolean(toDeltaCalled);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      id = in.readInt();
+      name = in.readUTF();
+      idChanged = in.readBoolean();
+      nameChanged = in.readBoolean();
+      fromDeltaCalled = in.readBoolean();
+      toDeltaCalled = in.readBoolean();
     }
   }
 

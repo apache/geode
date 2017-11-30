@@ -14,11 +14,13 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -134,6 +136,14 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEarlyAck(false);
     return factory.create();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache30.PartitionedRegionDUnitTest$PoisonedKey");
+    return properties;
   }
 
   public static int setLogLevel(LogWriter l, int logLevl) {

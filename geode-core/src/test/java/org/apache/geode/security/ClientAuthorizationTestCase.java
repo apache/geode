@@ -71,8 +71,11 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -81,6 +84,7 @@ import org.apache.geode.security.generator.AuthzCredentialGenerator.ClassCode;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
+import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -214,6 +218,10 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         authProps.setProperty(SECURITY_CLIENT_ACCESSOR, accessor);
       }
     }
+    if (Version.CURRENT_ORDINAL >= 75) {
+      authProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          UsernamePrincipal.class.getName());
+    }
     return concatProperties(new Properties[] {authProps, extraAuthProps, extraAuthzProps});
   }
 
@@ -231,7 +239,13 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     if (locatorPort == 0) {
       locatorPort = getRandomAvailablePort(SOCKET);
     }
-    return SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, null, serverPort,
+    Properties jprops = javaProps;
+    if (jprops == null) {
+      jprops = new Properties();
+    }
+    jprops.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.security.templates.UsernamePrincipal");
+    return SecurityTestUtils.createCacheServer(authProps, jprops, locatorPort, null, serverPort,
         true, NO_EXCEPTION);
   }
 
@@ -791,18 +805,29 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
         Properties clientProps =
             concatProperties(new Properties[] {opCredentials, extraAuthProps, extraAuthzProps});
+
         // Start the client with valid credentials but allowed or disallowed to perform an operation
         System.out.println("executeOpBlock: For client" + clientNum + credentialsTypeStr
             + " credentials: " + opCredentials);
         boolean setupDynamicRegionFactory = (opFlags & OpFlags.ENABLE_DRF) > 0;
 
         if (useThisVM) {
+          clientProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+              "org.apache.geode.security.templates.UsernamePrincipal");
           SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, 0,
               setupDynamicRegionFactory, NO_EXCEPTION);
         } else {
-          clientVM.invoke("SecurityTestUtils.createCacheClientWithDynamicRegion",
-              () -> SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps,
-                  javaProps, 0, setupDynamicRegionFactory, NO_EXCEPTION));
+          clientVM.invoke("SecurityTestUtils.createCacheClientWithDynamicRegion", () -> {
+            try {
+              DistributionConfig.class.getDeclaredMethod("getSerializableObjectFilter");
+              clientProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+                  "org.apache.geode.security.templates.UsernamePrincipal");
+            } catch (NoSuchMethodException e) {
+              // running an old version of Geode
+            }
+            SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps,
+                0, setupDynamicRegionFactory, NO_EXCEPTION);
+          });
         }
       }
 

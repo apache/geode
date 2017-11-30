@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,6 +27,7 @@ import org.apache.geode.cache.DuplicatePrimaryPartitionException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.partition.PartitionNotAvailableException;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -661,6 +663,16 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       }
     }
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.partitioned.fixed.MyDate3");
+    return result;
+
+  }
+
 
   /**
    * This tests validate that datastore member tries the put with callback on itself as well as

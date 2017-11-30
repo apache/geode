@@ -285,7 +285,8 @@ public class ShutdownAllRequest extends AdminRequest {
     }
 
     public Set getResults() {
-      logger.debug("{} shutdownAll returning {}", this, results, new Exception("stack trace"));
+      logger.debug("{} shutdownAll returning {}", this,
+          results/* , new Exception("stack trace") */);
       return results;
     }
   }

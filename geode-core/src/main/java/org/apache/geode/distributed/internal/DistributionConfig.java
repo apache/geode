@@ -4864,6 +4864,54 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   boolean DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = false;
 
+  /**
+   * Returns the value of the {@link ConfigurationProperties#VALIDATE_SERIALIZABLE_OBJECTS} property
+   */
+  @ConfigAttributeGetter(name = VALIDATE_SERIALIZABLE_OBJECTS)
+  boolean getValidateSerializableObjects();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#VALIDATE_SERIALIZABLE_OBJECTS} property
+   */
+  @ConfigAttributeSetter(name = VALIDATE_SERIALIZABLE_OBJECTS)
+  void setValidateSerializableObjects(boolean value);
+
+  /**
+   * The name of the {@link ConfigurationProperties#VALIDATE_SERIALIZABLE_OBJECTS} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String VALIDATE_SERIALIZABLE_OBJECTS_NAME = VALIDATE_SERIALIZABLE_OBJECTS;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#VALIDATE_SERIALIZABLE_OBJECTS}
+   * property.
+   */
+  boolean DEFAULT_VALIDATE_SERIALIZABLE_OBJECTS = false;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SERIALIZABLE_OBJECT_FILTER} property
+   */
+  @ConfigAttributeGetter(name = SERIALIZABLE_OBJECT_FILTER)
+  String getSerializableObjectFilter();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SERIALIZABLE_OBJECT_FILTER} property
+   */
+  @ConfigAttributeSetter(name = SERIALIZABLE_OBJECT_FILTER)
+  void setSerializableObjectFilter(String value);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SERIALIZABLE_OBJECT_FILTER} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SERIALIZABLE_OBJECT_FILTER_NAME = SERIALIZABLE_OBJECT_FILTER;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#SERIALIZABLE_OBJECT_FILTER} property.
+   * Current value is a pattern for rejecting everything <code>"!*"</code>
+   */
+  String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "!*";
+
   // *************** Initializers to gather all the annotations in this class
   // ************************
 
