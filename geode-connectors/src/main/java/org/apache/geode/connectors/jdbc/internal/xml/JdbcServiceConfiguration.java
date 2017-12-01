@@ -17,7 +17,9 @@ package org.apache.geode.connectors.jdbc.internal.xml;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
@@ -54,7 +56,16 @@ public class JdbcServiceConfiguration implements Extension<Cache> {
     InternalCache internalCache = (InternalCache) target;
     InternalJdbcConnectorService service =
         internalCache.getService(InternalJdbcConnectorService.class);
-    connections.forEach(connection -> service.createConnectionConfig(connection));
+    connections.forEach(connection -> createConnectionConfig(service, connection));
     mappings.forEach(mapping -> service.addOrUpdateRegionMapping(mapping));
+  }
+
+  private void createConnectionConfig(InternalJdbcConnectorService service,
+      ConnectionConfiguration connectionConfig) {
+    try {
+      service.createConnectionConfig(connectionConfig);
+    } catch (ConnectionConfigExistsException e) {
+      throw new InternalGemFireException(e);
+    }
   }
 }

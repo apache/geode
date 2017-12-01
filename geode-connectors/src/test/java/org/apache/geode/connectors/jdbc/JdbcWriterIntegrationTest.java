@@ -37,6 +37,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
@@ -203,7 +204,8 @@ public class JdbcWriterIntegrationTest {
     assertThat(resultSet.next()).isFalse();
   }
 
-  private Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName) {
+  private Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName)
+      throws ConnectionConfigExistsException {
     jdbcWriter = new JdbcWriter(createSqlHandler());
     jdbcWriter.init(new Properties());
 
@@ -220,7 +222,7 @@ public class JdbcWriterIntegrationTest {
     assertThat(size).isEqualTo(expected);
   }
 
-  private SqlHandler createSqlHandler() {
+  private SqlHandler createSqlHandler() throws ConnectionConfigExistsException {
     return new SqlHandler(new TestableConnectionManager(TestConfigService.getTestConfigService()));
   }
 

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.util.Set;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.extension.Extension;
@@ -25,9 +27,11 @@ public interface InternalJdbcConnectorService extends Extension<Cache>, CacheSer
 
   void destroyConnectionConfig(String connectionName);
 
-  void addOrUpdateRegionMapping(RegionMapping mapping);
-
   ConnectionConfiguration getConnectionConfig(String connectionName);
+
+  Set<ConnectionConfiguration> getConnectionConfigs();
+
+  void addOrUpdateRegionMapping(RegionMapping mapping);
 
   RegionMapping getMappingForRegion(String regionName);
 }

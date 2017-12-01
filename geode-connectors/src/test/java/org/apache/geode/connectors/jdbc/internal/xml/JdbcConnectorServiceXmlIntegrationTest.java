@@ -31,6 +31,7 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
@@ -80,7 +81,7 @@ public class JdbcConnectorServiceXmlIntegrationTest {
         .isEqualTo(regionMapping2);
   }
 
-  private void configureService() {
+  private void configureService() throws ConnectionConfigExistsException {
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
     config1 = new ConnectionConfigBuilder().withName("connection1").withUrl("url1")
         .withUser("username1").withPassword("secret1")

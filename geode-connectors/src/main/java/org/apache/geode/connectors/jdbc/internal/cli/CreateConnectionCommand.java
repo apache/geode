@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -61,7 +60,7 @@ public class CreateConnectionCommand implements GfshCommand {
   private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = CREATE_CONNECTION, help = CREATE_CONNECTION__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public Result createConnection(
@@ -75,42 +74,69 @@ public class CreateConnectionCommand implements GfshCommand {
       @CliOption(key = CREATE_CONNECTION__PARAMS,
           help = CREATE_CONNECTION__PARAMS__HELP) String[] params) {
 
-    Set<DistributedMember> membersToCreateConnectionOn = getMembers(null, null);
+    // input
+    Set<DistributedMember> targetMembers = getMembers(null, null);
+    ConnectionConfiguration configuration = getArguments(name, url, user, password, params);
 
+    // action
+    ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
+        execute(new CreateConnectionFunction(), configuration, targetMembers);
+
+    // output
+    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
+    XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    Result result = ResultBuilder.buildResult(tabularResultData);
+    updateClusterConfiguration(result, xmlEntity);
+    return result;
+  }
+
+  ConnectionConfiguration getArguments(String name, String url, String user, String password,
+      String[] params) {
     ConnectionConfigBuilder builder = new ConnectionConfigBuilder().withName(name).withUrl(url)
         .withUser(user).withPassword(password).withParameters(params);
-    ConnectionConfiguration configuration = builder.build();
+    return builder.build();
+  }
 
-    ResultCollector<?, ?> resultCollector =
-        executeFunction(new CreateConnectionFunction(), configuration, membersToCreateConnectionOn);
+  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
+      CreateConnectionFunction function, ConnectionConfiguration configuration,
+      Set<DistributedMember> targetMembers) {
+    return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
+        configuration, targetMembers);
+  }
 
-    Object resultCollectorResult = resultCollector.getResult();
+  private XmlEntity fillTabularResultData(
+      ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector,
+      TabularResultData tabularResultData) {
+    XmlEntity xmlEntity = null;
 
-    List<CliFunctionResult> connectionCreateResults =
-        (List<CliFunctionResult>) resultCollectorResult;
-
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    for (CliFunctionResult regionCreateResult : connectionCreateResults) {
-      boolean success = regionCreateResult.isSuccessful();
-      tabularResultData.accumulate("Member", regionCreateResult.getMemberIdOrName());
-      tabularResultData.accumulate("Status",
-          (success ? "" : ERROR_PREFIX) + regionCreateResult.getMessage());
-
-      if (success) {
-        xmlEntity.set(regionCreateResult.getXmlEntity());
+    for (CliFunctionResult oneResult : resultCollector.getResult()) {
+      if (oneResult.isSuccessful()) {
+        xmlEntity = addSuccessToResults(tabularResultData, oneResult);
       } else {
-        tabularResultData.setStatus(Result.Status.ERROR);
+        addErrorToResults(tabularResultData, oneResult);
       }
     }
 
-    Result result = ResultBuilder.buildResult(tabularResultData);
+    return xmlEntity;
+  }
 
-    if (xmlEntity.get() != null) {
+  private XmlEntity addSuccessToResults(TabularResultData tabularResultData,
+      CliFunctionResult oneResult) {
+    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
+    tabularResultData.accumulate("Status", oneResult.getMessage());
+    return oneResult.getXmlEntity();
+  }
+
+  private void addErrorToResults(TabularResultData tabularResultData, CliFunctionResult oneResult) {
+    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
+    tabularResultData.accumulate("Status", ERROR_PREFIX + oneResult.getMessage());
+    tabularResultData.setStatus(Result.Status.ERROR);
+  }
+
+  private void updateClusterConfiguration(final Result result, final XmlEntity xmlEntity) {
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), null));
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, null));
     }
-
-    return result;
   }
 }

@@ -47,7 +47,7 @@ public class JdbcServiceConfigurationTest {
   private JdbcServiceConfiguration configuration;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     connection1 = mock(ConnectionConfiguration.class);
     connection2 = mock(ConnectionConfiguration.class);
     mapping1 = mock(RegionMapping.class);
@@ -61,21 +61,21 @@ public class JdbcServiceConfigurationTest {
   }
 
   @Test
-  public void getXmlGeneratorReturnsJdbcConnectorServiceXmlGenerator() {
+  public void getXmlGeneratorReturnsJdbcConnectorServiceXmlGenerator() throws Exception {
     XmlGenerator<Cache> generator = configuration.getXmlGenerator();
 
     assertThat(generator).isInstanceOf(JdbcConnectorServiceXmlGenerator.class);
   }
 
   @Test
-  public void getXmlGeneratorReturnsGeneratorWithJdbcConnectorNamespace() {
+  public void getXmlGeneratorReturnsGeneratorWithJdbcConnectorNamespace() throws Exception {
     XmlGenerator<Cache> generator = configuration.getXmlGenerator();
 
     assertThat(generator.getNamespaceUri()).isEqualTo(NAMESPACE);
   }
 
   @Test
-  public void getXmlGeneratorReturnsEmptyGeneratorByDefault() {
+  public void getXmlGeneratorReturnsEmptyGeneratorByDefault() throws Exception {
     JdbcConnectorServiceXmlGenerator generator =
         (JdbcConnectorServiceXmlGenerator) configuration.getXmlGenerator();
 
@@ -84,7 +84,7 @@ public class JdbcServiceConfigurationTest {
   }
 
   @Test
-  public void getXmlGeneratorWithConnections() {
+  public void getXmlGeneratorWithConnections() throws Exception {
     configuration.addConnectionConfig(connection1);
     configuration.addConnectionConfig(connection2);
 
@@ -95,7 +95,7 @@ public class JdbcServiceConfigurationTest {
   }
 
   @Test
-  public void getXmlGeneratorWithRegionMappings() {
+  public void getXmlGeneratorWithRegionMappings() throws Exception {
     configuration.addRegionMapping(mapping1);
     configuration.addRegionMapping(mapping2);
 
@@ -106,14 +106,14 @@ public class JdbcServiceConfigurationTest {
   }
 
   @Test
-  public void onCreateWithNoConnectionsOrMappings() {
+  public void onCreateWithNoConnectionsOrMappings() throws Exception {
     configuration.onCreate(cache, cache);
 
     verifyZeroInteractions(service);
   }
 
   @Test
-  public void onCreateWithConnections() {
+  public void onCreateWithConnections() throws Exception {
     configuration.addConnectionConfig(connection1);
     configuration.addConnectionConfig(connection2);
 
@@ -124,7 +124,7 @@ public class JdbcServiceConfigurationTest {
   }
 
   @Test
-  public void onCreateWithRegionMappings() {
+  public void onCreateWithRegionMappings() throws Exception {
     configuration.addRegionMapping(mapping1);
     configuration.addRegionMapping(mapping2);
 

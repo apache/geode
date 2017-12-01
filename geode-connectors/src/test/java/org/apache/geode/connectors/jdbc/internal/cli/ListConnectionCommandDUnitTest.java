@@ -16,6 +16,8 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyConnectionCommand.DESTROY_CONNECTION;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyConnectionCommand.DESTROY_CONNECTION__NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_JDBC_CONNECTION;
+import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_OF_CONNECTIONS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -34,12 +36,13 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
-public class DestroyConnectionCommandDUnitTest implements Serializable {
+public class ListConnectionCommandDUnitTest implements Serializable {
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -62,33 +65,37 @@ public class DestroyConnectionCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
-    server.invoke(() -> createConnection());
-
     gfsh.connectAndVerify(locator);
   }
 
   @Test
-  public void destroysConnection() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(DESTROY_CONNECTION);
-    csb.addOption(DESTROY_CONNECTION__NAME, "name");
+  public void listsOneConnection() throws Exception {
+    server.invoke(() -> createOneConnection());
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
 
-    locator.invoke(() -> {
-      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
-          .getCacheXmlContent();
-      assertThat(xml).contains("jdbc:connector-service");
-    });
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    server.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
-      ConnectionConfiguration config =
-          cache.getService(InternalJdbcConnectorService.class).getConnectionConfig("name");
-      assertThat(config).isNull();
-    });
+    commandResultAssert.statusIsSuccess();
+
+    commandResultAssert.tableHasRowCount(LIST_OF_CONNECTIONS, 1);
+
+    // TODO: assert that the table contains LIST_OF_CONNECTIONS
+    // TODO: assert that the table contains name of connection
   }
 
-  private void createConnection() throws ConnectionConfigExistsException {
+  @Test
+  public void listsMultipleConnections() throws Exception {
+    // TODO: assert that the table contains LIST_OF_CONNECTIONS
+    // TODO: assert that the table contains names of several connections
+  }
+
+  @Test
+  public void reportsNoConnectionsFound() throws Exception {
+    // TODO: assert that the results show ListConnectionCommand.NO_CONNECTIONS_FOUND
+  }
+
+  private void createOneConnection() throws ConnectionConfigExistsException {
     InternalCache cache = LocatorServerStartupRule.getCache();
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
 

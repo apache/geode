@@ -14,7 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public class ConnectionConfigExistsException extends RuntimeException {
+public class ConnectionConfigExistsException extends Exception {
 
   public ConnectionConfigExistsException() {
     super();

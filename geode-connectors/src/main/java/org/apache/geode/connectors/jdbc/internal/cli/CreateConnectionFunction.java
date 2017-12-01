@@ -14,9 +14,12 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.jdbc.internal.cli.FunctionContextArgumentProvider.getMemberFromContext;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.xml.ElementType;
@@ -33,13 +36,16 @@ public class CreateConnectionFunction implements Function<ConnectionConfiguratio
 
   private static final String ID = CreateConnectionFunction.class.getName();
 
-  private final transient ExceptionHandler exceptionHandler;
+  private final FunctionContextArgumentProvider argumentProvider;
+  private final ExceptionHandler exceptionHandler;
 
   public CreateConnectionFunction() {
-    this(new ExceptionHandler());
+    this(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 
-  private CreateConnectionFunction(ExceptionHandler exceptionHandler) {
+  private CreateConnectionFunction(FunctionContextArgumentProvider argumentProvider,
+      ExceptionHandler exceptionHandler) {
+    this.argumentProvider = argumentProvider;
     this.exceptionHandler = exceptionHandler;
   }
 
@@ -55,30 +61,36 @@ public class CreateConnectionFunction implements Function<ConnectionConfiguratio
 
   @Override
   public void execute(FunctionContext<ConnectionConfiguration> context) {
-    ResultSender<Object> resultSender = context.getResultSender();
-
-    InternalCache cache = (InternalCache) context.getCache();
-    String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
-
-    ConnectionConfiguration connectionConfig = context.getArguments();
-
     try {
-      InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
-      service.createConnectionConfig(connectionConfig);
+      // input
+      ConnectionConfiguration connectionConfig = context.getArguments();
+      InternalJdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
 
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.CACHE, JdbcConnectorServiceXmlGenerator.PREFIX,
-          JdbcConnectorServiceXmlParser.NAMESPACE, ElementType.CONNECTION_SERVICE.getTypeName());
+      // action
+      createConnectionConfig(service, connectionConfig);
 
-      resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
-          "Created JDBC connection " + connectionConfig.getName() + " on " + memberNameOrId));
+      // output
+      String member = argumentProvider.getMember(context);
+      XmlEntity xmlEntity = argumentProvider.createXmlEntity(context);
+      CliFunctionResult result = createSuccessResult(connectionConfig.getName(), member, xmlEntity);
+      context.getResultSender().lastResult(result);
 
     } catch (Exception e) {
-      String exceptionMsg = e.getMessage();
-      if (exceptionMsg == null) {
-        exceptionMsg = CliUtil.stackTraceAsString(e);
-      }
-      resultSender.lastResult(exceptionHandler.handleException(memberNameOrId, exceptionMsg, e));
+      exceptionHandler.handleException(context, e);
     }
+  }
+
+  /**
+   * Creates the named connection configuration
+   */
+  void createConnectionConfig(InternalJdbcConnectorService service,
+      ConnectionConfiguration connectionConfig) throws ConnectionConfigExistsException {
+    service.createConnectionConfig(connectionConfig);
+  }
+
+  private CliFunctionResult createSuccessResult(String connectionName, String member,
+      XmlEntity xmlEntity) {
+    String message = "Created JDBC connection " + connectionName + " on " + member;
+    return new CliFunctionResult(member, xmlEntity, message);
   }
 }

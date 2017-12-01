@@ -40,7 +40,7 @@ public class JdbcConnectorServiceTest {
   private JdbcConnectorService service;
 
   @Before
-  public void setup() {
+  public void setUp() throws Exception {
     InternalCache cache = mock(InternalCache.class);
     config = mock(ConnectionConfiguration.class);
     mapping = mock(RegionMapping.class);
@@ -56,24 +56,24 @@ public class JdbcConnectorServiceTest {
   }
 
   @Test
-  public void returnsNoConfigIfEmpty() {
+  public void returnsNoConfigIfEmpty() throws Exception {
     assertThat(service.getConnectionConfig("foo")).isNull();
   }
 
   @Test
-  public void returnsNoMappingIfEmpty() {
+  public void returnsNoMappingIfEmpty() throws Exception {
     assertThat(service.getMappingForRegion("foo")).isNull();
   }
 
   @Test
-  public void returnsCorrectConfig() {
+  public void returnsCorrectConfig() throws Exception {
     service.createConnectionConfig(config);
 
     assertThat(service.getConnectionConfig(TEST_CONFIG_NAME)).isSameAs(config);
   }
 
   @Test
-  public void doesNotReturnConfigWithDifferentName() {
+  public void doesNotReturnConfigWithDifferentName() throws Exception {
     when(config.getName()).thenReturn("theOtherConfig");
     service.createConnectionConfig(config);
 
@@ -81,14 +81,14 @@ public class JdbcConnectorServiceTest {
   }
 
   @Test
-  public void returnsCorrectMapping() {
+  public void returnsCorrectMapping() throws Exception {
     service.addOrUpdateRegionMapping(mapping);
 
     assertThat(service.getMappingForRegion(TEST_REGION_NAME)).isSameAs(mapping);
   }
 
   @Test
-  public void doesNotReturnMappingForDifferentRegion() {
+  public void doesNotReturnMappingForDifferentRegion() throws Exception {
     when(mapping.getRegionName()).thenReturn("theOtherMapping");
     service.addOrUpdateRegionMapping(mapping);
 
@@ -96,7 +96,7 @@ public class JdbcConnectorServiceTest {
   }
 
   @Test
-  public void createConnectionConfig_throwsIfConnectionExists() {
+  public void createConnectionConfig_throwsIfConnectionExists() throws Exception {
     service.createConnectionConfig(config);
 
     assertThatThrownBy(() -> service.createConnectionConfig(config2))

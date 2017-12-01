@@ -22,7 +22,7 @@
     version="1.0">
      
 	<pool name="sessions" subscription-enabled="true">   
-		<server host="1.2.3.4" port="11211" /> 
+		<server host="127.0.0.1" port="11211" />
 	</pool>
 </client-cache>
 
