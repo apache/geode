@@ -268,11 +268,8 @@ public class GfshCommandRule extends DescribedExternalResource {
     return workingDir;
   }
 
-  public GfshCommandRule setTimeout(int timeoutInSeconds) {
+  public GfshCommandRule withTimeout(int timeoutInSeconds) {
     this.gfshTimeout = timeoutInSeconds;
-    if (gfsh != null) {
-      gfsh.setTimeout(timeoutInSeconds);
-    }
     return this;
   }
 
