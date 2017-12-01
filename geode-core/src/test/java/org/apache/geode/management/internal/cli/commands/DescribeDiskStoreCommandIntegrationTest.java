@@ -54,7 +54,7 @@ public class DescribeDiskStoreCommandIntegrationTest {
   }
 
   @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule().setTimeout(1);
+  public static GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
 
   @Test
   public void commandFailsWithoutOptions() throws Exception {

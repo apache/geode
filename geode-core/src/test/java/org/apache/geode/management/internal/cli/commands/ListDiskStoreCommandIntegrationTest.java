@@ -40,7 +40,7 @@ public class ListDiskStoreCommandIntegrationTest {
           .withName(MEMBER_NAME).withJMXManager().withAutoStart();
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule().setTimeout(1);
+  public GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
 
   @Test
   public void commandSucceedsWhenConnected() throws Exception {
