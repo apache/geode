@@ -168,6 +168,7 @@ jobs:
          - task: archive-results
            config:
              inputs:
+               - name: geode
                - name: geode-ci
                - name: geode-build-version
                - name: built-geode
@@ -179,7 +180,7 @@ jobs:
                PUBLIC_BUCKET: ((!public-bucket))
              run:
                args:
-               - distrbutedTest
+               - distributedTest
                - distributedtestfiles
                path: geode-ci/ci/scripts/test-archive.sh
 
