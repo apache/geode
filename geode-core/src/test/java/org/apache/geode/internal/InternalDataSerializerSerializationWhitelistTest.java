@@ -96,7 +96,7 @@ public class InternalDataSerializerSerializationWhitelistTest {
   }
 
   @Test(expected = java.io.InvalidClassException.class)
-  public void whitelistedWithNonlMatchingFilterCannotSerialize() throws Exception {
+  public void whitelistedWithNonMatchingFilterCannotSerialize() throws Exception {
     trySerializingWithFilter("RabidMonkeyTurnip");
   }
 

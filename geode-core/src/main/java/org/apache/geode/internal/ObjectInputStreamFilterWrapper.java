@@ -61,10 +61,6 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
     }
 
     logger.info("setting a serialization filter containing {}", serializationFilterSpec);
-    // logger.info("sanctioned serializables are");
-    // for (String cls: sanctionedClasses) {
-    // logger.info(" " + cls);
-    // }
 
     final ObjectInputFilter userFilter =
         ObjectInputFilter.Config.createFilter(serializationFilterSpec);
@@ -89,8 +85,6 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
       }
     };
 
-    // global filter - if we enable this it will affect all ObjectInputStreams
-    // ObjectInputFilter.Config.setSerialFilter(serializationFilter);
   }
 
   @Override
