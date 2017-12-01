@@ -88,7 +88,7 @@ public class DestroyGatewaySenderCommandTest {
     functionResults.add(result2);
 
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    parser.executeAndAssertThat(command, "destroy gateway-sender --id=1").statusIsError()
+    parser.executeAndAssertThat(command, "destroy gateway-sender --id=1").statusIsSuccess()
         .tableHasColumnWithValuesContaining("Status", "result1", "ERROR: result2");
 
   }
@@ -101,7 +101,7 @@ public class DestroyGatewaySenderCommandTest {
     functionResults.add(result2);
 
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    parser.executeAndAssertThat(command, "destroy gateway-sender --id=1").statusIsError()
+    parser.executeAndAssertThat(command, "destroy gateway-sender --id=1").statusIsSuccess()
         .tableHasColumnWithValuesContaining("Status", "result1",
             "ERROR: java.lang.Exception: something happened");
 

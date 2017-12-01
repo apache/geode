@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -31,7 +30,6 @@ import org.apache.geode.management.internal.cli.functions.RegionDestroyFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -48,9 +46,6 @@ public class DestroyRegionCommand implements GfshCommand {
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists)
       throws Throwable {
 
-    // regionPath should already be converted to have "/" in front of it.
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-
     // this finds all the members that host this region. destroy will be called on each of these
     // members since the region might be a scope.LOCAL region
     Set<DistributedMember> regionMembersList = findMembersForRegion(getCache(), regionPath);
@@ -62,36 +57,20 @@ public class DestroyRegionCommand implements GfshCommand {
       throw new EntityNotFoundException(message, ifExists);
     }
 
-    List<CliFunctionResult> resultsList =
-        executeAndGetFunctionResult(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
-
     // destroy is called on each member. If the region destroy is successful on one member, we
     // deem the destroy action successful, since if one member destroy successfully, the subsequent
     // destroy on a another member would probably throw RegionDestroyedException
-    TabularResultData tabularData = ResultBuilder.createTabularResultData();
+    List<CliFunctionResult> resultsList =
+        executeAndGetFunctionResult(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
 
-    boolean regionDestroyed = false;
-    for (CliFunctionResult functionResult : resultsList) {
-      tabularData.accumulate("Member", functionResult.getMemberIdOrName());
-      if (functionResult.isSuccessful()) {
-        if (xmlEntity.get() == null) {
-          xmlEntity.set(functionResult.getXmlEntity());
-        }
-        tabularData.accumulate("Status", functionResult.getMessage());
-        regionDestroyed = true;
-      } else {
-        tabularData.accumulate("Status", "Error: " + functionResult.getErrorMessage());
-      }
-    }
 
-    tabularData.setStatus(regionDestroyed ? Result.Status.OK : Result.Status.ERROR);
-
-    CommandResult result = ResultBuilder.buildResult(tabularData);
+    CommandResult result = ResultBuilder.buildResult(resultsList);
+    XmlEntity xmlEntity = findXmlEntity(resultsList);
 
     // if at least one member returns with successful deletion, we will need to update cc
-    if (regionDestroyed) {
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, null));
     }
     return result;
   }

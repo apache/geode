@@ -29,14 +29,20 @@ public class CliFunctionResultTest {
   private CliFunctionResult result;
 
   @Test
-  public void getErrorMessage() throws Exception {
+  public void getStatus() throws Exception {
     result = new CliFunctionResult("memberName", false, "message");
-    assertThat(result.getErrorMessage()).isEqualTo("message");
+    assertThat(result.getStatus()).isEqualTo("ERROR: message");
 
-    result = new CliFunctionResult("memberName", new Exception("exception message"), "message");
-    assertThat(result.getErrorMessage()).isEqualTo("message");
+    result = new CliFunctionResult("memberName", new Exception("exception message"),
+        "exception message");
+    assertThat(result.getStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
 
     result = new CliFunctionResult("memberName", new Exception("exception message"), null);
-    assertThat(result.getErrorMessage()).isEqualTo("java.lang.Exception: exception message");
+    assertThat(result.getStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
+
+    result = new CliFunctionResult("memberName", new Exception("exception message"),
+        "some other message");
+    assertThat(result.getStatus())
+        .isEqualTo("ERROR: some other message java.lang.Exception: exception message");
   }
 }

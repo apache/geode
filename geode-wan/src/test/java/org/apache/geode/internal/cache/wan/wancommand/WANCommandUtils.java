@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.wan.wancommand;
 
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.fail;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
@@ -129,16 +130,10 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void verifySenderState(String senderId, boolean isRunning, boolean isPaused) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
-    try {
-      Set<GatewaySender> senders = LocatorServerStartupRule.getCache().getGatewaySenders();
-      for (GatewaySender sender : senders) {
-        assertEquals(isRunning, sender.isRunning());
-        assertEquals(isPaused, sender.isPaused());
-      }
-    } finally {
-      exln.remove();
-    }
+    GatewaySender sender = LocatorServerStartupRule.getCache().getGatewaySenders().stream()
+        .filter(x -> senderId.equals(x.getId())).findFirst().orElse(null);
+    assertThat(sender.isRunning()).isEqualTo(isRunning);
+    assertThat(sender.isPaused()).isEqualTo(isPaused);
   }
 
   public static void verifySenderAttributes(String senderId, int remoteDsID, boolean isParallel,
@@ -148,43 +143,43 @@ public class WANCommandUtils implements Serializable {
       int dispatcherThreads, GatewaySender.OrderPolicy orderPolicy,
       List<String> expectedGatewayEventFilters, List<String> expectedGatewayTransportFilters) {
 
-    Set<GatewaySender> senders = LocatorServerStartupRule.getCache().getGatewaySenders();
-    for (GatewaySender sender : senders) {
-      assertEquals("remoteDistributedSystemId", remoteDsID, sender.getRemoteDSId());
-      assertEquals("isParallel", isParallel, sender.isParallel());
-      assertEquals("manualStart", manualStart, sender.isManualStart());
-      assertEquals("socketBufferSize", socketBufferSize, sender.getSocketBufferSize());
-      assertEquals("socketReadTimeout", socketReadTimeout, sender.getSocketReadTimeout());
-      assertEquals("enableBatchConflation", enableBatchConflation,
-          sender.isBatchConflationEnabled());
-      assertEquals("batchSize", batchSize, sender.getBatchSize());
-      assertEquals("batchTimeInterval", batchTimeInterval, sender.getBatchTimeInterval());
-      assertEquals("enablePersistence", enablePersistence, sender.isPersistenceEnabled());
-      assertEquals("diskSynchronous", diskSynchronous, sender.isDiskSynchronous());
-      assertEquals("maxQueueMemory", maxQueueMemory, sender.getMaximumQueueMemory());
-      assertEquals("alertThreshold", alertThreshold, sender.getAlertThreshold());
-      assertEquals("dispatcherThreads", dispatcherThreads, sender.getDispatcherThreads());
-      assertEquals("orderPolicy", orderPolicy, sender.getOrderPolicy());
+    GatewaySender sender = LocatorServerStartupRule.getCache().getGatewaySenders().stream()
+        .filter(x -> senderId.equals(x.getId())).findFirst().orElse(null);
 
-      // verify GatewayEventFilters
-      if (expectedGatewayEventFilters != null) {
-        assertEquals("gatewayEventFilters", expectedGatewayEventFilters.size(),
-            sender.getGatewayEventFilters().size());
+    assertEquals("remoteDistributedSystemId", remoteDsID, sender.getRemoteDSId());
+    assertEquals("isParallel", isParallel, sender.isParallel());
+    assertEquals("manualStart", manualStart, sender.isManualStart());
+    assertEquals("socketBufferSize", socketBufferSize, sender.getSocketBufferSize());
+    assertEquals("socketReadTimeout", socketReadTimeout, sender.getSocketReadTimeout());
+    assertEquals("enableBatchConflation", enableBatchConflation, sender.isBatchConflationEnabled());
+    assertEquals("batchSize", batchSize, sender.getBatchSize());
+    assertEquals("batchTimeInterval", batchTimeInterval, sender.getBatchTimeInterval());
+    assertEquals("enablePersistence", enablePersistence, sender.isPersistenceEnabled());
+    assertEquals("diskSynchronous", diskSynchronous, sender.isDiskSynchronous());
+    assertEquals("maxQueueMemory", maxQueueMemory, sender.getMaximumQueueMemory());
+    assertEquals("alertThreshold", alertThreshold, sender.getAlertThreshold());
+    assertEquals("dispatcherThreads", dispatcherThreads, sender.getDispatcherThreads());
+    assertEquals("orderPolicy", orderPolicy, sender.getOrderPolicy());
 
-        List<GatewayEventFilter> actualGatewayEventFilters = sender.getGatewayEventFilters();
-        List<String> actualEventFilterClassNames =
-            new ArrayList<String>(actualGatewayEventFilters.size());
-        for (GatewayEventFilter filter : actualGatewayEventFilters) {
-          actualEventFilterClassNames.add(filter.getClass().getName());
-        }
+    // verify GatewayEventFilters
+    if (expectedGatewayEventFilters != null) {
+      assertEquals("gatewayEventFilters", expectedGatewayEventFilters.size(),
+          sender.getGatewayEventFilters().size());
 
-        for (String expectedGatewayEventFilter : expectedGatewayEventFilters) {
-          if (!actualEventFilterClassNames.contains(expectedGatewayEventFilter)) {
-            fail("GatewayEventFilter " + expectedGatewayEventFilter
-                + " is not added to the GatewaySender");
-          }
+      List<GatewayEventFilter> actualGatewayEventFilters = sender.getGatewayEventFilters();
+      List<String> actualEventFilterClassNames =
+          new ArrayList<String>(actualGatewayEventFilters.size());
+      for (GatewayEventFilter filter : actualGatewayEventFilters) {
+        actualEventFilterClassNames.add(filter.getClass().getName());
+      }
+
+      for (String expectedGatewayEventFilter : expectedGatewayEventFilters) {
+        if (!actualEventFilterClassNames.contains(expectedGatewayEventFilter)) {
+          fail("GatewayEventFilter " + expectedGatewayEventFilter
+              + " is not added to the GatewaySender");
         }
       }
+
 
       // verify GatewayTransportFilters
       if (expectedGatewayTransportFilters != null) {
@@ -208,24 +203,22 @@ public class WANCommandUtils implements Serializable {
     }
   }
 
-  public static void verifySenderDestroyed(String senderId, boolean isParallel) {
+  public static void verifySenderNotExist(String senderId, boolean isParallel) {
     Cache cache = LocatorServerStartupRule.getCache();
     Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
-        .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
-    assertNull(sender);
+    Set<String> senderIds = senders.stream().map(AbstractGatewaySender.class::cast)
+        .map(AbstractGatewaySender::getId).collect(Collectors.toSet());
+    assertThat(senderIds).doesNotContain(senderId);
     String queueRegionNameSuffix = null;
     if (isParallel) {
       queueRegionNameSuffix = ParallelGatewaySenderQueue.QSTRING;
     } else {
       queueRegionNameSuffix = "_SERIAL_GATEWAY_SENDER_QUEUE";
     }
-    Set<LocalRegion> allRegions = ((GemFireCacheImpl) cache).getAllRegions();
-    for (LocalRegion region : allRegions) {
-      if (region.getName().contains(senderId + queueRegionNameSuffix)) {
-        fail("Region underlying the sender is not destroyed.");
-      }
-    }
+    Set<String> allRegions = ((GemFireCacheImpl) cache).getAllRegions().stream()
+        .map(LocalRegion::getName).collect(Collectors.toSet());
+
+    assertThat(allRegions).doesNotContain(senderId + queueRegionNameSuffix);
   }
 
   public static void startReceiver() {

@@ -99,7 +99,8 @@ public class CreateIndexFunction extends FunctionAdapter implements InternalEnti
     } else {
       XmlEntity xmlEntity =
           new XmlEntity(CacheXml.REGION, "name", cache.getRegion(regionPath).getName());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity));
+      context.getResultSender()
+          .lastResult(new CliFunctionResult(memberId, xmlEntity, "Index successfully created"));
     }
   }
 

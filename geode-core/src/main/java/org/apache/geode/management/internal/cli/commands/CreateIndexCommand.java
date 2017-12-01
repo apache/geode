@@ -15,29 +15,21 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -74,92 +66,22 @@ public class CreateIndexCommand implements GfshCommand {
           help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] group) {
 
     Result result;
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-
     final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    final ResultCollector<?, ?> rc =
-        createIndexOnMember(indexName, indexedExpression, regionPath, indexType, targetMembers);
+    IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, indexType);
+    List<CliFunctionResult> functionResults =
+        executeAndGetFunctionResult(createIndexFunction, indexInfo, targetMembers);
+    result = ResultBuilder.buildResult(functionResults);
+    XmlEntity xmlEntity = findXmlEntity(functionResults);
 
-    final List<Object> funcResults = (List<Object>) rc.getResult();
-    final Set<String> successfulMembers = new TreeSet<>();
-    final Map<String, Set<String>> indexOpFailMap = new HashMap<>();
-
-    for (final Object funcResult : funcResults) {
-      if (funcResult instanceof CliFunctionResult) {
-        final CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
-
-        if (cliFunctionResult.isSuccessful()) {
-          successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-
-          if (xmlEntity.get() == null) {
-            xmlEntity.set(cliFunctionResult.getXmlEntity());
-          }
-        } else {
-          final String exceptionMessage = cliFunctionResult.getMessage();
-          Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-          if (failedMembers == null) {
-            failedMembers = new TreeSet<>();
-          }
-          failedMembers.add(cliFunctionResult.getMemberIdOrName());
-          indexOpFailMap.put(exceptionMessage, failedMembers);
-        }
-      }
-    }
-
-    if (!successfulMembers.isEmpty()) {
-      final InfoResultData infoResult = ResultBuilder.createInfoResultData();
-      infoResult.addLine(CliStrings.CREATE_INDEX__SUCCESS__MSG);
-      infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__NAME__MSG, indexName));
-      infoResult
-          .addLine(CliStrings.format(CliStrings.CREATE_INDEX__EXPRESSION__MSG, indexedExpression));
-      infoResult.addLine(CliStrings.format(CliStrings.CREATE_INDEX__REGIONPATH__MSG, regionPath));
-      infoResult.addLine(CliStrings.CREATE_INDEX__MEMBER__MSG);
-
-      int num = 0;
-
-      for (final String memberId : successfulMembers) {
-        ++num;
-        infoResult.addLine(
-            CliStrings.format(CliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, num, memberId));
-      }
-      result = ResultBuilder.buildResult(infoResult);
-
-    } else {
-      // Group members by the exception thrown.
-      final ErrorResultData erd = ResultBuilder.createErrorResultData();
-      erd.addLine(CliStrings.format(CliStrings.CREATE_INDEX__FAILURE__MSG, indexName));
-      final Set<String> exceptionMessages = indexOpFailMap.keySet();
-
-      for (final String exceptionMessage : exceptionMessages) {
-        erd.addLine(exceptionMessage);
-        erd.addLine(CliStrings.CREATE_INDEX__EXCEPTION__OCCURRED__ON);
-        final Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
-        int num = 0;
-        for (final String memberId : memberIds) {
-          ++num;
-          erd.addLine(
-              CliStrings.format(CliStrings.CREATE_INDEX__NUMBER__AND__MEMBER, num, memberId));
-        }
-      }
-      result = ResultBuilder.buildResult(erd);
-    }
-
-    if (xmlEntity.get() != null) {
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), group));
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
     }
     return result;
-  }
-
-  ResultCollector<?, ?> createIndexOnMember(String indexName, String indexedExpression,
-      String regionPath, IndexType indexType, Set<DistributedMember> targetMembers) {
-    IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, indexType);
-    return CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
   }
 }

@@ -15,18 +15,13 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
@@ -37,10 +32,7 @@ import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -84,53 +76,14 @@ public class DestroyIndexCommand implements GfshCommand {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    ResultCollector rc = CliUtil.executeFunction(destroyIndexFunction, indexInfo, targetMembers);
-    List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
+    List<CliFunctionResult> funcResults =
+        executeAndGetFunctionResult(destroyIndexFunction, indexInfo, targetMembers);
+    Result result = ResultBuilder.buildResult(funcResults);
+    XmlEntity xmlEntity = findXmlEntity(funcResults);
 
-    Set<String> successfulMembers = new TreeSet<>();
-    Map<String, Set<String>> indexOpFailMap = new HashMap<>();
-
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    final String errorPrefix = "ERROR:";
-
-    for (CliFunctionResult cliFunctionResult : funcResults) {
-      boolean success = cliFunctionResult.isSuccessful();
-
-      tabularResultData.accumulate("Member", cliFunctionResult.getMemberIdOrName());
-      tabularResultData.accumulate("Status",
-          (success ? "" : errorPrefix) + cliFunctionResult.getMessage());
-
-      if (success) {
-        if (xmlEntity.get() == null) {
-          xmlEntity.set(cliFunctionResult.getXmlEntity());
-        }
-      } else {
-        tabularResultData.setStatus(Result.Status.ERROR);
-      }
-
-      if (cliFunctionResult.isSuccessful()) {
-        successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-        if (xmlEntity.get() == null) {
-          xmlEntity.set(cliFunctionResult.getXmlEntity());
-        }
-      } else {
-        String exceptionMessage = cliFunctionResult.getMessage();
-        Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-        if (failedMembers == null) {
-          failedMembers = new TreeSet<>();
-        }
-        failedMembers.add(cliFunctionResult.getMemberIdOrName());
-        indexOpFailMap.put(exceptionMessage, failedMembers);
-      }
-    }
-    Result result = ResultBuilder.buildResult(tabularResultData);
-
-    if (xmlEntity.get() != null) {
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), group));
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, group));
     }
     return result;
   }

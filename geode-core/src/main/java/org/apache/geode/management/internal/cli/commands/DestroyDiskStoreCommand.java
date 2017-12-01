@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -31,7 +30,6 @@ import org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFuncti
 import org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -50,8 +48,6 @@ public class DestroyDiskStoreCommand implements GfshCommand {
       @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExist) {
 
-    TabularResultData tabularData = ResultBuilder.createTabularResultData();
-
     Set<DistributedMember> targetMembers = findMembers(groups, null);
 
     if (targetMembers.isEmpty()) {
@@ -63,24 +59,12 @@ public class DestroyDiskStoreCommand implements GfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyDiskStoreFunction(), functionArgs, targetMembers);
 
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-    for (CliFunctionResult result : results) {
-      if (result.isSuccessful()) {
-        if (xmlEntity.get() == null) {
-          xmlEntity.set(result.getXmlEntity());
-        }
-      } else {
-        tabularData.setStatus(Result.Status.ERROR);
-      }
-      tabularData.accumulate("Member", result.getMemberIdOrName());
-      tabularData.accumulate("Result", result.getMessage());
-    }
+    Result result = ResultBuilder.buildResult(results);
+    XmlEntity xmlEntity = findXmlEntity(results);
 
-    Result result = ResultBuilder.buildResult(tabularData);
-
-    if (xmlEntity.get() != null) {
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), groups));
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, groups));
     }
 
     return result;

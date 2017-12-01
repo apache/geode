@@ -133,8 +133,8 @@ public class CreateAsyncEventQueueCommandTest {
 
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
         .tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Result", "member1", "SUCCESS")
-        .tableHasRowWithValues("Member", "Result", "member2", "SUCCESS");
+        .tableHasRowWithValues("Member", "Status", "member1", "SUCCESS")
+        .tableHasRowWithValues("Member", "Status", "member2", "SUCCESS");
 
     // addXmlEntity should only be called once
     verify(service).addXmlEntity(xmlEntity, null);
@@ -154,18 +154,11 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted() // need to make
-                                                                                     // sure
-                                                                                     // failToPersist
-                                                                                     // flag is not
-                                                                                     // set, so that
-                                                                                     // we won't
-                                                                                     // print out
-                                                                                     // warning
-                                                                                     // messages.
+    // need to make sure failToPersist flag is not set so that we won't print out the warning
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError().persisted()
         .tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Result", "member1", "ERROR: failed")
-        .tableHasRowWithValues("Member", "Result", "member2",
+        .tableHasRowWithValues("Member", "Status", "member1", "ERROR: failed")
+        .tableHasRowWithValues("Member", "Status", "member2",
             "ERROR: java.lang.RuntimeException: exception happened");
 
     // addXmlEntity should not be called
@@ -187,8 +180,8 @@ public class CreateAsyncEventQueueCommandTest {
 
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
         .tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Result", "member1", "SUCCESS").tableHasRowWithValues(
-            "Member", "Result", "member2", "ERROR: java.lang.RuntimeException: exception happened");
+        .tableHasRowWithValues("Member", "Status", "member1", "SUCCESS").tableHasRowWithValues(
+            "Member", "Status", "member2", "ERROR: java.lang.RuntimeException: exception happened");
 
     // addXmlEntity should be called once
     verify(service).addXmlEntity(xmlEntity, null);

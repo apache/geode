@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
@@ -53,7 +52,6 @@ import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -167,7 +165,6 @@ public class CreateRegionCommand implements GfshCommand {
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
     Result result;
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     if (regionShortcut != null && templateRegion != null) {
       return ResultBuilder.createUserErrorResult(
@@ -347,26 +344,12 @@ public class CreateRegionCommand implements GfshCommand {
     List<CliFunctionResult> regionCreateResults = executeAndGetFunctionResult(
         RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
 
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean regionCreated = false;
-    for (CliFunctionResult regionCreateResult : regionCreateResults) {
-      tabularResultData.accumulate("Member", regionCreateResult.getMemberIdOrName());
-      if (regionCreateResult.isSuccessful()) {
-        tabularResultData.accumulate("Status", regionCreateResult.getMessage());
-        xmlEntity.set(regionCreateResult.getXmlEntity());
-        regionCreated = true;
-      } else {
-        tabularResultData.accumulate("Status", "ERROR: " + regionCreateResult.getErrorMessage());
-      }
-    }
-
-    tabularResultData.setStatus(regionCreated ? Result.Status.OK : Result.Status.ERROR);
-    result = ResultBuilder.buildResult(tabularResultData);
-
-    if (regionCreated) {
+    result = ResultBuilder.buildResult(regionCreateResults);
+    XmlEntity xmlEntity = findXmlEntity(regionCreateResults);
+    if (xmlEntity != null) {
       verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, groups));
     }
     return result;
   }
