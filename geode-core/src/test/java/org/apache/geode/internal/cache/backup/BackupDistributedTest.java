@@ -53,14 +53,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.distributed.DistributedMember;
@@ -70,7 +69,6 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.DestroyRegionOperation.DestroyRegionMessage;
-import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PersistentPartitionedRegionTestBase;
@@ -78,8 +76,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -132,24 +128,16 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       DistributionMessageObserver.setInstance(null);
       disconnectFromDS();
     });
-
-    StringBuilder failures = new StringBuilder();
-    delete(getBackupDir(), failures);
-    if (failures.length() > 0) {
-      // logger.error(failures.toString());
-    }
   }
 
   @Test
   public void testBackupPR() throws Exception {
-    createPersistentRegion(vm0).await();
-    createPersistentRegion(vm1).await();
+    createPersistentRegions();
 
     long lastModified0 = setBackupFiles(vm0);
     long lastModified1 = setBackupFiles(vm1);
 
-    createData(vm0, 0, 5, "A", "region1");
-    createData(vm0, 0, 5, "B", "region2");
+    createData();
 
     BackupStatus status = backupMember(vm2);
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
@@ -184,6 +172,11 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     verifyUserFileRestored(vm1, lastModified1);
   }
 
+  private void createData() {
+    createData(vm0, 0, 5, "A", "region1");
+    createData(vm0, 0, 5, "B", "region2");
+  }
+
   /**
    * Test of bug 42419.
    *
@@ -193,11 +186,9 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
    */
   @Test
   public void testBackupFromMemberWithDiskStore() throws Exception {
-    createPersistentRegion(vm0).await();
-    createPersistentRegion(vm1).await();
+    createPersistentRegions();
 
-    createData(vm0, 0, 5, "A", "region1");
-    createData(vm0, 0, 5, "B", "region2");
+    createData();
 
     BackupStatus status = backupMember(vm1);
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
@@ -342,11 +333,9 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
           createTestHookToThrowIOExceptionBeforeProcessingPrepareBackupRequest(exceptionMessage));
     });
 
-    createPersistentRegion(vm0).await();
-    createPersistentRegion(vm1).await();
+    createPersistentRegions();
 
-    createData(vm0, 0, 5, "A", "region1");
-    createData(vm0, 0, 5, "B", "region2");
+    createData();
 
     assertThatThrownBy(() -> backupMember(vm2)).hasRootCauseInstanceOf(IOException.class);
 
@@ -364,8 +353,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     createPersistentRegion(vm0).await();
     createOverflowRegion(vm1);
 
-    createData(vm0, 0, 5, "A", "region1");
-    createData(vm0, 0, 5, "B", "region2");
+    createData();
 
     BackupStatus status = backupMember(vm2);
     assertThat(status.getBackedUpDiskStores()).hasSize(1);
@@ -381,8 +369,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     createPersistentRegion(vm1).await();
     createPersistentRegion(vm2).await();
 
-    createData(vm0, 0, 5, "A", "region1");
-    createData(vm0, 0, 5, "B", "region2");
+    createData();
 
     closeCache(vm2);
 
@@ -527,51 +514,38 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
   private AsyncInvocation createPersistentRegion(final VM vm) {
     return vm.invokeAsync(() -> {
       Cache cache = getCache();
-      DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      dsf.setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_1"));
-      // dsf.setDiskDirs(getDiskDirs(vm, getUniqueName()));
-      dsf.setMaxOplogSize(1);
-      DiskStore ds = dsf.create(getUniqueName());
+      DiskStore diskStore1 = cache.createDiskStoreFactory()
+          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_1"))
+          .setMaxOplogSize(1)
+          .create(getUniqueName());
 
-      RegionFactory rf = new RegionFactory();
-      rf.setDiskStoreName(ds.getName());
-      rf.setDiskSynchronous(true);
-      rf.setDataPolicy(getDataPolicy());
-      PartitionAttributesFactory paf = new PartitionAttributesFactory();
-      paf.setRedundantCopies(0);
-      rf.setPartitionAttributes(paf.create());
-      rf.create("region1");
+      DiskStore diskStore2 = cache.createDiskStoreFactory()
+          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_2"))
+          .setMaxOplogSize(1)
+          .create(getUniqueName() + 2);
 
-      dsf = cache.createDiskStoreFactory();
-      dsf.setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_2"));
-      // dsf.setDiskDirs(getDiskDirs(vm, getUniqueName() + 2));
-      dsf.setMaxOplogSize(1);
-      dsf.create(getUniqueName() + 2);
-      rf.setDiskStoreName(getUniqueName() + 2);
-      rf.create("region2");
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+        .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0).create());
+
+      regionFactory.setDiskStoreName(diskStore1.getName()).setDiskSynchronous(true).create("region1");
+      regionFactory.setDiskStoreName(diskStore2.getName()).setDiskSynchronous(true).create("region2");
     });
   }
 
   private void createOverflowRegion(final VM vm) {
-    SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        dsf.setDiskDirs(getDiskDirs(vm, getUniqueName()));
-        dsf.setMaxOplogSize(1);
-        DiskStore ds = dsf.create(getUniqueName());
+    vm.invoke(() -> {
+      Cache cache = getCache();
+      DiskStore diskStore = cache.createDiskStoreFactory()
+          .setDiskDirs(getDiskDirs(vm, getUniqueName()))
+          .create(getUniqueName());
 
-        RegionFactory rf = new RegionFactory();
-        rf.setDiskStoreName(ds.getName());
-        rf.setDiskSynchronous(true);
-        rf.setDataPolicy(DataPolicy.REPLICATE);
-        rf.setEvictionAttributes(
-            EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
-        rf.create("region3");
-      }
-    };
-    vm.invoke(createRegion);
+      cache.createRegionFactory(RegionShortcut.REPLICATE)
+          .setDiskStoreName(diskStore.getName())
+          .setDiskSynchronous(true)
+          .setEvictionAttributes(
+            EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
+          .create("region3");
+    });
   }
 
   @Override
@@ -600,32 +574,18 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
   @Override
   protected void checkData(VM vm, final int startKey, final int endKey, final String value,
       final String regionName) {
-    SerializableRunnable checkData = new SerializableRunnable() {
+    vm.invoke(() -> {
+      Region region = getCache().getRegion(regionName);
 
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(regionName);
-
-        for (int i = startKey; i < endKey; i++) {
-          assertEquals(value, region.get(i));
-        }
+      for (int i = startKey; i < endKey; i++) {
+        assertEquals(value, region.get(i));
       }
-    };
-
-    vm.invoke(checkData);
+    });
   }
 
   @Override
   protected void closeCache(final VM vm) {
-    SerializableRunnable closeCache = new SerializableRunnable("close cache") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        cache.close();
-      }
-    };
-    vm.invoke(closeCache);
+    vm.invoke(() -> getCache().close());
   }
 
   @Override
@@ -635,17 +595,11 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
 
   @Override
   protected Set<Integer> getBucketList(VM vm, final String regionName) {
-    SerializableCallable getBuckets = new SerializableCallable("get buckets") {
-
-      @Override
-      public Object call() throws Exception {
-        Cache cache = getCache();
-        PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-        return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
-      }
-    };
-
-    return (Set<Integer>) vm.invoke(getBuckets);
+    return vm.invoke(() -> {
+      Cache cache = getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
+      return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
+    });
   }
 
   private File[] getDiskDirs(VM vm, String dsName) {
@@ -653,57 +607,6 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     diskStoreDirs[0] = new File(workingDirByVm.get(vm), dsName);
     diskStoreDirs[0].mkdirs();
     return diskStoreDirs;
-  }
-
-  private DataPolicy getDataPolicy() {
-    return DataPolicy.PERSISTENT_PARTITION;
-  }
-
-  void checkRecoveredFromDisk(VM vm, final int bucketId, final boolean recoveredLocally) {
-    vm.invoke(new SerializableRunnable("check recovered from disk") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        PartitionedRegion region = (PartitionedRegion) cache.getRegion(getPartitionedRegionName());
-        DiskRegion disk = region.getRegionAdvisor().getBucket(bucketId).getDiskRegion();
-        if (recoveredLocally) {
-          assertEquals(0, disk.getStats().getRemoteInitializations());
-          assertEquals(1, disk.getStats().getLocalInitializations());
-        } else {
-          assertEquals(1, disk.getStats().getRemoteInitializations());
-          assertEquals(0, disk.getStats().getLocalInitializations());
-        }
-      }
-    });
-  }
-
-  /**
-   * Recursively delete a file or directory. A description of any files or directories that can not
-   * be deleted will be added to failures if failures is non-null. This method tries to delete as
-   * much as possible.
-   */
-  public static void delete(File file, StringBuilder failures) {
-    if (!file.exists()) {
-      return;
-    }
-
-    if (file.isDirectory()) {
-      File[] fileList = file.listFiles();
-      if (fileList != null) {
-        for (File child : fileList) {
-          delete(child, failures);
-        }
-      }
-    }
-
-    try {
-      Files.delete(file.toPath());
-    } catch (IOException e) {
-      if (failures != null) {
-        failures.append("Could not delete ").append(file).append(" due to ").append(e.getMessage())
-            .append('\n');
-      }
-    }
   }
 
   private BackupStatus backupMember(final VM vm) {
@@ -737,7 +640,6 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       String line;
       while ((line = reader.readLine()) != null) {
         logger.info("OUTPUT:" + line);
-        // TODO validate output
       }
     }
 
