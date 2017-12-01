@@ -14,14 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
 
 import org.apache.geode.management.cli.ConverterHint;
 
@@ -29,31 +26,21 @@ import org.apache.geode.management.cli.ConverterHint;
  *
  * @since GemFire 7.0
  */
-public class LogLevelConverter implements Converter<String> {
-  private Set<Completion> logLevels;
+public class LogLevelConverter extends BaseStringConverter {
+  private final Set<String> logLevels;
 
   public LogLevelConverter() {
-    logLevels = new LinkedHashSet<Completion>();
-    Level[] levels = Level.values();
-    for (Level level : levels) {
-      logLevels.add(new Completion(level.name()));
-    }
+    logLevels = Arrays.stream(Level.values()).map(Level::name).collect(Collectors.toSet());
   }
 
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && optionContext.contains(ConverterHint.LOG_LEVEL);
+  public String getConverterHint() {
+    return ConverterHint.LOG_LEVEL;
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
+  public Set<String> getCompletionValues() {
+    return logLevels;
   }
 
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    completions.addAll(logLevels);
-    return !completions.isEmpty();
-  }
 }

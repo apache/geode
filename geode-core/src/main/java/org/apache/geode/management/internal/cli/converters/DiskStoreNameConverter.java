@@ -34,38 +34,16 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  *
  * @since GemFire 7.0
  */
-public class DiskStoreNameConverter implements Converter<String> {
+public class DiskStoreNameConverter extends BaseStringConverter {
 
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && optionContext.contains(ConverterHint.DISKSTORE);
+  public String getConverterHint() {
+    return ConverterHint.DISKSTORE;
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    Set<String> diskStoreNames = getDiskStoreNames();
-
-    for (String diskStoreName : diskStoreNames) {
-      if (existingData != null) {
-        if (diskStoreName.startsWith(existingData)) {
-          completions.add(new Completion(diskStoreName));
-        }
-      } else {
-        completions.add(new Completion(diskStoreName));
-      }
-    }
-
-    return !completions.isEmpty();
-  }
-
-  public Set<String> getDiskStoreNames() {
-    SortedSet<String> diskStoreNames = new TreeSet<String>();
+  public Set<String> getCompletionValues() {
+    SortedSet<String> diskStoreNames = new TreeSet<>();
     Gfsh gfsh = Gfsh.getCurrentInstance();
     if (gfsh != null && gfsh.isConnectedAndReady()) { // gfsh exists & is not null
       Map<String, String[]> diskStoreInfo =
