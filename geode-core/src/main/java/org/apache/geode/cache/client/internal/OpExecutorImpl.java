@@ -329,7 +329,7 @@ public class OpExecutorImpl implements ExecutablePool {
     return executeOnServer(server, op, accessed, onlyUseExistingCnx);
   }
 
-  private Object executeOnServer(ServerLocation p_server, Op op, boolean accessed,
+  protected Object executeOnServer(ServerLocation p_server, Op op, boolean accessed,
       boolean onlyUseExistingCnx) {
     ServerLocation server = p_server;
     boolean returnCnx = true;
