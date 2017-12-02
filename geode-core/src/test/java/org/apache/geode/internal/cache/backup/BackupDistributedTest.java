@@ -53,15 +53,18 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -92,8 +95,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
-
   private static final Logger logger = LogService.getLogger();
+
+  private static final int NUM_BUCKETS = 15;
 
   @Rule
   public SerializableTemporaryFolder tempDir = new SerializableTemporaryFolder();
@@ -390,6 +394,61 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     }
   }
 
+  /**
+   * Test what happens when we restart persistent members while there is an accessor concurrently
+   * performing puts.
+   */
+  @Test
+  public void testRecoverySystemWithConcurrentPutter() throws Throwable {
+    createColatedPersistentRegions(vm1).await();
+    createColatedPersistentRegions(vm2).await();
+
+    createAccessor(vm0);
+
+    createData(vm0, 0, NUM_BUCKETS, "a", "region1");
+    createData(vm0, 0, NUM_BUCKETS, "a", "region2");
+
+
+    // backup the system. We use this to get a snapshot of vm1 and vm2
+    // when they both are online. Recovering from this backup simulates
+    // a simulataneous kill and recovery.
+    backupMember(vm3);
+
+    closeCache(vm1);
+    closeCache(vm2);
+
+    cleanDiskDirsInEveryVM();
+    restoreBackup(2);
+
+    // in vm0, start doing a bunch of concurrent puts.
+    AsyncInvocation async0 = vm0.invokeAsync(() -> {
+      Cache cache = getCache();
+      Region region = cache.getRegion("region1");
+      try {
+        for (int i = 0;; i++) {
+          try {
+            region.get(i % NUM_BUCKETS);
+          } catch (PartitionOfflineException | PartitionedRegionStorageException expected) {
+            // do nothing.
+          }
+        }
+      } catch (CacheClosedException expected) {
+        // ok, we're done.
+      }
+    });
+
+    AsyncInvocation async1 = createColatedPersistentRegions(vm1);
+    AsyncInvocation async2 = createColatedPersistentRegions(vm2);
+    async1.await();
+    async2.await();
+
+    // close the cache in vm0 to stop the async puts.
+    closeCache(vm0);
+
+    // make sure we didn't get an exception
+    async0.await();
+  }
+
   private DistributionMessageObserver createTestHookToBackupBeforeProcessingReplyMessage(
       Runnable task) {
     return new DistributionMessageObserver() {
@@ -515,20 +574,43 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     return vm.invokeAsync(() -> {
       Cache cache = getCache();
       DiskStore diskStore1 = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_1"))
-          .setMaxOplogSize(1)
+          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_1")).setMaxOplogSize(1)
           .create(getUniqueName());
 
       DiskStore diskStore2 = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_2"))
-          .setMaxOplogSize(1)
+          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_2")).setMaxOplogSize(1)
           .create(getUniqueName() + 2);
 
       RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-        .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0).create());
+          .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0).create());
 
-      regionFactory.setDiskStoreName(diskStore1.getName()).setDiskSynchronous(true).create("region1");
-      regionFactory.setDiskStoreName(diskStore2.getName()).setDiskSynchronous(true).create("region2");
+      regionFactory.setDiskStoreName(diskStore1.getName()).setDiskSynchronous(true)
+          .create("region1");
+      regionFactory.setDiskStoreName(diskStore2.getName()).setDiskSynchronous(true)
+          .create("region2");
+    });
+  }
+
+  private AsyncInvocation createColatedPersistentRegions(final VM vm) {
+    return vm.invokeAsync(() -> {
+      Cache cache = getCache();
+      DiskStore diskStore1 = cache.createDiskStoreFactory()
+          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_1")).setMaxOplogSize(1)
+          .create(getUniqueName());
+
+      DiskStore diskStore2 = cache.createDiskStoreFactory()
+          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_2")).setMaxOplogSize(1)
+          .create(getUniqueName() + 2);
+
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+          .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0).create());
+
+      regionFactory.setDiskStoreName(diskStore1.getName()).setDiskSynchronous(true)
+          .create("region1");
+      regionFactory.setDiskStoreName(diskStore2.getName()).setDiskSynchronous(true)
+          .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0)
+              .setColocatedWith("region1").create())
+          .create("region2");
     });
   }
 
@@ -536,14 +618,12 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     vm.invoke(() -> {
       Cache cache = getCache();
       DiskStore diskStore = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, getUniqueName()))
-          .create(getUniqueName());
+          .setDiskDirs(getDiskDirs(vm, getUniqueName())).create(getUniqueName());
 
-      cache.createRegionFactory(RegionShortcut.REPLICATE)
-          .setDiskStoreName(diskStore.getName())
+      cache.createRegionFactory(RegionShortcut.REPLICATE).setDiskStoreName(diskStore.getName())
           .setDiskSynchronous(true)
           .setEvictionAttributes(
-            EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
+              EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
           .create("region3");
     });
   }
@@ -644,6 +724,21 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     }
 
     assertThat(process.waitFor()).isEqualTo(0);
+  }
+
+  private void createAccessor(VM vm) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+
+      cache.createRegionFactory(RegionShortcut.PARTITION)
+          .setPartitionAttributes(
+              new PartitionAttributesFactory().setRedundantCopies(0).setLocalMaxMemory(0).create())
+          .create("region1");
+      cache.createRegionFactory(RegionShortcut.PARTITION)
+          .setPartitionAttributes(new PartitionAttributesFactory().setColocatedWith("region1")
+              .setRedundantCopies(0).setLocalMaxMemory(0).create())
+          .create("region2");
+    });
   }
 
   enum WhenToInvokeBackup {
