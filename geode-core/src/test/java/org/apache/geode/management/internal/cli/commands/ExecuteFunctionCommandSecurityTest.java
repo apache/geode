@@ -44,7 +44,7 @@ import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExecuteFunctionCommandSecurityTest implements Serializable {
@@ -53,7 +53,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private static MemberVM locator, server1, server2;
 
@@ -87,8 +87,8 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void dataReaderCanExecuteReadFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
     gfsh.executeAndAssertThat("execute function --id=" + new ReadFunction().getId())
         .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(ReadFunction.SUCCESS_OUTPUT);
@@ -96,8 +96,8 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void dataReaderCanNotExecuteWriteFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
     gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
         .containsOutput("dataRead not authorized for DATA:WRITE")
         .doesNotContainOutput(WriteFunction.SUCCESS_OUTPUT);
@@ -105,8 +105,8 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void dataWriterCanExecuteWriteFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataWrite", "dataWrite");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataWrite",
+        "dataWrite");
     gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
         .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(WriteFunction.SUCCESS_OUTPUT);
@@ -114,8 +114,8 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void dataWriterCanNotExecuteReadFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataWrite", "dataWrite");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataWrite",
+        "dataWrite");
     gfsh.executeCommand("execute function --id=" + new ReadFunction().getId());
     assertThat(gfsh.getGfshOutput()).contains("dataWrite not authorized for DATA:READ");
     assertThat(gfsh.getGfshOutput()).doesNotContain(ReadFunction.SUCCESS_OUTPUT);
@@ -123,8 +123,8 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void readOnlyUserOnReplicatedRegion() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
     gfsh.executeAndAssertThat(
         "execute function --id=" + new ReadFunction().getId() + " --region=" + REPLICATED_REGION)
         .statusIsSuccess().containsOutput(ReadFunction.SUCCESS_OUTPUT);
@@ -137,8 +137,8 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void readOnlyUserOnPartitionedRegion() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
     gfsh.executeAndAssertThat(
         "execute function --id=" + new ReadFunction().getId() + " --region=" + PARTITIONED_REGION)
         .statusIsSuccess().containsOutput(ReadFunction.SUCCESS_OUTPUT);

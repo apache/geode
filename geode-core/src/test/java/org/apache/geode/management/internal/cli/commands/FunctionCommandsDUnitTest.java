@@ -40,7 +40,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class FunctionCommandsDUnitTest {
@@ -54,7 +54,7 @@ public class FunctionCommandsDUnitTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -116,7 +116,7 @@ public class FunctionCommandsDUnitTest {
   }
 
   public void connectGfsh(MemberVM vm) throws Exception {
-    gfsh.connectAndVerify(vm.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(vm.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test

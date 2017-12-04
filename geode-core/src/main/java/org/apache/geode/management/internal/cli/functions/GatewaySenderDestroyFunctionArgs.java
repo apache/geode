@@ -20,13 +20,19 @@ public class GatewaySenderDestroyFunctionArgs implements Serializable {
 
   private static final long serialVersionUID = 3848480256348119530L;
   private String id;
+  private boolean ifExists;
 
 
-  public GatewaySenderDestroyFunctionArgs(String id) {
+  public GatewaySenderDestroyFunctionArgs(String id, boolean ifExists) {
     this.id = id;
+    this.ifExists = ifExists;
   }
 
   public String getId() {
     return id;
+  }
+
+  public boolean isIfExists() {
+    return ifExists;
   }
 }

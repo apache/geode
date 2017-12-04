@@ -27,7 +27,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.JarFileRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
@@ -44,7 +44,7 @@ public class ConcurrentDeployDUnitTest {
   public JarFileRule jar1Rule = new JarFileRule("classOne", "jar1.jar", true);
 
   // This is a reference used to refer to connections in VM 2 and VM 3
-  private static GfshShellConnectionRule gfsh;
+  private static GfshCommandRule gfsh;
 
   private VM gfsh1, gfsh2, gfsh3;
 
@@ -79,8 +79,8 @@ public class ConcurrentDeployDUnitTest {
   }
 
   public static void connectToLocator(int locatorPort) throws Exception {
-    gfsh = new GfshShellConnectionRule();
-    gfsh.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.locator);
+    gfsh = new GfshCommandRule();
+    gfsh.connectAndVerify(locatorPort, GfshCommandRule.PortType.locator);
   }
 
   public static void loopThroughDeployAndUndeploys(File jar1) throws Exception {

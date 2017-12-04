@@ -14,18 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
@@ -33,65 +28,46 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @since GemFire 8.0
  */
-public class DestroyDiskStoreFunction extends FunctionAdapter implements InternalEntity {
-  private static final Logger logger = LogService.getLogger();
-
+public class DestroyDiskStoreFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
 
   @Override
   public void execute(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
-    String memberId = "";
+    String memberId;
 
+    final DestroyDiskStoreFunctionArgs args = (DestroyDiskStoreFunctionArgs) context.getArguments();
+
+    InternalCache cache = (InternalCache) context.getCache();
+
+    DistributedMember member = cache.getDistributedSystem().getDistributedMember();
+
+    memberId = member.getId();
+    // If they set a name use it instead
+    if (!member.getName().equals("")) {
+      memberId = member.getName();
+    }
+
+    DiskStore diskStore = cache.findDiskStore(args.getId());
+
+    CliFunctionResult result;
     try {
-      final Object[] args = (Object[]) context.getArguments();
-      final String diskStoreName = (String) args[0];
-
-      InternalCache cache = (InternalCache) context.getCache();
-
-      DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-
-      memberId = member.getId();
-      // If they set a name use it instead
-      if (!member.getName().equals("")) {
-        memberId = member.getName();
-      }
-
-      DiskStore diskStore = cache.findDiskStore(diskStoreName);
-
-      CliFunctionResult result;
       if (diskStore != null) {
-        XmlEntity xmlEntity = new XmlEntity(CacheXml.DISK_STORE, "name", diskStoreName);
+        XmlEntity xmlEntity = new XmlEntity(CacheXml.DISK_STORE, "name", args.getId());
         diskStore.destroy();
         result = new CliFunctionResult(memberId, xmlEntity, "Success");
       } else {
-        result = new CliFunctionResult(memberId, false, "Disk store not found on this member");
+        if (args.isIfExists()) {
+          result = new CliFunctionResult(memberId, true,
+              "Skipping: Disk store not found on this member");
+        } else {
+          result = new CliFunctionResult(memberId, false, "Disk store not found on this member");
+        }
       }
-      context.getResultSender().lastResult(result);
-
-    } catch (IllegalStateException isex) {
-      CliFunctionResult result = new CliFunctionResult(memberId, false, isex.getMessage());
-      context.getResultSender().lastResult(result);
-
-    } catch (CacheClosedException cce) {
-      CliFunctionResult result = new CliFunctionResult(memberId, false, null);
-      context.getResultSender().lastResult(result);
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      logger.error("Could not destroy disk store: {}", th.getMessage(), th);
-
-      CliFunctionResult result = new CliFunctionResult(memberId, th, null);
-      context.getResultSender().lastResult(result);
+    } catch (IllegalStateException ex) {
+      result = new CliFunctionResult(memberId, false, ex.getMessage());
     }
+    context.getResultSender().lastResult(result);
   }
 
-  @Override
-  public String getId() {
-    return CreateDiskStoreFunction.class.getName();
-  }
 }

@@ -15,13 +15,8 @@
 package org.apache.geode.management.internal.cli.converters;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
 
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -31,32 +26,14 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  *
  * @since GemFire 8.0
  */
-public class ClusterMemberIdNameConverter implements Converter<String> {
-  @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && ConverterHint.ALL_MEMBER_IDNAME.equals(optionContext);
-  }
+public class ClusterMemberIdNameConverter extends BaseStringConverter {
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
+  public String getConverterHint() {
+    return ConverterHint.ALL_MEMBER_IDNAME;
   }
 
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    if (String.class.equals(targetType) && ConverterHint.ALL_MEMBER_IDNAME.equals(optionContext)) {
-      Set<String> memberIdAndNames = getMemberIdAndNames();
-
-      for (String string : memberIdAndNames) {
-        completions.add(new Completion(string));
-      }
-    }
-
-    return !completions.isEmpty();
-  }
-
-  private Set<String> getMemberIdAndNames() {
+  public Set<String> getCompletionValues() {
     final Set<String> memberIdsAndNames = new TreeSet<String>();
 
     final Gfsh gfsh = Gfsh.getCurrentInstance();

@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Test;
@@ -41,6 +42,7 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -49,7 +51,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -73,6 +74,15 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
     dataStore1 = host.getVM(0);
     dataStore2 = host.getVM(1);
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
+    return result;
+  }
+
 
   @Test
   public void testLocalDataSetIndexing() {

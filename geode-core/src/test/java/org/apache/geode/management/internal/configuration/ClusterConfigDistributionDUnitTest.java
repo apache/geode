@@ -40,7 +40,7 @@ import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
@@ -60,7 +60,7 @@ public class ClusterConfigDistributionDUnitTest {
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {

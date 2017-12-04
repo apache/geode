@@ -36,7 +36,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -46,7 +46,7 @@ public class DescribeConfigCommandDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -61,9 +61,9 @@ public class DescribeConfigCommandDUnitTest {
     MemberVM server0 = startupRule.startServerAsJmxManager(0, localProps);
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     server0.invoke(() -> {

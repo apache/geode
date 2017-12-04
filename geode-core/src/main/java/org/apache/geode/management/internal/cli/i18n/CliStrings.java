@@ -869,7 +869,7 @@ public class CliStrings {
       "Activates LRU eviction based on the region's memory usage specified by this value.";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT = "eviction-entry-count";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT__HELP =
-      "Activates LRU eviction based on the region's entry count specified by this value.";
+      "Activates LRU eviction based on the region's entry count specified by this value (in megabytes).";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER = "eviction-object-sizer";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER__HELP =
       "A custom class which implements ObjectSizer in order to perform max memory eviction.";
@@ -1067,6 +1067,9 @@ public class CliStrings {
 
   public static final String CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_WITHOUT_MAX_MEMORY =
       "eviction-object-sizer cannot be specified without eviction-max-memory";
+
+  public static final String CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE =
+      "eviction-object-sizer must implement both ObjectSizer and Declarable interfaces";
 
   /* debug command */
   public static final String DEBUG = "debug";
@@ -2033,9 +2036,10 @@ public class CliStrings {
   public static final String SHOW_METRICS__CATEGORY__HELP =
       "Categories available based upon the parameters specified are:\n"
           + "- no parameters specified: cluster, cache, diskstore, query\n"
-          + "- region specified: cluster, region, partition, diskstore, callback, eviction\n"
-          + "- member specified: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution, offheap\n"
-          + "- member and region specified: region, partition, diskstore, callback, eviction";
+          + "- region specified: callback, cluster, diskstore, eviction, partition, region\n"
+          + "- member specified: communication, diskstore, distribution, eviction, function, jvm, lock, member, offheap, region, serialization, transaction\n"
+          + "- member and port specified: cacheserver, communication, diskstore, distribution, eviction, function, jvm, lock, member, notification, offheap, query, region, serialization, transaction\n"
+          + "- member and region specified: callback, diskstore, eviction, partition, region";
   public static final String SHOW_METRICS__FILE = "file";
   public static final String SHOW_METRICS__FILE__HELP =
       "Name of the file to which metrics will be written.";

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,6 +48,7 @@ import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -59,6 +61,15 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
   public SnapshotDUnitTest() {
     super();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        SerializationType.class.getName() + ";" + MyObject.class.getName() + ";"
+            + SnapshotProblem.class.getName());
+    return properties;
   }
 
   @Test
@@ -240,14 +251,16 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  public static class SnapshotProblem<K, V> implements SnapshotFilter<K, V> {
+    @Override
+    public boolean accept(Entry<K, V> entry) {
+      throw new RuntimeException();
+    }
+  };
+
   @Test
   public void testCacheExportFilterException() throws Exception {
-    SnapshotFilter<Object, Object> oops = new SnapshotFilter<Object, Object>() {
-      @Override
-      public boolean accept(Entry<Object, Object> entry) {
-        throw new RuntimeException();
-      }
-    };
+    SnapshotFilter<Object, Object> oops = new SnapshotProblem();
 
     CacheSnapshotService css = getCache().getSnapshotService();
     SnapshotOptions<Object, Object> options = css.createOptions().setFilter(oops);

@@ -82,6 +82,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
+import org.apache.geode.internal.cache.backup.BackupLock;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
@@ -2029,7 +2031,7 @@ public class DiskStoreImpl implements DiskStore {
     return this.directories[this.infoFileDirIndex];
   }
 
-  int getInforFileDirIndex() {
+  public int getInforFileDirIndex() {
     return this.infoFileDirIndex;
   }
 
@@ -2696,7 +2698,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * Get all of the oplogs
    */
-  Oplog[] getAllOplogsForBackup() {
+  public Oplog[] getAllOplogsForBackup() {
     return persistentOplogs.getAllOplogs();
   }
 
@@ -2941,7 +2943,7 @@ public class DiskStoreImpl implements DiskStore {
   public static class KillCompactorException extends RuntimeException {
   }
 
-  DiskInitFile getDiskInitFile() {
+  public DiskInitFile getDiskInitFile() {
     return this.initFile;
   }
 
@@ -4328,7 +4330,7 @@ public class DiskStoreImpl implements DiskStore {
    * Wait for any current operations in the delayed write pool. Completion of this method ensures
    * that the writes have completed or the pool was shutdown
    */
-  protected void waitForDelayedWrites() {
+  public void waitForDelayedWrites() {
     Future<?> lastWriteTask = lastDelayedWrite;
     if (lastWriteTask != null) {
       try {

@@ -14,16 +14,23 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
-public class TestFunction extends FunctionAdapter {
+public class TestFunction extends FunctionAdapter implements DataSerializable {
 
   public static final String TEST_FUNCTION1 = "TestFunction1";
 
@@ -136,5 +143,21 @@ public class TestFunction extends FunctionAdapter {
    */
   public void init(Properties props) {
     this.props.putAll(props);
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeHashMap(this.props, out);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    Map map = DataSerializer.readHashMap(in);
+    if (map != null) {
+      for (Iterator it = map.entrySet().iterator(); it.hasNext();) {
+        Map.Entry entry = (Map.Entry) it.next();
+        props.put(entry.getKey(), entry.getValue());
+      }
+    }
   }
 }

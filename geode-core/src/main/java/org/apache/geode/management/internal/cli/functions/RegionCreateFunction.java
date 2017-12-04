@@ -24,6 +24,7 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -36,6 +37,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalEntity;
@@ -44,7 +46,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
-import org.apache.geode.management.internal.cli.exceptions.CreateSubregionException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -105,7 +106,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
                 new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, null/* do not log */));
-    } catch (IllegalArgumentException | CreateSubregionException e) {
+    } catch (IllegalArgumentException e) {
       resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (RegionExistsException e) {
       String exceptionMsg =
@@ -203,6 +204,11 @@ public class RegionCreateFunction implements Function, InternalEntity {
 
     EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();
     if (evictionAttributes != null) {
+      ObjectSizer sizer = evictionAttributes.getObjectSizer();
+      if (sizer != null && !(sizer instanceof Declarable)) {
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
+      }
       factory.setEvictionAttributes(evictionAttributes);
     }
 

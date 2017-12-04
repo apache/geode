@@ -71,6 +71,54 @@ public class QueryServiceJUnitTest {
   }
 
   @Test
+  public void toDateWithPresetDateShouldExecuteWithoutExceptions() throws Exception {
+    String testDate = "01/01/2000";
+    QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService.newQuery(
+        "SELECT * FROM /Portfolios WHERE createDate >= to_date('" + testDate + "', 'MM/dd/yyyy')");
+    query.execute();
+  }
+
+  @Test
+  public void toDateWithValidBindParameterDateShouldExecuteWithoutExceptions() throws Exception {
+    String testDate = "01/01/2000";
+    QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService
+        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+    query.execute(testDate);
+  }
+
+  @Test
+  public void toDateWithInValidStringBindParameterDateShouldThrowQueryInvalidException()
+      throws Exception {
+    String invalid = "someInvalidString";
+    QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService
+        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+    try {
+      query.execute(invalid);
+      fail();
+    } catch (QueryInvalidException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void toDateWithRegionAsBindParameterDateShouldThrowQueryInvalidException()
+      throws Exception {
+    Object invalid = CacheUtils.getRegion("Portfolios");
+    QueryService queryService = CacheUtils.getQueryService();
+    Query query = queryService
+        .newQuery("SELECT * FROM /Portfolios WHERE createDate >= to_date($1, 'MM/dd/yyyy')");
+    try {
+      query.execute(invalid);
+      fail();
+    } catch (QueryInvalidException e) {
+      // expected
+    }
+  }
+
+  @Test
   public void testCreateIndex() throws Exception {
     CacheUtils.log("testCreateIndex");
     QueryService qs = CacheUtils.getQueryService();

@@ -986,7 +986,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
         pathname + TIMESTAMP.format(Calendar.getInstance().getTime()));
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, String.valueOf(serverPort));
     command.addOption(CliStrings.START_SERVER__USE_CLUSTER_CONFIGURATION, Boolean.FALSE.toString());
-    command.addOption(CliStrings.START_SERVER__MAXHEAP, "10M");
+    command.addOption(CliStrings.START_SERVER__MAXHEAP, "12M");
     command.addOption(CliStrings.START_SERVER__LOG_LEVEL, "config");
     command.addOption(CliStrings.START_SERVER__DIR, workingDirectory.getCanonicalPath());
     command.addOption(CliStrings.START_SERVER__CACHE_XML_FILE,

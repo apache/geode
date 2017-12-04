@@ -121,7 +121,7 @@ public class HeadlessGfsh implements ResultHandler {
   }
 
   public Object getResult() throws InterruptedException {
-    // Dont wait for when some command calls gfsh.stop();
+    // Don't wait for when some command calls gfsh.stop();
     if (shell.stopCalledThroughAPI)
       return null;
     try {
@@ -144,6 +144,10 @@ public class HeadlessGfsh implements ResultHandler {
   public void clear() {
     queue.clear();
     outputString = null;
+  }
+
+  public void setTimeout(long timeout) {
+    this.timeout = timeout;
   }
 
   public void clearEvents() {

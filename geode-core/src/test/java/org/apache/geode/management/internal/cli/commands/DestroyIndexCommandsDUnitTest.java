@@ -30,7 +30,7 @@ import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class DestroyIndexCommandsDUnitTest {
@@ -47,7 +47,7 @@ public class DestroyIndexCommandsDUnitTest {
   public LocatorServerStartupRule rule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {

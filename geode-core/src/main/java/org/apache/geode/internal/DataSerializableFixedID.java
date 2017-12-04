@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 
 /**
  * An interface that implements data serialization for internal GemFire product classes that have a
@@ -727,7 +730,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short FINISH_BACKUP_REQUEST = 2114;
   public static final short FINISH_BACKUP_RESPONSE = 2115;
   public static final short PREPARE_BACKUP_REQUEST = 2116;
-  public static final short PREPARE_BACKUP_RESPONSE = 2117;
+  public static final short BACKUP_RESPONSE = 2117;
   public static final short COMPACT_REQUEST = 2118;
   public static final short COMPACT_RESPONSE = 2119;
   public static final short FLOW_CONTROL_PERMIT_MESSAGE = 2120;
@@ -787,7 +790,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short RELEASE_CLEAR_LOCK_MESSAGE = 2157;
   public static final short NULL_TOKEN = 2158;
 
-  public static final short CONFIGURATION_REQUEST = 2159;
   public static final short CONFIGURATION_RESPONSE = 2160;
 
   public static final short PARALLEL_QUEUE_REMOVAL_MESSAGE = 2161;

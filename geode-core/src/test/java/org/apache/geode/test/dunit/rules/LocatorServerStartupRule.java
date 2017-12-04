@@ -16,7 +16,9 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
 
@@ -24,7 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.rules.ExternalResource;
@@ -135,6 +139,14 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return startLocatorVM(index, new Properties());
   }
 
+  public MemberVM startLocatorVM(int index, int... locatorPort) throws Exception {
+    Properties properties = new Properties();
+    String locators = Arrays.stream(locatorPort).mapToObj(i -> "localhost[" + i + "]")
+        .collect(Collectors.joining(","));
+    properties.setProperty(LOCATORS, locators);
+    return startLocatorVM(index, properties);
+  }
+
   /**
    * Starts a locator instance with the given configuration properties inside
    * {@code getHost(0).getVM(index)}.
@@ -184,6 +196,12 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return startServerVM(index, new Properties(), locatorPort);
   }
 
+  public MemberVM startServerVM(int index, String group, int locatorPort) throws IOException {
+    Properties properties = new Properties();
+    properties.put(GROUPS, group);
+    return startServerVM(index, properties, locatorPort);
+  }
+
   public MemberVM startServerVM(int index, Properties properties) throws IOException {
     return startServerVM(index, properties, -1);
   }
@@ -216,6 +234,40 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       return serverStarter;
     });
     return setMember(index, new MemberVM(server, serverVM, useTempWorkingDir()));
+  }
+
+  public void startServerVMAsync(int index) {
+    startServerVMAsync(index, new Properties(), -1);
+  }
+
+  public void startServerVMAsync(int index, int locatorPort) {
+    startServerVMAsync(index, new Properties(), locatorPort);
+  }
+
+  public void startServerVMAsync(int index, Properties specifiedProperties, int locatorPort) {
+    assert members.get(index) != null;
+
+    Properties properties = new Properties();
+    properties.putAll(specifiedProperties);
+
+    String defaultName = "server-" + index;
+    properties.putIfAbsent(NAME, defaultName);
+    String name = properties.getProperty(NAME);
+
+    VM serverVM = getVM(index);
+    serverVM.invokeAsync(() -> {
+      memberStarter = new ServerStarterRule();
+      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
+      if (useTempWorkingDir()) {
+        File workingDirFile = createWorkingDirForMember(name);
+        serverStarter.withWorkingDir(workingDirFile);
+      }
+      if (logFile) {
+        serverStarter.withLogFile();
+      }
+      serverStarter.withProperties(properties).withConnectionToLocator(locatorPort).withAutoStart();
+      serverStarter.before();
+    });
   }
 
   public MemberVM startServerAsJmxManager(int index) throws IOException {
@@ -260,10 +312,14 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   public void stopVM(int index) {
+    stopVM(index, true);
+  }
+
+  public void stopVM(int index, boolean cleanWorkingDir) {
     MemberVM member = members.get(index);
     // user has started a server/locator in this VM
     if (member != null) {
-      member.stopMember();
+      member.stopMember(cleanWorkingDir);
     }
     // user may have used this VM as a client VM
     else {

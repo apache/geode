@@ -41,7 +41,7 @@ import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ShowMetricsDUnitTest {
@@ -52,7 +52,7 @@ public class ShowMetricsDUnitTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -131,7 +131,7 @@ public class ShowMetricsDUnitTest {
   public void testShowMetricsMember() throws Exception {
     gfsh.executeAndAssertThat(
         "show metrics --member=" + server.getName() + " --port=" + server.getPort())
-        .statusIsSuccess().containsOutput("Member Metrics").containsOutput("cache-server");
+        .statusIsSuccess().containsOutput("Member Metrics").containsOutput("cacheserver");
   }
 
   @Test
@@ -141,7 +141,7 @@ public class ShowMetricsDUnitTest {
 
     gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --port="
         + server.getPort() + " --file=" + output.getAbsolutePath()).statusIsSuccess()
-        .containsOutput("Member Metrics").containsOutput("cache-server")
+        .containsOutput("Member Metrics").containsOutput("cacheserver")
         .containsOutput("Member metrics exported to " + output.getAbsolutePath());
 
     assertThat(output).exists();

@@ -355,7 +355,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "DistTXStateProxyImplOnCoordinator::getRealDeal Built a new TXState: {} txMge:{} proxy {} target {}",
-            this.realDeal, this.txMgr.getDM().getId(), this, target, new Throwable());
+            this.realDeal, this.txMgr.getDM().getId(), this, target/* , new Throwable() */);
       }
       target2realDeals.put(target, (DistTXCoordinatorInterface) realDeal);
       if (logger.isDebugEnabled()) {

@@ -446,10 +446,10 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   public static void assertAllCountersZero() {
-    assertEquals(count, 0);
-    assertEquals(counterCreate, 0);
-    assertEquals(counterUpdate, 0);
-    assertEquals(counterDestroy, 0);
+    assertEquals(0, count);
+    assertEquals(0, counterCreate);
+    assertEquals(0, counterUpdate);
+    assertEquals(0, counterDestroy);
   }
 
   /**
@@ -483,36 +483,33 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void assertCounterSizes() {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
 
       public String description() {
-        return null;
+        return "Expected counterCreate to be 2. Instead it was " + counterCreate + ".";
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
 
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
         return counterUpdate == 2;
       }
 
       public String description() {
-        return null;
+        return "Expected counterUpdate to be 2. Instead it was " + counterUpdate + ".";
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
 
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
 
       public String description() {
-        return null;
+        return "Expected counterDestroy to be 2. Instead it was " + counterDestroy + ".";
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);

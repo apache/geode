@@ -63,10 +63,11 @@ public abstract class ContainerInstall {
   private final String MODULE_PATH;
   private final String WAR_FILE_PATH;
 
+  public static final String TMP_DIR = System.getProperty("java.io.tmpdir", "/tmp");
   public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
-  public static final String DEFAULT_INSTALL_DIR = "/tmp/cargo_containers/";
+  public static final String DEFAULT_INSTALL_DIR = TMP_DIR + "/cargo_containers/";
   protected static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
-  public static final String DEFAULT_MODULE_EXTRACTION_DIR = "/tmp/cargo_modules/";
+  public static final String DEFAULT_MODULE_EXTRACTION_DIR = TMP_DIR + "/cargo_modules/";
 
   /**
    * Represents the type of connection used in this installation
@@ -137,7 +138,8 @@ public abstract class ContainerInstall {
     logger.info("Installing container from URL " + downloadURL);
 
     // Optional step to install the container from a URL pointing to its distribution
-    Installer installer = new ZipURLInstaller(new URL(downloadURL), "/tmp/downloads", installDir);
+    Installer installer =
+        new ZipURLInstaller(new URL(downloadURL), TMP_DIR + "/downloads", installDir);
     installer.install();
 
     // Set install home

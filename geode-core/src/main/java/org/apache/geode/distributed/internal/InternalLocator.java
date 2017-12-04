@@ -77,9 +77,7 @@ import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
-import org.apache.geode.management.internal.configuration.handlers.ConfigurationRequestHandler;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
@@ -602,31 +600,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         s);
   }
 
-  class SharedConfigurationRunnable implements Runnable {
-
-    private final InternalLocator locator = InternalLocator.this;
-
-    @Override
-    public void run() {
-      try {
-        if (this.locator.sharedConfig == null) {
-          // locator.sharedConfig will already be created in case of auto-reconnect
-          this.locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
-        }
-        this.locator.sharedConfig.initSharedConfiguration(this.locator.loadFromSharedConfigDir());
-        this.locator.installSharedConfigDistribution();
-        logger.info(
-            "Cluster configuration service start up completed successfully and is now running ....");
-      } catch (CancelException | LockServiceDestroyedException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Cluster configuration start up was cancelled", e);
-        }
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-      }
-    }
-  }
-
   /**
    * Start a distributed system whose life cycle is managed by this locator. When the locator is
    * stopped, this distributed system will be disconnected. If a distributed system already exists,
@@ -722,7 +695,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     startJmxManagerLocationService(internalCache);
 
-    startSharedConfigurationService(internalCache);
+    startSharedConfigurationService();
   }
 
   /**
@@ -1089,19 +1062,13 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.myCache = newCache;
       this.myDs.setDependentLocator(this);
       logger.info("Locator restart: initializing TcpServer");
-      if (isSharedConfigurationEnabled()) {
-        this.sharedConfig = new ClusterConfigurationService(newCache);
-      }
+
       this.server.restarting(newSystem, newCache, this.sharedConfig);
       if (this.productUseLog.isClosed()) {
         this.productUseLog.reopen();
       }
       this.productUseLog.monitorUse(newSystem);
-      this.isSharedConfigurationStarted = true;
-      if (isSharedConfigurationEnabled()) {
-        ExecutorService es = newCache.getDistributionManager().getThreadPool();
-        es.execute(new SharedConfigurationRunnable());
-      }
+      startSharedConfigurationService();
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
@@ -1203,8 +1170,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     private TcpServer tcpServer;
     private final LocatorMembershipListener locatorListener;
     private final InternalLocator internalLocator;
-    // GEODE-2253 test condition
-    private boolean hasWaitedForHandlerInitialization = false;
 
     PrimaryHandler(InternalLocator locator, LocatorMembershipListener listener) {
       this.locatorListener = listener;
@@ -1259,7 +1224,6 @@ public class InternalLocator extends Locator implements ConnectListener {
                 // always retry some number of times
                 locatorWaitTime = 30;
               }
-              this.hasWaitedForHandlerInitialization = true;
               giveup = System.currentTimeMillis() + locatorWaitTime * 1000;
               try {
                 Thread.sleep(1000);
@@ -1276,14 +1240,6 @@ public class InternalLocator extends Locator implements ConnectListener {
               + "either not enabled or is not ready to process requests",
           request.getClass().getSimpleName());
       return null;
-    }
-
-    /**
-     * GEODE-2253 test condition - has this handler waited for a subordinate handler to be
-     * installed?
-     */
-    public boolean hasWaitedForHandlerInitialization() {
-      return this.hasWaitedForHandlerInitialization;
     }
 
     @Override
@@ -1378,20 +1334,40 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
   }
 
-  private void startSharedConfigurationService(InternalCache internalCache) {
+  private void startSharedConfigurationService() {
     installSharedConfigHandler();
 
-    if (this.config.getEnableClusterConfiguration() && !this.isSharedConfigurationStarted) {
-      if (!isDedicatedLocator()) {
-        logger.info("Cluster configuration service not enabled as it is only supported "
-            + "in dedicated locators");
-        return;
-      }
-
-      ExecutorService es = internalCache.getDistributionManager().getThreadPool();
-      es.execute(new SharedConfigurationRunnable());
-    } else {
+    if (!config.getEnableClusterConfiguration()) {
       logger.info("Cluster configuration service is disabled");
+      return;
+    }
+
+    if (isSharedConfigurationStarted) {
+      logger.info("Cluster configuration service is already started.");
+      return;
+    }
+
+    if (!isDedicatedLocator()) {
+      logger.info("Cluster configuration service not enabled as it is only supported "
+          + "in dedicated locators");
+      return;
+    }
+
+    try {
+      if (this.locator.sharedConfig == null) {
+        // locator.sharedConfig will already be created in case of auto-reconnect
+        this.locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
+      }
+      this.locator.sharedConfig.initSharedConfiguration(this.locator.loadFromSharedConfigDir());
+      logger.info(
+          "Cluster configuration service start up completed successfully and is now running ....");
+      isSharedConfigurationStarted = true;
+    } catch (CancelException | LockServiceDestroyedException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Cluster configuration start up was cancelled", e);
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
     }
   }
 
@@ -1401,17 +1377,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         this.handler.addHandler(JmxManagerLocatorRequest.class,
             new JmxManagerLocator(internalCache));
       }
-    }
-  }
-
-  /**
-   * Creates and installs the handler {@link ConfigurationRequestHandler}
-   */
-  private void installSharedConfigDistribution() {
-    if (!this.handler.isHandled(ConfigurationRequest.class)) {
-      this.handler.addHandler(ConfigurationRequest.class,
-          new ConfigurationRequestHandler(this.sharedConfig));
-      logger.info("ConfigRequestHandler installed");
     }
   }
 

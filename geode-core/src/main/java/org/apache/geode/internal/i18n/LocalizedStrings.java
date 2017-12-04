@@ -7126,8 +7126,6 @@ public class LocalizedStrings {
   public static final StringId Launcher_Status_ONLINE = new StringId(5255, "online");
   public static final StringId Launcher_Status_STARTING = new StringId(5256, "starting");
   public static final StringId Launcher_Status_STOPPED = new StringId(5257, "stopped");
-  public static final StringId Launcher_Command_FAILED_TO_GET_SHARED_CONFIGURATION =
-      new StringId(5258, "Unable to retrieve cluster configuration from the locator.");
 
   public static final StringId LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE =
       new StringId(5260,

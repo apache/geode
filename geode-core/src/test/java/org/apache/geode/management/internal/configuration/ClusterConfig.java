@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,12 +57,12 @@ public class ClusterConfig implements Serializable {
     Collections.addAll(this.groups, configGroups);
   }
 
-  public String getMaxLogFileSize() {
+  public Set<String> getMaxLogFileSizes() {
     if (this.groups.size() == 0) {
-      return null;
+      return Collections.emptySet();
     }
-    ConfigGroup lastGroupAdded = this.groups.get(this.groups.size() - 1);
-    return lastGroupAdded.getMaxLogFileSize();
+    return this.groups.stream().map(ConfigGroup::getMaxLogFileSize).filter(Objects::nonNull)
+        .collect(toSet());
   }
 
   public List<String> getJarNames() {
@@ -96,7 +97,7 @@ public class ClusterConfig implements Serializable {
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
 
       // verify no extra configs exist in memory
-      Set<String> actualGroupConfigs = sc.getEntireConfiguration().keySet();
+      Set<String> actualGroupConfigs = sc.getConfigurationRegion().keySet();
       assertThat(actualGroupConfigs).isEqualTo(expectedGroupConfigs);
 
       for (ConfigGroup configGroup : this.getGroups()) {
@@ -153,9 +154,9 @@ public class ClusterConfig implements Serializable {
         assertThat(cache.getRegion(region)).isNotNull();
       }
 
-      if (StringUtils.isNotBlank(this.getMaxLogFileSize())) {
+      if (this.getMaxLogFileSizes().size() > 0) {
         Properties props = cache.getDistributedSystem().getProperties();
-        assertThat(props.getProperty(LOG_FILE_SIZE_LIMIT)).isEqualTo(this.getMaxLogFileSize());
+        assertThat(this.getMaxLogFileSizes()).contains(props.getProperty(LOG_FILE_SIZE_LIMIT));
       }
 
       for (String jar : this.getJarNames()) {

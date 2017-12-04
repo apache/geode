@@ -121,6 +121,8 @@ public class Fakes {
     when(attributes.getDataPolicy()).thenReturn(policy);
     when(region.getCache()).thenReturn(cache);
     when(region.getRegionService()).thenReturn(cache);
+    when(region.getName()).thenReturn(name);
+
     return region;
   }
 

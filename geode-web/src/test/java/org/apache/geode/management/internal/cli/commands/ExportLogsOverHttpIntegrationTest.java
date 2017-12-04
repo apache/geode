@@ -20,14 +20,14 @@ import java.io.File;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(IntegrationTest.class)
 public class ExportLogsOverHttpIntegrationTest extends ExportLogsIntegrationTest {
 
   @Override
   public void connect() throws Exception {
-    gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
   }
 
   public File getWorkingDirectory() throws Exception {

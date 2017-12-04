@@ -134,9 +134,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
-import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.QueryMonitor;
-import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache.server.CacheServer;
@@ -174,6 +172,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
@@ -594,6 +593,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Set<RegionEntrySynchronizationListener> synchronizationListeners =
       new ConcurrentHashSet<>();
 
+  private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
+
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
     String propertyName = "sun.nio.ch.bugLevel";
@@ -679,7 +680,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Returns the last created instance of GemFireCache
    *
-   * @deprecated: use DM.getCache instead
+   * @deprecated use DM.getCache instead
    */
   @Deprecated
   public static GemFireCacheImpl getInstance() {
@@ -835,7 +836,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       // apply the cluster's properties configuration and initialize security using that
       // configuration
-      ClusterConfigurationLoader.applyClusterPropertiesConfiguration(this.configurationResponse,
+      ccLoader.applyClusterPropertiesConfiguration(this.configurationResponse,
           this.system.getConfig());
 
       this.securityService =
@@ -1033,11 +1034,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       return null;
     }
 
-    List<String> locatorConnectionStrings = getSharedConfigLocatorConnectionStringList();
+    Map<InternalDistributedMember, Collection<String>> locatorsWithClusterConfig =
+        getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
 
     try {
-      ConfigurationResponse response = ClusterConfigurationLoader
-          .requestConfigurationFromLocators(this.system.getConfig(), locatorConnectionStrings);
+      ConfigurationResponse response = ccLoader.requestConfigurationFromLocators(
+          this.system.getConfig().getGroups(), locatorsWithClusterConfig.keySet());
 
       // log the configuration received from the locator
       logger.info(LocalizedMessage
@@ -1097,27 +1099,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     // at this point check for equality
     return !clusterPropValue.equals(serverPropValue);
-  }
-
-  private List<String> getSharedConfigLocatorConnectionStringList() {
-    List<String> locatorConnectionStringList = new ArrayList<>();
-
-    Map<InternalDistributedMember, Collection<String>> locatorsWithClusterConfig =
-        getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
-
-    // If there are no locators with Shared configuration, that means the system has been started
-    // without shared configuration
-    // then do not make requests to the locators
-    if (!locatorsWithClusterConfig.isEmpty()) {
-      Set<Entry<InternalDistributedMember, Collection<String>>> locators =
-          locatorsWithClusterConfig.entrySet();
-
-      for (Entry<InternalDistributedMember, Collection<String>> loc : locators) {
-        Collection<String> locStrings = loc.getValue();
-        locatorConnectionStringList.addAll(locStrings);
-      }
-    }
-    return locatorConnectionStringList;
   }
 
   /**
@@ -1188,8 +1169,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     ClassPathLoader.setLatestToDefault(this.system.getConfig().getDeployWorkingDir());
 
     try {
-      ClusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(this,
-          this.configurationResponse);
+      ccLoader.deployJarsReceivedFromClusterConfiguration(this, this.configurationResponse);
     } catch (IOException | ClassNotFoundException e) {
       throw new GemFireConfigException(
           LocalizedStrings.GemFireCache_EXCEPTION_OCCURRED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION
@@ -1223,10 +1203,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         // Deploy all the jars from the deploy working dir.
         ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
       }
-      ClusterConfigurationLoader.applyClusterXmlConfiguration(this, this.configurationResponse,
-          this.system.getConfig());
+      ccLoader.applyClusterXmlConfiguration(this, this.configurationResponse,
+          this.system.getConfig().getGroups());
       initializeDeclarativeCache();
       completedCacheXml = true;
+    } catch (RuntimeException e) {
+      logger.error("Cache initialization failed because: " + e.toString()); // fix GEODE-3038
+      throw e;
     } finally {
       if (!completedCacheXml) {
         // so initializeDeclarativeCache threw an exception

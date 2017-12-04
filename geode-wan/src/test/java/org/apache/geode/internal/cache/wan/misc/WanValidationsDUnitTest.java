@@ -1206,10 +1206,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1019: random ports, time sensitive, waitForCriterion, suspect
-                             // string: loss of quorum
   @Test
-  public void testBug50434_PR_Parallel_pass() throws Exception {
+  public void whenSendersAreAddedUsingAttributesMutatorThenEventsMustBeSuccessfullyReceviedByRemoteSite()
+      throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 

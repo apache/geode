@@ -39,7 +39,6 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -97,17 +96,14 @@ public class ExportLogsCommand implements GfshCommand {
       @CliOption(key = CliStrings.EXPORT_LOGS__FILESIZELIMIT,
           unspecifiedDefaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__UNSPECIFIED_DEFAULT,
           specifiedDefaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__SPECIFIED_DEFAULT,
-          help = CliStrings.EXPORT_LOGS__FILESIZELIMIT__HELP) String fileSizeLimit) {
+          help = CliStrings.EXPORT_LOGS__FILESIZELIMIT__HELP) String fileSizeLimit)
+      throws Exception {
 
     long totalEstimatedExportSize = 0;
     Result result;
     InternalCache cache = getCache();
     try {
-      Set<DistributedMember> targetMembers = getMembers(groups, memberIds);
-
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+      Set<DistributedMember> targetMembers = getMembersIncludingLocators(groups, memberIds);
 
       long userSpecifiedLimit = parseFileSizeLimit(fileSizeLimit);
       if (userSpecifiedLimit > 0) {
@@ -201,9 +197,6 @@ public class ExportLogsCommand implements GfshCommand {
       FileUtils.deleteDirectory(tempDir.toFile());
 
       result = new CommandResult(exportedLogsZipFile);
-    } catch (Exception ex) {
-      logger.error(ex.getMessage(), ex);
-      result = ResultBuilder.createGemFireErrorResult(ex.getMessage());
     } finally {
       ExportLogsFunction.destroyExportLogsRegion(cache);
     }
@@ -211,13 +204,6 @@ public class ExportLogsCommand implements GfshCommand {
       logger.debug("Exporting logs returning = {}", result);
     }
     return result;
-  }
-
-  /**
-   * Wrapper to enable stubbing of static method call for unit testing
-   */
-  Set<DistributedMember> getMembers(String[] groups, String[] memberIds) {
-    return CliUtil.findMembersIncludingLocators(groups, memberIds);
   }
 
   /**

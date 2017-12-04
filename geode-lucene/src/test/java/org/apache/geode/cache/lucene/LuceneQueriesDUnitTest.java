@@ -17,6 +17,8 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
+import java.util.Properties;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.index.Term;
@@ -29,6 +31,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -212,4 +215,12 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
     });
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    String filter = (String) result.get(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER);
+    filter += ";org.apache.geode.cache.lucene.LuceneQueriesDUnitTest*";
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER, filter);
+    return result;
+  }
 }

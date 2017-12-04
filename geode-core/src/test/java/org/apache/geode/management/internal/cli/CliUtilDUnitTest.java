@@ -15,8 +15,17 @@
 
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -31,11 +40,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class CliUtilDUnitTest {
@@ -44,7 +54,7 @@ public class CliUtilDUnitTest {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @ClassRule
-  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   private static MemberVM locator;
   private static Set<DistributedMember> members;
@@ -183,6 +193,35 @@ public class CliUtilDUnitTest {
     });
   }
 
+
+  @Test
+  public void getMembersWithQueueId() throws Exception {
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
+        + MyAsyncEventListener.class.getName()).statusIsSuccess();
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue2 --group=group2 --listener="
+        + MyAsyncEventListener.class.getName()).statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create async-event-queue --id=queue --listener=" + MyAsyncEventListener.class.getName())
+        .statusIsSuccess();
+
+    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 2);
+    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue2", 2);
+    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue", 4);
+
+    locator.invoke(() -> {
+      members =
+          CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue1");
+      assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2");
+
+      members =
+          CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue2");
+      assertThat(getNames(members)).containsExactlyInAnyOrder("member3", "member4");
+
+      members = CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue");
+      assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
+          "member4");
+    });
+  }
 
   private static Set<String> getNames(Set<DistributedMember> members) {
     return members.stream().map(DistributedMember::getName).collect(Collectors.toSet());

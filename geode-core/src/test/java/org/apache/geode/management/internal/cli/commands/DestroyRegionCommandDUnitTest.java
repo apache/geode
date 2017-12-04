@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -38,7 +37,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class DestroyRegionCommandDUnitTest {
@@ -46,7 +45,7 @@ public class DestroyRegionCommandDUnitTest {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private static MemberVM locator, server1, server2, server3;
 
@@ -61,15 +60,6 @@ public class DestroyRegionCommandDUnitTest {
   @Before
   public void before() throws Exception {
     gfsh.connectAndVerify(locator);
-  }
-
-  @After
-  public void after() throws Exception {
-    // destroy regions
-    gfsh.execute("destroy region --name=/Customer --if-exists");
-    gfsh.execute("destroy region --name=/Order --if-exists");
-    gfsh.execute("destroy region --name=/Customer_2 --if-exists");
-    gfsh.execute("destroy region --name=/Customer_3 --if-exists");
   }
 
   @Test

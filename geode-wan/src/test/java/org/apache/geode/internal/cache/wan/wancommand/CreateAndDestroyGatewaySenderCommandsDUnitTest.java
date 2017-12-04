@@ -46,7 +46,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class CreateAndDestroyGatewaySenderCommandsDUnitTest {
@@ -55,7 +55,7 @@ public class CreateAndDestroyGatewaySenderCommandsDUnitTest {
   public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private MemberVM locatorSite1;
   private MemberVM locatorSite2;

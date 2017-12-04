@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExportLogsWithMemberGroupDUnitTest {
@@ -50,7 +50,7 @@ public class ExportLogsWithMemberGroupDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @ClassRule
-  public static GfshShellConnectionRule connector = new GfshShellConnectionRule();
+  public static GfshCommandRule connector = new GfshCommandRule();
 
   protected static int jmxPort, httpPort;
   protected static Set<String> expectedZipEntries = new HashSet<>();

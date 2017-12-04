@@ -627,6 +627,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   protected String userCommandPackages = DEFAULT_USER_COMMAND_PACKAGES;
 
+  private boolean validateSerializableObjects = DEFAULT_VALIDATE_SERIALIZABLE_OBJECTS;
+  private String serializableObjectFilter = DEFAULT_SERIALIZABLE_OBJECT_FILTER;
+
   /**
    * "off-heap-memory-size" with value of "" or "<size>[g|m]"
    */
@@ -841,7 +844,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.sslDefaultAlias = other.getSSLDefaultAlias();
     this.sslWebServiceRequireAuthentication = other.getSSLWebRequireAuthentication();
 
-
+    this.validateSerializableObjects = other.getValidateSerializableObjects();
+    this.serializableObjectFilter = other.getSerializableObjectFilter();
   }
 
   /**
@@ -2851,6 +2855,26 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setSSLWebRequireAuthentication(final boolean requiresAuthenatication) {
     this.sslWebServiceRequireAuthentication = requiresAuthenatication;
+  }
+
+  @Override
+  public boolean getValidateSerializableObjects() {
+    return validateSerializableObjects;
+  }
+
+  @Override
+  public void setValidateSerializableObjects(boolean value) {
+    this.validateSerializableObjects = value;
+  }
+
+  @Override
+  public String getSerializableObjectFilter() {
+    return serializableObjectFilter;
+  }
+
+  @Override
+  public void setSerializableObjectFilter(String value) {
+    this.serializableObjectFilter = value;
   }
 
   /////////////////////// Utility Methods ///////////////////////

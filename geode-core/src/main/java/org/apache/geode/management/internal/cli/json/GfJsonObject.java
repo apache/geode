@@ -167,6 +167,11 @@ public class GfJsonObject {
     if (opt instanceof GfJsonObject) {
       return (GfJsonObject) opt;
     }
+
+    if (opt == null) {
+      return null;
+    }
+
     return new GfJsonObject(opt);
   }
 
@@ -300,6 +305,9 @@ public class GfJsonObject {
     return jsonObject.keys();
   }
 
+  /**
+   * @return the column size of this GfJsonObject
+   */
   public int size() {
     return jsonObject.length();
   }

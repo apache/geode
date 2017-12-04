@@ -863,6 +863,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     if (event.getOperation().isCreate() && action == BEFOREUPDATE) {
       action = BEFORECREATE;
     }
+    if (event instanceof EntryEventImpl) {
+      ((EntryEventImpl) event).setReadOldValueFromDisk(true);
+    }
     try {
       switch (action) {
         case BEFORECREATE:
@@ -885,6 +888,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
       }
     } finally {
+      if (event instanceof EntryEventImpl) {
+        ((EntryEventImpl) event).setReadOldValueFromDisk(false);
+      }
       if (event != pevent) {
         if (event instanceof EntryEventImpl) {
           ((Releasable) event).release();
@@ -2495,6 +2501,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           }
 
           if (writer != null) {
+            if (entryEvtImpl != null) {
+              entryEvtImpl.setReadOldValueFromDisk(true);
+            }
             try {
               switch (action) {
                 case BEFORECREATE:
@@ -2524,6 +2533,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             } catch (Exception e) {
               NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId,
                   dm, false, e, false);
+            } finally {
+              if (entryEvtImpl != null) {
+                entryEvtImpl.setReadOldValueFromDisk(false);
+              }
             }
 
           } else {

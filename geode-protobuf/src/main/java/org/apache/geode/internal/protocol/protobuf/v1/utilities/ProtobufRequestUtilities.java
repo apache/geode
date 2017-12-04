@@ -19,8 +19,8 @@ import java.util.Set;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.ServerAPI;
 
 /**
  * This class contains helper functions for generating ClientProtocol.Request objects
@@ -110,9 +110,9 @@ public abstract class ProtobufRequestUtilities {
     return ClientProtocol.Request.newBuilder().setPutAllRequest(putAllRequestBuilder).build();
   }
 
-  public static ServerAPI.GetAvailableServersRequest createGetAvailableServersRequest() {
-    ServerAPI.GetAvailableServersRequest.Builder builder =
-        ServerAPI.GetAvailableServersRequest.newBuilder();
+  public static LocatorAPI.GetAvailableServersRequest createGetAvailableServersRequest() {
+    LocatorAPI.GetAvailableServersRequest.Builder builder =
+        LocatorAPI.GetAvailableServersRequest.newBuilder();
     return builder.build();
   }
 }

@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(IntegrationTest.class)
@@ -48,15 +48,15 @@ public class HttpOperationInvokerSecurityTest {
       new LocatorStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
 
   @ClassRule
-  public static GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   private static HttpOperationInvoker invoker;
   private static CommandRequest request;
 
   @Test
   public void performBeanOperationsHasAuthorizationCheck() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
-        "test", "test");
+    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http, "test",
+        "test");
     invoker = (HttpOperationInvoker) gfsh.getGfsh().getOperationInvoker();
 
     Integer distributedSystemId =
@@ -84,8 +84,8 @@ public class HttpOperationInvokerSecurityTest {
 
   @Test
   public void processCommandHasAuthorizationCheck() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http,
-        "test", "test");
+    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http, "test",
+        "test");
 
     invoker = (HttpOperationInvoker) gfsh.getGfsh().getOperationInvoker();
 

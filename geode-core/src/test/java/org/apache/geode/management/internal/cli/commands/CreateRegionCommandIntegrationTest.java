@@ -36,7 +36,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
@@ -55,11 +55,11 @@ public class CreateRegionCommandIntegrationTest {
       new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "REPLICATED");
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test
@@ -510,6 +510,24 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
+  public void testEvictionAttributesForLRUHeapWithObjectSizer() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create region --name=FOO --type=REPLICATE --eviction-action=local-destroy --eviction-object-sizer="
+            + TestObjectSizer.class.getName())
+        .statusIsSuccess();
+
+    Region foo = server.getCache().getRegion("/FOO");
+    assertThat(foo.getAttributes().getEvictionAttributes().getAction())
+        .isEqualTo(EvictionAction.LOCAL_DESTROY);
+    assertThat(foo.getAttributes().getEvictionAttributes().getAlgorithm())
+        .isEqualTo(EvictionAlgorithm.LRU_HEAP);
+    assertThat(foo.getAttributes().getEvictionAttributes().getObjectSizer().getClass().getName())
+        .isEqualTo(TestObjectSizer.class.getName());
+
+    gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
+  }
+
+  @Test
   public void testEvictionAttributesForLRUEntry() throws Exception {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-entry-count=1001 --eviction-action=overflow-to-disk")
@@ -542,7 +560,7 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
-  public void testEvictionAttributesForSizer() throws Exception {
+  public void testEvictionAttributesForObjectSizer() throws Exception {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
             + TestObjectSizer.class.getName())
@@ -557,5 +575,14 @@ public class CreateRegionCommandIntegrationTest {
         .isEqualTo(TestObjectSizer.class.getName());
 
     gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
+  }
+
+  @Test
+  public void testEvictionAttributesForNonDeclarableObjectSizer() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create region --name=FOO --type=REPLICATE --eviction-max-memory=1001 --eviction-action=overflow-to-disk --eviction-object-sizer="
+            + TestObjectSizerNotDeclarable.class.getName())
+        .statusIsError().containsOutput(
+            "eviction-object-sizer must implement both ObjectSizer and Declarable interfaces");
   }
 }

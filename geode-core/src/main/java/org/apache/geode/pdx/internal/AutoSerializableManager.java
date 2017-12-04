@@ -94,6 +94,7 @@ public class AutoSerializableManager {
    */
   private Set<Pattern> hardcodedExclusions = new HashSet<Pattern>() {
     {
+      add(Pattern.compile("org\\.apache\\.geode\\..*"));
       add(Pattern.compile("com\\.gemstone\\..*"));
       add(Pattern.compile("java\\..*"));
       add(Pattern.compile("javax\\..*"));

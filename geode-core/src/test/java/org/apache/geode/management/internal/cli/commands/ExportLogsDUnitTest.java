@@ -57,7 +57,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Member;
 
 @Category(DistributedTest.class)
@@ -69,7 +69,7 @@ public class ExportLogsDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   private MemberVM locator;
   private MemberVM server1;

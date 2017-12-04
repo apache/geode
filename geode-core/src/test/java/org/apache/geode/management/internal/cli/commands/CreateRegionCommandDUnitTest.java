@@ -19,7 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,20 +37,19 @@ import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
 public class CreateRegionCommandDUnitTest {
 
-  MemberVM locator;
-  MemberVM server;
+  private static MemberVM locator, server;
 
-  @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  @ClassRule
+  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TestName testName = new SerializableTestName();
@@ -57,8 +57,8 @@ public class CreateRegionCommandDUnitTest {
   @Rule
   public TemporaryFolder tmpDir = new TemporaryFolder();
 
-  @Before
-  public void before() throws Exception {
+  @BeforeClass
+  public static void before() throws Exception {
     locator = lsRule.startLocatorVM(0);
     server = lsRule.startServerVM(1, locator.getPort());
 

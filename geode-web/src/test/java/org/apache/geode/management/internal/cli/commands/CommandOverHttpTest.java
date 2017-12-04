@@ -30,7 +30,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
@@ -41,14 +41,14 @@ public class CommandOverHttpTest {
       new ServerStarterRule().withWorkingDir().withLogFile().withJMXManager().withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfshRule = new GfshShellConnectionRule();
+  public GfshCommandRule gfshRule = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void before() throws Exception {
-    gfshRule.connectAndVerify(server.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    gfshRule.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);
   }
 
   @Test

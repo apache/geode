@@ -125,8 +125,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   private void doTestSubscriptionWithMixedServersAndPeerFeed(String version,
       boolean usePeerForFeed) {
     server1 = Host.getHost(0).getVM(testVersion, 2);
-    server2 = Host.getHost(0).getVM(3);
-    VM server3 = Host.getHost(0).getVM(4);
+    server2 = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 3);
+    VM server3 = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 4);
     VM interestClient = Host.getHost(0).getVM(testVersion, 0);
     VM feeder = Host.getHost(0).getVM(version, 1);
 
@@ -227,8 +227,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   public void giiEventQueueShouldSucceedWithMixedVersions(String server1Version,
       String server2Version) {
     VM interestClient = Host.getHost(0).getVM(testVersion, 0);
-    // VM interestClient = Host.getHost(0).getVM(0);
-    VM feeder = Host.getHost(0).getVM(1);
+    VM feeder = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 1);
     server1 = Host.getHost(0).getVM(server1Version, 2);
     server2 = Host.getHost(0).getVM(server2Version, 3);
 

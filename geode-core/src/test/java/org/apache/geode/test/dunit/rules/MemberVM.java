@@ -101,8 +101,12 @@ public class MemberVM implements Member {
     return ((Server) member).getEmbeddedLocatorPort();
   }
 
-  public void stopMember() {
+  public void stopMember(boolean cleanWorkingDir) {
     this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    if (!cleanWorkingDir) {
+      return;
+    }
+
     if (tempWorkingDir) {
       /*
        * this temporary workingDir will dynamically change the "user.dir". system property to point
@@ -132,4 +136,17 @@ public class MemberVM implements Member {
           serverCount);
     });
   }
+
+  public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
+    vm.invoke(() -> LocatorServerStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
+        serverCount));
+  }
+
+  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
+    vm.invoke(() -> {
+      LocatorServerStartupRule.memberStarter.waitTillAsyncEventQueuesAreReadyOnServers(queueId,
+          serverCount);
+    });
+  }
+
 }

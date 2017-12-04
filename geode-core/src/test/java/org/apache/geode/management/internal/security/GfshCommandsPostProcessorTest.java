@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -30,7 +29,7 @@ import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, SecurityTest.class})
@@ -42,8 +41,8 @@ public class GfshCommandsPostProcessorTest {
       .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
-      serverStarter::getJmxPort, GfshShellConnectionRule.PortType.jmxManager);
+  public GfshCommandRule gfshConnection =
+      new GfshCommandRule(serverStarter::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

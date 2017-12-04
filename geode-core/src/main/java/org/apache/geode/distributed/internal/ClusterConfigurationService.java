@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -35,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,7 +65,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -80,7 +79,6 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.functions.UploadJarFunction;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
@@ -321,9 +319,12 @@ public class ClusterConfigurationService {
         // will need the jars on file to upload to other locators. Need to update the jars
         // using a new copy of the Configuration so that the change listener will pick up the jar
         // name changes.
+
+        String memberId = cache.getMyId().getId();
+
         Configuration configurationCopy = new Configuration(configuration);
         configurationCopy.addJarNames(jarNames);
-        configRegion.put(group, configurationCopy);
+        configRegion.put(group, configurationCopy, memberId);
       }
     } catch (Exception e) {
       success = false;
@@ -354,6 +355,20 @@ public class ClusterConfigurationService {
         if (configuration == null) {
           break;
         }
+
+        for (String jarRemoved : jarNames) {
+          File jar = this.getPathToJarOnThisLocator(group, jarRemoved).toFile();
+          if (jar.exists()) {
+            try {
+              FileUtils.forceDelete(jar);
+            } catch (IOException e) {
+              logger.error(
+                  "Exception occurred while attempting to delete a jar from the filesystem: {}",
+                  jarRemoved, e);
+            }
+          }
+        }
+
         Configuration configurationCopy = new Configuration(configuration);
         configurationCopy.removeJarNames(jarNames);
         configRegion.put(group, configurationCopy);
@@ -384,25 +399,56 @@ public class ClusterConfigurationService {
     return FileUtils.readFileToByteArray(jar);
   }
 
-  // used in the cluster config change listener when jarnames are changed in the internal region
+  // Only used when a locator is initially starting up
   public void downloadJarFromOtherLocators(String groupName, String jarName)
       throws IllegalStateException, IOException {
     logger.info("Getting Jar files from other locators");
     DM dm = this.cache.getDistributionManager();
     DistributedMember me = this.cache.getMyId();
-    Set<DistributedMember> locators =
-        new HashSet<>(dm.getAllHostedLocatorsWithSharedConfiguration().keySet());
+    List<DistributedMember> locators =
+        new ArrayList<>(dm.getAllHostedLocatorsWithSharedConfiguration().keySet());
     locators.remove(me);
 
     createConfigDirIfNecessary(groupName);
 
-    byte[] jarBytes = locators.stream()
-        .map((DistributedMember locator) -> downloadJarFromLocator(locator, groupName, jarName))
-        .filter(Objects::nonNull).findFirst().orElseThrow(() -> new IllegalStateException(
-            "No locators have a deployed jar named " + jarName + " in " + groupName));
+    if (locators.isEmpty()) {
+      throw new IllegalStateException(
+          "Request to download jar " + jarName + " but no other locators are present");
+    }
+
+    byte[] jarBytes = downloadJar(locators.get(0), groupName, jarName);
 
     File jarToWrite = getPathToJarOnThisLocator(groupName, jarName).toFile();
     FileUtils.writeByteArrayToFile(jarToWrite, jarBytes);
+  }
+
+  // used in the cluster config change listener when jarnames are changed in the internal region
+  public void downloadJarFromLocator(String groupName, String jarName,
+      DistributedMember sourceLocator) throws IllegalStateException, IOException {
+    logger.info("Downloading jar {} from locator {}", jarName, sourceLocator.getName());
+
+    createConfigDirIfNecessary(groupName);
+
+    byte[] jarBytes = downloadJar(sourceLocator, groupName, jarName);
+
+    if (jarBytes == null) {
+      throw new IllegalStateException("Could not download jar " + jarName + " in " + groupName
+          + " from " + sourceLocator.getName());
+    }
+
+    File jarToWrite = getPathToJarOnThisLocator(groupName, jarName).toFile();
+    FileUtils.writeByteArrayToFile(jarToWrite, jarBytes);
+  }
+
+  private byte[] downloadJar(DistributedMember locator, String groupName, String jarName) {
+    ResultCollector<byte[], List<byte[]>> rc =
+        (ResultCollector<byte[], List<byte[]>>) CliUtil.executeFunction(new UploadJarFunction(),
+            new Object[] {groupName, jarName}, Collections.singleton(locator));
+
+    List<byte[]> result = rc.getResult();
+
+    // we should only get one byte[] back in the list
+    return result.get(0);
   }
 
   // used when creating cluster config response
@@ -488,39 +534,31 @@ public class ClusterConfigurationService {
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the
    * requested shared configuration This method locks the ClusterConfigurationService
    */
-  public ConfigurationResponse createConfigurationResponse(final ConfigurationRequest configRequest)
-      throws LeaseExpiredException, IOException {
+  public ConfigurationResponse createConfigurationResponse(Set<String> groups) throws IOException {
+    ConfigurationResponse configResponse = null;
 
-    ConfigurationResponse configResponse = new ConfigurationResponse();
+    boolean isLocked = this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
+    try {
+      if (isLocked) {
+        configResponse = new ConfigurationResponse();
+        groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
+        logger.info("Building up configuration response with following configurations: {}", groups);
 
-    for (int i = 0; i < configRequest.getNumAttempts(); i++) {
-      boolean isLocked = this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, 5000, 5000);
-      try {
-        if (isLocked) {
-          Set<String> groups = configRequest.getGroups();
-          groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
-          logger.info("Building up configuration response with following configurations: {}",
-              groups);
-
-          for (String group : groups) {
-            Configuration configuration = getConfiguration(group);
-            configResponse.addConfiguration(configuration);
-          }
-
-          Map<String, byte[]> jarNamesToJarBytes = getAllJarsFromThisLocator(groups);
-          String[] jarNames = jarNamesToJarBytes.keySet().stream().toArray(String[]::new);
-          byte[][] jarBytes = jarNamesToJarBytes.values().toArray(new byte[jarNames.length][]);
-
-          configResponse.addJarsToBeDeployed(jarNames, jarBytes);
-          configResponse.setFailedToGetSharedConfig(false);
-          return configResponse;
+        for (String group : groups) {
+          Configuration configuration = getConfiguration(group);
+          configResponse.addConfiguration(configuration);
         }
-      } finally {
-        this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
-      }
 
+        Map<String, byte[]> jarNamesToJarBytes = getAllJarsFromThisLocator(groups);
+        String[] jarNames = jarNamesToJarBytes.keySet().stream().toArray(String[]::new);
+        byte[][] jarBytes = jarNamesToJarBytes.values().toArray(new byte[jarNames.length][]);
+
+        configResponse.addJarsToBeDeployed(jarNames, jarBytes);
+        return configResponse;
+      }
+    } finally {
+      this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
     }
-    configResponse.setFailedToGetSharedConfig(true);
     return configResponse;
   }
 
@@ -567,11 +605,6 @@ public class ClusterConfigurationService {
 
   public Configuration getConfiguration(String groupName) {
     return getConfigurationRegion().get(groupName);
-  }
-
-  public Map<String, Configuration> getEntireConfiguration() {
-    Set<String> keys = getConfigurationRegion().keySet();
-    return getConfigurationRegion().getAll(keys);
   }
 
   /**
@@ -624,7 +657,9 @@ public class ClusterConfigurationService {
       }
       Region<String, Configuration> clusterRegion = getConfigurationRegion();
       clusterRegion.clear();
-      clusterRegion.putAll(sharedConfiguration);
+
+      String memberId = cache.getMyId().getId();
+      clusterRegion.putAll(sharedConfiguration, memberId);
 
       // Overwrite the security settings using the locator's properties, ignoring whatever
       // in the import
@@ -663,25 +698,12 @@ public class ClusterConfigurationService {
     FileUtils.writeStringToFile(xmlFile, configuration.getCacheXmlContent(), "UTF-8");
   }
 
-  // TODO: return value is never used
-  private boolean lockSharedConfiguration() {
+  public boolean lockSharedConfiguration() {
     return this.sharedConfigLockingService.lock(SHARED_CONFIG_LOCK_NAME, -1, -1);
   }
 
-  private void unlockSharedConfiguration() {
+  public void unlockSharedConfiguration() {
     this.sharedConfigLockingService.unlock(SHARED_CONFIG_LOCK_NAME);
-  }
-
-  private byte[] downloadJarFromLocator(DistributedMember locator, String groupName,
-      String jarName) {
-    ResultCollector<byte[], List<byte[]>> rc =
-        (ResultCollector<byte[], List<byte[]>>) CliUtil.executeFunction(new UploadJarFunction(),
-            new Object[] {groupName, jarName}, Collections.singleton(locator));
-
-    List<byte[]> result = rc.getResult();
-
-    // we should only get one byte[] back in the list
-    return result.stream().filter(Objects::nonNull).findFirst().orElse(null);
   }
 
   /**
@@ -691,7 +713,7 @@ public class ClusterConfigurationService {
    *
    * @return {@link Region} ConfigurationRegion, this should never be null
    */
-  private Region<String, Configuration> getConfigurationRegion() {
+  public Region<String, Configuration> getConfigurationRegion() {
     Region<String, Configuration> configRegion = this.cache.getRegion(CONFIG_REGION_NAME);
 
     try {

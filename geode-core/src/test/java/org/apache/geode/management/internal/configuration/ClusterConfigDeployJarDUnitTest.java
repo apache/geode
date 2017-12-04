@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,7 +25,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
@@ -36,7 +35,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   private String group2Jar;
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -68,14 +67,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   @Test
   public void testDeployToMultipleLocators() throws Exception {
     MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
-    locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    MemberVM locator2 = lsRule.startLocatorVM(1, locatorProps);
-    locatorProps.setProperty(LOCATORS,
-        "localhost[" + locator.getPort() + "],localhost[" + locator2.getPort() + "]");
-    MemberVM locator3 = lsRule.startLocatorVM(2, locatorProps);
-
-    // has to start a server in order to run deploy command
-    lsRule.startServerVM(3, serverProps, locator.getPort());
+    MemberVM locator2 = lsRule.startLocatorVM(1, locator.getPort());
+    MemberVM locator3 = lsRule.startLocatorVM(2, locator.getPort(), locator2.getPort());
 
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();

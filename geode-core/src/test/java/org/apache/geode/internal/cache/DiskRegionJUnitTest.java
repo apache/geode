@@ -1414,7 +1414,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
-      assertTrue("Files already exists", files.length == 0);
+      assertTrue("Files already exists", files == null || files.length == 0);
     }
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
 
@@ -1459,7 +1459,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
-      assertTrue("Files already exists", files.length == 0);
+      assertTrue("Files already exists", files == null || files.length == 0);
     }
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
@@ -2352,7 +2352,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         }
       }
       assertTrue(i > 1);
-      assertTrue(switchedOplog[0].getOplogFile().delete());
+      assertTrue(switchedOplog[0].getOplogFileForTest().delete());
       region.close();
       // We don't validate the oplogs until we recreate the disk store.
       DiskStoreImpl store = ((LocalRegion) region).getDiskStore();

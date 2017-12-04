@@ -33,7 +33,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ImportClusterConfigDistributedTest {
@@ -50,7 +50,7 @@ public class ImportClusterConfigDistributedTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void exportClusterConfig() throws Exception {
@@ -75,8 +75,8 @@ public class ImportClusterConfigDistributedTest {
         .statusIsSuccess();
 
     gfsh.disconnect();
-    locator.stopMember();
-    server.stopMember();
+    locator.stopMember(true);
+    server.stopMember(true);
 
     assertThat(this.exportedClusterConfig).exists();
     assertThat(this.exportedClusterConfig.length()).isGreaterThan(100);

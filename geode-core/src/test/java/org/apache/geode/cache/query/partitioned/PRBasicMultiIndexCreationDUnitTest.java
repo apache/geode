@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,6 +30,7 @@ import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -44,6 +46,14 @@ public class PRBasicMultiIndexCreationDUnitTest extends PartitionedRegionDUnitTe
 
   public PRBasicMultiIndexCreationDUnitTest() {
     super();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
   }
 
   public void setCacheInVMs(VM... vms) {

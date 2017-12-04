@@ -108,7 +108,7 @@ public class StartJConsoleCommand implements GfshCommand {
     } catch (Throwable t) {
       SystemFailure.checkFailure();
       return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_JCONSOLE__CATCH_ALL_ERROR_MESSAGE, toString(t, false)));
+          String.format(CliStrings.START_JCONSOLE__CATCH_ALL_ERROR_MESSAGE, t.getMessage()));
     }
   }
 

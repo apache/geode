@@ -167,8 +167,8 @@ public class HandshakeRequestOperationHandlerJUnitTest {
         errorMessage.getError().getErrorCode());
   }
 
-  private ConnectionAPI.HandshakeRequest generateHandshakeRequest(int minorVersion,
-      int majorVersion) {
+  private ConnectionAPI.HandshakeRequest generateHandshakeRequest(int majorVersion,
+      int minorVersion) {
     return ConnectionAPI.HandshakeRequest.newBuilder().setMajorVersion(majorVersion)
         .setMinorVersion(minorVersion).build();
   }

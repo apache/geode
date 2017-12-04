@@ -60,6 +60,7 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -406,6 +407,20 @@ public class CliUtil {
     return result;
   }
 
+  public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,
+      String queueId) {
+    Set<DistributedMember> members = findMembers(null, null);
+    return members.stream().filter(m -> getAsyncEventQueueIds(cache, m).contains(queueId))
+        .collect(Collectors.toSet());
+  }
+
+  public static Set<String> getAsyncEventQueueIds(InternalCache cache, DistributedMember member) {
+    SystemManagementService managementService =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    return managementService.getAsyncEventQueueMBeanNames(member).stream()
+        .map(x -> x.getKeyProperty("queue")).collect(Collectors.toSet());
+  }
+
   static class CustomFileFilter implements FileFilter {
     private String extensionWithDot;
 
@@ -597,7 +612,7 @@ public class CliUtil {
    *
    * @param regions
    * @param cache
-   * @param returnAll: if true, returns all matching members, otherwise, returns only one.
+   * @param returnAll if true, returns all matching members, otherwise, returns only one.
    */
   public static Set<DistributedMember> getQueryRegionsAssociatedMembers(Set<String> regions,
       final InternalCache cache, boolean returnAll) {

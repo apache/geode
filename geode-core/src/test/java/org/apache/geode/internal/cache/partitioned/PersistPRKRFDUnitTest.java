@@ -21,6 +21,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Declarable;
@@ -28,16 +29,17 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -66,7 +68,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     createData(vm0, 0, 10, "a");
     vm0.invoke(new CacheSerializableRunnable(title + "server add writer") {
       public void run2() throws CacheException {
-        Region region = getRootRegion(PR_REGION_NAME);
+        Region region = getRootRegion(getPartitionedRegionName());
         // let the region to hold on the put until diskstore is closed
         if (!DiskStoreImpl.KRF_DEBUG) {
           region.getAttributesMutator().setCacheWriter(new MyWriter());
@@ -77,7 +79,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     // create test
     AsyncInvocation async1 = vm0.invokeAsync(new CacheSerializableRunnable(title + "async create") {
       public void run2() throws CacheException {
-        Region region = getRootRegion(PR_REGION_NAME);
+        Region region = getRootRegion(getPartitionedRegionName());
         IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
         try {
           region.put(10, "b");
@@ -111,7 +113,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     createPR(vm0, 0);
     vm0.invoke(new CacheSerializableRunnable(title + "server add writer") {
       public void run2() throws CacheException {
-        Region region = getRootRegion(PR_REGION_NAME);
+        Region region = getRootRegion(getPartitionedRegionName());
         // let the region to hold on the put until diskstore is closed
         if (!DiskStoreImpl.KRF_DEBUG) {
           region.getAttributesMutator().setCacheWriter(new MyWriter());
@@ -120,7 +122,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     });
     async1 = vm0.invokeAsync(new CacheSerializableRunnable(title + "async update") {
       public void run2() throws CacheException {
-        Region region = getRootRegion(PR_REGION_NAME);
+        Region region = getRootRegion(getPartitionedRegionName());
         IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
         try {
           region.put(1, "b");
@@ -154,7 +156,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     createPR(vm0, 0);
     vm0.invoke(new CacheSerializableRunnable(title + "server add writer") {
       public void run2() throws CacheException {
-        Region region = getRootRegion(PR_REGION_NAME);
+        Region region = getRootRegion(getPartitionedRegionName());
         // let the region to hold on the put until diskstore is closed
         if (!DiskStoreImpl.KRF_DEBUG) {
           region.getAttributesMutator().setCacheWriter(new MyWriter());
@@ -163,7 +165,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     });
     async1 = vm0.invokeAsync(new CacheSerializableRunnable(title + "async destroy") {
       public void run2() throws CacheException {
-        Region region = getRootRegion(PR_REGION_NAME);
+        Region region = getRootRegion(getPartitionedRegionName());
         IgnoredException expect = IgnoredException.addIgnoredException("CacheClosedException");
         try {
           region.destroy(2, "b");
@@ -195,6 +197,24 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
     checkData(vm0, 0, 10, "a");
     checkData(vm0, 10, 11, null);
     closeCache(vm0);
+  }
+
+  void checkRecoveredFromDisk(VM vm, final int bucketId, final boolean recoveredLocally) {
+    vm.invoke(new SerializableRunnable("check recovered from disk") {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        PartitionedRegion region = (PartitionedRegion) cache.getRegion(getPartitionedRegionName());
+        DiskRegion disk = region.getRegionAdvisor().getBucket(bucketId).getDiskRegion();
+        if (recoveredLocally) {
+          assertEquals(0, disk.getStats().getRemoteInitializations());
+          assertEquals(1, disk.getStats().getLocalInitializations());
+        } else {
+          assertEquals(1, disk.getStats().getRemoteInitializations());
+          assertEquals(0, disk.getStats().getLocalInitializations());
+        }
+      }
+    });
   }
 
   private static class MyWriter extends CacheWriterAdapter implements Declarable {

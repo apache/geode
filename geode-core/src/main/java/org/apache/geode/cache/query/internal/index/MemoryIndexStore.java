@@ -612,7 +612,7 @@ public class MemoryIndexStore implements IndexStore {
     MemoryIndexStoreEntry currentEntry;
 
     MemoryIndexStoreIterator(Map submap, Object indexKey, Collection keysToRemove) {
-      this(submap, indexKey, keysToRemove, GemFireCacheImpl.getInstance().cacheTimeMillis());
+      this(submap, indexKey, keysToRemove, cache.cacheTimeMillis());
     }
 
     private MemoryIndexStoreIterator(Map submap, Object indexKey, Collection keysToRemove,

@@ -89,7 +89,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     final Host host = Host.getHost(0);
     VM oldLocator = host.getVM(oldVersion, 0);
     VM oldServer = host.getVM(oldVersion, 1);
-    VM currentServer = host.getVM(2);
+    VM currentServer = host.getVM(VersionManager.CURRENT_VERSION, 2);
 
     // Start locator
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -130,10 +130,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     VM site1Client = host.getVM(oldVersion, 3);
 
     // Get current site members
-    VM site2Locator = host.getVM(4);
-    VM site2Server1 = host.getVM(5);
-    VM site2Server2 = host.getVM(6);
-    VM site2Client = host.getVM(7);
+    VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
+    VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
+    VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
+    VM site2Client = host.getVM(VersionManager.CURRENT_VERSION, 7);
 
     // Get old site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
@@ -193,9 +193,9 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     VM site1Client = host.getVM(oldVersion, 3);
 
     // Get current site members
-    VM site2Locator = host.getVM(4);
-    VM site2Server1 = host.getVM(5);
-    VM site2Server2 = host.getVM(6);
+    VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
+    VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
+    VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
 
     // Get old site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
@@ -255,10 +255,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     VM site1Server2 = host.getVM(oldVersion, 2);
 
     // Get current site members
-    VM site2Locator = host.getVM(4);
-    VM site2Server1 = host.getVM(5);
-    VM site2Server2 = host.getVM(6);
-    VM site2Client = host.getVM(7);
+    VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
+    VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
+    VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
+    VM site2Client = host.getVM(VersionManager.CURRENT_VERSION, 7);
 
     // Get old site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
@@ -319,9 +319,9 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     VM site1Client = host.getVM(oldVersion, 3);
 
     // Get current site members
-    VM site2Locator = host.getVM(4);
-    VM site2Server1 = host.getVM(5);
-    VM site2Server2 = host.getVM(6);
+    VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
+    VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
+    VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
 
     // Get old site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
@@ -442,9 +442,9 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     VM site1Client = host.getVM(oldVersion, 3);
 
     // Get old site members
-    VM site2Locator = host.getVM(4);
-    VM site2Server1 = host.getVM(5);
-    VM site2Server2 = host.getVM(6);
+    VM site2Locator = host.getVM(VersionManager.CURRENT_VERSION, 4);
+    VM site2Server1 = host.getVM(VersionManager.CURRENT_VERSION, 5);
+    VM site2Server2 = host.getVM(VersionManager.CURRENT_VERSION, 6);
 
     // Get mixed site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
@@ -512,7 +512,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
   private VM rollLocatorToCurrent(VM rollLocator, int port, int distributedSystemId,
       String locators, String remoteLocators) throws Exception {
     rollLocator.invoke(() -> stopLocator());
-    VM newLocator = Host.getHost(0).getVM(rollLocator.getId());
+    VM newLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, rollLocator.getId());
     newLocator.invoke(() -> startLocator(port, distributedSystemId, locators, remoteLocators));
     return newLocator;
   }
@@ -521,7 +521,7 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
       int distributedSystem, String regionName, String senderId, int messageSyncInterval)
       throws Exception {
     oldServer.invoke(() -> closeCache());
-    VM rollServer = Host.getHost(0).getVM(oldServer.getId());
+    VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
     startAndConfigureServers(rollServer, null, locators, distributedSystem, regionName, senderId,
         messageSyncInterval);
     return rollServer;

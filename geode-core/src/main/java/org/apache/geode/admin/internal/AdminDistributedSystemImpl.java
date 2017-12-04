@@ -38,7 +38,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.admin.remote.*;
-import org.apache.geode.internal.cache.BackupUtil;
+import org.apache.geode.internal.cache.backup.BackupUtil;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;

@@ -59,9 +59,9 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.assertions.GfshShellConnectionRuleAssert;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
@@ -70,7 +70,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
@@ -88,7 +88,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   public void connect(MemberVM serverVM) throws Exception {
-    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test
@@ -416,7 +416,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "notAnIndex");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(REGION_NAME);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError().containsOutput(REGION_NAME);
   }
 
   @Test
@@ -461,8 +461,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "field1:jon~");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field1");
 
-    GfshShellConnectionRuleAssert assertion =
-        gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    CommandResultAssert assertion = gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     try {
       assertion.tableHasColumnWithExactValuesInExactOrder("key", "A", "B", "C", "D");
@@ -554,7 +553,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__QUERY_STRING, "EFG");
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(getRegionNotFoundErrorMessage("/region"));
   }
 

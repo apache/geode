@@ -36,7 +36,7 @@ import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
@@ -45,7 +45,7 @@ public class ClusterConfigurationDUnitTest {
   public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -63,7 +63,7 @@ public class ClusterConfigurationDUnitTest {
   public void testStartServerAndExecuteCommands() throws Exception {
     MemberVM locator = startupRule.startLocatorVM(0);
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
       gfsh.connectAndVerify(locator);
     }

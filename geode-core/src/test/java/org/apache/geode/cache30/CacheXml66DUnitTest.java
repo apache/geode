@@ -3378,8 +3378,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     setXmlFile(findFile("sameRootRegion.xml"));
 
-    IgnoredException expectedException =
-        IgnoredException.addIgnoredException("While reading Cache XML file");
+    IgnoredException.addIgnoredException("While reading Cache XML file");
+    IgnoredException.addIgnoredException("org.apache.geode.cache.RegionExistsException");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -3392,7 +3392,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         Assert.fail("Expected a RegionExistsException, not a " + cause.getClass().getName(), cause);
       }
     } finally {
-      expectedException.remove();
+      IgnoredException.removeAllExpectedExceptions();
     }
   }
 
@@ -3420,8 +3420,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     setXmlFile(findFile("sameSubregion.xml"));
 
-    IgnoredException expectedException =
-        IgnoredException.addIgnoredException("While reading Cache XML file");
+    IgnoredException.addIgnoredException("While reading Cache XML file");
+    IgnoredException.addIgnoredException("org.apache.geode.cache.RegionExistsException");
     try {
       getCache();
       fail("Should have thrown a CacheXmlException");
@@ -3434,7 +3434,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         Assert.fail("Expected a RegionExistsException, not a " + cause.getClass().getName(), cause);
       }
     } finally {
-      expectedException.remove();
+      IgnoredException.removeAllExpectedExceptions();
     }
   }
 

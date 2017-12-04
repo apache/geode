@@ -38,7 +38,7 @@ public class FetchResourceAttributesRequest extends AdminRequest {
   }
 
   @Override
-  public AdminResponse createResponse(DistributionManager dm) {
+  public AdminResponse createResponse(DM dm) {
     return FetchResourceAttributesResponse.create(dm, this.getSender(), resourceUniqueId);
   }
 

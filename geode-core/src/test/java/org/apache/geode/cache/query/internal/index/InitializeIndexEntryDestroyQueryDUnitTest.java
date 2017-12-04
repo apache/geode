@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
@@ -43,12 +44,14 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -82,6 +85,15 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
   private static Scope[] getScope() {
     return new Scope[] {Scope.LOCAL, null};
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.**");
+    return properties;
+  }
+
 
   @Test
   @Parameters(method = "getScope")

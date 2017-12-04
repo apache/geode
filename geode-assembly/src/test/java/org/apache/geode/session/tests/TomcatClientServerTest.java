@@ -25,7 +25,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 /**
  * Setup class for Tomcat Client Server tests
@@ -39,7 +39,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public transient LocatorServerStartupRule locatorStartup = new LocatorServerStartupRule();

@@ -28,16 +28,16 @@ import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.ServerAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 
 @Experimental
 public class GetAvailableServersOperationHandler implements
-    OperationHandler<ServerAPI.GetAvailableServersRequest, ServerAPI.GetAvailableServersResponse, ClientProtocol.ErrorResponse> {
+    OperationHandler<LocatorAPI.GetAvailableServersRequest, LocatorAPI.GetAvailableServersResponse, ClientProtocol.ErrorResponse> {
 
   @Override
-  public Result<ServerAPI.GetAvailableServersResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, ServerAPI.GetAvailableServersRequest request,
+  public Result<LocatorAPI.GetAvailableServersResponse, ClientProtocol.ErrorResponse> process(
+      SerializationService serializationService, LocatorAPI.GetAvailableServersRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
     InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
@@ -50,8 +50,8 @@ public class GetAvailableServersOperationHandler implements
     Collection<BasicTypes.Server> servers = (Collection<BasicTypes.Server>) serversFromSnapshot
         .stream().map(serverLocation -> getServerProtobufMessage((ServerLocation) serverLocation))
         .collect(Collectors.toList());
-    ServerAPI.GetAvailableServersResponse.Builder builder =
-        ServerAPI.GetAvailableServersResponse.newBuilder().addAllServers(servers);
+    LocatorAPI.GetAvailableServersResponse.Builder builder =
+        LocatorAPI.GetAvailableServersResponse.newBuilder().addAllServers(servers);
     return Success.of(builder.build());
   }
 

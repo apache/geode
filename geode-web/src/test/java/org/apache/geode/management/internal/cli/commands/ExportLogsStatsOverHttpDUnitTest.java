@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
@@ -41,7 +41,7 @@ public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
   @Override
   public void connectIfNeeded() throws Exception {
     if (!connector.isConnected())
-      connector.connect(httpPort, GfshShellConnectionRule.PortType.http);
+      connector.connect(httpPort, GfshCommandRule.PortType.http);
   }
 
   @Test
