@@ -14,46 +14,41 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-
 /**
- *
- * @since GemFire 7.0
+ * Base class for all converters that use Strings
  */
-public class GatewaySenderIdConverter extends BaseStringConverter {
+public abstract class BaseStringConverter implements Converter<String> {
+
+  public abstract String getConverterHint();
+
+  public abstract Set<String> getCompletionValues();
 
   @Override
-  public String getConverterHint() {
-    return ConverterHint.GATEWAY_SENDER_ID;
+  public final boolean supports(Class<?> type, String optionContext) {
+    return String.class.equals(type) && optionContext.contains(getConverterHint());
   }
 
   @Override
-  public Set<String> getCompletionValues() {
-    Set<String> gatewaySenderIds = Collections.emptySet();
+  public final String convertFromText(String value, Class<?> targetType, String optionContext) {
+    return value;
+  }
 
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    if (gfsh != null && gfsh.isConnectedAndReady()) {
-      final String[] gatewaySenderIdArray = (String[]) gfsh.getOperationInvoker().invoke(
-          ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "listGatewaySenders",
-          new Object[0], new String[0]);
-      if (gatewaySenderIdArray != null && gatewaySenderIdArray.length != 0) {
-        gatewaySenderIds = new TreeSet<String>(Arrays.asList(gatewaySenderIdArray));
-      }
+  @Override
+  public final boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
+      String existingData, String optionContext, MethodTarget target) {
+    Set<String> values = getCompletionValues();
+
+    for (String v : values) {
+      completions.add(new Completion(v));
     }
 
-    return gatewaySenderIds;
+    return !completions.isEmpty();
   }
-
 }

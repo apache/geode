@@ -135,7 +135,7 @@ public class GfshParserConverterTest {
     DiskStoreNameConverter spy = parser.spyConverter(DiskStoreNameConverter.class);
 
     Set<String> diskStores = Arrays.stream("name1,name2".split(",")).collect(Collectors.toSet());
-    doReturn(diskStores).when(spy).getDiskStoreNames();
+    doReturn(diskStores).when(spy).getCompletionValues();
 
     String command = "compact disk-store --name=";
     commandCandidate = parser.complete(command);
