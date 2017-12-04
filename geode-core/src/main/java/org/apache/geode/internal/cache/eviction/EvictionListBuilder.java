@@ -67,32 +67,30 @@ public class EvictionListBuilder {
     }
   }
 
-  private InternalEvictionStatistics getEvictionStats() {
-    InternalEvictionStatistics statistics = null;
-    if (region != null) {
-      if (region instanceof BucketRegion) {
-        if (args != null && args.getPartitionedRegion() != null) {
-          statistics = (InternalEvictionStatistics) args.getPartitionedRegion()
-              .getEvictionController().getStatistics();
-        } else {
-          statistics = new DisabledEvictionStatistics();
-        }
-      } else if (region instanceof PlaceHolderDiskRegion) {
-        statistics = (InternalEvictionStatistics) ((PlaceHolderDiskRegion) region).getPRLRUStats();
-      } else if (region instanceof PartitionedRegion) {
-        statistics = (InternalEvictionStatistics) ((PartitionedRegion) region)
-            .getPRLRUStatsDuringInitialization();
-        if (statistics != null) {
-          PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-          EvictionController evictionController = partitionedRegion.getEvictionController();
-          ((AbstractEvictionController) evictionController).setStatistics(statistics);
-        }
-      }
-    }
-    if (statistics == null) {
-      StatisticsFactory sf = GemFireCacheImpl.getExisting("").getDistributedSystem();
-      statistics = (InternalEvictionStatistics) controller.initStats(region, sf);
-    }
+  private EvictionCounters getEvictionStats() {
+    EvictionCounters statistics = null;
+//    if (region != null) {
+//      if (region instanceof BucketRegion) {
+//        if (args != null && args.getPartitionedRegion() != null) {
+//          statistics = args.getPartitionedRegion().getEvictionController().getCounters();
+//        } else {
+//          statistics = new DisabledEvictionCounters();
+//        }
+//      } else if (region instanceof PlaceHolderDiskRegion) {
+//        statistics = ((PlaceHolderDiskRegion) region).getPRLRUStats();
+//      } else if (region instanceof PartitionedRegion) {
+//        statistics = ((PartitionedRegion) region).getPREvictionControllerFromDiskInitialization();
+//        if (statistics != null) {
+//          PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+//          EvictionController evictionController = partitionedRegion.getEvictionController();
+//          ((AbstractEvictionController) evictionController).setCounters(statistics);
+//        }
+//      }
+//    }
+//    if (statistics == null) {
+//      StatisticsFactory sf = GemFireCacheImpl.getExisting("").getDistributedSystem();
+//      statistics = controller.initStats(region, sf);
+//    }
     return statistics;
   }
 

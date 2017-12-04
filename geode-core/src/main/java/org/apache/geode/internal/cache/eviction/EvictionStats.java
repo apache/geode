@@ -14,18 +14,26 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import java.util.concurrent.Executors;
+import org.apache.geode.Statistics;
 
-import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.LRUClearWithDiskRegionOpRegressionTest;
+public interface EvictionStats {
 
-/**
- * Test Implementation class of LRUListWithAsyncSorting for
- * {@link LRUClearWithDiskRegionOpRegressionTest}.
- */
-public class TestLRUListWithAsyncSorting extends LRUListWithAsyncSorting {
+  void incEvictions();
 
-  public TestLRUListWithAsyncSorting(EvictionCounters stats, BucketRegion region) {
-    super(stats, region, Executors.newSingleThreadExecutor());
-  }
+  void updateCounter(long delta);
+
+  Statistics getStatistics();
+
+  void incDestroys();
+
+  void close();
+
+  void setLimit(long newValue);
+
+  void setCounter(long l);
+
+  void incEvaluations(long evaluations);
+
+  void incGreedyReturns(long greedyReturns);
+
 }

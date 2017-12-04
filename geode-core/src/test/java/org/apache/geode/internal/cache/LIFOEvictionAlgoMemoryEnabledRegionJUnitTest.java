@@ -38,9 +38,9 @@ import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.eviction.EvictionNode;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -61,7 +61,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
   private static Cache cache = null;
 
   /** Stores LIFO Related Statistics */
-  private static EvictionStatistics lifoStats = null;
+  private static EvictionCounters lifoStats = null;
 
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;

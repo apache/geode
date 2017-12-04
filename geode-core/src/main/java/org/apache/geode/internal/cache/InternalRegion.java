@@ -137,4 +137,6 @@ public interface InternalRegion<K, V>
 
   long getEvictionCounter();
 
+  RegionMap getRegionMap();
+
 }

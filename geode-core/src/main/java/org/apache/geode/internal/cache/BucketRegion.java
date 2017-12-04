@@ -2459,4 +2459,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
     super.postDestroyRegion(destroyDiskRegion, event);
   }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    return internalArgs.getPartitionedRegion().getEvictionController();
+  }
 }

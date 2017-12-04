@@ -176,7 +176,7 @@ import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
@@ -12105,9 +12105,33 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     long result = 0L;
     EvictionController evictionController = getEvictionController();
     if (evictionController != null) {
-      EvictionStatistics es = evictionController.getStatistics();
+      EvictionCounters es = evictionController.getCounters();
       if (es != null) {
         result = es.getCounter();
+      }
+    }
+    return result;
+  }
+
+  public long getEvictionLimit() {
+    long result = 0L;
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      EvictionCounters es = evictionController.getCounters();
+      if (es != null) {
+        result = es.getLimit();
+      }
+    }
+    return result;
+  }
+
+  public long getEvictionDestroys() {
+    long result = 0;
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      EvictionCounters es = evictionController.getCounters();
+      if (es != null) {
+        result = es.getDestroys();
       }
     }
     return result;
@@ -12130,12 +12154,17 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     Statistics result = null;
     EvictionController evictionController = getEvictionController();
     if (evictionController != null) {
-      EvictionStatistics es = evictionController.getStatistics();
+      EvictionCounters es = evictionController.getCounters();
       if (es != null) {
-        result = es.getStats();
+        result = es.getStatistics();
       }
     }
     return result;
+  }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    return null;
   }
 
 }

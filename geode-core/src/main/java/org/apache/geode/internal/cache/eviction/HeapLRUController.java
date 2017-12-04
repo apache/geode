@@ -16,10 +16,7 @@ package org.apache.geode.internal.cache.eviction;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
-import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
@@ -32,7 +29,6 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * A {@code HeapLRUController} controls the contents of {@link Region} based on the percentage of
@@ -57,38 +53,8 @@ public class HeapLRUController extends SizeLRUController {
   public static final String TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY =
       GEMFIRE_PREFIX + "topUpHeapEvictionPercentage";
 
-  private static final int PER_ENTRY_OVERHEAD = 250;
-
-  private int perEntryOverhead = PER_ENTRY_OVERHEAD;
-
-  private static final StatisticsType statType;
-
-  static {
-    // create the stats type for MemLRU.
-    StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
-
-    final String entryBytesDesc =
-        "The amount of memory currently used by regions configured for eviction.";
-    final String lruEvictionsDesc = "Number of total entry evictions triggered by LRU.";
-    final String lruDestroysDesc =
-        "Number of entries destroyed in the region through both destroy cache operations and eviction. Reset to zero each time it exceeds lruDestroysLimit.";
-    final String lruDestroysLimitDesc =
-        "Maximum number of entry destroys triggered by LRU before scan occurs.";
-    final String lruEvaluationsDesc = "Number of entries evaluated during LRU operations.";
-    final String lruGreedyReturnsDesc = "Number of non-LRU entries evicted during LRU operations";
-
-    statType = f.createType("HeapLRUStatistics",
-        "Statistics about byte based Least Recently Used region entry disposal",
-        new StatisticDescriptor[] {f.createLongGauge("entryBytes", entryBytesDesc, "bytes"),
-            f.createLongCounter("lruEvictions", lruEvictionsDesc, "entries"),
-            f.createLongCounter("lruDestroys", lruDestroysDesc, "entries"),
-            f.createLongGauge("lruDestroysLimit", lruDestroysLimitDesc, "entries"),
-            f.createLongCounter("lruEvaluations", lruEvaluationsDesc, "entries"),
-            f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"),});
-  }
-
-  public HeapLRUController(EvictionAction evictionAction, ObjectSizer sizer) {
-    super(evictionAction, sizer);
+  public HeapLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer, int entryOverhead) {
+    super(evictionCounters, evictionAction, sizer, entryOverhead);
   }
 
   @Override
@@ -132,64 +98,10 @@ public class HeapLRUController extends SizeLRUController {
       return 0;
     }
 
-    int size = HeapLRUController.this.getPerEntryOverhead();
+    int size = getPerEntryOverhead();
     size += sizeof(key);
     size += sizeof(value);
     return size;
-  }
-
-  @Override
-  public EvictionStatistics initStats(Object region, StatisticsFactory statsFactory) {
-    setRegionName(region);
-    InternalEvictionStatistics stats =
-        new EvictionStatisticsImpl(statsFactory, getRegionName(), this);
-    setStatistics(stats);
-    return stats;
-  }
-
-  @Override
-  public StatisticsType getStatisticsType() {
-    return statType;
-  }
-
-  @Override
-  public String getStatisticsName() {
-    return "HeapLRUStatistics";
-  }
-
-  @Override
-  public int getLimitStatId() {
-    throw new UnsupportedOperationException("Limit not used with this LRU type");
-  }
-
-  @Override
-  public int getCountStatId() {
-    return statType.nameToId("entryBytes");
-  }
-
-  @Override
-  public int getEvictionsStatId() {
-    return statType.nameToId("lruEvictions");
-  }
-
-  @Override
-  public int getDestroysStatId() {
-    return statType.nameToId("lruDestroys");
-  }
-
-  @Override
-  public int getDestroysLimitStatId() {
-    return statType.nameToId("lruDestroysLimit");
-  }
-
-  @Override
-  public int getEvaluationsStatId() {
-    return statType.nameToId("lruEvaluations");
-  }
-
-  @Override
-  public int getGreedyReturnsStatId() {
-    return statType.nameToId("lruGreedyReturns");
   }
 
   /**
@@ -200,7 +112,7 @@ public class HeapLRUController extends SizeLRUController {
    * threshold, then we evict the LRU entry.
    */
   @Override
-  public boolean mustEvict(EvictionStatistics stats, InternalRegion region, int delta) {
+  public boolean mustEvict(EvictionCounters stats, InternalRegion region, int delta) {
     InternalCache cache = (InternalCache) region.getRegionService();
     boolean offheap = region.getAttributes().getOffHeap();
     boolean shouldEvict =
@@ -213,18 +125,15 @@ public class HeapLRUController extends SizeLRUController {
   }
 
   @Override
-  public boolean lruLimitExceeded(EvictionStatistics stats, DiskRegionView diskRegionView) {
+  public boolean lruLimitExceeded(EvictionCounters stats, DiskRegionView diskRegionView) {
     InternalResourceManager resourceManager =
         diskRegionView.getDiskStore().getCache().getInternalResourceManager();
     return resourceManager.getMemoryMonitor(diskRegionView.getOffHeap()).getState().isEviction();
   }
 
-
-  public int getPerEntryOverhead() {
-    return perEntryOverhead;
+  @Override
+  protected EvictionStats createEvictionStatistics(StatisticsFactory statsFactory, String name) {
+    return new HeapLRUStatistics(statsFactory, name);
   }
 
-  public void setEntryOverHead(int entryOverHead) {
-    this.perEntryOverhead = entryOverHead;
-  }
 }

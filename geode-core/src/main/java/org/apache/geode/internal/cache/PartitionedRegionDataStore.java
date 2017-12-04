@@ -1834,8 +1834,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   public int getPerEntryLRUOverhead() {
     BucketRegion br = (localBucket2RegionMap.values().iterator().next());
-    AbstractLRURegionMap map = (AbstractLRURegionMap) br.getRegionMap();
-    return map.getEntryOverHead();
+    return br.getRegionMap().getEntryOverhead();
   }
 
   /**

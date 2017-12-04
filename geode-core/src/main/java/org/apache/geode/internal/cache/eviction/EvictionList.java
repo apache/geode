@@ -43,7 +43,7 @@ public interface EvictionList {
    *
    * @return The EvictionStatistics for this Clock hand's region.
    */
-  EvictionStatistics getStatistics();
+  EvictionCounters getStatistics();
 
   /**
    * called when an LRU map is cleared... resets stats and releases prev and next.

@@ -80,6 +80,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -135,8 +136,8 @@ public abstract class AbstractRegionMap implements RegionMap {
       throw new IllegalStateException("expected LocalRegion or PlaceHolderDiskRegion");
     }
 
-    setEntryFactory(new RegionEntryFactoryBuilder().create(
-        attr.statisticsEnabled, isLRU, isDisk, withVersioning, offHeap));
+    setEntryFactory(new RegionEntryFactoryBuilder().create(attr.statisticsEnabled, isLRU, isDisk,
+        withVersioning, offHeap));
   }
 
   private CustomEntryConcurrentHashMap<Object, Object> createConcurrentMap(int initialCapacity,
@@ -3932,6 +3933,28 @@ public abstract class AbstractRegionMap implements RegionMap {
     return null;
   }
 
+  @Override
+  public int getEntryOverhead() {
+    return (int) ReflectionSingleObjectSizer.sizeof(getEntryFactory().getEntryClass());
+  }
+
+  @Override
+  public boolean beginChangeValueForm(EvictableEntry le,
+      CachedDeserializable vmCachedDeserializable, Object v) {
+    return false;
+  }
+
+  @Override
+  public void finishChangeValueForm() {}
+
+  @Override
+  public int centralizedLruUpdateCallback() {
+    return 0;
+  }
+
+  @Override
+  public void updateEvictionCounter() {}
+
   public interface ARMLockTestHook {
     public void beforeBulkLock(LocalRegion region);
 
@@ -3962,5 +3985,4 @@ public abstract class AbstractRegionMap implements RegionMap {
   public void setARMLockTestHook(ARMLockTestHook theHook) {
     armLockTestHook = theHook;
   }
-
 }

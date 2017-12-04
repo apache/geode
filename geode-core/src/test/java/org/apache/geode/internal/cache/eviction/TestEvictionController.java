@@ -41,8 +41,6 @@ class TestEvictionController implements EvictionController {
     final String lruEvaluationsDesc = "Number of entries evaluated during LRU operations.";
     final String lruGreedyReturnsDesc = "Number of non-LRU entries evicted during LRU operations";
     final String lruDestroysDesc = "Number of entry destroys triggered by LRU.";
-    final String lruDestroysLimitDesc =
-        "Maximum number of entry destroys triggered by LRU before scan occurs.";
 
     statType = f.createType("TestLRUStatistics",
         "Statistics about byte based Least Recently Used region entry disposal",
@@ -51,8 +49,7 @@ class TestEvictionController implements EvictionController {
             f.createLongCounter("lruEvictions", lruEvictionsDesc, "entries"),
             f.createLongCounter("lruEvaluations", lruEvaluationsDesc, "entries"),
             f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"),
-            f.createLongCounter("lruDestroys", lruDestroysDesc, "entries"),
-            f.createLongCounter("lruDestroysLimit", lruDestroysLimitDesc, "entries"),});
+            f.createLongCounter("lruDestroys", lruDestroysDesc, "entries"),});
   }
 
   @Override
@@ -75,7 +72,7 @@ class TestEvictionController implements EvictionController {
   }
 
   @Override
-  public EvictionStatistics getStatistics() {
+  public EvictionCounters getCounters() {
     return null;
   }
 
@@ -115,11 +112,6 @@ class TestEvictionController implements EvictionController {
   }
 
   @Override
-  public int getDestroysLimitStatId() {
-    return statType.nameToId("lruDestroysLimit");
-  }
-
-  @Override
   public int getEvaluationsStatId() {
     return statType.nameToId("lruEvaluations");
   }
@@ -130,12 +122,12 @@ class TestEvictionController implements EvictionController {
   }
 
   @Override
-  public boolean mustEvict(EvictionStatistics stats, InternalRegion region, int delta) {
+  public boolean mustEvict(EvictionCounters stats, InternalRegion region, int delta) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
   @Override
-  public EvictionStatistics initStats(Object region, StatisticsFactory statsFactory) {
+  public EvictionCounters initStats(Object region, StatisticsFactory statsFactory) {
     String regionName;
     if (region instanceof Region) {
       regionName = ((Region) region).getName();
@@ -145,14 +137,14 @@ class TestEvictionController implements EvictionController {
     } else {
       throw new IllegalStateException("expected Region or PlaceHolderDiskRegion");
     }
-    final InternalEvictionStatistics stats =
-        new EvictionStatisticsImpl(statsFactory, "TestLRUStatistics" + regionName, this);
+    final EvictionCounters stats =
+        new EvictionCountersImpl(statsFactory, "TestLRUStatistics" + regionName, this);
     stats.setLimit(limit());
     return stats;
   }
 
   @Override
-  public boolean lruLimitExceeded(EvictionStatistics stats, DiskRegionView diskRegionView) {
+  public boolean lruLimitExceeded(EvictionCounters stats, DiskRegionView diskRegionView) {
     throw new UnsupportedOperationException("Not implemented");
   }
 

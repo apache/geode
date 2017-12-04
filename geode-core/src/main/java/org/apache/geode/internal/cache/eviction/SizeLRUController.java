@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Token;
@@ -23,11 +22,18 @@ import org.apache.geode.internal.size.Sizeable;
 
 abstract class SizeLRUController extends AbstractEvictionController {
 
-  private ObjectSizer sizer;
+  private final int perEntryOverhead;
 
-  SizeLRUController(EvictionAction evictionAction, ObjectSizer sizer) {
-    super(evictionAction);
+  private final ObjectSizer sizer;
+
+  SizeLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer, int entryOverhead) {
+    super(evictionCounters, evictionAction);
+    this.perEntryOverhead = entryOverhead;
     this.sizer = sizer;
+  }
+
+  public int getPerEntryOverhead() {
+    return perEntryOverhead;
   }
 
   /**
@@ -60,14 +66,4 @@ abstract class SizeLRUController extends AbstractEvictionController {
     }
     return size;
   }
-
-  /**
-   * Sets the {@link ObjectSizer} used to calculate the size of objects placed in the cache.
-   *
-   * @param sizer The name of the sizer class
-   */
-  void setSizer(ObjectSizer sizer) {
-    this.sizer = sizer;
-  }
-
 }

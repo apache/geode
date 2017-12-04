@@ -898,4 +898,26 @@ class ProxyRegionMap implements RegionMap {
   public EvictionController getEvictionController() {
     return null;
   }
+
+  @Override
+  public int getEntryOverhead() {
+    return 0;
+  }
+
+  @Override
+  public boolean beginChangeValueForm(EvictableEntry le,
+      CachedDeserializable vmCachedDeserializable, Object v) {
+    return false;
+  }
+
+  @Override
+  public void finishChangeValueForm() {}
+
+  @Override
+  public int centralizedLruUpdateCallback() {
+    return 0;
+  }
+
+  @Override
+  public void updateEvictionCounter() {}
 }

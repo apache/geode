@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -38,13 +37,13 @@ public interface EvictionController {
   long limit();
 
   /** setup stats for this LRU type, if reset is true, initialize counter on stats to zero. */
-  EvictionStatistics initStats(Object region, StatisticsFactory statsFactory);
+  EvictionCounters initStats(Object region, StatisticsFactory statsFactory);
 
   /** return the eviction controller instance this came from */
   EvictionAlgorithm getEvictionAlgorithm();
 
   /** return the stats object for this eviction controller */
-  EvictionStatistics getStatistics();
+  EvictionCounters getCounters();
 
   /**
    * Returns the {@code EvictionAction} to take when the LRU entry is evicted.
@@ -52,59 +51,12 @@ public interface EvictionController {
   EvictionAction getEvictionAction();
 
   /**
-   * Returns the statistics for this LRU algorithm
-   */
-  StatisticsType getStatisticsType();
-
-  /**
-   * Returns the name of the statistics for this LRU algorithm
-   */
-  String getStatisticsName();
-
-  /**
-   * Returns the id of the "limit" statistic for this LRU algorithm's statistics
-   */
-  int getLimitStatId();
-
-  /**
-   * Returns the id of the "counter" statistic for this LRU algorithm's statistics.
-   */
-  int getCountStatId();
-
-  /**
-   * Returns the id of the "evictions" statistic for this LRU algorithm's statistics.
-   */
-  int getEvictionsStatId();
-
-  /**
-   * Returns the id of the "destroys" statistic for this LRU algorithm's statistics.
-   */
-  int getDestroysStatId();
-
-  /**
-   * Returns the id of the "destroysLimit" statistic for this LRU algorithm's statistics
-   */
-  int getDestroysLimitStatId();
-
-  /**
-   * Returns the id of the "evaluations" statistic for this LRU algorithm's statistics.
-   */
-  int getEvaluationsStatId();
-
-  /**
-   * Returns the id of the "greedyReturns" statistic for this LRU algorithm's statistics
-   *
-   * @return the id
-   */
-  int getGreedyReturnsStatId();
-
-  /**
    * Returns whether or not there is enough room to accommodate data of the given size based on the
    * given {@code EvictionStatistics}.
    */
-  boolean mustEvict(EvictionStatistics stats, InternalRegion region, int delta);
+  boolean mustEvict(EvictionCounters stats, InternalRegion region, int delta);
 
-  boolean lruLimitExceeded(EvictionStatistics stats, DiskRegionView diskRegionView);
+  boolean lruLimitExceeded(EvictionCounters stats, DiskRegionView diskRegionView);
 
   /**
    * Returns the "limit" as defined by this LRU algorithm

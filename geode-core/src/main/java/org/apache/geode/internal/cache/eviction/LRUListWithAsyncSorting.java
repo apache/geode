@@ -73,11 +73,11 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     return Executors.newFixedThreadPool(threads);
   }
 
-  LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region) {
+  LRUListWithAsyncSorting(EvictionCounters stats, BucketRegion region) {
     this(stats, region, SINGLETON_EXECUTOR);
   }
 
-  LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region,
+  LRUListWithAsyncSorting(EvictionCounters stats, BucketRegion region,
       ExecutorService executor) {
     super(stats, region);
     this.scanThreshold = calculateScanThreshold();

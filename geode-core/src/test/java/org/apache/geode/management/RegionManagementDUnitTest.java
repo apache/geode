@@ -62,7 +62,7 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TestObjectSizerImpl;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -358,7 +358,7 @@ public class RegionManagementDUnitTest implements Serializable {
 
       Region region = getCache().createRegion(REGION_NAME, factory.create());
 
-      EvictionStatistics lruStats = ((LocalRegion) region).getEvictionController().getStatistics();
+      EvictionCounters lruStats = ((LocalRegion) region).getEvictionController().getCounters();
       assertThat(lruStats).isNotNull();
 
       RegionMXBean regionMXBean = getManagementService().getLocalRegionMBean(REGION_PATH);

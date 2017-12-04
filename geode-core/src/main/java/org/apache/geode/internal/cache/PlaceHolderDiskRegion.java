@@ -18,7 +18,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
@@ -51,12 +51,6 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
   PlaceHolderDiskRegion(DiskRegionView drv) {
     super(drv);
     this.name = drv.getName();
-  }
-
-  EvictionStatistics prlruStats;
-
-  public EvictionStatistics getPRLRUStats() {
-    return this.prlruStats;
   }
 
   @Override
@@ -205,5 +199,13 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
     this.numEntriesInVM.set(numEntriesInVM);
     this.numOverflowOnDisk.set(numOverflowOnDisk);
     this.numOverflowBytesOnDisk.set(numOverflowBytesOnDisk);
+  }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    if (isBucket()) {
+      return this.getDiskStore().getOrCreatePRLRUStats(this);
+    }
+    return null;
   }
 }

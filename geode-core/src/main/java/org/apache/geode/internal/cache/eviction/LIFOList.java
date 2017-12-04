@@ -24,7 +24,7 @@ import org.apache.geode.internal.cache.BucketRegion;
  */
 public class LIFOList extends AbstractEvictionList {
 
-  LIFOList(InternalEvictionStatistics stats, BucketRegion bucketRegion) {
+  LIFOList(EvictionCounters stats, BucketRegion bucketRegion) {
     super(stats, bucketRegion);
   }
 

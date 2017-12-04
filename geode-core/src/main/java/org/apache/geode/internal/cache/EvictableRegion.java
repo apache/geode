@@ -12,23 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.eviction;
+package org.apache.geode.internal.cache;
 
-import org.apache.geode.Statistics;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 
-public interface EvictionStatistics {
+public interface EvictableRegion {
+  EvictionAttributes getEvictionAttributes();
 
-  void incEvictions();
+  boolean getOffHeap();
 
-  long getCounter();
-
-  long getLimit();
-
-  void updateCounter(long delta);
-
-  long getEvictions();
-
-  Statistics getStats();
-
-  void incDestroys();
+  /**
+   * If this region represents a bucket then this methods needs to return the existing controller
+   * from the partitioned region that owns this bucket. Otherwise returns null.
+   */
+  EvictionController getExistingController(InternalRegionArguments internalArgs);
 }

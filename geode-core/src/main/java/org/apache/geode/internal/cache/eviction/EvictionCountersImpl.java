@@ -17,29 +17,11 @@ package org.apache.geode.internal.cache.eviction;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.internal.Assert;
 
-class EvictionStatisticsImpl implements InternalEvictionStatistics {
+class EvictionCountersImpl implements EvictionCounters {
 
   /** The Statistics object that we delegate most behavior to */
-  private final Statistics stats;
-  private final int limitId;
-
-  /**
-   * the number of destroys that must occur before a list scan is initiated to to remove unlinked
-   * entries.
-   */
-  private final int destroysLimitId;
-  private final int counterId;
-
-  /** entries that have been evicted from the LRU list */
-  private final int evictionsId;
-
-  /** entries that have been destroyed, but not yet evicted from the LRU list */
-  private final int destroysId;
-  private final int evaluationsId;
-  private final int greedyReturnsId;
+  private final EvictionStats stats;
 
   // Note: the following atomics have been added so that the eviction code
   // does not depend on the value of a statistic for its operations.
@@ -47,30 +29,17 @@ class EvictionStatisticsImpl implements InternalEvictionStatistics {
   // Striped stats optimize inc but cause set and get to be more expensive.
   private final AtomicLong counter = new AtomicLong();
   private final AtomicLong limit = new AtomicLong();
-  private final AtomicLong destroysLimit = new AtomicLong();
   private final AtomicLong destroys = new AtomicLong();
   private final AtomicLong evictions = new AtomicLong();
 
-  public EvictionStatisticsImpl(StatisticsFactory factory, String name, EvictionController helper) {
-    String statName = helper.getStatisticsName() + "-" + name;
-    stats = factory.createAtomicStatistics(helper.getStatisticsType(), statName);
-    if (helper.getEvictionAlgorithm().isLRUHeap()) {
-      limitId = 0;
-    } else {
-      limitId = helper.getLimitStatId();
-    }
-    destroysLimitId = helper.getDestroysLimitStatId();
-    counterId = helper.getCountStatId();
-    evictionsId = helper.getEvictionsStatId();
-    destroysId = helper.getDestroysStatId();
-    this.evaluationsId = helper.getEvaluationsStatId();
-    this.greedyReturnsId = helper.getGreedyReturnsStatId();
+  public EvictionCountersImpl(EvictionStats stats) {
+    this.stats = stats;
   }
 
   @Override
   public void incEvictions() {
     this.evictions.getAndAdd(1);
-    stats.incLong(evictionsId, 1);
+    this.stats.incEvictions();
   }
 
   /** common counter for different eviction types */
@@ -88,7 +57,7 @@ class EvictionStatisticsImpl implements InternalEvictionStatistics {
   public void updateCounter(long delta) {
     if (delta != 0) {
       this.counter.getAndAdd(delta);
-      stats.incLong(counterId, delta);
+      this.stats.updateCounter(delta);
     }
   }
 
@@ -98,62 +67,43 @@ class EvictionStatisticsImpl implements InternalEvictionStatistics {
   }
 
   @Override
-  public Statistics getStats() {
-    return this.stats;
+  public Statistics getStatistics() {
+    return this.stats.getStatistics();
   }
 
   @Override
   public void incDestroys() {
     this.destroys.getAndAdd(1);
-    stats.incLong(destroysId, 1);
+    this.stats.incDestroys();
   }
 
   @Override
   public void close() {
-    stats.close();
+    this.stats.close();
   }
 
   @Override
   public void setLimit(long newValue) {
-    Assert.assertTrue(newValue > 0L,
-        "limit must be positive, an attempt was made to set it to: " + newValue);
     long oldValue = this.limit.get();
     if (oldValue != newValue) {
       this.limit.set(newValue);
-      stats.setLong(limitId, newValue);
+      this.stats.setLimit(newValue);
     }
-  }
-
-  /** destroy limit */
-  @Override
-  public void setDestroysLimit(long newValue) {
-    Assert.assertTrue(newValue > 0L,
-        "destroys limit must be positive, an attempt was made to set it to: " + newValue);
-    long oldValue = this.destroysLimit.get();
-    if (oldValue != newValue) {
-      this.destroysLimit.set(newValue);
-      stats.setLong(destroysLimitId, newValue);
-    }
-  }
-
-  @Override
-  public long getDestroysLimit() {
-    return this.destroysLimit.get();
   }
 
   @Override
   public void resetCounter() {
     if (this.counter.get() != 0) {
       this.counter.set(0);
-      stats.setLong(counterId, 0);
+      this.stats.setCounter(0L);
     }
   }
 
   @Override
   public void decrementCounter(long delta) {
     if (delta != 0) {
-      this.counter.addAndGet(-delta);
-      stats.setLong(counterId, counter.get());
+      long newValue = this.counter.addAndGet(-delta);
+      this.stats.setCounter(newValue);
     }
   }
 
@@ -164,11 +114,11 @@ class EvictionStatisticsImpl implements InternalEvictionStatistics {
 
   @Override
   public void incEvaluations(long evaluations) {
-    stats.incLong(evaluationsId, evaluations);
+    this.stats.incEvaluations(evaluations);
   }
 
   @Override
   public void incGreedyReturns(long greedyReturns) {
-    stats.incLong(greedyReturnsId, greedyReturns);
+    this.stats.incGreedyReturns(greedyReturns);
   }
 }

@@ -99,7 +99,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  */
 @SuppressWarnings("deprecation")
 public abstract class AbstractRegion implements InternalRegion, AttributesMutator, CacheStatistics,
-    DataSerializableFixedID, Extensible<Region<?, ?>> {
+    DataSerializableFixedID, Extensible<Region<?, ?>>, EvictableRegion {
 
   private static final Logger logger = LogService.getLogger();
 

@@ -49,8 +49,8 @@ import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryHeap;
 import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryOffHeap;
 
 public class RegionEntryFactoryBuilder {
-  public RegionEntryFactory create(boolean statsEnabled, boolean isLRU,
-      boolean isDisk, boolean withVersioning, boolean offHeap) {
+  public RegionEntryFactory create(boolean statsEnabled, boolean isLRU, boolean isDisk,
+      boolean withVersioning, boolean offHeap) {
     int bitRepresentation = 0;
     bitRepresentation |= statsEnabled ? 1 : 0;
     bitRepresentation |= isLRU ? 2 : 0;

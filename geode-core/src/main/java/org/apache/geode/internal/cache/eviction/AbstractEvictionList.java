@@ -35,14 +35,14 @@ abstract class AbstractEvictionList implements EvictionList {
   protected final EvictionNode head = new GuardNode();
 
   /** Description of the Field */
-  protected final InternalEvictionStatistics stats;
+  protected final EvictionCounters stats;
 
   /** Counter for the size of the LRU list */
   private final AtomicInteger size = new AtomicInteger();
 
   private BucketRegion bucketRegion;
 
-  AbstractEvictionList(InternalEvictionStatistics stats, BucketRegion region) {
+  AbstractEvictionList(EvictionCounters stats, BucketRegion region) {
     if (stats == null) {
       throw new IllegalArgumentException("EvictionStatistics must not be null");
     }
@@ -72,7 +72,7 @@ abstract class AbstractEvictionList implements EvictionList {
   }
 
   @Override
-  public EvictionStatistics getStatistics() {
+  public EvictionCounters getStatistics() {
     return stats;
   }
 

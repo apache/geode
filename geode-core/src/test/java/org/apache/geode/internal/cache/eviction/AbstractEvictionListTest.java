@@ -39,12 +39,12 @@ public class AbstractEvictionListTest {
   public ExpectedException thrown = ExpectedException.none();
 
   private BucketRegion bucketRegion;
-  private InternalEvictionStatistics stats;
+  private EvictionCounters stats;
 
   @Before
   public void setup() {
     bucketRegion = mock(BucketRegion.class);
-    stats = mock(InternalEvictionStatistics.class);
+    stats = mock(EvictionCounters.class);
   }
 
   @Test
@@ -257,7 +257,7 @@ public class AbstractEvictionListTest {
 
   private static class TestEvictionList extends AbstractEvictionList {
 
-    TestEvictionList(InternalEvictionStatistics stats, BucketRegion region) {
+    TestEvictionList(EvictionCounters stats, BucketRegion region) {
       super(stats, region);
     }
 

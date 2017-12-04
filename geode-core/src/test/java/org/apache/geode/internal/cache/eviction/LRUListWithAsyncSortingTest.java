@@ -48,13 +48,13 @@ public class LRUListWithAsyncSortingTest {
   public ExpectedException thrown = ExpectedException.none();
 
   private BucketRegion bucketRegion;
-  private InternalEvictionStatistics stats;
+  private EvictionCounters stats;
   private ExecutorService executor = mock(ExecutorService.class);
 
   @Before
   public void setup() {
     bucketRegion = mock(BucketRegion.class);
-    stats = mock(InternalEvictionStatistics.class);
+    stats = mock(EvictionCounters.class);
   }
 
   @Test

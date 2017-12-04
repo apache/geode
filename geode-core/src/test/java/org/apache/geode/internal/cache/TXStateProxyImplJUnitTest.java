@@ -31,8 +31,8 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class TXStateProxyImplJUnitTest {
   @Test
   public void testGetKeyForIterator() {
-    RegionEntryFactory factory = new RegionEntryFactoryBuilder().create(false,
-        false, false, false, false);
+    RegionEntryFactory factory =
+        new RegionEntryFactoryBuilder().create(false, false, false, false, false);
     LocalRegion region = mock(LocalRegion.class);
     String key = "testkey";
     RegionEntry re = factory.createEntry(region, key, null);

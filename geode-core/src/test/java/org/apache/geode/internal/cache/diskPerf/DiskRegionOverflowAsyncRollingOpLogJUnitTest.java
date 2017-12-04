@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.DiskRegionHelperFactory;
 import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -194,8 +194,8 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
    * @param region1
    * @return
    */
-  protected EvictionStatistics getLRUStats(Region region1) {
-    return ((LocalRegion) region1).getEvictionController().getStatistics();
+  protected EvictionCounters getLRUStats(Region region1) {
+    return ((LocalRegion) region1).getEvictionController().getCounters();
 
   }
 

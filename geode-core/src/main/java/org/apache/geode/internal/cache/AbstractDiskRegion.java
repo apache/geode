@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.CopyOnWriteHashSet;
@@ -312,7 +313,8 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     }
   }
 
-  public EvictionAttributesImpl getEvictionAttributes() {
+  @Override
+  public EvictionAttributes getEvictionAttributes() {
     return new EvictionAttributesImpl().setAlgorithm(getActualLruAlgorithm())
         .setAction(getActualLruAction()).setMaximum(getLruLimit());
   }

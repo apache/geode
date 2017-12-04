@@ -38,8 +38,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.EvictionList;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.eviction.TestLRUListWithAsyncSorting;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -98,15 +98,17 @@ public class LRUClearWithDiskRegionOpRegressionTest {
     DistributedRegion distributedRegion =
         new DistributedRegion(regionName, regionAttributes, null, cache, args);
 
-    EvictionController eviction =
-        ((AbstractLRURegionMap) distributedRegion.entries).getEvictionController();
+    EvictionController eviction = distributedRegion.getEvictionController();
     assertThat(eviction).isNotNull();
 
-    EvictionStatistics evictionStatistics = eviction.getStatistics();
+    EvictionCounters evictionStatistics = eviction.getCounters();
     assertThat(evictionStatistics).isNotNull();
 
     EvictionList evictionList = new TestLRUListWithAsyncSorting(evictionStatistics, null);
-    ((AbstractLRURegionMap) distributedRegion.entries).setEvictionList(evictionList);
+    ((VMLRURegionMap) distributedRegion.entries).setEvictionList(evictionList); // TODO allow
+                                                                                // InternalRegionArguments
+                                                                                // to pass in
+                                                                                // EvictionList
 
     region = cache.createVMRegion(regionName, regionAttributes,
         new InternalRegionArguments().setInternalMetaRegion(distributedRegion)

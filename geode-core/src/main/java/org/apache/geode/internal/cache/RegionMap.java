@@ -27,6 +27,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictableMap;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -184,7 +185,6 @@ public interface RegionMap extends EvictableMap {
    * @see LocalRegion
    * @see AbstractRegionMap
    * @see CacheCallback
-   * @see AbstractLRURegionMap
    */
   boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI, boolean cacheWrite,
       boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
@@ -357,4 +357,19 @@ public interface RegionMap extends EvictableMap {
   long getEvictions();
 
   void incRecentlyUsed();
+
+  /**
+   * Returns the memory overhead of entries in this map
+   */
+  int getEntryOverhead();
+
+  boolean beginChangeValueForm(EvictableEntry le, CachedDeserializable vmCachedDeserializable,
+      Object v);
+
+  void finishChangeValueForm();
+
+  int centralizedLruUpdateCallback();
+
+  void updateEvictionCounter();
+
 }

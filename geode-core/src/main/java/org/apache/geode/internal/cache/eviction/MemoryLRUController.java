@@ -15,19 +15,14 @@
 package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 
 /**
@@ -42,86 +37,14 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class MemoryLRUController extends SizeLRUController {
 
-  private static final int OVERHEAD_PER_ENTRY = 250;
+  private long limit;
+  private final boolean isOffHeap;
 
   private static final long ONE_MEG = 1024L * 1024L;
 
-  protected static final StatisticsType statType;
-
-  static {
-    // create the stats type for MemLRU.
-    StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
-
-    final String bytesAllowedDesc = "Number of total bytes allowed in this region.";
-    final String byteCountDesc = "Number of bytes in region.";
-    final String lruEvictionsDesc = "Number of total entry evictions triggered by LRU.";
-    final String lruDestroysDesc =
-        "Number of entries destroyed in the region through both destroy cache operations and eviction. Reset to zero each time it exceeds lruDestroysLimit.";
-    final String lruDestroysLimitDesc =
-        "Maximum number of entry destroys triggered by LRU before scan occurs.";
-    final String lruEvaluationsDesc = "Number of entries evaluated during LRU operations.";
-    final String lruGreedyReturnsDesc = "Number of non-LRU entries evicted during LRU operations";
-
-    statType = f.createType("MemLRUStatistics",
-        "Statistics about byte based Least Recently Used region entry disposal",
-        new StatisticDescriptor[] {f.createLongGauge("bytesAllowed", bytesAllowedDesc, "bytes"),
-            f.createLongGauge("byteCount", byteCountDesc, "bytes"),
-            f.createLongCounter("lruEvictions", lruEvictionsDesc, "entries"),
-            f.createLongCounter("lruDestroys", lruDestroysDesc, "entries"),
-            f.createLongGauge("lruDestroysLimit", lruDestroysLimitDesc, "entries"),
-            f.createLongCounter("lruEvaluations", lruEvaluationsDesc, "entries"),
-            f.createLongCounter("lruGreedyReturns", lruGreedyReturnsDesc, "entries"),});
-  }
-
-  private long limit = (EvictionAttributes.DEFAULT_MEMORY_MAXIMUM) * ONE_MEG;
-
-  private int perEntryOverHead = OVERHEAD_PER_ENTRY;
-
-  private final boolean isOffHeap;
-
-  /**
-   * Create an instance of the capacity controller with default settings.
-   */
-  public MemoryLRUController() {
-    this(EvictionAttributes.DEFAULT_MEMORY_MAXIMUM);
-  }
-
   /**
    * Create an instance of the capacity controller the given settings.
-   *
-   * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
-   *        <p>
-   *        For a region with {@link org.apache.geode.cache.DataPolicy#PARTITION}, it is overridden
-   *        by {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int) "
-   *        local max memory "} specified for the
-   *        {@link org.apache.geode.cache.PartitionAttributes}. It signifies the amount of memory
-   *        allowed in the region, collectively for its primary buckets and redundant copies for
-   *        this VM. It can be different for the same region in different VMs.
-   */
-  public MemoryLRUController(int megabytes) {
-    this(megabytes, null /* sizerImpl */);
-  }
-
-  /**
-   * Create an instance of the capacity controller the given settings.
-   *
-   * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
-   *        <p>
-   *        For a region with {@link org.apache.geode.cache.DataPolicy#PARTITION}, it is overridden
-   *        by {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int) "
-   *        local max memory "} specified for the
-   *        {@link org.apache.geode.cache.PartitionAttributes}. It signifies the amount of memory
-   *        allowed in the region, collectively for its primary buckets and redundant copies for
-   *        this VM. It can be different for the same region in different VMs.
-   * @param sizerImpl classname of a class that implements ObjectSizer, used to compute object sizes
-   *        for MemLRU
-   */
-  public MemoryLRUController(int megabytes, ObjectSizer sizerImpl) {
-    this(megabytes, sizerImpl, EvictionAction.DEFAULT_EVICTION_ACTION, false);
-  }
-
-  /**
-   * Create an instance of the capacity controller the given settings.
+   * @param evictionCounters 
    *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
    *        <p>
@@ -134,10 +57,11 @@ public class MemoryLRUController extends SizeLRUController {
    * @param sizer classname of a class that implements ObjectSizer, used to compute object sizes for
    *        MemLRU
    * @param isOffHeap true if the region that owns this cc is stored off heap
+   * @param entryOverhead how much memory is used by the entry class
    */
-  public MemoryLRUController(int megabytes, ObjectSizer sizer, EvictionAction evictionAction,
-      boolean isOffHeap) {
-    super(evictionAction, sizer);
+  public MemoryLRUController(EvictionCounters evictionCounters, int megabytes, ObjectSizer sizer, EvictionAction evictionAction,
+      boolean isOffHeap, int entryOverhead) {
+    super(evictionCounters, evictionAction, sizer, entryOverhead);
     this.isOffHeap = isOffHeap;
     setMaximumMegabytes(megabytes);
   }
@@ -147,32 +71,19 @@ public class MemoryLRUController extends SizeLRUController {
    * next region operation that could increase the region's byte size. If the region is shared, this
    * change is seen by all members in the cluster.
    */
-  public void setMaximumMegabytes(int megabytes) {
+  private void setMaximumMegabytes(int megabytes) {
     if (megabytes <= 0) {
       throw new IllegalArgumentException(
           LocalizedStrings.MemLRUCapacityController_MEMLRUCONTROLLER_LIMIT_MUST_BE_POSTIVE_0
               .toLocalizedString(megabytes));
     }
-    if (stats == null) {
-      throw new InternalGemFireException(
-          LocalizedStrings.LRUAlgorithm_LRU_STATS_IN_EVICTION_CONTROLLER_INSTANCE_SHOULD_NOT_BE_NULL
-              .toLocalizedString());
-    }
-    this.limit = (megabytes) * ONE_MEG;
-    this.stats.setLimit(this.limit);
+    this.limit = megabytes * ONE_MEG;
+    getCounters().setLimit(this.limit);
   }
 
   @Override
   public void setLimit(int maximum) {
     setMaximumMegabytes(maximum);
-  }
-
-  /**
-   * Sets the the number of bytes of overhead each object occupies in the VM. This value may vary
-   * between VM implementations.
-   */
-  public void setEntryOverHead(int entryOverHead) {
-    this.perEntryOverHead = entryOverHead;
   }
 
   @Override
@@ -201,8 +112,8 @@ public class MemoryLRUController extends SizeLRUController {
 
     int size = 0;
     int keySize = 0;
-    if (!MemoryLRUController.this.isOffHeap) {
-      size += MemoryLRUController.this.getPerEntryOverhead();
+    if (!this.isOffHeap) {
+      size += getPerEntryOverhead();
       keySize = sizeof(key);
     }
     int valueSize = sizeof(value);
@@ -212,79 +123,13 @@ public class MemoryLRUController extends SizeLRUController {
   }
 
   @Override
-  public StatisticsType getStatisticsType() {
-    return statType;
+  public boolean mustEvict(EvictionCounters counters, InternalRegion region, int delta) {
+    return counters.getCounter() + delta > counters.getLimit();
   }
 
   @Override
-  public String getStatisticsName() {
-    return "MemLRUStatistics";
-  }
-
-  @Override
-  public int getLimitStatId() {
-    return statType.nameToId("bytesAllowed");
-  }
-
-  @Override
-  public int getCountStatId() {
-    return statType.nameToId("byteCount");
-  }
-
-  @Override
-  public int getEvictionsStatId() {
-    return statType.nameToId("lruEvictions");
-  }
-
-  @Override
-  public int getDestroysStatId() {
-    return statType.nameToId("lruDestroys");
-  }
-
-  @Override
-  public int getDestroysLimitStatId() {
-    return statType.nameToId("lruDestroysLimit");
-  }
-
-  @Override
-  public int getEvaluationsStatId() {
-    return statType.nameToId("lruEvaluations");
-  }
-
-  @Override
-  public int getGreedyReturnsStatId() {
-    return statType.nameToId("lruGreedyReturns");
-  }
-
-  @Override
-  public boolean mustEvict(EvictionStatistics stats, InternalRegion region, int delta) {
-    return stats.getCounter() + delta > stats.getLimit();
-  }
-
-  @Override
-  public boolean lruLimitExceeded(EvictionStatistics stats, DiskRegionView diskRegionView) {
-    return stats.getCounter() > stats.getLimit();
-  }
-
-  public int getPerEntryOverhead() {
-    return perEntryOverHead;
-  }
-
-  @Override
-  public boolean equals(Object cc) {
-    if (!super.equals(cc))
-      return false;
-    MemoryLRUController other = (MemoryLRUController) cc;
-    if (this.limit != other.limit)
-      return false;
-    return true;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result += this.limit;
-    return result;
+  public boolean lruLimitExceeded(EvictionCounters counters, DiskRegionView diskRegionView) {
+    return counters.getCounter() > counters.getLimit();
   }
 
   /**
@@ -296,5 +141,10 @@ public class MemoryLRUController extends SizeLRUController {
   public String toString() {
     return "MemLRUCapacityController with a capacity of " + this.getLimit()
         + " megabytes and and eviction action " + this.getEvictionAction();
+  }
+
+  @Override
+  protected EvictionStats createEvictionStatistics(StatisticsFactory statsFactory, String name) {
+    return new MemoryLRUStatistics(statsFactory, name);
   }
 }

@@ -46,7 +46,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -76,15 +76,15 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Returns the <code>EvictionStatistics</code> for the given region
    */
-  private EvictionStatistics getLRUStats(Region region) {
+  private EvictionCounters getLRUStats(Region region) {
     final LocalRegion l = (LocalRegion) region;
-    return l.getEvictionController().getStatistics();
+    return l.getEvictionController().getCounters();
   }
 
   //////// Test Methods
 
   /**
-   * Carefully verifies that region operations effect the {@link EvictionStatistics} as expected.
+   * Carefully verifies that region operations effect the {@link EvictionCounters} as expected.
    */
   @Test
   public void testRegionOperations() throws CacheException {
@@ -106,7 +106,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
       region = createRegion(name, factory.create());
     }
 
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 10; i++) {
@@ -128,7 +128,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Carefully verifies that region operations effect the {@link EvictionStatistics} as expected in
+   * Carefully verifies that region operations effect the {@link EvictionCounters} as expected in
    * the presense of a {@link CacheLoader}.
    */
   @Test
@@ -159,7 +159,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
       region = createRegion(name, factory.create());
     }
 
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 10; i++) {
@@ -213,7 +213,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
       region = createRegion(name, factory.create());
     }
 
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 1; i++) {
@@ -432,8 +432,8 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
           assertEquals(numEntries, r[i].size());
           {
             LocalRegion lr = (LocalRegion) r[i];
-            assertEquals(maxEntries, lr.getEvictionController().getStatistics().getLimit());
-            assertEquals(maxEntries, lr.getEvictionController().getStatistics().getCounter());
+            assertEquals(maxEntries, lr.getEvictionController().getCounters().getLimit());
+            assertEquals(maxEntries, lr.getEvictionController().getCounters().getCounter());
           }
         }
       }
@@ -452,8 +452,8 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
           assertEquals(numEntries, r[i].size());
           {
             LocalRegion lr = (LocalRegion) r[i];
-            assertEquals(maxEntries, lr.getEvictionController().getStatistics().getLimit());
-            assertEquals(maxEntries, lr.getEvictionController().getStatistics().getCounter());
+            assertEquals(maxEntries, lr.getEvictionController().getCounters().getLimit());
+            assertEquals(maxEntries, lr.getEvictionController().getCounters().getCounter());
           }
         }
 

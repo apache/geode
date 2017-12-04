@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
 import org.apache.geode.internal.cache.LocalRegion.RegionEntryCallback;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
@@ -844,5 +845,11 @@ public class DiskRegion extends AbstractDiskRegion {
   @Override
   public void close() {
     // nothing needed
+  }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    // should never be called so throw an exception
+    throw new IllegalStateException("getExistingController should never be called on " + getClass());
   }
 }

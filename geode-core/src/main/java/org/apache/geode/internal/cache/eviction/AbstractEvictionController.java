@@ -14,10 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
@@ -64,51 +60,85 @@ public abstract class AbstractEvictionController implements EvictionController {
   /**
    * Create and return the appropriate eviction controller using the attributes provided.
    */
-  public static EvictionController create(EvictionAttributes evictionAttributes,
-      boolean isOffHeap) {
+  public static EvictionController create(EvictionAttributes evictionAttributes, boolean isOffHeap,
+      int entryOverhead, StatisticsFactory statsFactory) {
     EvictionAlgorithm algorithm = evictionAttributes.getAlgorithm();
     EvictionAction action = evictionAttributes.getAction();
     ObjectSizer sizer = evictionAttributes.getObjectSizer();
     int maximum = evictionAttributes.getMaximum();
+    EvictionStats evictionStats;
+    EvictionCounters evictionCounters;
+    String fullPathName;
+    if (region instanceof Region) {
+      fullPathName = ((Region) region).getFullPath();
+    } else if (region instanceof PlaceHolderDiskRegion) {
+      PlaceHolderDiskRegion placeHolderDiskRegion = (PlaceHolderDiskRegion) region;
+      if (placeHolderDiskRegion.isBucket()) {
+        fullPathName = placeHolderDiskRegion.getPrName();
+      } else {
+        fullPathName = placeHolderDiskRegion.getName();
+      }
     if (algorithm == EvictionAlgorithm.LRU_HEAP) {
-      return new HeapLRUController(action, sizer);
+      evictionStats = new HeapLRUStatistics(statsFactory, fullPathName);
+      evictionCounters = new EvictionCountersImpl(evictionStats);
+      return new HeapLRUController(evictionCounters, action, sizer, entryOverhead);
     }
-    if (algorithm == EvictionAlgorithm.LRU_MEMORY) {
-      return new MemoryLRUController(maximum, sizer, action, isOffHeap);
+    if (algorithm == EvictionAlgorithm.LRU_MEMORY || algorithm == EvictionAlgorithm.LIFO_MEMORY) {
+      evictionStats = new MemoryLRUStatistics(statsFactory, fullPathName);
+      evictionCounters = new EvictionCountersImpl(evictionStats);
+      return new MemoryLRUController(evictionCounters, maximum, sizer, action, isOffHeap, entryOverhead);
     }
-    if (algorithm == EvictionAlgorithm.LRU_ENTRY) {
-      return new CountLRUEviction(maximum, action);
+    if (algorithm == EvictionAlgorithm.LRU_ENTRY || algorithm == EvictionAlgorithm.LIFO_ENTRY) {
+      evictionStats = new CountLRUStatistics(statsFactory, fullPathName);
+      evictionCounters = new EvictionCountersImpl(evictionStats);
+      return new CountLRUEviction(evictionCounters, maximum, action);
     }
-    if (algorithm == EvictionAlgorithm.LIFO_MEMORY) {
-      return new MemoryLRUController(maximum, sizer, action, isOffHeap);
-    }
-    if (algorithm == EvictionAlgorithm.LIFO_ENTRY) {
-      return new CountLRUEviction(maximum, action);
-    }
-    throw new IllegalStateException("Unhandled algorithm " + algorithm);
-  }
 
-  private static final int DESTROYS_LIMIT = 1000;
+    throw new IllegalStateException("Unhandled algorithm " + algorithm);
+    // if (region instanceof BucketRegion) {
+    // if (args != null && args.getPartitionedRegion() != null) {
+    // statistics = args.getPartitionedRegion()
+    // .getEvictionController().getStatistics();
+    // } else {
+    // statistics = new DisabledEvictionStatistics();
+    // }
+    // } else if (region instanceof PlaceHolderDiskRegion) {
+    // statistics = ((PlaceHolderDiskRegion) region).getPRLRUStats();
+    // } else if (region instanceof PartitionedRegion) {
+    // statistics = ((PartitionedRegion) region)
+    // .getPRLRUStatsDuringInitialization();
+    // if (statistics != null) {
+    // PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+    // EvictionController evictionController = partitionedRegion.getEvictionController();
+    // ((AbstractEvictionController) evictionController).setStatistics(statistics);
+    // }
+    // }
+    // }
+    // if (statistics == null) {
+    // StatisticsFactory sf = GemFireCacheImpl.getExisting("").getDistributedSystem();
+    // statistics = controller.initStats(region, sf);
+    // }
+
+  }
 
   /**
    * What to do upon eviction
    */
-  protected EvictionAction evictionAction;
+  private final EvictionAction evictionAction;
 
   /**
    * Used to dynamically track the changing region limit.
    */
-  protected transient InternalEvictionStatistics stats;
-
-  /** The region whose capacity is controller by this eviction controller */
-  private transient volatile String regionName;
+  private final EvictionCounters counters;
 
   /**
    * Creates a new {@code AbstractEvictionController} with the given {@linkplain EvictionAction
    * eviction action}.
+   * @param evictionCounters 
    */
-  protected AbstractEvictionController(EvictionAction evictionAction) {
-    setEvictionAction(evictionAction);
+  protected AbstractEvictionController(EvictionCounters evictionCounters, EvictionAction evictionAction) {
+    this.counters = evictionCounters;
+    this.evictionAction = evictionAction;
   }
 
   /**
@@ -132,77 +162,20 @@ public abstract class AbstractEvictionController implements EvictionController {
   }
 
   @Override
-  public synchronized EvictionStatistics getStatistics() {
-    // Synchronize with readObject/writeObject to avoid race
-    // conditions with copy sharing. See bug 31047.
-    return stats;
-  }
-
-  /**
-   * Return true if the specified capacity controller is compatible with this
-   */
-  @Override
-  public boolean equals(Object cc) {
-    if (cc == null) {
-      return false;
-    }
-    if (!getClass().isAssignableFrom(cc.getClass())) {
-      return false;
-    }
-    AbstractEvictionController other = (AbstractEvictionController) cc;
-    if (!other.evictionAction.equals(this.evictionAction)) {
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Note that we just need to make sure that equal objects return equal hashcodes; nothing really
-   * elaborate is done here.
-   */
-  @Override
-  public int hashCode() {
-    return this.evictionAction.hashCode();
+  public EvictionCounters getCounters() {
+    return this.counters;
   }
 
   @Override
   public long limit() {
-    if (stats == null) {
-      throw new InternalGemFireException(
-          LocalizedStrings.LRUAlgorithm_LRU_STATS_IN_EVICTION_CONTROLLER_INSTANCE_SHOULD_NOT_BE_NULL
-              .toLocalizedString());
-    }
-    return stats.getLimit();
+    return getCounters().getLimit();
   }
+
+  protected abstract EvictionStats createEvictionStatistics(StatisticsFactory statsFactory,
+      String name);
 
   @Override
-  public EvictionStatistics initStats(Object region, StatisticsFactory statsFactory) {
-    setRegionName(region);
-    InternalEvictionStatistics stats =
-        new EvictionStatisticsImpl(statsFactory, getRegionName(), this);
-    stats.setLimit(getLimit());
-    stats.setDestroysLimit(DESTROYS_LIMIT);
-    setStatistics(stats);
-    return stats;
-  }
-
-  /**
-   * Sets the action that is performed on the least recently used entry when it is evicted from the
-   * VM.
-   *
-   * @throws IllegalArgumentException If {@code evictionAction} specifies an unknown eviction
-   *         action.
-   * @see EvictionAction
-   */
-  protected void setEvictionAction(EvictionAction evictionAction) {
-    this.evictionAction = evictionAction;
-  }
-
-  protected String getRegionName() {
-    return this.regionName;
-  }
-
-  protected void setRegionName(Object region) {
+  public EvictionCounters initStats(Object region, StatisticsFactory statsFactory) {
     String fullPathName;
     if (region instanceof Region) {
       fullPathName = ((Region) region).getFullPath();
@@ -216,44 +189,21 @@ public abstract class AbstractEvictionController implements EvictionController {
     } else {
       throw new IllegalStateException("expected Region or PlaceHolderDiskRegion");
     }
-
-    if (this.regionName != null && !this.regionName.equals(fullPathName)) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LRUAlgorithm_LRU_EVICTION_CONTROLLER_0_ALREADY_CONTROLS_THE_CAPACITY_OF_1_IT_CANNOT_ALSO_CONTROL_THE_CAPACITY_OF_REGION_2
-              .toLocalizedString(AbstractEvictionController.this, this.regionName, fullPathName));
-    }
-    this.regionName = fullPathName; // store the name not the region since
-    // region is not fully constructed yet
-  }
-
-  protected void setStatistics(InternalEvictionStatistics stats) {
-    this.stats = stats;
-  }
-
-  private void writeObject(ObjectOutputStream out) throws IOException {
-    synchronized (this) { // See bug 31047
-      out.writeObject(this.evictionAction);
-    }
-  }
-
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    synchronized (this) { // See bug 31047
-      this.evictionAction = (EvictionAction) in.readObject();
-    }
+    EvictionStats stats = createEvictionStatistics(statsFactory, fullPathName);
+    EvictionCounters counters = new EvictionCountersImpl(stats);
+    counters.setLimit(getLimit());
+    //setCounters(counters);
+    return counters;
   }
 
   @Override
   public void close() {
-    if (this.stats != null) {
-      this.stats.close();
-    }
+    getCounters().close();
   }
 
   @Override
   public void closeBucket(BucketRegion bucketRegion) {
-    if (this.stats != null) {
-      this.stats.decrementCounter(bucketRegion.getCounter());
-    }
+    getCounters().decrementCounter(bucketRegion.getCounter());
   }
 
 }

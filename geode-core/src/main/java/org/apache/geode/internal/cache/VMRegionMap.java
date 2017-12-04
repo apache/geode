@@ -28,7 +28,4 @@ class VMRegionMap extends AbstractRegionMap {
     super(internalRegionArgs);
     initialize(owner, attr, internalRegionArgs, false/* isLRU */);
   }
-
-
-
 }

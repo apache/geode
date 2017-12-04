@@ -27,7 +27,6 @@ import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.AbstractDiskRegion;
-import org.apache.geode.internal.cache.AbstractLRURegionMap;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
@@ -1182,7 +1181,7 @@ public interface DiskEntry extends RegionEntry {
       try {
         if (recoveryStore.getEvictionAttributes() != null
             && recoveryStore.getEvictionAttributes().getAlgorithm().isLIFO()) {
-          ((AbstractLRURegionMap) recoveryStore.getRegionMap()).updateStats();
+          recoveryStore.getRegionMap().updateEvictionCounter();
           return;
         }
         // this must be done after releasing synchronization
