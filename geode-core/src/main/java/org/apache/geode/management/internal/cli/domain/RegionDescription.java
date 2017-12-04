@@ -29,7 +29,7 @@ import org.apache.geode.cache.Scope;
  */
 public class RegionDescription implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 6461449275798378332L;
   private String name;
   private boolean isPartition;
   private boolean isPersistent;
