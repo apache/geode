@@ -17,14 +17,22 @@ package org.apache.geode.management.internal.configuration.callbacks;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 
@@ -41,47 +49,36 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
     this.sharedConfig = sharedConfig;
   }
 
+  // Don't process the event locally. The action of adding or removing a jar should already have
+  // been performed by DeployCommand or UndeployCommand.
   @Override
   public void afterUpdate(EntryEvent<String, Configuration> event) {
     super.afterUpdate(event);
-    addOrRemoveJarFromFilesystem(event);
+    if (event.isOriginRemote()) {
+      addOrRemoveJarFromFilesystem(event);
+    }
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Configuration> event) {
     super.afterCreate(event);
-    addOrRemoveJarFromFilesystem(event);
+    if (event.isOriginRemote()) {
+      addOrRemoveJarFromFilesystem(event);
+    }
   }
 
-  // when a new jar is added, if it does not exist in the current locator, download it from
-  // another locator.
-  // when a jar is removed, if it exists in the current locator, remove it.
+  // Here we first remove any jars which are not used anymore and then we re-add all of the
+  // necessary jars again. This may appear a bit blunt but it also accounts for the situation
+  // where a jar is only being updated - i.e. the name does not change, only the content.
   private void addOrRemoveJarFromFilesystem(EntryEvent<String, Configuration> event) {
     String group = event.getKey();
-    Configuration newConfig = (Configuration) event.getNewValue();
-    Configuration oldConfig = (Configuration) event.getOldValue();
+    Configuration newConfig = event.getNewValue();
+    Configuration oldConfig = event.getOldValue();
     Set<String> newJars = newConfig.getJarNames();
     Set<String> oldJars = (oldConfig == null) ? new HashSet<>() : oldConfig.getJarNames();
-    Set<String> jarsAdded = new HashSet<>(newJars);
+
     Set<String> jarsRemoved = new HashSet<>(oldJars);
-
-    jarsAdded.removeAll(oldJars);
     jarsRemoved.removeAll(newJars);
-
-    if (!jarsAdded.isEmpty() && !jarsRemoved.isEmpty()) {
-      throw new IllegalStateException(
-          "We don't expect to have jars both added and removed in one event");
-    }
-
-    for (String jarAdded : jarsAdded) {
-      if (!jarExistsInFilesystem(group, jarAdded)) {
-        try {
-          sharedConfig.downloadJarFromOtherLocators(group, jarAdded);
-        } catch (Exception e) {
-          logger.error("Unable to add jar: " + jarAdded, e);
-        }
-      }
-    }
 
     for (String jarRemoved : jarsRemoved) {
       File jar = sharedConfig.getPathToJarOnThisLocator(group, jarRemoved).toFile();
@@ -95,10 +92,25 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
         }
       }
     }
+
+    String triggerMemberId = (String) event.getCallbackArgument();
+    DistributedMember locator = getDistributedMember(triggerMemberId);
+    for (String jarAdded : newJars) {
+      try {
+        sharedConfig.downloadJarFromLocator(group, jarAdded, locator);
+      } catch (Exception e) {
+        logger.error("Unable to add jar: " + jarAdded, e);
+      }
+    }
   }
 
-  private boolean jarExistsInFilesystem(String groupName, String jarName) {
-    return sharedConfig.getPathToJarOnThisLocator(groupName, jarName).toFile().exists();
-  }
+  private DistributedMember getDistributedMember(String memberName) {
+    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+    Set<DistributedMember> locators = new HashSet<>(
+        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
 
+    Optional<DistributedMember> locator =
+        locators.stream().filter(x -> x.getId().equals(memberName)).findFirst();
+    return locator.get();
+  }
 }
