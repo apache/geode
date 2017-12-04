@@ -26,8 +26,8 @@ public class ListConnectionFunction implements Function<Void>, InternalEntity {
 
   private static final String ID = ListConnectionFunction.class.getName();
 
-  private final transient FunctionContextArgumentProvider argumentProvider;
-  private final transient ExceptionHandler exceptionHandler;
+  private final FunctionContextArgumentProvider argumentProvider;
+  private final ExceptionHandler exceptionHandler;
 
   public ListConnectionFunction() {
     this(new FunctionContextArgumentProvider(), new ExceptionHandler());
