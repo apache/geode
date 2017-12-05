@@ -14,7 +14,10 @@
  */
 package org.apache.geode.cache.execute;
 
+import org.apache.logging.log4j.util.Strings;
+
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Defines the execution context of a {@link Function}. It is required by the
@@ -77,4 +80,22 @@ public interface FunctionContext<T1> {
   public boolean isPossibleDuplicate();
 
   public Cache getCache();
+
+  /**
+   * a convenience method to get the name of the member this function executes on. call this
+   * function once in your function execution to avoid performance issues.
+   *
+   * @return member name or id if name is blank
+   */
+  public default String getMemberName() {
+    DistributedMember member = getCache().getDistributedSystem().getDistributedMember();
+
+    // if this member has name, use it, otherwise, use the id
+    String memberName = member.getName();
+    if (!Strings.isBlank(memberName)) {
+      return memberName;
+    }
+
+    return member.getId();
+  }
 }
