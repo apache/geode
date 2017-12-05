@@ -344,35 +344,30 @@ public class CreateRegionCommand implements GfshCommand {
       }
     }
 
-    ResultCollector<?, ?> resultCollector =
-        executeFunction(RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
-    @SuppressWarnings("unchecked")
-    List<CliFunctionResult> regionCreateResults =
-        (List<CliFunctionResult>) resultCollector.getResult();
+    List<CliFunctionResult> regionCreateResults = executeAndGetFunctionResult(
+        RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
 
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    final String errorPrefix = "ERROR: ";
+    boolean regionCreated = false;
     for (CliFunctionResult regionCreateResult : regionCreateResults) {
-      boolean success = regionCreateResult.isSuccessful();
       tabularResultData.accumulate("Member", regionCreateResult.getMemberIdOrName());
-      tabularResultData.accumulate("Status",
-          (success ? "" : errorPrefix) + regionCreateResult.getMessage());
-
-      if (success) {
+      if (regionCreateResult.isSuccessful()) {
+        tabularResultData.accumulate("Status", regionCreateResult.getMessage());
         xmlEntity.set(regionCreateResult.getXmlEntity());
+        regionCreated = true;
       } else {
-        tabularResultData.setStatus(Result.Status.ERROR);
+        tabularResultData.accumulate("Status", "ERROR: " + regionCreateResult.getErrorMessage());
       }
     }
 
+    tabularResultData.setStatus(regionCreated ? Result.Status.OK : Result.Status.ERROR);
     result = ResultBuilder.buildResult(tabularResultData);
-    verifyDistributedRegionMbean(cache, regionPath);
 
-    if (xmlEntity.get() != null) {
+    if (regionCreated) {
+      verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
     }
-
     return result;
   }
 

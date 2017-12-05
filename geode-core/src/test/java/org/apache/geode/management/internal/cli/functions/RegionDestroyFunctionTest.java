@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.InternalCache;
@@ -76,7 +77,24 @@ public class RegionDestroyFunctionTest {
     CliFunctionResult result = resultCaptor.getValue();
 
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMessage()).contains("SUCCESS");
+    assertThat(result.getThrowable()).isNull();
+    assertThat(result.getMessage()).contains("Region 'testRegion' already destroyed");
+  }
+
+  @Test
+  public void regionAlreadyDestroyed_throwException() throws Exception {
+    when(context.getFunctionId()).thenReturn(RegionDestroyFunction.class.getName());
+    Region region = mock(Region.class);
+    when(cache.getRegion(any())).thenReturn(region);
+    doThrow(mock(RegionDestroyedException.class)).when(region).destroyRegion();
+    function.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getThrowable()).isNull();
+    assertThat(result.getMessage()).contains("Region 'testRegion' already destroyed");
   }
 
   @Test
