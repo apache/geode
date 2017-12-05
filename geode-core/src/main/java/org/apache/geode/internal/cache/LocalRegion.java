@@ -8981,123 +8981,22 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector) {
     final boolean isRvvDebugEnabled = logger.isTraceEnabled(LogMarker.RVV);
+    this.entries.lockEvictionListForClearRegion(this);
+    try {
+      RegionVersionVector rvv = waitForRvvDomination(vector, isRvvDebugEnabled);
+      RegionVersionVector myVector = getVersionVector();
+      boolean isGIIinProgress =
+          doPreClearRegionActions(regionEvent, cacheWrite, isRvvDebugEnabled, rvv, myVector);
 
-    RegionVersionVector rvv = vector;
-    if (this.serverRegionProxy != null) {
-      // clients and local regions do not maintain a full RVV. can't use it with clear()
-      rvv = null;
+      clearRegion(isRvvDebugEnabled, rvv, myVector);
+
+      doPostClearRegionActions(regionEvent, isGIIinProgress);
+    } finally {
+      this.entries.unlockEvictionListForClearRegion(this);
     }
-    if (rvv != null && this.dataPolicy.withStorage()) {
-      if (isRvvDebugEnabled) {
-        logger.trace(LogMarker.RVV, "waiting for my version vector to dominate{}mine={}{} other={}",
-            getLineSeparator(), getLineSeparator(), this.versionVector.fullToString(), rvv);
-      }
-      boolean result = this.versionVector.waitToDominate(rvv, this);
-      if (!result) {
-        if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "incrementing clearTimeouts for {} rvv={}", getName(),
-              this.versionVector.fullToString());
-        }
-        getCachePerfStats().incClearTimeouts();
-      }
-    }
+  }
 
-    // If the initial image operation is still in progress then we need will have to do the clear
-    // operation at the end of the GII.For this we try to acquire the lock of GII the boolean
-    // returned is true that means lock was obtained which also means that GII is still in progress.
-    boolean isGIIinProgress = lockGII();
-    if (isGIIinProgress) {
-      // Set a flag which will indicate that the Clear was invoked.
-      // Also we should try & abort the GII
-      try {
-        getImageState().setClearRegionFlag(true /* Clear region */, rvv);
-      } finally {
-        unlockGII();
-      }
-    }
-
-    if (cacheWrite && !isGIIinProgress) {
-      this.cacheWriteBeforeRegionClear(regionEvent);
-    }
-
-    RegionVersionVector myVector = getVersionVector();
-    if (myVector != null) {
-      if (isRvvDebugEnabled) {
-        logger.trace(LogMarker.RVV, "processing version information for {}", regionEvent);
-      }
-      if (!regionEvent.isOriginRemote() && !regionEvent.getOperation().isLocal()) {
-        // generate a new version for the operation
-        VersionTag tag = VersionTag.create(getVersionMember());
-        tag.setVersionTimeStamp(cacheTimeMillis());
-        tag.setRegionVersion(myVector.getNextVersionWhileLocked());
-        if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "generated version tag for clear: {}", tag);
-        }
-        regionEvent.setVersionTag(tag);
-      } else {
-        VersionTag tag = regionEvent.getVersionTag();
-        if (tag != null) {
-          if (isRvvDebugEnabled) {
-            logger.trace(LogMarker.RVV, "recording version tag for clear: {}", tag);
-          }
-          // clear() events always have the ID in the tag
-          myVector.recordVersion(tag.getMemberID(), tag);
-        }
-      }
-    }
-
-    // Clear the expiration task for all the entries. It is possible that
-    // after clearing it some new entries may get added before issuing clear
-    // on the map , but that should be OK, as the expiration thread will
-    // silently move ahead if the entry to be expired no longer existed
-    this.cancelAllEntryExpiryTasks();
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.clear();
-    }
-
-    // if all current content has been removed then the version vector
-    // does not need to retain any exceptions and the GC versions can
-    // be set to the current vector versions
-    if (rvv == null && myVector != null) {
-      myVector.removeOldVersions();
-    }
-
-    /*
-     * First we need to clear the TX state for the current region for the thread. The operation will
-     * not take global lock similar to regionInvalidator regionDestroy behaviour.
-     */
-
-    // clear the disk region if present
-    if (this.diskRegion != null) {
-      // persist current rvv and rvvgc which contained version for clear() itself
-      if (this.getDataPolicy().withPersistence()) {
-        // null means not to change dr.rvvTrust
-        if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "Clear: Saved current rvv: {}",
-              this.diskRegion.getRegionVersionVector());
-        }
-        this.diskRegion.writeRVV(this, null);
-        this.diskRegion.writeRVVGC(this);
-      }
-
-      // clear the entries in disk
-      this.diskRegion.clear(this, rvv);
-    }
-    // this will be done in diskRegion.clear if it is not null else it has to be
-    // done here
-    else {
-      // Now remove the tx entries for this region
-      txClearRegion();
-      // Now clear the map of committed entries
-      Set<VersionSource> remainingIDs = clearEntries(rvv);
-      if (!this.dataPolicy.withPersistence()) {
-        // persistent regions do not reap IDs
-        if (myVector != null) {
-          myVector.removeOldMembers(remainingIDs);
-        }
-      }
-    }
-
+  private void doPostClearRegionActions(RegionEventImpl regionEvent, boolean isGIIinProgress) {
     if (!isProxy()) {
       // Now we need to recreate all the indexes.
       // If the indexManager is null we don't have to worry
@@ -9137,6 +9036,137 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (hasListener) {
       dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
     }
+  }
+
+  private boolean doPreClearRegionActions(RegionEventImpl regionEvent, boolean cacheWrite,
+      boolean isRvvDebugEnabled, RegionVersionVector rvv, RegionVersionVector myVector) {
+    // If the initial image operation is still in progress then we need will have to do the clear
+    // operation at the end of the GII.For this we try to acquire the lock of GII the boolean
+    // returned is true that means lock was obtained which also means that GII is still in progress.
+    boolean isGIIinProgress = lockGII();
+    if (isGIIinProgress) {
+      // Set a flag which will indicate that the Clear was invoked.
+      // Also we should try & abort the GII
+      try {
+        getImageState().setClearRegionFlag(true /* Clear region */, rvv);
+      } finally {
+        unlockGII();
+      }
+    }
+
+    if (cacheWrite && !isGIIinProgress) {
+      this.cacheWriteBeforeRegionClear(regionEvent);
+    }
+
+    setVersionTagOfClearRegion(regionEvent, isRvvDebugEnabled, myVector);
+
+    // Clear the expiration task for all the entries. It is possible that
+    // after clearing it some new entries may get added before issuing clear
+    // on the map , but that should be OK, as the expiration thread will
+    // silently move ahead if the entry to be expired no longer existed
+    this.cancelAllEntryExpiryTasks();
+    if (this.entryUserAttributes != null) {
+      this.entryUserAttributes.clear();
+    }
+
+    // if all current content has been removed then the version vector
+    // does not need to retain any exceptions and the GC versions can
+    // be set to the current vector versions
+    if (rvv == null && myVector != null) {
+      myVector.removeOldVersions();
+    }
+    return isGIIinProgress;
+  }
+
+  private void clearRegion(boolean isRvvDebugEnabled, RegionVersionVector rvv,
+      RegionVersionVector myVector) {
+    /*
+     * First we need to clear the TX state for the current region for the thread. The operation will
+     * not take global lock similar to regionInvalidator regionDestroy behaviour.
+     */
+
+    // clear the disk region if present
+    if (this.diskRegion != null) {
+      // persist current rvv and rvvgc which contained version for clear() itself
+      if (this.getDataPolicy().withPersistence()) {
+        // null means not to change dr.rvvTrust
+        if (isRvvDebugEnabled) {
+          logger.trace(LogMarker.RVV, "Clear: Saved current rvv: {}",
+              this.diskRegion.getRegionVersionVector());
+        }
+        this.diskRegion.writeRVV(this, null);
+        this.diskRegion.writeRVVGC(this);
+      }
+
+      // clear the entries in disk
+      this.diskRegion.clear(this, rvv);
+    }
+    // this will be done in diskRegion.clear if it is not null else it has to be
+    // done here
+    else {
+      // Now remove the tx entries for this region
+      txClearRegion();
+      // Now clear the map of committed entries
+      Set<VersionSource> remainingIDs = clearEntries(rvv);
+      if (!this.dataPolicy.withPersistence()) {
+        // persistent regions do not reap IDs
+        if (myVector != null) {
+          myVector.removeOldMembers(remainingIDs);
+        }
+      }
+    }
+  }
+
+  private void setVersionTagOfClearRegion(RegionEventImpl regionEvent, boolean isRvvDebugEnabled,
+      RegionVersionVector myVector) {
+    if (myVector != null) {
+      if (isRvvDebugEnabled) {
+        logger.trace(LogMarker.RVV, "processing version information for {}", regionEvent);
+      }
+      if (!regionEvent.isOriginRemote() && !regionEvent.getOperation().isLocal()) {
+        // generate a new version for the operation
+        VersionTag tag = VersionTag.create(getVersionMember());
+        tag.setVersionTimeStamp(cacheTimeMillis());
+        tag.setRegionVersion(myVector.getNextVersionWhileLocked());
+        if (isRvvDebugEnabled) {
+          logger.trace(LogMarker.RVV, "generated version tag for clear: {}", tag);
+        }
+        regionEvent.setVersionTag(tag);
+      } else {
+        VersionTag tag = regionEvent.getVersionTag();
+        if (tag != null) {
+          if (isRvvDebugEnabled) {
+            logger.trace(LogMarker.RVV, "recording version tag for clear: {}", tag);
+          }
+          // clear() events always have the ID in the tag
+          myVector.recordVersion(tag.getMemberID(), tag);
+        }
+      }
+    }
+  }
+
+  private RegionVersionVector waitForRvvDomination(RegionVersionVector vector,
+      boolean isRvvDebugEnabled) {
+    RegionVersionVector rvv = vector;
+    if (this.serverRegionProxy != null) {
+      // clients and local regions do not maintain a full RVV. can't use it with clear()
+      rvv = null;
+    }
+    if (rvv != null && this.dataPolicy.withStorage()) {
+      if (isRvvDebugEnabled) {
+        logger.trace(LogMarker.RVV, "waiting for my version vector to dominate{}mine={}{} other={}",
+            getLineSeparator(), getLineSeparator(), this.versionVector.fullToString(), rvv);
+      }
+      boolean result = this.versionVector.waitToDominate(rvv, this);
+      if (!result) {
+        if (isRvvDebugEnabled) {
+          logger.trace(LogMarker.RVV, "incrementing clearTimeouts for {} rvv={}", getName(),
+              this.versionVector.fullToString());
+        }
+        getCachePerfStats().incClearTimeouts();
+      }
+    }
+    return rvv;
   }
 
   @Override

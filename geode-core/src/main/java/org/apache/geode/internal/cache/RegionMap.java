@@ -352,6 +352,10 @@ public interface RegionMap extends EvictableMap {
 
   default void unlockRegionForAtomicTX(LocalRegion r) {}
 
+  default void lockEvictionListForClearRegion(LocalRegion r) {}
+
+  default void unlockEvictionListForClearRegion(LocalRegion r) {}
+
   ARMLockTestHook getARMLockTestHook();
 
   long getEvictions();

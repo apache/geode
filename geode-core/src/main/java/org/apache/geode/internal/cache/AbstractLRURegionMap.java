@@ -690,6 +690,24 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
+  void lockForCacheModification(LocalRegion owner, EntryEventImpl event) {
+    if (useRVV(owner)) {
+      super.lockForCacheModification(owner, event);
+    } else {
+      getEvictionList().acquireReadLock();
+    }
+  }
+
+  @Override
+  void releaseCacheModificationLock(LocalRegion owner, EntryEventImpl event) {
+    if (useRVV(owner)) {
+      super.releaseCacheModificationLock(owner, event);
+    } else {
+      getEvictionList().releaseReadLock();
+    }
+  }
+
+  @Override
   protected void lruEntryUpdate(RegionEntry re) {
     final EvictableEntry e = (EvictableEntry) re;
     setDelta(e.updateEntrySize(getEvictionController()));
@@ -728,6 +746,26 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       if (!e.isEvicted()) {
         lruList.appendEntry(e);
       }
+    }
+  }
+
+  @Override
+  public void lockEvictionListForClearRegion(LocalRegion localRegion) {
+    if (!useRVV(localRegion)) {
+      getEvictionList().acquireWriteLock();
+    }
+
+  }
+
+  private boolean useRVV(LocalRegion localRegion) {
+    return localRegion.getConcurrencyChecksEnabled()
+        && localRegion.getDataPolicy().withReplication();
+  }
+
+  @Override
+  public void unlockEvictionListForClearRegion(LocalRegion localRegion) {
+    if (!useRVV(localRegion)) {
+      getEvictionList().releaseWriteLock();
     }
   }
 

@@ -56,4 +56,12 @@ public interface EvictionList {
   int size();
 
   void incrementRecentlyUsed();
+
+  public void acquireWriteLock();
+
+  public void releaseWriteLock();
+
+  public void acquireReadLock();
+
+  public void releaseReadLock();
 }
