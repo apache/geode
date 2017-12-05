@@ -24,8 +24,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -119,7 +117,7 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
         gatewaySubstitutionListener, listener, listenerProperties, forwardExpirationDestroy);
 
     CreateAsyncEventQueueFunction function = new CreateAsyncEventQueueFunction();
-    List<CliFunctionResult> results = execute(function, aeqArgs, targetMembers);
+    List<CliFunctionResult> results = executeAndGetFunctionResult(function, aeqArgs, targetMembers);
 
     if (results.size() == 0) {
       throw new RuntimeException("No results received.");
@@ -149,9 +147,4 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
     return commandResult;
   }
 
-  List<CliFunctionResult> execute(Function function, Object args,
-      Set<DistributedMember> targetMembers) {
-    ResultCollector rc = executeFunction(function, args, targetMembers);
-    return CliFunctionResult.cleanResults((List<?>) rc.getResult());
-  }
 }
