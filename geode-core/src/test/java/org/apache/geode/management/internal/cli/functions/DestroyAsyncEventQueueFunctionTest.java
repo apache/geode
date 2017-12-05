@@ -15,7 +15,10 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -32,6 +35,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -57,17 +61,21 @@ public class DestroyAsyncEventQueueFunctionTest {
 
   @Test
   public void execute_validAeqId_OK() throws Throwable {
+    XmlEntity xmlEntity = mock(XmlEntity.class);
+    DestroyAsyncEventQueueFunction spyFunction = spy(DestroyAsyncEventQueueFunction.class);
+    doReturn(xmlEntity).when(spyFunction).getAEQXmlEntity(anyString(), anyString());
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(mockAEQ);
 
     TestResultSender resultSender = new TestResultSender();
-
     FunctionContext context = new FunctionContextImpl(cache, "functionId", mockArgs, resultSender);
-    new DestroyAsyncEventQueueFunction().execute(context);
+    spyFunction.execute(context);
+
     List<?> results = resultSender.getResults();
     assertThat(results.size()).isEqualTo(1);
     CliFunctionResult result = (CliFunctionResult) results.get(0);
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMessage()).containsPattern(TEST_AEQ_ID + ".*destroyed");
+    assertThat(result.getXmlEntity()).isNotNull();
+    assertThat(result.getThrowable()).isNull();
   }
 
   @Test

@@ -39,6 +39,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunctionArgs;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -66,11 +67,11 @@ public class DestroyAsyncEventQueueCommandTest {
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
 
-    collector = mock(ResultCollector.class);
-    doReturn(collector).when(command).executeFunction(any(), any(), any(Set.class));
 
     functionResults = new ArrayList<>();
-    doReturn(functionResults).when(collector).getResult();
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(
+        any(DestroyAsyncEventQueueFunction.class), any(DestroyAsyncEventQueueFunctionArgs.class),
+        any(Set.class));
 
     members = new HashSet<>();
     doReturn(members).when(command).getMembers(any(), any());
@@ -86,24 +87,34 @@ public class DestroyAsyncEventQueueCommandTest {
   public void noOptionalGroup_successful() throws Exception {
     members.add(member1);
     members.add(member2);
-    CliFunctionResult result1 = new CliFunctionResult("member1", true, String.format(
-        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1"));
-    functionResults.add(result1);
+    functionResults.add(new CliFunctionResult("member2", true, String.format(
+        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1")));
+    functionResults.add(new CliFunctionResult("member1", true, String.format(
+        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1")));
 
     gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=queue1").statusIsSuccess()
-        .containsOutput("\\\"queue1\\\" destroyed");
+        .containsOutput("\\\"queue1\\\" destroyed").tableHasRowCount("Member", 2);
   }
 
   @Test
   public void ifExistsSpecified_defaultIsTrue() throws Exception {
     members.add(member1);
     members.add(member2);
+    functionResults.add(new CliFunctionResult("member1", true,
+        String.format(
+            "Skipping: " + DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND,
+            "nonexistentQueue")));
+    functionResults.add(new CliFunctionResult("member2", true,
+        String.format(
+            "Skipping: " + DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND,
+            "nonexistentQueue")));
     ArgumentCaptor<DestroyAsyncEventQueueFunctionArgs> argCaptor =
         ArgumentCaptor.forClass(DestroyAsyncEventQueueFunctionArgs.class);
-    gfsh.executeAndAssertThat(command,
-        "destroy async-event-queue --id=nonexistentQueue --if-exists");
 
-    verify(command).execute(any(), argCaptor.capture(), eq(members));
+    gfsh.executeAndAssertThat(command,
+        "destroy async-event-queue --id=nonexistentQueue --if-exists")
+        .tableHasRowCount("Member", 2);
+    verify(command).executeAndGetFunctionResult(any(), argCaptor.capture(), eq(members));
     assertThat(argCaptor.getValue().isIfExists()).isEqualTo(true);
   }
 
@@ -111,11 +122,18 @@ public class DestroyAsyncEventQueueCommandTest {
   public void ifExistsNotSpecified_isFalse() throws Exception {
     members.add(member1);
     members.add(member2);
+    functionResults.add(new CliFunctionResult("member1", false,
+        String.format(DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND,
+            "nonexistentQueue")));
+    functionResults.add(new CliFunctionResult("member2", false,
+        String.format(DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND,
+            "nonexistentQueue")));
     ArgumentCaptor<DestroyAsyncEventQueueFunctionArgs> argCaptor =
         ArgumentCaptor.forClass(DestroyAsyncEventQueueFunctionArgs.class);
-    gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=nonexistentQueue");
 
-    verify(command).execute(any(), argCaptor.capture(), eq(members));
+    gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=nonexistentQueue")
+        .statusIsError().tableHasRowCount("Member", 2);
+    verify(command).executeAndGetFunctionResult(any(), argCaptor.capture(), eq(members));
     assertThat(argCaptor.getValue().isIfExists()).isEqualTo(false);
   }
 
@@ -128,7 +146,7 @@ public class DestroyAsyncEventQueueCommandTest {
     gfsh.executeAndAssertThat(command,
         "destroy async-event-queue --id=nonexistentQueue --if-exists=false");
 
-    verify(command).execute(any(), argCaptor.capture(), eq(members));
+    verify(command).executeAndGetFunctionResult(any(), argCaptor.capture(), eq(members));
     assertThat(argCaptor.getValue().isIfExists()).isEqualTo(false);
   }
 
@@ -136,26 +154,45 @@ public class DestroyAsyncEventQueueCommandTest {
   public void ifExistsSpecifiedTrue() throws Exception {
     members.add(member1);
     members.add(member2);
+    functionResults.add(new CliFunctionResult("member1", false,
+        String.format(DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND,
+            "nonexistentQueue")));
+    functionResults.add(new CliFunctionResult("member2", false,
+        String.format(DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND,
+            "nonexistentQueue")));
     ArgumentCaptor<DestroyAsyncEventQueueFunctionArgs> argCaptor =
         ArgumentCaptor.forClass(DestroyAsyncEventQueueFunctionArgs.class);
+
     gfsh.executeAndAssertThat(command,
         "destroy async-event-queue --id=nonexistentQueue --if-exists=true");
-
-    verify(command).execute(any(), argCaptor.capture(), eq(members));
+    verify(command).executeAndGetFunctionResult(any(), argCaptor.capture(), eq(members));
     assertThat(argCaptor.getValue().isIfExists()).isEqualTo(true);
   }
 
   @Test
-  public void nonexistentQueueOnOneServer_returnsError() throws Exception {
+  public void mixedFunctionResults_returnsSuccess() throws Exception {
     members.add(member1);
     members.add(member2);
-    CliFunctionResult result1 = new CliFunctionResult("member1", false, String.format(
-        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND, "queue1"));
-    CliFunctionResult result2 = new CliFunctionResult("member1", true, String.format(
-        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1"));
-    functionResults.add(result1);
-    functionResults.add(result2);
+    functionResults.add(new CliFunctionResult("member2", false, String.format(
+        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND, "queue1")));
+    functionResults.add(new CliFunctionResult("member1", true, String.format(
+        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1")));
 
-    gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=queue1").statusIsError();
+    gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=queue1").statusIsSuccess();
+  }
+
+  @Test
+  public void mixedFunctionResultsWithIfExists_returnsSuccess() throws Exception {
+    members.add(member1);
+    members.add(member2);
+    functionResults.add(new CliFunctionResult("member1", true,
+        String.format(
+            "Skipping: " + DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND,
+            "queue1")));
+    functionResults.add(new CliFunctionResult("member1", true, String.format(
+        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1")));
+
+    gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=queue1 --if-exists")
+        .statusIsSuccess();
   }
 }

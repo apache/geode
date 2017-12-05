@@ -106,7 +106,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
-  public void destroyAeq_selectsQueuesOnGroup_returnsErrorForServersNotInGroup()
+  public void destroyAeq_selectsQueuesOnGroup_showsErrorForServersNotInGroup()
       throws GfJsonException {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();
@@ -114,7 +114,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
-    gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1").statusIsError()
+    gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1").statusIsSuccess()
         .tableHasRowWithValues("Member", "Status", "server-1",
             String.format(DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED,
                 "queue1"))
@@ -141,8 +141,10 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1 --group=group1")
-        .statusIsSuccess().tableHasRowWithValues("Member", "Status", "server-1", String.format(
+        .statusIsSuccess().containsOutput(String.format(
             DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1"));
+    // .tableHasRowWithValues("Member", "Status", "server-1", String.format(
+    // DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1"));
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .tableHasRowWithValues("Member", "ID", "server-3", "queue3");
   }

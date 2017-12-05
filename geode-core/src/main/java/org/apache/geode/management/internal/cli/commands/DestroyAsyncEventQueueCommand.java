@@ -19,12 +19,11 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS_
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.ConverterHint;
@@ -35,6 +34,7 @@ import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueue
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -62,38 +62,44 @@ public class DestroyAsyncEventQueueCommand implements GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = DESTROY_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] onGroups,
       @CliOption(key = IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean ifExists) {
+          unspecifiedDefaultValue = "false") boolean ifExists)
+      throws Throwable {
     DestroyAsyncEventQueueFunctionArgs asyncEventQueueDestoryFunctionArgs =
         new DestroyAsyncEventQueueFunctionArgs(aeqId, ifExists);
 
-    Set<DistributedMember> members = getMembers(onGroups, null);
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
-    List<CliFunctionResult> functionResults =
-        execute(new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs, members);
+    Set<DistributedMember> members = getMembers(onGroups, null);
+    if (members.size() == 0) {
+      String message = String.format(DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND, aeqId);
+    }
+
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+        new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs, members);
 
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean errorOccurred = false;
+    boolean success = false;
     for (CliFunctionResult functionResult : functionResults) {
       LogService.getLogger().info("FunctionResult = '" + functionResult + "'");
       tabularResultData.accumulate("Member", functionResult.getMemberIdOrName());
       if (functionResult.isSuccessful()) {
+        xmlEntity.set(functionResult.getXmlEntity());
         tabularResultData.accumulate("Status", functionResult.getMessage());
+        success = true;
       } else {
-        // if result has exception, it will be logged by the server before throwing it.
-        // so we don't need to log it here anymore.
         tabularResultData.accumulate("Status", "ERROR: " + functionResult.getErrorMessage());
-        errorOccurred = true;
+        if (functionResult.getThrowable() != null) {
+          throw functionResult.getThrowable();
+        }
       }
     }
-    tabularResultData.setStatus(errorOccurred ? Result.Status.ERROR : Result.Status.OK);
-    return ResultBuilder.buildResult(tabularResultData);
+
+    tabularResultData.setStatus(success ? Result.Status.OK : Result.Status.ERROR);
+    Result result = ResultBuilder.buildResult(tabularResultData);
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), onGroups));
+    }
+    return result;
   }
-
-  List<CliFunctionResult> execute(Function function, DestroyAsyncEventQueueFunctionArgs args,
-      Set<DistributedMember> members) {
-    ResultCollector<?, ?> resultCollector = executeFunction(function, args, members);
-
-    return (List<CliFunctionResult>) resultCollector.getResult();
-  }
-
 }

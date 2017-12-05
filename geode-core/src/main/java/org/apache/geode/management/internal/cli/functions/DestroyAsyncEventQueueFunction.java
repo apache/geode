@@ -16,13 +16,14 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.commands.DestroyAsyncEventQueueCommand;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
@@ -42,19 +43,10 @@ public class DestroyAsyncEventQueueFunction extends FunctionAdapter implements I
     DestroyAsyncEventQueueFunctionArgs aeqArgs =
         (DestroyAsyncEventQueueFunctionArgs) context.getArguments();
     String aeqId = aeqArgs.getId();
-
-    InternalCache cache = (InternalCache) context.getCache();
-
-    DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-
-    memberId = member.getId();
-    // If they set a name use it instead
-    if (!member.getName().equals("")) {
-      memberId = member.getName();
-    }
+    memberId = context.getMemberName();
 
     try {
-      AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+      AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) context.getCache().getAsyncEventQueue(aeqId);
       if (aeq == null) {
         if (aeqArgs.isIfExists()) {
           context.getResultSender()
@@ -70,13 +62,20 @@ public class DestroyAsyncEventQueueFunction extends FunctionAdapter implements I
       } else {
         aeq.stop();
         aeq.destroy();
-        context.getResultSender().lastResult(new CliFunctionResult(memberId, true, String.format(
-            DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, aeqId)));
+        XmlEntity xmlEntity = getAEQXmlEntity("name", aeqId);
+        context.getResultSender()
+            .lastResult(new CliFunctionResult(memberId, xmlEntity, String.format(
+                DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, aeqId)));
       }
     } catch (Exception e) {
       e.printStackTrace();
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, ""));
+      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     }
+  }
+
+  XmlEntity getAEQXmlEntity(String key, String value) {
+    XmlEntity xmlEntity = new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, key, value);
+    return xmlEntity;
   }
 
   @Override
