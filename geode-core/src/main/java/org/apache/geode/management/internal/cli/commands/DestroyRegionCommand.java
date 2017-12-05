@@ -21,15 +21,17 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.RegionDestroyFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -49,52 +51,49 @@ public class DestroyRegionCommand implements GfshCommand {
     // regionPath should already be converted to have "/" in front of it.
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
+    // this finds all the members that host this region. destroy will be called on each of these
+    // members since the region might be a scope.LOCAL region
     Set<DistributedMember> regionMembersList = findMembersForRegion(getCache(), regionPath);
 
     if (regionMembersList.size() == 0) {
-      if (ifExists) {
-        return ResultBuilder.createInfoResult("");
-      } else {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE,
-                regionPath, "jmx-manager-update-rate milliseconds"));
-      }
+      String message =
+          CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULD_NOT_FIND_REGIONPATH_0_IN_GEODE,
+              regionPath, "jmx-manager-update-rate milliseconds");
+      throw new EntityNotFoundException(message, ifExists);
     }
 
-    ResultCollector<?, ?> resultCollector =
-        executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
-    List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
+    List<CliFunctionResult> resultsList =
+        executeAndGetFunctionResult(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
 
-    // destroy is called on each member, if any error happens in any one of the member, we should
-    // deem the destroy not successful.
-    String errorMessage = null;
+    // destroy is called on each member. If the region destroy is successful on one member, we
+    // deem the destroy action successful, since if one member destroy successfully, the subsequent
+    // destroy on a another member would probably throw RegionDestroyedException
+    TabularResultData tabularData = ResultBuilder.createTabularResultData();
+
+    boolean regionDestroyed = false;
     for (CliFunctionResult functionResult : resultsList) {
+      tabularData.accumulate("Member", functionResult.getMemberIdOrName());
       if (functionResult.isSuccessful()) {
-        xmlEntity.set(functionResult.getXmlEntity());
+        if (xmlEntity.get() == null) {
+          xmlEntity.set(functionResult.getXmlEntity());
+        }
+        tabularData.accumulate("Status", functionResult.getMessage());
+        regionDestroyed = true;
       } else {
-        if (functionResult.getThrowable() != null) {
-          throw functionResult.getThrowable();
-        }
-        if (functionResult.getMessage() != null) {
-          errorMessage = functionResult.getMessage();
-        } else {
-          errorMessage = "Destroy failed on one member";
-        }
-        // if any error occurred, break out without looking further
-        break;
+        tabularData.accumulate("Status", "Error: " + functionResult.getErrorMessage());
       }
     }
 
-    if (errorMessage != null) {
-      return ResultBuilder.createGemFireErrorResult(errorMessage);
-    }
+    tabularData.setStatus(regionDestroyed ? Result.Status.OK : Result.Status.ERROR);
 
-    Result result =
-        ResultBuilder.createInfoResult(String.format("\"%s\" destroyed successfully.", regionPath));
-    if (xmlEntity.get() != null) {
+    CommandResult result = ResultBuilder.buildResult(tabularData);
+
+    // if at least one member returns with successful deletion, we will need to update cc
+    if (regionDestroyed) {
       persistClusterConfiguration(result,
           () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));
     }
     return result;
   }
+
 }
