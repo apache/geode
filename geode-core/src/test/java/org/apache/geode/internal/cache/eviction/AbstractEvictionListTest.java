@@ -199,6 +199,68 @@ public class AbstractEvictionListTest {
     verify(stats).incDestroys();
   }
 
+  @Test
+  public void unlinkHeadOnEmptyListReturnsNull() throws Exception {
+    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
+    assertThat(evictionList.unlinkHeadEntry()).isNull();
+  }
+
+  @Test
+  public void unlinkTailOnEmptyListReturnsNull() throws Exception {
+    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
+    assertThat(evictionList.unlinkTailEntry()).isNull();
+  }
+
+  @Test
+  public void unlinkHeadInListTest() throws Exception {
+    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
+    EvictionNode node = mock(EvictionNode.class);
+    when(node.next()).thenReturn(null, evictionList.tail);
+    when(node.previous()).thenReturn(evictionList.head);
+    evictionList.appendEntry(node);
+
+    assertThat(evictionList.unlinkHeadEntry()).isSameAs(node);
+    assertThat(evictionList.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void unlinkTailInListTest() throws Exception {
+    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
+    EvictionNode node = mock(EvictionNode.class);
+    when(node.next()).thenReturn(null, evictionList.tail);
+    when(node.previous()).thenReturn(evictionList.head);
+    evictionList.appendEntry(node);
+
+    assertThat(evictionList.unlinkTailEntry()).isSameAs(node);
+    assertThat(evictionList.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void nodeUsedByTransactionIsNotEvictable() {
+    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
+    EvictionNode node = mock(EvictionNode.class);
+    when(node.isInUseByTransaction()).thenReturn(true);
+
+    assertThat(evictionList.isEvictable(node)).isFalse();
+  }
+
+  @Test
+  public void evictedNodeIsNotEvictable() {
+    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
+    EvictionNode node = mock(EvictionNode.class);
+    when(node.isEvicted()).thenReturn(true);
+
+    assertThat(evictionList.isEvictable(node)).isFalse();
+  }
+
+  @Test
+  public void defaultNodeIsEvictable() {
+    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
+    EvictionNode node = mock(EvictionNode.class);
+
+    assertThat(evictionList.isEvictable(node)).isTrue();
+  }
+
   private static class TestEvictionList extends AbstractEvictionList {
 
     TestEvictionList(InternalEvictionStatistics stats, BucketRegion region) {
