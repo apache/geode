@@ -99,7 +99,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -1558,7 +1557,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   public static void cleanupVM() throws IOException {
     closeCache();
-    JUnit4CacheTestCase.cleanDiskDirs();
+    JUnit4DistributedTestCase.cleanDiskDirs();
   }
 
   public static void closeCache() throws IOException {
