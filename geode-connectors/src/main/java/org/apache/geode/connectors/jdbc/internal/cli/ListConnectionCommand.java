@@ -55,7 +55,7 @@ public class ListConnectionCommand implements GfshCommand {
 
     // action
     ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> resultCollector =
-        execute(new ListConnectionFunction(), targetMembers);
+        execute(new ListConnectionFunction(), targetMembers.iterator().next());
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
@@ -64,9 +64,9 @@ public class ListConnectionCommand implements GfshCommand {
   }
 
   ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> execute(
-      ListConnectionFunction function, Set<DistributedMember> targetMembers) {
+      ListConnectionFunction function, DistributedMember targetMember) {
     return (ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>>) executeFunction(
-        function, null, targetMembers);
+        function, null, targetMember);
   }
 
   private Result createResult(TabularResultData tabularResultData, boolean connectionsExist) {

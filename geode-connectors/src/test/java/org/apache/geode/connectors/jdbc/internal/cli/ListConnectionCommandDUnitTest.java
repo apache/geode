@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.cli.DestroyConnectionCommand.DESTROY_CONNECTION;
-import static org.apache.geode.connectors.jdbc.internal.cli.DestroyConnectionCommand.DESTROY_CONNECTION__NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_JDBC_CONNECTION;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand.LIST_OF_CONNECTIONS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,9 +27,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -71,28 +67,37 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   @Test
   public void listsOneConnection() throws Exception {
     server.invoke(() -> createOneConnection());
-
     CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
 
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
-
     commandResultAssert.tableHasRowCount(LIST_OF_CONNECTIONS, 1);
-
-    // TODO: assert that the table contains LIST_OF_CONNECTIONS
-    // TODO: assert that the table contains name of connection
+    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_CONNECTIONS, connectionName);
   }
 
   @Test
   public void listsMultipleConnections() throws Exception {
-    // TODO: assert that the table contains LIST_OF_CONNECTIONS
-    // TODO: assert that the table contains names of several connections
+    server.invoke(() -> createNConnections(3));
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
+
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+
+    commandResultAssert.statusIsSuccess();
+    commandResultAssert.tableHasRowCount(LIST_OF_CONNECTIONS, 3);
+    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_CONNECTIONS,
+        connectionName + "-1", connectionName + "-2",
+        connectionName + "-3");
   }
 
   @Test
   public void reportsNoConnectionsFound() throws Exception {
-    // TODO: assert that the results show ListConnectionCommand.NO_CONNECTIONS_FOUND
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_JDBC_CONNECTION);
+
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+
+    commandResultAssert.statusIsSuccess();
+    commandResultAssert.containsOutput("No connections found");
   }
 
   private void createOneConnection() throws ConnectionConfigExistsException {
@@ -103,4 +108,16 @@ public class ListConnectionCommandDUnitTest implements Serializable {
 
     assertThat(service.getConnectionConfig(connectionName)).isNotNull();
   }
+
+  private void createNConnections(int N) throws ConnectionConfigExistsException {
+    InternalCache cache = LocatorServerStartupRule.getCache();
+    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    for (int i = 1; i <= N; i++) {
+      String name = connectionName + "-" + i;
+      service.createConnectionConfig(
+          new ConnectionConfigBuilder().withName(name).build());
+      assertThat(service.getConnectionConfig(name)).isNotNull();
+    }
+  }
+
 }
