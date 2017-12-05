@@ -188,7 +188,7 @@ abstract class AbstractEvictionList implements EvictionList {
   public void releaseReadLock() {
     readWriteLock.readLock().unlock();
   }
-  
+
   protected synchronized EvictionNode unlinkTailEntry() {
     EvictionNode evictionNode = tail.previous();
     if (evictionNode == head) {
