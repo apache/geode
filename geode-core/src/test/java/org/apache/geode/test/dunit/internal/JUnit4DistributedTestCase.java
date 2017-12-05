@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.internal.ClusterConfigurationService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
 import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -25,12 +26,16 @@ import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -72,6 +77,7 @@ import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -123,6 +129,19 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   public static final void initializeBlackboard() {
     blackboard = new DUnitBlackboard();
+  }
+
+  protected static void deleteBACKUPDiskStoreFile(final File file) {
+    if (file.getName().startsWith("BACKUPDiskStore-")
+        || file.getName().startsWith(CLUSTER_CONFIG_DISK_DIR_PREFIX)) {
+      FileUtils.deleteQuietly(file);
+    }
+  }
+
+  public static final void cleanDiskDirs() {
+    FileUtils.deleteQuietly(JUnit4CacheTestCase.getDiskDir());
+    FileUtils.deleteQuietly(JUnit4CacheTestCase.getDiskDir());
+    Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
   }
 
   public final String getName() {
@@ -578,6 +597,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
     IgnoredException.removeAllExpectedExceptions();
     SocketCreatorFactory.close();
+    cleanDiskDirs();
   }
 
   // TODO: this should move to CacheTestCase

@@ -15,19 +15,16 @@
 package org.apache.geode.test.dunit.cache.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 
@@ -52,7 +49,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
@@ -490,17 +486,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   public static final File[] getDiskDirs() {
     return new File[] {getDiskDir()};
-  }
-
-  public static final void cleanDiskDirs() throws IOException {
-    FileUtils.deleteQuietly(getDiskDir());
-    Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
-  }
-
-  private static void deleteBACKUPDiskStoreFile(final File file) {
-    if (file.getName().startsWith("BACKUPDiskStore-")) {
-      FileUtils.deleteQuietly(file);
-    }
   }
 
   /**

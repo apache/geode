@@ -2228,11 +2228,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     // Runnable to clean up disk dirs on a members
     SerializableRunnable cleanDiskDirs = new SerializableRunnable("Clean disk dirs") {
       public void run() {
-        try {
-          cleanDiskDirs();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
+        cleanDiskDirs();
       }
     };
 

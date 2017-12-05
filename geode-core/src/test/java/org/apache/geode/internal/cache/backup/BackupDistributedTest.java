@@ -300,11 +300,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
 
     // Destroy the current data
     invokeInEveryVM("Clean disk dirs", () -> {
-      try {
-        cleanDiskDirs();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      cleanDiskDirs();
     });
 
     restoreBackup(2);
@@ -433,11 +429,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
 
   private void cleanDiskDirsInEveryVM() {
     invokeInEveryVM("cleanDiskDirsInEveryVM", () -> {
-      try {
-        cleanDiskDirs();
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+      cleanDiskDirs();
     });
   }
 

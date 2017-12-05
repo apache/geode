@@ -1286,13 +1286,13 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     }
 
     try {
-      cleanDiskDirs();
+      cleanDisk();
     } catch (IOException e) {
       LogWriterUtils.getLogWriter().error("Error cleaning disk dirs", e);
     }
   }
 
-  public static void cleanDiskDirs() throws IOException {
+  public static void cleanDisk() throws IOException {
     FileUtils.deleteDirectory(getDiskDir());
   }
 

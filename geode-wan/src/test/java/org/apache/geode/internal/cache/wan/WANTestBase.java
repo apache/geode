@@ -3674,7 +3674,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       Locator.getLocator().stop();
     }
     closeCache();
-    CacheTestCase.cleanDiskDirs();
+    JUnit4DistributedTestCase.cleanDiskDirs();
   }
 
   public static void closeCache() {
