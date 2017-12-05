@@ -63,14 +63,4 @@ public class LIFOList extends AbstractEvictionList {
   public void incrementRecentlyUsed() {
     // nothing
   }
-
-  private synchronized EvictionNode unlinkTailEntry() {
-    EvictionNode evictionNode = tail.previous();
-    if (evictionNode == head) {
-      return null; // end of eviction list
-    }
-
-    unlinkEntry(evictionNode);
-    return evictionNode;
-  }
 }

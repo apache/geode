@@ -188,4 +188,50 @@ abstract class AbstractEvictionList implements EvictionList {
   public void releaseReadLock() {
     readWriteLock.readLock().unlock();
   }
+  
+  protected synchronized EvictionNode unlinkTailEntry() {
+    EvictionNode evictionNode = tail.previous();
+    if (evictionNode == head) {
+      return null; // end of eviction list
+    }
+
+    unlinkEntry(evictionNode);
+    return evictionNode;
+  }
+
+  /**
+   * Remove and return the head entry in the list
+   */
+  protected synchronized EvictionNode unlinkHeadEntry() {
+    EvictionNode evictionNode = head.next();
+    if (evictionNode == tail) {
+      return null; // end of list
+    }
+
+    unlinkEntry(evictionNode);
+    return evictionNode;
+  }
+
+  protected boolean isEvictable(EvictionNode evictionNode) {
+    if (evictionNode.isEvicted()) {
+      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
+        logger.trace(LogMarker.LRU_CLOCK,
+            LocalizedMessage.create(LocalizedStrings.NewLRUClockHand_DISCARDING_EVICTED_ENTRY));
+      }
+      return false;
+    }
+
+    // If this Entry is part of a transaction, skip it since
+    // eviction should not cause commit conflicts
+    synchronized (evictionNode) {
+      if (evictionNode.isInUseByTransaction()) {
+        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
+          logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage.create(
+              LocalizedStrings.NewLRUClockHand_REMOVING_TRANSACTIONAL_ENTRY_FROM_CONSIDERATION));
+        }
+        return false;
+      }
+    }
+    return true;
+  }
 }

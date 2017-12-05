@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.eviction;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,26 +46,42 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
   private static final Logger logger = LogService.getLogger();
 
+  private static final Optional<Integer> EVICTION_SCAN_MAX_THREADS = SystemPropertyHelper
+      .getProductIntegerProperty(SystemPropertyHelper.EVICTION_SCAN_MAX_THREADS);
+
+  private static final ExecutorService SINGLETON_EXECUTOR = createExecutor();
+
   private static final int DEFAULT_EVICTION_SCAN_THRESHOLD_PERCENT = 25;
 
   private static final int MAX_EVICTION_ATTEMPTS = 10;
 
   private final AtomicInteger recentlyUsedCounter = new AtomicInteger();
 
-  private final ExecutorService executor;
-
   private final double scanThreshold;
 
   private Future<?> currentScan;
 
+  private final ExecutorService executor;
+
+  private static ExecutorService createExecutor() {
+    int threads = EVICTION_SCAN_MAX_THREADS.orElse(0);
+    if (threads < 1) {
+      threads = Math.max((Runtime.getRuntime().availableProcessors() / 4), 1);
+    }
+    // TODO need ThreadGroup that handles thread naming and
+    // unhandled exception logging
+    return Executors.newFixedThreadPool(threads);
+  }
+
+  LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region) {
+    this(stats, region, SINGLETON_EXECUTOR);
+  }
+
   LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region,
       ExecutorService executor) {
     super(stats, region);
-    if (executor == null) {
-      throw new IllegalArgumentException("Must provide an executor");
-    }
-    this.executor = executor;
     this.scanThreshold = calculateScanThreshold();
+    this.executor = executor;
   }
 
   private double calculateScanThreshold() {
@@ -78,19 +95,6 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     }
 
     return (double) thresholdPercent / 100;
-  }
-
-  /**
-   * Remove and return the head entry in the list
-   */
-  private synchronized EvictionNode unlinkHeadEntry() {
-    EvictionNode evictionNode = head.next();
-    if (evictionNode == tail) {
-      return null; // end of list
-    }
-
-    unlinkEntry(evictionNode);
-    return evictionNode;
   }
 
   @Override
@@ -146,28 +150,6 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     }
   }
 
-  private boolean isEvictable(EvictionNode evictionNode) {
-    if (evictionNode.isEvicted()) {
-      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-        logger.trace(LogMarker.LRU_CLOCK,
-            LocalizedMessage.create(LocalizedStrings.NewLRUClockHand_DISCARDING_EVICTED_ENTRY));
-      }
-      return false;
-    }
-
-    // If this Entry is part of a transaction, skip it since
-    // eviction should not cause commit conflicts
-    synchronized (evictionNode) {
-      if (evictionNode.isInUseByTransaction()) {
-        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-          logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage.create(
-              LocalizedStrings.NewLRUClockHand_REMOVING_TRANSACTIONAL_ENTRY_FROM_CONSIDERATION));
-        }
-        return false;
-      }
-    }
-    return true;
-  }
 
   /**
    * Determine who/when should invoke scan. Maybe when 10% of the RegionEntries have been dirtied by

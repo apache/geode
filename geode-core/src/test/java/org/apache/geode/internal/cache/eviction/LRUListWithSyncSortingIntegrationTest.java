@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * This class tests the LRUCapacityController's core clock algorithm.
  */
 @Category(IntegrationTest.class)
-public class LRUListWithAsyncSortingIntegrationTest {
+public class LRUListWithSyncSortingIntegrationTest {
 
   @Rule
   public TestName testName = new TestName();
@@ -51,7 +51,7 @@ public class LRUListWithAsyncSortingIntegrationTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private InternalRegion region;
-  private LRUListWithAsyncSorting evictionList;
+  private LRUListWithSyncSorting evictionList;
   private List<EvictionNode> nodes;
 
   @Before
@@ -90,8 +90,6 @@ public class LRUListWithAsyncSortingIntegrationTest {
   @Test
   public void testRecentlyUsed() throws Exception {
     actOnEvenNodes(i -> nodes.get(i).setRecentlyUsed(region));
-
-    evictionList.scan();
 
     actOnOddNodes(i -> {
       LRUTestEntry node = (LRUTestEntry) evictionList.getEvictableEntry();
@@ -152,16 +150,20 @@ public class LRUListWithAsyncSortingIntegrationTest {
 
   @Test
   public void evictsRecentlyUsedNodeIfOverLimit() throws Exception {
-    EvictionNode node = new LRUTestEntry(10);
-    nodes.add(node);
-    evictionList.appendEntry(node);
-    IntStream.range(0, 11).forEach(i -> nodes.get(i).setRecentlyUsed(region));
-    assertThat(evictionList.getEvictableEntry()).isSameAs(nodes.get(10));
+    IntStream.range(10, 16).forEach(i -> {
+      EvictionNode node = new LRUTestEntry(i);
+      nodes.add(node);
+      evictionList.appendEntry(node);
+    });
+
+    IntStream.range(0, 16).forEach(i -> nodes.get(i).setRecentlyUsed(region));
+    assertThat(evictionList.getEvictableEntry()).isSameAs(nodes.get(15));
   }
 
-  private LRUListWithAsyncSorting getEvictionList(Region region, EvictionController eviction) {
-    System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_ASYNC, "true");
-    return (LRUListWithAsyncSorting) new EvictionListBuilder(EvictionAlgorithm.LRU_HEAP)
+  private LRUListWithSyncSorting getEvictionList(Region region, EvictionController eviction) {
+    System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_ASYNC, "false");
+    System.setProperty("geode." + SystemPropertyHelper.EVICTION_SEARCH_MAX_ENTRIES, "15");
+    return (LRUListWithSyncSorting) new EvictionListBuilder(EvictionAlgorithm.LRU_HEAP)
         .withRegion(region).withEvictionController(eviction).withArgs(new InternalRegionArguments())
         .create();
   }

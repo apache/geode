@@ -31,6 +31,10 @@ public class SystemPropertyHelper {
 
   public static final String EVICTION_SCAN_THRESHOLD_PERCENT = "EvictionScanThresholdPercent";
 
+  public static final String EVICTION_SCAN_ASYNC = "EvictionScanAsync";
+
+  public static final String EVICTION_SEARCH_MAX_ENTRIES = "lru.maxSearchEntries";
+
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
@@ -38,7 +42,7 @@ public class SystemPropertyHelper {
    * @param name system property name set in Geode
    * @return a boolean value of the system property
    */
-  private static boolean getProductBooleanProperty(String name) {
+  public static boolean getProductBooleanProperty(String name) {
     String property = System.getProperty(GEODE_PREFIX + name);
     if (property != null) {
       return Boolean.getBoolean(GEODE_PREFIX + name);

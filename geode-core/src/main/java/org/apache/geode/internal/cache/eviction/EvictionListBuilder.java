@@ -14,10 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -29,18 +25,8 @@ import org.apache.geode.internal.lang.SystemPropertyHelper;
 
 public class EvictionListBuilder {
 
-  public static final Optional<Integer> EVICTION_SCAN_MAX_THREADS = SystemPropertyHelper
-      .getProductIntegerProperty(SystemPropertyHelper.EVICTION_SCAN_MAX_THREADS);
-
-  private static final ExecutorService EVICTION_SCAN_EXECUTOR = createExecutor();
-
-  private static ExecutorService createExecutor() {
-    int threads = EVICTION_SCAN_MAX_THREADS.orElse(0);
-    if (threads < 1) {
-      threads = Math.max((Runtime.getRuntime().availableProcessors() / 4), 1);
-    }
-    return Executors.newFixedThreadPool(threads);
-  }
+  private final boolean EVICTION_SCAN_ASYNC =
+      SystemPropertyHelper.getProductBooleanProperty(SystemPropertyHelper.EVICTION_SCAN_ASYNC);
 
   private EvictionAlgorithm algorithm;
   private Object region;
@@ -73,8 +59,11 @@ public class EvictionListBuilder {
     if (algorithm.isLIFO()) {
       return new LIFOList(getEvictionStats(), getBucketRegion());
     } else {
-      return new LRUListWithAsyncSorting(getEvictionStats(), getBucketRegion(),
-          EVICTION_SCAN_EXECUTOR);
+      if (EVICTION_SCAN_ASYNC) {
+        return new LRUListWithAsyncSorting(getEvictionStats(), getBucketRegion());
+      } else {
+        return new LRUListWithSyncSorting(getEvictionStats(), getBucketRegion());
+      }
     }
   }
 

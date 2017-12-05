@@ -58,12 +58,6 @@ public class LRUListWithAsyncSortingTest {
   }
 
   @Test
-  public void cannotInstantiateWithoutExecutor() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    new LRUListWithAsyncSorting(stats, bucketRegion, null);
-  }
-
-  @Test
   public void scansOnlyWhenOverThreshold() throws Exception {
     LRUListWithAsyncSorting list = new LRUListWithAsyncSorting(stats, bucketRegion, executor);
     for (int i = 0; i < 5; i++) {
