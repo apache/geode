@@ -41,7 +41,7 @@ abstract class AbstractEvictionList implements EvictionList {
   /** Counter for the size of the LRU list */
   private final AtomicInteger size = new AtomicInteger();
 
-  /** ReadWriteLock for clearRegion consistency with AbrstractRegionMap */
+  /** ReadWriteLock for clearRegion consistency with AbstractRegionMap */
   private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
   private BucketRegion bucketRegion;
