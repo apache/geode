@@ -128,8 +128,8 @@ public class CreateAsyncEventQueueCommandTest {
 
     // this is only to make the code pass that member check
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
-    doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
-        isA(Set.class));
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
+        isA(Object.class), isA(Set.class));
 
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
         .tableHasRowCount("Member", 2)
@@ -151,8 +151,8 @@ public class CreateAsyncEventQueueCommandTest {
 
     // this is only to make the code pass that member check
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
-    doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
-        isA(Set.class));
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
+        isA(Object.class), isA(Set.class));
 
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted() // need to make
                                                                                      // sure
@@ -182,8 +182,8 @@ public class CreateAsyncEventQueueCommandTest {
 
     // this is only to make the code pass that member check
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
-    doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
-        isA(Set.class));
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
+        isA(Object.class), isA(Set.class));
 
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
         .tableHasRowCount("Member", 2)
@@ -202,8 +202,8 @@ public class CreateAsyncEventQueueCommandTest {
     List<CliFunctionResult> functionResults = new ArrayList<>();
     XmlEntity xmlEntity = mock(XmlEntity.class);
     functionResults.add(new CliFunctionResult("member1", xmlEntity, "SUCCESS"));
-    doReturn(functionResults).when(command).execute(isA(Function.class), isA(Object.class),
-        isA(Set.class));
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
+        isA(Object.class), isA(Set.class));
 
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().failToPersist();
 

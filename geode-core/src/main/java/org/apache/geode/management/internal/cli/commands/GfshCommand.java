@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.CommandMarker;
@@ -33,6 +34,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -178,6 +180,12 @@ public interface GfshCommand extends CommandMarker {
   default ResultCollector<?, ?> executeFunction(Function function, Object args,
       final DistributedMember targetMember) {
     return executeFunction(function, args, Collections.singleton(targetMember));
+  }
+
+  default List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,
+      Set<DistributedMember> targetMembers) {
+    ResultCollector rc = executeFunction(function, args, targetMembers);
+    return CliFunctionResult.cleanResults((List<?>) rc.getResult());
   }
 
   default Set<DistributedMember> findAnyMembersForRegion(InternalCache cache, String regionPath) {

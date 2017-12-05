@@ -22,12 +22,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyDiskStoreFunctionArgs;
@@ -54,7 +52,7 @@ public class DestroyDiskStoreCommand implements GfshCommand {
 
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
+    Set<DistributedMember> targetMembers = findMembers(groups, null);
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
@@ -62,9 +60,8 @@ public class DestroyDiskStoreCommand implements GfshCommand {
 
     DestroyDiskStoreFunctionArgs functionArgs = new DestroyDiskStoreFunctionArgs(name, ifExist);
 
-    ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(new DestroyDiskStoreFunction(), functionArgs, targetMembers);
-    List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
+    List<CliFunctionResult> results =
+        executeAndGetFunctionResult(new DestroyDiskStoreFunction(), functionArgs, targetMembers);
 
     AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     for (CliFunctionResult result : results) {
