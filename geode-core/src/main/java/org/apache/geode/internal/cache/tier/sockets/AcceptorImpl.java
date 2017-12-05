@@ -104,6 +104,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   private static final boolean isJRockit = System.getProperty("java.vm.name").contains("JRockit");
   private static final int HANDSHAKER_DEFAULT_POOL_SIZE = 4;
+  public static final int CLIENT_QUEUE_INITIALIZATION_POOL_SIZE = 16;
 
   protected final CacheServerStats stats;
   private final int maxConnections;
@@ -616,7 +617,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         return new Thread(clientQueueThreadGroup, runnable, threadName);
       }
     };
-    return new PooledExecutorWithDMStats(new SynchronousQueue(), 16, getStats().getCnxPoolHelper(),
+    return new PooledExecutorWithDMStats(new SynchronousQueue(),
+        CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(),
         clientQueueThreadFactory, 60000);
   }
 
@@ -693,9 +695,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * @deprecated since 5.1 use cache-server max-threads instead
    */
   @Deprecated
-  private static final int DEPRECATED_SELECTOR_POOL_SIZE =
+  private final int DEPRECATED_SELECTOR_POOL_SIZE =
       Integer.getInteger("BridgeServer.SELECTOR_POOL_SIZE", 16).intValue();
-  private static final int HANDSHAKE_POOL_SIZE = Integer
+  private final int HANDSHAKE_POOL_SIZE = Integer
       .getInteger("BridgeServer.HANDSHAKE_POOL_SIZE", HANDSHAKER_DEFAULT_POOL_SIZE).intValue();
 
   @Override
@@ -1427,7 +1429,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     // GEODE-3637 - If the communicationMode is client Subscriptions, hand-off the client queue
     // initialization to be done in another threadPool
-    if (initializeClientPools(socket, communicationMode)) {
+    if (handOffQueueInitialization(socket, communicationMode)) {
       return;
     }
 
@@ -1493,7 +1495,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  private boolean initializeClientPools(Socket socket, CommunicationMode communicationMode) {
+  private boolean handOffQueueInitialization(Socket socket, CommunicationMode communicationMode) {
     if (communicationMode.isSubscriptionFeed()) {
       boolean isPrimaryServerToClient =
           communicationMode == CommunicationMode.PrimaryServerToClient;

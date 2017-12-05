@@ -1208,7 +1208,6 @@ public abstract class ServerConnection implements Runnable {
   }
 
   public void registerWithSelector2(Selector s) throws IOException {
-    /* this.sKey = */
     getSelectableChannel().register(s, SelectionKey.OP_READ, this);
   }
 
