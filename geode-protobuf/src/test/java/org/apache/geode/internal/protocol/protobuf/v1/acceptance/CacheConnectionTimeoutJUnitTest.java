@@ -37,6 +37,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -89,11 +90,11 @@ public class CacheConnectionTimeoutJUnitTest {
     CacheServer cacheServer = cache.addCacheServer();
     int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
-    cacheServer.setMaximumTimeBetweenPings(100);
+    cacheServer.setMaximumTimeBetweenPings(2000);
     cacheServer.start();
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    regionFactory.create(TEST_REGION);
+    regionFactory.setScope(Scope.DISTRIBUTED_ACK).create(TEST_REGION);
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
