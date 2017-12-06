@@ -16,10 +16,11 @@ package org.apache.geode.management.internal.cli.commands.lifecycle;
 
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 
+import java.io.IOException;
+
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.lang.StringUtils;
@@ -42,52 +43,41 @@ public class StatusServerCommand implements GfshCommand {
       @CliOption(key = CliStrings.STATUS_SERVER__PID,
           help = CliStrings.STATUS_SERVER__PID__HELP) final Integer pid,
       @CliOption(key = CliStrings.STATUS_SERVER__DIR,
-          help = CliStrings.STATUS_SERVER__DIR__HELP) final String workingDirectory) {
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (isConnectedAndReady()) {
-          final MemberMXBean serverProxy = getMemberMXBean(member);
+          help = CliStrings.STATUS_SERVER__DIR__HELP) final String workingDirectory)
+      throws IOException {
 
-          if (serverProxy != null) {
-            return ResultBuilder.createInfoResult(
-                ServerLauncher.ServerState.fromJson(serverProxy.status()).toString());
-          } else {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.STATUS_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
-          }
+    if (StringUtils.isNotBlank(member)) {
+      if (isConnectedAndReady()) {
+        final MemberMXBean serverProxy = getMemberMXBean(member);
+
+        if (serverProxy != null) {
+          return ResultBuilder.createInfoResult(
+              ServerLauncher.ServerState.fromJson(serverProxy.status()).toString());
         } else {
           return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
+              .format(CliStrings.STATUS_SERVER__NO_SERVER_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
         }
       } else {
-        final ServerLauncher serverLauncher = new ServerLauncher.Builder()
-            .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
-            // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
-            // server when it was started,
-            // set the disableDefaultServer property in the ServerLauncher.Builder to default status
-            // to the MemberMBean
-            // TODO fix this hack! (how, the 'start server' loop needs it)
-            .setDisableDefaultServer(true).setPid(pid).setWorkingDirectory(workingDirectory)
-            .build();
-
-        final ServerLauncher.ServerState status = serverLauncher.status();
-
-        if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
-            || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
-          return ResultBuilder.createGemFireErrorResult(status.toString());
-        }
-        return ResultBuilder.createInfoResult(status.toString());
+        return ResultBuilder.createUserErrorResult(CliStrings
+            .format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Cache Server"));
       }
-    } catch (IllegalArgumentException | IllegalStateException e) {
+    } else {
+      final ServerLauncher serverLauncher = new ServerLauncher.Builder()
+          .setCommand(ServerLauncher.Command.STATUS).setDebug(isDebugging())
+          // NOTE since we do not know whether the "CacheServer" was enabled or not on the GemFire
+          // server when it was started,
+          // set the disableDefaultServer property in the ServerLauncher.Builder to default status
+          // to the MemberMBean
+          // TODO fix this hack! (how, the 'start server' loop needs it)
+          .setDisableDefaultServer(true).setPid(pid).setWorkingDirectory(workingDirectory).build();
 
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STATUS_SERVER__GENERAL_ERROR_MESSAGE, toString(t, getGfsh().getDebug())));
+      final ServerLauncher.ServerState status = serverLauncher.status();
+
+      if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
+          || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
+        return ResultBuilder.createGemFireErrorResult(status.toString());
+      }
+      return ResultBuilder.createInfoResult(status.toString());
     }
   }
 }

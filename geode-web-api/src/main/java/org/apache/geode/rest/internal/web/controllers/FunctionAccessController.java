@@ -54,7 +54,7 @@ import org.apache.geode.rest.internal.web.util.JSONUtils;
 
 /**
  * The FunctionsController class serving REST Requests related to the function execution
- * 
+ *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
  */
@@ -80,7 +80,7 @@ public class FunctionAccessController extends AbstractBaseController {
 
   /**
    * list all registered functions in Gemfire data node
-   * 
+   *
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
@@ -107,7 +107,7 @@ public class FunctionAccessController extends AbstractBaseController {
   /**
    * Execute a function on Gemfire data node using REST API call. Arguments to the function are
    * passed as JSON string in the request body.
-   * 
+   *
    * @param functionId represents function to be executed
    * @param region list of regions on which function to be executed.
    * @param members list of nodes on which function to be executed.

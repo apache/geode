@@ -21,7 +21,7 @@ import org.apache.geode.internal.cache.ProxyBucketRegion;
  * This class provides 'do-nothing' implementations of all of the methods of interface
  * PartitionedRegionObserver. See the documentation for class PartitionedRegionObserverHolder for
  * details.
- * 
+ *
  */
 
 public class PartitionedRegionObserverAdapter implements PartitionedRegionObserver {

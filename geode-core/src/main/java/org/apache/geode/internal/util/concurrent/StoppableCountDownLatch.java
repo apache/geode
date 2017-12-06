@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.util.concurrent;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is a "stoppable" cover for {@link CountDownLatch}.

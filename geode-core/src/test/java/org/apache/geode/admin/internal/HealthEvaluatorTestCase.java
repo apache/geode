@@ -14,14 +14,15 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.junit.After;
-import org.junit.Before;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.junit.After;
+import org.junit.Before;
+
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
  * Superclass of tests for the {@linkplain org.apache.geode.admin.internal.AbstractHealthEvaluator

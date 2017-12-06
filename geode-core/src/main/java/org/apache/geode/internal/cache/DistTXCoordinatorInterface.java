@@ -25,9 +25,9 @@ import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 
 /**
  * [DISTTX] For Distributed Transaction
- * 
+ *
  * An entity that works as stub for DistTX on Coordinator.
- * 
+ *
  */
 public interface DistTXCoordinatorInterface extends TXStateInterface {
   /**

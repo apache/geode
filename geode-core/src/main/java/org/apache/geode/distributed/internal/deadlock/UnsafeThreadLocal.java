@@ -22,15 +22,15 @@ import java.lang.reflect.Method;
  * Most of this thread local is safe to use, except for the getValue(Thread) method. That is not
  * guaranteed to be correct. But for our deadlock detection tool I think it's good enough, and this
  * class provides a very low overhead way for us to record what thread holds a particular resource.
- * 
- * 
+ *
+ *
  */
 public class UnsafeThreadLocal<T> extends ThreadLocal<T> {
   /**
    * Dangerous method. Uses reflection to extract the thread local for a given thread.
-   * 
+   *
    * Unlike get(), this method does not set the initial value if none is found
-   * 
+   *
    * @throws SecurityException
    */
   public T get(Thread thread) {

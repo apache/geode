@@ -18,7 +18,7 @@ import org.apache.geode.Statistics;
 
 /**
  * Statistics for off-heap memory storage.
- * 
+ *
  * @since Geode 1.0
  */
 public interface OffHeapMemoryStats {

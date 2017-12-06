@@ -27,7 +27,7 @@ import org.apache.geode.pdx.internal.DataSize;
  * Some field types are always serialized with a certain number of bytes; these are called
  * "fixed-width". Others are serialized with a variable number of bytes; these are called
  * "variable-width".
- * 
+ *
  * @since GemFire 6.6.2
  */
 public enum FieldType {

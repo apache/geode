@@ -16,9 +16,9 @@
 
 package org.apache.geode.cache;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.*;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for region distribution scope.
@@ -72,10 +72,10 @@ public class Scope implements Serializable {
    * The following 4 definitions are included for use by the C interface. Any changes to the order
    * of the scopes in VALUES must be reflected here and changed in gemfire.h.
    */
-  final static int SCOPE_LOCAL = 0;
-  final static int SCOPE_DISTRIBUTED_NO_ACK = 1;
-  final static int SCOPE_DISTRIBUTED_ACK = 2;
-  final static int SCOPE_GLOBAL = 3;
+  static final int SCOPE_LOCAL = 0;
+  static final int SCOPE_DISTRIBUTED_NO_ACK = 1;
+  static final int SCOPE_DISTRIBUTED_ACK = 2;
+  static final int SCOPE_GLOBAL = 3;
 
   private Object readResolve() throws ObjectStreamException {
     return fromOrdinal(ordinal); // Canonicalize
@@ -94,7 +94,7 @@ public class Scope implements Serializable {
 
   /**
    * Returns whether this is local scope.
-   * 
+   *
    * @return true if this is LOCAL
    */
   public boolean isLocal() {
@@ -103,7 +103,7 @@ public class Scope implements Serializable {
 
   /**
    * Returns whether this is one of the distributed scopes.
-   * 
+   *
    * @return true if this is any scope other than LOCAL
    */
   public boolean isDistributed() {
@@ -112,7 +112,7 @@ public class Scope implements Serializable {
 
   /**
    * Returns whether this is distributed no ack scope.
-   * 
+   *
    * @return true if this is DISTRIBUTED_NO_ACK
    */
   public boolean isDistributedNoAck() {
@@ -121,7 +121,7 @@ public class Scope implements Serializable {
 
   /**
    * Returns whether this is distributed ack scope.
-   * 
+   *
    * @return true if this is DISTRIBUTED_ACK
    */
   public boolean isDistributedAck() {
@@ -130,7 +130,7 @@ public class Scope implements Serializable {
 
   /**
    * Returns whether this is global scope.
-   * 
+   *
    * @return true if this is GLOBAL
    */
   public boolean isGlobal() {
@@ -139,7 +139,7 @@ public class Scope implements Serializable {
 
   /**
    * Returns whether acknowledgements are required for this scope.
-   * 
+   *
    * @return true if this is DISTRIBUTED_ACK or GLOBAL, false otherwise
    */
   public boolean isAck() {
@@ -149,7 +149,7 @@ public class Scope implements Serializable {
 
   /**
    * Returns a string representation for this scope.
-   * 
+   *
    * @return String the name of this scope
    */
   @Override
@@ -159,7 +159,7 @@ public class Scope implements Serializable {
 
   /**
    * Parse the given string into a Scope
-   * 
+   *
    * @param scope the provided String form of Scope
    * @return the canonical Scope associated with the string
    */

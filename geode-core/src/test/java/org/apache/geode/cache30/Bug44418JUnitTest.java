@@ -13,9 +13,23 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache30;
+
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.awaitility.Awaitility.with;
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.core.ConditionTimeoutException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.Region.Entry;
@@ -23,26 +37,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.awaitility.core.ConditionTimeoutException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.awaitility.Awaitility.with;
-import static org.junit.Assert.fail;
 
 /**
  * Test for Bug 44418.
- * 
+ *
  * If a new expiration time is specified that is shorter than an existing one, ensure the new
  * shorter time is honored.
- * 
+ *
  * @since GemFire 7.0
  */
 @Category(IntegrationTest.class)
@@ -162,4 +163,3 @@ public class Bug44418JUnitTest { // TODO: rename this test to non-ticket descrip
     }
   }
 }
-

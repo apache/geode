@@ -27,7 +27,30 @@ import static org.apache.geode.internal.DataSerializableFixedID.NETWORK_PARTITIO
 import static org.apache.geode.internal.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
 import static org.apache.geode.internal.DataSerializableFixedID.VIEW_ACK_MESSAGE;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
@@ -59,28 +82,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the distributed system. It
@@ -729,7 +730,25 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       logger.warn("unable to record a membership view request due to this exception", t);
       throw t;
     }
+  }
 
+  private void sendDHKeys() {
+    if (isCoordinator
+        && !services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
+      synchronized (viewRequests) {
+        for (DistributionMessage request : viewRequests) {
+          if (request instanceof JoinRequestMessage) {
+
+            services.getMessenger().initClusterKey();
+            JoinRequestMessage jreq = (JoinRequestMessage) request;
+            // this will inform about cluster-secret key, as we have authenticated at this point
+            JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(),
+                services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
+            services.getMessenger().send(response);
+          }
+        }
+      }
+    }
   }
 
   // for testing purposes, returns a copy of the view requests for verification
@@ -783,6 +802,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (locator != null) {
       locator.setIsCoordinator(true);
     }
+    sendDHKeys();
     if (currentView == null) {
       // create the initial membership view
       NetView newView = new NetView(this.localAddress);
@@ -2261,7 +2281,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     /**
      * Create a new membership view and send it to members (including crashed members). Returns
      * false if the view cannot be prepared successfully, true otherwise
-     * 
+     *
      * @throws InterruptedException
      */
     void createAndSendView(List<DistributionMessage> requests)
@@ -2404,7 +2424,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     /**
      * This handles the 2-phase installation of the view
-     * 
+     *
      * @throws InterruptedException
      */
     void prepareAndSendView(NetView newView, List<InternalDistributedMember> joinReqs,

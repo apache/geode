@@ -25,31 +25,31 @@ import org.apache.geode.internal.VersionedDataSerializable;
 /**
  * RVV exceptions are part of a RegionVersionVector. They are held by RegionVersionHolders.
  * <p>
- * 
+ *
  * An RVV exception represents a missing range of versions from a member. This is represented as a
  * pair of version numbers: the last version we've received from the member and the next version
  * we've received from the member. The span of versions between (but not including) these two
  * numbers are the versions that are missing.
  * <p>
- * 
+ *
  * RVVException also tracks the scattering of versions we've received that fall within the range of
  * the exception. As these missing versions are received the RVVException coalesces the range. If
  * isFilled() returns true after adding a missing version to the RVVException, the hole has been
  * filled and the RVVException is no longer needed.
  * <p>
- * 
+ *
  * New exceptions are common to see as operations arrive from parallel threads operating on the same
  * region. These exceptions are soon mended and disappear.
  * <p>
- * 
+ *
  * Old exceptions indicate that we missed something that we are unlikely to receive without asking
  * for it.
  * <p>
- * 
+ *
  * RVVException currently depends on external synchronization. Typically the RegionVersionHolder
  * that holds the exception is locked while accessing its RVVExceptions. This is what is done in
  * RegionVersionVector.
- * 
+ *
  */
 abstract class RVVException
     implements Comparable<RVVException>, Cloneable, VersionedDataSerializable {
@@ -149,7 +149,7 @@ abstract class RVVException
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
   public int compareTo(RVVException o) {

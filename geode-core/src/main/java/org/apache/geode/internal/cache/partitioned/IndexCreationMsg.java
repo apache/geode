@@ -62,7 +62,7 @@ public class IndexCreationMsg extends PartitionMessage {
   /**
    * Constructor for the index creation message to be sent over the wire with all the relevant
    * information.
-   * 
+   *
    * @param recipients members to which this message has to be sent
    * @param regionId partitioned region id
    * @param processor The processor to reply to
@@ -78,7 +78,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
   /**
    * Empty default constructor.
-   * 
+   *
    */
   public IndexCreationMsg() {
 
@@ -97,7 +97,7 @@ public class IndexCreationMsg extends PartitionMessage {
   /**
    * This method actually operates on the partitioned region and creates given list of indexes from
    * a index creation message.
-   * 
+   *
    * @param dm distribution manager.
    * @param pr partitioned region on which to create an index.
    * @throws CacheException indicating a cache level error
@@ -336,7 +336,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
   /**
    * Methods that sends the actual index creation message to all the members.
-   * 
+   *
    * @param recipient set of members.
    * @param pr partitoned region associated with the index.
    * @param indexDefinitions set of index definitions
@@ -394,7 +394,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
   /**
    * Send a reply for index creation message.
-   * 
+   *
    * @param member representing the actual index creatro in the system
    * @param procId waiting processor
    * @param dm distribution manager to send the message
@@ -444,8 +444,8 @@ public class IndexCreationMsg extends PartitionMessage {
   /**
    * Class representing index creation response. This class has all the information for successful
    * or unsuccessful index creation on this member of the partitioned region.
-   * 
-   * 
+   *
+   *
    */
   public static class IndexCreationResponse extends PartitionResponse {
 
@@ -457,7 +457,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Construtor for index creation response message.
-     * 
+     *
      * @param ds distributed system for this member.
      * @param recipients all the member associated with the index
      */
@@ -467,7 +467,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Waits for the response from the members for index creation.
-     * 
+     *
      * @return IndexCreationResult for creation of indexes
      * @throws CacheException indicating a cache level error
      * @throws ForceReattemptException if the peer is no longer available
@@ -494,7 +494,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Sets the relevant information in the response.
-     * 
+     *
      * @param result true if index created properly
      * @param indexBucketsMap Map of indexes created and number of buckets indexed
      * @param numTotalBuckets Number of total buckets in this vm
@@ -508,8 +508,8 @@ public class IndexCreationMsg extends PartitionMessage {
 
   /**
    * Class representing index creation result.
-   * 
-   * 
+   *
+   *
    */
   public static class IndexCreationResult {
     /** Map of indexes created and number of buckets indexed. */
@@ -520,7 +520,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Constructor for index creation result.
-     * 
+     *
      * @param indexBucketsMap Map of indexes created and number of buckets indexed
      * @param numTotalBuckets Number of total buckets in this vm
      */
@@ -531,7 +531,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Returns a map of index names and number of buckets indexed
-     * 
+     *
      * @return indexBucketsMap
      */
     public Map<String, Integer> getIndexBucketsMap() {
@@ -543,8 +543,8 @@ public class IndexCreationMsg extends PartitionMessage {
 
   /**
    * Class for index creation reply. This class has the information about successful index creation.
-   * 
-   * 
+   *
+   *
    */
   public static class IndexCreationReplyMsg extends ReplyMessage {
 
@@ -566,7 +566,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Constructor for index creation reply message.
-     * 
+     *
      * @param processorId processor id of the waiting processor
      * @param ex any exceptions
      * @param result true if index created properly else false
@@ -610,7 +610,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Actual method sending the index creation reply message.
-     * 
+     *
      * @param recipient the originator of index creation message
      * @param processorId waiting processor id
      * @param dm distribution manager
@@ -630,7 +630,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     /**
      * Processes the index creation result.
-     * 
+     *
      * @param dm distribution manager
      */
     @Override

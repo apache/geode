@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Two-process functional tests for {@link LocalProcessLauncher}.
- * 
+ *
  * @since GemFire 7.0
  */
 @Category(DistributedTest.class)

@@ -106,9 +106,9 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
 
   /**
    * Creates a new <code>HeapLRUCapacityController</code> with the given eviction action.
-   * 
+   *
    * @param evictionAction The action that will occur when an entry is evicted
-   * 
+   *
    */
   public HeapLRUCapacityController(EvictionAction evictionAction, Region region) {
     super(evictionAction, region);
@@ -150,9 +150,9 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
-   * 
+   *
    * Note that we just need to make sure that equal objects return equal hashcodes; nothing really
    * elaborate is done here.
    */
@@ -164,7 +164,7 @@ public class HeapLRUCapacityController extends LRUAlgorithm {
 
   /**
    * Returns a brief description of this eviction controller.
-   * 
+   *
    * @since GemFire 4.0
    */
   @Override

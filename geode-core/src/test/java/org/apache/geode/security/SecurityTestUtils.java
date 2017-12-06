@@ -73,12 +73,15 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.Version;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
@@ -350,6 +353,10 @@ public class SecurityTestUtils {
     authProps.setProperty(MCAST_PORT, "0");
     authProps.setProperty(LOCATORS, "");
     authProps.setProperty(SECURITY_LOG_LEVEL, "finest");
+    if (Version.CURRENT_ORDINAL >= 75) {
+      authProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          UsernamePrincipal.class.getName());
+    }
     // TODO (ashetkar) Add " && (!multiUserAuthMode)" below.
     if (authInitModule != null) {
       authProps.setProperty(SECURITY_CLIENT_AUTH_INIT, authInitModule);
@@ -488,6 +495,11 @@ public class SecurityTestUtils {
       props.setProperty(DURABLE_CLIENT_ID, durableClientId);
       props.setProperty(DURABLE_CLIENT_TIMEOUT,
           String.valueOf(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT));
+    }
+
+    if (Version.CURRENT.ordinal() >= 75) {
+      props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
     SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");

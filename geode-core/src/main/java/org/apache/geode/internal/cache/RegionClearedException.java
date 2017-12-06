@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 /**
  * Indicates that a Clear Operation happened while an entry operation was in progress, which would
  * result in the ongoing entry operation to abort
- * 
+ *
  * @since GemFire 5.1
  */
 public class RegionClearedException extends Exception {

@@ -16,7 +16,7 @@ package org.apache.geode.internal.process;
 
 /**
  * A MBeanInvocationFailedException is thrown if invocation of the mbean failed.
- * 
+ *
  * @since GemFire 7.0
  */
 public class MBeanInvocationFailedException extends Exception {

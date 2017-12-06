@@ -32,12 +32,12 @@ import org.apache.geode.internal.security.SecurityService;
 
 /**
  * {@link Command} for {@link GetClientPartitionAttributesOp} operation
- * 
+ *
  * @since GemFire 6.5
  */
 public class GetClientPartitionAttributesCommand extends BaseCommand {
 
-  private final static GetClientPartitionAttributesCommand singleton =
+  private static final GetClientPartitionAttributesCommand singleton =
       new GetClientPartitionAttributesCommand();
 
   public static Command getCommand() {
@@ -123,5 +123,3 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
     }
   }
 }
-
-

@@ -22,7 +22,7 @@ import java.net.Socket;
  * Extended TCP socket options to set socket-specific KEEPALIVE settings etc. Passed to
  * {@link NativeCalls} API to set these options on the Java {@link Socket} using native OS specific
  * calls.
- * 
+ *
  * @since GemFire 8.0
  */
 public enum TCPSocketOptions {

@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode;
 
@@ -21,7 +21,7 @@ import org.apache.geode.cache.CacheRuntimeException;
 
 /**
  * Abstract root class of all GemFire exceptions representing system cancellation
- * 
+ *
  * @since GemFire 6.0
  */
 public abstract class CancelException extends CacheRuntimeException {
@@ -34,7 +34,7 @@ public abstract class CancelException extends CacheRuntimeException {
 
   /**
    * Create instance with given message
-   * 
+   *
    * @param message the message
    */
   public CancelException(String message) {
@@ -43,7 +43,7 @@ public abstract class CancelException extends CacheRuntimeException {
 
   /**
    * Create instance with given message and cause
-   * 
+   *
    * @param message the message
    * @param cause the cause
    */
@@ -53,7 +53,7 @@ public abstract class CancelException extends CacheRuntimeException {
 
   /**
    * Create instance with empty message and given cause
-   * 
+   *
    * @param cause the cause
    */
   public CancelException(Throwable cause) {

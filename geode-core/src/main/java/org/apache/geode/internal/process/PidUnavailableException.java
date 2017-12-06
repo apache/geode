@@ -17,7 +17,7 @@ package org.apache.geode.internal.process;
 /**
  * A PidUnavailableException is thrown when the pid cannot be parsed from the RuntimeMXBean name or
  * otherwise determined.
- * 
+ *
  * @since GemFire 7.0
  */
 public class PidUnavailableException extends Exception {

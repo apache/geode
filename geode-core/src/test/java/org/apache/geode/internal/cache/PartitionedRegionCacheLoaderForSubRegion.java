@@ -18,11 +18,11 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.PartitionAttributesFactory;
 
 /**
  * This class is cacheLoader for the partition region

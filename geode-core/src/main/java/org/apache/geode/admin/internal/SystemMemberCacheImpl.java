@@ -14,14 +14,14 @@
  */
 package org.apache.geode.admin.internal;
 
+import java.util.*;
+
 import org.apache.geode.admin.*;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ObjIdMap;
 import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.*;
 
 /**
  * View of a GemFire system member's cache.
@@ -292,7 +292,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -300,4 +300,3 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     return getName();
   }
 }
-

@@ -14,15 +14,15 @@
  */
 package org.apache.geode.modules.session.catalina.internal;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 
 @SuppressWarnings("serial")
 public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEvent {
@@ -74,4 +74,3 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
         .append("]").toString();
   }
 }
-

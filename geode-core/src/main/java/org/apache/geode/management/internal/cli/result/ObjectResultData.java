@@ -23,8 +23,8 @@ import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class ObjectResultData<T extends CliJsonSerializable> extends AbstractResultData {

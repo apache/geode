@@ -39,7 +39,6 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -57,7 +56,7 @@ public class ExportLogsCommand implements GfshCommand {
   public static final String FORMAT = "yyyy/MM/dd/HH/mm/ss/SSS/z";
   public static final String ONLY_DATE_FORMAT = "yyyy/MM/dd";
 
-  public final static String DEFAULT_EXPORT_LOG_LEVEL = "ALL";
+  public static final String DEFAULT_EXPORT_LOG_LEVEL = "ALL";
 
   private static final Pattern DISK_SPACE_LIMIT_PATTERN = Pattern.compile("(\\d+)([kmgtKMGT]?)");
 
@@ -97,17 +96,14 @@ public class ExportLogsCommand implements GfshCommand {
       @CliOption(key = CliStrings.EXPORT_LOGS__FILESIZELIMIT,
           unspecifiedDefaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__UNSPECIFIED_DEFAULT,
           specifiedDefaultValue = CliStrings.EXPORT_LOGS__FILESIZELIMIT__SPECIFIED_DEFAULT,
-          help = CliStrings.EXPORT_LOGS__FILESIZELIMIT__HELP) String fileSizeLimit) {
+          help = CliStrings.EXPORT_LOGS__FILESIZELIMIT__HELP) String fileSizeLimit)
+      throws Exception {
 
     long totalEstimatedExportSize = 0;
     Result result;
     InternalCache cache = getCache();
     try {
-      Set<DistributedMember> targetMembers = getMembers(groups, memberIds);
-
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+      Set<DistributedMember> targetMembers = getMembersIncludingLocators(groups, memberIds);
 
       long userSpecifiedLimit = parseFileSizeLimit(fileSizeLimit);
       if (userSpecifiedLimit > 0) {
@@ -157,7 +153,7 @@ public class ExportLogsCommand implements GfshCommand {
 
         cacheWriter.startFile(server.getName());
 
-        CliUtil.executeFunction(new ExportLogsFunction(),
+        executeFunction(new ExportLogsFunction(),
             new ExportLogsFunction.Args(start, end, logLevel, onlyLogLevel, logsOnly, statsOnly),
             server).getResult();
         Path zipFile = cacheWriter.endFile();
@@ -201,9 +197,6 @@ public class ExportLogsCommand implements GfshCommand {
       FileUtils.deleteDirectory(tempDir.toFile());
 
       result = new CommandResult(exportedLogsZipFile);
-    } catch (Exception ex) {
-      logger.error(ex.getMessage(), ex);
-      result = ResultBuilder.createGemFireErrorResult(ex.getMessage());
     } finally {
       ExportLogsFunction.destroyExportLogsRegion(cache);
     }
@@ -216,15 +209,8 @@ public class ExportLogsCommand implements GfshCommand {
   /**
    * Wrapper to enable stubbing of static method call for unit testing
    */
-  Set<DistributedMember> getMembers(String[] groups, String[] memberIds) {
-    return CliUtil.findMembersIncludingLocators(groups, memberIds);
-  }
-
-  /**
-   * Wrapper to enable stubbing of static method call for unit testing
-   */
   ResultCollector estimateLogSize(SizeExportLogsFunction.Args args, DistributedMember member) {
-    return CliUtil.executeFunction(new SizeExportLogsFunction(), args, member);
+    return executeFunction(new SizeExportLogsFunction(), args, member);
   }
 
   /**

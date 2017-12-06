@@ -23,10 +23,10 @@ import org.xml.sax.ContentHandler;
 /**
  * Interface for configuration XML parsers. Used by {@link CacheXmlParser} to parse entities defined
  * in the XML Namespace returned by {@link #getNamespaceUri()} .
- * 
+ *
  * Loaded by {@link ServiceLoader} on {@link XmlParser} class. See file
  * <code>META-INF/services/org.apache.geode.internal.cache.xmlcache.XmlParser</code>
- * 
+ *
  *
  * @since GemFire 8.1
  */
@@ -34,7 +34,7 @@ public interface XmlParser extends ContentHandler {
 
   /**
    * Get XML Namespace this parser is responsible for.
-   * 
+   *
    * @return XML Namespace.
    * @since GemFire 8.1
    */
@@ -42,7 +42,7 @@ public interface XmlParser extends ContentHandler {
 
   /**
    * Sets the XML config stack on this parser.
-   * 
+   *
    * @param stack current XML config stack.
    * @since GemFire 8.1
    */

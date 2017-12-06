@@ -20,6 +20,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -28,26 +39,16 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
 
-  protected final static float INITIAL_EVICTION_HEAP_PERCENTAGE = 50.9f;
-  protected final static float EVICTION_HEAP_PERCENTAGE_FAKE_NOTIFICATION = 85.0f;
-  protected final static int TEST_MAX_MEMORY = 100;
-  protected final static int MEMORY_USED_FAKE_NOTIFICATION = 90;
+  protected static final float INITIAL_EVICTION_HEAP_PERCENTAGE = 50.9f;
+  protected static final float EVICTION_HEAP_PERCENTAGE_FAKE_NOTIFICATION = 85.0f;
+  protected static final int TEST_MAX_MEMORY = 100;
+  protected static final int MEMORY_USED_FAKE_NOTIFICATION = 90;
 
   protected RegionTestableType[] getPartitionRedundantOverflowEvictionRegionType() {
     return new RegionTestableType[] {

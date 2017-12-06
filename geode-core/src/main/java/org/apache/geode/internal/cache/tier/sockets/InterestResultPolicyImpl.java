@@ -16,11 +16,11 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.*;
+
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-
-import java.io.*;
 
 /**
  * Used to make InterestResultPolicy implement DataSerializableFixedID

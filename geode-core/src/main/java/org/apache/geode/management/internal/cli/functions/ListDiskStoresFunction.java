@@ -20,7 +20,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -34,7 +33,7 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
  * determine all the disk stores that exist for the entire cache, distributed across the GemFire
  * distributed system.
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.DiskStore
  * @see org.apache.geode.cache.execute.Function
  * @see org.apache.geode.cache.execute.FunctionAdapter
@@ -52,15 +51,11 @@ public class ListDiskStoresFunction extends FunctionAdapter implements InternalE
     return getClass().getName();
   }
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   public void execute(final FunctionContext context) {
     final Set<DiskStoreDetails> memberDiskStores = new HashSet<DiskStoreDetails>();
 
     try {
-      final Cache cache = getCache();
+      final Cache cache = context.getCache();
 
       if (cache instanceof InternalCache) {
         final InternalCache gemfireCache = (InternalCache) cache;

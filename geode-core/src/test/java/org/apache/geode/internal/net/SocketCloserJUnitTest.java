@@ -14,13 +14,6 @@
  */
 package org.apache.geode.internal.net;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,6 +22,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the default SocketCloser.

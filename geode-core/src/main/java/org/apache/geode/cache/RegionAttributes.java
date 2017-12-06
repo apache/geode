@@ -44,14 +44,14 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns the cache loader associated with this region.
-   * 
+   *
    * @return the cache loader
    */
   public CacheLoader<K, V> getCacheLoader();
 
   /**
    * Returns the cache writer associated with this region.
-   * 
+   *
    * @return the cache writer
    */
   public CacheWriter<K, V> getCacheWriter();
@@ -75,7 +75,7 @@ public interface RegionAttributes<K, V> {
   /**
    * Gets the <code>timeToLive</code> expiration attributes for the region as a whole. Default is 0
    * which indicates that no expiration of this type will happen.
-   * 
+   *
    * @return the timeToLive expiration attributes for this region
    */
   public ExpirationAttributes getRegionTimeToLive();
@@ -92,7 +92,7 @@ public interface RegionAttributes<K, V> {
   /**
    * Gets the <code>timeToLive</code> expiration attributes for entries in this region. Default is 0
    * which indicates that no expiration of this type is set.
-   * 
+   *
    * @return the timeToLive expiration attributes for entries in this region
    */
   public ExpirationAttributes getEntryTimeToLive();
@@ -101,7 +101,7 @@ public interface RegionAttributes<K, V> {
    * Gets the <code>idleTimeout</code> expiration attributes for entries in this region. Default is
    * 0 which indicates that no expiration of this type is set. Note that the XML element that
    * corresponds to this method "entry-idle-time", does not include "out" in its name.
-   * 
+   *
    * @return the idleTimeout expiration attributes for entries in this region
    */
   public ExpirationAttributes getEntryIdleTimeout();
@@ -109,21 +109,21 @@ public interface RegionAttributes<K, V> {
   /**
    * Gets the <code>entryTimeToLive</code> <code>CustomExpiry</code>, if any for entries in this
    * region
-   * 
+   *
    * @return the entryTimeToLive CustomExpiry for entries in this region
    */
   public CustomExpiry<K, V> getCustomEntryTimeToLive();
 
   /**
    * Gets the <code>idleTimeout</code> <code>CustomExpiry</code>, if any for entries in this region
-   * 
+   *
    * @return the idleTimeout CustomExpiry for entries in this region
    */
   public CustomExpiry<K, V> getCustomEntryIdleTimeout();
 
   /**
    * Gets the flag telling a region to ignore JTA transactions. Default value is set to false.
-   * 
+   *
    * @since GemFire 5.0
    */
   public boolean getIgnoreJTA();
@@ -150,7 +150,7 @@ public interface RegionAttributes<K, V> {
   /**
    * Returns the scope of the region. Default scope is DISTRIBUTED_NO_ACK. Please refer the gemfire
    * documentation for more details on this.
-   * 
+   *
    * @return the region's <code>Scope</code>
    */
   public Scope getScope();
@@ -159,14 +159,14 @@ public interface RegionAttributes<K, V> {
   /**
    * Attributes that control the size of the <code>Region</code> using an {@link EvictionAlgorithm}
    * and a {@link EvictionAction}.
-   * 
+   *
    * @return the region's EvictionAttributes
    */
   public EvictionAttributes getEvictionAttributes();
 
   /**
    * Returns the cache listener for the region.
-   * 
+   *
    * @throws IllegalStateException if more than one cache listener exists on this attributes
    * @return the region's <code>CacheListener</code>
    * @deprecated as of GemFire 5.0, use {@link #getCacheListeners} instead
@@ -177,7 +177,7 @@ public interface RegionAttributes<K, V> {
   /**
    * Returns an array of all the cache listeners on this attributes. Modifications to the returned
    * array will not effect the attributes.
-   * 
+   *
    * @return the region's <code>CacheListener</code>s; an empty array if no listeners
    * @since GemFire 5.0
    */
@@ -188,7 +188,7 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns the initial capacity of the entries map. Default is 16.
-   * 
+   *
    * @return the initial capacity of the entries map
    * @see java.util.HashMap
    */
@@ -196,7 +196,7 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns the load factor of the entries map. Default is 0.75.
-   * 
+   *
    * @return the load factor of the entries map
    * @see java.util.HashMap
    */
@@ -228,7 +228,7 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns the concurrencyLevel of the entries map. Default is 16.
-   * 
+   *
    * @return the concurrencyLevel
    * @see AttributesFactory
    */
@@ -299,14 +299,14 @@ public interface RegionAttributes<K, V> {
   // STATISTICS
   /**
    * Returns whether the statistics are enabled for this region and its entries. Default is false.
-   * 
+   *
    * @return true if statistics are enabled
    */
   public boolean getStatisticsEnabled();
 
   /**
    * Returns whether or not acks are sent after an update is processed.
-   * 
+   *
    * @return True if acks are sent after updates are processed; false if acks are sent before
    *         updates are processed.
    *
@@ -319,7 +319,7 @@ public interface RegionAttributes<K, V> {
   /**
    * Returns whether or not this region is a publisher. Publishers are regions on which distributed
    * write operations are done.
-   * 
+   *
    * @return True if a publisher; false if not (default).
    *
    * @since GemFire 4.2.3
@@ -363,7 +363,7 @@ public interface RegionAttributes<K, V> {
    *
    * Note: This parameter is only valid for cache server to client communication. It has no effect
    * in peer to peer communication.
-   * 
+   *
    * Default is false.
    *
    * @return True if conflation is enabled; false conflation is not enabled (default).
@@ -374,7 +374,7 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns whether or not async conflation is enabled for sending messages to async peers.
-   * 
+   *
    * Default is false.
    *
    * @return True if async conflation is enabled; false async conflation is not enabled (default).
@@ -385,7 +385,7 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns the sizes of the disk directories in megabytes
-   * 
+   *
    * @return int[] sizes of the disk directories
    * @deprecated as of 6.5 use {@link DiskStore#getDiskDirSizes} instead.
    */
@@ -395,7 +395,7 @@ public interface RegionAttributes<K, V> {
   /**
    * Returns the name of the {@link Pool} that this region will use to communicate with servers, if
    * any. Returns <code>null</code> if this region communicates with peers.
-   * 
+   *
    * @return the name of the client-server {@link Pool} this region will use for server
    *         communication; <code>null</code> is returned if the region communicates with peers.
    * @since GemFire 5.7
@@ -414,7 +414,7 @@ public interface RegionAttributes<K, V> {
   /**
    * Returns the name of the {@link DiskStore} that this region belongs to, if any. Returns
    * <code>null</code> if this region belongs to default {@link DiskStore}.
-   * 
+   *
    * @return the name of the {@link DiskStore} of this region; <code>null</code> is returned if this
    *         region belongs to default {@link DiskStore}.
    * @since GemFire 6.5
@@ -423,7 +423,7 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns true if configured synchronous disk writes. Default is set to true.
-   * 
+   *
    * @return Returns true if writes to disk are synchronous and false otherwise
    * @since GemFire 6.5
    */
@@ -445,9 +445,9 @@ public interface RegionAttributes<K, V> {
    * When this is enabled, concurrent updates will be conflated if they are applied out of order.
    * <p>
    * All members must set this attribute the same.
-   * 
+   *
    * Default is set to true.
-   * 
+   *
    * @since GemFire 7.0
    * @return true if concurrent update checks are turned on
    */
@@ -455,7 +455,7 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns the compressor used by this region's entry values.
-   * 
+   *
    * @since GemFire 8.0
    * @return null if the region does not have compression enabled.
    */
@@ -463,12 +463,10 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns whether or not this region uses off-heap memory.
-   * 
+   *
    * @return True if a usage of off-heap memory is enabled; false if usage of off-heap memory is
    *         disabled (default).
    * @since Geode 1.0
    */
   public boolean getOffHeap();
 }
-
-

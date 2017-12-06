@@ -87,7 +87,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
   /**
    * Sends a PartitionedRegion manage bucket request to the recipient
-   * 
+   *
    * @param recipient the member to which the bucket manage request is sent
    * @param r the PartitionedRegion to which the bucket belongs
    * @param bucketId the unique identifier of the bucket
@@ -170,7 +170,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
   /**
    * Assists the toString method in reporting the contents of this message
-   * 
+   *
    * @see PartitionMessage#toString()
    * @param buff
    */
@@ -191,7 +191,7 @@ public class CreateBucketMessage extends PartitionMessage {
   /**
    * A class that contains the reply to a {@link CreateBucketMessage} message which contains the
    * {@link Node} that has accepted to manage the bucket.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class CreateBucketReplyMessage extends ReplyMessage {
@@ -213,7 +213,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
     /**
      * Accept the request to manage the bucket
-     * 
+     *
      * @param recipient the requesting node
      * @param processorId the identity of the processor the requesting node is waiting on
      * @param dm the distribution manager used to send the acceptance message
@@ -228,7 +228,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -287,10 +287,10 @@ public class CreateBucketMessage extends PartitionMessage {
 
   /**
    * A processor to capture the {@link Node} returned by {@link CreateBucketMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
-  static public class NodeResponse extends ReplyProcessor21 {
+  public static class NodeResponse extends ReplyProcessor21 {
     /**
      * the message that triggers return from waitForAcceptance. This will be null if the target
      * member exited
@@ -321,7 +321,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
     /**
      * Wait for the response to a {@link CreateBucketMessage} request.
-     * 
+     *
      * @return true if the node sent the request is managing the bucket
      * @throws ForceReattemptException if the peer is no longer available
      */

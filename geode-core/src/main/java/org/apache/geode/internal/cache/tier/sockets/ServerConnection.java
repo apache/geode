@@ -99,7 +99,7 @@ public abstract class ServerConnection implements Runnable {
 
   private final SecurityService securityService;
 
-  final protected CacheServerStats stats;
+  protected final CacheServerStats stats;
 
   // private static boolean useDataStream =
   // System.getProperty("hct.useDataStream", "false").equals("true");
@@ -195,10 +195,10 @@ public abstract class ServerConnection implements Runnable {
   /*
    * Uniquely identifying the client's Distributed System
    *
-   * 
+   *
    * private String membershipId;
-   * 
-   * 
+   *
+   *
    * Uniquely identifying the client's ConnectionProxy object
    *
    *
@@ -311,19 +311,19 @@ public abstract class ServerConnection implements Runnable {
     return this.acceptor;
   }
 
-  static private final ThreadLocal<Byte> executeFunctionOnLocalNodeOnly = new ThreadLocal<Byte>() {
+  private static final ThreadLocal<Byte> executeFunctionOnLocalNodeOnly = new ThreadLocal<Byte>() {
     @Override
     protected Byte initialValue() {
       return 0x00;
     }
   };
 
-  static public void executeFunctionOnLocalNodeOnly(Byte value) {
+  public static void executeFunctionOnLocalNodeOnly(Byte value) {
     byte b = value.byteValue();
     executeFunctionOnLocalNodeOnly.set(b);
   }
 
-  static public Byte isExecuteFunctionOnLocalNodeOnly() {
+  public static Byte isExecuteFunctionOnLocalNodeOnly() {
     return executeFunctionOnLocalNodeOnly.get();
   }
 
@@ -984,7 +984,7 @@ public abstract class ServerConnection implements Runnable {
         /*
          * This means that client and server VMs have different security settings. The server does
          * not have any security settings specified while client has.
-         * 
+         *
          * Here, should we just ignore this and send the dummy security part (connectionId, userId)
          * in the response (in this case, client needs to know that it is not expected to read any
          * security part in any of the server response messages) or just throw an exception

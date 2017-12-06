@@ -16,9 +16,9 @@
 
 package org.apache.geode.cache;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.*;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Enumerated type for region data policy. The data policy specifies how this local cache will
@@ -101,7 +101,7 @@ public class DataPolicy implements java.io.Serializable {
   /**
    * In addition to <code>PARTITION</code> also causes data to be stored to disk. The region
    * initialization may use the data stored on disk.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static final DataPolicy PERSISTENT_PARTITION = new DataPolicy(6, "PERSISTENT_PARTITION");
@@ -152,7 +152,7 @@ public class DataPolicy implements java.io.Serializable {
    * Although DataPolicy {@link #PARTITION} will return true to this query, it is possible to turn
    * off local storage with {@link PartitionAttributesFactory#setLocalMaxMemory(int)} by setting
    * localMaxMemory to zero.
-   * 
+   *
    * @return true if regions with this policy store data locally.
    * @see #NORMAL
    * @see #PRELOADED
@@ -167,7 +167,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return whether this policy does replication.
-   * 
+   *
    * @return true if this policy does replication.
    * @see #REPLICATE
    * @see #PERSISTENT_REPLICATE
@@ -178,7 +178,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return whether this policy does persistence.
-   * 
+   *
    * @return true if this policy does persistence.
    * @see #PERSISTENT_PARTITION
    * @see #PERSISTENT_REPLICATE
@@ -190,7 +190,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return whether this policy does partitioning.
-   * 
+   *
    * @return true if this policy does partitioning
    * @see #PARTITION
    * @see #PERSISTENT_PARTITION
@@ -202,7 +202,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return whether this policy does preloaded.
-   * 
+   *
    * @return true if this policy does preloaded.
    * @see #PRELOADED
    * @since GemFire 6.5
@@ -213,7 +213,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #EMPTY}.
-   * 
+   *
    * @return true if this policy is {@link #EMPTY}.
    * @deprecated from version 6.5 forward please use withStorage()
    */
@@ -223,7 +223,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #NORMAL}.
-   * 
+   *
    * @return true if this policy is {@link #NORMAL}.
    * @deprecated from version 6.5 forward please use an identity comparison instead of this method
    */
@@ -233,7 +233,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #PRELOADED}.
-   * 
+   *
    * @return true if this policy is {@link #PRELOADED}
    * @deprecated from version 6.5 forward please use withPreloaded()
    */
@@ -243,7 +243,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is the default.
-   * 
+   *
    * @return true if this policy is the default.
    * @deprecated from version 6.5 forward please use an identity comparison instead of this method
    */
@@ -253,7 +253,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #REPLICATE}.
-   * 
+   *
    * @return true if this policy is {@link #REPLICATE}.
    * @deprecated from version 6.5 forward please use withReplication()
    */
@@ -263,7 +263,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #PERSISTENT_REPLICATE}.
-   * 
+   *
    * @return true if this policy is {@link #PERSISTENT_REPLICATE}.
    * @deprecated from version 6.5 forward please use withPersistence() and withReplication()
    */
@@ -273,7 +273,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #PARTITION}.
-   * 
+   *
    * @return true if this policy is {@link #PARTITION}
    * @deprecated from version 6.5 forward please use withPartitioning()
    */
@@ -283,7 +283,7 @@ public class DataPolicy implements java.io.Serializable {
 
   /**
    * Returns a string representation for this data policy.
-   * 
+   *
    * @return the name of this data policy.
    */
   @Override

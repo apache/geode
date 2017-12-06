@@ -235,7 +235,7 @@ public class EnumInfo implements DataSerializableFixedID {
       return getFieldNames().contains(fieldName);
     }
 
-    static private final List<String> fieldNames;
+    private static final List<String> fieldNames;
     static {
       ArrayList<String> tmp = new ArrayList<String>(2);
       tmp.add("name");

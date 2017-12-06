@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -26,20 +28,18 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.size.ObjectGraphSizer.ObjectFilter;
 
-import org.apache.logging.log4j.Logger;
-
 /**
  * An implementation of {@link ObjectSizer} that calculates an accurate, in memory size of for each
  * object that it sizes. This is the slowest method of calculating sizes, but it should accurately
  * reflect the amount of heap memory used for objects.
- * 
+ *
  * This class will traverse all objects that are reachable from the passed in object by instance
  * fields. So use this class with caution if you have instance fields that refer to shared objects.
- * 
+ *
  * For objects that are all approximately the same size, consider using
  * {@link SizeClassOnceObjectSizer}
- * 
- * 
+ *
+ *
  */
 public class ReflectionObjectSizer implements ObjectSizer, Serializable {
 

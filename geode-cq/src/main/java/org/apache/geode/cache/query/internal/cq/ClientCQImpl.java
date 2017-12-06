@@ -366,7 +366,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
    * This executes the CQ first on the redundant server and then on the primary server. This is
    * required to keep the redundancy behavior in accordance with the HAQueue expectation (wherein
    * the events are delivered only from the primary).
-   * 
+   *
    * @param executeWithInitialResults boolean
    * @return Object SelectResults in case of executeWithInitialResults
    */
@@ -479,7 +479,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
   /**
    * Check to see if shutdown in progress.
-   * 
+   *
    * @return true if shutdown in progress else false.
    */
   private boolean shutdownInProgress() {

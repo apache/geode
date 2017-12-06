@@ -17,7 +17,7 @@ package org.apache.geode.internal;
 /**
  * Allows tests to expect certain exceptions without the SystemFailure watchdog getting upset. See
  * bug 46988.
- * 
+ *
  * @since GemFire 7.0.1
  */
 public class SystemFailureTestHook {

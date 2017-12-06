@@ -31,12 +31,12 @@ import org.apache.geode.tools.pulse.internal.util.ConnectionUtil;
  * This class can be used to connect to a locator and ask it to find a jmx manager. If the locator
  * can find a jmx manager that is already running it returns it. Otherwise the locator will attempt
  * to start a jmx manager and then return it.
- * 
+ *
  * This code does not depend on gemfire.jar but in order to do this some of GemFire's internal
  * serialization codes and byte sequences have been hard coded into this code.
- * 
+ *
  * @since GemFire version 7.0.Beta 2012-09-23
- * 
+ *
  */
 public class JmxManagerFinder {
 
@@ -46,10 +46,10 @@ public class JmxManagerFinder {
    * "Usage: JmxManagerFinder locatorHost locatorPort. Expected two arguments but found " +
    * args.length); return; } String locatorHost = args[0]; int locatorPort =
    * Integer.parseInt(args[1]);
-   * 
+   *
    * InetAddress addr = InetAddress.getByName(locatorHost); JmxManagerInfo locRes =
    * askLocatorForJmxManager(addr, locatorPort, 15000);
-   * 
+   *
    * if (locRes.port == 0) { System.out.println("Locator could not find a jmx manager"); } else {
    * System.out.println("Locator on host " + locRes.host + " port " + locRes.port + (locRes.ssl ?
    * " ssl" : "")); } }
@@ -63,8 +63,8 @@ public class JmxManagerFinder {
 
   /**
    * Describes the location of a jmx manager. If a jmx manager does not exist then port will be 0.
-   * 
-   * 
+   *
+   *
    */
   public static class JmxManagerInfo {
     JmxManagerInfo(String host, int port, boolean ssl) {
@@ -89,7 +89,7 @@ public class JmxManagerFinder {
 
   /**
    * Ask a locator to find a jmx manager. The locator will start one if one is not already running.
-   * 
+   *
    * @param addr the host address the locator is listening on
    * @param port the port the locator is listening on
    * @param timeout the number of milliseconds to wait for a response; 15000 is a reasonable default

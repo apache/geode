@@ -14,23 +14,10 @@
  */
 package org.apache.geode.internal.datasource;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.test.TestUtil;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -38,13 +25,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import javax.transaction.UserTransaction;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
 /**
- * 
- *  
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class ConnectionPoolingJUnitTest {
@@ -92,7 +94,7 @@ public class ConnectionPoolingJUnitTest {
    * ConnectionPoolingJUnitTest(); test.setup(); try { test.testGetSimpleDataSource(); } catch
    * (Exception e) { // TODO Auto-generated catch block e.printStackTrace(); fail(); }
    * test.testConnectionPoolFunctions(); test.teardown();
-   * 
+   *
    */
   @Test
   public void testConnectionPoolFunctions() throws Exception {

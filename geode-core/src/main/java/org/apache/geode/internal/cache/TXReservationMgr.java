@@ -15,18 +15,17 @@
 
 package org.apache.geode.internal.cache;
 
+import java.util.*;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.cache.locks.*;
-// import java.io.*;
-import java.util.*;
 
 /**
  * Used to reserve region entries, during a transaction commit, for modification by the transaction.
  *
- * 
+ *
  * @since GemFire 4.0
- * 
+ *
  */
 public class TXReservationMgr {
   /**

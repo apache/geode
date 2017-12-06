@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
+import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_OBJECT;
+import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -57,10 +62,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_OBJECT;
 
 /**
  * A class that specifies a destroy operation. Used by ReplicateRegions. Note: The reason for
@@ -68,9 +69,9 @@ import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS
  * RemoteDestroyMessage to differentiate an invalidate versus a destroy. The assumption is that
  * these operations are used frequently, if they are not then it makes sense to fold the destroy and
  * the invalidate into the same message and use an extra bit to differentiate
- * 
+ *
  * @since GemFire 6.5
- * 
+ *
  */
 public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     implements OldValueImporter {
@@ -196,7 +197,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   /**
    * Set the old value for this message, only used if there are cqs registered on one of the bridge
    * servers.
-   * 
+   *
    * @param event underlying event.
    * @since GemFire 5.5
    */
@@ -296,7 +297,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   /**
    * Sends a RemoteDestroyMessage {@link org.apache.geode.cache.Region#destroy(Object)}message to
    * the recipient
-   * 
+   *
    * @param recipient the recipient of the message
    * @param r the ReplicateRegion for which the destroy was performed
    * @param event the event causing this message
@@ -505,7 +506,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
   /**
    * Assists the toString method in reporting the contents of this message
-   * 
+   *
    */
   @Override
   protected void appendFields(StringBuffer buff) {

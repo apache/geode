@@ -26,7 +26,7 @@ public interface MapType extends CollectionType {
 
   /**
    * Return the type of the keys in this type of map.
-   * 
+   *
    * @return the ObjectType of the keys in this type of map.
    */
   public ObjectType getKeyType();

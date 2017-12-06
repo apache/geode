@@ -16,15 +16,16 @@ package org.apache.geode.management.internal;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import java.io.IOException;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class AgentUtilJUnitTest {

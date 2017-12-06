@@ -194,7 +194,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
    * This test is for a bug in which a cache loader threw an exception that caused the wrong value
    * to be put in a Future in nonTxnFindObject. This in turn caused a concurrent search for the
    * object to not invoke the loader a second time.
-   * 
+   *
    * VM0 is used to create a cache and a region having a loader that simulates the conditions that
    * caused the bug. One async thread then does a get() which invokes the loader. Another async
    * thread does a get() which reaches nonTxnFindObject and blocks waiting for the first thread's
@@ -462,7 +462,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           }
           /*
            * catch(EntryNotFoundException enfe) { fail("While getting value for ACK region", enfe);
-           * 
+           *
            * }
            */
           catch (TimeoutException te) {
@@ -561,7 +561,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           }
           /*
            * catch(EntryNotFoundException enfe) { fail("While getting value for ACK region", enfe);
-           * 
+           *
            * }
            */
           catch (TimeoutException te) {
@@ -1023,5 +1023,3 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
   }
 }
-
-

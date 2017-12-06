@@ -61,7 +61,7 @@ public interface InternalDataView {
 
   /**
    * Invalidate the entry
-   * 
+   *
    * @see Region#invalidate(Object)
    * @param event
    * @param invokeCallbacks
@@ -72,7 +72,7 @@ public interface InternalDataView {
 
   /**
    * get the entry count
-   * 
+   *
    * @param localRegion
    * @return the entry count
    */
@@ -110,7 +110,7 @@ public interface InternalDataView {
 
   /**
    * get entry for the key. Called only on farside.
-   * 
+   *
    * @param key
    * @param localRegion
    * @param allowTombstones
@@ -121,7 +121,7 @@ public interface InternalDataView {
 
   /**
    * Put or create an entry in the data view.
-   * 
+   *
    * @param event specifies the new or updated value
    * @param ifNew
    * @param ifOld
@@ -136,7 +136,7 @@ public interface InternalDataView {
 
   /**
    * Put or create an entry in the data view. Called only on the farside.
-   * 
+   *
    * @param event specifies the new or updated value
    * @param ifNew
    * @param ifOld
@@ -152,7 +152,7 @@ public interface InternalDataView {
 
   /**
    * Destroy an entry in the data view. Called only on the farside.
-   * 
+   *
    * @param event
    * @param cacheWrite TODO
    * @param expectedOldValue
@@ -163,7 +163,7 @@ public interface InternalDataView {
 
   /**
    * Invalidate an entry in the data view. Called only on farside.
-   * 
+   *
    * @param event
    * @param invokeCallbacks
    * @param forceNewEntry
@@ -198,7 +198,7 @@ public interface InternalDataView {
 
 
   /**
-   * 
+   *
    * @param key
    * @param currRgn
    * @param rememberReads
@@ -209,7 +209,7 @@ public interface InternalDataView {
       boolean allowTombstones);
 
   /**
-   * 
+   *
    * @param keyInfo
    * @param currRgn
    * @param rememberReads
@@ -225,14 +225,14 @@ public interface InternalDataView {
   Set getAdditionalKeysForIterator(LocalRegion currRgn);
 
   /**
-   * 
+   *
    * @param currRegion
    * @return set of keys in the region
    */
   Collection<?> getRegionKeysForIteration(LocalRegion currRegion);
 
   /**
-   * 
+   *
    * @param localRegion
    * @param key
    * @param doNotLockEntry

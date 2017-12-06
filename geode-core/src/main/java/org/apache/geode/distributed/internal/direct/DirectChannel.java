@@ -15,6 +15,15 @@
 
 package org.apache.geode.distributed.internal.direct;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.net.InetAddress;
+import java.net.SocketTimeoutException;
+import java.util.*;
+import java.util.concurrent.Semaphore;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
@@ -23,24 +32,16 @@ import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.*;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.net.InetAddress;
-import java.net.SocketTimeoutException;
-import java.util.*;
-import java.util.concurrent.Semaphore;
 
 /**
  * DirectChannel is used to interact directly with other Direct servers to distribute GemFire
@@ -69,7 +70,7 @@ public class DirectChannel {
 
   /**
    * Callback to set the local address, must be done before this channel is used.
-   * 
+   *
    * @param localAddr
    * @throws ConnectionException if the conduit has stopped
    */
@@ -87,7 +88,7 @@ public class DirectChannel {
   /**
    * when the initial number of members is known, this method is invoked to ensure that connections
    * to those members can be established in a reasonable amount of time. See bug 39848
-   * 
+   *
    * @param numberOfMembers
    */
   public void setMembershipSize(int numberOfMembers) {
@@ -153,13 +154,13 @@ public class DirectChannel {
    * value raises the possibility of a deadlock when serializing a message with PDX objects, because
    * the PDX serialization can trigger further distribution.
    */
-  static public final int DEFAULT_CONCURRENCY_LEVEL =
+  public static final int DEFAULT_CONCURRENCY_LEVEL =
       Integer.getInteger("p2p.defaultConcurrencyLevel", Integer.MAX_VALUE / 2).intValue();
 
   /**
    * The maximum number of concurrent senders sending a message to a group of recipients.
    */
-  static private final int MAX_GROUP_SENDERS =
+  private static final int MAX_GROUP_SENDERS =
       Integer.getInteger("p2p.maxGroupSenders", DEFAULT_CONCURRENCY_LEVEL).intValue();
   private Semaphore groupUnorderedSenderSem;
   private Semaphore groupOrderedSenderSem;
@@ -221,7 +222,7 @@ public class DirectChannel {
    * This is basically just sendToMany, giving us a way to see on the stack whether we are sending
    * to a single member or multiple members, in which case the group-send lock will be held during
    * distribution.
-   * 
+   *
    * @param mgr - the membership manager
    * @param p_destinations - the list of addresses to send the message to.
    * @param msg - the message to send
@@ -241,7 +242,7 @@ public class DirectChannel {
   /**
    * Sends a msg to a list of destinations. This code does some special optimizations to stream
    * large messages
-   * 
+   *
    * @param mgr - the membership manager
    * @param p_destinations - the list of addresses to send the message to.
    * @param msg - the message to send
@@ -497,7 +498,7 @@ public class DirectChannel {
   /**
    * Obtain the connections needed to transmit a message. The connections are put into the cons
    * object (the last parameter)
-   * 
+   *
    * @param mgr the membership manager
    * @param msg the message to send
    * @param destinations who to send the message to
@@ -562,7 +563,7 @@ public class DirectChannel {
 
   /**
    * Method send.
-   * 
+   *
    * @param mgr - the membership manager
    * @param destinations - the address(es) to send the message to.
    * @param msg - the message to send
@@ -622,7 +623,7 @@ public class DirectChannel {
 
   /**
    * Returns null if no config is available.
-   * 
+   *
    * @since GemFire 4.2.2
    */
   public DistributionConfig getDMConfig() {
@@ -642,7 +643,7 @@ public class DirectChannel {
   }
 
   /**
-   * 
+   *
    * @param ackTimeout ack wait threshold
    * @param ackSATimeout severe alert threshold
    * @param c
@@ -731,7 +732,7 @@ public class DirectChannel {
 
   /**
    * Ensure that the TCPConduit class gets loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {
@@ -740,7 +741,7 @@ public class DirectChannel {
 
   /**
    * Close the Conduit
-   * 
+   *
    * @see SystemFailure#emergencyClose()
    */
   public void emergencyClose() {
@@ -836,7 +837,7 @@ public class DirectChannel {
    * adds state for thread-owned serial connections to the given member to the parameter
    * <i>result</i>. This can be used to wait for the state to reach the given level in the member's
    * vm.
-   * 
+   *
    * @param member the member whose state is to be captured
    * @param result the map to add the state to
    * @since GemFire 5.1

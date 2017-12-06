@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Defines the operations required to handle statistics samples and receive notifications of
  * ResourceTypes and ResourceInstances.
- * 
+ *
  * @since GemFire 7.0
  */
 public interface SampleHandler {
@@ -33,7 +33,7 @@ public interface SampleHandler {
    * each sample. The delta in nanos can be determined by comparing any nano timeStamp to the first
    * nano timeStamp written to the archive file. Adding this delta to the recorded initial time in
    * milliseconds provides the actual (non-arbitrary) time for each sample.
-   * 
+   *
    * @param nanosTimeStamp an arbitrary nanoseconds time stamp for this sample
    * @param resourceInstances the statistics resource instances captured in this sample
    */
@@ -41,21 +41,21 @@ public interface SampleHandler {
 
   /**
    * Notification that a new statistics {@link ResourceType} has been created.
-   * 
+   *
    * @param resourceType the new statistics ResourceType that was created
    */
   public void allocatedResourceType(ResourceType resourceType);
 
   /**
    * Notification that a new statistics {@link ResourceInstance} has been created.
-   * 
+   *
    * @param resourceInstance the new statistics ResourceInstance that was created
    */
   public void allocatedResourceInstance(ResourceInstance resourceInstance);
 
   /**
    * Notification that an existing statistics {@link ResourceInstance} has been destroyed.
-   * 
+   *
    * @param resourceInstance the existing statistics ResourceInstance that was destroyed
    */
   public void destroyedResourceInstance(ResourceInstance resourceInstance);

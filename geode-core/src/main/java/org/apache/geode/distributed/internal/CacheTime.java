@@ -20,7 +20,7 @@ package org.apache.geode.distributed.internal;
 public interface CacheTime {
   /**
    * Returns the system millisecond clock time with adjustments from the distributed cache
-   * 
+   *
    * @return the current time
    */
   public long cacheTimeMillis();

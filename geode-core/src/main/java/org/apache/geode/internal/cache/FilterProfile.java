@@ -78,10 +78,10 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 /**
  * FilterProfile represents a distributed system member and is used for two purposes: processing
  * client-bound events, and providing information for profile exchanges.
- * 
+ *
  * FilterProfiles represent client IDs, including durable Queue IDs, with long integers. This
  * reduces the size of routing information when sent over the network.
- * 
+ *
  * @since GemFire 6.5
  */
 public class FilterProfile implements DataSerializableFixedID {
@@ -819,7 +819,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * adds a new CQ to this profile during a delta operation or deserialization
-   * 
+   *
    * @param serverCqName the query objects' name
    * @param ServerCQ the new query object
    * @param addToCqMap whether to add the query to this.cqs
@@ -1087,7 +1087,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * get local routing information
-   * 
+   *
    * @param part1Info routing information for peers, if any
    * @param event the event to process
    * @return routing information for clients connected to this server
@@ -1121,7 +1121,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * get continuous query routing information
-   * 
+   *
    * @param event the event to process
    * @param peerProfiles the profiles getting this event
    * @param frInfo the routing table to update
@@ -1273,7 +1273,7 @@ public class FilterProfile implements DataSerializableFixedID {
    * Fills in the routing information for clients that have registered interest in the given event.
    * The routing information is stored in the given FilterRoutingInfo object for use in message
    * delivery.
-   * 
+   *
    * @param event the event being applied to the cache
    * @param profiles the profiles of members having the affected region
    * @param filterRoutingInfo the routing object that is modified by this method (may be null)
@@ -1374,7 +1374,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * get the clients interested in the given event that are attached to this server.
-   * 
+   *
    * @param event the entry event being applied to the cache
    * @param akc allKeyClients collection
    * @param koi keysOfInterest collection
@@ -1677,7 +1677,7 @@ public class FilterProfile implements DataSerializableFixedID {
   /**
    * given a collection of on-wire identifiers, this returns a set of the client/server identifiers
    * for each client or durable queue
-   * 
+   *
    * @param integerIDs the integer ids of the clients/queues
    * @return the translated identifiers
    */
@@ -1688,7 +1688,7 @@ public class FilterProfile implements DataSerializableFixedID {
   /**
    * given a collection of on-wire identifiers, this returns a set of the CQ identifiers they
    * correspond to
-   * 
+   *
    * @param integerIDs the integer ids of the clients/queues
    * @return the translated identifiers
    */
@@ -1698,7 +1698,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * given an on-wire filter ID, find and return the corresponding cq name
-   * 
+   *
    * @param integerID the on-wire ID
    * @return the translated id
    */
@@ -1727,7 +1727,7 @@ public class FilterProfile implements DataSerializableFixedID {
   /**
    * Returns the filter profile messages received while members cache profile exchange was in
    * progress.
-   * 
+   *
    * @param member whose messages are returned.
    * @return filter profile messages that are queued for the member.
    */
@@ -1743,7 +1743,7 @@ public class FilterProfile implements DataSerializableFixedID {
   /**
    * Removes the filter profile messages from the queue that are received while the members cache
    * profile exchange was in progress.
-   * 
+   *
    * @param member whose messages are returned.
    * @return filter profile messages that are queued for the member.
    */
@@ -1814,7 +1814,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.
      * distributed.internal.DistributionManager)
      */
@@ -1945,7 +1945,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
      */
     public int getDSFID() {
@@ -2046,7 +2046,7 @@ public class FilterProfile implements DataSerializableFixedID {
     /**
      * given a collection of on-wire identifiers, this returns a set of the real identifiers (e.g.,
      * client IDs or durable queue IDs)
-     * 
+     *
      * @param integerIDs the integer ids
      * @return the translated identifiers
      */
@@ -2079,7 +2079,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Returns true if the client is interested in all keys.
-   * 
+   *
    * @param id client identifier.
    * @return true if client is interested in all keys.
    */
@@ -2093,7 +2093,7 @@ public class FilterProfile implements DataSerializableFixedID {
   /**
    * Returns true if the client is interested in all keys, for which updates are sent as
    * invalidates.
-   * 
+   *
    * @param id client identifier
    * @return true if client is interested in all keys.
    */
@@ -2106,7 +2106,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Returns the set of client interested keys.
-   * 
+   *
    * @param id client identifier
    * @return client interested keys.
    */
@@ -2123,7 +2123,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Returns the set of client interested keys for which updates are sent as invalidates.
-   * 
+   *
    * @param id client identifier
    * @return client interested keys.
    */
@@ -2140,7 +2140,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Returns the set of client interested patterns.
-   * 
+   *
    * @param id client identifier
    * @return client interested patterns.
    */
@@ -2161,7 +2161,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Returns the set of client interested patterns for which updates are sent as invalidates.
-   * 
+   *
    * @param id client identifier
    * @return client interested patterns.
    */
@@ -2182,7 +2182,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Returns the set of client interested filters.
-   * 
+   *
    * @param id client identifier
    * @return client interested filters.
    */
@@ -2199,7 +2199,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Returns the set of client interested filters for which updates are sent as invalidates.
-   * 
+   *
    * @param id client identifier
    * @return client interested filters.
    */

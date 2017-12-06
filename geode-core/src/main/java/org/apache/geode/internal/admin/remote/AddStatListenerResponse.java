@@ -16,11 +16,9 @@
 
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.*;
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
 import java.io.*;
-// import java.util.*;
+
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 
@@ -36,8 +34,8 @@ public class AddStatListenerResponse extends AdminResponse {
    * Returns a <code>AddStatListenerResponse</code> that will be returned to the specified
    * recipient. The message will contains a copy of the local manager's system config.
    */
-  public static AddStatListenerResponse create(DistributionManager dm,
-      InternalDistributedMember recipient, long resourceId, String statName) {
+  public static AddStatListenerResponse create(DM dm, InternalDistributedMember recipient,
+      long resourceId, String statName) {
     AddStatListenerResponse m = new AddStatListenerResponse();
     m.setRecipient(recipient);
     GemFireStatSampler sampler = null;

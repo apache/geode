@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 /**
  * Enumeration of GemFire {@link ControllableProcess} types and the file names associated with
  * controlling its lifecycle.
- * 
+ *
  * @since GemFire 8.0
  */
 public enum ProcessType {

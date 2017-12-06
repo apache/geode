@@ -33,7 +33,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * A message used for debugging purposes. For example if a test fails it can call
  * {@link PartitionedRegion#dumpAllBuckets(boolean)} which sends this message to all VMs that have
  * that PartitionedRegion defined.
- * 
+ *
  * @see org.apache.geode.internal.cache.PartitionedRegion#dumpAllBuckets(boolean)
  */
 public class DumpBucketsMessage extends PartitionMessage {

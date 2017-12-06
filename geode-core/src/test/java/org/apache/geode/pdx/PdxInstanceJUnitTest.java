@@ -14,19 +14,8 @@
  */
 package org.apache.geode.pdx;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
-import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -36,8 +25,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.*;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
+import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
  *
@@ -399,7 +400,7 @@ public class PdxInstanceJUnitTest {
 
 
 
-  static abstract class TestPdx implements PdxSerializable {
+  abstract static class TestPdx implements PdxSerializable {
 
     public void fromData(PdxReader in) {}
 

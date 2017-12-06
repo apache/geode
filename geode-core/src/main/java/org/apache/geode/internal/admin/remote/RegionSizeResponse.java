@@ -16,13 +16,11 @@
 
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.*;
-import org.apache.geode.cache.*;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
 
 /**
@@ -37,8 +35,7 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
   /**
    * Returns a <code>RegionSizeResponse</code> that will be returned to the specified recipient.
    */
-  public static RegionSizeResponse create(DistributionManager dm,
-      InternalDistributedMember recipient) {
+  public static RegionSizeResponse create(DM dm, InternalDistributedMember recipient) {
     RegionSizeResponse m = new RegionSizeResponse();
     m.setRecipient(recipient);
     return m;

@@ -14,18 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.fail;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * AFTER_REGION_CREATE was being sent before region initialization (bug 33726). Test to verify that

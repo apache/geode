@@ -24,8 +24,8 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class JCALocalTransaction implements LocalTransaction {

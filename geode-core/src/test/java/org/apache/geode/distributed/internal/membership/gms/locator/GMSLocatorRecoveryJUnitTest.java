@@ -25,6 +25,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
@@ -44,16 +55,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.util.Properties;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSLocatorRecoveryJUnitTest {
@@ -192,4 +193,3 @@ public class GMSLocatorRecoveryJUnitTest {
     }
   }
 }
-

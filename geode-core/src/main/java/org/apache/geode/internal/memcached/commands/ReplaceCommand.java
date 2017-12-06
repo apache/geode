@@ -28,9 +28,9 @@ import org.apache.geode.internal.memcached.ValueWrapper;
  * <code>
  * &lt;command name&gt; &lt;key&gt; &lt;flags&gt; &lt;exptime&gt; &lt;bytes&gt; [noreply]\r\n
  * </code><br/>
- * 
+ *
  * "replace" means "store this data, but only if the server *does* already hold data for this key".
- * 
+ *
  */
 public class ReplaceCommand extends StorageCommand {
 

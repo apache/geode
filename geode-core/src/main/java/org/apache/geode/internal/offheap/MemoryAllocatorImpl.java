@@ -47,7 +47,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * size. If no close fits exist then it allocates the next slice from the front of one the original
  * large chunks. If we can not find enough free memory then all the existing free memory is
  * defragmented. If we still do not have enough to make the allocation an exception is thrown.
- * 
+ *
  * @since Geode 1.0
  */
 public class MemoryAllocatorImpl implements MemoryAllocator {
@@ -285,7 +285,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
          * value could be GATEWAY_SENDER_EVENT_IMPL_VALUE or region entry value.
          */
         @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
-        Object value = re._getValue();
+        Object value = re.getValue();
         if (value instanceof OffHeapStoredObject) {
           result.add((OffHeapStoredObject) value);
         }

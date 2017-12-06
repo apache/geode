@@ -34,11 +34,11 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This structure contains all the filter evaluatable CompiledComparision conditions which are using
@@ -46,10 +46,10 @@ import org.apache.geode.cache.query.types.StructType;
  * either be a part of a GroupJunction or can be a stand alone Junction. In case it is a stand alone
  * Junction, then it can possibly have a not null Iter Operand, so that it can be evaluated along
  * with the expansion/truncation of index result.
- * 
+ *
  */
 public class RangeJunction extends AbstractGroupOrRangeJunction {
-  private final static int RANGE_SIZE_ESTIMATE = 3;
+  private static final int RANGE_SIZE_ESTIMATE = 3;
   // moved to AbstractGroupOrRangeJunction
   // private CompiledValue iterOperands;
 
@@ -382,7 +382,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Checks if key1 operator key2 is true or not. The operator could be =, != , <, >,<=,>=
-   * 
+   *
    * @param key1
    * @param key2
    * @param operator
@@ -399,7 +399,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * upper bound , in the sense that they do not represent a mutually exclusive condition like a> 10
    * and a <9 etc. If the condition is bounded in nature, it further checks if the not equal type
    * keys fall in the bounded range , else it removes it from the Not Equal Keys set
-   * 
+   *
    * @param notEqualKeys Set containing keys of operands having 'Not Equal' (!=) type conditions
    * @param lessCondnKey Key of the 'Less' condition operand
    * @param lessOperator Type of 'less' operator ( < or <=)
@@ -438,7 +438,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * Creates a Filter of type SingleCondnEvaluator if there exists atleast one key of type "NOT
    * EQUAL" which satisfies the 'less' or 'greater' type operand. Otherwise the Filter is nothing
    * but the CompiledComparison representing the 'less' or 'greater' inequality
-   * 
+   *
    * @param notEqualKeys Set containing NotEqual type Keys
    * @param operand CompiledValue representing the 'Less' or 'Greater' operand
    * @param operator Type of 'Less' or 'Greater' operand
@@ -548,7 +548,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Test function which retrieves the "NOT EQUAL KEYS"
-   * 
+   *
    * @param o Object of type NotEqualConditionEvaluator from which the set containing the keys for
    *        removal need to be retrieved
    * @return Unmodifiable Set containing the keys for removal
@@ -568,7 +568,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Test function which retrieves the SingleCondnEvaluator operator
-   * 
+   *
    * @param o Object of type SingleCondnEvaluator from which the set containing the keys for removal
    *        need to be retrieved
    * @return int indicating the operator
@@ -585,7 +585,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Test function which retrieves the evaluated Key for a SingleCondnEvaluator operator
-   * 
+   *
    * @param o Object of type SingleCondnEvaluator from which the set containing the keys for removal
    *        need to be retrieved
    * @return Object representing the evaluated Key
@@ -602,7 +602,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Test function which retrieves the LESS type evaluated Key for a DoubleCondnEvaluator operator
-   * 
+   *
    * @param o Object of type DoubleCondnEvaluator
    * @return Object representing the evaluated Key of Less Type
    */
@@ -619,7 +619,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
   /**
    * Test function which retrieves the GREATER type evaluated Key for a DoubleCondnEvaluator
    * operator
-   * 
+   *
    * @param o Object of type DoubleCondnEvaluator
    * @return Object representing the evaluated Key of GREATER Type
    */
@@ -635,7 +635,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Test function which retrieves the operator of Less Type
-   * 
+   *
    * @param o Object of type DoubleCondnEvaluator
    * @return int indicating the operator of less Type
    */
@@ -651,7 +651,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Test function which retrieves the operator of GREATER Type
-   * 
+   *
    * @param o Object of type DoubleCondnEvaluator
    * @return int indicating the operator of less Type
    */
@@ -667,7 +667,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   /**
    * Test function which retrieves the underlying Index for a NotEqualConditionEvaluator operator
-   * 
+   *
    * @param o Object of type NotEqualConditionEvaluator from which the index needs to be retrieved
    * @return Index
    */
@@ -686,8 +686,8 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * object of this class will be created only if RangeJunction contains more than one 'NOT EQUAL' (
    * != ) type conditions ( apart from conditions having null or undefined as key). This class is
    * also extended by SingleCondnEvaluator and DoubleCondnRangeJunctionEvaluator
-   * 
-   * 
+   *
+   *
    */
   private static class NotEqualConditionEvaluator extends AbstractCompiledValue implements Filter {
     final Set notEqualTypeKeys;
@@ -695,7 +695,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     final IndexInfo indxInfo;
 
     /**
-     * 
+     *
      * @param notEqualTypeKeys java.utils.Set object containing the Keys of the 'NOT EQUAL' type
      *        conditions ( a != 3 and a !=5) For DoubleCondnRangeJunctionEvaluator , this may be
      *        null
@@ -764,7 +764,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
        * resultset is a StructBag). If the match level is zero & expand to to top level flag is true
        * & iff the total no. of iterators in current scope is greater than the no. of fields in
        * StructBag , then only we need to do any expansion.
-       * 
+       *
        */
       try {
         observer.beforeIndexLookup(this.indxInfo._index, OQLLexerTokenTypes.TOK_NE,
@@ -873,8 +873,8 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * though not both 'Less' and 'Greater' together). The RangeJunction will identify the most
    * specific inequality for the AND junction. Thus if something like a > 7 and a >=6 , will be
    * sufficiently represented by a > 7
-   * 
-   * 
+   *
+   *
    */
   private static class SingleCondnEvaluator extends NotEqualConditionEvaluator {
     protected int condnOp = -1;
@@ -889,7 +889,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     }
 
     /**
-     * 
+     *
      * @param operator integer identifying the type of 'Less' or 'Greater' inequality
      * @param key Object representing the Key for the inequality
      * @param notEqualKeys Set containing the 'NOT EQUAL' Keys accompanying the 'Less' or 'Greater'
@@ -952,7 +952,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
        * resultset is a StructBag). If the match level is zero & expand to to top level flag is true
        * & iff the total no. of iterators in current scope is greater than the no. of fields in
        * StructBag , then only we need to do any expansion.
-       * 
+       *
        */
       try {
         observer.beforeIndexLookup(this.indxInfo._index, this.condnOp, this.condnKey);
@@ -1000,8 +1000,8 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * for the AND junction. Thus the conditions a > 8 and a <10 will be used to form the Object of
    * this class. For this evaluator only, the notEqualTypeKeys present in its super class may be
    * null ( if there is no 'NOT EQUAL' type condition satisfying the bounded condition)
-   * 
-   * 
+   *
+   *
    */
   private static class DoubleCondnRangeJunctionEvaluator extends NotEqualConditionEvaluator {
     protected final int lessCondnOp;
@@ -1013,7 +1013,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     protected final Object greaterCondnKey;
 
     /**
-     * 
+     *
      * @param lessCondnOp integer identifying the upper bound ( < or <= )
      * @param lessCondnKey Object representing the Upper Bound Key
      * @param greaterCondnOp integer identifying the lower bound ( > or >= )
@@ -1092,7 +1092,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
        * resultset is a StructBag). If the match level is zero & expand to to top level flag is true
        * & iff the total no. of iterators in current scope is greater than the no. of fields in
        * StructBag , then only we need to do any expansion.
-       * 
+       *
        */
       try {
         observer.beforeIndexLookup(this.indxInfo._index, this.greaterCondnOp, this.greaterCondnKey,

@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.awaitility.Awaitility.*;
+import static java.util.concurrent.TimeUnit.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.apache.geode.test.dunit.Host.*;
 import static org.apache.geode.test.dunit.Invoke.*;
-import static java.util.concurrent.TimeUnit.*;
+import static org.awaitility.Awaitility.*;
 
 import java.io.File;
 import java.io.FileFilter;

@@ -50,34 +50,34 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * AllGroupJunction & CompositeGroupJunction. The method createJunction is where the decision of
  * creating an AllGroupJunction ( wrapping multiple GroupJunctions and CompositeGroupJunctions) or a
  * single GroupJunction or a singe CompositeGroupJunction is taken.
- * 
+ *
  * CompiledJunction -----> on organization of Operands may result in any of the following cases
- * 
+ *
  * 1) CompiledJunction | | -------------------------------- | | CompiledJunction GroupJunction
  * (Filter evaluable) (Filter evaluable)
- * 
+ *
  * 2) CompiledJunction | | -------------------------------- | | CompiledJunction RangeJunction
  * (Filter evaluable same index operands. May contain iter operands belonging to the same Group)
  * (Filter evaluable)
- * 
- * 
+ *
+ *
  * 3) CompiledJunction | | -------------------------------- | | CompiledJunction GroupJunction
  * (Filter evaluable) (Filter evaluable) | | ---------------------------------------------- | |
  * CompiledComparison RangeJunction (at least one filter evaluable compiled Comparison using an
  * index shared by no other condition)
- * 
- * 
+ *
+ *
  * 5) CompiledJunction | | -------------------------------- | | CompiledJunction GroupJunction
  * (Filter evaluable) (Filter evaluable) | | --------------------------------------- | | |
  * RangeJunction RangeJunction CompiledComparison (zero or more Filter evaluable or iter evaluable )
- * 
+ *
  * 6) CompiledJunction | ---------------------------------- | | CompiledJunction AllGroupJunction
  * (filter evaluable) | ------------------------------------------------ | | | GroupJunction
  * GroupJunction CompositeGroupJunction | --------------------------------------- | | |
  * GroupJunction equi join conditions GroupJunction
- * 
- * 
- * 
+ *
+ *
+ *
  * @version $Revision: 1.2 $
  */
 public class CompiledJunction extends AbstractCompiledValue implements Negatable {
@@ -97,7 +97,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
   // join is added
   // after a valid operand has already set the counter to an integer, we instead just ignore and do
   // not set the place holder
-  private final static String PLACEHOLDER_FOR_JOIN = "join";
+  private static final String PLACEHOLDER_FOR_JOIN = "join";
 
   CompiledJunction(CompiledValue[] operands, int operator) {
     // invariant: operator must be LITERAL_and or LITERAL_or
@@ -443,7 +443,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
    * exclusively dependent only on the independent iterator of the group. Any iterator which is
    * ultimately dependent on more than one independent iterators cannot be assumed to be part of the
    * GroupJunction, even if one of independent iterator belongs to a different scope.
-   * 
+   *
    * @param context
    * @return New combination of AbstractCompiledValue(s) in form of CompiledJunction.
    * @throws FunctionDomainException
@@ -622,7 +622,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
    * exists operands using multiple indexes, then a GroupJunction is created. In that case , the
    * operands using the same index are grouped in a RangeJunction & that Range Junction becomes part
    * of the GroupJunction. A GroupJunction may contain one or more RangeJunction
-   * 
+   *
    * @param needsCompacting boolean indicating if there is a possibility of RangeJunction or not. If
    *        needsCompacting is false , then a GroupJunction will be formed, without any
    *        RangeJunction
@@ -1067,16 +1067,16 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
    * optimizes the limit on index intermediate results ONLY if ONE index is used for whole query and
    * all conditions in where clause use that index. Look at the call hierarchy of this function.
    * There are two cases:
-   * 
+   *
    * Literal_OR: A junction with OR will contain operands which are CompiledComparison or
    * CompiledJunction (or subjunction). we recursively check if all of those use the same index and
    * if ANY one of those comparisons or subjunctions does not use the index, it retruns false.
-   * 
+   *
    * Literal_AND: If we get combination of comparisons and subjunctions then limit is NOT applicable
    * on index results. Like, "where ID != 10 AND (ID < 5 OR ID > 10) LIMIT 5". If we get only
    * comparisons ONLY then if all comparisons use the same index then limit is applicable and this
    * returns true. Like, "where ID != 10 AND (ID < 5 AND ID > 10) LIMIT 5".
-   * 
+   *
    */
   @Override
   public boolean isLimitApplicableAtIndexLevel(ExecutionContext context)
@@ -1155,7 +1155,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
   /*
    * class CGJData { RuntimeIterator [] indpndItrs = null; List iterOperands = null; List
    * groupJunctions = null; CompiledValue [] compositeCompiledComparisons = null;
-   * 
+   *
    * CGJData(RuntimeIterator [] indpndItrs, List iterOperands,List groupJunctions, CompiledValue []
    * compositeCompiledComparisons) { this.indpndItrs = indpndItrs; this.iterOperands = iterOperands;
    * this.groupJunctions = groupJunctions; this.compositeCompiledComparisons =

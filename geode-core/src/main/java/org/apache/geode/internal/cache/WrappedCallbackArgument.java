@@ -55,7 +55,7 @@ public abstract class WrappedCallbackArgument {
 
   /**
    * Returns the original callback argument.
-   * 
+   *
    * @return the original callback argument
    */
   public Object getOriginalCallbackArg() {

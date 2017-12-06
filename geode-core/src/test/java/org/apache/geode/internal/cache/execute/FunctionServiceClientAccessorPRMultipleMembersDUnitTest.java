@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
 
 /**
  * Tests function execution with a client accessing multiple members with a PR with redundancy 0

@@ -25,14 +25,14 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * traces are added at the same point of origin. This will collect all unique code paths while the
  * collector is turned on. This class will affect timing and performance so its use is suspect while
  * diagnosing concurrency issues.
- * 
+ *
  * Example: <code>
  * public void doSomeWork() {
  *      // This will collect all unique code paths to this method.
  *      this.traceCollector.add(new Exception())
  * }
  * </code>
- * 
+ *
  *
  * @since Geode 1.0
  */
@@ -92,7 +92,7 @@ public class StackTraceCollector {
 
   /**
    * Adds a stack trace to this collector if it is unique.
-   * 
+   *
    * @param throwable used to generate the stack trace.
    * @return true if the stack trace was not already present in this collector. This will always
    *         return false if the collector is turned off.
@@ -103,7 +103,7 @@ public class StackTraceCollector {
 
   /**
    * Adds a stack trace to a collection Set if it is unique.
-   * 
+   *
    * @param throwable used to generate the stack trace.
    * @return true if the stack trace was not already present in this collector. This will always
    *         return false if the collector is turned off.
@@ -119,7 +119,7 @@ public class StackTraceCollector {
 
   /**
    * Clears this collector of all stack traces.
-   * 
+   *
    * @return true if there were stack traces to clear.
    */
   public boolean clear() {
@@ -131,7 +131,7 @@ public class StackTraceCollector {
 
   /**
    * Returns true if the throwable parameter is contained by this collector.
-   * 
+   *
    * @param throwable a stack trace to check.
    */
   public boolean contains(final Throwable throwable) {
@@ -140,7 +140,7 @@ public class StackTraceCollector {
 
   /**
    * Returns true if the stackTrace parameter is contained by this collector.
-   * 
+   *
    * @param stackTrace a stack trace.
    */
   public boolean contains(final String stackTrace) {
@@ -149,7 +149,7 @@ public class StackTraceCollector {
 
   /**
    * Returns the stack trace associated with a Throwable as a String.
-   * 
+   *
    * @param throwable contains a stack trace to be extracted and returned.
    */
   public synchronized String convert(final Throwable throwable) {

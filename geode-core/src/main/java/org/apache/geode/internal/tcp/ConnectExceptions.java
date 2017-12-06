@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.tcp;
 
-// import java.io.*;
 import java.util.*;
 
 import org.apache.geode.GemFireCheckedException;

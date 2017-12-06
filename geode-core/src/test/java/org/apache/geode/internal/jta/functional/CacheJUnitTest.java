@@ -62,7 +62,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * in the form: 1 => name1, 2 => name2, 3 => name3...as the values of ID and name fields
  * respectively. Test # 15 & 16 has the dependency to run on CloudScape database only due to
  * variations in DDL.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class CacheJUnitTest {
@@ -945,7 +945,7 @@ public class CacheJUnitTest {
     Statement stmt = null;
     /*
      * try { ta = (UserTransaction)ctx.lookup("java:/UserTransaction");
-     * 
+     *
      * } catch (NamingException e) { fail ("user txn lookup failed: " + e.getMessage ()); }
      */
 

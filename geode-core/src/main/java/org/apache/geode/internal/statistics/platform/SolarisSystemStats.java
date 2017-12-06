@@ -25,80 +25,80 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * running on.
  */
 public class SolarisSystemStats {
-  private final static int allocatedSwapINT = 0;
-  private final static int cpuActiveINT = 1;
-  private final static int cpuIdleINT = 2;
-  private final static int cpuIoWaitINT = 3;
-  private final static int cpuSwapWaitINT = 4;
-  private final static int cpuSystemINT = 5;
-  private final static int cpuUserINT = 6;
-  private final static int cpuWaitingINT = 7;
-  private final static int cpusINT = 8;
-  private final static int freeMemoryINT = 9;
-  private final static int physicalMemoryINT = 10;
-  private final static int processesINT = 11;
-  private final static int reservedSwapINT = 12;
-  private final static int schedulerRunCountINT = 13;
-  private final static int schedulerSwapCountINT = 14;
-  private final static int schedulerWaitCountINT = 15;
-  private final static int unreservedSwapINT = 16;
-  private final static int unallocatedSwapINT = 17;
+  private static final int allocatedSwapINT = 0;
+  private static final int cpuActiveINT = 1;
+  private static final int cpuIdleINT = 2;
+  private static final int cpuIoWaitINT = 3;
+  private static final int cpuSwapWaitINT = 4;
+  private static final int cpuSystemINT = 5;
+  private static final int cpuUserINT = 6;
+  private static final int cpuWaitingINT = 7;
+  private static final int cpusINT = 8;
+  private static final int freeMemoryINT = 9;
+  private static final int physicalMemoryINT = 10;
+  private static final int processesINT = 11;
+  private static final int reservedSwapINT = 12;
+  private static final int schedulerRunCountINT = 13;
+  private static final int schedulerSwapCountINT = 14;
+  private static final int schedulerWaitCountINT = 15;
+  private static final int unreservedSwapINT = 16;
+  private static final int unallocatedSwapINT = 17;
 
-  private final static int anonymousPagesFreedLONG = 0;
-  private final static int anonymousPagesPagedInLONG = 1;
-  private final static int anonymousPagesPagedOutLONG = 2;
-  private final static int contextSwitchesLONG = 3;
-  private final static int execPagesFreedLONG = 4;
-  private final static int execPagesPagedInLONG = 5;
-  private final static int execPagesPagedOutLONG = 6;
-  private final static int failedMutexEntersLONG = 7;
-  private final static int failedReaderLocksLONG = 8;
-  private final static int failedWriterLocksLONG = 9;
-  private final static int fileSystemPagesFreedLONG = 10;
-  private final static int fileSystemPagesPagedInLONG = 11;
-  private final static int fileSystemPagesPagedOutLONG = 12;
-  private final static int hatMinorFaultsLONG = 13;
-  private final static int interruptsLONG = 14;
-  private final static int involContextSwitchesLONG = 15;
-  private final static int majorPageFaultsLONG = 16;
-  private final static int messageCountLONG = 17;
-  private final static int pageDaemonCyclesLONG = 18;
-  private final static int pageInsLONG = 19;
-  private final static int pageOutsLONG = 20;
-  private final static int pagerRunsLONG = 21;
-  private final static int pagesPagedInLONG = 22;
-  private final static int pagesPagedOutLONG = 23;
-  private final static int pagesScannedLONG = 24;
-  private final static int procsInIoWaitLONG = 25;
-  private final static int protectionFaultsLONG = 26;
-  private final static int semphoreOpsLONG = 27;
-  private final static int softwareLockFaultsLONG = 28;
-  private final static int systemCallsLONG = 29;
-  private final static int systemMinorFaultsLONG = 30;
-  private final static int threadCreatesLONG = 31;
-  private final static int trapsLONG = 32;
-  private final static int userMinorFaultsLONG = 33;
-  private final static int loopbackInputPacketsLONG = 34;
-  private final static int loopbackOutputPacketsLONG = 35;
-  private final static int inputPacketsLONG = 36;
-  private final static int inputErrorsLONG = 37;
-  private final static int outputPacketsLONG = 38;
-  private final static int outputErrorsLONG = 39;
-  private final static int collisionsLONG = 40;
-  private final static int inputBytesLONG = 41;
-  private final static int outputBytesLONG = 42;
-  private final static int multicastInputPacketsLONG = 43;
-  private final static int multicastOutputPacketsLONG = 44;
-  private final static int broadcastInputPacketsLONG = 45;
-  private final static int broadcastOutputPacketsLONG = 46;
-  private final static int inputPacketsDiscardedLONG = 47;
-  private final static int outputPacketsDiscardedLONG = 48;
+  private static final int anonymousPagesFreedLONG = 0;
+  private static final int anonymousPagesPagedInLONG = 1;
+  private static final int anonymousPagesPagedOutLONG = 2;
+  private static final int contextSwitchesLONG = 3;
+  private static final int execPagesFreedLONG = 4;
+  private static final int execPagesPagedInLONG = 5;
+  private static final int execPagesPagedOutLONG = 6;
+  private static final int failedMutexEntersLONG = 7;
+  private static final int failedReaderLocksLONG = 8;
+  private static final int failedWriterLocksLONG = 9;
+  private static final int fileSystemPagesFreedLONG = 10;
+  private static final int fileSystemPagesPagedInLONG = 11;
+  private static final int fileSystemPagesPagedOutLONG = 12;
+  private static final int hatMinorFaultsLONG = 13;
+  private static final int interruptsLONG = 14;
+  private static final int involContextSwitchesLONG = 15;
+  private static final int majorPageFaultsLONG = 16;
+  private static final int messageCountLONG = 17;
+  private static final int pageDaemonCyclesLONG = 18;
+  private static final int pageInsLONG = 19;
+  private static final int pageOutsLONG = 20;
+  private static final int pagerRunsLONG = 21;
+  private static final int pagesPagedInLONG = 22;
+  private static final int pagesPagedOutLONG = 23;
+  private static final int pagesScannedLONG = 24;
+  private static final int procsInIoWaitLONG = 25;
+  private static final int protectionFaultsLONG = 26;
+  private static final int semphoreOpsLONG = 27;
+  private static final int softwareLockFaultsLONG = 28;
+  private static final int systemCallsLONG = 29;
+  private static final int systemMinorFaultsLONG = 30;
+  private static final int threadCreatesLONG = 31;
+  private static final int trapsLONG = 32;
+  private static final int userMinorFaultsLONG = 33;
+  private static final int loopbackInputPacketsLONG = 34;
+  private static final int loopbackOutputPacketsLONG = 35;
+  private static final int inputPacketsLONG = 36;
+  private static final int inputErrorsLONG = 37;
+  private static final int outputPacketsLONG = 38;
+  private static final int outputErrorsLONG = 39;
+  private static final int collisionsLONG = 40;
+  private static final int inputBytesLONG = 41;
+  private static final int outputBytesLONG = 42;
+  private static final int multicastInputPacketsLONG = 43;
+  private static final int multicastOutputPacketsLONG = 44;
+  private static final int broadcastInputPacketsLONG = 45;
+  private static final int broadcastOutputPacketsLONG = 46;
+  private static final int inputPacketsDiscardedLONG = 47;
+  private static final int outputPacketsDiscardedLONG = 48;
 
-  private final static int loadAverage1DOUBLE = 0;
-  private final static int loadAverage15DOUBLE = 1;
-  private final static int loadAverage5DOUBLE = 2;
+  private static final int loadAverage1DOUBLE = 0;
+  private static final int loadAverage15DOUBLE = 1;
+  private static final int loadAverage5DOUBLE = 2;
 
-  private final static StatisticsType myType;
+  private static final StatisticsType myType;
 
   private static void checkOffset(String name, int offset) {
     int id = myType.nameToId(name);
@@ -117,7 +117,7 @@ public class SolarisSystemStats {
    * "\n  KeepAliveTimeouts KeepAliveProbes KeepAliveDrops"
    * "\n  ListenQueueFull HalfOpenQueueFull HalfOpenDrops" "\n) "); sprintf(buff, "%d", typeCount);
    * TcpTypeCount = typeCount; typeCount++; strcat(res, buff); }
-   * 
+   *
    */
 
   static {

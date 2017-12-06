@@ -24,7 +24,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,6 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**

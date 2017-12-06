@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,24 +31,24 @@ import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 /**
  * Immutable representation of the outcome of parsing a given shell line. * Extends
  * {@link ParseResult} to add a field to specify the command string that was input by the user.
- * 
+ *
  * <p>
  * Some commands are required to be executed on a remote GemFire managing member. These should be
  * marked with the annotation {@link CliMetaData#shellOnly()} set to <code>false</code>.
  * {@link GfshExecutionStrategy} will detect whether the command is a remote command and send it to
  * ManagementMBean via {@link OperationInvoker}.
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class GfshParseResult extends ParseResult {
   private String userInput;
   private String commandName;
-  private Map<String, String> paramValueStringMap = new HashMap<>();
+  private Map<String, Object> paramValueMap = new HashMap<>();
 
   /**
    * Creates a GfshParseResult instance to represent parsing outcome.
-   * 
+   *
    * @param method Method associated with the command
    * @param instance Instance on which this method has to be executed
    * @param arguments arguments of the method
@@ -76,16 +75,16 @@ public class GfshParseResult extends ParseResult {
 
       CliOption cliOption = getCliOption(parameterAnnotations, i);
 
+      // this maps are used for easy access of option values.
+      // It's used in tests and validation of option values in pre-execution
+      paramValueMap.put(cliOption.key()[0], argument);
+
       String argumentAsString;
       if (argument instanceof Object[]) {
         argumentAsString = StringUtils.join((Object[]) argument, ",");
       } else {
         argumentAsString = argument.toString();
       }
-
-      // this maps are used for easy access of option values in String form.
-      // It's used in tests and validation of option values in pre-execution
-      paramValueStringMap.put(cliOption.key()[0], argumentAsString);
     }
   }
 
@@ -96,20 +95,24 @@ public class GfshParseResult extends ParseResult {
     return userInput;
   }
 
-  /**
-   * Used only in tests and command pre-execution for validating arguments
-   */
-  public String getParamValue(String param) {
-    return paramValueStringMap.get(param);
+  public Object getParamValue(String param) {
+    return paramValueMap.get(param);
   }
 
-  /**
-   * Used only in tests and command pre-execution for validating arguments
-   * 
-   * @return the unmodifiable paramValueStringMap
-   */
-  public Map<String, String> getParamValueStrings() {
-    return Collections.unmodifiableMap(paramValueStringMap);
+
+  public String getParamValueAsString(String param) {
+    Object argument = paramValueMap.get(param);
+    if (argument == null) {
+      return null;
+    }
+
+    String argumentAsString;
+    if (argument instanceof Object[]) {
+      argumentAsString = StringUtils.join((Object[]) argument, ",");
+    } else {
+      argumentAsString = argument.toString();
+    }
+    return argumentAsString;
   }
 
   public String getCommandName() {
@@ -124,5 +127,10 @@ public class GfshParseResult extends ParseResult {
       }
     }
     return null;
+  }
+
+  @Override
+  public String toString() {
+    return this.userInput;
   }
 }

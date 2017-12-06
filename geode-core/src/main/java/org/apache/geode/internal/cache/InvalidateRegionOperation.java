@@ -19,10 +19,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.DataSerializer;
 
 
 /**

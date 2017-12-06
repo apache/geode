@@ -26,13 +26,11 @@ import javax.management.MalformedObjectNameException;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
@@ -176,243 +174,221 @@ public class StartServerCommand implements GfshCommand {
           help = CliStrings.START_SERVER__USERNAME__HELP) final String userName,
       @CliOption(key = CliStrings.START_SERVER__PASSWORD, unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse)
+      throws Exception
   // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
   {
+
+    if (StringUtils.isBlank(memberName)) {
+      // when the user doesn't give us a name, we make one up!
+      memberName = StartMemberUtils.getNameGenerator().generate('-');
+    }
+
+    // prompt for password is username is specified in the command
+    if (StringUtils.isNotBlank(userName)) {
+      if (StringUtils.isBlank(passwordToUse)) {
+        passwordToUse = getGfsh().readPassword(CliStrings.START_SERVER__PASSWORD + ": ");
+      }
+      if (StringUtils.isBlank(passwordToUse)) {
+        return ResultBuilder
+            .createConnectionErrorResult(CliStrings.START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED);
+      }
+    }
+
+    workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
+
+    cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
+
+    if (StringUtils.isNotBlank(cacheXmlPathname) && !IOUtils.isExistingPathname(cacheXmlPathname)) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.CACHE_XML_NOT_FOUND_MESSAGE, cacheXmlPathname));
+    }
+
+    if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
+              gemfirePropertiesFile.getAbsolutePath()));
+    }
+
+    if (gemfireSecurityPropertiesFile != null && !gemfireSecurityPropertiesFile.exists()) {
+      return ResultBuilder.createUserErrorResult(
+          CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
+              gemfireSecurityPropertiesFile.getAbsolutePath()));
+    }
+
+    File serverPidFile = new File(workingDirectory, ProcessType.SERVER.getPidFileName());
+
+    final int oldPid = StartMemberUtils.readPid(serverPidFile);
+
+    Properties gemfireProperties = new Properties();
+
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.BIND_ADDRESS,
+        bindAddress);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.CACHE_XML_FILE,
+        cacheXmlPathname);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.ENABLE_TIME_STATISTICS, enableTimeStatistics);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS, group);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS,
+        locators);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.LOCATOR_WAIT_TIME, locatorWaitTime);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL,
+        logLevel);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_ADDRESS,
+        mcastBindAddress);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT,
+        mcastPort);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MEMCACHED_PORT,
+        memcachedPort);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.MEMCACHED_PROTOCOL, memcachedProtocol);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.MEMCACHED_BIND_ADDRESS, memcachedBindAddress);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PORT,
+        redisPort);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.REDIS_BIND_ADDRESS, redisBindAddress);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PASSWORD,
+        redisPassword);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.USE_CLUSTER_CONFIGURATION, requestSharedConfiguration);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCK_MEMORY,
+        lockMemory);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, offHeapMemorySize);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.START_DEV_REST_API, startRestApi);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
+    // if username is specified in the command line, it will overwrite what's set in the
+    // properties file
+    if (StringUtils.isNotBlank(userName)) {
+      gemfireProperties.setProperty(ResourceConstants.USER_NAME, userName);
+      gemfireProperties.setProperty(ResourceConstants.PASSWORD, passwordToUse);
+    }
+
+    // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
+    // argument
+    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+
+    ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
+        .setAssignBuckets(assignBuckets).setDisableDefaultServer(disableDefaultServer)
+        .setForce(force).setRebalance(rebalance).setRedirectOutput(redirectOutput)
+        .setServerBindAddress(serverBindAddress).setServerPort(serverPort)
+        .setSpringXmlLocation(springXmlLocation).setWorkingDirectory(workingDirectory)
+        .setCriticalHeapPercentage(criticalHeapPercentage)
+        .setEvictionHeapPercentage(evictionHeapPercentage)
+        .setCriticalOffHeapPercentage(criticalOffHeapPercentage)
+        .setEvictionOffHeapPercentage(evictionOffHeapPercentage).setMaxConnections(maxConnections)
+        .setMaxMessageCount(maxMessageCount).setMaxThreads(maxThreads)
+        .setMessageTimeToLive(messageTimeToLive).setSocketBufferSize(socketBufferSize);
+    if (hostNameForClients != null) {
+      serverLauncherBuilder.setHostNameForClients(hostNameForClients);
+    }
+    if (memberName != null) {
+      serverLauncherBuilder.setMemberName(memberName);
+    }
+    ServerLauncher serverLauncher = serverLauncherBuilder.build();
+
+    String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesFile,
+        gemfireSecurityPropertiesFile, gemfireProperties, classpath, includeSystemClasspath,
+        jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap);
+
+    if (getGfsh().getDebug()) {
+      getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
+    }
+
+    Process serverProcess = new ProcessBuilder(serverCommandLine)
+        .directory(new File(serverLauncher.getWorkingDirectory())).start();
+
+    serverProcess.getInputStream().close();
+    serverProcess.getOutputStream().close();
+
+    // fix TRAC bug #51967 by using NON_BLOCKING on Windows
+    final ProcessStreamReader.ReadingMode readingMode = SystemUtils.isWindows()
+        ? ProcessStreamReader.ReadingMode.NON_BLOCKING : ProcessStreamReader.ReadingMode.BLOCKING;
+
+    final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
+    ProcessStreamReader.InputListener inputListener = line -> {
+      message.append(line);
+      if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
+        message.append(StringUtils.LINE_SEPARATOR);
+      }
+    };
+
+    ProcessStreamReader stderrReader = new ProcessStreamReader.Builder(serverProcess)
+        .inputStream(serverProcess.getErrorStream()).inputListener(inputListener)
+        .readingMode(readingMode).continueReadingMillis(2 * 1000).build().start();
+
+    ServerLauncher.ServerState serverState;
+
+    String previousServerStatusMessage = null;
+
+    LauncherSignalListener serverSignalListener = new LauncherSignalListener();
+
+    final boolean registeredServerSignalListener =
+        getGfsh().getSignalHandler().registerListener(serverSignalListener);
+
     try {
-      if (StringUtils.isBlank(memberName)) {
-        // when the user doesn't give us a name, we make one up!
-        memberName = StartMemberUtils.getNameGenerator().generate('-');
-      }
+      getGfsh().logInfo(String.format(CliStrings.START_SERVER__RUN_MESSAGE, IOUtils
+          .tryGetCanonicalPathElseGetAbsolutePath(new File(serverLauncher.getWorkingDirectory()))),
+          null);
 
-      // prompt for password is username is specified in the command
-      if (StringUtils.isNotBlank(userName)) {
-        if (StringUtils.isBlank(passwordToUse)) {
-          passwordToUse = getGfsh().readPassword(CliStrings.START_SERVER__PASSWORD + ": ");
-        }
-        if (StringUtils.isBlank(passwordToUse)) {
-          return ResultBuilder.createConnectionErrorResult(
-              CliStrings.START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED);
-        }
-      }
+      serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory, memberName);
+      do {
+        if (serverProcess.isAlive()) {
+          Gfsh.print(".");
 
-      workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
-
-      cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
-
-      if (StringUtils.isNotBlank(cacheXmlPathname)
-          && !IOUtils.isExistingPathname(cacheXmlPathname)) {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.CACHE_XML_NOT_FOUND_MESSAGE, cacheXmlPathname));
-      }
-
-      if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, StringUtils.EMPTY,
-                gemfirePropertiesFile.getAbsolutePath()));
-      }
-
-      if (gemfireSecurityPropertiesFile != null && !gemfireSecurityPropertiesFile.exists()) {
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ",
-                gemfireSecurityPropertiesFile.getAbsolutePath()));
-      }
-
-      File serverPidFile = new File(workingDirectory, ProcessType.SERVER.getPidFileName());
-
-      final int oldPid = StartMemberUtils.readPid(serverPidFile);
-
-      Properties gemfireProperties = new Properties();
-
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.BIND_ADDRESS,
-          bindAddress);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.CACHE_XML_FILE, cacheXmlPathname);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.ENABLE_TIME_STATISTICS, enableTimeStatistics);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS,
-          group);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, jmxManagerHostnameForClients);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCATORS,
-          locators);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.LOCATOR_WAIT_TIME, locatorWaitTime);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOG_LEVEL,
-          logLevel);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.MCAST_ADDRESS, mcastBindAddress);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.MCAST_PORT,
-          mcastPort);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.MEMCACHED_PORT, memcachedPort);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.MEMCACHED_PROTOCOL, memcachedProtocol);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.MEMCACHED_BIND_ADDRESS, memcachedBindAddress);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PORT,
-          redisPort);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.REDIS_BIND_ADDRESS, redisBindAddress);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.REDIS_PASSWORD, redisPassword);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.USE_CLUSTER_CONFIGURATION, requestSharedConfiguration);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.LOCK_MEMORY,
-          lockMemory);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, offHeapMemorySize);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.START_DEV_REST_API, startRestApi);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
-      StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-          ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
-      // if username is specified in the command line, it will overwrite what's set in the
-      // properties file
-      if (StringUtils.isNotBlank(userName)) {
-        gemfireProperties.setProperty(ResourceConstants.USER_NAME, userName);
-        gemfireProperties.setProperty(ResourceConstants.PASSWORD, passwordToUse);
-      }
-
-      // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
-      // argument
-      final boolean redirectOutput =
-          Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
-
-      ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
-          .setAssignBuckets(assignBuckets).setDisableDefaultServer(disableDefaultServer)
-          .setForce(force).setRebalance(rebalance).setRedirectOutput(redirectOutput)
-          .setServerBindAddress(serverBindAddress).setServerPort(serverPort)
-          .setSpringXmlLocation(springXmlLocation).setWorkingDirectory(workingDirectory)
-          .setCriticalHeapPercentage(criticalHeapPercentage)
-          .setEvictionHeapPercentage(evictionHeapPercentage)
-          .setCriticalOffHeapPercentage(criticalOffHeapPercentage)
-          .setEvictionOffHeapPercentage(evictionOffHeapPercentage).setMaxConnections(maxConnections)
-          .setMaxMessageCount(maxMessageCount).setMaxThreads(maxThreads)
-          .setMessageTimeToLive(messageTimeToLive).setSocketBufferSize(socketBufferSize);
-      if (hostNameForClients != null) {
-        serverLauncherBuilder.setHostNameForClients(hostNameForClients);
-      }
-      if (memberName != null) {
-        serverLauncherBuilder.setMemberName(memberName);
-      }
-      ServerLauncher serverLauncher = serverLauncherBuilder.build();
-
-      String[] serverCommandLine = createStartServerCommandLine(serverLauncher,
-          gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, classpath,
-          includeSystemClasspath, jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap);
-
-      if (getGfsh().getDebug()) {
-        getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
-      }
-
-      Process serverProcess = new ProcessBuilder(serverCommandLine)
-          .directory(new File(serverLauncher.getWorkingDirectory())).start();
-
-      serverProcess.getInputStream().close();
-      serverProcess.getOutputStream().close();
-
-      // fix TRAC bug #51967 by using NON_BLOCKING on Windows
-      final ProcessStreamReader.ReadingMode readingMode = SystemUtils.isWindows()
-          ? ProcessStreamReader.ReadingMode.NON_BLOCKING : ProcessStreamReader.ReadingMode.BLOCKING;
-
-      final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
-      ProcessStreamReader.InputListener inputListener = line -> {
-        message.append(line);
-        if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
-          message.append(StringUtils.LINE_SEPARATOR);
-        }
-      };
-
-      ProcessStreamReader stderrReader = new ProcessStreamReader.Builder(serverProcess)
-          .inputStream(serverProcess.getErrorStream()).inputListener(inputListener)
-          .readingMode(readingMode).continueReadingMillis(2 * 1000).build().start();
-
-      ServerLauncher.ServerState serverState;
-
-      String previousServerStatusMessage = null;
-
-      LauncherSignalListener serverSignalListener = new LauncherSignalListener();
-
-      final boolean registeredServerSignalListener =
-          getGfsh().getSignalHandler().registerListener(serverSignalListener);
-
-      try {
-        getGfsh().logInfo(String.format(CliStrings.START_SERVER__RUN_MESSAGE,
-            IOUtils.tryGetCanonicalPathElseGetAbsolutePath(
-                new File(serverLauncher.getWorkingDirectory()))),
-            null);
-
-        serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory, memberName);
-        do {
-          if (serverProcess.isAlive()) {
-            Gfsh.print(".");
-
-            synchronized (this) {
-              TimeUnit.MILLISECONDS.timedWait(this, 500);
-            }
-
-            serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory, memberName);
-
-            String currentServerStatusMessage = serverState.getStatusMessage();
-
-            if (serverState.isStartingOrNotResponding()
-                && !(StringUtils.isBlank(currentServerStatusMessage)
-                    || currentServerStatusMessage.equalsIgnoreCase(previousServerStatusMessage)
-                    || currentServerStatusMessage.trim().toLowerCase().equals("null"))) {
-              Gfsh.println();
-              Gfsh.println(currentServerStatusMessage);
-              previousServerStatusMessage = currentServerStatusMessage;
-            }
-          } else {
-            final int exitValue = serverProcess.exitValue();
-
-            return ResultBuilder.createShellClientErrorResult(
-                String.format(CliStrings.START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                    exitValue, serverLauncher.getWorkingDirectory(), message.toString()));
-
+          synchronized (this) {
+            TimeUnit.MILLISECONDS.timedWait(this, 500);
           }
-        } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())
-            && serverState.isStartingOrNotResponding());
-      } finally {
-        stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop
-                                                                                                  // will
-                                                                                                  // close
-        // ErrorStream
-        getGfsh().getSignalHandler().unregisterListener(serverSignalListener);
-      }
 
-      Gfsh.println();
+          serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory, memberName);
 
-      final boolean asyncStart =
-          ServerLauncher.ServerState.isStartingNotRespondingOrNull(serverState);
+          String currentServerStatusMessage = serverState.getStatusMessage();
 
-      if (asyncStart) { // async start
-        Gfsh.print(String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, SERVER_TERM_NAME));
-        return ResultBuilder.createInfoResult("");
-      } else {
-        return ResultBuilder.createInfoResult(serverState.toString());
-      }
-    } catch (IllegalArgumentException e) {
-      String message = e.getMessage();
-      if (message != null && message.matches(
-          LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE.toLocalizedString(".+"))) {
-        message =
-            CliStrings.format(CliStrings.LAUNCHERLIFECYCLECOMMANDS__MSG__FAILED_TO_START_0_REASON_1,
-                SERVER_TERM_NAME, message);
-      }
-      return ResultBuilder.createUserErrorResult(message);
-    } catch (IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.START_SERVER__GENERAL_ERROR_MESSAGE, this.toString(t, getGfsh().getDebug())));
+          if (serverState.isStartingOrNotResponding()
+              && !(StringUtils.isBlank(currentServerStatusMessage)
+                  || currentServerStatusMessage.equalsIgnoreCase(previousServerStatusMessage)
+                  || currentServerStatusMessage.trim().toLowerCase().equals("null"))) {
+            Gfsh.println();
+            Gfsh.println(currentServerStatusMessage);
+            previousServerStatusMessage = currentServerStatusMessage;
+          }
+        } else {
+          final int exitValue = serverProcess.exitValue();
+
+          return ResultBuilder.createShellClientErrorResult(
+              String.format(CliStrings.START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
+                  exitValue, serverLauncher.getWorkingDirectory(), message.toString()));
+
+        }
+      } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())
+          && serverState.isStartingOrNotResponding());
+    } finally {
+      stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop
+                                                                                                // will
+                                                                                                // close
+      // ErrorStream
+      getGfsh().getSignalHandler().unregisterListener(serverSignalListener);
+    }
+
+    Gfsh.println();
+
+    final boolean asyncStart =
+        ServerLauncher.ServerState.isStartingNotRespondingOrNull(serverState);
+
+    if (asyncStart) { // async start
+      Gfsh.print(String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, SERVER_TERM_NAME));
+      return ResultBuilder.createInfoResult("");
+    } else {
+      return ResultBuilder.createInfoResult(serverState.toString());
     }
   }
 

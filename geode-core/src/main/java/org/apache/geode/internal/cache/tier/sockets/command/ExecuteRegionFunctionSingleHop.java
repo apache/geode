@@ -54,7 +54,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteRegionFunctionSingleHop extends BaseCommand {
 
-  private final static ExecuteRegionFunctionSingleHop singleton =
+  private static final ExecuteRegionFunctionSingleHop singleton =
       new ExecuteRegionFunctionSingleHop();
 
   public static Command getCommand() {
@@ -402,4 +402,3 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
     }
   }
 }
-

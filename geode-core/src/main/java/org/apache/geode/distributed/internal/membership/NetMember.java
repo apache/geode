@@ -25,7 +25,7 @@ import org.apache.geode.internal.shared.StringPrintWriter;
 
 /**
  * This is the SPI for the basic element of membership provided in the GemFire system.
- * 
+ *
  *
  */
 public interface NetMember extends Comparable<NetMember> {
@@ -46,7 +46,7 @@ public interface NetMember extends Comparable<NetMember> {
 
   /**
    * return a flag stating whether the member has network partition detection enabled
-   * 
+   *
    * @since GemFire 5.6
    */
   public boolean isNetworkPartitionDetectionEnabled();
@@ -55,7 +55,7 @@ public interface NetMember extends Comparable<NetMember> {
 
   /**
    * return a flag stating whether the member can be the membership coordinator
-   * 
+   *
    * @since GemFire 5.6
    */
   public boolean preferredForCoordinator();
@@ -63,7 +63,7 @@ public interface NetMember extends Comparable<NetMember> {
   /**
    * Set whether this member ID is preferred for coordinator. This is mostly useful for unit tests
    * because it does not distribute this status to other members in the distributed system.
-   * 
+   *
    * @param preferred
    */
   public void setPreferredForCoordinator(boolean preferred);

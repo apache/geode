@@ -14,29 +14,29 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.cache.query.types.*;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A Set constrained to contain Structs of all the same type. To conserve on objects, we store the
  * StructType once and reuse it to generate Struct instances on demand.
- * 
+ *
  * The values in this set are stored as Object[] and get wrapped in Structs as necessary.
- * 
+ *
  * @since GemFire 4.0
  */
 public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, SelectResults,
@@ -110,7 +110,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   /**
    * Creates a StructSet directly from a StructBag; (internal use)
-   * 
+   *
    * @since GemFire 5.1
    */
   StructSet(StructBag bag) {
@@ -358,7 +358,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   /**
    * Getter for property modifiable.
-   * 
+   *
    * @return Value of property modifiable.
    */
   public boolean isModifiable() {
@@ -371,7 +371,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   /**
    * Setter for property modifiable.
-   * 
+   *
    * @param modifiable New value of property modifiable.
    */
   public void setModifiable(boolean modifiable) {

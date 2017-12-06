@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * Subclass of {@link ServerLauncherLocalIntegrationTest} which forces the code to not find the
  * Attach API. As a result {@link ServerLauncher} ends up using the FileProcessController
  * implementation.
- * 
+ *
  * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)

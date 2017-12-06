@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 
 public class RegionAttributesInfo implements Serializable {
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 1L;
 

@@ -23,8 +23,8 @@ package org.apache.geode.cache.util;
  * @since GemFire 5.1
  */
 
-import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqListener;
 
 public abstract class CqListenerAdapter implements CqListener {
 

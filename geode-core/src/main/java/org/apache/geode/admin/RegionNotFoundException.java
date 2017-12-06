@@ -14,7 +14,6 @@
  */
 package org.apache.geode.admin;
 
-// import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheRuntimeException;
 
 /**

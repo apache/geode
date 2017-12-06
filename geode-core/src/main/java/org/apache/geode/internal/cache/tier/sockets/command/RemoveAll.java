@@ -50,7 +50,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class RemoveAll extends BaseCommand {
 
-  private final static RemoveAll singleton = new RemoveAll();
+  private static final RemoveAll singleton = new RemoveAll();
 
   public static Command getCommand() {
     return singleton;

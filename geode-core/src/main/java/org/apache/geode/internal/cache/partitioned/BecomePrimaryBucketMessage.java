@@ -42,11 +42,11 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * This message is sent to a recipient to make it become the primary for a partitioned region
  * bucket. The recipient will get in line for the bucket's primary lock and then send a
  * {@link DeposePrimaryBucketMessage} to the current primary.
- * 
+ *
  * Usage: BecomePrimaryBucketResponse response = BecomePrimaryBucketMessage.send(
  * InternalDistributedMember, PartitionedRegion, int bucketId); if (response != null &&
  * response.waitForResponse()) { // recipient became primary for the bucket }
- * 
+ *
  */
 public class BecomePrimaryBucketMessage extends PartitionMessage {
 
@@ -69,7 +69,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
 
   /**
    * Sends a message to make the recipient primary for the bucket.
-   * 
+   *
    * @param recipient the member to to become primary
    * @param pr the PartitionedRegion of the bucket
    * @param bid the bucket to become primary for

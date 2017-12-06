@@ -26,13 +26,13 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.junit.Retry;
-import org.apache.geode.test.junit.runners.TestRunner;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
  * Unit tests for {@link RetryRule} involving global scope (ie rule affects all tests in the test
  * class) with failures due to an {@code Exception}.
- * 
+ *
  * @see org.apache.geode.test.junit.rules.RetryRule
  */
 @Category(UnitTest.class)

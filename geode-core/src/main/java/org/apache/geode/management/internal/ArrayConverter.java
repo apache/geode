@@ -24,8 +24,8 @@ import javax.management.openmbean.OpenDataException;
 
 /**
  * Converting an Array of Composite types
- * 
- * 
+ *
+ *
  */
 public class ArrayConverter extends OpenTypeConverter {
   ArrayConverter(Type targetType, ArrayType openArrayType, Class openArrayClass,

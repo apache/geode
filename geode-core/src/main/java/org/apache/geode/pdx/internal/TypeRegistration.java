@@ -66,21 +66,21 @@ public interface TypeRegistration {
 
   /**
    * Returns the currently defined types.
-   * 
+   *
    * @return the types
    */
   Map<Integer, PdxType> types();
 
   /**
    * Returns the currently defined enums.
-   * 
+   *
    * @return the enums
    */
   Map<Integer, EnumInfo> enums();
 
   /**
    * Returns PdxType having the field
-   * 
+   *
    * @param fieldName
    * @param className
    * @return PdxType or null if field not present

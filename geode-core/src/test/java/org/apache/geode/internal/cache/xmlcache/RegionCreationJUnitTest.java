@@ -27,7 +27,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test for {@link RegionCreation}.
- * 
+ *
  * @since GemFire 8.1
  */
 @Category(UnitTest.class)
@@ -35,7 +35,7 @@ public class RegionCreationJUnitTest {
 
   /**
    * Test method for {@link RegionCreation#getExtensionPoint()}.
-   * 
+   *
    * Assert that method returns a {@link SimpleExtensionPoint} instance and assume that
    * {@link SimpleExtensionPointJUnitTest} has covered the rest.
    */

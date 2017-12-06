@@ -20,7 +20,7 @@ import org.apache.geode.cache.server.ServerMetrics;
 
 /**
  * Metrics describing the load on a bridge server.
- * 
+ *
  * @since GemFire 5.7
  *
  */

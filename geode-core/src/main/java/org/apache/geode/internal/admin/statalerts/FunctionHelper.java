@@ -14,19 +14,19 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
-import org.apache.geode.SystemFailure;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.geode.SystemFailure;
+
 /**
  * This class acts as a helper for the AlertManager & AlertAggregator for the execution of the user
  * specified functions
- * 
+ *
  * This class also keeps a registry of all the functions which are supported, which should be used
  * during creation of alert definition.
- * 
+ *
  */
 
 public class FunctionHelper {
@@ -49,7 +49,7 @@ public class FunctionHelper {
 
   /**
    * This function returns the available function names.
-   * 
+   *
    * @return List of the function names.
    */
   public static String[] getFunctionNames() {
@@ -58,7 +58,7 @@ public class FunctionHelper {
 
   /**
    * This method returns the function's name for the requested function identifier.
-   * 
+   *
    * @param functionId Identifier of the function
    * @return Function name.
    */
@@ -79,7 +79,7 @@ public class FunctionHelper {
 
   /**
    * This function returns the function identifier for the requested function name.
-   * 
+   *
    * @param qFunctionName Name of the function
    * @return Function identifier.
    */
@@ -102,10 +102,10 @@ public class FunctionHelper {
 
   /**
    * Apply the given function of the given list of numbers and returns result
-   * 
+   *
    * @param functorId Id of function to be applied
    * @param vals List of number on which function will be applied
-   * 
+   *
    */
   public static Number[] applyFunction(short functorId, Number[] vals) {
     Number[] res = new Number[1];
@@ -129,7 +129,7 @@ public class FunctionHelper {
 
   /**
    * Apply the SUM function on given list of number
-   * 
+   *
    * @param vals Array of number
    */
   public static Number SUM(Number[] vals) {
@@ -157,7 +157,7 @@ public class FunctionHelper {
 
   /**
    * Apply the Average function on given list of number
-   * 
+   *
    * @param vals Array of number
    */
   public static Number AVG(Number[] vals) {
@@ -181,7 +181,7 @@ public class FunctionHelper {
 
   /**
    * Apply the Minimum function on given list of number
-   * 
+   *
    * @param vals Array of number
    */
   public static Number MIN(Number[] vals) {
@@ -208,7 +208,7 @@ public class FunctionHelper {
 
   /**
    * Apply the Maximum function on given list of number
-   * 
+   *
    * @param vals Array of number
    */
   public static Number MAX(Number[] vals) {

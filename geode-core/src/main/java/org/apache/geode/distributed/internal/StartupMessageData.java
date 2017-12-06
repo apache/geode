@@ -32,7 +32,7 @@ import org.apache.geode.internal.GemFireVersion;
  * is handled by serializing and deserializing a new Properties instance if and only if the member
  * version is 6.6.3 or greater. New fields can be added to the Properties without breaking backwards
  * compatibility. All new fields added should be written to allow for version compatibility.
- * 
+ *
  * @since GemFire 7.0
  */
 class StartupMessageData {
@@ -194,7 +194,7 @@ class StartupMessageData {
 
   /**
    * Writes all optional fields to the DataOutput or null for minimal wire footprint.
-   * 
+   *
    * @throws IOException
    */
   void writeTo(DataOutput out) throws IOException {

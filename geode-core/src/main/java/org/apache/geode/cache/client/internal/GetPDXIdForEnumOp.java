@@ -23,14 +23,14 @@ import org.apache.geode.pdx.internal.EnumInfo;
 
 /**
  * Retrieve the PDXType, given an integer PDX id, from a server.
- * 
+ *
  * @since GemFire 6.6.2
  */
 public class GetPDXIdForEnumOp {
   /**
    * Register a bunch of instantiators on a server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    */
   public static int execute(ExecutablePool pool, EnumInfo ei) {

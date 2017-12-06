@@ -30,7 +30,7 @@ import org.apache.geode.cache.CacheFactory;
  * Field names are case sensitive.
  * <p>
  * All methods on this interface return itself to allow method calls to be chained together.
- * 
+ *
  * @since GemFire 6.6
  */
 public interface PdxWriter {
@@ -40,7 +40,7 @@ public interface PdxWriter {
    * <code>char</code>.
    * <p>
    * Java char is mapped to .NET System.Char.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -54,7 +54,7 @@ public interface PdxWriter {
    * <code>boolean</code>.
    * <p>
    * Java boolean is mapped to .NET System.Boolean.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -68,7 +68,7 @@ public interface PdxWriter {
    * <code>byte</code>.
    * <p>
    * Java byte is mapped to .NET System.SByte.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -82,7 +82,7 @@ public interface PdxWriter {
    * <code>short</code>.
    * <p>
    * Java short is mapped to .NET System.Int16.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -96,7 +96,7 @@ public interface PdxWriter {
    * <code>int</code>.
    * <p>
    * Java int is mapped to .NET System.Int32.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -110,7 +110,7 @@ public interface PdxWriter {
    * <code>long</code>.
    * <p>
    * Java long is mapped to .NET System.Int64.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -124,7 +124,7 @@ public interface PdxWriter {
    * <code>float</code>.
    * <p>
    * Java float is mapped to .NET System.Float.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -138,7 +138,7 @@ public interface PdxWriter {
    * <code>double</code>.
    * <p>
    * Java double is mapped to .NET System.Double.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -152,7 +152,7 @@ public interface PdxWriter {
    * <code>Date</code>.
    * <p>
    * Java Date is mapped to .NET System.DateTime.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -166,7 +166,7 @@ public interface PdxWriter {
    * <code>String</code>.
    * <p>
    * Java String is mapped to .NET System.String.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -186,7 +186,7 @@ public interface PdxWriter {
    * Note that some Java objects serialized with this method may not be compatible with non-java
    * languages. To ensure that only portable objects are serialized use
    * {@link #writeObject(String, Object, boolean)}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -239,7 +239,7 @@ public interface PdxWriter {
    * <li>java.util.HashSet: CacheableHashSet
    * <li>java.util.LinkedHashSet: CacheableLinkedHashSet
    * </ul>
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @param checkPortability if true then an exception is thrown if a non-portable object is
@@ -258,7 +258,7 @@ public interface PdxWriter {
    * <code>boolean[]</code>.
    * <p>
    * Java boolean[] is mapped to .NET System.Boolean[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -272,7 +272,7 @@ public interface PdxWriter {
    * <code>char[]</code>.
    * <p>
    * Java char[] is mapped to .NET System.Char[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -286,7 +286,7 @@ public interface PdxWriter {
    * <code>byte[]</code>.
    * <p>
    * Java byte[] is mapped to .NET System.Byte[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -300,7 +300,7 @@ public interface PdxWriter {
    * <code>short[]</code>.
    * <p>
    * Java short[] is mapped to .NET System.Int16[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -314,7 +314,7 @@ public interface PdxWriter {
    * <code>int[]</code>.
    * <p>
    * Java int[] is mapped to .NET System.Int32[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -328,7 +328,7 @@ public interface PdxWriter {
    * <code>long[]</code>.
    * <p>
    * Java long[] is mapped to .NET System.Int64[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -342,7 +342,7 @@ public interface PdxWriter {
    * <code>float[]</code>.
    * <p>
    * Java float[] is mapped to .NET System.Float[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -356,7 +356,7 @@ public interface PdxWriter {
    * <code>double[]</code>.
    * <p>
    * Java double[] is mapped to .NET System.Double[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -370,7 +370,7 @@ public interface PdxWriter {
    * <code>String[]</code>.
    * <p>
    * Java String[] is mapped to .NET System.String[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -388,7 +388,7 @@ public interface PdxWriter {
    * Note that this call may serialize elements that are not compatible with non-java languages. To
    * ensure that only portable objects are serialized use
    * {@link #writeObjectArray(String, Object[], boolean)}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -406,7 +406,7 @@ public interface PdxWriter {
    * Note that this call may serialize elements that are not compatible with non-java languages. To
    * ensure that only portable objects are serialized use
    * {@link #writeObjectArray(String, Object[], boolean)}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @param checkPortability if true then an exception is thrown if a non-portable object is
@@ -425,7 +425,7 @@ public interface PdxWriter {
    * <code>byte[][]</code>.
    * <p>
    * Java byte[][] is mapped to .NET System.Byte[][].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxWriter
@@ -468,7 +468,7 @@ public interface PdxWriter {
    * </ul>
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object) writeObject}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        <code>fieldType</code>
@@ -514,7 +514,7 @@ public interface PdxWriter {
    * </ul>
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object, boolean) writeObject}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        <code>fieldType</code>
@@ -536,7 +536,7 @@ public interface PdxWriter {
    * calling {@link PdxReader#readUnreadFields() readUnreadFields}.
    * <p>
    * This method must be called first before any of the writeXXX methods is called.
-   * 
+   *
    * @param unread the object that was returned from {@link PdxReader#readUnreadFields()
    *        readUnreadFields}.
    * @return this PdxWriter
@@ -548,16 +548,16 @@ public interface PdxWriter {
    * Indicate that the named field should be included in hashCode and equals checks of this object
    * on a server that is accessing {@link PdxInstance} or when a client executes a query on a
    * server.
-   * 
+   *
    * The fields that are marked as identity fields are used to generate the hashCode and equals
    * methods of {@link PdxInstance}. Because of this, the identity fields should themselves either
    * be primitives, or implement hashCode and equals.
-   * 
+   *
    * If no fields are set as identity fields, then all fields will be used in hashCode and equals
    * checks.
-   * 
+   *
    * The identity fields should be marked after they are written using a write* method.
-   * 
+   *
    * @param fieldName the name of the field to mark as an identity field.
    * @return this PdxWriter
    * @throws PdxFieldDoesNotExistException if the named field has not already been written.

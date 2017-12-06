@@ -14,18 +14,19 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.NO_MEMBERS_FOUND_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
 @Category(IntegrationTest.class)
@@ -36,20 +37,20 @@ public class GfshMultilineCommandTest {
 
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void testMultiLineCommand() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     // Execute a command
     CommandStringBuilder csb = new CommandStringBuilder(LIST_MEMBER);
     csb.addOption(GROUP, "nogroup");
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput().trim()).isEqualTo(NO_MEMBERS_FOUND_MESSAGE);
 
     // Now execute same command with a new Continuation on new line
     csb = new CommandStringBuilder(LIST_MEMBER).addNewLine().addOption(GROUP, "nogroup");
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
     assertThat(gfsh.getGfshOutput().trim()).isEqualTo(NO_MEMBERS_FOUND_MESSAGE);
   }
 

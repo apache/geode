@@ -20,9 +20,9 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 /**
  * This interface is used by testing/debugging code to be notified of different client/server
  * events. See the documentation for class ClientServerObserverHolder for details.
- * 
+ *
  * @since GemFire 5.1
- * 
+ *
  */
 public interface ClientServerObserver {
   /**
@@ -52,21 +52,21 @@ public interface ClientServerObserver {
 
   /**
    * Invoked by CacheClientUpdater just before invoking endpointDied for fail over
-   * 
+   *
    * @param location ServerLocation which has failed
    */
   public void beforeFailoverByCacheClientUpdater(ServerLocation location);
 
   /**
    * Invoked before sending an instantiator message to server
-   * 
+   *
    * @param eventId
    */
   public void beforeSendingToServer(EventID eventId);
 
   /**
    * Invoked after sending an instantiator message to server
-   * 
+   *
    * @param eventId
    */
   public void afterReceivingFromServer(EventID eventId);

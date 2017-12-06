@@ -19,9 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
-import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,9 +31,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
+import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
+import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LogSizerTest {

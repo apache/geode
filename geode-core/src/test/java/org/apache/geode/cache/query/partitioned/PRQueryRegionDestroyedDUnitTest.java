@@ -15,30 +15,20 @@
 
 package org.apache.geode.cache.query.partitioned;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-/**
- * This test creates partition regions with one Accessor node & two Datastores Calls
- * region.destroy() on one of the data stores while the query is being executed and recreates the PR
- * on the VM and verifies the results.
- * 
- */
-
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
+import static org.junit.Assert.*;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.query.data.PortfolioData;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -47,19 +37,14 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.internal.cache.ForceReattemptException;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestCase {
 
-  /**
-   * constructor *
-   * 
-   * @param name
-   */
-
   public PRQueryRegionDestroyedDUnitTest() {
-
     super();
   }
 
@@ -67,6 +52,14 @@ public class PRQueryRegionDestroyedDUnitTest extends PartitionedRegionDUnitTestC
     for (VM vm : vms) {
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
   }
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();

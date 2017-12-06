@@ -781,17 +781,17 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   private static final String KEY_WAIT = "KEY_WAIT";
   private static final String KEY_DISCONNECT = "KEY_DISCONNECT";
 
-  protected final static int CALLBACK_CREATE = 0;
-  protected final static int CALLBACK_UPDATE = 1;
-  protected final static int CALLBACK_INVALIDATE = 2;
-  protected final static int CALLBACK_DESTROY = 3;
-  protected final static int CALLBACK_REGION_INVALIDATE = 4;
+  protected static final int CALLBACK_CREATE = 0;
+  protected static final int CALLBACK_UPDATE = 1;
+  protected static final int CALLBACK_INVALIDATE = 2;
+  protected static final int CALLBACK_DESTROY = 3;
+  protected static final int CALLBACK_REGION_INVALIDATE = 4;
 
-  protected final static Integer CALLBACK_CREATE_INTEGER = new Integer(CALLBACK_CREATE);
-  protected final static Integer CALLBACK_UPDATE_INTEGER = new Integer(CALLBACK_UPDATE);
-  protected final static Integer CALLBACK_INVALIDATE_INTEGER = new Integer(CALLBACK_INVALIDATE);
-  protected final static Integer CALLBACK_DESTROY_INTEGER = new Integer(CALLBACK_DESTROY);
-  protected final static Integer CALLBACK_REGION_INVALIDATE_INTEGER =
+  protected static final Integer CALLBACK_CREATE_INTEGER = new Integer(CALLBACK_CREATE);
+  protected static final Integer CALLBACK_UPDATE_INTEGER = new Integer(CALLBACK_UPDATE);
+  protected static final Integer CALLBACK_INVALIDATE_INTEGER = new Integer(CALLBACK_INVALIDATE);
+  protected static final Integer CALLBACK_DESTROY_INTEGER = new Integer(CALLBACK_DESTROY);
+  protected static final Integer CALLBACK_REGION_INVALIDATE_INTEGER =
       new Integer(CALLBACK_REGION_INVALIDATE);
 
   private static class CallbackWrapper {
@@ -1460,4 +1460,3 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 
   }
 }
-

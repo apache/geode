@@ -26,14 +26,14 @@ public interface Config {
    * Given the attribute's name return its value as a string. This method is used as a way to get
    * command line arguments that specify the attribute name and fetch them safely from a Config
    * instance.
-   * 
+   *
    * @throws IllegalArgumentException if the specified name is illegal
    */
   String getAttribute(String attName);
 
   /**
    * Given the attribute's name return its value as an Object.
-   * 
+   *
    * @throws IllegalArgumentException if the specified name is illegal
    */
   Object getAttributeObject(String attName);
@@ -41,7 +41,7 @@ public interface Config {
   /**
    * Given the attribute's name set its value. This method is used as a way to get command line
    * arguments that specify the attribute name and value and get them safely into a Config instance.
-   * 
+   *
    * @throws IllegalArgumentException if the specified name or value are illegal
    * @throws org.apache.geode.UnmodifiableException if the attribute can not be modified.
    */
@@ -49,7 +49,7 @@ public interface Config {
 
   /**
    * Given the attribute's name set its value to the specified Object.
-   * 
+   *
    * @throws IllegalArgumentException if the specified name is unknown
    * @throws org.apache.geode.InvalidValueException if the specified value is not compatible with
    *         the attributes type
@@ -59,7 +59,7 @@ public interface Config {
 
   /**
    * Returns true if the named configuration attribute can be modified.
-   * 
+   *
    * @throws IllegalArgumentException if the specified name is illegal
    */
   boolean isAttributeModifiable(String attName);
@@ -67,7 +67,7 @@ public interface Config {
   /**
    * Returns the source of the given attribute. This lets you figure out where an attribute's value
    * came from.
-   * 
+   *
    * @param attName the name of the attribute whose source is returned
    * @return null if the attribute has not been configured; otherwise returns the source of the
    *         given attribute
@@ -76,7 +76,7 @@ public interface Config {
 
   /**
    * Returns a description of the named configuration attribute.
-   * 
+   *
    * @throws IllegalArgumentException if the specified name is illegal
    */
   String getAttributeDescription(String attName);
@@ -84,7 +84,7 @@ public interface Config {
   /**
    * Returns the class that defines the type of this attribute. The attribute's values will be
    * constrained to be instances of this type.
-   * 
+   *
    * @throws IllegalArgumentException if the specified name is illegal
    */
   Class getAttributeType(String attName);
@@ -106,21 +106,21 @@ public interface Config {
 
   /**
    * Converts the contents of this config to a property instance.
-   * 
+   *
    * @since GemFire 3.5
    */
   Properties toProperties();
 
   /**
    * Writes this config to the specified file.
-   * 
+   *
    * @since GemFire 3.5
    */
   void toFile(File f) throws IOException;
 
   /**
    * Returns a formatted string suitable for logging.
-   * 
+   *
    * @since GemFire 7.0
    */
   String toLoggerString();

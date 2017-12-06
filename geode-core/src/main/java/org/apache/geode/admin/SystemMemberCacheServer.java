@@ -66,7 +66,7 @@ public interface SystemMemberCacheServer {
 
   /**
    * Returns a string representing the ip address or host name that this server will listen on.
-   * 
+   *
    * @return the ip address or host name that this server is to listen on
    * @since GemFire 5.7
    */
@@ -85,7 +85,7 @@ public interface SystemMemberCacheServer {
    * The default value does not override the gemfire.properties. If you wish to override the
    * properties and want to have your server bind to all local addresses then use this string
    * <code>"0.0.0.0"</code>.
-   * 
+   *
    * @param address the ip address or host name that this server is to listen on
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
@@ -95,7 +95,7 @@ public interface SystemMemberCacheServer {
   /**
    * Returns a string representing the ip address or host name that server locators will tell
    * clients that this server is listening on.
-   * 
+   *
    * @return the ip address or host name to give to clients so they can connect to this server
    * @since GemFire 5.7
    */
@@ -110,7 +110,7 @@ public interface SystemMemberCacheServer {
    * The default value causes the bind-address to be given to clients
    * <p>
    * A <code>null</code> value will be treated the same as the default "".
-   * 
+   *
    * @param name the ip address or host name that will be given to clients so they can connect to
    *        this server
    * @throws AdminException if this cache server is running
@@ -130,7 +130,7 @@ public interface SystemMemberCacheServer {
    * clients who have registered interest in that key. Other clients are not notified of the change.
    * In addition, the actual value is pushed to the client. The client does not need to request the
    * new value from the cache server.
-   * 
+   *
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */
@@ -138,7 +138,7 @@ public interface SystemMemberCacheServer {
 
   /**
    * Answers whether or not this cache server should notify clients based on key subscription.
-   * 
+   *
    * @since GemFire 5.7
    */
   public boolean getNotifyBySubscription();
@@ -156,7 +156,7 @@ public interface SystemMemberCacheServer {
   /**
    * Returns the configured buffer size of the socket connection for this <code>CacheServer</code>.
    * The default is 32768 bytes.
-   * 
+   *
    * @return the configured buffer size of the socket connection for this <code>CacheServer</code>
    * @since GemFire 5.7
    */
@@ -177,7 +177,7 @@ public interface SystemMemberCacheServer {
    * Returns the maximum amount of time between client pings. This value is used by the
    * <code>ClientHealthMonitor</code> to determine the health of this <code>CacheServer</code>'s
    * clients. The default is 60000 ms.
-   * 
+   *
    * @return the maximum amount of time between client pings.
    * @since GemFire 5.7
    */
@@ -185,7 +185,7 @@ public interface SystemMemberCacheServer {
 
   /**
    * Returns the maximum allowed client connections
-   * 
+   *
    * @since GemFire 5.7
    */
   public int getMaxConnections();
@@ -193,7 +193,7 @@ public interface SystemMemberCacheServer {
   /**
    * Sets the maxium number of client connections allowed. When the maximum is reached the server
    * will stop accepting connections.
-   * 
+   *
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */
@@ -202,7 +202,7 @@ public interface SystemMemberCacheServer {
   /**
    * Returns the maxium number of threads allowed in this server to service client requests. The
    * default of <code>0</code> causes the server to dedicate a thread for every client connection.
-   * 
+   *
    * @since GemFire 5.7
    */
   public int getMaxThreads();
@@ -210,7 +210,7 @@ public interface SystemMemberCacheServer {
   /**
    * Sets the maxium number of threads allowed in this server to service client requests. The
    * default of <code>0</code> causes the server to dedicate a thread for every client connection.
-   * 
+   *
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */
@@ -218,14 +218,14 @@ public interface SystemMemberCacheServer {
 
   /**
    * Returns the maximum number of messages that can be enqueued in a client-queue.
-   * 
+   *
    * @since GemFire 5.7
    */
   public int getMaximumMessageCount();
 
   /**
    * Sets maximum number of messages that can be enqueued in a client-queue.
-   * 
+   *
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */
@@ -233,14 +233,14 @@ public interface SystemMemberCacheServer {
 
   /**
    * Returns the time (in seconds ) after which a message in the client queue will expire.
-   * 
+   *
    * @since GemFire 5.7
    */
   public int getMessageTimeToLive();
 
   /**
    * Sets the time (in seconds ) after which a message in the client queue will expire.
-   * 
+   *
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */
@@ -249,7 +249,7 @@ public interface SystemMemberCacheServer {
   /**
    * Sets the list of server groups this cache server will belong to. By default cache servers
    * belong to the default global server group which all cache servers always belong to.
-   * 
+   *
    * @param groups possibly empty array of <code>String</code> where each string is a server groups
    *        that this cache server will be a member of.
    * @throws AdminException if this cache server is running
@@ -259,7 +259,7 @@ public interface SystemMemberCacheServer {
 
   /**
    * Returns the list of server groups that this cache server belongs to.
-   * 
+   *
    * @return a possibly empty array of <code>String</code>s where each string is a server group.
    *         Modifying this array will not change the server groups that this cache server belongs
    *         to.
@@ -270,7 +270,7 @@ public interface SystemMemberCacheServer {
   /**
    * Get a description of the load probe for this cache server. {@link ServerLoadProbe} for details
    * on the load probe.
-   * 
+   *
    * @return the load probe used by this cache server.
    * @since GemFire 5.7
    */
@@ -279,10 +279,10 @@ public interface SystemMemberCacheServer {
   /**
    * Set the load probe for this cache server. See {@link ServerLoadProbe} for details on how to
    * implement a load probe.
-   * 
+   *
    * The load probe should implement DataSerializable if it is used with this interface, because it
    * will be sent to the remote VM.
-   * 
+   *
    * @param loadProbe the load probe to use for this cache server.
    * @throws AdminException if the cache server is running
    * @since GemFire 5.7
@@ -291,14 +291,14 @@ public interface SystemMemberCacheServer {
 
   /**
    * Get the frequency in milliseconds to poll the load probe on this cache server.
-   * 
+   *
    * @return the frequency in milliseconds that we will poll the load probe.
    */
   public long getLoadPollInterval();
 
   /**
    * Set the frequency in milliseconds to poll the load probe on this cache server
-   * 
+   *
    * @param loadPollInterval the frequency in milliseconds to poll the load probe. Must be greater
    *        than 0.
    * @throws AdminException if the cache server is running

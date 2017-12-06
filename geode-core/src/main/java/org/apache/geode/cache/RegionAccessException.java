@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
 
@@ -39,7 +40,7 @@ public class RegionAccessException extends RegionRoleException {
 
   /**
    * Constructs a <code>RegionAccessException</code> with a message.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    * @param missingRoles the missing required roles that caused this exception
@@ -54,7 +55,7 @@ public class RegionAccessException extends RegionRoleException {
 
   /**
    * Constructs a <code>RegionAccessException</code> with a message and a cause.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    * @param missingRoles the missing required roles that caused this exception
@@ -70,7 +71,7 @@ public class RegionAccessException extends RegionRoleException {
 
   /**
    * Returns the missing required roles that caused this exception.
-   * 
+   *
    * @return the missing required roles that caused this exception
    */
   public Set getMissingRoles() {
@@ -84,8 +85,12 @@ public class RegionAccessException extends RegionRoleException {
   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
     out.defaultWriteObject();
     // transform roles to string names which are serializable...
-    Set roleNames = new HashSet(this.missingRoles.size());
-    for (Iterator iter = this.missingRoles.iterator(); iter.hasNext();) {
+    Set mr = this.missingRoles;
+    if (mr == null) {
+      mr = Collections.EMPTY_SET;
+    }
+    Set roleNames = new HashSet(mr.size());
+    for (Iterator iter = mr.iterator(); iter.hasNext();) {
       String name = ((Role) iter.next()).getName();
       roleNames.add(name);
     }
@@ -109,4 +114,3 @@ public class RegionAccessException extends RegionRoleException {
   }
 
 }
-

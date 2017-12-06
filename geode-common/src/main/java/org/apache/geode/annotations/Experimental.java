@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * Signifies that a public API (public class, method or field) is subject to incompatible changes,
  * or even removal, in a future release. An API bearing this annotation is exempt from any
  * compatibility guarantees made by its containing library.
- * 
+ *
  * <p>
  * Note that the presence of this annotation implies nothing about the quality or performance of the
  * API in question, only the fact that it is not "API-frozen."
@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * It is generally safe for <i>applications</i> to depend on beta APIs, at the cost of some extra
  * work during upgrades. However, it is generally inadvisable for <i>libraries</i> (which get
  * included on users' class paths, outside the library developers' control) to do so.
- * 
+ *
  * <p>
  * Inspired by similar annotations in JGroups, Spark, DataflowJavaSDK.
  */

@@ -16,7 +16,15 @@ package org.apache.geode.cache.query;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -31,13 +39,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Utility class for testing supported queries
@@ -1683,7 +1684,7 @@ public class QueryTestUtils implements Serializable {
    *    new QueryTestUtils().executeQueries(arr);
    *    </code>
    * </P>
-   * 
+   *
    * @param qarr Array of keys, queries in the values mapped are executed
    * @return Object array containing SelectResults
    */
@@ -1701,7 +1702,7 @@ public class QueryTestUtils implements Serializable {
 
   /**
    * Execute queries by removing any DISTINCT clause if present
-   * 
+   *
    * @param vm
    * @param qarr
    */
@@ -1715,7 +1716,7 @@ public class QueryTestUtils implements Serializable {
 
   /**
    * Execute queries by removing any DISTINCT clause if present
-   * 
+   *
    * @param qarr
    */
   public Object[] executeQueriesWithoutDistinct(String qarr[]) {
@@ -1742,7 +1743,7 @@ public class QueryTestUtils implements Serializable {
 
   /**
    * Execute queries by adding a DISTINCT clause if not present
-   * 
+   *
    * @param vm
    * @param qarr
    */
@@ -1756,7 +1757,7 @@ public class QueryTestUtils implements Serializable {
 
   /**
    * Execute queries by adding a DISTINCT clause if not present
-   * 
+   *
    * @param qarr
    */
   public Object[] executeQueriesWithDistinct(String qarr[]) {

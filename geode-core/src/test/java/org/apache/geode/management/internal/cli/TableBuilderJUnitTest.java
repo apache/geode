@@ -14,12 +14,13 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import org.apache.geode.management.internal.cli.result.TableBuilder;
-import org.apache.geode.management.internal.cli.result.TableBuilder.Row;
-import org.apache.geode.management.internal.cli.result.TableBuilder.RowGroup;
-import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
-import org.apache.geode.management.internal.cli.result.TableBuilderHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.junit.Assert.*;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,12 +31,12 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
+import org.apache.geode.management.internal.cli.result.TableBuilder;
+import org.apache.geode.management.internal.cli.result.TableBuilder.Row;
+import org.apache.geode.management.internal.cli.result.TableBuilder.RowGroup;
+import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
+import org.apache.geode.management.internal.cli.result.TableBuilderHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Testing TableBuilder and TableBuilderHelper using mocks for Gfsh

@@ -14,13 +14,10 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -34,6 +31,8 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test Region expiration - both time-to-live and idle timeout.
@@ -65,7 +64,7 @@ public class RegionExpirationDUnitTest extends JUnit4CacheTestCase {
    */
   /*
    * The encode and decode time methods are now private in MetaMap
-   * 
+   *
    * @Test public void testTimeEncoding() throws CacheException { Region r =
    * createRegion(getUniqueName(), getRegionAttributes()); long start =
    * ((InternalDistributedSystem)getCache().getDistributedSystem()).getStartTime(); long timeMs =

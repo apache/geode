@@ -37,7 +37,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * <li>http://weblogs.java.net/blog/kohsuke/archive/2009/01/writing_a_unix.html
  * <li>http://www.enderunix.org/docs/eng/daemon.php
  * </ul>
- * 
+ *
  * @since GemFire 7.0
  */
 class LocalProcessLauncher {
@@ -51,14 +51,14 @@ class LocalProcessLauncher {
   /**
    * Constructs a new ProcessLauncher. Parses this process's RuntimeMXBean name for the pid (process
    * id).
-   * 
+   *
    * @param pidFile the file to create and write pid into
    * @param force if true then the pid file will be replaced if it already exists
-   * 
+   *
    * @throws FileAlreadyExistsException if the pid file already exists and force is false
    * @throws IOException if unable to write pid (process id) to pid file
    * @throws PidUnavailableException if the pid cannot be parsed from the RuntimeMXBean name
-   * 
+   *
    * @see java.lang.management.RuntimeMXBean
    */
   LocalProcessLauncher(final File pidFile, final boolean force)
@@ -72,7 +72,7 @@ class LocalProcessLauncher {
 
   /**
    * Returns the process id (pid).
-   * 
+   *
    * @return the process id (pid)
    */
   int getPid() {
@@ -81,7 +81,7 @@ class LocalProcessLauncher {
 
   /**
    * Returns the pid file.
-   * 
+   *
    * @return the pid file
    */
   File getPidFile() {
@@ -110,9 +110,9 @@ class LocalProcessLauncher {
 
   /**
    * Creates a new pid file and writes this process's pid into it.
-   * 
+   *
    * @param force if true then the pid file will be replaced if it already exists it
-   * 
+   *
    * @throws FileAlreadyExistsException if the pid file already exists and force is false
    * @throws IOException if unable to create or write to the file
    */

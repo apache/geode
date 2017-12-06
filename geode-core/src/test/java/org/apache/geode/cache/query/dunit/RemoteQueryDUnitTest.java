@@ -516,7 +516,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     /*
      * final String name = this.getName(); final Host host = Host.getHost(0); VM vm0 =
      * host.getVM(0); VM vm1 = host.getVM(1); // final int numberOfEntries = 100;
-     * 
+     *
      * // Start server vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") { public
      * void run2() throws CacheException { Properties config = new Properties();
      * config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() +
@@ -524,77 +524,77 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
      * factory.setScope(Scope.LOCAL); createRegion(name, factory.create()); Wait.pause(1000); try {
      * startBridgeServer(0, false); } catch (Exception ex) {
      * Assert.fail("While starting CacheServer", ex); } } });
-     * 
+     *
      * // Initialize server region vm0.invoke(new CacheSerializableRunnable("Create Bridge Server")
      * { public void run2() throws CacheException { Region region =
      * getRootRegion().getSubregion(name); Portfolio portfolio = null; Position position1 = null;
      * Position position2 = null; Properties portfolioProperties= null; Properties
      * position1Properties = null; Properties position2Properties = null;
-     * 
+     *
      * // Create portfolio 1 portfolio = new Portfolio(); portfolioProperties = new Properties();
      * portfolioProperties.put("id", new Integer(1)); portfolioProperties.put("type", "type1");
      * portfolioProperties.put("status", "active");
-     * 
+     *
      * position1 = new Position(); position1Properties = new Properties();
      * position1Properties.put("secId", "SUN"); position1Properties.put("qty", new Double(34000.0));
      * position1Properties.put("mktValue", new Double(24.42)); position1.init(position1Properties);
      * portfolioProperties.put("position1", position1);
-     * 
+     *
      * position2 = new Position(); position2Properties = new Properties();
      * position2Properties.put("secId", "IBM"); position2Properties.put("qty", new Double(8765.0));
      * position2Properties.put("mktValue", new Double(34.29)); position2.init(position2Properties);
      * portfolioProperties.put("position2", position2);
-     * 
+     *
      * portfolio.init(portfolioProperties); region.put(new Integer(1), portfolio);
-     * 
+     *
      * // Create portfolio 2 portfolio = new Portfolio(); portfolioProperties = new Properties();
      * portfolioProperties.put("id", new Integer(2)); portfolioProperties.put("type", "type2");
      * portfolioProperties.put("status", "inactive");
-     * 
+     *
      * position1 = new Position(); position1Properties = new Properties();
      * position1Properties.put("secId", "YHOO"); position1Properties.put("qty", new Double(9834.0));
      * position1Properties.put("mktValue", new Double(12.925)); position1.init(position1Properties);
      * portfolioProperties.put("position1", position1);
-     * 
+     *
      * position2 = new Position(); position2Properties = new Properties();
      * position2Properties.put("secId", "GOOG"); position2Properties.put("qty", new
      * Double(12176.0)); position2Properties.put("mktValue", new Double(21.972));
      * position2.init(position2Properties); portfolioProperties.put("position2", position2);
-     * 
+     *
      * portfolio.init(portfolioProperties); region.put(new Integer(2), portfolio);
-     * 
+     *
      * // Create portfolio 3 portfolio = new Portfolio(); portfolioProperties = new Properties();
      * portfolioProperties.put("id", new Integer(3)); portfolioProperties.put("type", "type3");
      * portfolioProperties.put("status", "active");
-     * 
+     *
      * position1 = new Position(); position1Properties = new Properties();
      * position1Properties.put("secId", "MSFT"); position1Properties.put("qty", new
      * Double(98327.0)); position1Properties.put("mktValue", new Double(23.32));
      * position1.init(position1Properties); portfolioProperties.put("position1", position1);
-     * 
+     *
      * position2 = new Position(); position2Properties = new Properties();
      * position2Properties.put("secId", "AOL"); position2Properties.put("qty", new Double(978.0));
      * position2Properties.put("mktValue", new Double(40.373)); position2.init(position2Properties);
      * portfolioProperties.put("position2", position2);
-     * 
+     *
      * portfolio.init(portfolioProperties); region.put(new Integer(3), portfolio);
-     * 
+     *
      * // Create portfolio 4 portfolio = new Portfolio(); portfolioProperties = new Properties();
      * portfolioProperties.put("id", new Integer(4)); portfolioProperties.put("type", "type1");
      * portfolioProperties.put("status", "inactive");
-     * 
+     *
      * position1 = new Position(); position1Properties = new Properties();
      * position1Properties.put("secId", "APPL"); position1Properties.put("qty", new Double(90.0));
      * position1Properties.put("mktValue", new Double(67.356572));
      * position1.init(position1Properties); portfolioProperties.put("position1", position1);
-     * 
+     *
      * position2 = new Position(); position2Properties = new Properties();
      * position2Properties.put("secId", "ORCL"); position2Properties.put("qty", new Double(376.0));
      * position2Properties.put("mktValue", new Double(101.34)); position2.init(position2Properties);
      * portfolioProperties.put("position2", position2);
-     * 
+     *
      * portfolio.init(portfolioProperties); region.put(new Integer(4), portfolio); } });
-     * 
+     *
      * // Create client region final int port = vm0.invoke(() ->
      * RemoteQueryDUnitTest.getCacheServerPort()); final String host0 =
      * NetworkUtils.getServerHostName(vm0.getHost()); vm1.invoke(new
@@ -603,11 +603,11 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
      * getCache(); AttributesFactory factory = new AttributesFactory();
      * factory.setScope(Scope.LOCAL); ClientServerTestCase.configureConnectionPool(factory, host0,
      * port,-1, true, -1, -1, null); createRegion(name, factory.create()); } });
-     * 
+     *
      * // Execute client queries vm1.invoke(new CacheSerializableRunnable("Execute queries") {
      * public void run2() throws CacheException { Region region =
      * getRootRegion().getSubregion(name); String queryString = null; SelectResults results = null;
-     * 
+     *
      * queryString = "IMPORT Position; " + "SELECT DISTINCT id, status FROM " + region.getFullPath()
      * + "WHERE NOT (SELECT DISTINCT * FROM positions.values posnVal TYPE Position " +
      * "WHERE posnVal.secId='AOL' OR posnVal.secId='SAP').isEmpty"; try { results =
@@ -616,8 +616,8 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
      * //assertIndexDetailsEquals(numberOfEntries, results.size());
      * assertTrue(!results.getCollectionType().allowsDuplicates() &&
      * results.getCollectionType().getElementType().isStructType()); } });
-     * 
-     * 
+     *
+     *
      * // Stop server vm0.invoke(new SerializableRunnable("Stop CacheServer") { public void run() {
      * stopBridgeServer(getCache()); } });
      */
@@ -1435,31 +1435,31 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
 /*
  * String queryString = "ticker = 'ibm'"; SelectResults results = region.query(queryString);
- * 
+ *
  * String queryString = "ticker = 'ibm' and price = 50";
- * 
+ *
  * String queryString = "select distinct * from /trade";
- * 
+ *
  * String queryString = "import TestObject; select distinct * from /trade";
- * 
+ *
  * String queryString = "IMPORT Position; " + "SELECT DISTINCT id, status FROM /root/portfolios " +
  * "WHERE NOT (SELECT DISTINCT * FROM positions.values posnVal TYPE Position " +
  * "WHERE posnVal.secId='AOL' OR posnVal.secId='SAP').isEmpty";
- * 
+ *
  * queryString = "SELECT DISTINCT itr.value FROM /trade.entries itr where itr.key = 'key-1'";
- * 
+ *
  * queryString = "SELECT DISTINCT itr.key FROM /trade.entries itr where itr.key = 'key-1'";
- * 
+ *
  * String queryString =
  * "select distinct a, b.price from /generic/app1/Trade a, /generic/app1/Trade b where a.price = b.price"
  * ;
- * 
+ *
  * String queryString =
  * "SELECT DISTINCT a, b.unitPrice from /newegg/arinv a, /newegg/itemPriceSetting b where a.item = b.itemNumber and a.item = '26-106-934'"
  * ;
- * 
+ *
  * String queryString =
  * "SELECT DISTINCT a, UNDEFINED from /newegg/arinv a, /newegg/itemPriceSetting b where a.item = b.itemNumber and a.item = '26-106-934'"
  * ;
- * 
+ *
  */

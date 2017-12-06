@@ -392,10 +392,10 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     assertEquals("Pdx are not equal; json filename " + jd.getFileName(), pdx, pdx2);
   }
 
-  protected final static int INT_TAB = '\t';
-  protected final static int INT_LF = '\n';
-  protected final static int INT_CR = '\r';
-  protected final static int INT_SPACE = 0x0020;
+  protected static final int INT_TAB = '\t';
+  protected static final int INT_LF = '\n';
+  protected static final int INT_CR = '\r';
+  protected static final int INT_SPACE = 0x0020;
 
   public String jsonParse(String jsonSting) {
 
@@ -682,5 +682,3 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
 
 }
-
-

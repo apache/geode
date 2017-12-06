@@ -23,6 +23,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.junit.Rule;
+import org.springframework.shell.core.CommandMarker;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.ManagementService;
@@ -37,18 +50,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.junit.Rule;
-import org.springframework.shell.core.CommandMarker;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Base class for all the CLI/gfsh command dunit tests.
@@ -155,7 +156,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   protected Object[] setUpJMXManagerOnVM(int vm, final Properties props, String jsonFile) {
     Object[] result = Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm" + vm, () -> {
       final Object[] results = new Object[3];
-      final Properties localProps = (props != null ? props : new Properties());
+      final Properties localProps = (props != null ? props : getDistributedSystemProperties());
 
       try {
         this.jmxHost = InetAddress.getLocalHost().getHostName();

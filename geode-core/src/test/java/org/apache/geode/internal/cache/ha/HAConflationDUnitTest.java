@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,6 +44,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -128,7 +128,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * In this test do a create & then update on same key , the client should receive 2 calabcks.
-   * 
+   *
    * @throws Exception
    */
 
@@ -145,7 +145,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   /**
    * In this test do create , then update & update. The client should receive 2 callbacks , one for
    * create & one for the last update.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -169,7 +169,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   /**
    * In this test do create , then update, update, invalidate. The client should receive 3
    * callbacks, one for create one for the last update and one for the invalidate.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -188,7 +188,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   /**
    * In this test do a create , update , update & destroy. The client should receive 3 callbacks (
    * craete , conflated update & destroy).
-   * 
+   *
    * @throws Exception
    */
   @Test

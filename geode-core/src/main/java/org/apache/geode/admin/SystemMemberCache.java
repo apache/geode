@@ -39,7 +39,7 @@ public interface SystemMemberCache {
 
   /**
    * Indicates if this cache has been closed.
-   * 
+   *
    * @return true, if this cache is closed; false, otherwise
    */
   public boolean isClosed();
@@ -180,4 +180,3 @@ public interface SystemMemberCache {
    */
   public boolean isServer() throws AdminException;
 }
-

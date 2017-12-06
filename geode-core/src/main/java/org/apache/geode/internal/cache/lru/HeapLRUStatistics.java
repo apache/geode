@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache.lru;
 
 import org.apache.geode.*;
-// import org.apache.geode.internal.*;
 
 /**
  * Statistics for the HeapLRUCapacityController, which treats the counter statistic differently than
@@ -39,7 +38,7 @@ public class HeapLRUStatistics extends LRUStatistics {
    * has changed after performing a Region operation. The <code>HeapLRUCapacityController</code>
    * however does not care about <code>Region</code> changes, it only considers heap changes and
    * uses <code>Runtime</code> to determine how much to evict.
-   * 
+   *
    * @see org.apache.geode.internal.cache.lru.HeapLRUCapacityController#createLRUHelper
    * @see EnableLRU#mustEvict
    */
@@ -58,4 +57,3 @@ public class HeapLRUStatistics extends LRUStatistics {
     super.resetCounter();
   }
 }
-

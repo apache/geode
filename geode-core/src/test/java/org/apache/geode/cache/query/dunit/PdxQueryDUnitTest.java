@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -70,7 +70,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.junit.experimental.categories.Category;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class PdxQueryDUnitTest extends PDXQueryTestBase {
@@ -2684,7 +2684,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
 
   /**
    * Test to query a field that is not present in the Pdx object but has a get method
-   * 
+   *
    * @throws CacheException
    */
   @Test
@@ -2831,7 +2831,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
   /**
    * Test to query a field that is not present in the Pdx object but is present in some other
    * version of the pdx instance
-   * 
+   *
    * @throws CacheException
    */
   @Test
@@ -3069,7 +3069,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
    * 2 servers(replicated) and 2 clients. client2 puts version1 and version2 objects on server1
    * client1 had registered interest to server2, hence gets the pdx objects for both versions Test
    * local query on client1 Test if client1 fetched pdxtypes from server
-   * 
+   *
    * @throws CacheException
    */
   @Test
@@ -3210,7 +3210,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
   /**
    * Test to query a field that is not present in the Pdx object Also the implicit method is absent
    * in the class
-   * 
+   *
    * @throws CacheException
    */
   @Test

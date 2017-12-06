@@ -16,7 +16,7 @@ package org.apache.geode.internal.process;
 
 /**
  * A ConnectionFailedException is thrown if connection to a process fails.
- * 
+ *
  * @since GemFire 7.0
  */
 public class ConnectionFailedException extends Exception {

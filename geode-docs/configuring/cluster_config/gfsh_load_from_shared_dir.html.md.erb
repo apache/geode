@@ -38,7 +38,3 @@ You can use this technique to migrate a single server's configuration into the c
 
     After successful startup, the locator should report that the "Cluster configuration service is up and running." Any servers that join this cluster and have `--use-cluster-configuration` set to true will pick up these configuration files.
 
-**Note:**
-If you make any manual modifications to the cluster.xml or cluster.properties (or group\_name.xml or group\_name.properties) files, you must stop the locator and then restart the locator using the `--load-cluster-configuration-from-dir` parameter. Direct file modifications are not picked up iby the cluster configuration service without a locator restart.
-
-

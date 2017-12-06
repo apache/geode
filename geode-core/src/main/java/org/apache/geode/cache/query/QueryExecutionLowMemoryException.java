@@ -20,10 +20,10 @@ import org.apache.geode.cache.control.ResourceManager;
 
 /**
  * Thrown when the query is executing and the critical heap percentage is met.
- * 
+ *
  * @see ResourceManager#setCriticalHeapPercentage(float)
  * @see ResourceManager#getCriticalHeapPercentage()
- * 
+ *
  *      If critical heap percentage is set, the query monitor can be disabled from sending out
  *      QueryExecutionLowMemoryExeceptions at the risk of a query exhausting all memory.
  *
@@ -40,7 +40,7 @@ public class QueryExecutionLowMemoryException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>QueryExecutionLowMemoryException</code> with the specified
    * detail message.
-   * 
+   *
    * @param msg the detail message.
    */
   public QueryExecutionLowMemoryException(String msg) {
@@ -50,7 +50,7 @@ public class QueryExecutionLowMemoryException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>QueryExecutionLowMemoryException</code> with the specified
    * detail message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -61,7 +61,7 @@ public class QueryExecutionLowMemoryException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>QueryExecutionLowMemoryException</code> with the specified
    * cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public QueryExecutionLowMemoryException(Throwable cause) {

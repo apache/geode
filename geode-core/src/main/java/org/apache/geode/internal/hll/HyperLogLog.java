@@ -13,8 +13,6 @@
  */
 package org.apache.geode.internal.hll;
 
-import org.apache.geode.redis.internal.executor.hll.HllExecutor;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -26,6 +24,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+
+import org.apache.geode.redis.internal.executor.hll.HllExecutor;
 
 /**
  * Java implementation of HyperLogLog (HLL) algorithm from this paper:

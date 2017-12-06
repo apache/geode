@@ -21,7 +21,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a {@link Locator}.
- * 
+ *
  * @since GemFire 7.0
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
@@ -45,14 +45,14 @@ public interface LocatorMXBean {
 
   /**
    * Returns whether the Locator provides peer location services to members.
-   * 
+   *
    * @return True if the Locator provides peer locations services, false otherwise.
    */
   public boolean isPeerLocator();
 
   /**
    * Returns whether the Locator provides server location services To clients.
-   * 
+   *
    * @return True if the Locator provides server location services, false otherwise.
    */
   public boolean isServerLocator();

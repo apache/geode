@@ -36,11 +36,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category({DistributedTest.class, SecurityTest.class})
@@ -57,7 +57,7 @@ public class ClusterConfigWithSecurityDUnitTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule connector = new GfshShellConnectionRule();
+  public GfshCommandRule connector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -79,7 +79,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
     // the second locator should inherit the first locator's security props
     locator1.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.locatorStarter.getLocator();
+      InternalLocator locator = LocatorServerStartupRule.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties clusterConfigProps = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(clusterConfigProps.getProperty(SECURITY_MANAGER))
@@ -93,11 +93,13 @@ public class ClusterConfigWithSecurityDUnitTest {
     connector.connect(locator0, CliStrings.CONNECT__USERNAME, "cluster",
         CliStrings.CONNECT__PASSWORD, "cluster");
 
-    connector.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
+    connector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsSuccess();
 
     locator0.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.locatorStarter.getLocator();
+      InternalLocator locator = LocatorServerStartupRule.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties properties = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(properties.getProperty(MCAST_PORT)).isEqualTo("0");
@@ -119,7 +121,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
     // cluster config specifies a security-manager so integrated security should be enabled
     server.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       Properties properties = cache.getDistributedSystem().getSecurityProperties();
       assertThat(properties.getProperty(SECURITY_MANAGER))
           .isEqualTo(SimpleTestSecurityManager.class.getName());

@@ -106,7 +106,7 @@ public class GatewayReceiverCreateFunction extends FunctionAdapter implements In
 
   /**
    * GatewayReceiver creation happens here.
-   * 
+   *
    * @param cache
    * @param gatewayReceiverCreateArgs
    * @return GatewayReceiver

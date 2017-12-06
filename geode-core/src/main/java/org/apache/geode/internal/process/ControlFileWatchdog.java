@@ -26,7 +26,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Invokes a ControlRequestHandler when a control file has been created.
- * 
+ *
  * @since GemFire 8.0
  */
 class ControlFileWatchdog implements Runnable {

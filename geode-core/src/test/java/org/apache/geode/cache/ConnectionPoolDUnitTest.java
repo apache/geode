@@ -17,6 +17,8 @@ package org.apache.geode.cache;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.junit.runners.MethodSorters.*;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,13 +29,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializable;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
@@ -71,6 +73,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -96,10 +99,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   protected static int numberOfAfterCreates;
   protected static int numberOfAfterUpdates;
 
-  protected final static int TYPE_CREATE = 0;
-  protected final static int TYPE_UPDATE = 1;
-  protected final static int TYPE_INVALIDATE = 2;
-  protected final static int TYPE_DESTROY = 3;
+  protected static final int TYPE_CREATE = 0;
+  protected static final int TYPE_UPDATE = 1;
+  protected static final int TYPE_INVALIDATE = 2;
+  protected static final int TYPE_DESTROY = 3;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -191,7 +194,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * By default return 0 which turns off selector and gives thread per cnx. Test subclasses can
    * override to run with selector.
-   * 
+   *
    * @since GemFire 5.1
    */
   protected int getMaxThreads() {
@@ -334,7 +337,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * Create a fake EntryEvent that returns the provided region for {@link CacheEvent#getRegion()}
    * and returns {@link org.apache.geode.cache.Operation#LOCAL_LOAD_CREATE} for
    * {@link CacheEvent#getOperation()}
-   * 
+   *
    * @param r
    * @return fake entry event
    */
@@ -702,7 +705,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * Tests for bug 36684 by having two bridge servers with cacheloaders that should always return a
    * value and one client connected to each server reading values. If the bug exists, the clients
    * will get null sometimes.
-   * 
+   *
    * @throws InterruptedException
    */
   @Test
@@ -1218,7 +1221,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Make sure cnx lifetime expiration working on thread local cnxs.
-   * 
+   *
    * @author darrel
    */
   @Test
@@ -1228,7 +1231,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Make sure cnx lifetime expiration working on thread local cnxs.
-   * 
+   *
    * @author darrel
    */
   @Test
@@ -3114,7 +3117,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Accessed by reflection DO NOT REMOVE
-   * 
+   *
    * @return
    */
   protected static int getCacheServerPort() {
@@ -3232,7 +3235,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a "loner" distributed system that has dynamic region creation enabled.
-   * 
+   *
    * @since GemFire 4.3
    */
   protected Cache createDynamicRegionCache(String testName, String connectionPoolName) {
@@ -3247,7 +3250,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * A handy method to poll for arrival of non-null/non-invalid entries
-   * 
+   *
    * @param r the Region to poll
    * @param key the key of the Entry to poll for
    */
@@ -5394,47 +5397,47 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test that the "notify by subscription" attribute is unique for each BridgeServer and Gateway
-   * 
+   *
    * @throws Exception
    */
   /*
    * public void test035NotifyBySubscriptionIsolation() throws Exception { final String name =
    * this.getName(); final Host host = Host.getHost(0); final VM server = host.getVM(3); final VM
    * client1 = host.getVM(1); final VM client2 = host.getVM(2);
-   * 
+   *
    * final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3); final int bs1Port =
    * ports[0]; final int bs2Port = ports[1]; final int gwPort = ports[2];
-   * 
+   *
    * final String key1 = "key1-" + name; final String val1 = "val1-" + name; final String key2 =
    * "key2-" + name; final String val2 = "val2-" + name;
-   * 
+   *
    * try { server.invoke(new CacheSerializableRunnable("Setup BridgeServers and Gateway") { public
    * void run2() throws CacheException { Cache cache = getCache();
-   * 
+   *
    * try {
-   * 
+   *
    * // Create a gateway (which sets notify-by-subscription to true) cache.setGatewayHub(name,
    * gwPort).start();
-   * 
+   *
    * // Start the server that does not have notify-by-subscription (server2) CacheServer bridge2 =
    * cache.addCacheServer(); bridge2.setPort(bs2Port); bridge2.setNotifyBySubscription(false);
    * String[] noNotifyGroup = {"noNotifyGroup"}; bridge2.setGroups(noNotifyGroup); bridge2.start();
    * assertFalse(bridge2.getNotifyBySubscription()); { BridgeServerImpl bsi = (BridgeServerImpl)
    * bridge2; AcceptorImpl aci = bsi.getAcceptor();
-   * 
+   *
    * //assertFalse(aci.getCacheClientNotifier().getNotifyBySubscription()); }
-   * 
+   *
    * // Start the server that DOES have notify-by-subscription (server1) CacheServer bridge1 =
    * cache.addCacheServer(); bridge1.setPort(bs1Port); bridge1.setNotifyBySubscription(true);
    * String[] notifyGroup = {"notifyGroup"}; bridge1.setGroups(notifyGroup); bridge1.start();
    * assertTrue(bridge1.getNotifyBySubscription()); { BridgeServerImpl bsi = (BridgeServerImpl)
    * bridge1; AcceptorImpl aci = bsi.getAcceptor();
    * assertTrue(aci.getCacheClientNotifier().getNotifyBySubscription()); }
-   * 
+   *
    * } catch (IOException ioe) { fail("Setup of BridgeServer test " + name + " failed", ioe ); }
-   * 
+   *
    * Region r = createRootRegion(name, getRegionAttributes()); r.put(key1, val1); } });
-   * 
+   *
    * client1.invoke(new
    * CacheSerializableRunnable("Test client1 to server with true notify-by-subscription") { public
    * void run2() throws CacheException { createLonerDS(); AttributesFactory factory = new
@@ -5445,36 +5448,36 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * factory.create()); assertNull(r.getEntry(key1)); r.registerInterest(key1);
    * assertNotNull(r.getEntry(key1)); assertIndexDetailsEquals(val1, r.getEntry(key1).getValue());
    * r.registerInterest(key2); assertNull(r.getEntry(key2)); } });
-   * 
+   *
    * client2.invoke(new
    * CacheSerializableRunnable("Test client2 to server with false notify-by-subscription") { public
    * void run2() throws CacheException { createLonerDS(); AttributesFactory factory = new
    * AttributesFactory();
    * ClientServerTestCase.configureConnectionPool(factory,getServerHostName(host),bs2Port,-1,true,-1
    * ,-1, "noNotifyGroup");
-   * 
+   *
    * factory.setScope(Scope.LOCAL); factory.setCacheListener(new
    * CertifiableTestCacheListener(getLogWriter())); Region r = createRootRegion(name,
    * factory.create()); assertNull(r.getEntry(key1)); assertIndexDetailsEquals(val1, r.get(key1));
    * assertNull(r.getEntry(key2)); r.registerInterest(key2); assertNull(r.getEntry(key2)); } });
-   * 
+   *
    * server.invoke(new
    * CacheSerializableRunnable("Update server with new values for client notification") { public
    * void run2() throws CacheException { Region r = getRootRegion(name); assertNotNull(r);
    * r.put(key2, val2); // Create a new entry r.put(key1, val2); // Change the first entry } });
-   * 
+   *
    * client1.invoke(new
    * CacheSerializableRunnable("Test update from to server with true notify-by-subscription") {
    * public void run2() throws CacheException { Region r = getRootRegion(name); assertNotNull(r);
    * CertifiableTestCacheListener ctl = (CertifiableTestCacheListener)
    * r.getAttributes().getCacheListener();
-   * 
+   *
    * ctl.waitForUpdated(key1); assertNotNull(r.getEntry(key1)); assertIndexDetailsEquals(val2,
    * r.getEntry(key1).getValue()); // new value should have been pushed
-   * 
+   *
    * ctl.waitForCreated(key2); assertNotNull(r.getEntry(key2)); // new entry should have been pushed
    * assertIndexDetailsEquals(val2, r.getEntry(key2).getValue()); } });
-   * 
+   *
    * client2.invoke(new
    * CacheSerializableRunnable("Test update from server with false notify-by-subscription") { public
    * void run2() throws CacheException { Region r = getRootRegion(name); assertNotNull(r);
@@ -5482,7 +5485,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * r.getAttributes().getCacheListener(); ctl.waitForInvalidated(key1);
    * assertNotNull(r.getEntry(key1)); assertNull(r.getEntry(key1).getValue()); // Invalidate should
    * have been pushed assertIndexDetailsEquals(val2, r.get(key1)); // New value should be fetched
-   * 
+   *
    * assertNull(r.getEntry(key2)); // assertNull(r.getEntry(key2).getValue());
    * assertIndexDetailsEquals(val2, r.get(key2)); // New entry should be fetched } }); tearDown(); }
    * finally { // HashSet destroyedRoots = new HashSet(); try { client1.invoke(() ->
@@ -5847,7 +5850,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     disconnectAllFromDS();
   }
 
-  static class Order implements Serializable {
+  static class Order implements DataSerializable {
     int index;
 
     public Order() {}
@@ -5858,6 +5861,16 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     public int getIndex() {
       return index;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeInt(index);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      index = in.readInt();
     }
   }
 }

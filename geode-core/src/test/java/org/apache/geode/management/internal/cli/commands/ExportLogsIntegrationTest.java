@@ -27,9 +27,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(IntegrationTest.class)
 public class ExportLogsIntegrationTest {
@@ -38,7 +38,7 @@ public class ExportLogsIntegrationTest {
       new LocatorStarterRule().withWorkingDir().withLogFile().withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void connect() throws Exception {

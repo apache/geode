@@ -20,7 +20,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * 
+ *
  *
  */
 public abstract class DistTXStateProxyImpl extends TXStateProxyImpl {

@@ -20,7 +20,7 @@ import org.apache.geode.GemFireCheckedException;
 /**
  * Thrown during by the query engine during parsing or execution. Instances of subclasses are thrown
  * for more specific exceptions.
- * 
+ *
  * @since GemFire 4.0
  */
 
@@ -37,7 +37,7 @@ public /* abstract */ class QueryException extends GemFireCheckedException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause of this exception
    */
@@ -47,7 +47,7 @@ public /* abstract */ class QueryException extends GemFireCheckedException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param msg the error message
    */
   public QueryException(String msg) {
@@ -56,7 +56,7 @@ public /* abstract */ class QueryException extends GemFireCheckedException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param cause a Throwable cause of this exception
    */
   public QueryException(Throwable cause) {

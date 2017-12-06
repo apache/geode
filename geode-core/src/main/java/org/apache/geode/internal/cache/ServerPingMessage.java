@@ -27,12 +27,12 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Ping to check if a server is alive. It waits for a specified time before returning false.
- * 
+ *
  */
 public class ServerPingMessage extends PooledDistributionMessage {
   private int processorId = 0;
@@ -53,7 +53,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
   /**
    * Sends a ping message. The pre-GFXD_101 recipients are filtered out and it is assumed that they
    * are pingable.
-   * 
+   *
    * @return true if all the recipients are pingable
    */
   public static boolean send(InternalCache cache, Set<InternalDistributedMember> recipients) {

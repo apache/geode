@@ -23,13 +23,13 @@ import java.io.InputStreamReader;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.process.ProcessWrapper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.process.ProcessWrapper;
 
 /**
  * Basic unit testing of the golden testing framework. This tests an example which is expected to
  * always pass.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class PassJUnitTest extends GoldenTestCase implements ExecutableProcess {

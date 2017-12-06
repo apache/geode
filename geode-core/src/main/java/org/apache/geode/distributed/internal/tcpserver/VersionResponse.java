@@ -14,16 +14,16 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.internal.Version;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.Version;
+
 /**
  * Get GemFire version of the member running TcpServer.
- * 
+ *
  * @since GemFire 7.1
  */
 public class VersionResponse implements DataSerializable {

@@ -26,8 +26,8 @@ import org.apache.geode.management.internal.ManagementConstants;
 
 /**
  * This class acts as a Bridge between JMX layer and GemFire layer
- * 
- * 
+ *
+ *
  */
 public class LockServiceMBeanBridge {
 
@@ -45,7 +45,7 @@ public class LockServiceMBeanBridge {
   }
 
   /**
-   * 
+   *
    * @return currently held lock by this lock Service
    */
 
@@ -101,7 +101,7 @@ public class LockServiceMBeanBridge {
 
   /**
    * Returns a list of thread which are blocked on some Object
-   * 
+   *
    * @return map of object Name and thread holding lock on that object
    */
   public Map<String, String> listThreadsHoldingLock() {

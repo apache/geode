@@ -63,5 +63,3 @@ class TemporalComparator implements Comparator {
     return extraNanos1 == extraNanos2 ? 0 : (extraNanos1 < extraNanos2 ? -1 : 1);
   }
 }
-
-

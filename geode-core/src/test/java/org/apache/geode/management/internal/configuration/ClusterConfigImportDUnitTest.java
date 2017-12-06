@@ -37,10 +37,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
@@ -50,7 +50,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   private MemberVM locatorVM;
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -69,7 +69,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     String regionName = "regionA";
     server1.invoke(() -> {
       // this region will be created on both servers, but we should only be getting the name once.
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
 
@@ -101,8 +101,10 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
 
   @Test
   public void testImportClusterConfig() throws Exception {
-    gfshConnector.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsSuccess();
 
     // Make sure that a backup of the old clusterConfig was created
     assertThat(locatorVM.getWorkingDir().listFiles())
@@ -134,8 +136,10 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
         "localhost[" + locatorVM.getPort() + "],localhost[" + locator1.getPort() + "]");
     MemberVM locator2 = lsRule.startLocatorVM(2, locatorProps);
 
-    gfshConnector.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsSuccess();
 
     CONFIG_FROM_ZIP.verify(locatorVM);
     REPLICATED_CONFIG_FROM_ZIP.verify(locator1);
@@ -159,7 +163,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   public void testExportClusterConfig(String zipFilePath) throws Exception {
     MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
-    gfshConnector.executeAndVerifyCommand("create region --name=myRegion --type=REPLICATE");
+    gfshConnector.executeAndAssertThat("create region --name=myRegion --type=REPLICATE")
+        .statusIsSuccess();
 
     ConfigGroup cluster = new ConfigGroup("cluster").regions("myRegion");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
@@ -167,7 +172,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(locatorVM);
 
     gfshConnector
-        .executeAndVerifyCommand("export cluster-configuration --zip-file-name=" + zipFilePath);
+        .executeAndAssertThat("export cluster-configuration --zip-file-name=" + zipFilePath)
+        .statusIsSuccess();
 
     File exportedZip = new File(zipFilePath);
     assertThat(exportedZip).exists();

@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.*;
-// import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 

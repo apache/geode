@@ -13,9 +13,13 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.wan.parallel;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
@@ -29,22 +33,17 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-
 import org.apache.geode.internal.size.SingleObjectSizer;
 
 /**
  * Queue built on top of {@link ParallelGatewaySenderQueue} which allows multiple dispatcher to
  * register and do peek/remove from the underlying {@link ParallelGatewaySenderQueue}
- * 
+ *
  * There is only one queue, but this class co-ordinates access by multiple threads such that we get
  * zero contention while peeking or removing.
- * 
+ *
  * It implements RegionQueue so that AbstractGatewaySenderEventProcessor can work on it.
- * 
+ *
  *
  */
 public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {

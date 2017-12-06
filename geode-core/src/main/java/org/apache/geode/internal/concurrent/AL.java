@@ -17,7 +17,7 @@ package org.apache.geode.internal.concurrent;
 /**
  * These methods are the same ones on the JDK 5 version java.util.concurrent.atomic.AtomicLong. Note
  * that unlike AtomicLong this interface does not support <code>java.lang.Number</code>.
- * 
+ *
  * @deprecated used AtomicLong instead
  */
 public interface AL {
@@ -116,7 +116,7 @@ public interface AL {
    * Atomically sets the value to the given updated value if the given value {@code >} the current
    * value. This could be sub-optimat when the update being done by multiple thread is not in in an
    * incremental fashion.
-   * 
+   *
    * @param update
    */
   public boolean setIfGreater(long update);

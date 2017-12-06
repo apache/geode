@@ -44,4 +44,3 @@ public class LockGrantorDestroyedException extends IllegalStateException {
   }
 
 }
-

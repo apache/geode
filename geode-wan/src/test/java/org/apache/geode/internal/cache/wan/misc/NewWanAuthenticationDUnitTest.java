@@ -20,9 +20,8 @@ import static org.apache.geode.test.dunit.Assert.*;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
-import org.apache.geode.security.TestSecurityManager;
 import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,6 +35,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityTestUtils;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;

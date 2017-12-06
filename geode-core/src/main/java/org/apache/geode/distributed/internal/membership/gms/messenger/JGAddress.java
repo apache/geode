@@ -14,18 +14,19 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.internal.net.SocketCreator;
-import org.jgroups.Global;
-import org.jgroups.stack.IpAddress;
-import org.jgroups.util.UUID;
-
 import java.io.*;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+
+import org.jgroups.Global;
+import org.jgroups.stack.IpAddress;
+import org.jgroups.util.UUID;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * This is a copy of JGroups 3.6.4 IpAddress (Apache 2.0 License) that is repurposed to be a Logical
@@ -37,7 +38,7 @@ public class JGAddress extends UUID {
   private static final long serialVersionUID = -1818672332115113291L;
 
   // whether to show UUID info in toString()
-  private final static boolean SHOW_UUIDS =
+  private static final boolean SHOW_UUIDS =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_UUIDs");
 
   private InetAddress ip_addr;

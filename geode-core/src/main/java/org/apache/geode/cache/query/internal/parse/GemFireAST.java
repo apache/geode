@@ -15,9 +15,9 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
-// import antlr.collections.*;
-// import org.apache.geode.cache.query.*;
+import antlr.CommonAST;
+import antlr.Token;
+
 import org.apache.geode.cache.query.internal.QCompiler;
 
 /**

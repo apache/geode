@@ -14,19 +14,17 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -34,6 +32,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic use cases for PR persistence.
@@ -121,7 +120,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
         Cache cache = getCache();
 
         CacheTransactionManager tx = cache.getCacheTransactionManager();
-        Region region = cache.getRegion(PR_REGION_NAME);
+        Region region = cache.getRegion(getPartitionedRegionName());
 
         for (int i = startKey; i < endKey; i++) {
           tx.begin();
@@ -170,7 +169,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
   }
 
   @Override
-  protected void checkData(VM vm0, final int startKey, final int endKey, final String value,
+  protected void checkData(VM vm, final int startKey, final int endKey, final String value,
       final String regionName) {
     SerializableRunnable checkData = new SerializableRunnable() {
 
@@ -188,6 +187,24 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
       }
     };
 
-    vm0.invoke(checkData);
+    vm.invoke(checkData);
+  }
+
+  void checkRecoveredFromDisk(VM vm, final int bucketId, final boolean recoveredLocally) {
+    vm.invoke(new SerializableRunnable("check recovered from disk") {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        PartitionedRegion region = (PartitionedRegion) cache.getRegion(getPartitionedRegionName());
+        DiskRegion disk = region.getRegionAdvisor().getBucket(bucketId).getDiskRegion();
+        if (recoveredLocally) {
+          assertEquals(0, disk.getStats().getRemoteInitializations());
+          assertEquals(1, disk.getStats().getLocalInitializations());
+        } else {
+          assertEquals(1, disk.getStats().getRemoteInitializations());
+          assertEquals(0, disk.getStats().getLocalInitializations());
+        }
+      }
+    });
   }
 }

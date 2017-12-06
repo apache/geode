@@ -14,21 +14,21 @@
  */
 package org.apache.geode.security.generator;
 
+import java.util.Iterator;
+import java.util.Properties;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 
-import java.util.Iterator;
-import java.util.Properties;
-
 /**
  * An {@link AuthInitialize} implementation that obtains the user name and password as the
  * credentials from the given set of properties. If keep-extra-props property exits, it will copy
  * rest of the properties provided in getCredential props argument will also be copied as new
  * credentials.
- * 
+ *
  * @since GemFire 5.5
  */
 public class UserPasswordWithExtraPropsAuthInit extends UserPasswordAuthInit {

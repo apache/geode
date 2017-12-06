@@ -19,15 +19,15 @@ import static org.mockito.Mockito.*;
 
 import java.util.function.IntSupplier;
 
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneIndexStatsJUnitTest {
@@ -84,6 +84,20 @@ public class LuceneIndexStatsJUnitTest {
     stats.endUpdate(5);
     verifyIncInt("updatesInProgress", -1);
     verifyIncInt("updates", 1);
+    // Because the initial stat time is 0 and the final time is 5, the delta is -5
+    verifyIncLong("updateTime", -5);
+  }
+
+  @Test
+  public void shouldIncrementFailedEntriesStats() {
+
+    stats.startUpdate();
+    verifyIncInt("updatesInProgress", 1);
+    stats.incFailedEntries();
+    stats.endUpdate(5);
+    verifyIncInt("updatesInProgress", -1);
+    verifyIncInt("updates", 1);
+    verifyIncInt("failedEntries", 1);
     // Because the initial stat time is 0 and the final time is 5, the delta is -5
     verifyIncLong("updateTime", -5);
   }

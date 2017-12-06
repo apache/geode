@@ -15,8 +15,8 @@
 package org.apache.geode.management.internal.cli.result;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public interface CliJsonSerializableIds {
@@ -27,5 +27,3 @@ public interface CliJsonSerializableIds {
 
   /* CLI Data Transfer Objects 100 onwards - add below */
 }
-
-

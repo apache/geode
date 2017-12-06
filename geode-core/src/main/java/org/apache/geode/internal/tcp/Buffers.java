@@ -34,7 +34,7 @@ public class Buffers {
 
   /**
    * Should only be called by threads that have currently acquired send permission.
-   * 
+   *
    * @return a byte buffer to be used for sending on this connection.
    */
   static ByteBuffer acquireSenderBuffer(int size, DMStats stats) {

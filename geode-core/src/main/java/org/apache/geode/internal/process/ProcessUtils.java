@@ -26,7 +26,7 @@ import java.lang.management.ManagementFactory;
 
 /**
  * Utility operations for processes such as identifying the process id (pid).
- * 
+ *
  * @since GemFire 7.0
  */
 public class ProcessUtils {
@@ -39,9 +39,9 @@ public class ProcessUtils {
 
   /**
    * Returns the pid for this process.
-   * 
+   *
    * @throws PidUnavailableException if parsing the pid from the name of the RuntimeMXBean fails
-   * 
+   *
    * @see java.lang.management.RuntimeMXBean#getName()
    */
   public static int identifyPid() throws PidUnavailableException {
@@ -50,7 +50,7 @@ public class ProcessUtils {
 
   /**
    * Returns the pid for this process using the specified name from RuntimeMXBean.
-   * 
+   *
    * @throws PidUnavailableException if parsing the pid from the RuntimeMXBean name fails
    */
   public static int identifyPid(final String name) throws PidUnavailableException {
@@ -71,7 +71,7 @@ public class ProcessUtils {
   /**
    * Returns true if a process identified by the process id is currently running on this host
    * machine.
-   * 
+   *
    * @param pid process id to check for
    * @return true if the pid matches a currently running process
    */
@@ -84,7 +84,7 @@ public class ProcessUtils {
   /**
    * Returns true if a process identified by the specified Process is currently running on this host
    * machine.
-   * 
+   *
    * @param process the Process to check
    * @return true if the Process is a currently running process
    */
@@ -97,7 +97,7 @@ public class ProcessUtils {
   /**
    * Returns true if a process identified by the process id was running on this host machine and has
    * been terminated by this operation.
-   * 
+   *
    * @param pid process id
    * @return true if the process was terminated by this operation
    */

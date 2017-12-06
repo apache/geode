@@ -14,6 +14,22 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Test;
+
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
@@ -24,6 +40,7 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -31,26 +48,11 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Basic test of regions that use off heap storage. Subclasses exist for the different types of
  * offheap store.
- * 
+ *
  *
  */
 public abstract class OffHeapRegionBase {

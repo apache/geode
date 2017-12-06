@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyLong;
 
 import java.io.IOException;
 import java.util.concurrent.locks.Lock;
@@ -124,4 +124,3 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   }
 
 }
-

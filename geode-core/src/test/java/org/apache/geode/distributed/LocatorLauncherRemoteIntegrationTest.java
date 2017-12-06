@@ -32,6 +32,7 @@ import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessControllerFactory;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -69,6 +70,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-3506
   public void startDeletesStaleControlFiles() throws Exception {
     File stopRequestFile = givenControlFile(getStopRequestFileName());
     File statusRequestFile = givenControlFile(getStatusRequestFileName());

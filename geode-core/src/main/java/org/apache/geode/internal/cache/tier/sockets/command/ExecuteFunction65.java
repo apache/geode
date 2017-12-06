@@ -56,7 +56,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteFunction65 extends BaseCommand {
 
-  private final static ExecuteFunction65 singleton = new ExecuteFunction65();
+  private static final ExecuteFunction65 singleton = new ExecuteFunction65();
 
   public static Command getCommand() {
     return singleton;

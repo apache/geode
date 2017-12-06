@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.size;
 
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
+
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
@@ -34,7 +34,7 @@ public class ObjectTraverser {
   /**
    * Visit all objects reachable from a given root object, using a breadth first search. Using this
    * method requires some heap space - probably between 8 - 30 bytes per reachable object.
-   * 
+   *
    * @param root object to traverse from
    * @param visitor a visitor to visit each node
    * @param includeStatics if true, the first time we see a new object type, we will visit all of
@@ -131,7 +131,7 @@ public class ObjectTraverser {
   public interface Visitor {
     /**
      * Visit an object
-     * 
+     *
      * @param parent the parent of the object
      * @param object the object we are visiting
      * @return true the search should continue on and visit the children of this object as well

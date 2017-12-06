@@ -55,7 +55,7 @@ public class SatisfyRedundancy extends RebalanceDirectorAdapter {
 
   /**
    * Try to satisfy redundancy for a single bucket.
-   * 
+   *
    * @return true if we actually created a bucket somewhere.
    */
   private boolean satisfyRedundancy() {

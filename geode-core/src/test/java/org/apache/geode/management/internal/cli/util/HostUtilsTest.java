@@ -16,11 +16,12 @@ package org.apache.geode.management.internal.cli.util;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class HostUtilsTest {

@@ -17,10 +17,13 @@ package org.apache.geode.cache.lucene.internal;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Properties;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -37,6 +40,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -115,6 +119,37 @@ public class LuceneIndexForPartitionedRegionTest {
 
     verify(aeqFactory).setPersistent(eq(true));
     verify(aeqFactory).create(any(), any());
+  }
+
+  @Test
+  public void createRepositoryManagerWithNotNullSerializer() {
+    String name = "indexName";
+    String regionPath = "regionName";
+    InternalCache cache = Fakes.cache();
+    LuceneSerializer serializer = mock(LuceneSerializer.class);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    index = spy(index);
+    index.setupRepositoryManager(serializer);
+    verify(index).createRepositoryManager(eq(serializer));
+  }
+
+  @Test
+  public void createRepositoryManagerWithNullSerializer() {
+    String name = "indexName";
+    String regionPath = "regionName";
+    String fields[] = {"field1", "field2"};
+    InternalCache cache = Fakes.cache();
+    ArgumentCaptor<LuceneSerializer> serializerCaptor =
+        ArgumentCaptor.forClass(LuceneSerializer.class);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    index = spy(index);
+    when(index.getFieldNames()).thenReturn(fields);
+    index.setupRepositoryManager(null);
+    verify(index).createRepositoryManager(serializerCaptor.capture());
+    LuceneSerializer serializer = serializerCaptor.getValue();
+    assertNull(serializer);
   }
 
   @Test
@@ -219,7 +254,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ(any(), any());
-    spy.setupRepositoryManager();
+    spy.setupRepositoryManager(null);
     spy.setupAEQ(region.getAttributes(), aeq);
     spy.initialize();
     return spy;
@@ -275,7 +310,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ((RegionAttributes) any(), any());
-    spy.setupRepositoryManager();
+    spy.setupRepositoryManager(null);
     spy.setupAEQ(any(), any());
     spy.initialize();
 
@@ -297,7 +332,7 @@ public class LuceneIndexForPartitionedRegionTest {
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ(any(), any());
-    spy.setupRepositoryManager();
+    spy.setupRepositoryManager(null);
     spy.setupAEQ(any(), any());
     spy.initialize();
     spy.initialize();
@@ -323,7 +358,7 @@ public class LuceneIndexForPartitionedRegionTest {
     index = spy(index);
     when(index.getFieldNames()).thenReturn(fields);
     doReturn(aeq).when(index).createAEQ(any(), any());
-    index.setupRepositoryManager();
+    index.setupRepositoryManager(null);
     index.setupAEQ(cache.getRegionAttributes(regionPath), aeq.getId());
     index.initialize();
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);

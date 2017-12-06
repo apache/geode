@@ -15,16 +15,15 @@
 package org.apache.geode.cache.operations.internal;
 
 import java.io.Serializable;
-
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Token;
@@ -48,7 +47,7 @@ public class UpdateOnlyMap implements Map, Serializable {
 
   /**
    * Only called by internal code to bypass exportValue() method
-   * 
+   *
    * @return internal map
    */
   public Map getInternalMap() {

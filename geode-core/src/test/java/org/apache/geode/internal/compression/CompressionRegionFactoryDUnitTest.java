@@ -14,14 +14,10 @@
  */
 package org.apache.geode.internal.compression;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -32,6 +28,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests that the compressor region attribute is properly set or rejected by a RegionFactory.
@@ -55,7 +54,7 @@ public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a new CompressionRegionFactoryDUnitTest.
-   * 
+   *
    * @param name test name.
    */
   public CompressionRegionFactoryDUnitTest() {
@@ -75,7 +74,7 @@ public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the VM for a given identifier.
-   * 
+   *
    * @param vm a virtual machine identifier.
    */
   private VM getVM(int vm) {
@@ -84,7 +83,7 @@ public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Removes created regions from a VM.
-   * 
+   *
    * @param vm the virtual machine to cleanup.
    */
   private void cleanup(final VM vm) {
@@ -98,7 +97,7 @@ public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Asserts that a given compressor has been assigned to a region.
-   * 
+   *
    * @param vm the virtual machine to run the assertions on.
    * @param name a region name.
    * @param compressor a compressor.
@@ -117,7 +116,7 @@ public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param vm a virtual machine to create the region on.
    * @param name a region name.
    * @param compressor a compressor.
@@ -141,7 +140,7 @@ public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param name a region name.
    * @param compressor a compressor.
    */

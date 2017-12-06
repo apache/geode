@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Operation;
@@ -87,4 +88,3 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSer
   }
 
 }
-

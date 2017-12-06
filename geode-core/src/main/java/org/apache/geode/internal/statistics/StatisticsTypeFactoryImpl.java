@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * The implementation of {@link StatisticsTypeFactory}. Each VM can any have a single instance of
@@ -32,7 +32,7 @@ import java.util.*;
  */
 public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   // static fields
-  private final static StatisticsTypeFactoryImpl singleton = new StatisticsTypeFactoryImpl();
+  private static final StatisticsTypeFactoryImpl singleton = new StatisticsTypeFactoryImpl();
 
   // static methods
   /**
@@ -56,7 +56,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   /**
    * Adds an already created type. If the type has already been added and is equal to the new one
    * then the new one is dropped and the existing one returned.
-   * 
+   *
    * @throws IllegalArgumentException if the type already exists and is not equal to the new type
    */
   public StatisticsType addType(StatisticsType t) {

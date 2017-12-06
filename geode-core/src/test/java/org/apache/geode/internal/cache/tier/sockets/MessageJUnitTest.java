@@ -20,12 +20,12 @@ import static org.mockito.Mockito.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.Version;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, ClientServerTest.class})

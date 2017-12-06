@@ -14,11 +14,11 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import org.apache.geode.DataSerializable;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import org.apache.geode.DataSerializable;
 
 /**
  * @since GemFire 7.1

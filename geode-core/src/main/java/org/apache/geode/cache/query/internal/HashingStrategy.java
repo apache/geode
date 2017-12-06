@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal;
 
@@ -22,7 +22,7 @@ import java.io.Serializable;
 /**
  * This interface defines a Hashing strategy for keys(OR values) in a HashMap(OR HashSet) for
  * calculation of hash-code for custom objects and primitive types.
- * 
+ *
  * @since GemFire 8.0
  *
  */
@@ -31,7 +31,7 @@ public interface HashingStrategy extends Serializable {
   /**
    * Computes a hash code for the specified object. Implementors can use the object's own
    * <tt>hashCode</tt> method, the Java runtime's <tt>identityHashCode</tt>, or a custom scheme.
-   * 
+   *
    * @param o object for which the hash-code is to be computed
    * @return the hashCode
    */

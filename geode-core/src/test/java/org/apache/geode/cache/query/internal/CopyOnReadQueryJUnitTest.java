@@ -34,7 +34,7 @@ import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
+ *
  *
  */
 @Category(IntegrationTest.class)
@@ -79,7 +79,7 @@ public class CopyOnReadQueryJUnitTest {
 
 
   /**
-   * 
+   *
    * @param region
    * @param numObjects
    * @param objectsAndResultsMultiplier number of similar objects to put into the cache so that
@@ -262,7 +262,7 @@ public class CopyOnReadQueryJUnitTest {
   // }
 
   /**
-   * 
+   *
    * @param queries
    * @param expectedResults
    * @param numObjects
@@ -286,7 +286,7 @@ public class CopyOnReadQueryJUnitTest {
   }
 
   /**
-   * 
+   *
    * @param queries
    * @param expectedResults
    * @param numObjects

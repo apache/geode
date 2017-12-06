@@ -16,6 +16,7 @@
 package org.apache.geode.distributed.internal;
 
 import java.util.*;
+
 import org.apache.geode.distributed.internal.membership.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -85,7 +86,7 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
   /**
    * Use this method instead of {@link #waitForReplies()} if you want the wait to throw an exception
    * when a member departs.
-   * 
+   *
    * @throws ReplyException the exception passed back in reply
    * @throws InterruptedException
    * @throws ReliableReplyException when a member departs
@@ -114,4 +115,3 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
     }
   }
 }
-

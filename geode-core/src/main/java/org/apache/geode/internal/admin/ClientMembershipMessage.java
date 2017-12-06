@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 /**
  * A PooledDistributionMessage for notifying admin members about changes in Client Membership
  * received through BridgeMembership
- * 
+ *
  */
 public class ClientMembershipMessage extends PooledDistributionMessage {
   public static final int JOINED = 0;
@@ -46,7 +46,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
 
   /**
    * Parameterized constructor
-   * 
+   *
    * @param clientId Id of the client
    * @param clientHost host the client was running on (could be null)
    * @param eventType whether client joined, left or crashed. Should be one of
@@ -60,7 +60,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
   }
 
   /**
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.internal.DistributionManager)
    */
   @Override
@@ -84,7 +84,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
   }
 
   /**
-   * 
+   *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
@@ -148,7 +148,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
 
   /**
    * String representation of this message.
-   * 
+   *
    * @return String representation of this message.
    */
   @Override

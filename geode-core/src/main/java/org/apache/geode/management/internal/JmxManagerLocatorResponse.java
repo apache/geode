@@ -27,7 +27,7 @@ import org.apache.geode.internal.Version;
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a
  * JmxManagerLocatorResponse.
- * 
+ *
  * @since GemFire 7.0
  *
  */

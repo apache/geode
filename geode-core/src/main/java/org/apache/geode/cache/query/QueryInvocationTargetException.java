@@ -25,7 +25,7 @@ public class QueryInvocationTargetException extends QueryException {
 
   /**
    * Construct an instance of QueryInvalidException
-   * 
+   *
    * @param cause a Throwable cause of this exception
    */
   public QueryInvocationTargetException(Throwable cause) {
@@ -35,7 +35,7 @@ public class QueryInvocationTargetException extends QueryException {
 
   /**
    * Construct an instance of QueryInvalidException
-   * 
+   *
    * @param msg the error message
    */
   public QueryInvocationTargetException(String msg) {
@@ -44,7 +44,7 @@ public class QueryInvocationTargetException extends QueryException {
 
   /**
    * Construct an instance of QueryInvalidException
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause of this exception
    */

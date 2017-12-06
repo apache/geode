@@ -54,12 +54,12 @@ import org.apache.geode.internal.security.SecurityService;
  * This is the base command which read the parts for the MessageType.EXECUTE_FUNCTION.<br>
  * If the hasResult byte is 1, then this command send back the result after the execution to the
  * client else do not send the reply back to the client
- * 
+ *
  * @since GemFire 5.8Beta
  */
 public class ExecuteFunction extends BaseCommand {
 
-  private final static ExecuteFunction singleton = new ExecuteFunction();
+  private static final ExecuteFunction singleton = new ExecuteFunction();
 
   public static Command getCommand() {
     return singleton;

@@ -34,7 +34,7 @@ import org.apache.geode.internal.InternalDataSerializer;
  * A message from a server to a locator to update the locator with new load information from the
  * server. Also includes the id of any clients whose estimate is no longer needed on the
  * server-locator.
- * 
+ *
  * @since GemFire 5.7
  *
  */

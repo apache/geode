@@ -23,14 +23,14 @@ import org.apache.geode.cache.RegionEvent;
  * CacheObserver. See the documentation for class CacheObserverHolder for details. Also the callback
  * is issed only if the boolean ISSUE_CALLBACKS_TO_CACHE_OBSERVER present in
  * org.apache.geode.internal.cache.LocalRegion is made true
- * 
+ *
  */
 public class CacheObserverAdapter implements CacheObserver {
 
   /**
    * Called just after the region is cleared & before Listener callback is issued. The call to this
    * method is synchronous
-   * 
+   *
    * @param event RegionEvent object
    */
   public void afterRegionClear(RegionEvent event) {}
@@ -57,7 +57,7 @@ public class CacheObserverAdapter implements CacheObserver {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.CacheObserver#afterConflation(java.nio.ByteBuffer,
    * java.nio.ByteBuffer)
    */
@@ -67,7 +67,7 @@ public class CacheObserverAdapter implements CacheObserver {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.CacheObserver#afterSettingOplogOffSet()
    */
   public void afterSettingOplogOffSet(long offset) {
@@ -88,7 +88,7 @@ public class CacheObserverAdapter implements CacheObserver {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.CacheObserver#beforeStoppingCompacter()
    */
   public void beforeStoppingCompactor() {
@@ -114,7 +114,7 @@ public class CacheObserverAdapter implements CacheObserver {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.CacheObserver#afterSwitchingWriteAndFlushMaps()
    */
   public void afterSwitchingWriteAndFlushMaps() {

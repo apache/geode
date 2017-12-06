@@ -21,8 +21,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(UnitTest.class)
 public class MemberStarterRuleTest {

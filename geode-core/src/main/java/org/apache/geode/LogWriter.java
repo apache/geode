@@ -15,10 +15,10 @@
 
 package org.apache.geode;
 
+import java.util.logging.Handler;
+
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
-
-import java.util.logging.Handler;
 
 /**
  * Defines methods available to clients that want to write a log message to their GemFire
@@ -229,7 +229,7 @@ public interface LogWriter {
    * <p>
    * The logging is done using the <code>finer</code> level. The string message will start with
    * <code>"ENTRY"</code> and include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
@@ -240,7 +240,7 @@ public interface LogWriter {
    * <p>
    * The logging is done using the <code>finer</code> level. The string message will start with
    * <code>"RETURN"</code> and include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
@@ -255,7 +255,7 @@ public interface LogWriter {
    * This is a convenience method that could be done instead by calling
    * {@link #finer(String, Throwable)}. The string message will start with <code>"THROW"</code> and
    * include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    * @param thrown The Throwable that is being thrown.
@@ -292,7 +292,7 @@ public interface LogWriter {
 
   /**
    * A mechanism for accessing the abstraction layer used for internationalization.
-   * 
+   *
    * @return LogWriterI18n
    */
   public LogWriterI18n convertToLogWriterI18n();

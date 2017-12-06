@@ -15,18 +15,18 @@
 package org.apache.geode.admin.jmx.internal;
 
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.modeler.AttributeInfo;
-import org.apache.commons.modeler.OperationInfo;
 import org.apache.commons.modeler.ManagedBean;
+import org.apache.commons.modeler.OperationInfo;
 
 /**
  * Extends ManagedBean to allow for dynamically creating new instances of ManagedBean based on an
  * existing instance of ManagedBean.
- * 
+ *
  * @since GemFire 5.0.1
  */
 public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
@@ -140,4 +140,3 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
     return (sb.toString());
   }
 }
-

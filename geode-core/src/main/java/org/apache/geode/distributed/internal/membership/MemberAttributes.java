@@ -121,4 +121,3 @@ public class MemberAttributes {
     return this.vmViewId;
   }
 }
-

@@ -14,18 +14,23 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 
 /**
  * Implementing class for <code>Conflatable</code> interface. Objects of this class will be add to
  * the queue
- * 
- * 
+ *
+ *
  */
-public class ConflatableObject implements Conflatable, Serializable {
+public class ConflatableObject implements Conflatable, DataSerializable {
 
   /** The key for this entry */
   private Object key;
@@ -48,7 +53,7 @@ public class ConflatableObject implements Conflatable, Serializable {
 
   /**
    * Constructor
-   * 
+   *
    * @param key - The key for this entry
    * @param value - The value for this entry
    * @param eventId - eventID object for this entry
@@ -66,7 +71,7 @@ public class ConflatableObject implements Conflatable, Serializable {
 
   /**
    * Returns whether the object should be conflated
-   * 
+   *
    * @return whether the object should be conflated
    */
   public boolean shouldBeConflated() {
@@ -75,7 +80,7 @@ public class ConflatableObject implements Conflatable, Serializable {
 
   /**
    * Returns the name of the region for this <code>Conflatable</code>
-   * 
+   *
    * @return the name of the region for this <code>Conflatable</code>
    */
   public String getRegionToConflate() {
@@ -84,7 +89,7 @@ public class ConflatableObject implements Conflatable, Serializable {
 
   /**
    * Returns the key for this <code>Conflatable</code>
-   * 
+   *
    * @return the key for this <code>Conflatable</code>
    */
   public Object getKeyToConflate() {
@@ -93,7 +98,7 @@ public class ConflatableObject implements Conflatable, Serializable {
 
   /**
    * Returns the value for this <code>Conflatable</code>
-   * 
+   *
    * @return the value for this <code>Conflatable</code>
    */
   public Object getValueToConflate() {
@@ -102,7 +107,7 @@ public class ConflatableObject implements Conflatable, Serializable {
 
   /**
    * Sets the latest value for this <code>Conflatable</code>
-   * 
+   *
    * @param value The latest value
    */
   public void setLatestValue(Object value) {
@@ -111,7 +116,7 @@ public class ConflatableObject implements Conflatable, Serializable {
 
   /**
    * Return this event's identifier
-   * 
+   *
    * @return this event's identifier
    */
   public EventID getEventId() {
@@ -186,5 +191,23 @@ public class ConflatableObject implements Conflatable, Serializable {
    */
   void setValue(Object value) {
     this.value = value;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeObject(key, out);
+    DataSerializer.writeObject(value, out);
+    DataSerializer.writeObject(id, out);
+    out.writeBoolean(conflate);
+    out.writeUTF(regionname);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    this.key = DataSerializer.readObject(in);
+    this.value = DataSerializer.readObject(in);
+    this.id = DataSerializer.readObject(in);
+    this.conflate = in.readBoolean();
+    this.regionname = in.readUTF();
   }
 }

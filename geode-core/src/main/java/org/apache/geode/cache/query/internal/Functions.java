@@ -15,13 +15,12 @@
 
 package org.apache.geode.cache.query.internal;
 
+import java.text.*;
 import java.util.*;
 
 import org.apache.geode.cache.query.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
-
-import java.text.*;
 
 /**
  * Class Description

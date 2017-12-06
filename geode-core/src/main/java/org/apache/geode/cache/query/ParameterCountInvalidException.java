@@ -25,7 +25,7 @@ public class ParameterCountInvalidException extends QueryException {
 
   /**
    * Creates a new instance of QueryParameterCountInvalidException
-   * 
+   *
    * @param message the error message
    */
   public ParameterCountInvalidException(String message) {

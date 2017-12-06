@@ -30,7 +30,7 @@ import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandl
 /**
  * Creates the {@link PidFile} and uses {@link ControlFileWatchdog} to monitor the directory for
  * creation of stop or status request files.
- * 
+ *
  * @since GemFire 8.0
  */
 public class ControllableProcess {
@@ -80,7 +80,7 @@ public class ControllableProcess {
 
   /**
    * Returns the process id (PID).
-   * 
+   *
    * @return the process id (PID)
    */
   public int getPid() {
@@ -89,7 +89,7 @@ public class ControllableProcess {
 
   /**
    * Returns the PID file.
-   * 
+   *
    * @return the PID file
    */
   public File getPidFile() {

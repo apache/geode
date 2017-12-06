@@ -58,7 +58,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * </ol>
  *
  * @since GemFire 4.0
- * 
+ *
  */
 public class TXFarSideCMTracker {
   private static final Logger logger = LogService.getLogger();

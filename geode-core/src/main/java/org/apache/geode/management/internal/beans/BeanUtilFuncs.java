@@ -40,7 +40,7 @@ public class BeanUtilFuncs {
 
   /**
    * returns the tail of the log file
-   * 
+   *
    * @return tail of the log file
    */
   public static String tailSystemLog(File logFile, final int numLines) throws IOException {
@@ -327,7 +327,7 @@ public class BeanUtilFuncs {
   /**
    * Compresses a given String. It is encoded using ISO-8859-1, So any decompression of the
    * compressed string should also use ISO-8859-1
-   * 
+   *
    * @param str String to be compressed.
    * @return compressed bytes
    */

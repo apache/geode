@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
@@ -29,12 +36,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -188,7 +189,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * ((CachedDeserializable)object).getDeserializedValue(this, this.getRegionEntry(k)); } } } catch
    * (EntryNotFoundException ok) { // just return null; } if (object == Token.TOMBSTONE) { object =
    * null; }
-   * 
+   *
    * return object; }
    */
 
@@ -382,7 +383,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * It should be an atomic operation. If the key has been added to the eventSeqNumQueue then make
    * sure that the value is in the Bucket before the eventSeqNumQueue is available for
    * peek/remove/take from other thread.
-   * 
+   *
    * @param key
    * @param value
    * @return boolean which shows whether the operation was successful or not.
@@ -500,7 +501,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   /**
-   * 
+   *
    * @param key
    */
   public void addToFailedBatchRemovalMessageKeys(Object key) {

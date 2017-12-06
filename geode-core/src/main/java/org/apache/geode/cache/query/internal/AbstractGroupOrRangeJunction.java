@@ -18,6 +18,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import java.util.*;
+
 import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
@@ -26,10 +28,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.util.*;
-
 /**
- * 
+ *
  */
 public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     implements Filter, OQLLexerTokenTypes {
@@ -429,7 +429,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    * Segregates the Where clause operands of a Range or Group Junction into filter evaluatable &
    * iter evaluatable operands by creating an Object of Organizedoperands. This method is invoked
    * from organizeOperands of Group or Range Junction.
-   * 
+   *
    * @param indexCount Indicates the number of operands of the evalOperands List which are filter
    *        evaluatable. The filter evaluatable operands are present at the start of the List
    * @param evalOperands List containing the operands of the Group or Range Junction. The operands
@@ -490,7 +490,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    * else if a GroupJunction then that will be created. This method retains the operands of the old
    * junction while creating the new junction and adds the iter operands passed, to the existing
    * operands.
-   * 
+   *
    * @param completeExpansion if true indicates that the junction on evaluation should be expanded
    *        to the query from clause level.
    * @param indpnds The independent runtime iterators to which this group belongs to. Normally it
@@ -511,7 +511,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    * else if a GroupJunction then that will be created. This method discards the operands of the old
    * junction while creating the new junction . The new junction will only have the operands passed
    * to it.
-   * 
+   *
    * @param operator The junction type ( AND or OR ) of the old junction
    * @param indpndntItr Array of RuntimeIterator representing the Independent Iterator for the Group
    *        or Range Junction
@@ -527,7 +527,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    * Segregates the conditions into those which are filter evaluatable and which are iter
    * evaluatable. This method is appropriately overridden in the GroupJunction and RangeJunction
    * class.
-   * 
+   *
    * @param context ExecutionContext object
    * @return Object of type OrganizedOperands
    * @throws FunctionDomainException

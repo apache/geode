@@ -25,7 +25,7 @@ public class TypeMismatchException extends QueryException {
 
   /**
    * Construct an instance of TypeMismatchException
-   * 
+   *
    * @param msg the error message
    */
   public TypeMismatchException(String msg) {
@@ -34,7 +34,7 @@ public class TypeMismatchException extends QueryException {
 
   /**
    * Construct an instance of TypeMismatchException
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause of this exception
    */

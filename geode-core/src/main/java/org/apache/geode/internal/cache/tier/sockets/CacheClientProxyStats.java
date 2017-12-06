@@ -20,8 +20,8 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * Class <code>CacheClientProxyStats</code> tracks GemFire statistics related to a
@@ -81,7 +81,7 @@ public class CacheClientProxyStats implements MessageStats {
   private static final int _deltaFullMessagesSentId;
   /** Id of the CQ count statistic */
   private static final int _cqCountId;
-  private final static int _sentBytesId;
+  private static final int _sentBytesId;
 
   /**
    * Static initializer to create and initialize the <code>StatisticsType</code>
@@ -172,7 +172,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "messagesReceived" stat.
-   * 
+   *
    * @return the current value of the "messagesReceived" stat
    */
   public int getMessagesReceived() {
@@ -181,7 +181,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "messagesQueued" stat.
-   * 
+   *
    * @return the current value of the "messagesQueued" stat
    */
   public int getMessagesQueued() {
@@ -190,7 +190,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "messagesNotQueuedOriginator" stat.
-   * 
+   *
    * @return the current value of the "messagesNotQueuedOriginator" stat
    */
   public int getMessagesNotQueuedOriginator() {
@@ -199,7 +199,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "messagesNotQueuedNotInterested" stat.
-   * 
+   *
    * @return the current value of the "messagesNotQueuedNotInterested" stat
    */
   public int getMessagesNotQueuedNotInterested() {
@@ -208,7 +208,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "messagesFailedQueued" stat.
-   * 
+   *
    * @return the current value of the "messagesFailedQueued" stat
    */
   public int getMessagesFailedQueued() {
@@ -217,7 +217,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "messageQueueSize" stat.
-   * 
+   *
    * @return the current value of the "messageQueueSize" stat
    */
   public int getMessageQueueSize() {
@@ -226,7 +226,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the messagesProcessed" stat.
-   * 
+   *
    * @return the current value of the messagesProcessed" stat
    */
   public int getMessagesProcessed() {
@@ -235,7 +235,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "messageProcessingTime" stat.
-   * 
+   *
    * @return the current value of the "messageProcessingTime" stat
    */
   public long getMessageProcessingTime() {
@@ -244,7 +244,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "deltaMessagesSent" stat.
-   * 
+   *
    * @return the current value of the "deltaMessagesSent" stat
    */
   public int getDeltaMessagesSent() {
@@ -253,7 +253,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "deltaFullMessagesSent" stat.
-   * 
+   *
    * @return the current value of the "deltaFullMessagesSent" stat
    */
   public int getDeltaFullMessagesSent() {
@@ -262,7 +262,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current value of the "cqCount" stat.
-   * 
+   *
    * @return the current value of the "cqCount" stat
    */
   public int getCqCount() {
@@ -320,7 +320,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Sets the "messageQueueSize" stat.
-   * 
+   *
    * @param size The size of the queue
    */
   public void setQueueSize(int size) {
@@ -329,7 +329,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Returns the current time (ns).
-   * 
+   *
    * @return the current time (ns)
    */
   public long startTime() {
@@ -338,7 +338,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   /**
    * Increments the "messagesProcessed" and "messageProcessingTime" stats.
-   * 
+   *
    * @param start The start of the message (which is decremented from the current time to determine
    *        the message processing time).
    */

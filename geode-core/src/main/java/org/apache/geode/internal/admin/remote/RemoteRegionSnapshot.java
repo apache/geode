@@ -15,13 +15,13 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+import java.util.*;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.*;
 import org.apache.geode.internal.admin.*;
-
-import java.util.*;
-import java.io.*;
 
 public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
   private static final long serialVersionUID = -2006079857403000280L;

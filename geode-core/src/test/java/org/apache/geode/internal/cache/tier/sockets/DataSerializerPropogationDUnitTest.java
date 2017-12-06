@@ -22,7 +22,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -58,9 +57,11 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({DistributedTest.class, ClientServerTest.class, FlakyTest.class})
 public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;
@@ -650,7 +651,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
 
   /**
    * Test's same eventId being same for the dataserializers at all clients & servers
-   * 
+   *
    */
   @Test
   public void testDataSerializersEventIdVerificationClientsAndServers() throws Exception {
@@ -811,7 +812,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
 
   /**
    * This method creates the server cache
-   * 
+   *
    * @param maxThreads
    * @return
    * @throws Exception
@@ -835,7 +836,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
 
   /**
    * This method creates the server cache
-   * 
+   *
    * @param maxThreads
    * @return
    * @throws Exception
@@ -871,7 +872,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
 
   /**
    * sets the EventId value in the VM
-   * 
+   *
    * @param eventID
    */
   public static void setEventId(EventID eventID) {

@@ -26,13 +26,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Locale;
 
-import org.mockito.ArgumentCaptor;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
-
 import org.apache.logging.log4j.core.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -42,6 +39,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Region;

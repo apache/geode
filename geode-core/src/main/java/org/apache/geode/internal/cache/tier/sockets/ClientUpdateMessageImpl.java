@@ -43,12 +43,12 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.lru.Sizeable;
@@ -145,7 +145,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   /**
    * Represents the changed bytes of this event's _value.
-   * 
+   *
    * @since GemFire 6.1
    */
   private byte[] deltaBytes = null;
@@ -338,7 +338,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * Returns a <code>Message</code> generated from the fields of this
    * <code>ClientUpdateMessage</code>.
-   * 
+   *
    * @param latestValue Object containing the latest value to use. This could be the original value
    *        if conflation is not enabled, or it could be a conflated value if conflation is enabled.
    * @return a <code>Message</code> generated from the fields of this
@@ -1016,7 +1016,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   /**
    * Returns the cqs for the given client.
-   * 
+   *
    * @return cqNames
    */
   public String[] getCqs(ClientProxyMembershipID clientId) {
@@ -1037,7 +1037,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   /**
    * Add cqs for the given client.
-   * 
+   *
    * @param clientId
    * @param filteredCqs
    */
@@ -1122,10 +1122,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * out.writeInt(this._clientCqs.size()); // For each client. Iterator entries =
    * this._clientCqs.entrySet().iterator(); while (entries.hasNext()) { Map.Entry entry =
    * (Map.Entry)entries.next();
-   * 
+   *
    * // Write ProxyId. ClientProxyMembershipID proxyId = (ClientProxyMembershipID)entry.getKey();
    * proxyId.toData(out);
-   * 
+   *
    * HashMap cqs = (HashMap)entry.getValue(); // Write CQ size for each Client.
    * out.writeInt(cqs.size()); Iterator clients = cqs.entrySet().iterator(); while
    * (clients.hasNext()) { Map.Entry client = (Map.Entry)clients.next(); // Write CQ Name. String cq
@@ -1136,16 +1136,16 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /*
    * private void readCqInfo(ObjectInput in) throws IOException, ClassNotFoundException { // Read
    * Client CQ Size int numClientIds = in.readInt(); this._clientCqs = new HashMap();
-   * 
+   *
    * // For each Client. for (int cCnt=0; cCnt < numClientIds; cCnt++){ ClientProxyMembershipID
    * proxyId = new ClientProxyMembershipID();
-   * 
+   *
    * // Read Proxy id. proxyId.fromData(in); // read CQ size for each Client. int numCqs =
    * in.readInt(); HashMap cqs = new HashMap();
-   * 
+   *
    * for (int cqCnt=0; cqCnt < numCqs; cqCnt++){ // Get CQ Name and CQ Op. // Read CQ Name. String
    * cqName = (String)in.readObject(); int cqOp = in.readInt();
-   * 
+   *
    * // Read CQ Op. cqs.put(cqName, Integer.valueOf(cqOp)); } this._clientCqs.put(proxyId, cqs); } }
    */
 
@@ -1400,7 +1400,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage#needsNoAuthorizationCheck()
    */

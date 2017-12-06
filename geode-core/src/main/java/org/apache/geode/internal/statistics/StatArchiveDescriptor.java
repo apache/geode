@@ -23,7 +23,7 @@ package org.apache.geode.internal.statistics;
  * {@link StatArchiveDescriptor.Builder} is used for constructing instances instead of a constructor
  * with many similar parameters (ie, multiple Strings which could easily be interposed with one
  * another).
- * 
+ *
  * @since GemFire 7.0
  */
 public class StatArchiveDescriptor {

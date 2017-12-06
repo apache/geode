@@ -35,7 +35,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Does a region get on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class GetOp {
@@ -49,7 +49,7 @@ public class GetOp {
   /**
    * Does a region get on a server using connections from the given pool to communicate with the
    * server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the region to do the get on
    * @param key the entry key to do the get on

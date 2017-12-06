@@ -40,14 +40,14 @@ import org.apache.geode.cache.client.ClientCacheFactory;
  * field and the PdxInstance for version 2 will have the field. This differs from deserialization of
  * a pdx back to a domain class. In that case if version 2 is deserializing version 1 PdxReader will
  * return a default value for the added field even though version 1 has no knowledge of it.
- * 
+ *
  * @since GemFire 6.6
  */
 public interface PdxInstance extends java.io.Serializable {
 
   /**
    * Return the full name of the class that this pdx instance represents.
-   * 
+   *
    * @return the name of the class that this pdx instance represents.
    * @since GemFire 6.6.2
    */
@@ -57,14 +57,14 @@ public interface PdxInstance extends java.io.Serializable {
    * Returns true if this instance represents an enum. Enum's have a String field named "name" and
    * an int field named "ordinal". It is ok to cast a PdxInstance that represents an enum to
    * {@link java.lang.Comparable}. PdxInstances representing enums are not writable.
-   * 
+   *
    * @return true if this instance represents an enum.
    */
   public boolean isEnum();
 
   /**
    * Deserializes and returns the domain object that this instance represents.
-   * 
+   *
    * @return the deserialized domain object.
    * @throws PdxSerializationException if the instance could not be deserialized
    */
@@ -74,7 +74,7 @@ public interface PdxInstance extends java.io.Serializable {
    * Checks if the named field exists and returns the result.
    * <p>
    * This can be useful when writing code that handles more than one version of a PDX class.
-   * 
+   *
    * @param fieldName the name of the field to check
    * @return <code>true</code> if the named field exists; otherwise <code>false</code>
    */
@@ -82,7 +82,7 @@ public interface PdxInstance extends java.io.Serializable {
 
   /**
    * Return an unmodifiable list of the field names on this PdxInstance.
-   * 
+   *
    * @return an unmodifiable list of the field names on this PdxInstance
    */
   public List<String> getFieldNames();
@@ -93,7 +93,7 @@ public interface PdxInstance extends java.io.Serializable {
    * <p>
    * Note that if no fields have been marked then all the fields are used as identity fields even
    * though this method will return <code>false</code> since none of them have been <em>marked</em>.
-   * 
+   *
    * @param fieldName the name of the field to check
    * @return <code>true</code> if the named field exists and was marked as an identify field;
    *         otherwise <code>false</code>
@@ -111,9 +111,9 @@ public interface PdxInstance extends java.io.Serializable {
    * If an Object[] is deserialized by this call then that array's component type will be
    * <code>Object.class</code> instead of the original class that the array had when it was
    * serialized. This is done so that PdxInstance objects can be added to the array.
-   * 
+   *
    * @param fieldName name of the field to read
-   * 
+   *
    * @return If this instance has the named field then the field's value is returned, otherwise
    *         <code>null</code> is returned.
    * @throws PdxSerializationException if the field could not be deserialized
@@ -162,7 +162,7 @@ public interface PdxInstance extends java.io.Serializable {
    * {@link java.util.Arrays#deepEquals(Object[], Object[]) deepEquals} as noted above. You should
    * either override equals and hashCode in these cases or mark other fields as your identity
    * fields.
-   * 
+   *
    * @param other the other instance to compare to this.
    * @return <code>true</code> if this instance is equal to <code>other</code>.
    */
@@ -205,7 +205,7 @@ public interface PdxInstance extends java.io.Serializable {
    * Creates and returns a {@link WritablePdxInstance} whose initial values are those of this
    * PdxInstance. This call returns a copy of the current field values so modifications made to the
    * returned value will not modify this PdxInstance.
-   * 
+   *
    * @return a {@link WritablePdxInstance}
    * @throws IllegalStateException if the PdxInstance is an enum.
    */

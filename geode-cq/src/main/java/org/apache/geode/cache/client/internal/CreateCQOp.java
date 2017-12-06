@@ -14,29 +14,29 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * Creates a CQ on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class CreateCQOp {
   /**
    * Create a continuous query on the server using connections from the given pool to communicate
    * with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param cqName name of the CQ to create
    * @param queryStr string OQL statement to be executed
@@ -53,7 +53,7 @@ public class CreateCQOp {
 
   /**
    * Create a continuous query on the server using a specific connections from the given pool.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param conn the actual connection to use
    * @param cqName name of the CQ to create
@@ -132,7 +132,7 @@ public class CreateCQOp {
 
     /**
      * This constructor is for our subclasses
-     * 
+     *
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     protected CreateCQOpImpl(int msgType, int numParts) {

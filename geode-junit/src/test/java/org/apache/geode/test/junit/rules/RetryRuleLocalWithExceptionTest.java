@@ -26,8 +26,8 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.junit.Retry;
-import org.apache.geode.test.junit.runners.TestRunner;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
  * Unit tests for {@link RetryRule} involving local scope (ie rule affects only the test methods

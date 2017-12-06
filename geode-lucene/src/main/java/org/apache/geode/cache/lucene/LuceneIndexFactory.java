@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.lucene.analysis.Analyzer;
-
 import java.util.Map;
+
+import org.apache.lucene.analysis.Analyzer;
 
 /**
  * A factory for creating a lucene index on the current member. Obtain a factory from
@@ -29,7 +29,7 @@ public interface LuceneIndexFactory {
 
   /**
    * Add a field to be indexed
-   * 
+   *
    * @param name A field of the object to index. Only fields listed here will be stored in the
    *        index. Fields should map to PDX fieldNames if the object is serialized with PDX, or to
    *        java fields on the object otherwise. The special field name
@@ -40,7 +40,7 @@ public interface LuceneIndexFactory {
 
   /**
    * Set the list of fields to be indexed.
-   * 
+   *
    * @param fields Fields of the object to index. Only fields listed here will be stored in the
    *        index. Fields should map to PDX fieldNames if the object is serialized with PDX, or to
    *        java fields on the object otherwise. The special field name
@@ -64,7 +64,7 @@ public interface LuceneIndexFactory {
 
   /**
    * Set the list of fields to be indexed.
-   * 
+   *
    * @param fieldMap Fields of the object to index, with the analyzer to be used for each field.
    *        Only fields listed here will be stored in the index. Fields should map to PDX fieldNames
    *        if the object is serialized with PDX, or to java fields on the object otherwise. The
@@ -75,10 +75,17 @@ public interface LuceneIndexFactory {
 
   /**
    * Create the index on this member.
-   * 
+   *
    * @param indexName name of the index.
    * @param regionPath The region to index. The entries added to this region will be indexes.
    */
   void create(String indexName, String regionPath);
 
+  /**
+   * Configure the way objects are converted to lucene documents for this lucene index
+   *
+   * @param luceneSerializer A callback which converts a region value to a lucene document or
+   *        documents to be stored in the index.
+   */
+  public LuceneIndexFactory setLuceneSerializer(LuceneSerializer luceneSerializer);
 }

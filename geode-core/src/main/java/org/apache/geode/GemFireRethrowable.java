@@ -21,7 +21,7 @@ package org.apache.geode;
  * <code>Exception</code> to not accidently catch this exception.
  * <p>
  * Note: if user code catches this error (or its subclasses) then it <em>must</em> be rethrown.
- * 
+ *
  * @since GemFire 5.7
  */
 public class GemFireRethrowable extends Error {
@@ -34,7 +34,7 @@ public class GemFireRethrowable extends Error {
 
   /**
    * Create a GemFireRethrowable with the specified message.
-   * 
+   *
    * @param message
    */
   public GemFireRethrowable(String message) {

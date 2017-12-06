@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode;
 
@@ -21,7 +21,7 @@ package org.apache.geode;
  * This exception wraps any checked exception encountered during invocation of
  * {@link Delta#fromDelta(java.io.DataInput)} or {@link Delta#toDelta(java.io.DataOutput)} in
  * GemFire.
- * 
+ *
  * @since GemFire 6.5
  */
 public class DeltaSerializationException extends RuntimeException {

@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for FastLogger when using the default log4j2 config for GemFire.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class FastLoggerWithDefaultConfigJUnitTest {

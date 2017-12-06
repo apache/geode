@@ -14,23 +14,23 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
 /**
  * Implementation of DiskWriteAttributes
- * 
+ *
  * @see AttributesFactory#setDiskWriteAttributes
  * @see RegionAttributes#getDiskWriteAttributes
  * @see Region#writeToDisk
- * 
- * 
+ *
+ *
  * @since GemFire 5.1
  */
 @SuppressWarnings({"deprecation", "unused"})
@@ -80,7 +80,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
   /**
    * Default disk directory size in megabytes
-   * 
+   *
    * @since GemFire 5.1
    */
   public static final int DEFAULT_DISK_DIR_SIZE = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
@@ -102,7 +102,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /////////////////////// Constructors ///////////////////////
 
   /**
-   * 
+   *
    * Creates a new <code>DiskWriteAttributes</code> object using the properties specified. The
    * properties that can be specified are:
    * <ul>
@@ -123,7 +123,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * The above properties are case sensitive and if a propery which is not in the list above is
    * passed no action is taken. If a property which is present above is not specified then the
    * following default values will be uses
-   * 
+   *
    * <ul>
    * <li>synchronous = false
    * <li>auto-compact = true
@@ -133,9 +133,9 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * <li>time-interval = 1000 milliseconds
    * <li>byte-threshold = 0 bytes
    * </ul>
-   * 
+   *
    * @param properties
-   * 
+   *
    * @throws IllegalArgumentException If any of the properties specified are not in the expected
    *         format.
    * @throws IllegalStateException if max-oplog-size is set to infinity(0) and compaction is set to
@@ -215,12 +215,12 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /**
    * Verifys if the propertyString passed is a valid boolean value or null else throws an
    * IllegalArgument exception
-   * 
+   *
    * @param propertyString
    * @param property
    * @throws IllegalArgumentException if the property string passed does not represent a boolean or
    *         null
-   * 
+   *
    */
   private void verifyBooleanString(String propertyString, String property) {
     if (!(propertyString.equalsIgnoreCase("true") || propertyString.equalsIgnoreCase("false"))) {
@@ -233,7 +233,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /**
    * Verifys if the string passed, is in a number format which is acceptable and returns the long
    * value of the string.
-   * 
+   *
    * @param propertyString
    * @param property
    * @return the long value of the string
@@ -260,7 +260,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /**
    * Verifys if the string passed, is in a number format which is acceptable and returns the int
    * value of the string.
-   * 
+   *
    * @param propertyString
    * @param property
    * @return the int value of the string
@@ -360,9 +360,9 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
-   * 
+   *
    * Note that we just need to make sure that equal objects return equal hashcodes; nothing really
    * elaborate is done here.
    */
@@ -403,7 +403,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
   /**
    * Get the default max oplog size limit in megabytes
-   * 
+   *
    * @return the default max oplog size limit in megabytes
    */
   public static int getDefaultMaxOplogSizeLimit() {
@@ -411,9 +411,9 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   }
 
   /**
-   * 
+   *
    * Returns the default compaction oplog value
-   * 
+   *
    * @return the default compaction oplog value
    */
   public static boolean getDefaultRollOplogsValue() {
@@ -421,9 +421,9 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   }
 
   /**
-   * 
+   *
    * Gets the default max oplog size in megabytes
-   * 
+   *
    * @return the default max oplog size in megabytes
    */
   public static int getDefaultMaxOplogSize() {
@@ -432,7 +432,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
   /**
    * Returns a default instance of DiskWriteAttributes
-   * 
+   *
    * @return the default DiskWriteAttributes instance
    */
   public static DiskWriteAttributes getDefaultAsyncInstance() {

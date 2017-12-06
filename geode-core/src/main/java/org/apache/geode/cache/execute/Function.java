@@ -35,7 +35,7 @@ import org.apache.geode.security.ResourcePermission;
  * {@link FunctionService#registerFunction(Function)} or the cache.xml <code>function</code>
  * element.
  * </p>
- * 
+ *
  * @since GemFire 6.0
  */
 @FunctionalInterface
@@ -52,7 +52,7 @@ public interface Function<T> extends Identifiable<String> {
    * If {@link Function#hasResult()} returns true, {@link ResultCollector#getResult()} blocks and
    * waits for the result of function execution
    * </p>
-   * 
+   *
    * @return whether this function returns a Result back to the caller.
    * @since GemFire 6.0
    */
@@ -66,7 +66,7 @@ public interface Function<T> extends Identifiable<String> {
    * provided to this function is the one which was built using {@linkplain Execution}. The contexts
    * can be data dependent or data-independent so user should check to see if the context provided
    * in parameter is instance of {@link RegionFunctionContext}.
-   * 
+   *
    * @param context as created by {@link Execution}
    * @since GemFire 6.0
    */
@@ -74,7 +74,7 @@ public interface Function<T> extends Identifiable<String> {
 
   /**
    * Return a unique function identifier, used to register the function with {@link FunctionService}
-   * 
+   *
    * @return string identifying this function
    * @since GemFire 6.0
    */
@@ -99,7 +99,7 @@ public interface Function<T> extends Identifiable<String> {
    * This method is only consulted when Region passed to
    * FunctionService#onRegion(org.apache.geode.cache.Region) is a partitioned region
    * </p>
-   * 
+   *
    * @return false if the function is read only, otherwise returns true
    * @see FunctionService
    * @since GemFire 6.0
@@ -110,7 +110,7 @@ public interface Function<T> extends Identifiable<String> {
 
   /**
    * Specifies whether the function is eligible for re-execution (in case of failure).
-   * 
+   *
    * @return whether the function is eligible for re-execution.
    * @see RegionFunctionContext#isPossibleDuplicate()
    * @since GemFire 6.5

@@ -28,12 +28,12 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * 
+ *
  * Provides internal methods for tests
- * 
- * 
+ *
+ *
  * @since GemFire 6.1
- * 
+ *
  */
 public class InternalFunctionService {
 
@@ -41,7 +41,7 @@ public class InternalFunctionService {
    * Returns an {@link Execution} object that can be used to execute a function on the set of
    * {@link Region}s. The function would be executed on the set of members that host data for any of
    * the regions in the set of regions. <br>
-   * 
+   *
    * If the Set provided contains region with : <br>
    * DataPolicy.NORMAL, execute the function on any random member which has DataPolicy.REPLICATE .
    * <br>
@@ -50,16 +50,16 @@ public class InternalFunctionService {
    * DataPolicy.REPLICATE, execute the function locally or any random member which has
    * DataPolicy.REPLICATE .<br>
    * DataPolicy.PARTITION, it executes on members where the primary copy of data is hosted. <br>
-   * 
+   *
    * This API is not supported for cache clients in client server mode
-   * 
+   *
    * For an Execution object obtained from this method, calling the withFilter method throws
    * {@link UnsupportedOperationException}
-   * 
+   *
    * @see MultiRegionFunctionContext
-   * 
+   *
    * @param regions
-   * 
+   *
    */
   public static Execution onRegions(Set<Region> regions) {
     if (regions == null) {

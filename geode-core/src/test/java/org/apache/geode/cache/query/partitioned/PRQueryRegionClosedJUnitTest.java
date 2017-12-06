@@ -37,8 +37,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Test verifies Region#query()for PartitionedRegion on a single VM with Region#close() being called
  * on the same with some delay and then recreating the region instantly.
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class PRQueryRegionClosedJUnitTest {
@@ -71,8 +71,8 @@ public class PRQueryRegionClosedJUnitTest {
    * 2. Puts some test Objects in cache.<br>
    * 3. Create a Thread and fire queries on the data and verifies the result.<br>
    * 4. Create another Thread and call Region#close() on the PR region.<br>
-   * 
-   * 
+   *
+   *
    * @throws Exception
    */
   @Test
@@ -223,7 +223,7 @@ public class PRQueryRegionClosedJUnitTest {
 
   /**
    * Populates the region with the Objects stores in the data Object array.
-   * 
+   *
    * @param region
    * @param data
    */

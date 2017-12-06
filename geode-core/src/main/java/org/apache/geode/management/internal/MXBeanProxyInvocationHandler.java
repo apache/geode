@@ -30,8 +30,8 @@ import org.apache.geode.i18n.LogWriterI18n;
  * This proxy handler handles all the method call invoked on an MXBean It follows same route as
  * MBeanProxyInvocationHandler Only difference is after obtaining the result it transforms the open
  * type to the actual java type
- * 
- * 
+ *
+ *
  */
 public class MXBeanProxyInvocationHandler {
 
@@ -90,7 +90,7 @@ public class MXBeanProxyInvocationHandler {
   /**
    * Eliminate methods that are overridden with a covariant return type. Reflection will return both
    * the original and the overriding method but we need only the overriding one is of interest
-   * 
+   *
    * @param methodArray
    * @return the method after eliminating covariant menthods
    */
@@ -147,13 +147,13 @@ public class MXBeanProxyInvocationHandler {
       return +1;
     }
 
-    public final static MethodOrder instance = new MethodOrder();
+    public static final MethodOrder instance = new MethodOrder();
   }
 
   /**
    * Hanlder for MXBean Proxy
-   * 
-   * 
+   *
+   *
    */
   private abstract class MethodHandler {
     MethodHandler(String name, OpenMethod cm) {

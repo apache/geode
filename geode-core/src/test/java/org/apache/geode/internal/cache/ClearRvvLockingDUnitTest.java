@@ -20,6 +20,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.test.dunit.Assert.fail;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,14 +54,14 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Test class to verify proper RVV locking interaction between entry operations such as PUT/REMOVE
  * and the CLEAR region operation
- * 
+ *
  * GEODE-599: After an operation completed, it would unlock the RVV. This was occurring before the
  * operation was distributed to other members which created a window in which another operation
  * could be performed prior to that operation being distributed.
- * 
+ *
  * The fix for GEODE-599 was to not release the lock until after distributing the operation to the
  * other members.
- * 
+ *
  */
 
 @SuppressWarnings("serial")
@@ -71,19 +72,19 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   public transient JUnitSoftAssertions softly = new JUnitSoftAssertions();
   /*
    * The tests perform a single operation and a concurrent clear.
-   * 
+   *
    * opsVM determines where the single operation will be performed, null will perform the op on the
    * test VM (vm0) clearVM determines where the clear operation will be performed, null will perform
    * the clear on the test VM (vm0)
-   * 
+   *
    * Specifying NULL/NULL for opsVM and clearVM has the effect of performing both in the same thread
    * whereas specifying vm0/vm0 for example will run them both on the same vm, but different
    * threads. NULL/NULL is not tested here since the same thread performing a clear prior to
    * returning from a put is not possible using the public API.
-   * 
+   *
    * Each test is performed twice once with operation and clear on the same vm, once on different
    * vms.
-   * 
+   *
    */
   VM vm0, vm1, opsVM, clearVM;
 
@@ -578,7 +579,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   static VM theOtherVM;
-  transient static CountDownLatch step1Latch, step2Latch;
+  static transient CountDownLatch step1Latch, step2Latch;
 
   public static void primeStep1Latch(int waitCount) {
     step1Latch = new CountDownLatch(waitCount);

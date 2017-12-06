@@ -23,7 +23,7 @@ import org.apache.geode.DataSerializable;
 
 /**
  * A request to the TCP server to provide information about the server
- * 
+ *
  * @since GemFire 5.7
  *
  */

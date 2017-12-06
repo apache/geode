@@ -64,7 +64,7 @@ public class DiskStoreMonitor {
 
   /**
    * Validates the warning percent.
-   * 
+   *
    * @param val the value to check
    */
   public static void checkWarning(float val) {
@@ -77,7 +77,7 @@ public class DiskStoreMonitor {
 
   /**
    * Validates the critical percent.
-   * 
+   *
    * @param val the value to check
    */
   public static void checkCritical(float val) {

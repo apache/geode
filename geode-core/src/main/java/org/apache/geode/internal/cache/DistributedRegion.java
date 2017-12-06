@@ -127,7 +127,7 @@ import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
 @SuppressWarnings("deprecation")
-public class DistributedRegion extends LocalRegion implements CacheDistributionAdvisee {
+public class DistributedRegion extends LocalRegion implements InternalDistributedRegion {
   private static final Logger logger = LogService.getLogger();
 
   /** causes cache profile to be added to afterRemoteRegionCreate notification for testing */
@@ -268,7 +268,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Record the event state from image provider
-   * 
+   *
    * @param provider the member that provided the initial image and event state
    */
   protected void recordEventStateFromImageProvider(InternalDistributedMember provider) {
@@ -277,7 +277,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Intended for used during construction of a DistributedRegion
-   * 
+   *
    * @return the advisor to be used by the region
    */
   protected CacheDistributionAdvisor createDistributionAdvisor(
@@ -583,7 +583,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Throws RegionAccessException if required roles are missing and the LossAction is NO_ACCESS
-   * 
+   *
    * @throws RegionAccessException if required roles are missing and the LossAction is NO_ACCESS
    */
   @Override
@@ -606,7 +606,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * Throws RegionAccessException is required roles are missing and the LossAction is either
    * NO_ACCESS or LIMITED_ACCESS.
-   * 
+   *
    * @throws RegionAccessException if required roles are missing and the LossAction is either
    *         NO_ACCESS or LIMITED_ACCESS
    */
@@ -677,7 +677,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * Called when we do a distributed operation and don't have anyone to distributed it too. Since
    * this is only called when no distribution was done (i.e. no recipients) we do not check
    * isMissingRequiredRoles because it might not longer be true due to race conditions
-   * 
+   *
    * @return false if this region has at least one required role and queuing is configured. Returns
    *         true if sending to no one is ok.
    * @throws RoleException if a required role is missing and the LossAction is either NO_ACCESS or
@@ -698,7 +698,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * returns true if this Region does not distribute its operations to other members.
-   * 
+   *
    * @since GemFire 6.0
    * @see HARegion#localDestroyNoCallbacks(Object)
    */
@@ -741,7 +741,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Performs the resumption action when reliability is resumed.
-   * 
+   *
    * @return true if asynchronous resumption is triggered
    */
   private boolean resumeReliability(InternalDistributedMember id, Set newlyAcquiredRoles) {
@@ -840,7 +840,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * Called when reliability is lost. If MembershipAttributes are configured with
    * {@link LossAction#RECONNECT}then DistributedSystem reconnect will be called asynchronously.
-   * 
+   *
    * @return true if asynchronous resumption is triggered
    */
   private boolean lostReliability(final InternalDistributedMember id, final Set newlyMissingRoles) {
@@ -1016,7 +1016,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Called while NOT holding lock on parent's subregions
-   * 
+   *
    * @throws IllegalStateException if region is not compatible with a region in another VM.
    */
   @Override
@@ -1676,7 +1676,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * decide if InvalidateRegionOperation should be sent to peers. broken out so that BucketRegion
    * can override
-   * 
+   *
    * @return true if {@link InvalidateRegionOperation} should be distributed, false otherwise
    */
   protected boolean shouldDistributeInvalidateRegion(RegionEventImpl event) {
@@ -1686,7 +1686,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * Distribute the invalidate of a region given its event. This implementation sends the invalidate
    * to peers.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected void distributeInvalidateRegion(RegionEventImpl event) {
@@ -2356,7 +2356,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * @return true if cacheWrite was performed
    */
   @Override
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
 
     boolean result = false;
@@ -2700,9 +2700,9 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * If this region's scope is GLOBAL, get a distributed lock on the given key, and return the Lock.
    * The sender is responsible for unlocking.
-   * 
+   *
    * @return the acquired Lock if the region is GLOBAL, otherwise null.
-   * 
+   *
    * @throws NullPointerException if key is null
    */
   private Lock getDistributedLockIfGlobal(Object key) throws TimeoutException {
@@ -2753,7 +2753,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Checks if the entry is a valid entry
-   * 
+   *
    * @return true if entry not null or entry is not removed
    */
   protected boolean checkEntryNotValid(RegionEntry mapEntry) {
@@ -2874,7 +2874,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
     DiskPosition() {}
 
-    void setPosition(long oplogId, long offset) {
+    public void setPosition(long oplogId, long offset) {
       this.oplogId = oplogId;
       this.offset = offset;
     }
@@ -3185,7 +3185,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * If this region's scope is GLOBAL, get the region distributed lock. The sender is responsible
    * for unlocking.
-   * 
+   *
    * @return the acquired Lock if the region is GLOBAL and not already suspend, otherwise null.
    */
   private Lock getRegionDistributedLockIfGlobal() throws TimeoutException {
@@ -3201,7 +3201,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Distribute the PutAllOp. This implementation distributes it to peers.
-   * 
+   *
    * @return token >0 means startOperation finished distribution
    * @since GemFire 5.7
    */
@@ -3259,7 +3259,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Returns the missing required roles after waiting up to the timeout
-   * 
+   *
    * @throws IllegalStateException if region is not configured with required roles
    */
   public Set waitForRequiredRoles(long timeout) throws InterruptedException {
@@ -3379,7 +3379,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * Used to get membership events from our advisor to implement RegionMembershipListener
    * invocations.
-   * 
+   *
    * @since GemFire 5.0
    */
   protected class AdvisorListener implements MembershipListener {
@@ -3537,7 +3537,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Used to bootstrap txState.
-   * 
+   *
    * @return member with primary bucket for partitionedRegions
    */
   @Override
@@ -3584,7 +3584,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * Execute the provided named function in all locations that contain the given keys. So function
    * can be executed on just one fabric node, executed in parallel on a subset of nodes in parallel
    * across all the nodes.
-   * 
+   *
    * @since GemFire 5.8
    */
   @Override
@@ -3826,14 +3826,14 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
 
   /**
    * Fetch Version for the given key from a remote replicate member.
-   * 
+   *
    * @throws EntryNotFoundException if the entry is not found on replicate member
    * @return VersionTag for the key
    */
   protected VersionTag fetchRemoteVersionTag(Object key) {
     VersionTag tag = null;
     assert this.dataPolicy != DataPolicy.REPLICATE;
-    final TXStateProxy tx = cache.getTXMgr().internalSuspend();
+    final TXStateProxy tx = cache.getTXMgr().pauseTransaction();
     try {
       boolean retry = true;
       InternalDistributedMember member = getRandomReplicate();
@@ -3856,7 +3856,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       }
     } finally {
       if (tx != null) {
-        cache.getTXMgr().internalResume(tx);
+        cache.getTXMgr().unpauseTransaction(tx);
       }
     }
     return tag;
@@ -3869,4 +3869,11 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   public boolean hasNetLoader() {
     return this.hasNetLoader(getCacheDistributionAdvisor());
   }
+
+  @Override
+  public long getLatestLastAccessTimeFromOthers(Object key) {
+    LatestLastAccessTimeOperation op = new LatestLastAccessTimeOperation(this, key);
+    return op.getLatestLastAccessTime();
+  }
+
 }

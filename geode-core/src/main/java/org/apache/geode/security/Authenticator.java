@@ -31,11 +31,11 @@ import org.apache.geode.distributed.DistributedSystem;
  * initialized on the group coordinator for each member during the
  * {@link DistributedSystem#connect(Properties)} call of a new member. For client-server, an object
  * of this class is created for each connection during the client-server handshake.
- * 
+ *
  * The static creation function should have the following signature:
  * <code>public static Authenticator [method-name]();</code> i.e. it should be a zero argument
  * function.
- * 
+ *
  * @since GemFire 5.5
  *
  * @deprecated since Geode 1.0, use {@link SecurityManager} instead
@@ -45,12 +45,12 @@ public interface Authenticator extends CacheCallback {
   /**
    * Initialize the callback for a client/peer. This is invoked when a new connection from a
    * client/peer is created with the host.
-   * 
+   *
    * @param securityProps the security properties obtained using a call to
    *        {@link DistributedSystem#getSecurityProperties}
    * @param systemLogger {@link LogWriter} for system logs
    * @param securityLogger {@link LogWriter} for security logs
-   * 
+   *
    * @throws AuthenticationFailedException if some exception occurs during the initialization
    */
   void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
@@ -63,13 +63,13 @@ public interface Authenticator extends CacheCallback {
   /**
    * Verify the credentials provided in the properties for the client/peer as specified in member ID
    * and returns the principal associated with the client/peer.
-   * 
+   *
    * @param props the credentials of the client/peer as a set of property key/values
    * @param member the {@link DistributedMember} object of the connecting client/peer member. NULL
    *        when invoked locally on the member initiating the authentication request.
-   * 
+   *
    * @return the principal for the client/peer when authentication succeeded
-   * 
+   *
    * @throws AuthenticationFailedException If the authentication of the client/peer fails.
    */
   Principal authenticate(Properties props, DistributedMember member)

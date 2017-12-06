@@ -14,17 +14,13 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.Properties;
 import java.util.Random;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -41,11 +37,14 @@ import org.apache.geode.internal.cache.lru.LRUStatistics;
 import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.WellKnownClassSizer;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic functionality of the memory lru eviction controller and its statistics.
- * 
- * 
+ *
+ *
  * @since GemFire 3.2
  */
 @Category(DistributedTest.class)
@@ -145,7 +144,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Make sure that we only size a class the first time we see the class instance.
-   * 
+   *
    * @throws CacheException
    */
   @Test
@@ -205,7 +204,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Class used in testCustomObjectSizer
-   * 
+   *
    * @since GemFire 5.0
    */
   class CustomObjectSizer implements ObjectSizer {
@@ -230,7 +229,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Validate that a custom {@link ObjectSizer} is called, configured propertly, and actually limits
    * the size of the <code>Region</code>.
-   * 
+   *
    * @throws Exception
    */
   @Test

@@ -15,7 +15,7 @@
 /*
  * Created on Oct 13, 2005
  *
- * 
+ *
  */
 package org.apache.geode.cache.query.internal;
 
@@ -46,8 +46,8 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
- *  
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class ExecutionContextJUnitTest {

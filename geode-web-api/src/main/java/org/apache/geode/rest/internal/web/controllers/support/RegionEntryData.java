@@ -35,6 +35,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.pdx.JSONFormatter;
@@ -42,13 +45,10 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.JsonWriter;
 
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 /**
  * The RegionData class is a container for data fetched from a GemFire Cache Region.
  * <p/>
- * 
+ *
  * @see com.fasterxml.jackson.databind.JsonSerializable
  * @see java.lang.Iterable
  * @since GemFire 8.0
@@ -93,4 +93,3 @@ public class RegionEntryData<T> extends RegionData<T> {
   }
 
 }
-

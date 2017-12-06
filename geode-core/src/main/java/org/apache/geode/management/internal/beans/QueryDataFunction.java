@@ -14,7 +14,21 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -46,23 +60,10 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.commands.DataCommandsUtils;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.json.TypedJson;
-import org.apache.logging.log4j.Logger;
-
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This function is executed on one or multiple members based on the member input to
@@ -365,7 +366,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
                     .toString();
           } else {
             Set<DistributedMember> associatedMembers =
-                DataCommandsUtils.getRegionAssociatedMembers(regionPath, cache, true);
+                CliUtil.getRegionAssociatedMembers(regionPath, cache, true);
 
             if (inputMembers != null && inputMembers.size() > 0) {
               if (!associatedMembers.containsAll(inputMembers)) {
@@ -396,10 +397,9 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
 
       String randomRegion = regionsInQuery.iterator().next();
 
+      // get the first available member
       Set<DistributedMember> associatedMembers =
-          DataCommandsUtils.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);// First
-      // available
-      // member
+          CliUtil.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);
 
       if (associatedMembers != null && associatedMembers.size() > 0) {
         Object[] functionArgs = new Object[6];

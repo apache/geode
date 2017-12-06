@@ -19,14 +19,16 @@ package org.apache.geode.internal.cache;
  * EntryExpiryTask represents a timeout event for a region entry.
  */
 
+import java.util.concurrent.locks.Lock;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.logging.log4j.Logger;
-
-import java.util.concurrent.locks.Lock;
 
 public class EntryExpiryTask extends ExpiryTask {
 
@@ -67,7 +69,7 @@ public class EntryExpiryTask extends ExpiryTask {
   /**
    * Returns the tasks region entry if it "checks" out. The check is to see if the region entry
    * still exists.
-   * 
+   *
    * @throws EntryNotFoundException if the task no longer has a region entry or if the region entry
    *         it has is removed.
    */
@@ -251,6 +253,37 @@ public class EntryExpiryTask extends ExpiryTask {
       action = getTTLAttributes().getAction();
     }
     return action;
+  }
+
+  @Override
+  protected boolean isIdleExpiredOnOthers() throws EntryNotFoundException {
+    if (getIdleAttributes().getTimeout() <= 0L) {
+      // idle expiration is not being used
+      return true;
+    }
+    if (getIdleAttributes().getAction().isLocal()) {
+      // no need to consult with others if using a local action
+      return true;
+    }
+    if (SystemPropertyHelper.restoreIdleExpirationBehavior()) {
+      return true;
+    }
+
+    long latestLastAccessTime = getLatestLastAccessTimeOnOtherMembers();
+    if (latestLastAccessTime > getLastAccessedTime()) {
+      setLastAccessedTime(latestLastAccessTime);
+      return false;
+    }
+    return true;
+  }
+
+  private long getLatestLastAccessTimeOnOtherMembers() {
+    return getLocalRegion().getLatestLastAccessTimeFromOthers(getKey());
+  }
+
+  private void setLastAccessedTime(long lastAccessedTime) throws EntryNotFoundException {
+    RegionEntry re = getCheckedRegionEntry();
+    re.setLastAccessed(lastAccessedTime);
   }
 
   /**

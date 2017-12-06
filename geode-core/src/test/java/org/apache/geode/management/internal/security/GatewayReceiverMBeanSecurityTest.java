@@ -31,11 +31,11 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GatewayReceiverMBeanSecurityTest {

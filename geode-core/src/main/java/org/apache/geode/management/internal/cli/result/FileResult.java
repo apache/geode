@@ -21,8 +21,8 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class FileResult implements Result {
@@ -62,7 +62,7 @@ public class FileResult implements Result {
 
   /**
    * Calculates the total file size of all files associated with this result.
-   * 
+   *
    * @return Total file size.
    */
   public long computeFileSizeTotal() {
@@ -75,7 +75,7 @@ public class FileResult implements Result {
 
   /**
    * Get a comma separated list of all files associated with this result.
-   * 
+   *
    * @return Comma separated list of files.
    */
   public String getFormattedFileList() {

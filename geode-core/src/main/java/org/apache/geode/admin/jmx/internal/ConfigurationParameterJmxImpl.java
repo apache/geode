@@ -149,15 +149,9 @@ public class ConfigurationParameterJmxImpl
     Class inClass = (Class) in.readObject();
     boolean inUserModifiable = in.readBoolean();
 
-    Assert.assertTrue(inName != null);
-    Assert.assertTrue(inDescription != null);
-    Assert.assertTrue(inValue != null);
-    Assert.assertTrue(inClass != null);
-
     this.deserialized = true;
     this.name = inName;
     setInternalState(inDescription, inValue, inClass, inUserModifiable);
   }
 
 }
-

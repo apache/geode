@@ -40,7 +40,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * Queries the grantor for current leasing information of a lock.
- * 
+ *
  */
 public class DLockQueryProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();
@@ -50,7 +50,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
   /**
    * Query the grantor for current leasing information of a lock.
-   * 
+   *
    * @param grantor the member that is the grantor
    * @param serviceName the name of the lock service
    * @param objectName the named lock
@@ -93,7 +93,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
   /**
    * Instantiates a new DLockQueryProcessor.
-   * 
+   *
    * @param dm the distribution manager to use for logging and messaging
    * @param grantor the member to query for lock leasing info
    * @param serviceName the name of the lock service
@@ -369,7 +369,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     /**
      * Returns true if the queried grantor replied with the current lease info for the named lock.
-     * 
+     *
      * @return true if the queried grantor replied with the current lease info
      */
     boolean repliedOK() {
@@ -378,7 +378,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     /**
      * Returns true if the queried grantor replied NOT_GRANTOR.
-     * 
+     *
      * @return true if the queried grantor replied NOT_GRANTOR
      */
     boolean repliedNotGrantor() {
@@ -387,7 +387,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     /**
      * Returns the member holding the lease or null if there was no lease.
-     * 
+     *
      * @return the member holding the lease or null
      */
     DistributedMember getLessee() {
@@ -400,7 +400,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     /**
      * Returns the query reply's lesseeThread or null if there was no lease.
-     * 
+     *
      * @return the query reply's lesseeThread or null
      */
     RemoteThread getLesseeThread() {
@@ -409,7 +409,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     /**
      * Return the query reply's leaseId or -1 if there was no lease.
-     * 
+     *
      * @return the query reply's leaseId or -1
      */
     int getLeaseId() {
@@ -418,7 +418,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     /**
      * Return the query reply's leaseExpireTime or 0 if there was no lease.
-     * 
+     *
      * @return the query reply's leaseExpireTime or 0
      */
     long getLeaseExpireTime() {

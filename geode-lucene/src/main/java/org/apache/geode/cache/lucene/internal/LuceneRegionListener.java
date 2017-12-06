@@ -15,15 +15,15 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.analysis.Analyzer;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.RegionListener;
@@ -44,10 +44,17 @@ public class LuceneRegionListener implements RegionListener {
 
   private final String[] fields;
 
+  private LuceneSerializer serializer;
+
   private LuceneIndexImpl luceneIndex;
 
+  private AtomicBoolean beforeCreateInvoked = new AtomicBoolean();
+
+  private AtomicBoolean afterCreateInvoked = new AtomicBoolean();
+
   public LuceneRegionListener(LuceneServiceImpl service, InternalCache cache, String indexName,
-      String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers) {
+      String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
+      LuceneSerializer serializer) {
     this.service = service;
     this.cache = cache;
     this.indexName = indexName;
@@ -55,6 +62,7 @@ public class LuceneRegionListener implements RegionListener {
     this.fields = fields;
     this.analyzer = analyzer;
     this.fieldAnalyzers = fieldAnalyzers;
+    this.serializer = serializer;
   }
 
   public String getRegionPath() {
@@ -71,23 +79,9 @@ public class LuceneRegionListener implements RegionListener {
     RegionAttributes updatedRA = attrs;
     String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
 
-    if (path.equals(this.regionPath)) {
+    if (path.equals(this.regionPath) && this.beforeCreateInvoked.compareAndSet(false, true)) {
 
-      if (!attrs.getDataPolicy().withPartitioning()) {
-        // replicated region
-        throw new UnsupportedOperationException(
-            "Lucene indexes on replicated regions are not supported");
-      }
-
-      // For now we cannot support eviction with local destroy.
-      // Eviction with overflow to disk still needs to be supported
-      EvictionAttributes evictionAttributes = attrs.getEvictionAttributes();
-      EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
-      if (evictionAlgorithm != EvictionAlgorithm.NONE
-          && evictionAttributes.getAction().isLocalDestroy()) {
-        throw new UnsupportedOperationException(
-            "Lucene indexes on regions with eviction and action local destroy are not supported");
-      }
+      LuceneServiceImpl.validateRegionAttributes(attrs);
 
       String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
       if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
@@ -98,10 +92,10 @@ public class LuceneRegionListener implements RegionListener {
 
       // Add index creation profile
       internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(this.indexName,
-          this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers));
+          this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers, serializer));
 
       luceneIndex = this.service.beforeDataRegionCreated(this.indexName, this.regionPath, attrs,
-          this.analyzer, this.fieldAnalyzers, aeqId, this.fields);
+          this.analyzer, this.fieldAnalyzers, aeqId, serializer, this.fields);
 
       // Add internal async event id
       internalRegionArgs.addInternalAsyncEventQueueId(aeqId);
@@ -111,14 +105,28 @@ public class LuceneRegionListener implements RegionListener {
 
   @Override
   public void afterCreate(Region region) {
-    if (region.getFullPath().equals(this.regionPath)) {
+    if (region.getFullPath().equals(this.regionPath)
+        && this.afterCreateInvoked.compareAndSet(false, true)) {
       this.service.afterDataRegionCreated(this.luceneIndex);
-      String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
-      AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
-      AbstractPartitionedRepositoryManager repositoryManager =
-          (AbstractPartitionedRepositoryManager) luceneIndex.getRepositoryManager();
-      repositoryManager.allowRepositoryComputation();
-      this.cache.removeRegionListener(this);
+    }
+  }
+
+  @Override
+  public void beforeDestroyed(Region region) {
+    if (region.getFullPath().equals(this.regionPath)) {
+      this.service.beforeRegionDestroyed(region);
+    }
+  }
+
+  @Override
+  public void cleanupFailedInitialization(Region region) {
+    // Reset the booleans
+    this.beforeCreateInvoked.set(false);
+    this.afterCreateInvoked.set(false);
+
+    // Clean up the region in the LuceneService
+    if (region.getFullPath().equals(this.regionPath)) {
+      this.service.cleanupFailedInitialization(region);
     }
   }
 }
