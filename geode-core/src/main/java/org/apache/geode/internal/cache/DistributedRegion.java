@@ -1896,11 +1896,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     // want that to happen, so we'll synchronize to make sure only one thread on
     // this member performs a clear.
     synchronized (this.clearLock) {
-      // Will only allow at most one clear region in the cluster at a time for non RVV case as well.
-      // This is to prevent multiple nodes to execute clear region at same time.
-      distributedLockForClear();
-      try {
-        if (enableRVV) {
+      if (enableRVV) {
+
+        distributedLockForClear();
+        try {
           Set<InternalDistributedMember> participants =
               getCacheDistributionAdvisor().adviseInvalidateRegion();
           // pause all generation of versions and flush from the other members to this one
@@ -1913,16 +1912,16 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           } finally {
             releaseWriteLocksForClear(regionEvent, participants);
           }
-        } else {
-          Set<InternalDistributedMember> participants =
-              getCacheDistributionAdvisor().adviseInvalidateRegion();
-          clearRegionLocally(regionEvent, cacheWrite, null);
-          if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
-            DistributedClearOperation.clear(regionEvent, null, participants);
-          }
+        } finally {
+          distributedUnlockForClear();
         }
-      } finally {
-        distributedUnlockForClear();
+      } else {
+        Set<InternalDistributedMember> participants =
+            getCacheDistributionAdvisor().adviseInvalidateRegion();
+        clearRegionLocally(regionEvent, cacheWrite, null);
+        if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
+          DistributedClearOperation.clear(regionEvent, null, participants);
+        }
       }
     }
 

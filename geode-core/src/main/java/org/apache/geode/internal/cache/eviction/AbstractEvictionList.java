@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.eviction;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
@@ -40,9 +39,6 @@ abstract class AbstractEvictionList implements EvictionList {
 
   /** Counter for the size of the LRU list */
   private final AtomicInteger size = new AtomicInteger();
-
-  /** ReadWriteLock for clearRegion consistency with AbstractRegionMap */
-  private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
   private BucketRegion bucketRegion;
 
@@ -167,26 +163,6 @@ abstract class AbstractEvictionList implements EvictionList {
     evictionNode.setNext(null);
     evictionNode.setPrevious(null);
     decrementSize();
-  }
-
-  @Override
-  public void acquireWriteLock() {
-    readWriteLock.writeLock().lock();
-  }
-
-  @Override
-  public void releaseWriteLock() {
-    readWriteLock.writeLock().unlock();;
-  }
-
-  @Override
-  public void acquireReadLock() {
-    readWriteLock.readLock().lock();
-  }
-
-  @Override
-  public void releaseReadLock() {
-    readWriteLock.readLock().unlock();
   }
 
   protected synchronized EvictionNode unlinkTailEntry() {
