@@ -50,7 +50,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 public class GetAllWithCallback extends BaseCommand {
   private static final Logger logger = LogService.getLogger();
 
-  private final static GetAllWithCallback singleton = new GetAllWithCallback();
+  private static final GetAllWithCallback singleton = new GetAllWithCallback();
 
   public static Command getCommand() {
     return singleton;

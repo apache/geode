@@ -15,10 +15,11 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class CommandAvailabilityIndicator implements CommandMarker {
 
@@ -48,7 +49,7 @@ public class CommandAvailabilityIndicator implements CommandMarker {
       CliStrings.CREATE_GATEWAYRECEIVER, CliStrings.START_GATEWAYRECEIVER,
       CliStrings.STOP_GATEWAYRECEIVER, CliStrings.LIST_GATEWAY, CliStrings.STATUS_GATEWAYSENDER,
       CliStrings.STATUS_GATEWAYRECEIVER, CliStrings.LOAD_BALANCE_GATEWAYSENDER,
-      CliStrings.DESTROY_GATEWAYSENDER})
+      CliStrings.DESTROY_GATEWAYSENDER, AlterAsyncEventQueueCommand.COMMAND_NAME})
   public boolean clientCommandsAvailable() {
     Gfsh gfsh = Gfsh.getCurrentInstance();
 

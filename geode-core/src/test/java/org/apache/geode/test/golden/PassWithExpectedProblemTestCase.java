@@ -25,7 +25,7 @@ import org.apache.geode.test.process.ProcessWrapper;
 /**
  * Abstract test case for golden testing framework. This provides basis for unit tests which involve
  * an example that is expected to always pass.
- * 
+ *
  */
 public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase
     implements ExecutableProcess {

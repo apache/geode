@@ -18,7 +18,7 @@ package org.apache.geode.rest.internal.web.controllers.support;
 /**
  * The QueryResultTypes type describes possible query result types
  * <p/>
- * 
+ *
  * @since GemFire 8.0
  */
 

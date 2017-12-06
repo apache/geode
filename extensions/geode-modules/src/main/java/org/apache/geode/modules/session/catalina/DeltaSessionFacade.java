@@ -14,9 +14,9 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.catalina.session.StandardSessionFacade;
-
 import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.session.StandardSessionFacade;
 
 public class DeltaSessionFacade extends StandardSessionFacade {
 

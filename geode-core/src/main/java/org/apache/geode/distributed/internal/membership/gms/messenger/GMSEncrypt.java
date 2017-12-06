@@ -31,11 +31,11 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class GMSEncrypt implements Cloneable {
 
@@ -348,11 +348,11 @@ public class GMSEncrypt implements Cloneable {
     return blocksize;
   }
 
-  static public byte[] encryptBytes(byte[] data, Cipher encrypt) throws Exception {
+  public static byte[] encryptBytes(byte[] data, Cipher encrypt) throws Exception {
     return encrypt.doFinal(data);
   }
 
-  static public byte[] decryptBytes(byte[] data, Cipher decrypt) throws Exception {
+  public static byte[] decryptBytes(byte[] data, Cipher decrypt) throws Exception {
     try {
       byte[] decryptBytes = decrypt.doFinal(data);
       return decryptBytes;
@@ -607,4 +607,3 @@ public class GMSEncrypt implements Cloneable {
     }
   }
 }
-

@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import java.io.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 
 /**
  * An interface that implements data serialization for internal GemFire product classes that have a
@@ -61,13 +64,14 @@ public interface DataSerializableFixedID extends SerializationVersions {
   /*
    * In the class to be serialized, add public FOO(DataInput in) throws IOException,
    * ClassNotFoundException { fromData(in); }
-   * 
+   *
    * public int getDSFID() { return FOO; }
-   * 
+   *
    * In DataSerializableFixedId, allocate an ID for the class public static final byte FOO = -54;
-   * 
+   *
    * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
    */
+  public static final short FINAL_CHECK_PASSED_MESSAGE = -158;
   public static final short NETWORK_PARTITION_MESSAGE = -157;
   public static final short SUSPECT_MEMBERS_MESSAGE = -156;
 
@@ -233,7 +237,9 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   public static final byte CLIENT_INTEREST_MESSAGE = -21;
 
-  // IDs -20 .. -16 are not used
+  public static final byte LATEST_LAST_ACCESS_TIME_MESSAGE = -20;
+
+  // IDs -19 .. -16 are not used
 
   /**
    * A header byte meaning that the next element in the stream is a <code>VMIdProfile</code>.
@@ -724,7 +730,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short FINISH_BACKUP_REQUEST = 2114;
   public static final short FINISH_BACKUP_RESPONSE = 2115;
   public static final short PREPARE_BACKUP_REQUEST = 2116;
-  public static final short PREPARE_BACKUP_RESPONSE = 2117;
+  public static final short BACKUP_RESPONSE = 2117;
   public static final short COMPACT_REQUEST = 2118;
   public static final short COMPACT_RESPONSE = 2119;
   public static final short FLOW_CONTROL_PERMIT_MESSAGE = 2120;
@@ -784,7 +790,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short RELEASE_CLEAR_LOCK_MESSAGE = 2157;
   public static final short NULL_TOKEN = 2158;
 
-  public static final short CONFIGURATION_REQUEST = 2159;
   public static final short CONFIGURATION_RESPONSE = 2160;
 
   public static final short PARALLEL_QUEUE_REMOVAL_MESSAGE = 2161;
@@ -839,7 +844,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * the getSerializationVersions array of the implementing class. e.g. if msg format changed in
    * version 80, create toDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
    * array and copy previous toData contents to this newly created toDataPre_GFE_X_X_X_X() method.
-   * 
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
   public void toData(DataOutput out) throws IOException;
@@ -853,7 +858,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * version 80, create fromDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
    * array and copy previous fromData contents to this newly created fromDataPre_GFE_X_X_X_X()
    * method.
-   * 
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */

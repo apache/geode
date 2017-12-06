@@ -14,14 +14,15 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.Session;
+
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.SessionCustomExpiry;
-import org.apache.catalina.Session;
-
-import javax.servlet.http.HttpSession;
 
 public abstract class AbstractSessionCache implements SessionCache {
 

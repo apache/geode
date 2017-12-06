@@ -20,13 +20,13 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.MessageStats;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * Stats for a client to server {@link Connection}
- * 
+ *
  * @since GemFire 5.7
  */
 public class ConnectionStats implements MessageStats {
@@ -36,404 +36,404 @@ public class ConnectionStats implements MessageStats {
 
   ///////////////////////////////////////////////////////////////////////
   /*
-   * private final static int opInProgressId; private final static int opSendInProgressId; private
-   * final static int opSendFailedId; private final static int opSendId; private final static int
-   * opSendDurationId; private final static int opTimedOutId; private final static int opFailedId;
-   * private final static int opId; private final static int opDurationId;
+   * private static final int opInProgressId; private static final int opSendInProgressId; private
+   * static final int opSendFailedId; private static final int opSendId; private static final int
+   * opSendDurationId; private static final int opTimedOutId; private static final int opFailedId;
+   * private static final int opId; private static final int opDurationId;
    */
   ///////////////////////////////////////////////////////////////////////
 
-  private final static int getInProgressId;
-  private final static int getSendInProgressId;
-  private final static int getSendFailedId;
-  private final static int getSendId;
-  private final static int getSendDurationId;
-  private final static int getTimedOutId;
-  private final static int getFailedId;
-  private final static int getId;
-  private final static int getDurationId;
+  private static final int getInProgressId;
+  private static final int getSendInProgressId;
+  private static final int getSendFailedId;
+  private static final int getSendId;
+  private static final int getSendDurationId;
+  private static final int getTimedOutId;
+  private static final int getFailedId;
+  private static final int getId;
+  private static final int getDurationId;
 
-  private final static int putInProgressId;
-  private final static int putSendInProgressId;
-  private final static int putSendFailedId;
-  private final static int putSendId;
-  private final static int putSendDurationId;
-  private final static int putTimedOutId;
-  private final static int putFailedId;
-  private final static int putId;
-  private final static int putDurationId;
+  private static final int putInProgressId;
+  private static final int putSendInProgressId;
+  private static final int putSendFailedId;
+  private static final int putSendId;
+  private static final int putSendDurationId;
+  private static final int putTimedOutId;
+  private static final int putFailedId;
+  private static final int putId;
+  private static final int putDurationId;
 
-  private final static int destroyInProgressId;
-  private final static int destroySendInProgressId;
-  private final static int destroySendFailedId;
-  private final static int destroySendId;
-  private final static int destroySendDurationId;
-  private final static int destroyTimedOutId;
-  private final static int destroyFailedId;
-  private final static int destroyId;
-  private final static int destroyDurationId;
+  private static final int destroyInProgressId;
+  private static final int destroySendInProgressId;
+  private static final int destroySendFailedId;
+  private static final int destroySendId;
+  private static final int destroySendDurationId;
+  private static final int destroyTimedOutId;
+  private static final int destroyFailedId;
+  private static final int destroyId;
+  private static final int destroyDurationId;
 
-  private final static int destroyRegionInProgressId;
-  private final static int destroyRegionSendInProgressId;
-  private final static int destroyRegionSendFailedId;
-  private final static int destroyRegionSendId;
-  private final static int destroyRegionSendDurationId;
-  private final static int destroyRegionTimedOutId;
-  private final static int destroyRegionFailedId;
-  private final static int destroyRegionId;
-  private final static int destroyRegionDurationId;
+  private static final int destroyRegionInProgressId;
+  private static final int destroyRegionSendInProgressId;
+  private static final int destroyRegionSendFailedId;
+  private static final int destroyRegionSendId;
+  private static final int destroyRegionSendDurationId;
+  private static final int destroyRegionTimedOutId;
+  private static final int destroyRegionFailedId;
+  private static final int destroyRegionId;
+  private static final int destroyRegionDurationId;
 
-  private final static int clearInProgressId;
-  private final static int clearSendInProgressId;
-  private final static int clearSendFailedId;
-  private final static int clearSendId;
-  private final static int clearSendDurationId;
-  private final static int clearTimedOutId;
-  private final static int clearFailedId;
-  private final static int clearId;
-  private final static int clearDurationId;
+  private static final int clearInProgressId;
+  private static final int clearSendInProgressId;
+  private static final int clearSendFailedId;
+  private static final int clearSendId;
+  private static final int clearSendDurationId;
+  private static final int clearTimedOutId;
+  private static final int clearFailedId;
+  private static final int clearId;
+  private static final int clearDurationId;
 
-  private final static int containsKeyInProgressId;
-  private final static int containsKeySendInProgressId;
-  private final static int containsKeySendFailedId;
-  private final static int containsKeySendId;
-  private final static int containsKeySendDurationId;
-  private final static int containsKeyTimedOutId;
-  private final static int containsKeyFailedId;
-  private final static int containsKeyId;
-  private final static int containsKeyDurationId;
+  private static final int containsKeyInProgressId;
+  private static final int containsKeySendInProgressId;
+  private static final int containsKeySendFailedId;
+  private static final int containsKeySendId;
+  private static final int containsKeySendDurationId;
+  private static final int containsKeyTimedOutId;
+  private static final int containsKeyFailedId;
+  private static final int containsKeyId;
+  private static final int containsKeyDurationId;
 
-  private final static int keySetInProgressId;
-  private final static int keySetSendInProgressId;
-  private final static int keySetSendFailedId;
-  private final static int keySetSendId;
-  private final static int keySetSendDurationId;
-  private final static int keySetTimedOutId;
-  private final static int keySetFailedId;
-  private final static int keySetId;
-  private final static int keySetDurationId;
+  private static final int keySetInProgressId;
+  private static final int keySetSendInProgressId;
+  private static final int keySetSendFailedId;
+  private static final int keySetSendId;
+  private static final int keySetSendDurationId;
+  private static final int keySetTimedOutId;
+  private static final int keySetFailedId;
+  private static final int keySetId;
+  private static final int keySetDurationId;
 
-  private final static int commitInProgressId;
-  private final static int commitSendInProgressId;
-  private final static int commitSendFailedId;
-  private final static int commitSendId;
-  private final static int commitSendDurationId;
+  private static final int commitInProgressId;
+  private static final int commitSendInProgressId;
+  private static final int commitSendFailedId;
+  private static final int commitSendId;
+  private static final int commitSendDurationId;
 
-  private final static int commitFailedId;
-  private final static int commitTimedOutId;
-  private final static int commitId;
-  private final static int commitDurationId;
+  private static final int commitFailedId;
+  private static final int commitTimedOutId;
+  private static final int commitId;
+  private static final int commitDurationId;
 
-  private final static int rollbackInProgressId;
-  private final static int rollbackSendInProgressId;
-  private final static int rollbackSendFailedId;
-  private final static int rollbackSendId;
-  private final static int rollbackSendDurationId;
+  private static final int rollbackInProgressId;
+  private static final int rollbackSendInProgressId;
+  private static final int rollbackSendFailedId;
+  private static final int rollbackSendId;
+  private static final int rollbackSendDurationId;
 
-  private final static int rollbackFailedId;
-  private final static int rollbackTimedOutId;
-  private final static int rollbackId;
-  private final static int rollbackDurationId;
+  private static final int rollbackFailedId;
+  private static final int rollbackTimedOutId;
+  private static final int rollbackId;
+  private static final int rollbackDurationId;
 
-  private final static int getEntryInProgressId;
-  private final static int getEntrySendInProgressId;
-  private final static int getEntrySendFailedId;
-  private final static int getEntrySendId;
-  private final static int getEntrySendDurationId;
+  private static final int getEntryInProgressId;
+  private static final int getEntrySendInProgressId;
+  private static final int getEntrySendFailedId;
+  private static final int getEntrySendId;
+  private static final int getEntrySendDurationId;
 
-  private final static int getEntryFailedId;
-  private final static int getEntryTimedOutId;
-  private final static int getEntryId;
-  private final static int getEntryDurationId;
+  private static final int getEntryFailedId;
+  private static final int getEntryTimedOutId;
+  private static final int getEntryId;
+  private static final int getEntryDurationId;
 
-  private final static int txSynchronizationInProgressId;
-  private final static int txSynchronizationSendInProgressId;
-  private final static int txSynchronizationSendFailedId;
-  private final static int txSynchronizationSendId;
-  private final static int txSynchronizationSendDurationId;
+  private static final int txSynchronizationInProgressId;
+  private static final int txSynchronizationSendInProgressId;
+  private static final int txSynchronizationSendFailedId;
+  private static final int txSynchronizationSendId;
+  private static final int txSynchronizationSendDurationId;
 
-  private final static int txSynchronizationFailedId;
-  private final static int txSynchronizationTimedOutId;
-  private final static int txSynchronizationId;
-  private final static int txSynchronizationDurationId;
+  private static final int txSynchronizationFailedId;
+  private static final int txSynchronizationTimedOutId;
+  private static final int txSynchronizationId;
+  private static final int txSynchronizationDurationId;
 
-  private final static int txFailoverInProgressId;
-  private final static int txFailoverSendInProgressId;
-  private final static int txFailoverSendFailedId;
-  private final static int txFailoverSendId;
-  private final static int txFailoverSendDurationId;
+  private static final int txFailoverInProgressId;
+  private static final int txFailoverSendInProgressId;
+  private static final int txFailoverSendFailedId;
+  private static final int txFailoverSendId;
+  private static final int txFailoverSendDurationId;
 
-  private final static int txFailoverFailedId;
-  private final static int txFailoverTimedOutId;
-  private final static int txFailoverId;
-  private final static int txFailoverDurationId;
+  private static final int txFailoverFailedId;
+  private static final int txFailoverTimedOutId;
+  private static final int txFailoverId;
+  private static final int txFailoverDurationId;
 
-  private final static int sizeInProgressId;
-  private final static int sizeSendInProgressId;
-  private final static int sizeSendFailedId;
-  private final static int sizeSendId;
-  private final static int sizeSendDurationId;
+  private static final int sizeInProgressId;
+  private static final int sizeSendInProgressId;
+  private static final int sizeSendFailedId;
+  private static final int sizeSendId;
+  private static final int sizeSendDurationId;
 
-  private final static int sizeFailedId;
-  private final static int sizeTimedOutId;
-  private final static int sizeId;
-  private final static int sizeDurationId;
+  private static final int sizeFailedId;
+  private static final int sizeTimedOutId;
+  private static final int sizeId;
+  private static final int sizeDurationId;
 
-  private final static int invalidateInProgressId;
-  private final static int invalidateSendInProgressId;
-  private final static int invalidateSendFailedId;
-  private final static int invalidateSendId;
-  private final static int invalidateSendDurationId;
+  private static final int invalidateInProgressId;
+  private static final int invalidateSendInProgressId;
+  private static final int invalidateSendFailedId;
+  private static final int invalidateSendId;
+  private static final int invalidateSendDurationId;
 
-  private final static int invalidateFailedId;
-  private final static int invalidateTimedOutId;
-  private final static int invalidateId;
-  private final static int invalidateDurationId;
+  private static final int invalidateFailedId;
+  private static final int invalidateTimedOutId;
+  private static final int invalidateId;
+  private static final int invalidateDurationId;
 
 
-  private final static int registerInterestInProgressId;
-  private final static int registerInterestSendInProgressId;
-  private final static int registerInterestSendFailedId;
-  private final static int registerInterestSendId;
-  private final static int registerInterestSendDurationId;
-  private final static int registerInterestTimedOutId;
-  private final static int registerInterestFailedId;
-  private final static int registerInterestId;
-  private final static int registerInterestDurationId;
+  private static final int registerInterestInProgressId;
+  private static final int registerInterestSendInProgressId;
+  private static final int registerInterestSendFailedId;
+  private static final int registerInterestSendId;
+  private static final int registerInterestSendDurationId;
+  private static final int registerInterestTimedOutId;
+  private static final int registerInterestFailedId;
+  private static final int registerInterestId;
+  private static final int registerInterestDurationId;
 
-  private final static int unregisterInterestInProgressId;
-  private final static int unregisterInterestSendInProgressId;
-  private final static int unregisterInterestSendFailedId;
-  private final static int unregisterInterestSendId;
-  private final static int unregisterInterestSendDurationId;
-  private final static int unregisterInterestTimedOutId;
-  private final static int unregisterInterestFailedId;
-  private final static int unregisterInterestId;
-  private final static int unregisterInterestDurationId;
+  private static final int unregisterInterestInProgressId;
+  private static final int unregisterInterestSendInProgressId;
+  private static final int unregisterInterestSendFailedId;
+  private static final int unregisterInterestSendId;
+  private static final int unregisterInterestSendDurationId;
+  private static final int unregisterInterestTimedOutId;
+  private static final int unregisterInterestFailedId;
+  private static final int unregisterInterestId;
+  private static final int unregisterInterestDurationId;
 
-  private final static int queryInProgressId;
-  private final static int querySendInProgressId;
-  private final static int querySendFailedId;
-  private final static int querySendId;
-  private final static int querySendDurationId;
-  private final static int queryTimedOutId;
-  private final static int queryFailedId;
-  private final static int queryId;
-  private final static int queryDurationId;
+  private static final int queryInProgressId;
+  private static final int querySendInProgressId;
+  private static final int querySendFailedId;
+  private static final int querySendId;
+  private static final int querySendDurationId;
+  private static final int queryTimedOutId;
+  private static final int queryFailedId;
+  private static final int queryId;
+  private static final int queryDurationId;
 
-  private final static int createCQInProgressId;
-  private final static int createCQSendInProgressId;
-  private final static int createCQSendFailedId;
-  private final static int createCQSendId;
-  private final static int createCQSendDurationId;
-  private final static int createCQTimedOutId;
-  private final static int createCQFailedId;
-  private final static int createCQId;
-  private final static int createCQDurationId;
-  private final static int stopCQInProgressId;
-  private final static int stopCQSendInProgressId;
-  private final static int stopCQSendFailedId;
-  private final static int stopCQSendId;
-  private final static int stopCQSendDurationId;
-  private final static int stopCQTimedOutId;
-  private final static int stopCQFailedId;
-  private final static int stopCQId;
-  private final static int stopCQDurationId;
-  private final static int closeCQInProgressId;
-  private final static int closeCQSendInProgressId;
-  private final static int closeCQSendFailedId;
-  private final static int closeCQSendId;
-  private final static int closeCQSendDurationId;
-  private final static int closeCQTimedOutId;
-  private final static int closeCQFailedId;
-  private final static int closeCQId;
-  private final static int closeCQDurationId;
-  private final static int gatewayBatchInProgressId;
-  private final static int gatewayBatchSendInProgressId;
-  private final static int gatewayBatchSendFailedId;
-  private final static int gatewayBatchSendId;
-  private final static int gatewayBatchSendDurationId;
-  private final static int gatewayBatchTimedOutId;
-  private final static int gatewayBatchFailedId;
-  private final static int gatewayBatchId;
-  private final static int gatewayBatchDurationId;
-  private final static int getDurableCQsInProgressId;
-  private final static int getDurableCQsSendsInProgressId;
-  private final static int getDurableCQsSendFailedId;
-  private final static int getDurableCQsSendId;
-  private final static int getDurableCQsSendDurationId;
-  private final static int getDurableCQsTimedOutId;
-  private final static int getDurableCQsFailedId;
-  private final static int getDurableCQsId;
-  private final static int getDurableCQsDurationId;
+  private static final int createCQInProgressId;
+  private static final int createCQSendInProgressId;
+  private static final int createCQSendFailedId;
+  private static final int createCQSendId;
+  private static final int createCQSendDurationId;
+  private static final int createCQTimedOutId;
+  private static final int createCQFailedId;
+  private static final int createCQId;
+  private static final int createCQDurationId;
+  private static final int stopCQInProgressId;
+  private static final int stopCQSendInProgressId;
+  private static final int stopCQSendFailedId;
+  private static final int stopCQSendId;
+  private static final int stopCQSendDurationId;
+  private static final int stopCQTimedOutId;
+  private static final int stopCQFailedId;
+  private static final int stopCQId;
+  private static final int stopCQDurationId;
+  private static final int closeCQInProgressId;
+  private static final int closeCQSendInProgressId;
+  private static final int closeCQSendFailedId;
+  private static final int closeCQSendId;
+  private static final int closeCQSendDurationId;
+  private static final int closeCQTimedOutId;
+  private static final int closeCQFailedId;
+  private static final int closeCQId;
+  private static final int closeCQDurationId;
+  private static final int gatewayBatchInProgressId;
+  private static final int gatewayBatchSendInProgressId;
+  private static final int gatewayBatchSendFailedId;
+  private static final int gatewayBatchSendId;
+  private static final int gatewayBatchSendDurationId;
+  private static final int gatewayBatchTimedOutId;
+  private static final int gatewayBatchFailedId;
+  private static final int gatewayBatchId;
+  private static final int gatewayBatchDurationId;
+  private static final int getDurableCQsInProgressId;
+  private static final int getDurableCQsSendsInProgressId;
+  private static final int getDurableCQsSendFailedId;
+  private static final int getDurableCQsSendId;
+  private static final int getDurableCQsSendDurationId;
+  private static final int getDurableCQsTimedOutId;
+  private static final int getDurableCQsFailedId;
+  private static final int getDurableCQsId;
+  private static final int getDurableCQsDurationId;
 
-  private final static int readyForEventsInProgressId;
-  private final static int readyForEventsSendInProgressId;
-  private final static int readyForEventsSendFailedId;
-  private final static int readyForEventsSendId;
-  private final static int readyForEventsSendDurationId;
-  private final static int readyForEventsTimedOutId;
-  private final static int readyForEventsFailedId;
-  private final static int readyForEventsId;
-  private final static int readyForEventsDurationId;
+  private static final int readyForEventsInProgressId;
+  private static final int readyForEventsSendInProgressId;
+  private static final int readyForEventsSendFailedId;
+  private static final int readyForEventsSendId;
+  private static final int readyForEventsSendDurationId;
+  private static final int readyForEventsTimedOutId;
+  private static final int readyForEventsFailedId;
+  private static final int readyForEventsId;
+  private static final int readyForEventsDurationId;
 
-  private final static int makePrimaryInProgressId;
-  private final static int makePrimarySendInProgressId;
-  private final static int makePrimarySendFailedId;
-  private final static int makePrimarySendId;
-  private final static int makePrimarySendDurationId;
-  private final static int makePrimaryTimedOutId;
-  private final static int makePrimaryFailedId;
-  private final static int makePrimaryId;
-  private final static int makePrimaryDurationId;
+  private static final int makePrimaryInProgressId;
+  private static final int makePrimarySendInProgressId;
+  private static final int makePrimarySendFailedId;
+  private static final int makePrimarySendId;
+  private static final int makePrimarySendDurationId;
+  private static final int makePrimaryTimedOutId;
+  private static final int makePrimaryFailedId;
+  private static final int makePrimaryId;
+  private static final int makePrimaryDurationId;
 
-  private final static int closeConInProgressId;
-  private final static int closeConSendInProgressId;
-  private final static int closeConSendFailedId;
-  private final static int closeConSendId;
-  private final static int closeConSendDurationId;
-  private final static int closeConTimedOutId;
-  private final static int closeConFailedId;
-  private final static int closeConId;
-  private final static int closeConDurationId;
+  private static final int closeConInProgressId;
+  private static final int closeConSendInProgressId;
+  private static final int closeConSendFailedId;
+  private static final int closeConSendId;
+  private static final int closeConSendDurationId;
+  private static final int closeConTimedOutId;
+  private static final int closeConFailedId;
+  private static final int closeConId;
+  private static final int closeConDurationId;
 
-  private final static int primaryAckInProgressId;
-  private final static int primaryAckSendInProgressId;
-  private final static int primaryAckSendFailedId;
-  private final static int primaryAckSendId;
-  private final static int primaryAckSendDurationId;
-  private final static int primaryAckTimedOutId;
-  private final static int primaryAckFailedId;
-  private final static int primaryAckId;
-  private final static int primaryAckDurationId;
+  private static final int primaryAckInProgressId;
+  private static final int primaryAckSendInProgressId;
+  private static final int primaryAckSendFailedId;
+  private static final int primaryAckSendId;
+  private static final int primaryAckSendDurationId;
+  private static final int primaryAckTimedOutId;
+  private static final int primaryAckFailedId;
+  private static final int primaryAckId;
+  private static final int primaryAckDurationId;
 
-  private final static int pingInProgressId;
-  private final static int pingSendInProgressId;
-  private final static int pingSendFailedId;
-  private final static int pingSendId;
-  private final static int pingSendDurationId;
-  private final static int pingTimedOutId;
-  private final static int pingFailedId;
-  private final static int pingId;
-  private final static int pingDurationId;
+  private static final int pingInProgressId;
+  private static final int pingSendInProgressId;
+  private static final int pingSendFailedId;
+  private static final int pingSendId;
+  private static final int pingSendDurationId;
+  private static final int pingTimedOutId;
+  private static final int pingFailedId;
+  private static final int pingId;
+  private static final int pingDurationId;
 
-  private final static int registerInstantiatorsInProgressId;
-  private final static int registerInstantiatorsSendInProgressId;
-  private final static int registerInstantiatorsSendFailedId;
-  private final static int registerInstantiatorsSendId;
-  private final static int registerInstantiatorsSendDurationId;
-  private final static int registerInstantiatorsTimedOutId;
-  private final static int registerInstantiatorsFailedId;
-  private final static int registerInstantiatorsId;
-  private final static int registerInstantiatorsDurationId;
+  private static final int registerInstantiatorsInProgressId;
+  private static final int registerInstantiatorsSendInProgressId;
+  private static final int registerInstantiatorsSendFailedId;
+  private static final int registerInstantiatorsSendId;
+  private static final int registerInstantiatorsSendDurationId;
+  private static final int registerInstantiatorsTimedOutId;
+  private static final int registerInstantiatorsFailedId;
+  private static final int registerInstantiatorsId;
+  private static final int registerInstantiatorsDurationId;
 
-  private final static int registerDataSerializersInProgressId;
-  private final static int registerDataSerializersSendInProgressId;
-  private final static int registerDataSerializersSendFailedId;
-  private final static int registerDataSerializersSendId;
-  private final static int registerDataSerializersSendDurationId;
-  private final static int registerDataSerializersTimedOutId;
-  private final static int registerDataSerializersFailedId;
-  private final static int registerDataSerializersId;
-  private final static int registerDataSerializersDurationId;
+  private static final int registerDataSerializersInProgressId;
+  private static final int registerDataSerializersSendInProgressId;
+  private static final int registerDataSerializersSendFailedId;
+  private static final int registerDataSerializersSendId;
+  private static final int registerDataSerializersSendDurationId;
+  private static final int registerDataSerializersTimedOutId;
+  private static final int registerDataSerializersFailedId;
+  private static final int registerDataSerializersId;
+  private static final int registerDataSerializersDurationId;
 
-  private final static int putAllInProgressId;
-  private final static int putAllSendInProgressId;
-  private final static int putAllSendFailedId;
-  private final static int putAllSendId;
-  private final static int putAllSendDurationId;
-  private final static int putAllTimedOutId;
-  private final static int putAllFailedId;
-  private final static int putAllId;
-  private final static int putAllDurationId;
+  private static final int putAllInProgressId;
+  private static final int putAllSendInProgressId;
+  private static final int putAllSendFailedId;
+  private static final int putAllSendId;
+  private static final int putAllSendDurationId;
+  private static final int putAllTimedOutId;
+  private static final int putAllFailedId;
+  private static final int putAllId;
+  private static final int putAllDurationId;
 
-  private final static int removeAllInProgressId;
-  private final static int removeAllSendInProgressId;
-  private final static int removeAllSendFailedId;
-  private final static int removeAllSendId;
-  private final static int removeAllSendDurationId;
-  private final static int removeAllTimedOutId;
-  private final static int removeAllFailedId;
-  private final static int removeAllId;
-  private final static int removeAllDurationId;
+  private static final int removeAllInProgressId;
+  private static final int removeAllSendInProgressId;
+  private static final int removeAllSendFailedId;
+  private static final int removeAllSendId;
+  private static final int removeAllSendDurationId;
+  private static final int removeAllTimedOutId;
+  private static final int removeAllFailedId;
+  private static final int removeAllId;
+  private static final int removeAllDurationId;
 
-  private final static int getAllInProgressId;
-  private final static int getAllSendInProgressId;
-  private final static int getAllSendFailedId;
-  private final static int getAllSendId;
-  private final static int getAllSendDurationId;
-  private final static int getAllTimedOutId;
-  private final static int getAllFailedId;
-  private final static int getAllId;
-  private final static int getAllDurationId;
+  private static final int getAllInProgressId;
+  private static final int getAllSendInProgressId;
+  private static final int getAllSendFailedId;
+  private static final int getAllSendId;
+  private static final int getAllSendDurationId;
+  private static final int getAllTimedOutId;
+  private static final int getAllFailedId;
+  private static final int getAllId;
+  private static final int getAllDurationId;
 
-  private final static int connectionsId;
-  private final static int connectsId;
-  private final static int disconnectsId;
-  private final static int messagesBeingReceivedId;
-  private final static int messageBytesBeingReceivedId;
-  private final static int receivedBytesId;
-  private final static int sentBytesId;
+  private static final int connectionsId;
+  private static final int connectsId;
+  private static final int disconnectsId;
+  private static final int messagesBeingReceivedId;
+  private static final int messageBytesBeingReceivedId;
+  private static final int receivedBytesId;
+  private static final int sentBytesId;
 
-  private final static int executeFunctionInProgressId;
-  private final static int executeFunctionSendInProgressId;
-  private final static int executeFunctionSendFailedId;
-  private final static int executeFunctionSendId;
-  private final static int executeFunctionSendDurationId;
-  private final static int executeFunctionTimedOutId;
-  private final static int executeFunctionFailedId;
-  private final static int executeFunctionId;
-  private final static int executeFunctionDurationId;
+  private static final int executeFunctionInProgressId;
+  private static final int executeFunctionSendInProgressId;
+  private static final int executeFunctionSendFailedId;
+  private static final int executeFunctionSendId;
+  private static final int executeFunctionSendDurationId;
+  private static final int executeFunctionTimedOutId;
+  private static final int executeFunctionFailedId;
+  private static final int executeFunctionId;
+  private static final int executeFunctionDurationId;
 
-  private final static int getClientPRMetadataInProgressId;
-  private final static int getClientPRMetadataSendInProgressId;
-  private final static int getClientPRMetadataSendFailedId;
-  private final static int getClientPRMetadataSendId;
-  private final static int getClientPRMetadataSendDurationId;
-  private final static int getClientPRMetadataTimedOutId;
-  private final static int getClientPRMetadataFailedId;
-  private final static int getClientPRMetadataId;
-  private final static int getClientPRMetadataDurationId;
+  private static final int getClientPRMetadataInProgressId;
+  private static final int getClientPRMetadataSendInProgressId;
+  private static final int getClientPRMetadataSendFailedId;
+  private static final int getClientPRMetadataSendId;
+  private static final int getClientPRMetadataSendDurationId;
+  private static final int getClientPRMetadataTimedOutId;
+  private static final int getClientPRMetadataFailedId;
+  private static final int getClientPRMetadataId;
+  private static final int getClientPRMetadataDurationId;
 
-  private final static int getClientPartitionAttributesInProgressId;
-  private final static int getClientPartitionAttributesSendInProgressId;
-  private final static int getClientPartitionAttributesSendFailedId;
-  private final static int getClientPartitionAttributesSendId;
-  private final static int getClientPartitionAttributesSendDurationId;
-  private final static int getClientPartitionAttributesTimedOutId;
-  private final static int getClientPartitionAttributesFailedId;
-  private final static int getClientPartitionAttributesId;
-  private final static int getClientPartitionAttributesDurationId;
+  private static final int getClientPartitionAttributesInProgressId;
+  private static final int getClientPartitionAttributesSendInProgressId;
+  private static final int getClientPartitionAttributesSendFailedId;
+  private static final int getClientPartitionAttributesSendId;
+  private static final int getClientPartitionAttributesSendDurationId;
+  private static final int getClientPartitionAttributesTimedOutId;
+  private static final int getClientPartitionAttributesFailedId;
+  private static final int getClientPartitionAttributesId;
+  private static final int getClientPartitionAttributesDurationId;
 
-  private final static int getPDXIdForTypeInProgressId;
-  private final static int getPDXIdForTypeSendInProgressId;
-  private final static int getPDXIdForTypeSendFailedId;
-  private final static int getPDXIdForTypeSendId;
-  private final static int getPDXIdForTypeSendDurationId;
-  private final static int getPDXIdForTypeTimedOutId;
-  private final static int getPDXIdForTypeFailedId;
-  private final static int getPDXIdForTypeId;
-  private final static int getPDXIdForTypeDurationId;
+  private static final int getPDXIdForTypeInProgressId;
+  private static final int getPDXIdForTypeSendInProgressId;
+  private static final int getPDXIdForTypeSendFailedId;
+  private static final int getPDXIdForTypeSendId;
+  private static final int getPDXIdForTypeSendDurationId;
+  private static final int getPDXIdForTypeTimedOutId;
+  private static final int getPDXIdForTypeFailedId;
+  private static final int getPDXIdForTypeId;
+  private static final int getPDXIdForTypeDurationId;
 
-  private final static int getPDXTypeByIdInProgressId;
-  private final static int getPDXTypeByIdSendInProgressId;
-  private final static int getPDXTypeByIdSendFailedId;
-  private final static int getPDXTypeByIdSendId;
-  private final static int getPDXTypeByIdSendDurationId;
-  private final static int getPDXTypeByIdTimedOutId;
-  private final static int getPDXTypeByIdFailedId;
-  private final static int getPDXTypeByIdId;
-  private final static int getPDXTypeByIdDurationId;
+  private static final int getPDXTypeByIdInProgressId;
+  private static final int getPDXTypeByIdSendInProgressId;
+  private static final int getPDXTypeByIdSendFailedId;
+  private static final int getPDXTypeByIdSendId;
+  private static final int getPDXTypeByIdSendDurationId;
+  private static final int getPDXTypeByIdTimedOutId;
+  private static final int getPDXTypeByIdFailedId;
+  private static final int getPDXTypeByIdId;
+  private static final int getPDXTypeByIdDurationId;
 
-  private final static int addPdxTypeInProgressId;
-  private final static int addPdxTypeSendInProgressId;
-  private final static int addPdxTypeSendFailedId;
-  private final static int addPdxTypeSendId;
-  private final static int addPdxTypeSendDurationId;
-  private final static int addPdxTypeTimedOutId;
-  private final static int addPdxTypeFailedId;
-  private final static int addPdxTypeId;
-  private final static int addPdxTypeDurationId;
+  private static final int addPdxTypeInProgressId;
+  private static final int addPdxTypeSendInProgressId;
+  private static final int addPdxTypeSendFailedId;
+  private static final int addPdxTypeSendId;
+  private static final int addPdxTypeSendDurationId;
+  private static final int addPdxTypeTimedOutId;
+  private static final int addPdxTypeFailedId;
+  private static final int addPdxTypeId;
+  private static final int addPdxTypeDurationId;
 
 
   // An array of all of the ids that represent operation statistics. This
@@ -1777,7 +1777,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endGetSend} and
    * {@link #endGet}.
-   * 
+   *
    * @return the start time of this get
    */
   public long startGet() {
@@ -1789,7 +1789,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the get has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startGet}.
    * @param failed true if the send of the get failed
    */
@@ -1809,7 +1809,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified get has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startGet}.
    * @param timedOut true if get timed out
    * @param failed true if get failed
@@ -1843,7 +1843,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endPutSend} and
    * {@link #endPut}.
-   * 
+   *
    * @return the start time of this put
    */
   public long startPut() {
@@ -1855,7 +1855,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the put has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startPut}.
    * @param failed true if the send of the put failed
    */
@@ -1875,7 +1875,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified put has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startPut}.
    * @param timedOut true if put timed out
    * @param failed true if put failed
@@ -1909,7 +1909,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endDestroySend} and
    * {@link #endDestroy}.
-   * 
+   *
    * @return the start time of this destroy
    */
   public long startDestroy() {
@@ -1921,7 +1921,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the destroy has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startDestroy}.
    * @param failed true if the send of the destroy failed
    */
@@ -1941,7 +1941,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified destroy has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startDestroy}.
    * @param timedOut true if destroy timed out
    * @param failed true if destroy failed
@@ -1967,7 +1967,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endDestroyRegionSend} and
    * {@link #endDestroyRegion}.
-   * 
+   *
    * @return the start time of this destroyRegion
    */
   public long startDestroyRegion() {
@@ -1979,7 +1979,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the destroyRegion has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startDestroyRegion}.
    * @param failed true if the send of the destroyRegion failed
    */
@@ -1999,7 +1999,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified destroyRegion has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startDestroyRegion}.
    * @param timedOut true if destroyRegion timed out
    * @param failed true if destroyRegion failed
@@ -2025,7 +2025,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endClearSend} and
    * {@link #endClear}.
-   * 
+   *
    * @return the start time of this clear
    */
   public long startClear() {
@@ -2037,7 +2037,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the clear has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startClear}.
    * @param failed true if the send of the clear failed
    */
@@ -2057,7 +2057,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified clear has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startClear}.
    * @param timedOut true if clear timed out
    * @param failed true if clear failed
@@ -2083,7 +2083,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endContainsKeySend} and
    * {@link #endContainsKey}.
-   * 
+   *
    * @return the start time of this containsKey
    */
   public long startContainsKey() {
@@ -2095,7 +2095,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the containsKey has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startContainsKey}.
    * @param failed true if the send of the containsKey failed
    */
@@ -2115,7 +2115,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified containsKey has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startContainsKey}.
    * @param timedOut true if containsKey timed out
    * @param failed true if containsKey failed
@@ -2141,7 +2141,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endKeySetSend} and
    * {@link #endKeySet}.
-   * 
+   *
    * @return the start time of this keySet
    */
   public long startKeySet() {
@@ -2153,7 +2153,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the keySet has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startKeySet}.
    * @param failed true if the send of the keySet failed
    */
@@ -2173,7 +2173,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified keySet has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startKeySet}.
    * @param timedOut true if keySet timed out
    * @param failed true if keySet failed
@@ -2199,7 +2199,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endRegisterInterestSend}
    * and {@link #endRegisterInterest}.
-   * 
+   *
    * @return the start time of this registerInterest
    */
   public long startRegisterInterest() {
@@ -2211,7 +2211,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the registerInterest has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startRegisterInterest}.
    * @param failed true if the send of the registerInterest failed
    */
@@ -2231,7 +2231,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified registerInterest has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startRegisterInterest}.
    * @param timedOut true if registerInterest timed out
    * @param failed true if registerInterest failed
@@ -2257,7 +2257,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call
    * {@link #endUnregisterInterestSend} and {@link #endUnregisterInterest}.
-   * 
+   *
    * @return the start time of this unregisterInterest
    */
   public long startUnregisterInterest() {
@@ -2269,7 +2269,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the unregisterInterest has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startUnregisterInterest}.
    * @param failed true if the send of the unregisterInterest failed
    */
@@ -2289,7 +2289,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified unregisterInterest has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startUnregisterInterest}.
    * @param timedOut true if unregisterInterest timed out
    * @param failed true if unregisterInterest failed
@@ -2315,7 +2315,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endQuerySend} and
    * {@link #endQuery}.
-   * 
+   *
    * @return the start time of this query
    */
   public long startQuery() {
@@ -2327,7 +2327,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the query has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startQuery}.
    * @param failed true if the send of the query failed
    */
@@ -2347,7 +2347,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified query has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startQuery}.
    * @param timedOut true if query timed out
    * @param failed true if query failed
@@ -2373,7 +2373,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endCreateCQSend} and
    * {@link #endCreateCQ}.
-   * 
+   *
    * @return the start time of this createCQ
    */
   public long startCreateCQ() {
@@ -2385,7 +2385,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the createCQ has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startCreateCQ}.
    * @param failed true if the send of the createCQ failed
    */
@@ -2405,7 +2405,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified createCQ has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startCreateCQ}.
    * @param timedOut true if createCQ timed out
    * @param failed true if createCQ failed
@@ -2431,7 +2431,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endStopCQSend} and
    * {@link #endStopCQ}.
-   * 
+   *
    * @return the start time of this stopCQ
    */
   public long startStopCQ() {
@@ -2443,7 +2443,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the stopCQ has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startStopCQ}.
    * @param failed true if the send of the stopCQ failed
    */
@@ -2463,7 +2463,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified stopCQ has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startStopCQ}.
    * @param timedOut true if stopCQ timed out
    * @param failed true if stopCQ failed
@@ -2489,7 +2489,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endCloseCQSend} and
    * {@link #endCloseCQ}.
-   * 
+   *
    * @return the start time of this closeCQ
    */
   public long startCloseCQ() {
@@ -2501,7 +2501,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the closeCQ has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startCloseCQ}.
    * @param failed true if the send of the closeCQ failed
    */
@@ -2521,7 +2521,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified closeCQ has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startCloseCQ}.
    * @param timedOut true if closeCQ timed out
    * @param failed true if closeCQ failed
@@ -2547,7 +2547,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endStopCQSend} and
    * {@link #endStopCQ}.
-   * 
+   *
    * @return the start time of this stopCQ
    */
   public long startGetDurableCQs() {
@@ -2559,7 +2559,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the stopCQ has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startStopCQ}.
    * @param failed true if the send of the stopCQ failed
    */
@@ -2579,7 +2579,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified stopCQ has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startStopCQ}.
    * @param timedOut true if stopCQ timed out
    * @param failed true if stopCQ failed
@@ -2605,7 +2605,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endGatewayBatchSend} and
    * {@link #endGatewayBatch}.
-   * 
+   *
    * @return the start time of this gatewayBatch
    */
   public long startGatewayBatch() {
@@ -2617,7 +2617,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the gatewayBatch has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startGatewayBatch}.
    * @param failed true if the send of the gatewayBatch failed
    */
@@ -2637,7 +2637,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified gatewayBatch has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startGatewayBatch}.
    * @param timedOut true if gatewayBatch timed out
    * @param failed true if gatewayBatch failed
@@ -2663,7 +2663,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endReadyForEventsSend}
    * and {@link #endReadyForEvents}.
-   * 
+   *
    * @return the start time of this readyForEvents
    */
   public long startReadyForEvents() {
@@ -2675,7 +2675,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the readyForEvents has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startReadyForEvents}.
    * @param failed true if the send of the readyForEvents failed
    */
@@ -2695,7 +2695,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified readyForEvents has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startReadyForEvents}.
    * @param timedOut true if readyForEvents timed out
    * @param failed true if readyForEvents failed
@@ -2721,7 +2721,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endMakePrimarySend} and
    * {@link #endMakePrimary}.
-   * 
+   *
    * @return the start time of this makePrimary
    */
   public long startMakePrimary() {
@@ -2733,7 +2733,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the makePrimary has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startMakePrimary}.
    * @param failed true if the send of the makePrimary failed
    */
@@ -2753,7 +2753,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified makePrimary has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startMakePrimary}.
    * @param timedOut true if makePrimary timed out
    * @param failed true if makePrimary failed
@@ -2779,7 +2779,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endCloseConSend} and
    * {@link #endCloseCon}.
-   * 
+   *
    * @return the start time of this closeCon
    */
   public long startCloseCon() {
@@ -2791,7 +2791,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the closeCon has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startCloseCon}.
    * @param failed true if the send of the closeCon failed
    */
@@ -2811,7 +2811,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified closeCon has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startCloseCon}.
    * @param timedOut true if closeCon timed out
    * @param failed true if closeCon failed
@@ -2837,7 +2837,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endPrimaryAckSend} and
    * {@link #endPrimaryAck}.
-   * 
+   *
    * @return the start time of this primaryAck
    */
   public long startPrimaryAck() {
@@ -2849,7 +2849,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the primaryAck has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startPrimaryAck}.
    * @param failed true if the send of the primaryAck failed
    */
@@ -2869,7 +2869,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified primaryAck has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startPrimaryAck}.
    * @param timedOut true if primaryAck timed out
    * @param failed true if primaryAck failed
@@ -2895,7 +2895,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endPingSend} and
    * {@link #endPing}.
-   * 
+   *
    * @return the start time of this ping
    */
   public long startPing() {
@@ -2907,7 +2907,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the ping has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startPing}.
    * @param failed true if the send of the ping failed
    */
@@ -2927,7 +2927,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified ping has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startPing}.
    * @param timedOut true if ping timed out
    * @param failed true if ping failed
@@ -2953,7 +2953,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call
    * {@link #endRegisterInstantiatorsSend} and {@link #endRegisterInstantiators}.
-   * 
+   *
    * @return the start time of this registerInstantiators
    */
   public long startRegisterInstantiators() {
@@ -2972,7 +2972,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the registerInstantiators has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startRegisterInstantiators}.
    * @param failed true if the send of the registerInstantiators failed
    */
@@ -3006,7 +3006,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified registerInstantiators has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startRegisterInstantiators}.
    * @param timedOut true if registerInstantiators timed out
    * @param failed true if registerInstantiators failed
@@ -3048,7 +3048,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endPutAllSend} and
    * {@link #endPutAll}.
-   * 
+   *
    * @return the start time of this putAll
    */
   public long startPutAll() {
@@ -3060,7 +3060,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the putAll has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startPutAll}.
    * @param failed true if the send of the putAll failed
    */
@@ -3080,7 +3080,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified putAll has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startPutAll}.
    * @param timedOut true if putAll timed out
    * @param failed true if putAll failed
@@ -3106,7 +3106,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endRemoveAllSend} and
    * {@link #endRemoveAll}.
-   * 
+   *
    * @return the start time of this removeAll
    */
   public long startRemoveAll() {
@@ -3118,7 +3118,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the removeAll has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startRemoveAll}.
    * @param failed true if the send of the removeAll failed
    */
@@ -3138,7 +3138,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified removeAll has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startRemoveAll}.
    * @param timedOut true if removeAll timed out
    * @param failed true if removeAll failed
@@ -3164,7 +3164,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endGetAllSend} and
    * {@link #endGetAll}.
-   * 
+   *
    * @return the start time of this getAll
    */
   public long startGetAll() {
@@ -3176,7 +3176,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the getAll has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startGetAll}.
    * @param failed true if the send of the getAll failed
    */
@@ -3196,7 +3196,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified getAll has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startGetAll}.
    * @param timedOut true if getAll timed out
    * @param failed true if getAll failed
@@ -3286,7 +3286,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call {@link #endExecuteFunctionSend}
    * and {@link #endExecuteFunction}.
-   * 
+   *
    * @return the start time of this ExecuteFunction
    */
   public long startExecuteFunction() {
@@ -3297,7 +3297,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the executeFunction has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startExecuteFunction}.
    * @param failed true if the send of the executeFunction failed
    */
@@ -3316,7 +3316,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified executeFunction has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startExecuteFunction}.
    * @param timedOut true if executeFunction timed out
    * @param failed true if executeFunction failed
@@ -3353,7 +3353,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call
    * {@link #endGetClientPRMetadataSend} and {@link #endGetClientPRMetadata}.
-   * 
+   *
    * @return the start time of this ExecuteFunction
    */
   public long startGetClientPRMetadata() {
@@ -3365,7 +3365,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the GetClientPRMetadata has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startGetClientPRMetadata}.
    * @param failed true if the send of the GetClientPRMetadata failed
    */
@@ -3385,7 +3385,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified GetClientPRMetadata has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startGetClientPRMetadata}.
    * @param timedOut true if GetClientPRMetadata timed out
    * @param failed true if GetClientPRMetadata failed
@@ -3411,7 +3411,7 @@ public class ConnectionStats implements MessageStats {
    * <p>
    * Note: for every call of this method the caller must also call
    * {@link #endGetClientPartitionAttributesSend} and {@link #endGetClientPartitionAttributes}.
-   * 
+   *
    * @return the start time of this GetClientPartitionAttributes
    */
   public long startGetClientPartitionAttributes() {
@@ -3423,7 +3423,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the send part of the GetClientPartitionAttributes operation has completed
-   * 
+   *
    * @param startTime the value returned by {@link #startGetClientPartitionAttributes}.
    * @param failed true if the send of the GetClientPartitionAttributes failed
    */
@@ -3443,7 +3443,7 @@ public class ConnectionStats implements MessageStats {
 
   /**
    * Records that the specified GetClientPartitionAttributes has ended
-   * 
+   *
    * @param startTime the value returned by {@link #startGetClientPartitionAttributes}.
    * @param timedOut true if GetClientPartitionAttributes timed out
    * @param failed true if GetClientPartitionAttributes failed

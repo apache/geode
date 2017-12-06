@@ -135,4 +135,3 @@ public class CqStateDUnitTest extends HelperTestCase {
   }
 
 }
-

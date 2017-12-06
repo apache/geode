@@ -27,16 +27,16 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 /**
  * A load probe which returns load as a function of the number of connections to the bridge server.
- * 
+ *
  * The Load object returned by this probe reports the connection load as the number of connections
  * to this server divided by the max connections for this server. This means that servers with a
  * lower max connections will receive fewer connections than servers with a higher max connections.
  * The load therefore is a number between 0 and 1, where 0 means there are are no connections, and 1
  * means the server at max connections.
- * 
+ *
  * The queue load is reported simply as the number of queues hosted by this bridge server.
- * 
- * 
+ *
+ *
  * @since GemFire 5.7
  */
 public class ConnectionCountProbe extends ServerLoadProbeAdapter

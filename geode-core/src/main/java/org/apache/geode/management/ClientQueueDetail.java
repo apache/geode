@@ -15,7 +15,7 @@
 package org.apache.geode.management;
 
 /**
- * 
+ *
  * @since GemFire 8.0
  */
 public class ClientQueueDetail {

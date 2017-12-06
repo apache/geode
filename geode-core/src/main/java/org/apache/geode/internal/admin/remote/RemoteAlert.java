@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.*;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.*;
 import org.apache.geode.internal.admin.*;
@@ -21,11 +26,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
-
-import java.io.*;
-import java.util.*;
-import java.text.DateFormat;
-import java.text.ParseException;
 
 /**
  * Implementation of the Alert interface.
@@ -96,10 +96,10 @@ public class RemoteAlert implements Alert {
   /**
    * Returns a InternalDistributedMember instance representing a member that is sending (or has
    * sent) this alert. Could be <code>null</code>.
-   * 
+   *
    * @return the InternalDistributedMember instance representing a member that is sending/has sent
    *         this alert
-   * 
+   *
    * @since GemFire 6.5
    */
   public InternalDistributedMember getSender() {

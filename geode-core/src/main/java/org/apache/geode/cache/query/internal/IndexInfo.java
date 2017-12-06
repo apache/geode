@@ -22,7 +22,7 @@ import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 
 public class IndexInfo {
-  final private CompiledValue _key;
+  private final CompiledValue _key;
 
   final CompiledValue _path;
 

@@ -17,6 +17,18 @@
  */
 package org.apache.geode.cache.query.functional;
 
+import static org.junit.Assert.*;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Query;
@@ -25,17 +37,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
-
-import static org.junit.Assert.*;
 
 @Category(IntegrationTest.class)
 public class SelectToDateJUnitTest {
@@ -180,7 +181,7 @@ public class SelectToDateJUnitTest {
   /******** Region Creation Helper Methods *********/
   /**
    * Each month will have exactly 20 entries with a matching date Code borrowed from shobhit's test
-   * 
+   *
    * @throws ParseException
    */
   private void createLocalRegion() throws ParseException {

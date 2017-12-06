@@ -14,18 +14,16 @@
  */
 package org.apache.geode.admin.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.SystemMember;
 import org.apache.geode.admin.Statistic;
+import org.apache.geode.admin.SystemMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.admin.SystemMember;
-
-import java.util.ArrayList;
-// import java.util.Date;
-import java.util.List;
 
 /**
  * Provides monitoring of a statistic resource.
@@ -165,7 +163,7 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -174,4 +172,3 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
   }
 
 }
-

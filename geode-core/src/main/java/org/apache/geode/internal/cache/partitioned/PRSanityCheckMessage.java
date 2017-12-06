@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Set;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
@@ -28,15 +33,10 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Set;
-
 /**
  * PRSanityCheckMessage is used to assert correctness of prID assignments across the distributed
  * system.
- * 
+ *
  *
  */
 public class PRSanityCheckMessage extends PartitionMessage {
@@ -144,7 +144,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
   /**
    * completely override process() from PartitionMessage. This message doesn't operate on a specific
    * partitioned region, so the superclass impl doesn't make any sense to it.
-   * 
+   *
    * @param dm the distribution manager to use
    */
   @Override

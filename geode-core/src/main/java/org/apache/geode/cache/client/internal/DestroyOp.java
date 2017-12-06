@@ -35,7 +35,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Does a region destroy on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class DestroyOp {
@@ -49,7 +49,7 @@ public class DestroyOp {
   /**
    * Does a region entry destroy on a server using connections from the given pool to communicate
    * with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the region to do the entry destroy on
    * @param key the entry key to do the destroy on
@@ -90,7 +90,7 @@ public class DestroyOp {
   /**
    * Does a region entry destroy on a server using the given connection to communicate with the
    * server.
-   * 
+   *
    * @param con the connection to use to send to the server
    * @param pool the pool to use to communicate with the server.
    * @param region the region to do the entry destroy on

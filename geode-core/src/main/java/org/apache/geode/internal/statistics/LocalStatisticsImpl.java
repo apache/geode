@@ -19,8 +19,6 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeImpl;
-// import org.apache.geode.util.IntArray;
-// import org.apache.geode.util.LongArray;
 
 /**
  * An implementation of {@link Statistics} that stores its statistics in local java memory.
@@ -45,17 +43,17 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   /**
    * An array containing the JOM object used to lock a int statistic when it is incremented.
    */
-  private transient final Object[] intLocks;
+  private final transient Object[] intLocks;
 
   /**
    * An array containing the JOM object used to lock a long statistic when it is incremented.
    */
-  private transient final Object[] longLocks;
+  private final transient Object[] longLocks;
 
   /**
    * An array containing the JOM object used to lock a double statistic when it is incremented.
    */
-  private transient final Object[] doubleLocks;
+  private final transient Object[] doubleLocks;
 
   /** The StatisticsFactory that created this instance */
   private final StatisticsManager dSystem;

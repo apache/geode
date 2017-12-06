@@ -18,7 +18,7 @@ import javax.print.attribute.EnumSyntax;
 
 /**
  * The action that an {@link org.apache.geode.cache.EvictionAlgorithm} takes.
- * 
+ *
  * @since GemFire 5.0
  * @see org.apache.geode.cache.EvictionAlgorithm
  * @see org.apache.geode.internal.cache.EvictionAttributesImpl
@@ -83,7 +83,7 @@ public final class EvictionAction extends EnumSyntax {
   /**
    * Returns the eviction action the corresponds to the given parameter. Returns <code>null</code>
    * if no action corresponds.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static EvictionAction parseValue(int v) {
@@ -95,7 +95,7 @@ public final class EvictionAction extends EnumSyntax {
   }
 
   /**
-   * 
+   *
    * @param s
    * @return the action parsed from the provided string. If there are problems with parsing NONE is
    *         returned.

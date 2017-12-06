@@ -16,18 +16,15 @@ package org.apache.geode.management.internal.cli.commands.lifecycle;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_TERM_NAME;
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
-import static org.apache.geode.management.internal.cli.util.HostUtils.getLocatorId;
 
 import java.io.IOException;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -53,49 +50,39 @@ public class StatusLocatorCommand implements GfshCommand {
       @CliOption(key = CliStrings.STATUS_LOCATOR__PID,
           help = CliStrings.STATUS_LOCATOR__PID__HELP) final Integer pid,
       @CliOption(key = CliStrings.STATUS_LOCATOR__DIR,
-          help = CliStrings.STATUS_LOCATOR__DIR__HELP) final String workingDirectory) {
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (isConnectedAndReady()) {
-          final MemberMXBean locatorProxy = getMemberMXBean(member);
+          help = CliStrings.STATUS_LOCATOR__DIR__HELP) final String workingDirectory)
+      throws Exception {
 
-          if (locatorProxy != null) {
-            LocatorLauncher.LocatorState state =
-                LocatorLauncher.LocatorState.fromJson(locatorProxy.status());
-            return createStatusLocatorResult(state);
-          } else {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
-          }
+    if (StringUtils.isNotBlank(member)) {
+      if (isConnectedAndReady()) {
+        final MemberMXBean locatorProxy = getMemberMXBean(member);
+
+        if (locatorProxy != null) {
+          LocatorLauncher.LocatorState state =
+              LocatorLauncher.LocatorState.fromJson(locatorProxy.status());
+          return createStatusLocatorResult(state);
         } else {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
-              CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
+              CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
         }
       } else {
-        final LocatorLauncher locatorLauncher =
-            new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
-                .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid)
-                .setPort(locatorPort).setWorkingDirectory(workingDirectory).build();
-
-        final LocatorLauncher.LocatorState status = locatorLauncher.status();
-        if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
-            || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
-          return ResultBuilder.createShellClientErrorResult(status.toString());
-        }
-        return createStatusLocatorResult(status);
+        return ResultBuilder.createUserErrorResult(CliStrings.format(
+            CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
       }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STATUS_LOCATOR__GENERAL_ERROR_MESSAGE, getLocatorId(locatorHost, locatorPort),
-          StringUtils.defaultIfBlank(workingDirectory, SystemUtils.CURRENT_DIRECTORY),
-          toString(t, getGfsh().getDebug())));
+    } else {
+      final LocatorLauncher locatorLauncher =
+          new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
+              .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid).setPort(locatorPort)
+              .setWorkingDirectory(workingDirectory).build();
+
+      final LocatorLauncher.LocatorState status = locatorLauncher.status();
+      if (status.getStatus().equals(AbstractLauncher.Status.NOT_RESPONDING)
+          || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
+        return ResultBuilder.createShellClientErrorResult(status.toString());
+      }
+      return createStatusLocatorResult(status);
     }
+
   }
 
   protected Result createStatusLocatorResult(final LocatorLauncher.LocatorState state)

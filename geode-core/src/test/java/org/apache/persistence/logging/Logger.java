@@ -62,7 +62,7 @@ public class Logger {
   /**
    * Returns the logger with the given name
    */
-  public synchronized static Logger getLogger(String name) {
+  public static synchronized Logger getLogger(String name) {
     Logger logger = (Logger) loggers.get(name);
     if (logger == null) {
       logger = new Logger(name);

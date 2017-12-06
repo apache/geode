@@ -15,14 +15,15 @@
 
 package org.apache.geode.modules.session.internal.common;
 
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 import org.apache.geode.modules.session.internal.filter.util.TypeAwareMap;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.SessionCustomExpiry;
-
-import java.util.Map;
-import javax.servlet.http.HttpSession;
 
 public abstract class AbstractSessionCache implements SessionCache {
 

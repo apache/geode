@@ -16,19 +16,17 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.*;
+
 import org.apache.geode.*;
 import org.apache.geode.admin.GemFireHealth;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-import java.io.*;
-// import java.util.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular agent who was registered a health listener on a GemFireVM.
  * This message is only sent when the health status changes.
- * 
+ *
  * @since GemFire 3.5
  */
 public class HealthListenerMessage extends PooledDistributionMessage implements AdminMessageType {

@@ -16,8 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 public class ExecuteFunctionHelper {
 
-  public final static byte BUCKETS_AS_FILTER_MASK = 0x02;
-  public final static byte IS_REXECUTE_MASK = 0x01;
+  public static final byte BUCKETS_AS_FILTER_MASK = 0x02;
+  public static final byte IS_REXECUTE_MASK = 0x01;
 
   static byte createFlags(boolean executeOnBucketSet, byte isReExecute) {
     byte flags = executeOnBucketSet ? (byte) (0x00 | BUCKETS_AS_FILTER_MASK) : 0x00;

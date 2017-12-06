@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +33,7 @@ import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxStringJUnitTest {
@@ -160,7 +160,7 @@ public class PdxStringJUnitTest {
   /**
    * this test verifies that pdxstream with pdxType.Object tyep for string and checks whether we
    * create PdxString or not
-   * 
+   *
    * @throws Exception
    */
   @Test

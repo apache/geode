@@ -19,7 +19,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * Base class for Mock Extension XML Generators.
- * 
+ *
  *
  * @since GemFire 8.1
  */

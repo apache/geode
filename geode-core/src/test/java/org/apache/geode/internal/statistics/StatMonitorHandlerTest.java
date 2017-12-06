@@ -19,19 +19,20 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.UnitTest;
+
 /**
  * Unit tests for {@link StatMonitorHandler}.
- * 
+ *
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)

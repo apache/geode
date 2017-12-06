@@ -14,6 +14,21 @@
  */
 package org.apache.geode.cache.client;
 
+import static org.apache.geode.cache.client.ClientRegionShortcut.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.client.internal.ProxyRegion;
 import org.apache.geode.cache.query.Query;
@@ -24,24 +39,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-
-import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.Properties;
-
-import static org.apache.geode.cache.client.ClientRegionShortcut.*;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Unit test for the ClientRegionFactory class
- * 
+ *
  * @since GemFire 6.5
  */
 @Category({IntegrationTest.class, ClientServerTest.class})

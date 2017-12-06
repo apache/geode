@@ -22,10 +22,10 @@ import org.apache.geode.cache.execute.ResultSender;
 
 /**
  * Context available when called using {@link InternalFunctionService#onRegions(Set)}
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
- * 
+ *
  */
 public class MultiRegionFunctionContextImpl extends FunctionContextImpl
     implements MultiRegionFunctionContext {

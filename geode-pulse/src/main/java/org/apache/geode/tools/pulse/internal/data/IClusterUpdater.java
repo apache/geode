@@ -17,16 +17,16 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import javax.management.remote.JMXConnector;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Interface having updateData() function which is getting Override by both MockDataUpdater and
  * JMXDataUpdater
- * 
+ *
  * @since GemFire version 7.0.Beta 2012-09-23
- * 
+ *
  */
 public interface IClusterUpdater {
   boolean updateData();

@@ -22,7 +22,7 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 
 /**
  * Defines the execution context of a data dependent {@link Function}.
- * 
+ *
  * Applications can use the methods provided to retrieve the Region and context specific routing
  * objects. When the function is executed using {@link FunctionService#onRegion(Region)}, the
  * {@link Function#execute(FunctionContext) FunctionContext} can be typecast to this type.
@@ -31,10 +31,10 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
  * If the region is a partitioned region, {@link PartitionRegionHelper} can be used to get local and
  * {@linkplain PartitionAttributesFactory#setColocatedWith(String) colocated} data references.
  * </p>
- * 
- * 
+ *
+ *
  * @since GemFire 6.0
- * 
+ *
  * @see FunctionContext
  * @see PartitionRegionHelper
  */
@@ -43,9 +43,9 @@ public interface RegionFunctionContext extends FunctionContext {
   /**
    * Returns subset of keys (filter) provided by the invoking thread (aka routing objects). The set
    * of filter keys are locally present in the datastore on the executing cluster member.
-   * 
+   *
    * @see Execution#withFilter(Set)
-   * 
+   *
    * @return the objects that caused the function to be routed to this cluster member
    * @since GemFire 6.0
    */
@@ -53,11 +53,11 @@ public interface RegionFunctionContext extends FunctionContext {
 
   /**
    * Returns the reference to the Region on which the function is executed
-   * 
+   *
    * @see FunctionService#onRegion(Region)
-   * 
+   *
    * @return returns the Region on which the function is executed
-   * 
+   *
    * @since GemFire 6.0
    */
   public <K, V> Region<K, V> getDataSet();

@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.*;
+
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -24,14 +25,14 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * 
+ *
  */
 public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   private CompiledValue _value;
 
   /**
-   * 
+   *
    * @param value
    */
   public CompiledUnaryMinus(CompiledValue value) {
@@ -61,7 +62,7 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
   }
 
   /**
-   * 
+   *
    */
   @Override
   public Set computeDependencies(ExecutionContext context)
@@ -70,7 +71,7 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
   }
 
   /**
-   * 
+   *
    * @param obj
    * @return Object
    * @throws TypeMismatchException
@@ -97,5 +98,3 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
   }
 
 }
-
-

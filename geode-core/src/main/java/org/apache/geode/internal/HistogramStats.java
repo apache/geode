@@ -23,7 +23,7 @@ import org.apache.geode.StatisticsType;
 
 public class HistogramStats {
   /** stat type description */
-  private final static String hist_typeDesc = "A bucketed histogram of values with unit ";
+  private static final String hist_typeDesc = "A bucketed histogram of values with unit ";
 
   private final int statCounterIndex[];
 
@@ -33,7 +33,7 @@ public class HistogramStats {
 
   /**
    * Create a set of statistics to capture a histogram of values with the given break points.
-   * 
+   *
    * @param name a unique name for the histogram type
    * @param unit the unit of data collected
    * @param factory

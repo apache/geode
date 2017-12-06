@@ -50,7 +50,7 @@ public class PeerTXStateStub extends TXStateStub {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#rollback()
    */
   @Override

@@ -15,12 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResultException;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 
 public class GatewayCommandsUtils {
@@ -31,16 +25,5 @@ public class GatewayCommandsUtils {
     }
     resultData.accumulate("Result", Status);
     resultData.accumulate("Message", message);
-  }
-
-  static Result handleCommandResultException(CommandResultException crex) {
-    Result result;
-    if (crex.getResult() != null) {
-      result = crex.getResult();
-    } else {
-      LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(crex));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + crex.getMessage());
-    }
-    return result;
   }
 }

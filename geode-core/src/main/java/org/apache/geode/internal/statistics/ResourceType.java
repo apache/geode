@@ -22,7 +22,7 @@ import org.apache.geode.StatisticsType;
  * The ResourceType holds an array of StatisticDescriptors for its StatisticsType.
  * <p/>
  * Extracted from {@link StatArchiveWriter}.
- * 
+ *
  * @since GemFire 7.0
  */
 public class ResourceType {

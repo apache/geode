@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.NetView;
  * LocalViewMessage is used to pass a new membership view to the GemFire cache in an orderly manner.
  * It is intended to be queued with serially executed messages so that the view takes effect at the
  * proper time.
- * 
+ *
  */
 
 public class LocalViewMessage extends SerialDistributionMessage {

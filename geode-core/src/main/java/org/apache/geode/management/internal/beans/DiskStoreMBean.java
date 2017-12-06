@@ -22,8 +22,8 @@ import org.apache.geode.management.DiskStoreMXBean;
  * DiskStore MBean represent a DiskStore which provides disk storage for one or more regions. The
  * regions in the same disk store will share the same disk persistence attributes. A region without
  * a disk store name belongs to the default disk store.
- * 
- * 
+ *
+ *
  */
 public class DiskStoreMBean extends NotificationBroadcasterSupport implements DiskStoreMXBean {
 

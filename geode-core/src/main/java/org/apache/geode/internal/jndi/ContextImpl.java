@@ -14,29 +14,31 @@
  */
 package org.apache.geode.internal.jndi;
 
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
-import java.util.Iterator;
+
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.ContextNotEmptyException;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NoPermissionException;
 import javax.naming.NotContextException;
-import javax.naming.NameAlreadyBoundException;
 import javax.transaction.SystemException;
+
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 
@@ -47,7 +49,7 @@ import org.apache.geode.internal.jta.UserTransactionImpl;
  * separator character - '/' or '.'. It is possible to use both separator characters in the same
  * name. In such cases any occurrences of '.' are replaced with '/' before parsing. This rule can be
  * altered/modified by making changes in NameParserImpl class.
- * 
+ *
  */
 public class ContextImpl implements Context {
 
@@ -85,7 +87,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public Object addToEnvironment(String key, Object value) throws NamingException {
     throw new NamingException(
@@ -96,7 +98,7 @@ public class ContextImpl implements Context {
   /**
    * Binds object to a name in this context. Intermediate contexts that do not exist will be
    * created.
-   * 
+   *
    * @param name Name of the object to bind
    * @param obj Object to bind. Can be null.
    * @throws NoPermissionException if this context has been destroyed.
@@ -114,11 +116,11 @@ public class ContextImpl implements Context {
 
   /**
    * Binds object to name in this context.
-   * 
+   *
    * @param name * name of the object to add
    * @param obj object to bind
    * @throws NamingException if naming error occurs
-   * 
+   *
    */
   public void bind(String name, Object obj) throws NamingException {
     bind(nameParser.parse(name), obj);
@@ -131,10 +133,10 @@ public class ContextImpl implements Context {
 
   /**
    * Returns composition of prefix and name .
-   * 
+   *
    * @param name name relative to this context
    * @param prefix name of this context Example: composeName("a","b") : b/a composeName("a","") : a
-   * 
+   *
    */
   public Name composeName(Name name, Name prefix) throws NamingException {
     checkIsDestroyed();
@@ -147,10 +149,10 @@ public class ContextImpl implements Context {
 
   /**
    * Returns composition of prefix and name .
-   * 
+   *
    * @param name name relative to this context
    * @param prefix name of this context Example: composeName("a","b") : b/a composeName("a","") : a
-   * 
+   *
    */
   public String composeName(String name, String prefix) throws NamingException {
     checkIsDestroyed();
@@ -159,7 +161,7 @@ public class ContextImpl implements Context {
 
   /**
    * Creates subcontext with name, relative to this Context.
-   * 
+   *
    * @param name subcontext name.
    * @return new subcontext named name relative to this context.
    * @throws NoPermissionException if this context has been destroyed.
@@ -168,7 +170,7 @@ public class ContextImpl implements Context {
    * @throws NameAlreadyBoundException if name is already bound in this Context
    * @throws NotContextException if any intermediate name from name is not bound to instance of
    *         javax.naming.Context.
-   * 
+   *
    */
   public Context createSubcontext(Name name) throws NamingException {
     checkIsDestroyed();
@@ -206,11 +208,11 @@ public class ContextImpl implements Context {
 
   /**
    * Creates subcontext with name, relative to this Context.
-   * 
+   *
    * @param name subcontext name
    * @return new subcontext named name relative to this context.
    * @throws NamingException if naming error occurs.
-   * 
+   *
    */
   public Context createSubcontext(String name) throws NamingException {
     return createSubcontext(nameParser.parse(name));
@@ -220,7 +222,7 @@ public class ContextImpl implements Context {
    * Destroys subcontext with name name. The subcontext must be empty otherwise
    * ContextNotEmptyException is thrown. Once a context is destroyed, the instance should not be
    * used.
-   * 
+   *
    * @param name subcontext to destroy
    * @throws NoPermissionException if this context has been destroyed.
    * @throws InvalidNameException if name is empty or is CompositeName that spans more than one
@@ -228,7 +230,7 @@ public class ContextImpl implements Context {
    * @throws ContextNotEmptyException if Context name is not empty.
    * @throws NameNotFoundException if subcontext with name name can not be found.
    * @throws NotContextException if name is not bound to instance of ContextImpl.
-   * 
+   *
    */
   public void destroySubcontext(Name name) throws NamingException {
     checkIsDestroyed();
@@ -265,7 +267,7 @@ public class ContextImpl implements Context {
 
   /**
    * Destroys subcontext with name name.
-   * 
+   *
    * @param name name of subcontext to destroy.
    * @throws NamingException if naming error occurs
    */
@@ -275,7 +277,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public Hashtable getEnvironment() throws NamingException {
     throw new NamingException(
@@ -284,7 +286,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public String getNameInNamespace() throws NamingException {
     throw new NamingException(
@@ -293,12 +295,12 @@ public class ContextImpl implements Context {
 
   /**
    * Retrieves NameParser used to parse context with name name.
-   * 
+   *
    * @param name context name.
    * @return NameParser.
    * @throws NoPermissionException if this context has been destroyed.
    * @throws NamingException if any other naming error occurs.
-   * 
+   *
    */
   public NameParser getNameParser(Name name) throws NamingException {
     checkIsDestroyed();
@@ -307,12 +309,12 @@ public class ContextImpl implements Context {
 
   /**
    * Retrieves NameParser used to parse context with name name.
-   * 
+   *
    * @param name context name.
    * @return NameParser.
    * @throws NoPermissionException if this context has been destroyed.
    * @throws NamingException if any other naming error occurs.
-   * 
+   *
    */
   public NameParser getNameParser(String name) throws NamingException {
     checkIsDestroyed();
@@ -321,12 +323,12 @@ public class ContextImpl implements Context {
 
   /**
    * The same as listBindings(String).
-   * 
+   *
    * @param name name of Context, relative to this Context
    * @return NamingEnumeration of all name-class pairs. Each element from the enumeration is
    *         instance of NameClassPair
    * @throws NamingException if naming error occurs
-   * 
+   *
    */
   public NamingEnumeration list(Name name) throws NamingException {
     return listBindings(name);
@@ -334,12 +336,12 @@ public class ContextImpl implements Context {
 
   /**
    * The same as listBindings(String).
-   * 
+   *
    * @param name name of Context, relative to this Context
    * @return NamingEnumeration of all name-class pairs. Each element from the enumeration is
    *         instance of NameClassPair
    * @throws NamingException if naming error occurs
-   * 
+   *
    */
   public NamingEnumeration list(String name) throws NamingException {
     return list(nameParser.parse(name));
@@ -347,7 +349,7 @@ public class ContextImpl implements Context {
 
   /**
    * Lists all bindings for Context with name name. If name is empty then this Context is assumed.
-   * 
+   *
    * @param name name of Context, relative to this Context
    * @return NamingEnumeration of all name-object pairs. Each element from the enumeration is
    *         instance of Binding.
@@ -357,7 +359,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException component of name is not bound to instance of ContextImpl, when
    *         name is not an atomic name
    * @throws NamingException if any other naming error occurs
-   * 
+   *
    */
   public NamingEnumeration listBindings(Name name) throws NamingException {
     checkIsDestroyed();
@@ -392,7 +394,7 @@ public class ContextImpl implements Context {
 
   /**
    * Lists all bindings for Context with name name. If name is empty then this Context is assumed.
-   * 
+   *
    * @param name name of Context, relative to this Context
    * @return NamingEnumeration of all name-object pairs. Each element from the enumeration is
    *         instance of Binding.
@@ -402,7 +404,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException component of name is not bound to instance of ContextImpl, when
    *         name is not an atomic name
    * @throws NamingException if any other naming error occurs
-   * 
+   *
    */
   public NamingEnumeration listBindings(String name) throws NamingException {
     return listBindings(nameParser.parse(name));
@@ -410,7 +412,7 @@ public class ContextImpl implements Context {
 
   /**
    * Looks up object with binding name name in this context.
-   * 
+   *
    * @param name name to look up
    * @return object reference bound to name name.
    * @throws NoPermissionException if this context has been destroyed.
@@ -419,7 +421,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException component of name is not bound to instance of ContextImpl, when
    *         name is not atomic name.
    * @throws NamingException if any other naming error occurs
-   * 
+   *
    */
   public Object lookup(Name name) throws NamingException {
     checkIsDestroyed();
@@ -467,11 +469,11 @@ public class ContextImpl implements Context {
   /**
    * Looks up the object in this context. If the object is not found and the remote context was
    * provided, calls the remote context to lookup the object.
-   * 
+   *
    * @param name object to search
    * @return object reference bound to name name.
    * @throws NamingException if naming error occurs.
-   * 
+   *
    */
   public Object lookup(String name) throws NamingException {
     checkIsDestroyed();
@@ -489,7 +491,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public Object lookupLink(Name name) throws NamingException {
     throw new NamingException(
@@ -498,7 +500,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public Object lookupLink(String name) throws NamingException {
     throw new NamingException(
@@ -507,7 +509,7 @@ public class ContextImpl implements Context {
 
   /**
    * Rebinds object obj to name name . If there is existing binding it will be overwritten.
-   * 
+   *
    * @param name name of the object to rebind.
    * @param obj object to add. Can be null.
    * @throws NoPermissionException if this context has been destroyed
@@ -516,7 +518,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException if name has more than one atomic name and intermediate context is
    *         not found
    * @throws NamingException if any other naming error occurs
-   * 
+   *
    */
   public void rebind(Name name, Object obj) throws NamingException {
     checkIsDestroyed();
@@ -550,7 +552,7 @@ public class ContextImpl implements Context {
 
   /**
    * Rebinds object obj to String name. If there is existing binding it will be overwritten.
-   * 
+   *
    * @param name name of the object to rebind.
    * @param obj object to add. Can be null.
    * @throws NoPermissionException if this context has been destroyed
@@ -559,7 +561,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException if name has more than one atomic name and intermediate context is
    *         not found
    * @throws NamingException if any other naming error occurs
-   * 
+   *
    */
   public void rebind(String name, Object obj) throws NamingException {
     rebind(nameParser.parse(name), obj);
@@ -567,7 +569,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public Object removeFromEnvironment(String key) throws NamingException {
     throw new NamingException(
@@ -577,7 +579,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public void rename(Name name1, Name name2) throws NamingException {
     throw new NamingException(
@@ -587,7 +589,7 @@ public class ContextImpl implements Context {
 
   /**
    * Not implemented
-   * 
+   *
    */
   public void rename(String name1, String name2) throws NamingException {
     throw new NamingException(
@@ -597,7 +599,7 @@ public class ContextImpl implements Context {
 
   /**
    * Removes name and its associated object from the context.
-   * 
+   *
    * @param name name to remove
    * @throws NoPermissionException if this context has been destroyed.
    * @throws InvalidNameException if name is empty or is CompositeName that spans more than one
@@ -606,7 +608,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException if name has more than one atomic name and intermediate context is
    *         not found.
    * @throws NamingException if any other naming exception occurs
-   * 
+   *
    */
   public void unbind(Name name) throws NamingException {
     checkIsDestroyed();
@@ -640,9 +642,9 @@ public class ContextImpl implements Context {
   }
 
   /**
-   * 
+   *
    * Removes name and its associated object from the context.
-   * 
+   *
    * @param name name to remove
    * @throws NoPermissionException if this context has been destroyed.
    * @throws InvalidNameException if name is empty or is CompositeName that spans more than one
@@ -651,7 +653,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException if name has more than one atomic name and intermediate context is
    *         not found.
    * @throws NamingException if any other naming exception occurs
-   * 
+   *
    */
   public void unbind(String name) throws NamingException {
     unbind(nameParser.parse(name));
@@ -660,7 +662,7 @@ public class ContextImpl implements Context {
   /**
    * Checks if this context has been destroyed. isDestroyed is set to true when a context is
    * destroyed by calling destroySubcontext method.
-   * 
+   *
    * @throws NoPermissionException if this context has been destroyed
    */
   private void checkIsDestroyed() throws NamingException {
@@ -682,7 +684,7 @@ public class ContextImpl implements Context {
    * Parses name which is CompositeName or CompoundName . If name is not CompositeName then it is
    * assumed to be CompoundName. If the name contains leading and/or terminal empty components, they
    * will not be included in the result.
-   * 
+   *
    * @param name Name to parse.
    * @return parsed name as instance of CompoundName.
    * @throws InvalidNameException if name is CompositeName and spans more than one name space.
@@ -729,7 +731,7 @@ public class ContextImpl implements Context {
   /**
    * Returns the compound string name of this context. Suppose a/b/c/d is the full name and this
    * context is "c". It's compound string name is a/b/c
-   * 
+   *
    * @return compound string name of the context
    */
   String getCompoundStringName() throws NamingException {
@@ -752,7 +754,7 @@ public class ContextImpl implements Context {
 
   /*
    * Returns the "atomic" (as opposed to "composite") name of the context.
-   * 
+   *
    * @return name of the context
    */
   String getAtomicName() {
@@ -767,7 +769,7 @@ public class ContextImpl implements Context {
     return getParentContext() == null;
   }
 
-  static private class NamingEnumerationImpl implements NamingEnumeration {
+  private static class NamingEnumerationImpl implements NamingEnumeration {
 
     private Vector elements;
     private int currentElement;

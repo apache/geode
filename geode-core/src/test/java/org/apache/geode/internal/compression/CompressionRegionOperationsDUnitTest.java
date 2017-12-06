@@ -171,7 +171,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests the following operations on a region with compression enabled:
-   * 
+   *
    * <ul>
    * <li>{@link Region#put(Object, Object)}</li>
    * <li>{@link Region#putAll(Map)}</li>
@@ -179,7 +179,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * <li>{@link Region#get(Object)}</li>
    * <li>{@link Region#getAll(Collection)}</li>
    * </ul>
-   * 
+   *
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsOnVM(final VM vm) {
@@ -233,7 +233,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests the following region key, value operations:
-   * 
+   *
    * <ul>
    * <li>{@link Region#invalidate(Object)}</li>
    * <li>{@link Region#containsKey(Object)}</li>
@@ -246,7 +246,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * <li>{@link Region#values()}</li>
    * <li>{@link Region#keySet()}</li>
    * </ul>
-   * 
+   *
    * @param vm a test virtual machine.
    */
   private void testKeysAndValuesOperationsOnVM(final VM vm) {
@@ -309,7 +309,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests compressed put/get region operations using CachedDeserializable values.
-   * 
+   *
    * @see CompressionRegionOperationsDUnitTest#testGetPutOperations()
    */
   @Test
@@ -320,7 +320,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests the following operations on a region with compression enabled using CachedDeserializable
    * values:
-   * 
+   *
    * <ul>
    * <li>{@link Region#put(Object, Object)}</li>
    * <li>{@link Region#putAll(Map)}</li>
@@ -328,7 +328,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * <li>{@link Region#get(Object)}</li>
    * <li>{@link Region#getAll(Collection)}</li>
    * </ul>
-   * 
+   *
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsWithCachedDeserializableOnVM(final VM vm) {
@@ -377,7 +377,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests compressed put/get region operations using byte[] values.
-   * 
+   *
    * @see CompressionRegionOperationsDUnitTest#testGetPutOperations()
    */
   @Test
@@ -387,7 +387,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests the following operations on a region with compression enabled using byte[] values:
-   * 
+   *
    * <ul>
    * <li>{@link Region#put(Object, Object)}</li>
    * <li>{@link Region#putAll(Map)}</li>
@@ -395,7 +395,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
    * <li>{@link Region#get(Object)}</li>
    * <li>{@link Region#getAll(Collection)}</li>
    * </ul>
-   * 
+   *
    * @param vm a test virtual machine.
    */
   private void testGetPutOperationsWithByteArraysOnVM(final VM vm) {
@@ -446,7 +446,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the VM for a given identifier.
-   * 
+   *
    * @param vm a virtual machine identifier.
    */
   protected VM getVM(int vm) {
@@ -455,7 +455,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Removes created regions from a VM.
-   * 
+   *
    * @param vm the virtual machine to cleanup.
    */
   private void cleanup(final VM vm) {
@@ -469,7 +469,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param vm a virtual machine to create the region on.
    * @param name a region name.
    * @param compressor a compressor.
@@ -498,7 +498,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param name a region name.
    * @param compressor a compressor.
    */

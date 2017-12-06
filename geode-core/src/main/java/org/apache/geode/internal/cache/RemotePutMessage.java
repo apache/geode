@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -56,9 +59,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 /**
  * A Replicate Region update message. Meant to be sent only to the peer who hosts transactional
@@ -157,7 +157,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   /**
    * For put to happen, the old value must be equal to this expectedOldValue.
-   * 
+   *
    * @see PartitionedRegion#replace(Object, Object, Object)
    */
   private Object expectedOldValue;
@@ -262,7 +262,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   /**
    * this is similar to send() but it selects an initialized replicate that is used to proxy the
    * message
-   * 
+   *
    * @param event represents the current operation
    * @param lastModified lastModified time
    * @param ifNew whether a new entry can be created
@@ -350,7 +350,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   /**
    * Sends a ReplicateRegion {@link org.apache.geode.cache.Region#put(Object, Object)} message to
    * the recipient
-   * 
+   *
    * @param recipient the member to which the put message is sent
    * @param r the PartitionedRegion for which the put was performed
    * @param event the event prompting this message
@@ -370,7 +370,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   /**
    * Sends a ReplicateRegion {@link org.apache.geode.cache.Region#put(Object, Object)} message to
    * the recipient
-   * 
+   *
    * @param recipient the member to which the put message is sent
    * @param r the PartitionedRegion for which the put was performed
    * @param event the event prompting this message
@@ -845,7 +845,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -988,7 +988,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   /**
    * A processor to capture the value returned by {@link RemotePutMessage}
-   * 
+   *
    * @since GemFire 5.1
    */
   public static class RemotePutResponse extends RemoteOperationResponse {

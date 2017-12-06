@@ -24,9 +24,9 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Holds the rebalancing details for a single partitioned region.
- * 
+ *
  * Serializable form is used to allow JMX MBeans to use this as a remotable return type.
- * 
+ *
  */
 public class PartitionRebalanceDetailsImpl
     implements PartitionRebalanceInfo, Serializable, Comparable<PartitionRebalanceDetailsImpl> {
@@ -44,7 +44,7 @@ public class PartitionRebalanceDetailsImpl
   private Set<PartitionMemberInfo> partitionMemberDetailsBefore;
   private long primaryTransferTime;
   private int primaryTransfersCompleted;
-  transient private final PartitionedRegion region;
+  private final transient PartitionedRegion region;
   private long time;
 
   public PartitionRebalanceDetailsImpl(PartitionedRegion region) {

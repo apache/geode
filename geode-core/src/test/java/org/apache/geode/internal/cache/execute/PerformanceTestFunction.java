@@ -32,7 +32,7 @@ public class PerformanceTestFunction extends FunctionAdapter {
 
   /**
    * Application execution implementation
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public void execute(FunctionContext context) {
@@ -55,7 +55,7 @@ public class PerformanceTestFunction extends FunctionAdapter {
 
   /**
    * Get the function identifier, used by clients to invoke this function
-   * 
+   *
    * @return an object identifying this function
    * @since GemFire 5.8Beta
    */

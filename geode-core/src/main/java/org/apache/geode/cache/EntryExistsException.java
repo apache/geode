@@ -31,7 +31,7 @@ public class EntryExistsException extends CacheException {
 
   /**
    * Constructs an instance of <code>EntryExistsException</code> with the specified detail message.
-   * 
+   *
    * @param msg the detail message
    * @since GemFire 6.5
    */

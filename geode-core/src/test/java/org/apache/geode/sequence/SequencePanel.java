@@ -14,10 +14,11 @@
  */
 package org.apache.geode.sequence;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+
+import javax.swing.*;
 
 /**
  * Created by IntelliJ IDEA. User: dan Date: Oct 28, 2010 Time: 10:29:23 PM To change this template

@@ -22,13 +22,13 @@ import java.util.*;
  * An event that describes the culmination of an entire transaction. It either describes the work
  * done by a committed transaction or the work abandoned by an explicit rollback or failed commit.
  * The actual work is represented by an ordered list of {@link EntryEvent} instances.
- * 
+ *
  * <p>
  * A <code>TransactionListener</code> receives an instance of this class allowing exploration of the
  * resultant operations. The resultant operation is the final result of, potentially, a sequence of
  * operations on a key such that earlier operations might be masked. For example, multiple put
  * operations using the same key will result in only one {@link EntryEvent} for that key.
- * 
+ *
  * <p>
  * An instance of TransactionEvent for the same transaction on the originating VM may differ from a
  * recipient VM. The amount of variation will depend on the variation of the state of Entries on
@@ -51,14 +51,14 @@ public interface TransactionEvent {
 
   /**
    * Gets the <code>TransactionId</code> associated this TransactionEvent.
-   * 
+   *
    */
   public TransactionId getTransactionId();
 
   /**
    * Returns an ordered list of every {@link CacheEvent} for this transaction. The event order is
    * consistent with the order in which the operations were performed during the transaction.
-   * 
+   *
    * @return an unmodifiable <code>List</code> of all the {@link CacheEvent} instances; one for each
    *         operation performed by this transaction.
    * @since GemFire 5.0

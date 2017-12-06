@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
@@ -82,23 +82,23 @@ import org.apache.geode.pdx.PdxInstance;
  *   private String name;
  *   private Date birthday;
  *   private Company employer;
- * 
+ *
  *   public void toData(DataOutput out) throws IOException {
  *     out.writeInt(this.id);
  *     out.writeUTF(this.name);
  *     DataSerializer.writeDate(this.birthday, out);
  *     DataSerializer.writeObject(this.employer, out);
  *   }
- * 
+ *
  *   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
- * 
+ *
  *     this.id = in.readInt();
  *     this.name = in.readUTF();
  *     this.birthday = DataSerializer.readDate(in);
  *     this.employer = (Company) DataSerializer.readObject(in);
  *   }
  * }
- * 
+ *
  * </PRE>
  *
  * <P>
@@ -226,9 +226,9 @@ public abstract class DataSerializer {
   /**
    * Writes class name to a <code>DataOutput</code>. This method will handle a <code>null</code>
    * value and not throw a <code>NullPointerException</code>.
-   * 
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
-   * 
+   *
    * @see #readNonPrimitiveClassName(DataInput)
    */
   public static void writeNonPrimitiveClassName(String className, DataOutput out)
@@ -267,9 +267,9 @@ public abstract class DataSerializer {
 
   /**
    * Reads name of an instance of <code>Class</code> from a <code>DataInput</code>.
-   * 
+   *
    * The return value may be <code>null</code>.
-   * 
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see #writeNonPrimitiveClassName(String, DataOutput)
    */
@@ -3098,7 +3098,7 @@ public abstract class DataSerializer {
   /**
    * For internal use only. Sets the unique <code>eventId</code> of this
    * <code>DataSerializer</code>.
-   * 
+   *
    * @since GemFire 6.5
    */
   public void setEventId(Object/* EventID */ eventId) {
@@ -3108,7 +3108,7 @@ public abstract class DataSerializer {
   /**
    * For internal use only. Returns the unique <code>eventId</code> of this
    * <code>DataSerializer</code>.
-   * 
+   *
    * @since GemFire 6.5
    */
   public Object/* EventID */ getEventId() {
@@ -3117,7 +3117,7 @@ public abstract class DataSerializer {
 
   /**
    * For internal use only. Sets the context of this <code>DataSerializer</code>.
-   * 
+   *
    * @since GemFire 6.5
    */
   public void setContext(Object/* ClientProxyMembershipID */ context) {
@@ -3126,7 +3126,7 @@ public abstract class DataSerializer {
 
   /**
    * For internal use only. Returns the context of this <code>DataSerializer</code>.
-   * 
+   *
    * @since GemFire 6.5
    */
   public Object/* ClientProxyMembershipID */ getContext() {
@@ -3136,12 +3136,12 @@ public abstract class DataSerializer {
   /**
    * maps a class to its enum constants.
    */
-  private final static ConcurrentMap knownEnums = new ConcurrentHashMap();
+  private static final ConcurrentMap knownEnums = new ConcurrentHashMap();
 
   /**
    * gets the enum constants for the given class. {@link Class#getEnumConstants()} uses reflection,
    * so we keep around the class to enumConstants mapping in the {@link #knownEnums} map
-   * 
+   *
    * @param <E>
    * @param clazz
    * @return enum constants for the given class
@@ -3161,7 +3161,7 @@ public abstract class DataSerializer {
    * serializes the ordinal byte, so for backward compatibility new enum constants should only be
    * added to the end of the enum type.<br />
    * Example: <code>DataSerializer.writeEnum(DAY_OF_WEEK.SUN, out);</code>
-   * 
+   *
    * @see #readEnum(Class, DataInput)
    * @since GemFire 6.5
    * @throws IOException
@@ -3188,7 +3188,7 @@ public abstract class DataSerializer {
    * backward compatibility new enum constants should only be added to the end of the enum
    * type.<br />
    * Example: <code>DAY_OF_WEEK d = DataSerializer.readEnum(DAY_OF_WEEK.class, in);</code>
-   * 
+   *
    * @since GemFire 6.5
    * @see #writeEnum(Enum, DataOutput)
    * @throws IOException A problem occurs while writing to <code>out</code>
@@ -3212,4 +3212,3 @@ public abstract class DataSerializer {
     return getEnumConstantsForClass(clazz)[ordinal];
   }
 }
-

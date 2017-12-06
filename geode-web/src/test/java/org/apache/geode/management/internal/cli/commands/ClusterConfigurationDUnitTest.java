@@ -30,13 +30,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
@@ -45,7 +45,7 @@ public class ClusterConfigurationDUnitTest {
   public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -63,7 +63,7 @@ public class ClusterConfigurationDUnitTest {
   public void testStartServerAndExecuteCommands() throws Exception {
     MemberVM locator = startupRule.startLocatorVM(0);
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
       gfsh.connectAndVerify(locator);
     }
@@ -72,26 +72,27 @@ public class ClusterConfigurationDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
     // create regions, index and asyncEventQueue
-    gfsh.executeAndVerifyCommand("create region --name=R1 --type=REPLICATE");
-    gfsh.executeAndVerifyCommand("create region --name=R2 --type=PARTITION");
-    gfsh.executeAndVerifyCommand("create index --name=ID1 --expression=AAPL --region=R1");
+    gfsh.executeAndAssertThat("create region --name=R1 --type=REPLICATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --name=R2 --type=PARTITION").statusIsSuccess();
+    gfsh.executeAndAssertThat("create index --name=ID1 --expression=AAPL --region=R1")
+        .statusIsSuccess();
     createAsyncEventQueue("Q1");
 
     MemberVM server3 = startupRule.startServerVM(3, locator.getPort());
 
-    gfsh.executeAndVerifyCommand("describe region --name=R1");
+    gfsh.executeAndAssertThat("describe region --name=R1").statusIsSuccess();
     verifyContainsAllServerNames(gfsh.getGfshOutput(), server1.getName(), server2.getName(),
         server3.getName());
 
-    gfsh.executeAndVerifyCommand("describe region --name=R2");
+    gfsh.executeAndAssertThat("describe region --name=R2").statusIsSuccess();
     verifyContainsAllServerNames(gfsh.getGfshOutput(), server1.getName(), server2.getName(),
         server3.getName());
 
-    gfsh.executeAndVerifyCommand("list indexes");
+    gfsh.executeAndAssertThat("list indexes").statusIsSuccess();
     verifyContainsAllServerNames(gfsh.getGfshOutput(), server1.getName(), server2.getName(),
         server3.getName());
 
-    gfsh.executeAndVerifyCommand("list async-event-queues");
+    gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
     verifyContainsAllServerNames(gfsh.getGfshOutput(), server1.getName(), server2.getName(),
         server3.getName());
   }
@@ -121,7 +122,7 @@ public class ClusterConfigurationDUnitTest {
     FileUtils.writeByteArrayToFile(jarFile, jarBytes);
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
     csb.addOption(CliStrings.JAR, jarFile.getAbsolutePath());
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     csb = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
     csb.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, queueName);
@@ -139,6 +140,6 @@ public class ClusterConfigurationDUnitTest {
     csb.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT, "true");
     csb.addOption(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL, "true");
 
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
   }
 }

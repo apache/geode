@@ -16,17 +16,16 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
-import org.apache.geode.internal.*;
 import java.io.*;
-// import java.net.*;
-// import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.*;
 
 /**
  * A message that is sent in response to a {@link VersionInfoRequest}.
- * 
+ *
  * @since GemFire 3.5
  */
 public class VersionInfoResponse extends AdminResponse {
@@ -37,8 +36,7 @@ public class VersionInfoResponse extends AdminResponse {
   /**
    * Returns a <code>VersionInfoResponse</code> that will be returned to the specified recipient.
    */
-  public static VersionInfoResponse create(DistributionManager dm,
-      InternalDistributedMember recipient) {
+  public static VersionInfoResponse create(DM dm, InternalDistributedMember recipient) {
     VersionInfoResponse m = new VersionInfoResponse();
     m.setRecipient(recipient);
     m.verInfo = GemFireVersion.asString();

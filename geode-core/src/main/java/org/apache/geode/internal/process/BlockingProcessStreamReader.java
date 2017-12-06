@@ -27,9 +27,9 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * Reads the output stream of a Process. Default implementation performs blocking per-line reading
  * of the InputStream.
- * 
+ *
  * Extracted from ProcessStreamReader.
- * 
+ *
  * @since GemFire 8.2
  */
 public class BlockingProcessStreamReader extends ProcessStreamReader {

@@ -50,8 +50,8 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This is for testing remote Cluster
- * 
- * 
+ *
+ *
  */
 
 @Category(DistributedTest.class)
@@ -128,7 +128,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
 
   /**
    * Checks Proxy GatewaySender
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -166,7 +166,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
 
   /**
    * stops a gateway sender
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -186,7 +186,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
 
   /**
    * start a gateway sender
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -206,7 +206,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
 
   /**
    * Checks whether a GatewayReceiverMBean is created or not
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -224,7 +224,7 @@ public class TestRemoteClusterDUnitTest extends ManagementTestBase {
 
   /**
    * Checks whether a GatewayReceiverMBean is created or not
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")

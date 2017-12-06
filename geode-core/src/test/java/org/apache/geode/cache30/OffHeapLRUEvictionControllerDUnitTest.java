@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests the basic functionality of the lru eviction controller and its statistics using off-heap
  * regions.
- * 
+ *
  * @since Geode 1.0
  */
 @Category(DistributedTest.class)

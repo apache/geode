@@ -14,21 +14,22 @@
  */
 package org.apache.geode.disttx;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
+import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.TXExpiryJUnitTest;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Same tests as that of {@link TXExpiryJUnitTest} after setting "distributed-transactions" property

@@ -21,14 +21,14 @@ import org.apache.geode.management.internal.FederationComponent;
 /**
  * Internal aggregate handlers could(they can be independent of this interface also as long as they
  * adhere to ProxyAggregator contract) implement this interface.
- * 
- * 
+ *
+ *
  */
 
 public interface AggregateHandler {
 
   /**
-   * 
+   *
    * @param objectName name of the proxy object
    * @param interfaceClass interface class of the proxy object.
    * @param proxyObject actual reference of the proxy.
@@ -38,7 +38,7 @@ public interface AggregateHandler {
       FederationComponent newVal);
 
   /**
-   * 
+   *
    * @param objectName name of the proxy object
    * @param interfaceClass interface class of the proxy object.
    * @param proxyObject actual reference of the proxy.
@@ -48,7 +48,7 @@ public interface AggregateHandler {
       FederationComponent oldVal);
 
   /**
-   * 
+   *
    * @param objectName name of the proxy object
    * @param interfaceClass interface class of the proxy object.
    * @param proxyObject actual reference of the proxy.
@@ -59,7 +59,7 @@ public interface AggregateHandler {
       FederationComponent newVal, FederationComponent oldVal);
 
   /**
-   * 
+   *
    * @param objectName name of the proxy object
    * @param interfaceClass interface class of the proxy object.
    * @param proxyObject actual reference of the proxy.

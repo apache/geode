@@ -23,13 +23,13 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * This command is currently no-op
- * 
+ *
  * "quit" is a command with no arguments: quit\r\n<br/>
  * <br/>
- * 
+ *
  * Upon receiving this command, the server closes the connection. However, the client may also
  * simply close the connection when it no longer needs it, without issuing this command.
- * 
+ *
  *
  */
 public class QuitCommand extends AbstractCommand {

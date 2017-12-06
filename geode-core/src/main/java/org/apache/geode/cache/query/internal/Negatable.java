@@ -20,4 +20,3 @@ package org.apache.geode.cache.query.internal;
 public interface Negatable {
   public void negate();
 }
-

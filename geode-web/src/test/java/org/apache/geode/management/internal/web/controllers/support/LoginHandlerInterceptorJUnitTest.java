@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract and
  * functionality of the Spring HandlerInterceptor, LoginHandlerInterceptor class.
- * 
+ *
  * @see org.jmock.Mockery
  * @see org.junit.Assert
  * @see org.junit.Test

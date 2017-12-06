@@ -15,19 +15,19 @@
 package org.apache.geode.test.golden;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.process.ProcessWrapper;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
-import org.junit.After;
-import org.junit.Before;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.junit.After;
+import org.junit.Before;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.test.process.ProcessWrapper;
 
 /**
  * Test framework for launching processes and comparing output to expected golden output.
@@ -68,7 +68,7 @@ public abstract class GoldenTestCase {
 
   /**
    * Override this for additional set up.
-   * 
+   *
    * @throws Exception
    */
   public void subSetUp() throws Exception {
@@ -77,7 +77,7 @@ public abstract class GoldenTestCase {
 
   /**
    * Override this for additional tear down after destroying all processes and printing output.
-   * 
+   *
    * @throws Exception
    */
   public void subTearDown() throws Exception {
@@ -104,7 +104,7 @@ public abstract class GoldenTestCase {
   /**
    * Returns an array of expected problem strings. Without overriding this, any line with warning,
    * error or severe will cause the test to fail. By default, null is returned.
-   * 
+   *
    * (see PartitionedRegionTest which expects a WARNING log message)
    */
   protected String[] expectedProblemLines() {

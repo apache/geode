@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
- * 
+ *
  *
  */
 public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
@@ -43,7 +43,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   /**
    * default constructor
-   * 
+   *
    */
   public ClientDataSerializerMessage() {
 
@@ -57,7 +57,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   /**
    * Returns a <code>Message</code> generated from the fields of this
    * <code>ClientDataSerializerMessage</code>.
-   * 
+   *
    * @param latestValue byte[] containing the latest value to use. This could be the original value
    *        if conflation is not enabled, or it could be a conflated value if conflation is enabled.
    * @return a <code>Message</code> generated from the fields of this
@@ -160,7 +160,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   /**
    * Writes an object to a <code>Datautput</code>.
-   * 
+   *
    * @throws IOException If this serializer cannot write an object to <code>out</code>.
    * @see #fromData
    */
@@ -179,7 +179,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   /**
    * Reads an object from a <code>DataInput</code>.
-   * 
+   *
    * @throws IOException If this serializer cannot read an object from <code>in</code>.
    * @throws ClassNotFoundException If the class for an object being restored cannot be found.
    * @see #toData

@@ -59,7 +59,7 @@ public class UpdateAttributesProcessor {
   /**
    * If true then sender is telling receiver to remove the sender's profile. No profile exchange is
    * needed in this case.
-   * 
+   *
    * @since GemFire 5.7
    */
   private boolean removeProfile = false;
@@ -72,7 +72,7 @@ public class UpdateAttributesProcessor {
 
   /**
    * Creates a new instance of UpdateAttributesProcessor
-   * 
+   *
    * @since GemFire 5.7
    */
   public UpdateAttributesProcessor(DistributionAdvisee da, boolean removeProfile) {
@@ -90,7 +90,7 @@ public class UpdateAttributesProcessor {
 
   /**
    * Distribute with optional exchange of profiles but do not create new profile version.
-   * 
+   *
    * @param exchangeProfiles true if we want to receive profile replies
    */
   public void distribute(boolean exchangeProfiles) {
@@ -186,7 +186,7 @@ public class UpdateAttributesProcessor {
 
     /**
      * Registers this processor as a membership listener and returns a set of the current members.
-     * 
+     *
      * @return a Set of the current members
      * @since GemFire 5.7
      */
@@ -202,7 +202,7 @@ public class UpdateAttributesProcessor {
 
     /**
      * Unregisters this processor as a membership listener
-     * 
+     *
      * @since GemFire 5.7
      */
     @Override
@@ -217,7 +217,7 @@ public class UpdateAttributesProcessor {
 
     /**
      * If this processor being used by controller then return ALL members; otherwise defer to super.
-     * 
+     *
      * @return a Set of the current members
      * @since GemFire 5.7
      */
@@ -427,7 +427,7 @@ public class UpdateAttributesProcessor {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.distributed.internal.ReplyMessage#getInlineProcess()
      * ProfileReplyMessages must be processed in-line and not in a pool to keep partitioned region
      * bucket profile exchange from swamping the high priority pool and not allowing other profile
@@ -442,7 +442,7 @@ public class UpdateAttributesProcessor {
   }
   /**
    * Used to return multiple profiles
-   * 
+   *
    * @since GemFire 5.7
    */
   public static class ProfilesReplyMessage extends ReplyMessage {
@@ -519,7 +519,7 @@ public class UpdateAttributesProcessor {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.distributed.internal.ReplyMessage#getInlineProcess()
      * ProfilesReplyMessages must be processed in-line and not in a pool to keep partitioned region
      * bucket profile exchange from swamping the high priority pool and not allowing other profile

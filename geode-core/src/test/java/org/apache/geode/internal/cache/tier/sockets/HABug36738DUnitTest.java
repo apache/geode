@@ -19,7 +19,6 @@ import static org.awaitility.Awaitility.*;
 import static org.awaitility.Duration.*;
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,6 +38,7 @@ import org.apache.geode.internal.cache.ha.HAHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**

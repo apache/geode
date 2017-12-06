@@ -27,7 +27,7 @@ import org.apache.geode.internal.util.StopWatch;
  * Reads the InputStream per-byte instead of per-line. Uses BufferedReader.ready() to ensure that
  * calls to read() will not block. Uses continueReadingMillis to continue reading after the Process
  * terminates in order to fully read the last of that Process' output (such as a stack trace).
- * 
+ *
  * @since GemFire 8.2
  */
 class NonBlockingProcessStreamReader extends ProcessStreamReader {

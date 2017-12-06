@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
 import java.util.*;
+
+import org.apache.geode.cache.*;
 import org.apache.geode.internal.offheap.Releasable;
 
 /**
@@ -27,7 +28,7 @@ public class TXEvent implements TransactionEvent, Releasable {
 
   private final TXStateInterface localTxState;
   private List events;
-  final private Cache cache;
+  private final Cache cache;
 
   TXEvent(TXStateInterface localTxState, Cache cache) {
     this.localTxState = localTxState;

@@ -34,7 +34,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class CreateRegion extends BaseCommand {
 
-  private final static CreateRegion singleton = new CreateRegion();
+  private static final CreateRegion singleton = new CreateRegion();
 
   public static Command getCommand() {
     return singleton;

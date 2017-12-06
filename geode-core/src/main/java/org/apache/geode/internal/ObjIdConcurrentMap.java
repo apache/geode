@@ -75,7 +75,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @since GemFire 1.5
  * @param <V> the type of mapped values
- * 
+ *
  *        Keys on this map are a primitive "int".
  */
 public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
@@ -168,7 +168,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
 
   /**
    * Returns the segment that should be used for key with given hash
-   * 
+   *
    * @param hash the hash code for the key
    * @return the segment
    */
@@ -269,7 +269,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     /**
      * The load factor for the hash table. Even though this value is same for all segments, it is
      * replicated to avoid needing links to outer object.
-     * 
+     *
      * @serial
      */
     final float loadFactor;
@@ -809,7 +809,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * identical in functionality to {@link #containsValue}, and exists solely to ensure full
    * compatibility with class {@link java.util.Hashtable}, which supported this method prior to
    * introduction of the Java Collections framework.
-   * 
+   *
    * @param value a value to search for
    * @return <tt>true</tt> if and only if some key maps to the <tt>value</tt> argument in this table
    *         as determined by the <tt>equals</tt> method; <tt>false</tt> otherwise
@@ -936,7 +936,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   /*
    * public Set<K> keySet() { Set<K> ks = keySet; return (ks != null) ? ks : (keySet = new
    * KeySet()); }
-   * 
+   *
    * /** Returns a {@link Collection} view of the values contained in this map. The collection is
    * backed by the map, so changes to the map are reflected in the collection, and vice-versa. The
    * collection supports element removal, which removes the corresponding mapping from this map, via
@@ -952,7 +952,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   /*
    * public Collection<V> values() { Collection<V> vs = values; return (vs != null) ? vs : (values =
    * new Values()); }
-   * 
+   *
    * /** Returns a {@link Set} view of the mappings contained in this map. The set is backed by the
    * map, so changes to the map are reflected in the set, and vice-versa. The set supports element
    * removal, which removes the corresponding mapping from the map, via the
@@ -967,20 +967,20 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   /*
    * public Set<Map.Entry<K,V>> entrySet() { Set<Map.Entry<K,V>> es = entrySet; return (es != null)
    * ? es : (entrySet = new EntrySet()); }
-   * 
+   *
    * /** Returns an enumeration of the keys in this table.
    *
    * @return an enumeration of the keys in this table
-   * 
+   *
    * @see #keySet()
    */
   /*
    * public Enumeration<K> keys() { return new KeyIterator(); }
-   * 
+   *
    * /** Returns an enumeration of the values in this table.
    *
    * @return an enumeration of the values in this table
-   * 
+   *
    * @see #values()
    */
   /*
@@ -1052,7 +1052,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   /*
    * class KeyIterator extends HashIterator implements Iterator<K>, Enumeration<K> { public K next()
    * { return super.nextEntry().key; } public K nextElement() { return super.nextEntry().key; } }
-   * 
+   *
    * class ValueIterator extends HashIterator implements Iterator<V>, Enumeration<V> { public V
    * next() { return super.nextEntry().value; } public V nextElement() { return
    * super.nextEntry().value; } }
@@ -1150,20 +1150,20 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   /*
    * class EntryIterator extends HashIterator implements Iterator<Entry<V>> { public Entry<V> next()
    * { HashEntry<V> e = super.nextEntry(); return new WriteThroughEntry(e.key, e.value); } }
-   * 
+   *
    * class KeySet extends AbstractSet<K> { public Iterator<K> iterator() { return new KeyIterator();
    * } public int size() { return ObjIdConcurrentMap.this.size(); } public boolean isEmpty() {
    * return ObjIdConcurrentMap.this.isEmpty(); } public boolean contains(Object o) { return
    * ObjIdConcurrentMap.this.containsKey(o); } public boolean remove(Object o) { return
    * ObjIdConcurrentMap.this.remove(o) != null; } public void clear() {
    * ObjIdConcurrentMap.this.clear(); } }
-   * 
+   *
    * class Values extends AbstractCollection<V> { public Iterator<V> iterator() { return new
    * ValueIterator(); } public int size() { return ObjIdConcurrentMap.this.size(); } public boolean
    * isEmpty() { return ObjIdConcurrentMap.this.isEmpty(); } public boolean contains(Object o) {
    * return ObjIdConcurrentMap.this.containsValue(o); } public void clear() {
    * ObjIdConcurrentMap.this.clear(); } }
-   * 
+   *
    * class EntrySet extends AbstractSet<Map.Entry<K,V>> { public Iterator<Map.Entry<K,V>> iterator()
    * { return new EntryIterator(); } public boolean contains(Object o) { if (!(o instanceof
    * Map.Entry)) return false; Map.Entry<?,?> e = (Map.Entry<?,?>)o; V v =
@@ -1178,7 +1178,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
 
   /**
    * Save the state of the <tt>ConcurrentHashMap</tt> instance to a stream (i.e., serialize it).
-   * 
+   *
    * @param s the stream
    * @serialData the key (Object) and value (Object) for each key-value mapping, followed by a null
    *             pair. The key-value mappings are emitted in no particular order.
@@ -1207,7 +1207,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
 
   /**
    * Reconstitute the <tt>ConcurrentHashMap</tt> instance from a stream (i.e., deserialize it).
-   * 
+   *
    * @param s the stream
    */
   @SuppressWarnings("unchecked")

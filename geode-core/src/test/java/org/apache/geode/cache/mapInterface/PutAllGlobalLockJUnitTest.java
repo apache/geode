@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import org.apache.geode.test.junit.categories.DLockTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,6 +34,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category({IntegrationTest.class, DLockTest.class})

@@ -14,20 +14,20 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.EventID;
 
 /**
  * Does a region clear (or create) on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class ClearOp {
   /**
    * Does a region clear on a server using connections from the given pool to communicate with the
    * server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the clear on
    * @param eventId the event id for this clear
@@ -42,7 +42,7 @@ public class ClearOp {
   /**
    * Does a region clear on a server using the given connection from the given pool to communicate
    * with the server.
-   * 
+   *
    * @param con the connection to use to send to the server
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the clear on

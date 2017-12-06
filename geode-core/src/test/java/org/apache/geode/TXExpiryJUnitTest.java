@@ -14,6 +14,17 @@
  */
 package org.apache.geode;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.*;
@@ -23,17 +34,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Tests transaction expiration functionality
@@ -198,9 +198,9 @@ public class TXExpiryJUnitTest {
         } else {
           checkVal = "conflictVal";
           final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
-          TXStateProxy tx = txMgrImpl.internalSuspend();
+          TXStateProxy tx = txMgrImpl.pauseTransaction();
           exprReg.put("key0", checkVal);
-          txMgrImpl.internalResume(tx);
+          txMgrImpl.unpauseTransaction(tx);
           try {
             this.txMgr.commit();
             fail("Expected CommitConflictException!");

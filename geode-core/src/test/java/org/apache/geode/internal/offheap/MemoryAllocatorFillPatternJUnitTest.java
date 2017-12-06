@@ -14,17 +14,18 @@
  */
 package org.apache.geode.internal.offheap;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
+import static com.googlecode.catchexception.CatchException.catchException;
+import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
@@ -78,7 +79,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
 
   /**
    * This tests the fill pattern for a single tiny Chunk allocation.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -88,7 +89,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
 
   /**
    * This tests the fill pattern for a single huge Chunk allocation.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -143,7 +144,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
   /**
    * This tests that fill validation is working properly on newly created fragments after a
    * defragmentation.
-   * 
+   *
    * @throws Exception
    */
   @Test

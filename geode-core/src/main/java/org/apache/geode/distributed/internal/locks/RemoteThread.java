@@ -71,7 +71,7 @@ public class RemoteThread {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -86,4 +86,3 @@ public class RemoteThread {
   }
 
 }
-

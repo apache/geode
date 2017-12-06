@@ -14,6 +14,8 @@
  */
 package org.apache.geode.admin;
 
+import java.util.Properties;
+
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
 import org.apache.geode.distributed.DistributedSystem;
@@ -23,8 +25,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LocalLogWriter;
-
-import java.util.Properties;
 
 /**
  * Factory for creating GemFire administration entities.
@@ -83,12 +83,12 @@ public class AdminDistributedSystemFactory {
    * Once it has been enabled be careful to only use GemFire APIs from the
    * <code>org.apache.geode.admin</code> package. In particular do not create a
    * {@link org.apache.geode.cache.Cache} or a normal {@link DistributedSystem}.
-   * 
+   *
    * @param adminOnly <code>true</code> if this VM should be limited to administration APIs;
    *        <code>false</code> if this VM should allow all GemFire APIs.
    * @throws IllegalStateException if a {@link DistributedSystem} or {@link AdminDistributedSystem}
    *         connection already exists.
-   * 
+   *
    * @since GemFire 5.7
    */
   public static void setEnableAdministrationOnly(boolean adminOnly) {
@@ -145,4 +145,3 @@ public class AdminDistributedSystemFactory {
   }
 
 }
-

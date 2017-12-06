@@ -23,4 +23,3 @@ package org.apache.geode.rest.internal.web.controllers.support;
 public enum UpdateOp {
   CAS, PUT, REPLACE
 }
-

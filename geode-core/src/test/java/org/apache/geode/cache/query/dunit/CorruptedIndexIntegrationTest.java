@@ -168,6 +168,61 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
   }
 
   @Test
+  public void putMustSucceedButShouldNotbeAddedtoIndexWhenTheRangeIndexIsCorrupted()
+      throws Exception {
+    String regionName = "portfolio";
+    String INDEX_NAME = "key_index1";
+
+    PartitionAttributesFactory partitionAttributes = new PartitionAttributesFactory();
+    partitionAttributes.setTotalNumBuckets(1);
+
+    Cache cache = getCache();
+    Region region = cache.createRegionFactory().setDataPolicy(DataPolicy.PARTITION)
+        .setPartitionAttributes(partitionAttributes.create()).create(regionName);
+
+    Portfolio p = new Portfolio(1, 2);
+    HashMap map1 = new HashMap();
+    map1.put("SUN", 1);
+    map1.put("IBM", 2);
+    map1.put("AOL", 4);
+    p.positions = map1;
+    region.put(1, p);
+
+    QueryService queryService = cache.getQueryService();
+    Index keyIndex1 = queryService.createIndex(INDEX_NAME, "positions[*]", "/portfolio");
+
+    Portfolio p2 = new Portfolio(3, 4);
+    HashMap map2 = new HashMap();
+    map2.put("APPL", 3);
+    map2.put("AOL", "hello");
+    p2.positions = map2;
+    region.put(2, p2);
+
+    Portfolio p3 = new Portfolio(5, 6);
+    HashMap map3 = new HashMap();
+    map3.put("APPL", 4);
+    map3.put("AOL", "world");
+    p3.positions = map3;
+    region.put(3, p3);
+
+    assertEquals("Put must be successful", 3, region.size());
+    assertEquals("Index must be invalid at this point ", false, keyIndex1.isValid());
+    assertEquals("No new entries must be added to the corrupted index", 4,
+        keyIndex1.getStatistics().getNumberOfValues());
+
+    QueryObserverImpl observer = new QueryObserverImpl();
+    QueryObserverHolder.setInstance(observer);
+
+    SelectResults results = (SelectResults) queryService
+        .newQuery(
+            "select * from /portfolio p where p.positions['AOL'] = 'hello' OR p.positions['IBM'] = 2")
+        .execute();
+    assertEquals("Correct results expected from the query execution ", 2, results.size());
+    assertEquals("No index must be used while executing the query ", 0,
+        observer.indexesUsed.size());
+  }
+
+  @Test
   public void rangeIndexCreationMustFailIfRegionEntriesAreNotCompatible() throws Exception {
     String regionName = "portfolio";
     String INDEX_NAME = "key_index1";

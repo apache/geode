@@ -34,18 +34,18 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * A Partitioned Region specific message whose reply guarantees that all operations have completed
  * for a given Partitioned Region's bucket.
- * 
+ *
  * <p>
  * Currently this message does not support conserve-sockets=false, that is it only flushes the
  * shared communication channels.
  * </p>
- * 
+ *
  * <p>
  * This messages implementation is unique in that it uses another instance of itself as the reply.
  * This was to leverage the fact that the message is a
  * {@link org.apache.geode.distributed.internal.SerialDistributionMessage}.
  * </p>
- * 
+ *
  * @since GemFire 5.1
  */
 public class FlushMessage extends SerialDistributionMessage implements MessageWithReply {
@@ -109,7 +109,7 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
    * should be complete. Use this from a host of a backup bucket (aka secondary) when the update
    * operations originating from the primary {@link Scope#DISTRIBUTED_NO_ACK do not require an
    * acknowldgement}
-   * 
+   *
    * @param primary
    * @param p
    * @param bucketId

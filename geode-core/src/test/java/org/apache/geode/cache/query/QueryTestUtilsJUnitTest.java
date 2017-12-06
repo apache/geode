@@ -35,8 +35,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * A sample test class using the QueryTestUtils
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class QueryTestUtilsJUnitTest {

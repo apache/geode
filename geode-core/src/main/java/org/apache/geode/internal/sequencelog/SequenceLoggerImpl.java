@@ -14,15 +14,15 @@
  */
 package org.apache.geode.internal.sequencelog;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
 
 /**
  *

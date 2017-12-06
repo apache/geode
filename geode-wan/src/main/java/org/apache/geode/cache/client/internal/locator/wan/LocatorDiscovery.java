@@ -14,6 +14,11 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -23,15 +28,11 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.*;
 import org.apache.geode.internal.tcp.ConnectionException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class represent a runnable task which exchange the locator information with local
  * locators(within the site) as well as remote locators (across the site)
- * 
+ *
  * @since GemFire 7.0
  */
 public class LocatorDiscovery {

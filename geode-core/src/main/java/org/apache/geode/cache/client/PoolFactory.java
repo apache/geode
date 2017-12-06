@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache.client;
 
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache.*; // for javadocs
-import org.apache.geode.cache.query.*; // for javadocs
 
 
 /**
@@ -183,7 +183,7 @@ public interface PoolFactory {
    * The default value for whether to have single hop optimisations enabled.
    * <p>
    * Current value: <code>true</code>.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static final boolean DEFAULT_PR_SINGLE_HOP_ENABLED = true;
@@ -191,7 +191,7 @@ public interface PoolFactory {
    * The default value for whether to use multiuser mode.
    * <p>
    * Current value: <code>false</code>.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static final boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
@@ -214,7 +214,7 @@ public interface PoolFactory {
    * specifies how long those operations will block waiting for a free connection before receiving
    * an {@link AllConnectionsInUseException}. If max connections is not set this setting has no
    * effect.
-   * 
+   *
    * @see #setMaxConnections(int)
    * @param connectionTimeout the connection timeout in milliseconds
    * @return a reference to <code>this</code>
@@ -229,7 +229,7 @@ public interface PoolFactory {
    * to improve the load balance.
    * <p>
    * A value of <code>-1</code> disables load conditioning
-   * 
+   *
    * @param loadConditioningInterval the connection lifetime in milliseconds
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>connectionLifetime</code> is less than
@@ -241,7 +241,7 @@ public interface PoolFactory {
    * Sets the socket buffer size for each connection made in this pool. Large messages can be
    * received and sent faster when this buffer is larger. Larger buffers also optimize the rate at
    * which servers can send events for client subscriptions.
-   * 
+   *
    * @param bufferSize the size of the socket buffers used for reading and writing on each
    *        connection in this pool.
    * @return a reference to <code>this</code>
@@ -260,7 +260,7 @@ public interface PoolFactory {
    * If <code>false</code> then connections are returned to the pool as soon as the operation being
    * done with the connection completes. This allows connections to be shared amonst multiple
    * threads keeping the number of connections down.
-   * 
+   *
    * @param threadLocalConnections if <code>true</code> then enable thread local connections.
    * @return a reference to <code>this</code>
    */
@@ -269,7 +269,7 @@ public interface PoolFactory {
   /**
    * Sets the number of milliseconds to wait for a response from a server before timing out the
    * operation and trying another server (if any are available).
-   * 
+   *
    * @param timeout number of milliseconds to wait for a response from a server
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>timeout</code> is less than <code>0</code>.
@@ -280,7 +280,7 @@ public interface PoolFactory {
    * Set the minimum number of connections to keep available at all times. When the pool is created,
    * it will create this many connections. If <code>0</code> then connections will not be made until
    * an actual operation is done that requires client-to-server communication.
-   * 
+   *
    * @param minConnections the initial number of connections this pool will create.
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>minConnections</code> is less than <code>0</code>.
@@ -291,7 +291,7 @@ public interface PoolFactory {
    * Set the max number of client to server connections that the pool will create. If all of the
    * connections are in use, an operation requiring a client to server connection will block until a
    * connection is available.
-   * 
+   *
    * @see #setFreeConnectionTimeout(int)
    * @param maxConnections the maximum number of connections in the pool. this pool will create. -1
    *        indicates that there is no maximum number of connections
@@ -305,7 +305,7 @@ public interface PoolFactory {
    * Set the amount of time a connection can be idle before expiring the connection. If the pool
    * size is greater than the minimum specified by {@link PoolFactory#setMinConnections(int)},
    * connections which have been idle for longer than the idleTimeout will be closed.
-   * 
+   *
    * @param idleTimeout The amount of time in milliseconds that an idle connection should live
    *        before expiring. -1 indicates that connections should never expire.
    * @return a reference to <code>this</code>
@@ -315,7 +315,7 @@ public interface PoolFactory {
 
   /**
    * Set the number of times to retry a request after timeout/exception.
-   * 
+   *
    * @param retryAttempts The number of times to retry a request after timeout/exception. -1
    *        indicates that a request should be tried against every available server before failing
    * @return a reference to <code>this</code>
@@ -326,10 +326,10 @@ public interface PoolFactory {
   /**
    * How often to ping servers to verify that they are still alive. Each server will be sent a ping
    * every pingInterval if there has not been any other communication with the server.
-   * 
+   *
    * These pings are used by the server to monitor the health of the client. Make sure that the
    * pingInterval is less than the maximum time between pings allowed by the cache server.
-   * 
+   *
    * @param pingInterval The amount of time in milliseconds between pings.
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>pingInterval</code> is less than or equal to
@@ -343,7 +343,7 @@ public interface PoolFactory {
    * monitor clients.
    * <p>
    * A value of <code>-1</code> disables the sending of client statistics to the server.
-   * 
+   *
    * @param statisticInterval The amount of time in milliseconds between sends of client statistics
    *        to the server.
    * @return a reference to <code>this</code>
@@ -354,7 +354,7 @@ public interface PoolFactory {
 
   /**
    * Configures the group that all servers this pool connects to must belong to.
-   * 
+   *
    * @param group the server group that this pool will connect to. If <code>null</code> or
    *        <code>""</code> then all servers will be connected to.
    * @return a reference to <code>this</code>
@@ -366,7 +366,7 @@ public interface PoolFactory {
    * and will be used to discover other running cache servers and locators. Note that if the host is
    * unknown at the time of this call the locator will still be added. When the pool is used for an
    * operation if the host is still unknown an exception will be thrown.
-   * 
+   *
    * @param host the host name or ip address that the locator is listening on.
    * @param port the port that the locator is listening on
    * @return a reference to <code>this</code>
@@ -381,7 +381,7 @@ public interface PoolFactory {
    * this client will directly connect to without consulting a server locator. Note that if the host
    * is unknown at the time of this call the server will still be added. When the pool is used for
    * an operation if the host is still unknown an exception will be thrown.
-   * 
+   *
    * @param host the host name or ip address that the server is listening on.
    * @param port the port that the server is listening on
    * @return a reference to <code>this</code>
@@ -395,7 +395,7 @@ public interface PoolFactory {
    * If set to <code>true</code> then the created pool will have server-to-client subscriptions
    * enabled. If set to <code>false</code> then all <code>Subscription*</code> attributes are
    * ignored at create time.
-   * 
+   *
    * @return a reference to <code>this</code>
    */
   public PoolFactory setSubscriptionEnabled(boolean enabled);
@@ -405,7 +405,7 @@ public interface PoolFactory {
    * no redundant copies will be kept on the servers. Otherwise an effort will be made to maintain
    * the requested number of copies of the server-to-client subscriptions. At most one copy per
    * server will be made up to the requested level.
-   * 
+   *
    * @param redundancy the number of redundant servers for this client's subscriptions.
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>redundancyLevel</code> is less than <code>-1</code>.
@@ -417,7 +417,7 @@ public interface PoolFactory {
    * for subscription events the client has received from the server. It's used to minimize
    * duplicate events. Entries that have not been modified for this amount of time are expired from
    * the list
-   * 
+   *
    * @param messageTrackingTimeout number of milliseconds to set the timeout to.
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>messageTrackingTimeout</code> is less than or equal
@@ -428,7 +428,7 @@ public interface PoolFactory {
   /**
    * Sets the interval in milliseconds to wait before sending acknowledgements to the cache server
    * for events received from the server subscriptions.
-   * 
+   *
    * @param ackInterval number of milliseconds to wait before sending event acknowledgements.
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>ackInterval</code> is less than or equal to
@@ -438,7 +438,7 @@ public interface PoolFactory {
 
   /**
    * Resets the configuration of this factory to its defaults.
-   * 
+   *
    * @return a reference to <code>this</code>
    */
   public PoolFactory reset();
@@ -446,7 +446,7 @@ public interface PoolFactory {
   /**
    * Create a new Pool for connecting a client to a set of GemFire Cache Servers. using this
    * factory's settings for attributes.
-   * 
+   *
    * @param name the name of the pool, used when connecting regions to it
    * @throws IllegalStateException if a pool with <code>name</code> already exists
    * @throws IllegalStateException if a locator or server has not been added.
@@ -471,7 +471,7 @@ public interface PoolFactory {
    * {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)
    * local-max-memory} equal to zero, no cache operations mentioned above will be routed to those
    * servers as they do not host any partitions.
-   * 
+   *
    * @return a reference to <code>this</code>
    * @since GemFire 6.5
    */
@@ -480,13 +480,13 @@ public interface PoolFactory {
   /**
    * If set to <code>true</code> then the created pool can be used by multiple authenticated users.
    * <br>
-   * 
+   *
    * This setting should only be used for applications that require the client to authenticate
    * itself with the server multiple users.
-   * 
+   *
    * <br>
    * Note: If set to true, all the client side regions must have their data-policy set to empty.
-   * 
+   *
    * @return a reference to <code>this</code>
    * @see ClientCache#createAuthenticatedView(java.util.Properties)
    * @since GemFire 6.5

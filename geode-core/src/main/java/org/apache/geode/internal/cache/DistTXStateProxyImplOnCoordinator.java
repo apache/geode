@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.geode.cache.CommitConflictException;
@@ -355,7 +355,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "DistTXStateProxyImplOnCoordinator::getRealDeal Built a new TXState: {} txMge:{} proxy {} target {}",
-            this.realDeal, this.txMgr.getDM().getId(), this, target, new Throwable());
+            this.realDeal, this.txMgr.getDM().getId(), this, target/* , new Throwable() */);
       }
       target2realDeals.put(target, (DistTXCoordinatorInterface) realDeal);
       if (logger.isDebugEnabled()) {

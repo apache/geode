@@ -22,7 +22,7 @@ package org.apache.geode.cache;
  * <p>
  * Another way to use predefined region attributes is in cache.xml by setting the refid attribute on
  * a region element or region-attributes element to the string of each value.
- * 
+ *
  * @since GemFire 6.5
  */
 public enum RegionShortcut {

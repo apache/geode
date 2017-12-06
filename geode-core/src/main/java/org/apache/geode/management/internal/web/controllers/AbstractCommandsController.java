@@ -59,7 +59,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * The AbstractCommandsController class is the abstract base class encapsulating common
  * functionality across all Management Controller classes that expose REST API web service endpoints
  * (URLs/URIs) for GemFire shell (Gfsh) commands.
- * 
+ *
  * @see org.apache.geode.management.MemberMXBean
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.springframework.http.ResponseEntity
@@ -142,7 +142,7 @@ public abstract class AbstractCommandsController {
    * Gets a reference to the platform MBeanServer running in this JVM process. The MBeanServer
    * instance constitutes a connection to the MBeanServer. This method returns a security-wrapped
    * MBean if integrated security is active.
-   * 
+   *
    * @return a reference to the platform MBeanServer for this JVM process.
    * @see java.lang.management.ManagementFactory#getPlatformMBeanServer()
    * @see javax.management.MBeanServer
@@ -160,7 +160,7 @@ public abstract class AbstractCommandsController {
    * method gets an instance of the Platform MBeanServer for this JVM process and uses it to lookup
    * the MemberMXBean for the GemFire Manager based on the ObjectName declared in the
    * DistributedSystemMXBean.getManagerObjectName() operation.
-   * 
+   *
    * @return a proxy instance to the MemberMXBean of the GemFire Manager.
    * @see #getMBeanServer()
    * @see #createMemberMXBeanForManagerUsingProxy(javax.management.MBeanServer,
@@ -190,7 +190,7 @@ public abstract class AbstractCommandsController {
   /**
    * Creates a Proxy using the Platform MBeanServer and ObjectName in order to access attributes and
    * invoke operations on the GemFire Manager's MemberMXBean.
-   * 
+   *
    * @param server a reference to this JVM's Platform MBeanServer.
    * @param managingMemberObjectName the ObjectName of the GemFire Manager's MemberMXBean registered
    *        in the Platform MBeanServer.
@@ -207,7 +207,7 @@ public abstract class AbstractCommandsController {
   /**
    * Gets the environment setup during this HTTP/command request for the current command process
    * execution.
-   * 
+   *
    * @return a mapping of environment variables to values.
    * @see LoginHandlerInterceptor#getEnvironment()
    */
@@ -224,7 +224,7 @@ public abstract class AbstractCommandsController {
    * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
    * Gfsh performs validation of the command during parsing before sending the command to the
    * Manager for processing.
-   * 
+   *
    * @param command a String value containing a valid command String as would be entered by the user
    *        in Gfsh.
    * @param environment a Map containing any environment configuration settings to be used by the

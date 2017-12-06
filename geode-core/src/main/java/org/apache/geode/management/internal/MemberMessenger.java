@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal;
 
+import java.util.Set;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -24,15 +26,13 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.admin.remote.AlertLevelChangeMessage;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 
-import java.util.Set;
-
 /**
  * This class will act as a messenger from manager to members for various operations.
- * 
+ *
  * To start with its is designed to Manager start stop details, change alert level.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class MemberMessenger {
 

@@ -30,14 +30,14 @@ import org.apache.geode.management.internal.ManagementConstants;
 /**
  * Bridge for the Distributed lock service. It provides an aggregated view of a lock service which
  * might be present in multiple members.
- * 
+ *
  * Proxies are added as and when proxies are received by Federation framework.
- * 
+ *
  * Each method which access all the proxies to gather data from them creates an Iterator. Iterates
  * over them and gather data. Creating multiple iterator on each method call is a concern and a
  * better way needs to be introduced.
- * 
- * 
+ *
+ *
  */
 public class DistributedLockServiceBridge {
 
@@ -63,7 +63,7 @@ public class DistributedLockServiceBridge {
 
   /**
    * Public constructor
-   * 
+   *
    * @param objectName name of the MBean
    * @param proxy reference to the proxy
    */
@@ -78,7 +78,7 @@ public class DistributedLockServiceBridge {
 
   /**
    * Add a proxy to the proxy map
-   * 
+   *
    * @param objectName name of the MBean
    * @param proxy reference to the proxy
    */
@@ -90,7 +90,7 @@ public class DistributedLockServiceBridge {
   }
 
   /**
-   * 
+   *
    * @param objectName name of the MBean
    * @param proxy reference to the proxy
    * @return true if no proxies left for this aggregator to work on
@@ -111,7 +111,7 @@ public class DistributedLockServiceBridge {
 
 
   /**
-   * 
+   *
    * @return member name of the grantor
    */
   public String fetchGrantorMember() {
@@ -126,7 +126,7 @@ public class DistributedLockServiceBridge {
   }
 
   /**
-   * 
+   *
    * @return number of members using this lock service
    */
   public int getMemberCount() {
@@ -135,7 +135,7 @@ public class DistributedLockServiceBridge {
   }
 
   /**
-   * 
+   *
    * @return list of members using this lock service
    */
   public String[] getMemberNames() {
@@ -151,7 +151,7 @@ public class DistributedLockServiceBridge {
   }
 
   /**
-   * 
+   *
    * @return name of the lock service
    */
   public String getName() {
@@ -167,7 +167,7 @@ public class DistributedLockServiceBridge {
   }
 
   /**
-   * 
+   *
    * @return lists the name of locks held by this member's threads
    */
   public String[] listHeldLocks() {
@@ -191,7 +191,7 @@ public class DistributedLockServiceBridge {
   }
 
   /**
-   * 
+   *
    * @return a map of object name and thread name if this member holds lock or null/none
    */
   public Map<String, String> listThreadsHoldingLock() {

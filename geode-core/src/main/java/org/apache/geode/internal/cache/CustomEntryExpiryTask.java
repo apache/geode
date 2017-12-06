@@ -18,7 +18,7 @@ import org.apache.geode.cache.ExpirationAttributes;
 
 /**
  * Remembers the expiration attributes returned from the customer's CustomExpiry callback, if any.
- * 
+ *
  * @since GemFire 8.0
  *
  */

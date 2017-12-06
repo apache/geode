@@ -18,21 +18,21 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ExternalizableDSFID;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ExternalizableDSFID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.internal.util.VersionedArrayList;
 
@@ -166,7 +166,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
 
   /**
    * Returns a the list of nodes that participate in the PartitionedRegion
-   * 
+   *
    * @return a copy of the list of nodes that the caller is free to modify
    */
   Set<Node> getNodes() {
@@ -178,7 +178,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
 
   /**
    * Return a safe, light weight size of the nodes
-   * 
+   *
    * @return number of VMs that participate in the PartitionedRegion
    */
   int getNumberOfNodes() {
@@ -326,7 +326,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   /**
    * This method returns true is a node has taken a responsibility of destroying the
    * PartitionedRegion globally
-   * 
+   *
    * @return true, if a node has taken a responsibility of destroying the PartitionedRegion globally
    *         else it returns false
    */

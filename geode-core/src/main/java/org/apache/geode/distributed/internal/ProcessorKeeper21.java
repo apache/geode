@@ -14,20 +14,21 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.internal.*;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.geode.internal.*;
 
 /**
  * A message processor class typically creates an instance of ProcessorKeeper and holds it in a
  * static variable. In the constructor of the processor class, do this:
- * 
+ *
  * <code>processorId = keeper.put()</code>
- * 
+ *
  * When a message is processed, do this:
- * 
+ *
  * <code>processor = <processorclass>.keeper().get(processorId);
- * 
+ *
  * <p>
  * Processor ids are always greater than 0.
  * </p>
@@ -74,7 +75,7 @@ public class ProcessorKeeper21 {
    * Save the processor in this keeper, generate an id for the processor, and return that id so it
    * can be used to retrieve the processor later. This keeper keeps a weak reference to the
    * processor.
-   * 
+   *
    * @param processor the processor to keep
    * @return the unique id for processor
    */

@@ -261,7 +261,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   /**
    * For Test use only.
-   * 
+   *
    * @return CQ Results Cache.
    */
   public Set<Object> getCqResultKeyCache() {
@@ -278,7 +278,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * Returns parameterized query used by the server. This method replaces Region name with $1 and if
    * type is not specified in the query, looks for type from cqattributes and appends into the
    * query.
-   * 
+   *
    * @return String modified query.
    */
   private Query constructServerSideQuery() throws QueryException {
@@ -299,7 +299,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   /**
    * Returns if the passed key is part of the CQs result set. This method needs to be called once
    * the CQ result key caching is completed (cqResultsCacheInitialized is true).
-   * 
+   *
    * @return true if key is in the Results Cache.
    */
   public boolean isPartOfCqResult(Object key) {
@@ -394,7 +394,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   /**
    * Returns the size of the CQ Result key cache.
-   * 
+   *
    * @return size of CQ Result key cache.
    */
   public int getCqResultKeysSize() {
@@ -481,7 +481,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   /**
    * Get CacheClientNotifier of this CqQuery.
-   * 
+   *
    * @return CacheClientNotifier
    */
   public CacheClientNotifier getCacheClientNotifier() {

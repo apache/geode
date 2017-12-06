@@ -74,7 +74,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   /**
    * If true then someone explicitly added region attributes to this region
-   * 
+   *
    * @since GemFire 6.5
    */
   private boolean hasAttributes;
@@ -101,7 +101,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   /**
    * {@link ExtensionPoint} to {@link Region}.
-   * 
+   *
    * @since GemFire 8.1
    */
   private final SimpleExtensionPoint<Region<?, ?>> extensionPoint =
@@ -259,7 +259,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   /**
    * Called by CacheXmlParser to add the IndexCreationData object to the list. It is called when
    * functional element is encounetered
-   * 
+   *
    * @param icd
    */
   void addIndexData(IndexCreationData icd) {

@@ -15,12 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
+import java.io.Serializable;
+
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
-
 import org.apache.geode.internal.cache.lru.LRUStatistics;
-
-import java.io.Serializable;
 
 /**
  * Class <code>RegionStatus</code> provides information about <code>Region</code>s. This class is

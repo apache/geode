@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -24,10 +24,6 @@ import static org.junit.Assert.fail;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.data.Instrument;
-import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,9 +36,13 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexMaintenanceException;
+import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.data.Instrument;
 import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
+import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -215,7 +215,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
   /**
    * Test index object's comapreTo Function implementation correctness for indexes.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -267,7 +267,7 @@ public class MapRangeIndexMaintenanceJUnitTest {
 
   /**
    * Test index object's comapreTo Function implementation correctness for indexes.
-   * 
+   *
    * @throws Exception
    */
   @Test

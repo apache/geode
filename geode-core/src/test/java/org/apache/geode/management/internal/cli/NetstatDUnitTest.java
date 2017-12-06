@@ -15,11 +15,7 @@
 
 package org.apache.geode.management.internal.cli;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -28,7 +24,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class NetstatDUnitTest {
@@ -36,7 +36,7 @@ public class NetstatDUnitTest {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @ClassRule
-  public static GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public static GfshCommandRule gfshConnector = new GfshCommandRule();
 
   private static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
@@ -75,41 +75,41 @@ public class NetstatDUnitTest {
 
   @Test
   public void testConnectToLocator() throws Exception {
-    gfshConnector.connect(ports[0], GfshShellConnectionRule.PortType.locator);
-    gfshConnector.executeAndVerifyCommand(netStatCommand);
+    gfshConnector.connect(ports[0], GfshCommandRule.PortType.locator);
+    gfshConnector.executeAndAssertThat(netStatCommand).statusIsSuccess();
   }
 
   @Test
   public void testConnectToJmxManagerOne() throws Exception {
-    gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatCommand);
+    gfshConnector.connect(ports[1], GfshCommandRule.PortType.jmxManager);
+    gfshConnector.executeAndAssertThat(netStatCommand).statusIsSuccess();
   }
 
   @Test
   public void testConnectToJmxManagerTwo() throws Exception {
-    gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatCommand);
+    gfshConnector.connect(ports[2], GfshCommandRule.PortType.jmxManager);
+    gfshConnector.executeAndAssertThat(netStatCommand).statusIsSuccess();
   }
 
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToLocatorWithLargeCommandResponse() throws Exception {
-    gfshConnector.connect(ports[0], GfshShellConnectionRule.PortType.locator);
-    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+    gfshConnector.connect(ports[0], GfshCommandRule.PortType.locator);
+    gfshConnector.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
   }
 
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerOneWithLargeCommandResponse() throws Exception {
-    gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+    gfshConnector.connect(ports[1], GfshCommandRule.PortType.jmxManager);
+    gfshConnector.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
   }
 
   @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerTwoWithLargeCommandResponse() throws Exception {
-    gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManager);
-    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+    gfshConnector.connect(ports[2], GfshCommandRule.PortType.jmxManager);
+    gfshConnector.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
   }
 
   @After

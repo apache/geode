@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -27,6 +26,7 @@ import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**

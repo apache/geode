@@ -21,7 +21,7 @@ import java.util.Comparator;
  * This interface is to be implemented by all the query SelectResults implementation which have
  * ordered data. This encompasses those classes which have data stored in a List, LinkedMap,
  * LinkedSet, TreeMap , TreeSet etc.
- * 
+ *
  * @see NWayMergeResults
  * @see SortedResultsBag
  * @see SortedStructBag

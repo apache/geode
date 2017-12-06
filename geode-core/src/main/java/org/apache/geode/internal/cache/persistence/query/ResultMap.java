@@ -19,21 +19,21 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 /**
  * The contract for a sorted set of temporary results for a query. This set may be persisted on
  * disk.
- * 
+ *
  * This class is threadsafe. Iterators will reflect all entries added to the set up until the time
  * that the iterator was obtained. After that they may or may not reflect modifications to the set
  * while the iteration is in progress. They will guarantee that entries will be returned in the
  * correct order.
- * 
+ *
  * The key and value are both allowed to be an object, or a CachedDeserializable.
- * 
+ *
  * @since GemFire cedar
  */
 public interface ResultMap {
 
   /**
    * Add an entry to the map. If the same key exists in the map it is replaced with the new value
-   * 
+   *
    * @param key the key for the entry. The key may be NULL.
    * @param value a value for the entry, or NULL for no value
    */
@@ -41,9 +41,9 @@ public interface ResultMap {
 
   /**
    * Remove an entry from the map.
-   * 
+   *
    * @param key the key to remove
-   * 
+   *
    *        This method has no effect if the key does not exist in the map.
    */
   void remove(Object key);
@@ -103,7 +103,7 @@ public interface ResultMap {
 
   /**
    * A single entry in an index
-   * 
+   *
    * @since GemFire cedar
    */
   interface Entry {

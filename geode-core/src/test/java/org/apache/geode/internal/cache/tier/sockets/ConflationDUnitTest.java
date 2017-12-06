@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -55,6 +54,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -109,7 +109,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Set the boolean to make the dispatcher thread pause <code>milis</code> miliseconds.
-   * 
+   *
    */
   public static void setIsSlowStart(String milis) {
     CacheClientProxy.isSlowStartForTesting = true;
@@ -225,7 +225,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create pool for a client
-   * 
+   *
    * @return created pool
    */
   private static Pool createPool(String host, String name, Integer port, boolean enableQueue) {
@@ -239,7 +239,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create a client with 2 regions sharing a common writer
-   * 
+   *
    * @throws Exception
    */
 
@@ -256,7 +256,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create a client with 2 regions sharing a common writer
-   * 
+   *
    * @throws Exception
    */
 
@@ -275,7 +275,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create client 2 with 2 regions with sharing a common writer and having a common listener
-   * 
+   *
    * @throws Exception
    */
   public static void createClientCache2CommonWriter(String host, Integer port) throws Exception {
@@ -387,7 +387,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create client 2 with 2 regions each with a unique writer but both having a common listener
-   * 
+   *
    * @throws Exception
    */
   public static void createClientCache2UniqueWriter(String host, Integer port) throws Exception {
@@ -436,20 +436,20 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * variables to count operations (messages received on client from server)
    */
-  volatile static int count = 0;
-  volatile static int counterCreate = 0;
-  volatile static int counterUpdate = 0;
-  volatile static int counterDestroy = 0;
+  static volatile int count = 0;
+  static volatile int counterCreate = 0;
+  static volatile int counterUpdate = 0;
+  static volatile int counterDestroy = 0;
 
   /**
    * assert all the counters are zero
    *
    */
   public static void assertAllCountersZero() {
-    assertEquals(count, 0);
-    assertEquals(counterCreate, 0);
-    assertEquals(counterUpdate, 0);
-    assertEquals(counterDestroy, 0);
+    assertEquals(0, count);
+    assertEquals(0, counterCreate);
+    assertEquals(0, counterUpdate);
+    assertEquals(0, counterDestroy);
   }
 
   /**
@@ -483,36 +483,33 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void assertCounterSizes() {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
 
       public String description() {
-        return null;
+        return "Expected counterCreate to be 2. Instead it was " + counterCreate + ".";
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
 
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
         return counterUpdate == 2;
       }
 
       public String description() {
-        return null;
+        return "Expected counterUpdate to be 2. Instead it was " + counterUpdate + ".";
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
 
     ev = new WaitCriterion() {
       public boolean done() {
-        Thread.yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
 
       public String description() {
-        return null;
+        return "Expected counterDestroy to be 2. Instead it was " + counterDestroy + ".";
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
@@ -861,4 +858,3 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(() -> ConflationDUnitTest.closeCache());
   }
 }
-

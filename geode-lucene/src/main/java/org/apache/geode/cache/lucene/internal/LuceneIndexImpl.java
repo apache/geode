@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -24,16 +24,20 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -52,6 +56,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
   protected Analyzer analyzer;
+  protected LuceneSerializer luceneSerializer;
   protected LocalRegion dataRegion;
 
   protected LuceneIndexImpl(String indexName, String regionPath, InternalCache cache) {
@@ -114,6 +119,14 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.analyzer;
   }
 
+  public LuceneSerializer getLuceneSerializer() {
+    return this.luceneSerializer;
+  }
+
+  public void setLuceneSerializer(LuceneSerializer serializer) {
+    this.luceneSerializer = serializer;
+  }
+
   public Cache getCache() {
     return this.cache;
   }
@@ -145,11 +158,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
   }
 
-  protected void setupRepositoryManager() {
-    repositoryManager = createRepositoryManager();
+  protected void setupRepositoryManager(LuceneSerializer luceneSerializer) {
+    repositoryManager = createRepositoryManager(luceneSerializer);
   }
 
-  protected abstract RepositoryManager createRepositoryManager();
+  protected abstract RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer);
 
   protected abstract void createLuceneListenersAndFileChunkRegions(
       AbstractPartitionedRepositoryManager partitionedRepositoryManager);
@@ -208,6 +221,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.addFieldNames(this.getFieldNames());
     creation.setRegion(dataRegion);
     creation.setFieldAnalyzers(this.getFieldAnalyzers());
+    creation.setLuceneSerializer(this.getLuceneSerializer());
     dataRegion.getExtensionPoint().addExtension(creation);
   }
 
@@ -230,6 +244,26 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
     // Close the repository manager
     repositoryManager.close();
+
+    RegionListener listenerToRemove = getRegionListener();
+    if (listenerToRemove != null) {
+      cache.removeRegionListener(listenerToRemove);
+    }
+
+  }
+
+  private RegionListener getRegionListener() {
+    RegionListener rl = null;
+    for (RegionListener listener : cache.getRegionListeners()) {
+      if (listener instanceof LuceneRegionListener) {
+        LuceneRegionListener lrl = (LuceneRegionListener) listener;
+        if (lrl.getRegionPath().equals(regionPath) && lrl.getIndexName().equals(indexName)) {
+          rl = lrl;
+          break;
+        }
+      }
+    }
+    return rl;
   }
 
   protected <K, V> Region<K, V> createRegion(final String regionName,

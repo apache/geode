@@ -14,16 +14,16 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Specifies how the region is affected by resumption of reliability when one or more missing
  * required roles return to the distributed membership. The <code>ResumptionAction</code> is
  * specified when configuring a region's {@link org.apache.geode.cache.MembershipAttributes}.
- * 
+ *
  * @deprecated this API is scheduled to be removed
  */
 public class ResumptionAction implements java.io.Serializable {
@@ -97,7 +97,7 @@ public class ResumptionAction implements java.io.Serializable {
 
   /**
    * Returns a string representation for this resumption action.
-   * 
+   *
    * @return the name of this resumption action
    */
   @Override
@@ -106,4 +106,3 @@ public class ResumptionAction implements java.io.Serializable {
   }
 
 }
-

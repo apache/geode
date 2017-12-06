@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -60,6 +59,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -279,15 +279,15 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   protected static EventID putAlleventId5 = null;
 
-  protected final static String PUTALL_KEY1 = "putAllKey1";
+  protected static final String PUTALL_KEY1 = "putAllKey1";
 
-  protected final static String PUTALL_KEY2 = "putAllKey2";
+  protected static final String PUTALL_KEY2 = "putAllKey2";
 
-  protected final static String PUTALL_KEY3 = "putAllKey3";
+  protected static final String PUTALL_KEY3 = "putAllKey3";
 
-  protected final static String PUTALL_KEY4 = "putAllKey4";
+  protected static final String PUTALL_KEY4 = "putAllKey4";
 
-  protected final static String PUTALL_KEY5 = "putAllKey5";
+  protected static final String PUTALL_KEY5 = "putAllKey5";
 
   /**
    * This test: 1) creates a client server configuration 2) asserts that the ThreadIdToSequenceIdMap

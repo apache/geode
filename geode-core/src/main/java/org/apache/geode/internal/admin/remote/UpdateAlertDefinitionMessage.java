@@ -17,6 +17,7 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -27,7 +28,7 @@ import org.apache.geode.internal.admin.StatAlertsManager;
 /**
  * distribution message to register alert's definition {@link StatAlertDefinition} to member's alert
  * manager {@link StatAlertsManager}
- * 
+ *
  */
 public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
 
@@ -43,7 +44,7 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
 
   /**
    * Returns a <code>FetchHostRequest</code> to be sent to the specified recipient.
-   * 
+   *
    * @param alertDefs an array of stat alert definitions to set
    * @param actionCode either of ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION,
    *        REMOVE_ALERT_DEFINITION
@@ -98,17 +99,17 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
   }
 
   /**
-   * 
+   *
    * @return action(ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION, REMOVE_ALERT_DEFINITION) to be
    *         taken on alert definitions
-   * 
+   *
    */
   public int getActionCode() {
     return _actionCode;
   }
 
   /**
-   * 
+   *
    * @param alertDefinitions List of stat alert definitions
    * @param actionCode Action(ADD_ALERT_DEFINITION, UPDATE_ALERT_DEFINITION,
    *        REMOVE_ALERT_DEFINITION) to be taken on alert definitions
@@ -126,7 +127,7 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
    * <p>
    * 2. if the internalDS instance is null or is dis-connected, the returned string is -
    * "InternalDistributedSystem instance not found, no connection with DistributedSystem."
-   * 
+   *
    * @return String representation of this message object.
    */
   @Override

@@ -38,17 +38,17 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * member.
  *
  * RegionVersionHolders should be modified under synchronization on the holder.
- * 
+ *
  * Starting in 7.0.1 the holder has a BitSet that records the most recent versions. The variable
  * bitSetVersion corresponds to bit zero, and subsequent bits represent bitSetVersion+1, +2, etc.
  * The method mergeBitSet() should be used to dump the BitSet's exceptions into the regular
  * exceptions list prior to performing operations like exceptions- comparisons or dominance checks.
- * 
+ *
  * Starting in 8.0, the holder introduced a special exception to describe following use case of
  * unfinished operation: Operation R4 and R5 are applied locally, but never distributed to P. So P's
  * RVV for R is still 3. After R GIIed from P, R's RVV becomes R5(3-6), i.e. Exception's nextVersion
  * is currentVersion+1.
- * 
+ *
  */
 public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
@@ -70,7 +70,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   /**
    * This contructor should only be used for cloning a RegionVersionHolder or initializing and
    * invalid version holder (with version -1)
-   * 
+   *
    * @param ver
    */
   public RegionVersionHolder(long ver) {
@@ -260,7 +260,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    * corresponds to this.bitSetVersion. This scans the bitset looking for gaps that are recorded as
    * RVV exceptions. The scan terminates at numBits or when the last set bit is found. The bitSet is
    * adjusted and a new bitSetVersion is established.
-   * 
+   *
    * @param newVersion the desired new bitSetVersion, which may be > the max representable in the
    *        bitset
    * @param numBits the desired number of bits to flush from the bitset
@@ -412,7 +412,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   /**
    * Initialize this version holder from another version holder This is called during GII.
-   * 
+   *
    * It's more likely that the other holder has seen most of the versions, and this version holder
    * only has a few updates that happened since the GII started. So we apply our seen versions to
    * the other version holder and then initialize this version holder from the other version holder.
@@ -502,7 +502,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   /**
    * Returns true if this version hold has an exception in the exception list for the given version
    * number.
-   * 
+   *
    * This differs from contains because it returns true if v is greater than the last seen version
    * for this holder.
    */
@@ -629,9 +629,9 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.DataSerializable#toData(java.io.DataOutput)
-   * 
+   *
    * Version Holders serialized to disk, so if the serialization format of version holder changes,
    * we need to upgrade our persistence format.
    */
@@ -650,7 +650,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.DataSerializable#fromData(java.io.DataInput)
    */
   public void fromData(DataInput in) throws IOException {
@@ -671,9 +671,9 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   /*
    * Warning: this hashcode uses mutable state and is only good for as long as the holder is not
    * modified. It was added for unit testing.
-   * 
+   *
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
    */
   public synchronized int hashCode() {
@@ -747,7 +747,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   /**
    * Canonicalize an ordered set of exceptions. In the canonical form, none of the RVVExceptions
    * have any received versions.
-   * 
+   *
    * @param exceptions
    * @return The canonicalized set of exceptions.
    */

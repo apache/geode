@@ -194,7 +194,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   /**
    * Wait for there to be initialized copies of this bucket. Get the latest membership view from
    * those copies.
-   * 
+   *
    */
   public void initializeMembershipView() {
     MembershipChangeListener listener = new MembershipChangeListener();
@@ -322,7 +322,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 
   /**
    * Callers should have already verified that debug output is enabled.
-   * 
+   *
    * @param infoMsg
    */
   public void dump(String infoMsg) {
@@ -367,7 +367,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   /**
    * Wait for this bucket to be recovered from disk, at least to the point where it starts doing a
    * GII.
-   * 
+   *
    * This method will throw an exception if the recovery thread encountered an exception.
    */
   public void waitForPrimaryPersistentRecovery() {

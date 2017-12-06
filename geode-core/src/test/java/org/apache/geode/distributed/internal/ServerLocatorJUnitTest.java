@@ -18,7 +18,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,6 +26,7 @@ import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * </p>
  * TODO: write more unit tests for this class...
  * </p>
- * 
+ *
  * @see org.apache.geode.distributed.internal.ServerLocator
  * @see org.junit.Assert
  * @see org.junit.Test

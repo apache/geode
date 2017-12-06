@@ -47,7 +47,7 @@ public interface Alert {
   /**
    * Returns a InternalDistributedMember instance representing a member that is sending (or has
    * sent) this alert. Could be <code>null</code>.
-   * 
+   *
    * @return the InternalDistributedMember instance representing a member that is sending/has sent
    *         this alert
    *
@@ -55,14 +55,14 @@ public interface Alert {
    */
   public InternalDistributedMember getSender();
 
-  public final static int ALL = InternalLogWriter.ALL_LEVEL;
-  public final static int OFF = InternalLogWriter.NONE_LEVEL;
-  public final static int FINEST = InternalLogWriter.FINEST_LEVEL;
-  public final static int FINER = InternalLogWriter.FINER_LEVEL;
-  public final static int FINE = InternalLogWriter.FINE_LEVEL;
-  public final static int CONFIG = InternalLogWriter.CONFIG_LEVEL;
-  public final static int INFO = InternalLogWriter.INFO_LEVEL;
-  public final static int WARNING = InternalLogWriter.WARNING_LEVEL;
-  public final static int ERROR = InternalLogWriter.ERROR_LEVEL;
-  public final static int SEVERE = InternalLogWriter.SEVERE_LEVEL;
+  public static final int ALL = InternalLogWriter.ALL_LEVEL;
+  public static final int OFF = InternalLogWriter.NONE_LEVEL;
+  public static final int FINEST = InternalLogWriter.FINEST_LEVEL;
+  public static final int FINER = InternalLogWriter.FINER_LEVEL;
+  public static final int FINE = InternalLogWriter.FINE_LEVEL;
+  public static final int CONFIG = InternalLogWriter.CONFIG_LEVEL;
+  public static final int INFO = InternalLogWriter.INFO_LEVEL;
+  public static final int WARNING = InternalLogWriter.WARNING_LEVEL;
+  public static final int ERROR = InternalLogWriter.ERROR_LEVEL;
+  public static final int SEVERE = InternalLogWriter.SEVERE_LEVEL;
 }

@@ -14,10 +14,10 @@
  */
 package org.apache.geode;
 
-// import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.statistics.StatArchiveFormat;
 import java.io.IOException;
 import java.io.Reader;
+
+import org.apache.geode.internal.statistics.StatArchiveFormat;
 
 /**
  * Instances of this interface provide methods that create instances of {@link StatisticDescriptor}
@@ -31,11 +31,11 @@ import java.io.Reader;
  * increase and decrease or a <I>counter</I> meaning that its value is strictly increasing. Marking
  * a statistic as a counter allows statistic display tools to properly display a statistics whose
  * value "wraps around" (that is, exceeds its maximum value).
- * 
+ *
  * <P>
  * The following code is an example of how to create a type using XML. In this example the type has
  * two stats whose values always increase:
- * 
+ *
  * <pre>
     StatisticsTypeFactory f = ...;
     StatisticsType t = f.createType(
@@ -53,7 +53,7 @@ import java.io.Reader;
  * </pre>
  * <P>
  * The following is an example of how to create the same type using XML. The XML data:
- * 
+ *
  * <pre>
     &lt;?xml version="1.0" encoding="UTF-8"?&gt;
     &lt;!DOCTYPE statistics PUBLIC
@@ -73,16 +73,16 @@ import java.io.Reader;
       &lt;/type&gt;
     &lt;/statistics&gt;
  * </pre>
- * 
+ *
  * The code to create the type:
- * 
+ *
  * <pre>
       StatisticsTypeFactory f = ...;
       Reader r = new InputStreamReader("fileContainingXmlData"));
       StatisticsType type = f.createTypesFromXml(r)[0];
  * </pre>
  * <P>
- * 
+ *
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
  *
@@ -185,7 +185,7 @@ public interface StatisticsTypeFactory {
   /**
    * Creates or finds and returns a {@link StatisticsType} with the given <code>name</code>,
    * <code>description</code>, and {@link StatisticDescriptor statistic descriptions}.
-   * 
+   *
    * @throws IllegalArgumentException if a type with the given <code>name</code> already exists and
    *         it differs from the given parameters.
    */

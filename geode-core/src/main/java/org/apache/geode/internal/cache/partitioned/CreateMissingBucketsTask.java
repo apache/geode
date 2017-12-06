@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache.partitioned;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
+import org.apache.geode.internal.cache.PartitionedRegionStats;
 
 /**
  * A task for creating buckets in a child colocated region that are present in the leader region.

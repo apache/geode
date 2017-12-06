@@ -50,7 +50,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Get70 extends BaseCommand {
 
-  private final static Get70 singleton = new Get70();
+  private static final Get70 singleton = new Get70();
 
   public static Command getCommand() {
     return singleton;

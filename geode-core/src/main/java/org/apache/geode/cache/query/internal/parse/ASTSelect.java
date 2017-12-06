@@ -22,8 +22,8 @@ import java.util.Map;
 import antlr.*;
 import antlr.collections.*;
 
-import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.QCompiler;
 
 public class ASTSelect extends GemFireAST {
   private static final long serialVersionUID = 1389351692304773456L;

@@ -20,7 +20,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * This class represents the data given for binding an overflow mechanism to a client subscription.
  * It encapsulates eviction policy, capacity and overflowDirectory. This object will get created for
  * every <b>client-subscription</b> tag
- * 
+ *
  * @since GemFire 5.7
  */
 public class ClientHaQueueCreation {

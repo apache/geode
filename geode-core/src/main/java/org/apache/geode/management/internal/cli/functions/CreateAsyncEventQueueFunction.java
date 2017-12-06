@@ -21,7 +21,6 @@ import java.util.Properties;
 import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
@@ -38,7 +37,6 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
@@ -85,21 +83,15 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       String[] gatewayEventFilters = aeqArgs.getGatewayEventFilters();
       if (gatewayEventFilters != null) {
         for (String gatewayEventFilter : gatewayEventFilters) {
-          Class<?> gatewayEventFilterKlass =
-              forName(gatewayEventFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER);
           asyncEventQueueFactory
-              .addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass,
-                  CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER));
+              .addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilter));
         }
       }
 
       String gatewaySubstitutionFilter = aeqArgs.getGatewaySubstitutionFilter();
       if (gatewaySubstitutionFilter != null) {
-        Class<?> gatewayEventSubstitutionFilterKlass = forName(gatewaySubstitutionFilter,
-            CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER);
         asyncEventQueueFactory.setGatewayEventSubstitutionListener(
-            (GatewayEventSubstitutionFilter<?, ?>) newInstance(gatewayEventSubstitutionFilterKlass,
-                CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER));
+            (GatewayEventSubstitutionFilter<?, ?>) newInstance(gatewaySubstitutionFilter));
       }
 
       String listenerClassName = aeqArgs.getListenerClassName();
@@ -130,48 +122,19 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
 
     } catch (CacheClosedException cce) {
       context.getResultSender().lastResult(new CliFunctionResult(memberId, false, null));
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      logger.error("Could not create async event queue: {}", th.getMessage(), th);
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, th, null));
+    } catch (Exception e) {
+      logger.error("Could not create async event queue: {}", e.getMessage(), e);
+      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, null));
     }
   }
 
-  private Class<?> forName(String className, String neededFor) {
+  private Object newInstance(String className)
+      throws ClassNotFoundException, IllegalAccessException, InstantiationException {
     if (Strings.isNullOrEmpty(className)) {
       return null;
     }
 
-    try {
-      return ClassPathLoader.getLatest().forName(className);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-          className, neededFor), e);
-    } catch (ClassCastException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          className, neededFor), e);
-    }
-  }
-
-  private static Object newInstance(Class<?> klass, String neededFor) {
-    try {
-      return klass.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          klass, neededFor), e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, klass,
-          neededFor), e);
-    }
+    return ClassPathLoader.getLatest().forName(className).newInstance();
   }
 
   @Override

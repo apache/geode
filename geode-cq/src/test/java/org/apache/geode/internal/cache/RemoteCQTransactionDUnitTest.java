@@ -21,6 +21,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheListener;
@@ -68,19 +75,13 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
 
-  final protected String CUSTOMER = "custRegion";
-  final protected String ORDER = "orderRegion";
-  final protected String D_REFERENCE = "distrReference";
+  protected final String CUSTOMER = "custRegion";
+  protected final String ORDER = "orderRegion";
+  protected final String D_REFERENCE = "distrReference";
 
   final CustId expectedCustId = new CustId(6);
   final Customer expectedCustomer = new Customer("customer6", "address6");
@@ -394,7 +395,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  static abstract class CacheCallback {
+  abstract static class CacheCallback {
 
     protected boolean isAccessor;
     protected Exception ex = null;
@@ -517,7 +518,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     public void close() {}
   }
 
-  static abstract class txCallback {
+  abstract static class txCallback {
 
     protected boolean isAccessor;
     protected Exception ex = null;

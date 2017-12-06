@@ -16,41 +16,41 @@ package org.apache.geode.management.internal.cli.result;
 
 /**
  * Helper class to build rows of columnized strings & build a table from those rows.
- * 
+ *
  * Sample usage:
- * 
+ *
  * <code>
  *     public final Table createTable() {
  *       Table resultTable = TableBuilder.newTable();
  *       resultTable.setColumnSeparator(" | ");
- *            
+ *
  *       resultTable.newBlankRow();
  *       resultTable.newRow().newLeftCol("Displaying all fields for member: " + memberName);
  *       resultTable.newBlankRow();
  *       RowGroup rowGroup = resultTable.newRowGroup();
  *       rowGroup.newRow().newCenterCol("FIELD1").newCenterCol("FIELD2");
- *       rowGroup.newRowSeparator('-');    
+ *       rowGroup.newRowSeparator('-');
  *       for (int i = 0; i < counter; i++) {
  *         rowGroup.newRow().newLeftCol(myFirstField[i]).newLeftCol(mySecondField[i]);
- *       }        
+ *       }
  *       resultTable.newBlankRow();
- *     
+ *
  *       return resultTable;
  *     }
  * </code>
- * 
+ *
  * Will result in this:
- * 
+ *
  * <literal>
- * 
+ *
  * Displaying all fields for member: Member1
- * 
+ *
  * FIELD1 | FIELD2 -------------- | --------------- My First Field | My Second Field Another Fld1 |
  * Another Fld2 Last Fld1 | Last Fld2
- * 
+ *
  * </literal>
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 
@@ -166,7 +166,7 @@ public class TableBuilder {
   /**
    * A group of rows. Widths for all columns within a group will be the same and when built will
    * automatically be set to the length of the longest value in the column.
-   * 
+   *
    * @since GemFire 7.0
    */
   public static class RowGroup {

@@ -26,7 +26,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.RegionEntry;
 
 /**
- * 
+ *
  */
 public interface IndexedExpressionEvaluator {
 

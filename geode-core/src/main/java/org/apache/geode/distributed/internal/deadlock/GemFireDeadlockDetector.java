@@ -36,8 +36,8 @@ import org.apache.geode.internal.cache.execute.AbstractExecution;
  * This class uses gemfire function execution to get the dependencies between threads present in
  * each member of the distributed system. It then uses the {@link DeadlockDetector} class to
  * determine if any deadlocks exist within those dependencies.
- * 
- * 
+ *
+ *
  */
 public class GemFireDeadlockDetector {
 
@@ -53,7 +53,7 @@ public class GemFireDeadlockDetector {
 
   /**
    * Find any deadlocks the exist in this distributed system.
-   * 
+   *
    * The deadlocks are returned as a list of dependencies. See {@link DeadlockDetector}
    */
   public DependencyGraph find() {

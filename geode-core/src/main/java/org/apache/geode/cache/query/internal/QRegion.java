@@ -14,13 +14,14 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.*;
-import java.util.concurrent.locks.Lock;
-import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;

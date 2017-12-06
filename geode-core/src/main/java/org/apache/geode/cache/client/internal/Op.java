@@ -17,7 +17,7 @@ package org.apache.geode.cache.client.internal;
 /**
  * An operation to perform on a server. Used by {@link ExecutablePool} to attempt the operation on
  * multiple servers until the retryAttempts is exceeded.
- * 
+ *
  * @since GemFire 5.7
  *
  */
@@ -26,7 +26,7 @@ public interface Op {
   /**
    * Attempts to execute this operation by sending its message out on the given connection, waiting
    * for a response, and returning it.
-   * 
+   *
    * @param cnx the connection to use when attempting execution of the operation.
    * @return the result of the operation or <code>null</code if the operation has no result.
    * @throws Exception if the execute failed

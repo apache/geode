@@ -14,15 +14,15 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-
 import java.util.List;
+
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 
 /**
  * TODO: define another addStatistic for StatisticDescriptor which will enable static monitoring
  * that will fire for all instances even ones that may not yet be created at the time this monitor
  * is defined
- * 
+ *
  * @since GemFire 7.0
  */
 public abstract class StatisticsMonitor {
@@ -88,7 +88,7 @@ public abstract class StatisticsMonitor {
   /**
    * This method may be overridden but please ensure that you invoke super.monitor(long, List) from
    * this method in the subclass.
-   * 
+   *
    * @param millisTimeStamp the real time in millis of the sample
    * @param resourceInstances resources with one or more updated values
    */

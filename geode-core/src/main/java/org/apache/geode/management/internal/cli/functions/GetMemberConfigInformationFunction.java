@@ -14,6 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.*;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -28,20 +34,14 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
 /****
- * 
+ *
  *
  */
 public class GetMemberConfigInformationFunction extends FunctionAdapter implements InternalEntity {
 
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 1L;
 
@@ -135,7 +135,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
 
   /****
    * Gets the default values for the cache attributes
-   * 
+   *
    * @return a map containing the cache attributes - default values
    */
   private Map<String, String> getCacheAttributesDefaultValues() {
@@ -164,7 +164,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
 
   /***
    * Gets the default values for the cache attributes
-   * 
+   *
    * @return a map containing the cache server attributes - default values
    */
   private Map<String, String> getCacheServerAttributesDefaultValues() {
@@ -193,7 +193,7 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
 
   /****
    * Removes the default values from the attributesMap based on defaultAttributesMap
-   * 
+   *
    * @param attributesMap
    * @param defaultAttributesMap
    */

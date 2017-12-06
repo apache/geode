@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.security;
 
 /**
  * Interface for AccessControlMBean
- * 
+ *
  * @since Geode 1.0
  */
 public interface AccessControlMXBean {

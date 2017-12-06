@@ -20,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Test object which does not implement ObjectSizer, used as Key/Value in put operation.
- * 
- * 
+ *
+ *
  */
 public class TestNonSizerObject implements Serializable {
 

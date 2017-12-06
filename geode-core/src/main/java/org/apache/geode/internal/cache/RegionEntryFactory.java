@@ -26,7 +26,7 @@ package org.apache.geode.internal.cache;
 public interface RegionEntryFactory {
   /**
    * Creates an instance of RegionEntry.
-   * 
+   *
    * @return the created entry
    */
   public RegionEntry createEntry(RegionEntryContext context, Object key, Object value);

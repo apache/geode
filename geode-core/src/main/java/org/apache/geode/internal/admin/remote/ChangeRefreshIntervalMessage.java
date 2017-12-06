@@ -25,9 +25,9 @@ import org.apache.geode.internal.admin.StatAlertsManager;
 
 /**
  * Distribution message, sets refresh time interval in member's alerts manager
- * 
+ *
  * @see StatAlertsManager
- * 
+ *
  * @since GemFire 5.7
  */
 public class ChangeRefreshIntervalMessage extends PooledDistributionMessage {

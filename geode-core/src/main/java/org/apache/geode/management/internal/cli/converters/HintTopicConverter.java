@@ -14,19 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.CommandManager;
-import org.apache.geode.management.internal.cli.CommandManagerAware;
-import org.apache.geode.management.internal.cli.help.Helper;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import java.util.List;
-import java.util.Set;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.CommandManager;
+import org.apache.geode.management.internal.cli.CommandManagerAware;
+import org.apache.geode.management.internal.cli.help.Helper;
 
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 public class HintTopicConverter implements Converter<String>, CommandManagerAware {

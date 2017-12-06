@@ -14,6 +14,14 @@
  */
 package org.apache.geode.internal.logging;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.Date;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.OSProcess;
@@ -22,14 +30,6 @@ import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.util.LogFileUtils;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.Date;
 
 /**
  * Implementation of {@link LogWriterI18n} for distributed system members. It's just like
@@ -67,7 +67,7 @@ public class ManagerLogWriter extends LocalLogWriter {
 
   /**
    * Creates a writer that logs to <code>System.out</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @throws IllegalArgumentException if level is not in legal range
    */
@@ -312,7 +312,7 @@ public class ManagerLogWriter extends LocalLogWriter {
   public static File getLogNameForOldMainLog(File log, boolean useOldFile) {
     /*
      * this is just searching for the existing logfile name we need to search for meta log file name
-     * 
+     *
      */
     RollingFileHandler rollingFileHandler = new MainWithChildrenRollingFileHandler();
     File dir = rollingFileHandler.getParentFile(log.getAbsoluteFile());

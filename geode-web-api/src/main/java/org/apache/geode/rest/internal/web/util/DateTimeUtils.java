@@ -22,7 +22,7 @@ import java.util.Date;
 /**
  * The DateTimeUtils class is a utility class for working with dates and times.
  * <p/>
- * 
+ *
  * @see java.util.Calendar
  * @see java.text.DateFormat
  * @see java.util.Date
@@ -49,4 +49,3 @@ public abstract class DateTimeUtils {
   }
 
 }
-

@@ -21,13 +21,14 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static it.unimi.dsi.fastutil.HashCommon.arraySize;
-import it.unimi.dsi.fastutil.HashCommon;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+
+import it.unimi.dsi.fastutil.HashCommon;
 
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
@@ -48,9 +49,9 @@ public class HashIndexSet implements Set {
    */
   class HashIndexSetProperties {
     /** the set of Objects */
-    final protected transient Object[] set;
+    protected final transient Object[] set;
     /** used for hashing into the table **/
-    final protected int mask;
+    protected final int mask;
 
     /** the current number of entries in the set */
     protected transient int size = 0;
@@ -120,7 +121,7 @@ public class HashIndexSet implements Set {
   /**
    * Creates a new <code>HashIndexSet</code> instance with a prime capacity equal to or greater than
    * <tt>initialCapacity</tt> and with the specified load factor.
-   * 
+   *
    * @param initialCapacity an <code>int</code> value
    * @param loadFactor a <code>float</code> value
    */
@@ -142,7 +143,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Searches the set for <tt>obj</tt>
-   * 
+   *
    * @param obj an <code>Object</code> value
    * @return a <code>boolean</code> value
    */
@@ -161,7 +162,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Locates the index of <tt>obj</tt>.
-   * 
+   *
    * @param obj an <code>Object</code> value, expected to be the value object
    * @return the index of <tt>obj</tt> or -1 if it isn't in the set.
    */
@@ -175,7 +176,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Locates index slot of object using the provided key (in this case we are passing in old key)
-   * 
+   *
    * @param key
    * @param obj
    * @return the indexSlot of the given key/object combination
@@ -191,10 +192,10 @@ public class HashIndexSet implements Set {
 
     /*
      * Code originated from fastutils Copyright (C) 2002-2014 Sebastiano Vigna
-     * 
+     *
      * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
      * except in compliance with the License. You may obtain a copy of the License at
-     * 
+     *
      * http://www.apache.org/licenses/LICENSE-2.0
      */
     if (!((curr = set[pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask]) == null
@@ -219,7 +220,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Locates the index of <tt>obj</tt>.
-   * 
+   *
    * @param indexKey an <code>Object</code> value that represents the index key
    * @return Iterator over a collection of objects that match the key
    */
@@ -228,7 +229,7 @@ public class HashIndexSet implements Set {
   }
 
   /**
-   * 
+   *
    * @param set represents the array that all elements are stored in
    * @param index the array index location to store the object. This should be calculated by one of
    *        the insertionIndex methods
@@ -259,7 +260,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Add an object using the hash value of the provided indexKey
-   * 
+   *
    * @param indexKey
    * @param obj the object to add
    * @return true if object has been added
@@ -300,7 +301,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Locates the next available insertion index for the provided indexKey and set
-   * 
+   *
    * @return the index of an open or resused position
    */
   protected int insertionIndex(Object indexKey, HashIndexSetProperties metaData) {
@@ -319,10 +320,10 @@ public class HashIndexSet implements Set {
     try {
       /*
        * Code originated from fastutils Copyright (C) 2002-2014 Sebastiano Vigna
-       * 
+       *
        * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
        * except in compliance with the License. You may obtain a copy of the License at
-       * 
+       *
        * http://www.apache.org/licenses/LICENSE-2.0
        */
       if (!((curr = array[pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask]) == null
@@ -364,7 +365,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Expands or contracts a set to the new specified n.
-   * 
+   *
    * @param newN the expected size
    */
   protected void rehash(int newN) {
@@ -407,7 +408,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Unsupported as the hash index does not use this method call
-   * 
+   *
    * @return an <code>Object[]</code> value
    */
   public Object[] toArray() {
@@ -416,7 +417,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Unsupported as the hash index does not use this method call
-   * 
+   *
    * @param a an <code>Object[]</code> value
    * @return an <code>Object[]</code> value
    */
@@ -453,7 +454,7 @@ public class HashIndexSet implements Set {
   }
 
   /**
-   * 
+   *
    * @param key assumed to not be null, rather needs to be NULL token
    * @param obj
    * @param newIndexSlot if inplace modification occurs with out having a reversemap we end up
@@ -497,7 +498,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Creates an iterator over the values of the set. The iterator supports element deletion.
-   * 
+   *
    * @return an <code>Iterator</code> value
    */
   public Iterator iterator() {
@@ -506,7 +507,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Determine if all of the elements in <tt>collection</tt> are present.
-   * 
+   *
    * @param collection a <code>Collection</code> value
    * @return true if all elements are present.
    */
@@ -528,7 +529,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Removes all of the elements in <tt>collection</tt> from the set.
-   * 
+   *
    * @param collection a <code>Collection</code> value
    * @return true if the set was modified by the remove all operation.
    */
@@ -547,7 +548,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Removes any values in the set which are not contained in <tt>collection</tt>.
-   * 
+   *
    * @param collection a <code>Collection</code> value
    * @return true if the set was modified by the retain all operation
    */
@@ -577,7 +578,7 @@ public class HashIndexSet implements Set {
   /**
    * Returns the number of positions used in the backing array Is not a true representation of the
    * number of elements in the array as the array may contain REMOVED tokens
-   * 
+   *
    * @return an <code>int</code> value
    */
   public int size() {
@@ -613,7 +614,7 @@ public class HashIndexSet implements Set {
 
   /**
    * Remove the object at <tt>index</tt>.
-   * 
+   *
    * @param index an <code>int</code> value
    */
   protected boolean removeAt(int index) {
@@ -810,4 +811,3 @@ public class HashIndexSet implements Set {
     }
   }
 }
-

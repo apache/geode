@@ -20,7 +20,8 @@ import java.util.Map;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 /**
@@ -74,7 +75,7 @@ public class ExportDiskRegion extends ValidatingDiskRegion {
     /**
      * Write a batch of entries to the export system. The value in RecoveredEntry is will not be
      * null, so there is no need to fault in the value in the implementor
-     * 
+     *
      * @throws IOException
      */
     public void writeBatch(Map<Object, RecoveredEntry> entries) throws IOException;

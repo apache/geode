@@ -46,8 +46,8 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class HashIndexQueryIntegrationTest {
@@ -88,7 +88,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Helper that tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
 
@@ -122,9 +122,9 @@ public class HashIndexQueryIntegrationTest {
 
   /*
    * helper method to test against a compact range index instead of hash index
-   * 
+   *
    * @param query
-   * 
+   *
    * @throws Exception
    */
   private void helpTestCRIndexForQuery(String query, String indexedExpression, String regionPath)
@@ -140,7 +140,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with And query for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -192,7 +192,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with And query for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -211,7 +211,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with Short vs Integer comparison
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -233,7 +233,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with comparison between float and integer
-   * 
+   *
    * @throws Exception
    */
   // @Test
@@ -252,7 +252,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with comparison between float and integer
-   * 
+   *
    * @throws Exception
    */
   // @Test
@@ -271,7 +271,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index with And query for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -290,7 +290,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -309,7 +309,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -322,7 +322,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -335,7 +335,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -348,7 +348,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -360,7 +360,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for replicated region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -372,7 +372,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for partitioned region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -384,7 +384,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -399,7 +399,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -414,7 +414,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -430,7 +430,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   // @Test
@@ -445,7 +445,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -461,7 +461,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -477,7 +477,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -494,7 +494,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   // @Test
@@ -511,7 +511,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct number of results on local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -532,7 +532,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results on replicated
    * region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -553,7 +553,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results on partitioned
    * region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -574,7 +574,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct number of results
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -602,7 +602,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where only
    * 1 value is using the key for partitioned regions
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -614,7 +614,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where only
    * 1 value is using the key for replicated regions
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -645,7 +645,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where only
    * 1 value is using the key for partitioned regions
-   * 
+   *
    * @throws Exception
    */
   private void helpTestHashIndexRemove() throws Exception {
@@ -667,7 +667,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where
    * multiple entries are using the key on localRegion
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -679,7 +679,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where
    * multiple entries are using the key on replicated region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -691,7 +691,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that the value is correctly removed from the index where
    * multiple entries are using the key on partitioned region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -736,7 +736,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result on local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -748,7 +748,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result on replicated region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -760,7 +760,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result on partitioned region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -773,7 +773,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results for local
    * region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -792,7 +792,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results for replicated
    * region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -811,7 +811,7 @@ public class HashIndexQueryIntegrationTest {
   /**
    * Tests that hash index is used and that it returns the correct number of results for partitioned
    * region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -829,7 +829,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -841,7 +841,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -853,7 +853,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -865,7 +865,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -877,7 +877,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for replicated region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -889,7 +889,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result for partitioned region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -901,7 +901,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index is used and that it returns the correct result
-   * 
+   *
    * @throws Exception
    */
   private void helpTestHashIndexNotUsedInRangeQuery() throws Exception {
@@ -912,7 +912,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by asc query for local region using hash index
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -924,7 +924,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by asc query for replicated region using hash index
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -936,7 +936,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by asc query for partitioned region using hash index
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -961,7 +961,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by desc query for local region using hash index
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -973,7 +973,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by desc query for replicated region using hash index
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -985,7 +985,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Test order by desc query for partitioned region using hash index
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -997,7 +997,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index on non sequential hashes for local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1025,7 +1025,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index on non sequential hashes for replicated region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1053,7 +1053,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * Tests that hash index on non sequential hashes for partitioned region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1094,7 +1094,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test async exception for hash index using partitioned region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1119,7 +1119,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test multiple iterators exception for hash index using local region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1130,7 +1130,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test multiple iterators exception for hash index using replicated region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1141,7 +1141,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test multiple iterators exception for hash index using partiioned region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1162,7 +1162,7 @@ public class HashIndexQueryIntegrationTest {
 
   /**
    * test remove and not equals Query
-   * 
+   *
    * @throws Exception
    */
   @Test

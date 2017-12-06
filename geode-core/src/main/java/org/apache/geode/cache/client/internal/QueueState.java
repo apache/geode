@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.concurrent.ScheduledExecutorService;
+
 import org.apache.geode.internal.cache.EventID;
 
 public interface QueueState {

@@ -28,11 +28,11 @@ public interface MemoryMonitor extends ResourceMonitor {
 
   public boolean hasEvictionThreshold();
 
-  default public float getCriticalThreshold() {
+  public default float getCriticalThreshold() {
     return getThresholds().getCriticalThreshold();
   }
 
-  default public float getEvictionThreshold() {
+  public default float getEvictionThreshold() {
     return getThresholds().getEvictionThreshold();
   }
 

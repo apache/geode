@@ -14,22 +14,23 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.net.InetSocketAddress;
+import java.util.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import java.net.InetSocketAddress;
-import java.util.*;
 
 /**
  * A connection source where the list of endpoints is specified explicitly.
- * 
+ *
  * @since GemFire 5.7
- * 
+ *
  *        TODO - the UnusedServerMonitor basically will force the pool to have at least one
  *        connection to each server. Maybe we need to have it create connections that are outside
  *        the pool?

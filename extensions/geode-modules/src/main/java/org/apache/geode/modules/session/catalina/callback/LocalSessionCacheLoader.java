@@ -14,14 +14,15 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
+import java.util.Properties;
+
+import javax.servlet.http.HttpSession;
+
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
-
-import javax.servlet.http.HttpSession;
-import java.util.Properties;
 
 public class LocalSessionCacheLoader implements CacheLoader<String, HttpSession>, Declarable {
 

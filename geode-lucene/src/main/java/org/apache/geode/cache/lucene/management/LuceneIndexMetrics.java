@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache.lucene.management;
 
-import org.apache.geode.cache.lucene.LuceneIndex;
-
 import java.beans.ConstructorProperties;
+
+import org.apache.geode.cache.lucene.LuceneIndex;
 
 public class LuceneIndexMetrics {
 

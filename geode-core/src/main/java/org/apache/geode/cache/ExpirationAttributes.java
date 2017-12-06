@@ -61,7 +61,7 @@ public class ExpirationAttributes implements DataSerializable {
   /**
    * Constructs an <code>ExpirationAttributes</code> with the specified expiration time and the
    * default expiration action <code>ExpirationAction.INVALIDATE</code>.
-   * 
+   *
    * @param expirationTime The number of seconds before expiration
    * @throws IllegalArgumentException if expirationTime is nonpositive
    */
@@ -73,14 +73,22 @@ public class ExpirationAttributes implements DataSerializable {
   /**
    * Constructs an <code>ExpirationAttributes</code> with the specified expiration time and
    * expiration action.
-   * 
-   * @param expirationTime The number of seconds for a value to live before it expires
+   *
+   * @param expirationTime The number of seconds for a value to live before it expires. If this
+   *        parameter is negative, the expiration time will be set to 0, indicating no expiration.
    * @param expirationAction the action to take when the value expires
-   * @throws IllegalArgumentException if expirationTime is nonpositive
    */
   public ExpirationAttributes(int expirationTime, ExpirationAction expirationAction) {
-    this.timeout = expirationTime;
-    this.action = expirationAction;
+    if (expirationTime < 0) {
+      this.timeout = 0;
+    } else {
+      this.timeout = expirationTime;
+    }
+    if (expirationAction == null) {
+      this.action = ExpirationAction.INVALIDATE;
+    } else {
+      this.action = expirationAction;
+    }
   }
 
 
@@ -96,7 +104,7 @@ public class ExpirationAttributes implements DataSerializable {
 
   /**
    * Returns the action that should take place when this value or region expires.
-   * 
+   *
    * @return the action to take when expiring
    */
   public ExpirationAction getAction() {
@@ -120,7 +128,7 @@ public class ExpirationAttributes implements DataSerializable {
   /**
    * Returns a string representation of this <code>ExpirationAttributes</code>. If the timeout is
    * zero, returns <code>"NO EXPIRATION"</code>.
-   * 
+   *
    * @return the String representation of this expiration attribute
    */
   @Override

@@ -18,7 +18,7 @@ import org.apache.geode.GemFireCheckedException;
 
 /**
  * Exception thrown from Connection Pool.
- * 
+ *
  */
 public class PoolException extends GemFireCheckedException {
   private static final long serialVersionUID = -6178632158204356727L;
@@ -40,7 +40,7 @@ public class PoolException extends GemFireCheckedException {
   /**
    * Single Argument constructor to construct a new exception with the specified detail message.
    * Calls Exception class constructor.
-   * 
+   *
    * @param message The detail message. The detail message is saved for later retrieval.
    */
   public PoolException(String message, Exception ex) {

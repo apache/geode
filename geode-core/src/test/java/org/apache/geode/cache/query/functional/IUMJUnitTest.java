@@ -14,7 +14,7 @@
  */
 /*
  * IUMJUnitTest.java
- * 
+ *
  * @ TASK IUM 4 & IUM 3 Created on April 29, 2005, 10:14 AM
  */
 package org.apache.geode.cache.query.functional;

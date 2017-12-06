@@ -47,8 +47,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test for accessing query bind parameters from authorization callbacks
- * 
- * 
+ *
+ *
  */
 @Category(DistributedTest.class)
 public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {

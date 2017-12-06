@@ -14,9 +14,10 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import java.util.*;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.*;
-import java.util.*;
 
 public class VersionMismatchAlert implements Alert {
   private final RemoteGfManagerAgent source;
@@ -68,9 +69,9 @@ public class VersionMismatchAlert implements Alert {
 
   /**
    * Returns a InternalDistributedMember instance representing the agent.
-   * 
+   *
    * @return the InternalDistributedMember instance representing this agent instance
-   * 
+   *
    * @since GemFire 6.5
    */
   public InternalDistributedMember getSender() {

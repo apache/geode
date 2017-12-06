@@ -15,61 +15,46 @@
 
 package org.apache.geode.internal.cache.wan.wancommand;
 
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 
-import java.util.List;
+import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
-public class DestroyGatewaySenderCommandDUnitTest extends WANCommandTestBase {
-  @Test
-  public void testDestroyGatewaySender_NotCreatedSender() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+public class DestroyGatewaySenderCommandDUnitTest {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+  @Rule
+  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
-    // Test Destroy Command
-    String command =
-        CliStrings.DESTROY_GATEWAYSENDER + " --" + CliStrings.DESTROY_GATEWAYSENDER__ID + "=ln";
-    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testDestroyGatewaySender_NotCreatedSender stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(5, status.size());
-      for (String stat : status) {
-        assertTrue("GatewaySender destroy should fail", stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateDestroyParallelGatewaySender failed as did not get CommandResult");
-    }
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
+
+  private MemberVM locator;
+
+  @Before
+  public void before() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    locator = locatorServerStartupRule.startLocatorVM(0, props);
+    gfsh.connectAndVerify(locator);
   }
 
-  private CommandResult executeCommandWithIgnoredExceptions(String command) {
-    final IgnoredException ignored = IgnoredException.addIgnoredException("Could not connect");
-    try {
-      return executeCommand(command);
-    } finally {
-      ignored.remove();
-    }
+  @Test
+  public void testDestroyGatewaySender_NotCreatedSender() throws Exception {
+    locatorServerStartupRule.startServerVM(1, locator.getPort());
+    locatorServerStartupRule.startServerVM(2, locator.getPort());
+
+    // destroy a sender that does not exist
+    gfsh.executeAndAssertThat("destroy gateway-sender --id=ln").statusIsError()
+        .tableHasColumnWithValuesContaining("Status", "ERROR", "ERROR");
   }
 }

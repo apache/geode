@@ -19,18 +19,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Calendar;
+import java.util.Date;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Calendar;
-import java.util.Date;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and
  * functionality of the ClassUtils class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.internal.lang.ClassUtils
  * @see org.junit.Assert
  * @see org.junit.Test

@@ -79,7 +79,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 /**
  * Acts as an intermediate between MBean layer and Federation Layer. Handles all Call backs from
  * GemFire to instantiate or remove MBeans from GemFire Domain.
- * 
+ *
  * Even though this class have a lot of utility functions it interacts with the state of the system
  * and contains some state itself.
  */
@@ -329,7 +329,7 @@ public class ManagementAdapter {
   /**
    * Handles Region Creation. This is the call back which will create the specified RegionMXBean and
    * will send a notification on behalf of Member Mbean
-   * 
+   *
    * @param region the region for which the call back is invoked
    */
   public <K, V> void handleRegionCreation(Region<K, V> region) throws ManagementException {
@@ -364,7 +364,7 @@ public class ManagementAdapter {
 
   /**
    * Handles Disk Creation. Will create DiskStoreMXBean and will send a notification
-   * 
+   *
    * @param disk the disk store for which the call back is invoked
    */
   public void handleDiskCreation(DiskStore disk) throws ManagementException {
@@ -388,7 +388,7 @@ public class ManagementAdapter {
 
   /**
    * Handles LockService Creation
-   * 
+   *
    * @param lockService
    */
   public void handleLockServiceCreation(DLockService lockService) throws ManagementException {
@@ -420,7 +420,7 @@ public class ManagementAdapter {
 
   /**
    * Handles GatewaySender creation
-   * 
+   *
    * @param sender the specific gateway sender
    * @throws ManagementException
    */
@@ -446,7 +446,7 @@ public class ManagementAdapter {
 
   /**
    * Handles Gateway receiver creation
-   * 
+   *
    * @param recv specific gateway receiver
    * @throws ManagementException
    */
@@ -480,7 +480,7 @@ public class ManagementAdapter {
 
   /**
    * Handles Gateway receiver creation
-   * 
+   *
    * @param recv specific gateway receiver
    * @throws ManagementException
    */
@@ -506,7 +506,7 @@ public class ManagementAdapter {
 
   /**
    * Handles Gateway receiver creation
-   * 
+   *
    * @param recv specific gateway receiver
    * @throws ManagementException
    */
@@ -583,7 +583,7 @@ public class ManagementAdapter {
   /**
    * Sends the alert with the Object source as member. This notification will get filtered out for
    * particular alert level
-   * 
+   *
    * @param details
    */
   public void handleSystemNotification(AlertDetails details) {
@@ -626,7 +626,7 @@ public class ManagementAdapter {
 
   /**
    * Assumption is its a cache server instance. For Gateway receiver there will be a separate method
-   * 
+   *
    * @param cacheServer cache server instance
    */
   public void handleCacheServerStart(CacheServer cacheServer) {
@@ -664,7 +664,7 @@ public class ManagementAdapter {
 
   /**
    * Assumption is its a cache server instance. For Gateway receiver there will be a separate method
-   * 
+   *
    * @param server cache server instance
    */
   public void handleCacheServerStop(CacheServer server) {
@@ -697,7 +697,7 @@ public class ManagementAdapter {
 
   /**
    * Handles Cache removal. It will automatically remove all MBeans from GemFire Domain
-   * 
+   *
    * @param cache GemFire Cache instance. For now client cache is not supported
    */
   public void handleCacheRemoval(Cache cache) throws ManagementException {
@@ -773,7 +773,7 @@ public class ManagementAdapter {
 
   /**
    * Handles particular region destroy or close operation it will remove the corresponding MBean
-   * 
+   *
    * @param region
    */
   public void handleRegionRemoval(Region region) throws ManagementException {
@@ -816,7 +816,7 @@ public class ManagementAdapter {
 
   /**
    * Handles DiskStore Removal
-   * 
+   *
    * @param disk
    */
   public void handleDiskRemoval(DiskStore disk) throws ManagementException {
@@ -854,7 +854,7 @@ public class ManagementAdapter {
 
   /**
    * Handles Lock Service Removal
-   * 
+   *
    * @param lockService lock service instance
    */
   public void handleLockServiceRemoval(DLockService lockService) throws ManagementException {
@@ -878,10 +878,10 @@ public class ManagementAdapter {
   /**
    * Handles management side call backs for a locator creation and start. Assumption is a cache will
    * be created before hand.
-   * 
+   *
    * There is no corresponding handleStopLocator() method. Locator will close the cache whenever its
    * stopped and it should also shutdown all the management services by closing the cache.
-   * 
+   *
    * @param locator instance of locator which is getting started
    * @throws ManagementException
    */

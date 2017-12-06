@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.beans.stats.StatsKey;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 /**
- * 
+ *
  *
  */
 public class GatewayReceiverMBeanBridge extends ServerBridge {

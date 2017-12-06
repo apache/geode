@@ -19,10 +19,10 @@ package org.apache.geode.internal.statistics;
  * be registered with statSampler. This can be done in the following manner: <code>
  * InternalDistributedSystem internalSystem = (InternalDistributedSystem)cache
  *                                                      .getDistributedSystem();
- * final GemFireStatSampler sampler = internalSystem.getStatSampler();          
+ * final GemFireStatSampler sampler = internalSystem.getStatSampler();
  * sampler.addLocalStatListener(l, stats, statName);
  * </code>
- * 
+ *
  *
  */
 public interface LocalStatListener {

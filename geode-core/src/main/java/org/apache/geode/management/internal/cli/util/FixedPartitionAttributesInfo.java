@@ -59,5 +59,3 @@ public class FixedPartitionAttributesInfo implements Serializable {
   }
 
 }
-
-

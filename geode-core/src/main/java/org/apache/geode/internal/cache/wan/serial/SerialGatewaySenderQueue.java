@@ -52,15 +52,15 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
-import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.event.EventTracker;
+import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -410,7 +410,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * This method removes batchSize entries from the queue. It will only remove entries that were
    * previously peeked.
-   * 
+   *
    * @param size the number of entries to remove
    */
   public void remove(int size) throws CacheException {
@@ -660,7 +660,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   /**
    * returns true if key a is before key b. This test handles keys that have wrapped around
-   * 
+   *
    * @param a
    * @param b
    */
@@ -685,7 +685,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   /**
    * Finds the next object after the last key peeked
-   * 
+   *
    * @throws CacheException
    */
   private Long getCurrentKey() {
@@ -763,7 +763,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * Returns the value of the tail key. The tail key points to an empty where the next queue entry
    * will be stored.
-   * 
+   *
    * @return the value of the tail key
    * @throws CacheException
    */
@@ -789,7 +789,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   /**
    * Increments the value of the tail key by one.
-   * 
+   *
    * @throws CacheException
    */
   private void incrementTailKey() throws CacheException {
@@ -802,15 +802,15 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   /**
    * If the keys are not yet initialized, initialize them from the region .
-   * 
+   *
    * TODO - We could initialize the indexes maps at the time here. However, that would require
    * iterating over the values of the region rather than the keys, which could be much more
    * expensive if the region has overflowed to disk.
-   * 
+   *
    * We do iterate over the values of the region in SerialGatewaySender at the time of failover. see
    * SerialGatewaySender.handleFailover. So there's a possibility we can consolidate that code with
    * this method and iterate over the region once.
-   * 
+   *
    * @throws CacheException
    */
   private void initializeKeys() throws CacheException {
@@ -872,7 +872,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * Returns the value of the head key. The head key points to the next entry to be removed from the
    * queue.
-   * 
+   *
    * @return the value of the head key
    * @throws CacheException
    */
@@ -897,7 +897,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   /**
    * Increments the value of the head key by one.
-   * 
+   *
    * @throws CacheException
    */
   private void updateHeadKey(long destroyedKey) throws CacheException {
@@ -912,7 +912,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * Initializes the <code>Region</code> backing this queue. The <code>Region</code>'s scope is
    * DISTRIBUTED_NO_ACK and mirror type is KEYS_VALUES and is set to overflow to disk based on the
    * <code>GatewayQueueAttributes</code>.
-   * 
+   *
    * @param sender The GatewaySender <code>SerialGatewaySenderImpl</code>
    * @param listener The GemFire <code>CacheListener</code>. The <code>CacheListener</code> can be
    *        null.
@@ -1019,7 +1019,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     /**
      * Constructor : Creates and initializes the thread
-     * 
+     *
      * @param c
      */
     public BatchRemovalThread(InternalCache c) {

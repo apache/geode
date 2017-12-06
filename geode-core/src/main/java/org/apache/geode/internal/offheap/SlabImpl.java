@@ -16,7 +16,7 @@ package org.apache.geode.internal.offheap;
 
 /**
  * Implements the Slab interface using AddressableMemoryManager.
- * 
+ *
  * @since Geode 1.0
  */
 public class SlabImpl implements Slab {

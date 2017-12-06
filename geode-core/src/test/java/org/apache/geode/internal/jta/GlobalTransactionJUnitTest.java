@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
+
 import javax.naming.Context;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;

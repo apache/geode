@@ -16,12 +16,10 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.*;
-// import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-import java.io.*;
-// import java.util.*;
 
 public class FetchStatsRequest extends AdminRequest {
 
@@ -42,7 +40,7 @@ public class FetchStatsRequest extends AdminRequest {
   }
 
   @Override
-  public AdminResponse createResponse(DistributionManager dm) {
+  public AdminResponse createResponse(DM dm) {
     return FetchStatsResponse.create(dm, this.getSender(), this.statisticsTypeName);
   }
 

@@ -16,12 +16,13 @@ package org.apache.geode.test.junit.rules.examples;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.rules.RetryRule;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.RetryRule;
 
 /**
  * Example usage of {@link RetryRule} with global scope.

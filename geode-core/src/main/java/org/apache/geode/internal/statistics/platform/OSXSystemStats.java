@@ -27,43 +27,43 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 public class OSXSystemStats {
 
   // shared fields
-  // private final static int allocatedSwapINT = 0;
-  // private final static int bufferMemoryINT = 1;
-  // private final static int contextSwitchesINT = 2;
-  // private final static int cpuActiveINT = 3;
-  // private final static int cpuIdleINT = 4;
-  // private final static int cpuNiceINT = 5;
-  // private final static int cpuSystemINT = 6;
-  // private final static int cpuUserINT = 7;
-  // private final static int cpusINT = 8;
-  // private final static int freeMemoryINT = 9;
-  // private final static int pagesPagedInINT = 10;
-  // private final static int pagesPagedOutINT = 11;
-  // private final static int pagesSwappedInINT = 12;
-  // private final static int pagesSwappedOutINT = 13;
-  // private final static int physicalMemoryINT = 14;
-  // private final static int processCreatesINT = 15;
-  // private final static int processesINT = 16;
-  // private final static int sharedMemoryINT = 17;
-  // private final static int unallocatedSwapINT = 18;
+  // private static final int allocatedSwapINT = 0;
+  // private static final int bufferMemoryINT = 1;
+  // private static final int contextSwitchesINT = 2;
+  // private static final int cpuActiveINT = 3;
+  // private static final int cpuIdleINT = 4;
+  // private static final int cpuNiceINT = 5;
+  // private static final int cpuSystemINT = 6;
+  // private static final int cpuUserINT = 7;
+  // private static final int cpusINT = 8;
+  // private static final int freeMemoryINT = 9;
+  // private static final int pagesPagedInINT = 10;
+  // private static final int pagesPagedOutINT = 11;
+  // private static final int pagesSwappedInINT = 12;
+  // private static final int pagesSwappedOutINT = 13;
+  // private static final int physicalMemoryINT = 14;
+  // private static final int processCreatesINT = 15;
+  // private static final int processesINT = 16;
+  // private static final int sharedMemoryINT = 17;
+  // private static final int unallocatedSwapINT = 18;
   //
-  // private final static int loopbackPacketsLONG = 0;
-  // private final static int loopbackBytesLONG = 1;
-  // private final static int recvPacketsLONG = 2;
-  // private final static int recvBytesLONG = 3;
-  // private final static int recvErrorsLONG = 4;
-  // private final static int recvDropsLONG = 5;
-  // private final static int xmitPacketsLONG = 6;
-  // private final static int xmitBytesLONG = 7;
-  // private final static int xmitErrorsLONG = 8;
-  // private final static int xmitDropsLONG = 9;
-  // private final static int xmitCollisionsLONG = 10;
+  // private static final int loopbackPacketsLONG = 0;
+  // private static final int loopbackBytesLONG = 1;
+  // private static final int recvPacketsLONG = 2;
+  // private static final int recvBytesLONG = 3;
+  // private static final int recvErrorsLONG = 4;
+  // private static final int recvDropsLONG = 5;
+  // private static final int xmitPacketsLONG = 6;
+  // private static final int xmitBytesLONG = 7;
+  // private static final int xmitErrorsLONG = 8;
+  // private static final int xmitDropsLONG = 9;
+  // private static final int xmitCollisionsLONG = 10;
   //
-  // private final static int loadAverage1DOUBLE = 0;
-  // private final static int loadAverage15DOUBLE = 1;
-  // private final static int loadAverage5DOUBLE = 2;
+  // private static final int loadAverage1DOUBLE = 0;
+  // private static final int loadAverage15DOUBLE = 1;
+  // private static final int loadAverage5DOUBLE = 2;
 
-  private final static StatisticsType myType;
+  private static final StatisticsType myType;
 
   private static void checkOffset(String name, int offset) {
     int id = myType.nameToId(name);

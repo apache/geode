@@ -32,7 +32,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 public class AddPdxType extends BaseCommand {
   private static final Logger logger = LogService.getLogger();
 
-  private final static AddPdxType singleton = new AddPdxType();
+  private static final AddPdxType singleton = new AddPdxType();
 
   public static Command getCommand() {
     return singleton;

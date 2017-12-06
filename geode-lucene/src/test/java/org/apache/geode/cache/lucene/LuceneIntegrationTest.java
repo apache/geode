@@ -15,16 +15,16 @@
 
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
+import org.junit.After;
+import org.junit.Before;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
-
-import org.junit.After;
-import org.junit.Before;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 
 public class LuceneIntegrationTest {

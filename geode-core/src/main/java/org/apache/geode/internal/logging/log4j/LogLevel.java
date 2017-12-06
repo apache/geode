@@ -15,13 +15,14 @@
 
 package org.apache.geode.internal.logging.log4j;
 
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.logging.log4j.Level;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Level;
+
+import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
  * This class provides utility methods to hold all valid log4j levels and lgegacy geode log levels
@@ -81,7 +82,7 @@ public class LogLevel {
 
   /**
    * resolve the log4j level from any log statement in the log file.
-   * 
+   *
    * @param level either legacy level string or log4j level string
    * @return log4j level. Level.OFF is invalid string
    */
@@ -93,7 +94,7 @@ public class LogLevel {
 
   /**
    * get Log4j Level from either legacy level string or log4j level string
-   * 
+   *
    * @param level either legacy level string or log4j level string
    * @return log4j level. null if invalid level string
    */
@@ -103,7 +104,7 @@ public class LogLevel {
 
   /**
    * convert log4j level to logwriter code
-   * 
+   *
    * @param log4jLevel log4j level object
    * @return legacy logwriter code
    */
@@ -118,7 +119,7 @@ public class LogLevel {
 
   /**
    * convert legacy logwriter code to log4j level
-   * 
+   *
    * @param logWriterLevel logwriter code
    * @return log4j level
    */
@@ -131,7 +132,7 @@ public class LogLevel {
 
   /**
    * convert a string to logwriter code, either log4j level or logwriter string, or a level-xxx
-   * 
+   *
    * @param levelName a string of level name
    * @return logwriter code
    */
@@ -157,7 +158,7 @@ public class LogLevel {
 
   /**
    * convert a legacy logwriter code to log4j level string
-   * 
+   *
    * @param logWriterLevel integer code
    * @return log4j level string
    */

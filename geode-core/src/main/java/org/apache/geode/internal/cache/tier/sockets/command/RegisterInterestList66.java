@@ -48,7 +48,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class RegisterInterestList66 extends BaseCommand {
 
-  private final static RegisterInterestList66 singleton = new RegisterInterestList66();
+  private static final RegisterInterestList66 singleton = new RegisterInterestList66();
 
   public static Command getCommand() {
     return singleton;

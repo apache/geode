@@ -20,13 +20,13 @@ import org.apache.geode.pdx.internal.PdxType;
 
 /**
  * Retrieve the PDXType, given an integer PDX id, from a server.
- * 
+ *
  * @since GemFire 6.6
  */
 public class GetPDXTypeByIdOp {
   /**
    * Get a PdxType from the given pool.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    */
   public static PdxType execute(ExecutablePool pool, int pdxId) {

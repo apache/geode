@@ -82,7 +82,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
   /**
    * Sends a PartitionedRegion message to fetch keys for a bucketId
-   * 
+   *
    * @param recipient the member that the fetch keys message is sent to
    * @param r the PartitionedRegion that contains the bucket
    * @param bucketId the identity of the bucket that contains the keys to be returned
@@ -109,7 +109,7 @@ public class FetchKeysMessage extends PartitionMessage {
   }
 
   /**
-   * 
+   *
    * @param recipient
    * @param r
    * @param bucketId
@@ -251,7 +251,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
     /**
      * Send an ack
-     * 
+     *
      * @throws ForceReattemptException if the peer is no longer available
      */
     public static void send(final InternalDistributedMember recipient, final int processorId,
@@ -373,7 +373,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -445,7 +445,7 @@ public class FetchKeysMessage extends PartitionMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class FetchKeysResponse extends PartitionResponse {

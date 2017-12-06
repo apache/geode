@@ -23,9 +23,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Abstract class PulseService
- * 
+ *
  * This is a base class for all services in pulse.
- * 
+ *
  * @since GemFire version 7.5
  */
 public interface PulseService {

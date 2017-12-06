@@ -21,4 +21,3 @@ package org.apache.geode.internal.admin;
  */
 public interface TransportConfig {
 }
-

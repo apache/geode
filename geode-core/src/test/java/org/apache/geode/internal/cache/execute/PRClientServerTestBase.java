@@ -45,6 +45,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.functions.TestFunction;
@@ -592,6 +593,8 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
   private void createCacheInClientServer() {
     Properties props = new Properties();
+    props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.functions.TestFunction;org.apache.geode.internal.cache.execute.**");
     server1.invoke(() -> PRClientServerTestBase.createCacheInVm(props));
 
     server2.invoke(() -> PRClientServerTestBase.createCacheInVm(props));
@@ -599,10 +602,9 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
     server3.invoke(() -> PRClientServerTestBase.createCacheInVm(props));
 
-    Properties props2 = new Properties();
-    props2.setProperty(MCAST_PORT, "0");
-    props2.setProperty(LOCATORS, "");
-    client.invoke(() -> PRClientServerTestBase.createCacheInVm(props2));
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    client.invoke(() -> PRClientServerTestBase.createCacheInVm(props));
   }
 
   public static void createCacheInVm(Properties props) {

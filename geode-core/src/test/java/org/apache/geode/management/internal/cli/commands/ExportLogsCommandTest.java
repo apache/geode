@@ -14,13 +14,26 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.*;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.GIGABYTE;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.KILOBYTE;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.MEGABYTE;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.TERABYTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.Matchers;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
@@ -35,15 +48,6 @@ import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.BytesToString;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.Matchers;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @Category(UnitTest.class)
 public class ExportLogsCommandTest {
@@ -178,7 +182,7 @@ public class ExportLogsCommandTest {
     testResults2.addResult(member2, 60 * MEGABYTE);
 
     doReturn(mockCache).when(spyCmd).getCache();
-    doReturn(testMembers).when(spyCmd).getMembers(null, null);
+    doReturn(testMembers).when(spyCmd).getMembersIncludingLocators(null, null);
     doReturn(testResults1).when(spyCmd)
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
     doReturn(testResults2).when(spyCmd)
@@ -219,7 +223,7 @@ public class ExportLogsCommandTest {
     testResults2.addResult(member2, 60 * MEGABYTE);
 
     doReturn(mockCache).when(spyCmd).getCache();
-    doReturn(testMembers).when(spyCmd).getMembers(null, null);
+    doReturn(testMembers).when(spyCmd).getMembersIncludingLocators(null, null);
     doReturn(testResults1).when(spyCmd)
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
     doReturn(testResults2).when(spyCmd)
@@ -260,7 +264,7 @@ public class ExportLogsCommandTest {
     testResults1.addResult(member1, new ManagementException(sb.toString()));
 
     doReturn(mockCache).when(spyCmd).getCache();
-    doReturn(testMembers).when(spyCmd).getMembers(null, null);
+    doReturn(testMembers).when(spyCmd).getMembersIncludingLocators(null, null);
     doReturn(testResults1).when(spyCmd)
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
 

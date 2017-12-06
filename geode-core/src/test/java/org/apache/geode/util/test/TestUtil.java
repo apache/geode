@@ -14,13 +14,13 @@
  */
 package org.apache.geode.util.test;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.SystemUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 
 public class TestUtil {
 
@@ -28,10 +28,10 @@ public class TestUtil {
    * Return the path to a named resource. This finds the resource on the classpath using the rules
    * of class.getResource. For a relative path it will look in the same package as the class, for an
    * absolute path it will start from the base package.
-   * 
+   *
    * Best practice is to put the resource in the same package as your test class and load it with
    * this method.
-   * 
+   *
    * @param clazz the class to look relative too
    * @param name the name of the resource, eg "cache.xml"
    */

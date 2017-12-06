@@ -18,7 +18,7 @@ import java.beans.ConstructorProperties;
 
 /**
  * Composite data type used to distribute server load information.
- * 
+ *
  * @since GemFire 7.0
  */
 public class ServerLoadData {

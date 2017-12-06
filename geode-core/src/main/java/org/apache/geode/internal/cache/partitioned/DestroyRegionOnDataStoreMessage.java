@@ -17,28 +17,26 @@ package org.apache.geode.internal.cache.partitioned;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import org.apache.geode.DataSerializer;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-
 import java.util.Set;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * A message sent to a data store telling that data store to globally destroy the region on behalf
  * of a PR accessor.
- * 
+ *
  * @since GemFire 5.0
  */
 public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
@@ -60,7 +58,7 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
 
   /**
    * Sends a DestroyRegionOnDataStoreMessage requesting that another VM destroy an existing region
-   * 
+   *
    */
   public static void send(InternalDistributedMember recipient, PartitionedRegion r,
       Object callbackArg) {

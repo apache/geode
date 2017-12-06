@@ -14,50 +14,33 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.MethodTarget;
+
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+
 /**
- * 
+ *
  * @since GemFire 7.0
  */
-public class GatewaySenderIdConverter implements Converter<String> {
+public class GatewaySenderIdConverter extends BaseStringConverter {
 
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && ConverterHint.GATEWAY_SENDER_ID.equals(optionContext);
+  public String getConverterHint() {
+    return ConverterHint.GATEWAY_SENDER_ID;
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    if (String.class.equals(targetType) && ConverterHint.GATEWAY_SENDER_ID.equals(optionContext)) {
-      Set<String> gatewaySenderIds = getGatewaySenderIds();
-
-      for (String gatewaySenderId : gatewaySenderIds) {
-        completions.add(new Completion(gatewaySenderId));
-      }
-    }
-
-    return !completions.isEmpty();
-  }
-
-  public Set<String> getGatewaySenderIds() {
+  public Set<String> getCompletionValues() {
     Set<String> gatewaySenderIds = Collections.emptySet();
 
     Gfsh gfsh = Gfsh.getCurrentInstance();

@@ -21,22 +21,23 @@ import java.util.Arrays;
 import org.apache.commons.io.FileUtils;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.Member;
 import org.apache.geode.test.junit.rules.Server;
 
-public class MemberVM<T extends Member> implements Member {
-  private T member;
+public class MemberVM implements Member {
+  private Member member;
   private VM vm;
   private boolean tempWorkingDir;
 
-  public MemberVM(T member, VM vm) {
+  public MemberVM(Member member, VM vm) {
     this(member, vm, false);
   }
 
-  public MemberVM(T member, VM vm, boolean tempWorkingDir) {
+  public MemberVM(Member member, VM vm, boolean tempWorkingDir) {
     this.member = member;
     this.vm = vm;
     this.tempWorkingDir = tempWorkingDir;
@@ -54,11 +55,15 @@ public class MemberVM<T extends Member> implements Member {
     vm.invoke(runnable);
   }
 
+  public <T> T invoke(final SerializableCallableIF<T> callable) {
+    return vm.invoke(callable);
+  }
+
   public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {
     return vm.invokeAsync(runnable);
   }
 
-  public T getMember() {
+  public Member getMember() {
     return member;
   }
 
@@ -96,8 +101,12 @@ public class MemberVM<T extends Member> implements Member {
     return ((Server) member).getEmbeddedLocatorPort();
   }
 
-  public void stopMember() {
+  public void stopMember(boolean cleanWorkingDir) {
     this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    if (!cleanWorkingDir) {
+      return;
+    }
+
     if (tempWorkingDir) {
       /*
        * this temporary workingDir will dynamically change the "user.dir". system property to point
@@ -109,8 +118,34 @@ public class MemberVM<T extends Member> implements Member {
     } else
       // if using the dunit/vm dir as the preset working dir, need to cleanup dir except
       // the locator0view* file, so that regions/indexes won't get persisted across tests
-      Arrays.stream(getWorkingDir().listFiles((dir, name) -> {
-        return !name.startsWith("locator0view");
-      })).forEach(FileUtils::deleteQuietly);
+      Arrays.stream(getWorkingDir().listFiles((dir, name) -> !name.startsWith("locator0view")))
+          .forEach(FileUtils::deleteQuietly);
+  }
+
+  public static void invokeInEveryMember(SerializableRunnableIF runnableIF, MemberVM... members) {
+    Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
+  }
+
+  /**
+   * this should called on a locatorVM or a serverVM with jmxManager enabled
+   */
+  public void waitTillRegionsAreReadyOnServers(String regionPath, int serverCount) {
+    vm.invoke(() -> LocatorServerStartupRule.memberStarter
+        .waitTillRegionIsReadyOnServers(regionPath, serverCount));
+  }
+
+  public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
+    vm.invoke(() -> LocatorServerStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
+        serverCount));
+  }
+
+  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
+    vm.invoke(() -> LocatorServerStartupRule.memberStarter
+        .waitTillAsyncEventQueuesAreReadyOnServers(queueId, serverCount));
+  }
+
+  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) throws Exception {
+    vm.invoke(() -> LocatorServerStartupRule.memberStarter
+        .waitTilGatewaySendersAreReady(expectedGatewayObjectCount));
   }
 }

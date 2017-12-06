@@ -35,7 +35,7 @@ public abstract class OperationAbortedException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>OperationAbortedException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message
    */
   public OperationAbortedException(String msg) {
@@ -45,7 +45,7 @@ public abstract class OperationAbortedException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>OperationAbortedException</code> with the specified detail
    * message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -55,7 +55,7 @@ public abstract class OperationAbortedException extends CacheRuntimeException {
 
   /**
    * Constructs an instance of <code>OperationAbortedException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public OperationAbortedException(Throwable cause) {

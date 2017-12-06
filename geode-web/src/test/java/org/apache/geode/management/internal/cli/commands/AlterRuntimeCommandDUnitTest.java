@@ -38,10 +38,10 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -51,7 +51,7 @@ public class AlterRuntimeCommandDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -59,7 +59,7 @@ public class AlterRuntimeCommandDUnitTest {
   private void verifyDefaultConfig(MemberVM[] servers) {
     for (MemberVM server : servers) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogLevel()).isEqualTo(LogWriterImpl.ERROR_LEVEL);
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
@@ -83,9 +83,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server0 = startupRule.startServerAsJmxManager(0, props);
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -100,10 +100,10 @@ public class AlterRuntimeCommandDUnitTest {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED, "true");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
 
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     server0.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogLevel()).isEqualTo(LogWriterImpl.INFO_LEVEL);
       assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
@@ -137,19 +137,19 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
 
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -173,18 +173,18 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csbSetFileSizeLimit =
         new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csbSetFileSizeLimit.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "50");
-    gfsh.executeAndVerifyCommand(csbSetFileSizeLimit.toString());
+    gfsh.executeAndAssertThat(csbSetFileSizeLimit.toString()).statusIsSuccess();
 
     server2.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
       assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
@@ -194,11 +194,11 @@ public class AlterRuntimeCommandDUnitTest {
         new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csbSetDiskSpaceLimit.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
 
-    gfsh.executeAndVerifyCommand(csbSetDiskSpaceLimit.toString());
+    gfsh.executeAndAssertThat(csbSetDiskSpaceLimit.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
         assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
@@ -221,16 +221,16 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.MEMBERS, server1.getName());
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
 
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedLimit;
@@ -240,7 +240,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getLogDiskSpaceLimit()).isEqualTo(expectedLimit);
@@ -264,9 +264,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -276,7 +276,7 @@ public class AlterRuntimeCommandDUnitTest {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT,
         String.valueOf(TEST_LIMIT));
 
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedLimit;
@@ -289,7 +289,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedGroup = "";
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getGroups()).isEqualTo(expectedGroup);
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
@@ -314,19 +314,19 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "11");
 
-    gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(11);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -352,9 +352,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -382,9 +382,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -423,20 +423,20 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final String TEST_NAME = "statisticsArchive";
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, TEST_NAME);
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -460,9 +460,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final String TEST_NAME = "statisticsArchive";
@@ -470,7 +470,7 @@ public class AlterRuntimeCommandDUnitTest {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, TEST_NAME);
     csb.addOption(CliStrings.MEMBERS, server1.getName());
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (final MemberVM server : new MemberVM[] {server1, server2}) {
       String expectedName;
@@ -480,7 +480,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedName = "";
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -505,9 +505,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final String TEST_NAME = "statisticsArchive";
@@ -515,7 +515,7 @@ public class AlterRuntimeCommandDUnitTest {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, TEST_NAME);
     csb.addOption(CliStrings.GROUP, "G1");
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       String expectedName;
@@ -525,7 +525,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedName = "";
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -549,19 +549,19 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, "2000");
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -585,9 +585,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_RATE = 2000;
@@ -596,7 +596,7 @@ public class AlterRuntimeCommandDUnitTest {
         String.valueOf(TEST_RATE));
     csb.addOption(CliStrings.MEMBER, server1.getName());
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (final MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedSampleRate;
@@ -606,7 +606,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedSampleRate = 1000;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -631,9 +631,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_RATE = 2500;
@@ -642,7 +642,7 @@ public class AlterRuntimeCommandDUnitTest {
         String.valueOf(TEST_RATE));
     csb.addOption(CliStrings.GROUP, "G1");
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedSampleRate;
@@ -652,7 +652,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedSampleRate = 1000;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -678,9 +678,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -713,9 +713,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -723,11 +723,11 @@ public class AlterRuntimeCommandDUnitTest {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT,
         String.valueOf(TEST_LIMIT));
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(TEST_LIMIT);
@@ -752,9 +752,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -763,7 +763,7 @@ public class AlterRuntimeCommandDUnitTest {
         String.valueOf(TEST_LIMIT));
     csb.addOption(CliStrings.MEMBER, server1.getName());
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (final MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedLimit;
@@ -773,7 +773,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(expectedLimit);
@@ -799,9 +799,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 25;
@@ -810,7 +810,7 @@ public class AlterRuntimeCommandDUnitTest {
         String.valueOf(TEST_LIMIT));
     csb.addOption(CliStrings.GROUP, "G1");
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedLimit;
@@ -820,7 +820,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(expectedLimit);
@@ -847,9 +847,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -870,7 +870,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -895,9 +895,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -905,11 +905,11 @@ public class AlterRuntimeCommandDUnitTest {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT,
         String.valueOf(TEST_LIMIT));
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -934,9 +934,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 10;
@@ -945,7 +945,7 @@ public class AlterRuntimeCommandDUnitTest {
         String.valueOf(TEST_LIMIT));
     csb.addOption(CliStrings.MEMBER, server1.getName());
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (final MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedLimit;
@@ -955,7 +955,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -981,9 +981,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     final int TEST_LIMIT = 25;
@@ -992,7 +992,7 @@ public class AlterRuntimeCommandDUnitTest {
         String.valueOf(TEST_LIMIT));
     csb.addOption(CliStrings.GROUP, "G1");
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       int expectedLimit;
@@ -1002,7 +1002,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -1029,9 +1029,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -1064,19 +1064,19 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED, "false");
 
-    CommandResult result = gfsh.executeAndVerifyCommand(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+        InternalCache cache = LocatorServerStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -1105,13 +1105,13 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     server2.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getGroups()).isEqualTo("G1");
     });
@@ -1125,7 +1125,7 @@ public class AlterRuntimeCommandDUnitTest {
         .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
 
     server1.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
       assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
@@ -1151,9 +1151,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
@@ -1165,7 +1165,7 @@ public class AlterRuntimeCommandDUnitTest {
         .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
 
     server1.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
       assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
@@ -1182,9 +1182,9 @@ public class AlterRuntimeCommandDUnitTest {
     MemberVM locator = startupRule.startLocatorVM(0);
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     Properties props = new Properties();
@@ -1193,11 +1193,11 @@ public class AlterRuntimeCommandDUnitTest {
     startupRule.startServerVM(1, props, locator.getPort());
 
     String command = "alter runtime --group=Group1 --log-level=fine";
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     locator.invoke(() -> {
       ClusterConfigurationService sharedConfig =
-          LocatorServerStartupRule.locatorStarter.getLocator().getSharedConfiguration();
+          LocatorServerStartupRule.getLocator().getSharedConfiguration();
       Properties properties = sharedConfig.getConfiguration("Group1").getGemfireProperties();
       assertThat(properties.get(LOG_LEVEL)).isEqualTo("fine");
     });

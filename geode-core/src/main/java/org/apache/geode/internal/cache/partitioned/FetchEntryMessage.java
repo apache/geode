@@ -54,7 +54,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * This message is used as the request for a
  * {@link org.apache.geode.cache.Region#getEntry(Object)}operation. The reply is sent in a
  * {@link org.apache.geode.internal.cache.partitioned.FetchEntryMessage.FetchEntryReplyMessage}.
- * 
+ *
  * @since GemFire 5.1
  */
 public class FetchEntryMessage extends PartitionMessage {
@@ -80,7 +80,7 @@ public class FetchEntryMessage extends PartitionMessage {
 
   /**
    * Sends a PartitionedRegion {@link org.apache.geode.cache.Region#getEntry(Object)} message
-   * 
+   *
    * @param recipient the member that the getEntry message is sent to
    * @param r the PartitionedRegion for which getEntry was performed upon
    * @param key the object to which the value should be feteched
@@ -208,7 +208,7 @@ public class FetchEntryMessage extends PartitionMessage {
 
   /**
    * This message is used for the reply to a {@link FetchEntryMessage}.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class FetchEntryReplyMessage extends ReplyMessage {
@@ -241,7 +241,7 @@ public class FetchEntryMessage extends PartitionMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override

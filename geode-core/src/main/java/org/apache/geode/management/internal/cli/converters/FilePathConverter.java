@@ -14,16 +14,17 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import org.apache.geode.management.cli.ConverterHint;
+import java.io.File;
+import java.util.List;
+
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import java.io.File;
-import java.util.List;
+import org.apache.geode.management.cli.ConverterHint;
 
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 public class FilePathConverter implements Converter<File> {

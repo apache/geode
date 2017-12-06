@@ -14,16 +14,17 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
+
 /**
  * Provides the LoggerContext and LoggerConfig for GemFire appenders to attach to. These appenders
  * include AlertAppender and LogWriterAppender.
- * 
+ *
  */
 public class AppenderContext {
 

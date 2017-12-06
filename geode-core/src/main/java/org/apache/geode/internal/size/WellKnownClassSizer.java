@@ -17,7 +17,7 @@ package org.apache.geode.internal.size;
 
 /**
  * An efficient sizer for some commonly used classes.
- * 
+ *
  * This will return 0 if it does not know how to size the object
  *
  */

@@ -14,29 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
-import org.apache.geode.modules.util.ContextMapper;
-import org.apache.geode.modules.util.RegionConfiguration;
-import org.apache.geode.modules.util.RegionHelper;
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Pipeline;
-import org.apache.catalina.Session;
-import org.apache.catalina.Valve;
-import org.apache.catalina.session.ManagerBase;
-import org.apache.catalina.session.StandardSession;
-import org.apache.catalina.util.CustomObjectInputStream;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -59,7 +36,31 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-abstract public class DeltaSessionManager extends ManagerBase
+import org.apache.catalina.Container;
+import org.apache.catalina.Context;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.Loader;
+import org.apache.catalina.Pipeline;
+import org.apache.catalina.Session;
+import org.apache.catalina.Valve;
+import org.apache.catalina.session.ManagerBase;
+import org.apache.catalina.session.StandardSession;
+import org.apache.catalina.util.CustomObjectInputStream;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
+import org.apache.geode.modules.util.ContextMapper;
+import org.apache.geode.modules.util.RegionConfiguration;
+import org.apache.geode.modules.util.RegionHelper;
+
+public abstract class DeltaSessionManager extends ManagerBase
     implements Lifecycle, PropertyChangeListener, SessionManager {
 
   /**

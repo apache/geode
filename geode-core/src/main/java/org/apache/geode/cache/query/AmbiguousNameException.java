@@ -26,7 +26,7 @@ public class AmbiguousNameException extends NameResolutionException {
 
   /**
    * Constructs instance of AmbiguousNameException with error message
-   * 
+   *
    * @param msg the error message
    */
   public AmbiguousNameException(String msg) {
@@ -35,7 +35,7 @@ public class AmbiguousNameException extends NameResolutionException {
 
   /**
    * Constructs instance of AmbiguousNameException with error message and cause
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable that is a cause of this exception
    */

@@ -17,7 +17,7 @@ package org.apache.geode.cache.execute;
 /**
  * Application developers can extend this class instead of implementing the {@link Function}
  * interface.
- * 
+ *
  * <p>
  * This implementation provides the following defaults
  * </p>
@@ -27,12 +27,12 @@ package org.apache.geode.cache.execute;
  * <li>{@link Function#isHA()} returns true</li>
  * </ol>
  * </p>
- * 
+ *
  * @since GemFire 6.0
  * @see Function
  * @deprecated Use {@link Function} instead. Function has default methods that now mimic the
  *             behavior of FunctionAdapter.
- * 
+ *
  */
 public abstract class FunctionAdapter implements Function {
 }

@@ -14,15 +14,6 @@
  */
 package org.apache.geode.management.internal.configuration.messages;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.xml.sax.SAXException;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,27 +22,27 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-/***
- * Response containing the configuration requested by the {@link ConfigurationRequest}
- */
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+
 public class ConfigurationResponse implements DataSerializableFixedID {
 
   private Map<String, Configuration> requestedConfiguration = new HashMap<String, Configuration>();
   private byte[][] jarBytes;
   private String[] jarNames;
   private boolean failedToGetSharedConfig = false;
-
-  public ConfigurationResponse() {
-
-  }
-
-  public ConfigurationResponse(Map<String, Configuration> requestedConfiguration) {
-    this.requestedConfiguration.putAll(requestedConfiguration);
-  }
 
   @Override
   public int getDSFID() {
@@ -76,10 +67,6 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
   public Map<String, Configuration> getRequestedConfiguration() {
     return this.requestedConfiguration;
-  }
-
-  public void setRequestedConfiguration(Map<String, Configuration> requestedConfiguration) {
-    this.requestedConfiguration = requestedConfiguration;
   }
 
   public void addConfiguration(Configuration configuration) {
@@ -153,18 +140,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     this.jarBytes = jarBytes;
   }
 
-  // TODO Sourabh, please review for correctness
   public Version[] getSerializationVersions() {
     return new Version[] {Version.CURRENT};
   }
-
-  public boolean failedToGetSharedConfig() {
-    return failedToGetSharedConfig;
-  }
-
-  public void setFailedToGetSharedConfig(boolean failedToGetSharedConfig) {
-    this.failedToGetSharedConfig = failedToGetSharedConfig;
-  }
 }
-
-

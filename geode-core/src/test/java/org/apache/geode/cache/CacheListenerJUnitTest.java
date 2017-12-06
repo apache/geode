@@ -14,30 +14,31 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.RegionMembershipListenerAdapter;
 import org.apache.geode.cache.util.RegionRoleListenerAdapter;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Unit test for basic CacheListener feature. NOTE: these tests using a loner DistributedSystem and
  * local scope regions so all the listener features tested are for local listeners being invoked for
  * local operations.
- * 
+ *
  * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)

@@ -26,10 +26,10 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * 
+ *
  * This class keeps track of the information we need to determine which threads in the receiver
  * system a reply processor thread is waiting for.
- * 
+ *
  * This will allow us to programatically discover deadlocks.
  *
  */

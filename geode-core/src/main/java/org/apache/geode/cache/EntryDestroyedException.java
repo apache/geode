@@ -18,7 +18,7 @@ package org.apache.geode.cache;
  * Indicates that a method was invoked on an entry that has been destroyed.
  *
  *
- * 
+ *
  * @see Region.Entry
  * @since GemFire 3.0
  */
@@ -32,7 +32,7 @@ public class EntryDestroyedException extends CacheRuntimeException {
 
   /**
    * Constructs a new <code>EntryDestroyedException</code> with the message.
-   * 
+   *
    * @param s the detailed message for this exception
    */
   public EntryDestroyedException(String s) {
@@ -42,7 +42,7 @@ public class EntryDestroyedException extends CacheRuntimeException {
   /**
    * Constructs a new <code>EntryDestroyedException</code> with a detailed message and a causal
    * exception.
-   * 
+   *
    * @param s the message
    * @param ex a causal Throwable
    */
@@ -52,7 +52,7 @@ public class EntryDestroyedException extends CacheRuntimeException {
 
   /**
    * Construct a <code>EntryDestroyedException</code> with a cause.
-   * 
+   *
    * @param ex the causal Throwable
    */
   public EntryDestroyedException(Throwable ex) {

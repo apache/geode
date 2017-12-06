@@ -23,7 +23,7 @@ import org.apache.geode.internal.concurrent.LI;
 /**
  * This class is serializable version of the java 1.6 lock info class. It also holds a locality
  * field to identify the VM where the lock is held.
- * 
+ *
  *
  */
 class LocalLockInfo implements Serializable {

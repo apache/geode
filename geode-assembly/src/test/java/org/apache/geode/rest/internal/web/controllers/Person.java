@@ -14,18 +14,18 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import java.io.Serializable;
 import java.util.Date;
+
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 
-import java.io.Serializable;
-
 /**
  * The Person class is an abstraction modeling a person.
  * <p/>
- * 
+ *
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")

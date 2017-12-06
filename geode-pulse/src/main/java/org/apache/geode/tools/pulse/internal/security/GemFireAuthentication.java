@@ -17,16 +17,17 @@ package org.apache.geode.tools.pulse.internal.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
-
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 
 /**
  * Spring security authentication object for GemFire
@@ -42,7 +43,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  * to get authentication levels. See @See {@link #populateAuthorities(JMXConnector)}. This sets
  * Spring Security Authorities 2.b DataBrowser end-points are required to be authorized against
  * Spring Granted Authority
- * 
+ *
  * @since GemFire version 9.0
  */
 public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
@@ -79,10 +80,6 @@ public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
 
     return authorities;
 
-  }
-
-  public JMXConnector getJmxc() {
-    return jmxc;
   }
 
 }

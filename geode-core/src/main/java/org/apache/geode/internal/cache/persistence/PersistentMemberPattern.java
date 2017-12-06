@@ -26,10 +26,10 @@ import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Implementation of the public PersistentID. It holds the region, host, directory, and timestamp.
- * 
+ *
  * This class also is also used to describe members that the user has revoked. Any fields that are
  * null will be considered a wildcard matching any members.
- * 
+ *
  * @since GemFire prPersistSprint1
  */
 public class PersistentMemberPattern implements PersistentID, Comparable<PersistentMemberPattern> {

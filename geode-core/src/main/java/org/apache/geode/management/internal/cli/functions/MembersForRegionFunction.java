@@ -28,7 +28,7 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * 
+ *
  * @since GemFire 8.0
  */
 

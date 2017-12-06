@@ -16,8 +16,9 @@
 
 package org.apache.geode.tools.pulse.internal;
 
-import javax.servlet.ServletContextEvent;
 import static org.mockito.Mockito.*;
+
+import javax.servlet.ServletContextEvent;
 
 import org.junit.After;
 import org.junit.Assert;

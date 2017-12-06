@@ -33,7 +33,7 @@ public class ArgumentRedactor {
 
   /**
    * Accept a map of key/value pairs and produce a printable string, redacting any necessary values.
-   * 
+   *
    * @param map A {@link Map} of key/value pairs such as a collection of properties
    *
    * @return A printable string with redacted fields. E.g., "username=jdoe password=********"
@@ -52,7 +52,7 @@ public class ArgumentRedactor {
   /**
    * Returns the redacted value of the {@link Entry} if the key indicates redaction is necessary.
    * Otherwise, value is returned, unchanged.
-   * 
+   *
    * @param entry A key/value pair
    *
    * @return The redacted string for value.
@@ -68,7 +68,7 @@ public class ArgumentRedactor {
    * Example:<br>
    * Single value: "password=secret" or "--password=secret" Multiple values: "-Dflag -Dkey=value
    * --classpath=."
-   * 
+   *
    * @param line The argument input to be parsed
    * @return A redacted string that has sensitive information obscured.
    */
@@ -130,7 +130,7 @@ public class ArgumentRedactor {
 
   /**
    * Determine whether a key's value should be redacted.
-   * 
+   *
    * @param key The key in question.
    *
    * @return true if the value should be redacted, otherwise false.

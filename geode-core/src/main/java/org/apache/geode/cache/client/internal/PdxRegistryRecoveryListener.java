@@ -31,13 +31,13 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * connect to a new server before realizing that all the servers crashed. To fix this, we would need
  * to get some kind of birthdate of the server ds we connect and use that to decide if we need to
  * recover the PDX registry.
- * 
+ *
  * We can also lose connectivity with the servers, even if the servers are still running. Maybe for
  * the PDX registry we need some way of telling if the PDX registry was lost at the server side in
  * the interval.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class PdxRegistryRecoveryListener extends EndpointManager.EndpointListenerAdapter {
   private static final Logger logger = LogService.getLogger();

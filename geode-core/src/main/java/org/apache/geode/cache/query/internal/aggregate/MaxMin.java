@@ -19,7 +19,7 @@ import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the Max or Min
- * 
+ *
  *
  */
 
