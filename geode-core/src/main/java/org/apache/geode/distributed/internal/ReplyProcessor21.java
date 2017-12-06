@@ -161,13 +161,13 @@ public class ReplyProcessor21 implements MembershipListener {
    * on this one. This is a thread-local so that lower level comm layers can tell that the interval
    * should be shortened
    */
-  private static final ThreadLocal<Boolean> SevereAlertShorten =
+  private static final ThreadLocal<Boolean> severeAlertShorten =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   /**
    * whether the next replyProcessor for the current thread should perform severe-alert processing
    */
-  private static ThreadLocal<Boolean> ForceSevereAlertProcessing =
+  private static ThreadLocal<Boolean> forceSevereAlertProcessing =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   ////////////////////// Static Methods /////////////////////
@@ -1151,25 +1151,25 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param flag whether to shorten the time or not
    */
   public static void setShortSevereAlertProcessing(boolean flag) {
-    SevereAlertShorten.set(Boolean.valueOf(flag));
+    severeAlertShorten.set(flag);
   }
 
   public static boolean getShortSevereAlertProcessing() {
-    return ((Boolean) SevereAlertShorten.get()).booleanValue();
+    return severeAlertShorten.get();
   }
 
   /**
    * Force reply-waits in the current thread to perform severe-alert processing
    */
   public static void forceSevereAlertProcessing() {
-    ForceSevereAlertProcessing.set(Boolean.TRUE);
+    forceSevereAlertProcessing.set(Boolean.TRUE);
   }
 
   /**
    * Reset the forcing of severe-alert processing for the current thread
    */
   public static void unforceSevereAlertProcessing() {
-    ForceSevereAlertProcessing.set(Boolean.FALSE);
+    forceSevereAlertProcessing.set(Boolean.FALSE);
   }
 
   /**
@@ -1177,7 +1177,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * current thread to perform severe-alert processing.
    */
   public static boolean isSevereAlertProcessingForced() {
-    return (Boolean) ForceSevereAlertProcessing.get();
+    return forceSevereAlertProcessing.get();
   }
 
 
@@ -1186,7 +1186,7 @@ public class ReplyProcessor21 implements MembershipListener {
    */
   public long getAckSevereAlertThresholdMS() {
     long disconnectTimeout = getSevereAlertThreshold() * 1000L;
-    if (disconnectTimeout > 0 && ((Boolean) SevereAlertShorten.get()).booleanValue()) {
+    if (disconnectTimeout > 0 && severeAlertShorten.get()) {
       disconnectTimeout = (long) (disconnectTimeout * PR_SEVERE_ALERT_RATIO);
     }
     return disconnectTimeout;
