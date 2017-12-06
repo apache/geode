@@ -16,6 +16,8 @@ package org.apache.geode.internal.lang;
 
 import java.util.Optional;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * The SystemPropertyHelper class is an helper class for accessing system properties used in geode.
  * The method name to get the system property should be the same as the system property name.
@@ -27,11 +29,37 @@ public class SystemPropertyHelper {
   private static final String GEODE_PREFIX = "geode.";
   private static final String GEMFIRE_PREFIX = "gemfire.";
 
+
+  /**
+   * Setting this to "true" enables a new asynchronous eviction algorithm. For more details see
+   * {@link org.apache.geode.internal.cache.eviction.LRUListWithSyncSorting}.
+   *
+   * @since Geode 1.4.0
+   */
+  @Experimental
+  public static final String EVICTION_SCAN_ASYNC = "EvictionScanAsync";
+
+  /**
+   * This property allows the maximum number of threads used for asynchronous eviction scanning to
+   * be configured. It defaults to "Math.max((Runtime.getRuntime().availableProcessors() / 4), 1)".
+   * For more details see {@link org.apache.geode.internal.cache.eviction.LRUListWithSyncSorting}.
+   *
+   * @since Geode 1.4.0
+   */
+  @Experimental
   public static final String EVICTION_SCAN_MAX_THREADS = "EvictionScanMaxThreads";
 
+  /**
+   * This property allows configuration of the threshold percentage at which an asynchronous scan is
+   * started. If the number of entries that have been recently used since the previous scan divided
+   * by total number of entries exceeds the threshold then a scan is started. The default threshold
+   * is 25. If the threshold is less than 0 or greater than 100 then the default threshold is used.
+   * For more details see {@link org.apache.geode.internal.cache.eviction.LRUListWithSyncSorting}.
+   *
+   * @since Geode 1.4.0
+   */
+  @Experimental
   public static final String EVICTION_SCAN_THRESHOLD_PERCENT = "EvictionScanThresholdPercent";
-
-  public static final String EVICTION_SCAN_ASYNC = "EvictionScanAsync";
 
   public static final String EVICTION_SEARCH_MAX_ENTRIES = "lru.maxSearchEntries";
 
