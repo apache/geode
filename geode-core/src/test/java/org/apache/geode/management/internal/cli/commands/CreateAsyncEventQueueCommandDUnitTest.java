@@ -62,7 +62,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     server = lsRule.startServerAsJmxManager(0);
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()
-        .containsOutput("Failed to persist the configuration")
+        .containsOutput("This change is not persisted in the cluster configuration")
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Success").tableHasRowCount("Member", 1);
   }
 

@@ -110,6 +110,13 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
 
     MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
+
+    locatorSite1.invoke(() -> {
+      String xml = LocatorServerStartupRule.getLocator().getSharedConfiguration()
+          .getConfiguration("cluster").getCacheXmlContent();
+      assertThat(xml).doesNotContain("gateway-sender id=\"ln\"");
+    });
+
   }
 
   /**

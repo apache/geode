@@ -105,12 +105,12 @@ public class CommandResultAssert
     return this;
   }
 
-  public CommandResultAssert failToPersist() {
+  public CommandResultAssert hasFailToPersistError() {
     Assertions.assertThat(actual.getCommandResult().failedToPersist()).isTrue();
     return this;
   }
 
-  public CommandResultAssert persisted() {
+  public CommandResultAssert hasNoFailToPersistError() {
     Assertions.assertThat(actual.getCommandResult().failedToPersist()).isFalse();
     return this;
   }
