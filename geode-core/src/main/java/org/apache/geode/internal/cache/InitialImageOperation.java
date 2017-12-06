@@ -3367,7 +3367,7 @@ public class InitialImageOperation {
       dop.writeBoolean(isHARegion);
       if (eventState != null) {
         dop.writeBoolean(true);
-        EventStateHelper.toData(dop, eventState, isHARegion);
+        EventStateHelper.dataSerialize(dop, eventState, isHARegion);
       } else {
         dop.writeBoolean(false);
       }
@@ -3400,7 +3400,7 @@ public class InitialImageOperation {
       isHARegion = dip.readBoolean();
       boolean has = dip.readBoolean();
       if (has) {
-        eventState = EventStateHelper.fromData(dip, isHARegion);
+        eventState = EventStateHelper.deDataSerialize(dip, isHARegion);
       }
       has = dip.readBoolean();
       if (has) {

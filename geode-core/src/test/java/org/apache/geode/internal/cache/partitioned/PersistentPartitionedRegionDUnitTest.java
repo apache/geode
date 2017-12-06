@@ -71,6 +71,7 @@ import org.apache.geode.cache.persistence.RevokeFailedException;
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -561,6 +562,15 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         return getDiskDirs()[0];
       }
     });
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.partitioned.PersistentPartitionedRegionDUnitTest$TestFunction");
+    return result;
+
   }
 
   /**

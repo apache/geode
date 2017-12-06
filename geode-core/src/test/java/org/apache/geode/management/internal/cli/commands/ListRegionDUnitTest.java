@@ -15,18 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_REGION;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.MEMBER;
-
-import java.util.Properties;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -66,22 +57,16 @@ public class ListRegionDUnitTest {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @ClassRule
-  public static GfshCommandRule gfshShellConnectionRule = new GfshCommandRule();
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
   public static void setupSystem() throws Exception {
-    final Properties locatorProps = createProperties(LOCATOR_NAME, GROUP3_NAME);
-    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
-
-    final Properties server1Props = createProperties(SERVER1_NAME, GROUP1_NAME);
-    server1Props.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    MemberVM server1 = lsRule.startServerVM(1, server1Props, locator.getPort());
-
-    final Properties server2Props = createProperties(SERVER2_NAME, GROUP2_NAME);
-    MemberVM server = lsRule.startServerVM(2, server2Props, locator.getPort());
+    MemberVM locator = lsRule.startLocatorVM(0);
+    MemberVM server1 = lsRule.startServerVM(1, GROUP1_NAME, locator.getPort());
+    MemberVM server = lsRule.startServerVM(2, GROUP2_NAME, locator.getPort());
 
     server1.invoke(() -> {
-      final Cache cache = CacheFactory.getAnyInstance();
+      final Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.create(PR1);
@@ -89,20 +74,20 @@ public class ListRegionDUnitTest {
     });
 
     server.invoke(() -> {
-      final Cache cache = CacheFactory.getAnyInstance();
+      final Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.create(PR1);
       createRegionsWithSubRegions();
     });
 
-    gfshShellConnectionRule.connectAndVerify(locator);
+    gfsh.connectAndVerify(locator);
   }
 
   @Test
   public void listAllRegions() throws Exception {
     String listRegions = new CommandStringBuilder(LIST_REGION).toString();
-    gfshShellConnectionRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
+    gfsh.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
         LOCALREGIONONSERVER1, REGION1, REGION2, REGION3);
   }
 
@@ -110,7 +95,7 @@ public class ListRegionDUnitTest {
   public void listRegionsOnManager() throws Exception {
     String listRegions =
         new CommandStringBuilder(LIST_REGION).addOption(MEMBER, SERVER1_NAME).toString();
-    gfshShellConnectionRule.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
+    gfsh.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
         LOCALREGIONONSERVER1);
   }
 
@@ -118,36 +103,24 @@ public class ListRegionDUnitTest {
   public void listRegionsOnServer() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(MEMBER, SERVER2_NAME);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(PR1, REGION1, REGION2, REGION3, SUBREGION1A);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1, REGION1,
+        REGION2, REGION3, SUBREGION1A);
   }
 
   @Test
   public void listRegionsInGroup1() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, GROUP1_NAME);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(PR1, LOCALREGIONONSERVER1);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
+        LOCALREGIONONSERVER1);
   }
 
   @Test
   public void listRegionsInGroup2() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, GROUP2_NAME);
-    gfshShellConnectionRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(PR1, REGION1, REGION2, REGION3, SUBREGION1A);
-  }
-
-
-  private static Properties createProperties(String name, String groups) {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
-    props.setProperty(ENABLE_TIME_STATISTICS, "true");
-    props.setProperty(NAME, name);
-    props.setProperty(GROUPS, groups);
-    return props;
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1, REGION1,
+        REGION2, REGION3, SUBREGION1A);
   }
 
   private static void createLocalRegion(final String regionName) {

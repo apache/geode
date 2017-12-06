@@ -187,6 +187,10 @@ public class Helper {
     }
   }
 
+  public boolean hasAvailabilityIndicator(String command) {
+    return availabilityIndicators.get(command) != null;
+  }
+
   HelpBlock getHelp() {
     HelpBlock root = new HelpBlock();
     commands.keySet().stream().sorted().map(commands::get).forEach(method -> {

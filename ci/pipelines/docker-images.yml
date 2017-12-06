@@ -31,7 +31,7 @@ resources:
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/apachegeode-build-concourse
+    repository: gcr.io/apachegeode-ci/((!docker-image-name))
 
 jobs:
 # apachegeode-build-concourse

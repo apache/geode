@@ -16,10 +16,12 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
@@ -41,6 +43,8 @@ public class RegionDestroyFunction implements Function, InternalEntity {
   @Override
   public void execute(FunctionContext context) {
     String regionPath = null;
+    String memberName = context.getMemberName();
+
     try {
       String functionId = context.getFunctionId();
       Object arguments = context.getArguments();
@@ -54,24 +58,31 @@ public class RegionDestroyFunction implements Function, InternalEntity {
       regionPath = (String) arguments;
       Cache cache = context.getCache();
       Region<?, ?> region = cache.getRegion(regionPath);
-      // if the region is a distributed region, and is already destroyed by another member
+      // the region is already destroyed by another member
       if (region == null) {
-        context.getResultSender().lastResult(new CliFunctionResult("", true, "SUCCESS"));
+        context.getResultSender().lastResult(new CliFunctionResult(memberName, true,
+            String.format("Region '%s' already destroyed", regionPath)));
         return;
       }
 
       region.destroyRegion();
+
       String regionName =
           regionPath.startsWith(Region.SEPARATOR) ? regionPath.substring(1) : regionPath;
       XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionName);
-      context.getResultSender().lastResult(new CliFunctionResult("", xmlEntity, regionPath));
+      context.getResultSender().lastResult(new CliFunctionResult(memberName, xmlEntity,
+          String.format("Region '%s' destroyed successfully", regionPath)));
 
     } catch (IllegalStateException ex) {
-      // user is trying to destroy something that can't destroyed.
-      context.getResultSender().lastResult(new CliFunctionResult("", false, ex.getMessage()));
-    } catch (Exception ex) {
+      // user is trying to destroy something that can't destroyed, like co-location
       context.getResultSender()
-          .lastResult(new CliFunctionResult("", ex, "failed to destroy " + regionPath));
+          .lastResult(new CliFunctionResult(memberName, false, ex.getMessage()));
+    } catch (RegionDestroyedException ex) {
+      context.getResultSender().lastResult(new CliFunctionResult(memberName, true,
+          String.format("Region '%s' already destroyed", regionPath)));
+    } catch (Exception ex) {
+      LogService.getLogger().error(ex.getMessage(), ex);
+      context.getResultSender().lastResult(new CliFunctionResult(memberName, ex, ex.getMessage()));
     }
   }
 

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -52,6 +54,14 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitTestCase {
 
   final int totalNumBuckets = 5;
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.PartitionedRegionTestUtilsDUnitTest$TestPRKey");
+    return result;
+  }
 
   /**
    * Test the {@link PartitionedRegion#getSomeKeys(java.util.Random)} method, making sure it returns
@@ -385,31 +395,6 @@ public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitT
       assertTrue(s.isEmpty());
     }
 
-    class TestPRKey implements Serializable {
-      int hashCode;
-      int differentiator;
-
-      TestPRKey(int hash, int differentiator) {
-        this.hashCode = hash;
-        this.differentiator = differentiator;
-      }
-
-      public int hashCode() {
-        return hashCode;
-      }
-
-      public boolean equals(Object obj) {
-        if (!(obj instanceof TestPRKey)) {
-          return false;
-        }
-        return ((TestPRKey) obj).differentiator == this.differentiator;
-      }
-
-      public String toString() {
-        return "TestPRKey " + hashCode + " diff " + differentiator;
-      }
-    }
-
     TestPRKey key;
     Integer val;
 
@@ -441,6 +426,31 @@ public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitT
       key = (TestPRKey) s.iterator().next();
       assertEquals(i, key.hashCode());
       // assertIndexDetailsEquals(new Integer(i), p.get(key));
+    }
+  }
+
+  static class TestPRKey implements Serializable {
+    int hashCode;
+    int differentiator;
+
+    TestPRKey(int hash, int differentiator) {
+      this.hashCode = hash;
+      this.differentiator = differentiator;
+    }
+
+    public int hashCode() {
+      return hashCode;
+    }
+
+    public boolean equals(Object obj) {
+      if (!(obj instanceof TestPRKey)) {
+        return false;
+      }
+      return ((TestPRKey) obj).differentiator == this.differentiator;
+    }
+
+    public String toString() {
+      return "TestPRKey " + hashCode + " diff " + differentiator;
     }
   }
 

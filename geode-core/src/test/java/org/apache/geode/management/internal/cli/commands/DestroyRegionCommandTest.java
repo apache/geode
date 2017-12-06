@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -33,9 +34,10 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -51,19 +53,24 @@ public class DestroyRegionCommandTest {
   private DestroyRegionCommand command;
   private CommandResult result;
   private CliFunctionResult result1, result2;
+  private ClusterConfigurationService ccService;
+  XmlEntity xmlEntity;
 
   @Before
   public void before() throws Exception {
+    xmlEntity = mock(XmlEntity.class);
     command = spy(DestroyRegionCommand.class);
+    ccService = mock(ClusterConfigurationService.class);
+    doReturn(ccService).when(command).getSharedConfiguration();
     doReturn(mock(InternalCache.class)).when(command).getCache();
 
-    ResultCollector collector = mock(ResultCollector.class);
-    doReturn(collector).when(command).executeFunction(any(), any(), any(Set.class));
-
     List<CliFunctionResult> functionResults = new ArrayList<>();
-    doReturn(functionResults).when(collector).getResult();
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
+        any(Set.class));
     result1 = mock(CliFunctionResult.class);
     result2 = mock(CliFunctionResult.class);
+    when(result1.getMemberIdOrName()).thenReturn("member1");
+    when(result2.getMemberIdOrName()).thenReturn("member2");
     functionResults.add(result1);
     functionResults.add(result2);
   }
@@ -81,6 +88,12 @@ public class DestroyRegionCommandTest {
   }
 
   @Test
+  public void regionConverterApplied() {
+    GfshParseResult parseResult = parser.parse("destroy region --name=test");
+    assertThat(parseResult.getParamValue("name")).isEqualTo("/test");
+  }
+
+  @Test
   public void whenNoRegionIsFoundOnAnyMembers() throws Exception {
     doReturn(Collections.emptySet()).when(command).findMembersForRegion(any(), any());
     parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
@@ -91,41 +104,60 @@ public class DestroyRegionCommandTest {
   }
 
   @Test
-  public void multipleResultReturnedWithOneError() throws Exception {
+  public void multipleResultReturned_oneSucess_oneFailed() throws Exception {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any(), any());
     when(result1.isSuccessful()).thenReturn(true);
     when(result1.getMessage()).thenReturn("result1 message");
-    when(result1.getXmlEntity()).thenReturn(mock(XmlEntity.class));
+    when(result1.getXmlEntity()).thenReturn(xmlEntity);
 
     when(result2.isSuccessful()).thenReturn(false);
-    when(result2.getMessage()).thenReturn("result2 message");
+    when(result2.getErrorMessage()).thenReturn("result2 message");
 
-    parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
-        .containsOutput("result2 message");
+    parser.executeAndAssertThat(command, "destroy region --name=test").statusIsSuccess()
+        .containsOutput("result1 message").containsOutput("result2 message");
 
-    // verify that xmlEntiry returned by the result1 is not saved to Cluster config
-    verify(command, never()).persistClusterConfiguration(any(), any());
+    // verify that xmlEntiry returned by the result1 is saved to Cluster config
+    verify(ccService).deleteXmlEntity(xmlEntity, null);
   }
 
   @Test
-  public void multipleResultReturnedWithOneException() throws Exception {
+  public void multipleResultReturned_oneSuccess_oneException() throws Exception {
     // mock this to pass the member search call
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any(), any());
     when(result1.isSuccessful()).thenReturn(true);
     when(result1.getMessage()).thenReturn("result1 message");
-    when(result1.getXmlEntity()).thenReturn(mock(XmlEntity.class));
+    when(result1.getXmlEntity()).thenReturn(xmlEntity);
 
     when(result2.isSuccessful()).thenReturn(false);
-    when(result2.getThrowable()).thenReturn(new IllegalArgumentException("something happened"));
+    when(result2.getErrorMessage()).thenReturn("something happened");
+
+    parser.executeAndAssertThat(command, "destroy region --name=test").statusIsSuccess()
+        .containsOutput("result1 message").containsOutput("something happened");
+
+
+    // verify that xmlEntiry returned by the result1 is saved to Cluster config
+    verify(ccService).deleteXmlEntity(xmlEntity, null);
+  }
+
+  @Test
+  public void multipleResultReturned_all_failed() throws Exception {
+    // mock this to pass the member search call
+    doReturn(Collections.singleton(DistributedMember.class)).when(command)
+        .findMembersForRegion(any(), any());
+    when(result1.isSuccessful()).thenReturn(false);
+    when(result1.getErrorMessage()).thenReturn("result1 message");
+
+    when(result2.isSuccessful()).thenReturn(false);
+    when(result2.getErrorMessage()).thenReturn("something happened");
 
     parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
-        .containsOutput("something happened");
+        .containsOutput("result1 message").containsOutput("something happened");
 
 
-    // verify that xmlEntiry returned by the result1 is not saved to Cluster config
+    // verify that xmlEntiry returned by the result1 is saved to Cluster config
     verify(command, never()).persistClusterConfiguration(any(), any());
   }
 }

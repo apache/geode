@@ -16,6 +16,14 @@
 #
 
 ---
+image_resource: &docker-geode-build-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-name))
+    tag: latest
+
 resource_types:
   - name: gcs-resource
     type: docker-image
@@ -27,6 +35,12 @@ resource_types:
       repository: pcfseceng/email-resource
 
 resources:
+- name: docker-test-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-name))
 - name: geode
   type: git
   source:
@@ -84,27 +98,282 @@ jobs:
         outputs:
         - name: built-geode
         - name: results
-        image_resource:
-          type: docker-image
-          source:
-            username: ((!docker-username))
-            password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/apachegeode-build-concourse
-            tag: latest
+        image_resource: *docker-geode-build-image
         params:
           MAINTENANCE_VERSION: ((!maintenance-version))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
         run:
           path: geode-ci/ci/scripts/build.sh
-      ensure:
+      on_failure:
         aggregate:
           - put: send-notification-email
             params:
               subject: results/subject
               body: results/body
+      ensure:
+        aggregate:
           - put: geode-build-artifact
             params:
               file: built-geode/geodefiles-*.tgz
           - put: geode-build-version
             params:
               file: results/number
+- name: DistributedTest
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [Build]
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+        passed: [Build]
+      - get: docker-test-image
+        params:
+          rootfs: true
+    - task: runtests
+      privileged: true
+      timeout: 6h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: docker-test-image
+          - name: geode-build-version
+        platform: linux
+        outputs:
+          - name: built-geode
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+          PARALLEL_DUNIT: true
+          DUNIT_PARALLEL_FORKS: 7
+        run:
+          args:
+          - distributedTest
+          - distributedtestfiles
+          path: geode-ci/ci/scripts/test-run.sh
+      on_failure:
+        aggregate:
+          - put: send-notification-email
+            params:
+              subject: built-geode/subject
+              body: built-geode/body
+      ensure:
+         aggregate:
+         - task: archive-results
+           config:
+             inputs:
+               - name: geode
+               - name: geode-ci
+               - name: geode-build-version
+               - name: built-geode
+             platform: linux
+             image_resource: *docker-geode-build-image
+             params:
+               MAINTENANCE_VERSION: ((!maintenance-version))
+               SERVICE_ACCOUNT: ((!concourse-gcp-account))
+               PUBLIC_BUCKET: ((!public-bucket))
+             run:
+               args:
+               - distributedTest
+               - distributedtestfiles
+               path: geode-ci/ci/scripts/test-archive.sh
+
+- name: AcceptanceTest
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [Build]
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+        passed: [Build]
+      - get: docker-test-image
+        params:
+          rootfs: true
+    - task: runtests
+      privileged: true
+      timeout: 6h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: docker-test-image
+          - name: geode-build-version
+        platform: linux
+        outputs:
+          - name: built-geode
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+          PARALLEL_DUNIT: true
+          DUNIT_PARALLEL_FORKS: 1
+        run:
+          args:
+          - :geode-assembly:acceptanceTest
+          - acceptancetestfiles
+          path: geode-ci/ci/scripts/test-run.sh
+      on_failure:
+        aggregate:
+          - put: send-notification-email
+            params:
+              subject: built-geode/subject
+              body: built-geode/body
+      ensure:
+         aggregate:
+         - task: archive-results
+           config:
+             inputs:
+               - name: geode
+               - name: geode-ci
+               - name: geode-build-version
+               - name: built-geode
+             platform: linux
+             image_resource: *docker-geode-build-image
+             params:
+               MAINTENANCE_VERSION: ((!maintenance-version))
+               SERVICE_ACCOUNT: ((!concourse-gcp-account))
+               PUBLIC_BUCKET: ((!public-bucket))
+             run:
+               args:
+               - :geode-assembly:acceptanceTest
+               - acceptancetestfiles
+               path: geode-ci/ci/scripts/test-archive.sh
+
+- name: IntegrationTest
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [Build]
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+        passed: [Build]
+      - get: docker-test-image
+        params:
+          rootfs: true
+    - task: runtests
+      privileged: true
+      timeout: 6h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: docker-test-image
+          - name: geode-build-version
+        platform: linux
+        outputs:
+          - name: built-geode
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+          PARALLEL_DUNIT: true
+          DUNIT_PARALLEL_FORKS: 1
+        run:
+          args:
+          - integrationTest
+          - integrationtestfiles
+          path: geode-ci/ci/scripts/test-run.sh
+      on_failure:
+        aggregate:
+          - put: send-notification-email
+            params:
+              subject: built-geode/subject
+              body: built-geode/body
+      ensure:
+         aggregate:
+         - task: archive-results
+           config:
+             inputs:
+               - name: geode
+               - name: geode-ci
+               - name: geode-build-version
+               - name: built-geode
+             platform: linux
+             image_resource: *docker-geode-build-image
+             params:
+               MAINTENANCE_VERSION: ((!maintenance-version))
+               SERVICE_ACCOUNT: ((!concourse-gcp-account))
+               PUBLIC_BUCKET: ((!public-bucket))
+             run:
+               args:
+               - integrationTest
+               - integrationtestfiles
+               path: geode-ci/ci/scripts/test-archive.sh
+
+- name: FlakyTest
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [Build]
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+        passed: [Build]
+      - get: docker-test-image
+        params:
+          rootfs: true
+    - task: runtests
+      privileged: true
+      timeout: 6h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: docker-test-image
+          - name: geode-build-version
+        platform: linux
+        outputs:
+          - name: built-geode
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+        run:
+          args:
+          - flakyTest
+          - flakytestfiles
+          path: geode-ci/ci/scripts/test-run.sh
+      on_failure:
+        aggregate:
+          - put: send-notification-email
+            params:
+              subject: built-geode/subject
+              body: built-geode/body
+      ensure:
+         aggregate:
+         - task: archive-results
+           config:
+             inputs:
+               - name: geode
+               - name: geode-ci
+               - name: geode-build-version
+               - name: built-geode
+             platform: linux
+             image_resource: *docker-geode-build-image
+             params:
+               MAINTENANCE_VERSION: ((!maintenance-version))
+               SERVICE_ACCOUNT: ((!concourse-gcp-account))
+               PUBLIC_BUCKET: ((!public-bucket))
+             run:
+               args:
+               - flakyTest
+               - flakytestfiles
+               path: geode-ci/ci/scripts/test-archive.sh
+

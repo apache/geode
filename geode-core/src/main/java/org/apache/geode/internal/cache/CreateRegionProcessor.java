@@ -805,7 +805,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
       }
       if (in.readBoolean()) {
-        this.eventState = EventStateHelper.fromData(in, false);
+        this.eventState = EventStateHelper.deDataSerialize(in, false);
       }
       if (in.readBoolean()) {
         this.destroyedId = new PersistentMemberID();
@@ -838,7 +838,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // The isHARegion flag is false here because
         // we currently only include the event state in the profile
         // for bucket regions.
-        EventStateHelper.toData(out, (Map) eventState, false);
+        EventStateHelper.dataSerialize(out, (Map) eventState, false);
       } else {
         out.writeBoolean(false);
       }

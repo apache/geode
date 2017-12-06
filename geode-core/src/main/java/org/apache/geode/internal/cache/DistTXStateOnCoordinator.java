@@ -109,8 +109,10 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
       boolean overwriteDestroyed) {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove throwable
-      logger.debug("DistTXStateOnCoordinator.putEntry " + event.getKeyInfo().getKey(),
-          new Throwable());
+      logger.debug(
+          "DistTXStateOnCoordinator.putEntry " + event.getKeyInfo().getKey()/*
+                                                                             * , new Throwable()
+                                                                             */);
     }
 
     boolean returnValue = super.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue,
@@ -137,8 +139,10 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
       boolean overwriteDestroyed) throws DataLocationException {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove throwable
-      logger.debug("DistTXStateOnCoordinator.putEntryOnRemote " + event.getKeyInfo().getKey(),
-          new Throwable());
+      logger.debug("DistTXStateOnCoordinator.putEntryOnRemote "
+          + event.getKeyInfo().getKey()/*
+                                        * , new Throwable()
+                                        */);
     }
 
     boolean returnValue = super.putEntryOnRemote(event, ifNew, ifOld, expectedOldValue,

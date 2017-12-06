@@ -105,6 +105,16 @@ public class CommandResultAssert
     return this;
   }
 
+  public CommandResultAssert failToPersist() {
+    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isTrue();
+    return this;
+  }
+
+  public CommandResultAssert persisted() {
+    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isFalse();
+    return this;
+  }
+
   /**
    * Verifies that gfsh executed with status ERROR
    */
@@ -199,7 +209,7 @@ public class CommandResultAssert
     for (int rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
       Object[] rowValues = new Object[headers.length];
       for (int columnIndex = 0; columnIndex < headers.length; columnIndex++) {
-        rowValues[columnIndex] = allValues.get(headers[columnIndex]).get(rowIndex);
+        rowValues[columnIndex] = allValues.get(headers[columnIndex]).get(rowIndex).toString();
       }
 
       // check if entire row is equal, but if not, continue to next row
@@ -209,7 +219,7 @@ public class CommandResultAssert
     }
 
     // did not find any matching rows, then this would pass only if we do not pass in any values
-    assertThat(headersThenValues.length).isEqualTo(0);
+    assertThat(headersThenValues.length).describedAs("No matching row found.").isEqualTo(0);
     return this;
   }
 

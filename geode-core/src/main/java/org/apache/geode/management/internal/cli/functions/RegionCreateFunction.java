@@ -74,8 +74,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
     ResultSender<Object> resultSender = context.getResultSender();
 
     Cache cache = context.getCache();
-    String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+    String memberNameOrId = context.getMemberName();
 
     RegionFunctionArgs regionCreateArgs = (RegionFunctionArgs) context.getArguments();
 

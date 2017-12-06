@@ -156,7 +156,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
   protected Object[] setUpJMXManagerOnVM(int vm, final Properties props, String jsonFile) {
     Object[] result = Host.getHost(0).getVM(vm).invoke("setUpJmxManagerOnVm" + vm, () -> {
       final Object[] results = new Object[3];
-      final Properties localProps = (props != null ? props : new Properties());
+      final Properties localProps = (props != null ? props : getDistributedSystemProperties());
 
       try {
         this.jmxHost = InetAddress.getLocalHost().getHostName();

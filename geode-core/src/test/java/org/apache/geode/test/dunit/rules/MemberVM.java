@@ -101,8 +101,12 @@ public class MemberVM implements Member {
     return ((Server) member).getEmbeddedLocatorPort();
   }
 
-  public void stopMember() {
+  public void stopMember(boolean cleanWorkingDir) {
     this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    if (!cleanWorkingDir) {
+      return;
+    }
+
     if (tempWorkingDir) {
       /*
        * this temporary workingDir will dynamically change the "user.dir". system property to point

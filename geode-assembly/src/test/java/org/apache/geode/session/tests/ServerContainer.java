@@ -14,6 +14,8 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -70,7 +72,7 @@ public abstract class ServerContainer {
 
   public static final String DEFAULT_LOGGING_LEVEL = LoggingLevel.LOW.getLevel();
   public static final String DEFAULT_LOG_DIR = "cargo_logs/";
-  public static final String DEFAULT_CONFIG_DIR = "/tmp/cargo_configs/";
+  public static final String DEFAULT_CONFIG_DIR = TMP_DIR + "/cargo_configs/";
 
   public static final Logger logger = LogService.getLogger();
 
