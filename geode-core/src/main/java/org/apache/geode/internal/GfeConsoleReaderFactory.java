@@ -15,18 +15,18 @@
 
 package org.apache.geode.internal;
 
+import java.io.Console;
+
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.GfshConsoleReader;
 
-import java.io.Console;
-
 /**
  * Factory for Console Reader Utility.
- * 
+ *
  * Default uses <code>java.io.Console</code> returned by <code>System.console()</code>
- * 
- * 
+ *
+ *
  * @since GemFire 7.0.1
  */
 public class GfeConsoleReaderFactory {

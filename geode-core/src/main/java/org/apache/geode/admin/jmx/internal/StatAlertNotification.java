@@ -16,11 +16,11 @@ package org.apache.geode.admin.jmx.internal;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.StatAlert;
@@ -28,10 +28,10 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
  * Notification to be sent to clients (e.g GFMon2.0 ). It incorporates
- * 
+ *
  * @see StatAlert raised and also Gemfire member id which raised the alert
- * 
- * 
+ *
+ *
  * @since GemFire 5.7
  */
 public class StatAlertNotification extends StatAlert
@@ -60,7 +60,7 @@ public class StatAlertNotification extends StatAlert
   }
 
   /**
-   * 
+   *
    * @param id of gemfire member which raised the alert
    */
   public void setMemberId(String id) {
@@ -83,7 +83,7 @@ public class StatAlertNotification extends StatAlert
 
   /**
    * The notification is something like this "For Member ID: <ID> [ <StatName> = <Value> .. ]"
-   * 
+   *
    * @param defn {@link StatAlertDefinition}
    * @return String representation of this object based on {@link StatAlertDefinition}
    */

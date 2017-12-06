@@ -18,6 +18,8 @@ package org.apache.geode.tools.pulse.tests.rules;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.StringUtils;
 import org.junit.rules.ExternalResource;
 import org.openqa.selenium.By;
@@ -27,8 +29,6 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.util.concurrent.TimeUnit;
 
 public class WebDriverRule extends ExternalResource {
   private WebDriver driver;

@@ -43,11 +43,10 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.util.DiskStoreNotFoundException;
-import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -124,10 +123,6 @@ public class DiskStoreCommandsJUnitTest {
 
     mockContext.checking(new Expectations() {
       {
-        oneOf(mockMember).getName();
-        will(returnValue(null));
-        oneOf(mockMember).getId();
-        will(returnValue(memberId));
         oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
@@ -147,39 +142,8 @@ public class DiskStoreCommandsJUnitTest {
     assertEquals(expectedDiskStoredDetails, actualDiskStoreDetails);
   }
 
-  @Test(expected = MemberNotFoundException.class)
-  public void testGetDiskStoreDescriptionThrowsMemberNotFoundException() {
-    final String diskStoreName = "mockDiskStore";
-    final String memberId = "mockMember";
-
-    final InternalCache mockCache = mockContext.mock(InternalCache.class, "InternalCache");
-
-    final DistributedMember mockMember =
-        mockContext.mock(DistributedMember.class, "DistributedMember");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockMember).getName();
-        will(returnValue(null));
-        oneOf(mockMember).getId();
-        will(returnValue("testMember"));
-      }
-    });
-
-    final DescribeDiskStoreCommand describeCommand =
-        createDescribeDiskStoreCommand(mockCache, mockMember, null);
-
-    try {
-      describeCommand.getDiskStoreDescription(memberId, diskStoreName);
-    } catch (MemberNotFoundException expected) {
-      assertEquals(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberId),
-          expected.getMessage());
-      throw expected;
-    }
-  }
-
-  @Test(expected = DiskStoreNotFoundException.class)
-  public void testGetDiskStoreDescriptionThrowsDiskStoreNotFoundException() {
+  @Test(expected = EntityNotFoundException.class)
+  public void testGetDiskStoreDescriptionThrowsEntityNotFoundException() {
     final String diskStoreName = "mockDiskStore";
     final String memberId = "mockMember";
 
@@ -192,14 +156,10 @@ public class DiskStoreCommandsJUnitTest {
 
     mockContext.checking(new Expectations() {
       {
-        oneOf(mockMember).getName();
-        will(returnValue(null));
-        oneOf(mockMember).getId();
-        will(returnValue(memberId));
         oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
-        will(throwException(new DiskStoreNotFoundException("expected")));
+        will(throwException(new EntityNotFoundException("expected")));
       }
     });
 
@@ -208,7 +168,7 @@ public class DiskStoreCommandsJUnitTest {
 
     try {
       describeCommand.getDiskStoreDescription(memberId, diskStoreName);
-    } catch (DiskStoreNotFoundException expected) {
+    } catch (EntityNotFoundException expected) {
       assertEquals("expected", expected.getMessage());
       throw expected;
     }
@@ -228,10 +188,6 @@ public class DiskStoreCommandsJUnitTest {
 
     mockContext.checking(new Expectations() {
       {
-        oneOf(mockMember).getName();
-        will(returnValue(null));
-        oneOf(mockMember).getId();
-        will(returnValue(memberId));
         oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
@@ -267,10 +223,6 @@ public class DiskStoreCommandsJUnitTest {
 
     mockContext.checking(new Expectations() {
       {
-        oneOf(mockMember).getName();
-        will(returnValue(null));
-        oneOf(mockMember).getId();
-        will(returnValue(memberId));
         oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
@@ -434,9 +386,15 @@ public class DiskStoreCommandsJUnitTest {
     }
 
     @Override
-    public Set<DistributedMember> getMembers(final InternalCache cache) {
+    public Set<DistributedMember> getAllMembers(final InternalCache cache) {
       assertSame(getCache(), cache);
       return Collections.singleton(this.distributedMember);
+    }
+
+    @Override
+    public DistributedMember getMember(String nameOrId) {
+      assertSame(getCache(), cache);
+      return this.distributedMember;
     }
 
     @Override
@@ -447,7 +405,6 @@ public class DiskStoreCommandsJUnitTest {
   }
 
   private static class TestListDiskStoresCommand extends ListDiskStoresCommand {
-
     private final InternalCache cache;
     private final DistributedMember distributedMember;
     private final Execution functionExecutor;
@@ -466,9 +423,15 @@ public class DiskStoreCommandsJUnitTest {
     }
 
     @Override
-    public Set<DistributedMember> getMembers(final InternalCache cache) {
+    public Set<DistributedMember> getAllMembers(final InternalCache cache) {
       assertSame(getCache(), cache);
       return Collections.singleton(this.distributedMember);
+    }
+
+    @Override
+    public DistributedMember getMember(String nameOrId) {
+      assertSame(getCache(), cache);
+      return this.distributedMember;
     }
 
     @Override

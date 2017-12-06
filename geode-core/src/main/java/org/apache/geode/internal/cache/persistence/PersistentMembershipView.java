@@ -57,7 +57,7 @@ public class PersistentMembershipView implements DataSerializable {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.DataSerializable#fromData(java.io.DataInput)
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {

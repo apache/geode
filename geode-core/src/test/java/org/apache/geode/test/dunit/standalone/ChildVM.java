@@ -39,7 +39,7 @@ public class ChildVM {
     stopMainLoop = true;
   }
 
-  private final static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   public static void main(String[] args) throws Throwable {
     try {

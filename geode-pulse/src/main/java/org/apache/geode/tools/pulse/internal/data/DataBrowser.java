@@ -17,14 +17,6 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,10 +28,18 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Scanner;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Class DataBrowser This class contains Data browser functionalities for managing queries and
  * histories.
- * 
+ *
  * @since GemFire version 7.5.Beta 2013-03-25
  */
 public class DataBrowser {
@@ -54,7 +54,7 @@ public class DataBrowser {
 
   /**
    * addQueryInHistory method adds user's query into query history file
-   * 
+   *
    * @param userId Logged in User's Id
    * @param queryText Query text to execute
    */
@@ -84,7 +84,7 @@ public class DataBrowser {
 
   /**
    * deleteQueryById method deletes query from query history file
-   * 
+   *
    * @param userId Logged in user's Unique Id
    * @param queryId Unique Id of Query to be deleted
    * @return boolean
@@ -115,7 +115,7 @@ public class DataBrowser {
 
   /**
    * getQueryHistoryByUserId method reads and lists out the queries from history file
-   * 
+   *
    * @param userId Logged in User's Id
    */
   public ArrayNode getQueryHistoryByUserId(String userId) {
@@ -148,7 +148,7 @@ public class DataBrowser {
 
   /**
    * generateQueryKey method fetches queries from query history file
-   * 
+   *
    * @return Properties A collection queries in form of key and values
    */
   private ObjectNode fetchAllQueriesFromFile() {
@@ -181,7 +181,7 @@ public class DataBrowser {
 
   /**
    * generateQueryKey method stores queries in query history file.
-   * 
+   *
    * @return Boolean true is operation is successful, false otherwise
    */
   private boolean storeQueriesInFile(ObjectNode queries) {

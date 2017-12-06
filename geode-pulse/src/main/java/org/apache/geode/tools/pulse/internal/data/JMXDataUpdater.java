@@ -17,16 +17,10 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -43,11 +37,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
+import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -62,9 +59,17 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
+
 /**
  * Class JMXDataUpdater Class used for creating JMX connection and getting all the required MBeans
- * 
+ *
  * @since GemFire version 7.0.Beta 2012-09-23
  */
 public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
@@ -375,7 +380,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster System and map them to cluster vo
-   * 
+   *
    * @param mbeanName Cluster System MBean
    */
   private void updateClusterSystem(ObjectName mbeanName) throws IOException {
@@ -528,7 +533,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * function used to get attribute values of Gateway Receiver and map them to GatewayReceiver inner
    * class object
-   * 
+   *
    * @return GatewayReceiver object
    */
   private Cluster.GatewayReceiver initGatewayReceiver(ObjectName mbeanName)
@@ -856,7 +861,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * Add member specific region information on the region
-   * 
+   *
    * @param regionObjectName: used to construct the jmx objectname. For region name that has special
    *        characters in, it will have double quotes around it.
    */
@@ -1029,7 +1034,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster Region and map them to cluster region vo
-   * 
+   *
    * @param mbeanName Cluster Region MBean
    */
   private void updateClusterRegion(ObjectName mbeanName) throws IOException {
@@ -1256,15 +1261,20 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * function used to iterate through all member attributes and return the updated member
    */
   private Cluster.Member initializeMember(ObjectName mbeanName, Cluster.Member member)
-      throws InstanceNotFoundException, ReflectionException, IOException {
+      throws InstanceNotFoundException, ReflectionException, IOException, IntrospectionException {
+
+    MBeanAttributeInfo[] mbeanAttributes = this.mbs.getMBeanInfo(mbeanName).getAttributes();
+    Set<String> mbeanAttributeNames =
+        Arrays.stream(mbeanAttributes).map(MBeanAttributeInfo::getName).collect(Collectors.toSet());
 
     AttributeList attributeList =
-        this.mbs.getAttributes(mbeanName, PulseConstants.MEMBER_MBEAN_ATTRIBUTES);
+        this.mbs.getAttributes(mbeanName, mbeanAttributeNames.toArray(new String[0]));
 
     for (int i = 0; i < attributeList.size(); i++) {
 
       Attribute attribute = (Attribute) attributeList.get(i);
       String name = attribute.getName();
+
       switch (name) {
         case PulseConstants.MBEAN_ATTRIBUTE_GEMFIREVERSION:
           if (member.getGemfireVersion() == null) {
@@ -1393,7 +1403,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Cluster Member and map them to cluster member vo
-   * 
+   *
    * @param mbeanName Cluster Member MBean
    */
   private void updateClusterMember(ObjectName mbeanName) throws IOException {
@@ -1424,7 +1434,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         memberList.add(clusterMember);
         cluster.getPhysicalToMember().put(clusterMember.getHost(), memberList);
       }
-    } catch (InstanceNotFoundException | ReflectionException infe) {
+    } catch (InstanceNotFoundException | ReflectionException | IntrospectionException infe) {
       logger.warn(infe);
     }
   }
@@ -1578,7 +1588,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   /**
    * function used to get attribute values of Member Region and map them to Member vo
-   * 
+   *
    * @param mbeanName Member Region MBean
    */
   private void updateMemberRegion(ObjectName mbeanName) throws IOException {
@@ -1677,7 +1687,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
        * Rolling upgrade handled gracefully CompositeData compositeData = (CompositeData)
        * (this.mbs.invoke(mbeanName, PulseConstants.MBEAN_OPERATION_LISTREGIONATTRIBUTES, null,
        * null));
-       * 
+       *
        * if (compositeData != null) { if
        * (compositeData.containsKey(PulseConstants.COMPOSITE_DATA_KEY_SCOPE)) {
        * region.setScope((String) compositeData .get(PulseConstants.COMPOSITE_DATA_KEY_SCOPE)); }
@@ -1692,8 +1702,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
        * //logger.
        * warning("Some of the Pulse elements are not available currently. There might be a GemFire upgrade going on."
        * ); }
-       * 
-       * 
+       *
+       *
        * // Remove deleted regions from member's regions list for (Iterator<String> it =
        * cluster.getDeletedRegions().iterator(); it .hasNext();) { String deletedRegion = it.next();
        * if (member.getMemberRegions().get(deletedRegion) != null) {

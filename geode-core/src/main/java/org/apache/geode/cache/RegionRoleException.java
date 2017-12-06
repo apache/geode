@@ -28,7 +28,7 @@ public abstract class RegionRoleException extends RoleException {
 
   /**
    * Constructs a <code>RegionRoleException</code> with a message.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    */
@@ -39,7 +39,7 @@ public abstract class RegionRoleException extends RoleException {
 
   /**
    * Constructs a <code>RegionRoleException</code> with a message and a cause.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    * @param ex the Throwable cause
@@ -51,7 +51,7 @@ public abstract class RegionRoleException extends RoleException {
 
   /**
    * Returns the full path of the region for which access was attempted.
-   * 
+   *
    * @return the full path of the region for which access was attempted
    */
   public String getRegionFullPath() {
@@ -59,4 +59,3 @@ public abstract class RegionRoleException extends RoleException {
   }
 
 }
-

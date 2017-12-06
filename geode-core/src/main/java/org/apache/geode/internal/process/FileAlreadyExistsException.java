@@ -17,7 +17,7 @@ package org.apache.geode.internal.process;
 /**
  * A FileAlreadyExistsException is thrown when a pid file already exists and the launcher expects to
  * create a new pid file without forcing the deletion of the old one.
- * 
+ *
  * @since GemFire 7.0
  */
 public class FileAlreadyExistsException extends Exception {

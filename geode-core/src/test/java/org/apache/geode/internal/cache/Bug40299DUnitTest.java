@@ -72,7 +72,7 @@ public class Bug40299DUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This method is used to create Cache in VM0
-   * 
+   *
    * @return CacheSerializableRunnable
    */
 
@@ -112,7 +112,7 @@ public class Bug40299DUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This method puts in 7 in the Region
-   * 
+   *
    * @return CacheSerializableRunnable
    */
   private CacheSerializableRunnable putSomeEntries() {
@@ -130,7 +130,7 @@ public class Bug40299DUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This method does concurrent NetSearch.doGet with clear in the Region
-   * 
+   *
    * @return CacheSerializableRunnable
    */
   private CacheSerializableRunnable concurrentNetSearchGetAndClear() {
@@ -184,9 +184,9 @@ public class Bug40299DUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * 
+   *
    * getThread
-   * 
+   *
    */
   protected class getThread implements Runnable {
     LocalRegion region = null;
@@ -206,7 +206,7 @@ public class Bug40299DUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This method verifies that region is not destroyed
-   * 
+   *
    * @return CacheSerializableRunnable
    */
   private CacheSerializableRunnable verifyRegionNotDestroyed() {
@@ -222,7 +222,7 @@ public class Bug40299DUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This method destroys the Region
-   * 
+   *
    * @return CacheSerializableRunnable
    */
   private CacheSerializableRunnable destroyRegion() {

@@ -17,12 +17,12 @@ package org.apache.geode.test.junit.rules.serializable;
 import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.*;
 
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Serializable subclass of {@link org.junit.rules.TemporaryFolder TemporaryFolder}. Instance

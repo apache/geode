@@ -30,7 +30,7 @@ public class DSFIDNotFoundException extends NotSerializableException {
 
   /**
    * Constructs a DSFIDNotFoundException object with message string.
-   * 
+   *
    * @param msg exception message
    */
   public DSFIDNotFoundException(String msg, int dsfid) {

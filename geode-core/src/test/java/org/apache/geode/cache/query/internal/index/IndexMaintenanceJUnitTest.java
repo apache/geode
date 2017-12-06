@@ -64,7 +64,7 @@ import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class IndexMaintenanceJUnitTest {
@@ -1363,4 +1363,3 @@ public class IndexMaintenanceJUnitTest {
   }
 
 }
-

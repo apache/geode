@@ -16,10 +16,13 @@ package org.apache.geode.cache.query.partitioned;
 
 import static org.apache.geode.cache.query.Utils.*;
 
+import java.util.Properties;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.data.PortfolioData;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -52,6 +55,14 @@ public class PRBasicRemoveIndexDUnitTest extends PartitionedRegionDUnitTestCase 
     for (VM vm : vms) {
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
   }
 
   /**

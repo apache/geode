@@ -917,7 +917,7 @@ conversionExpr :
                "to_date"^<AST=org.apache.geode.cache.query.internal.parse.ASTConversionExpr>
               )
               TOK_LPAREN!
-              stringLiteral TOK_COMMA! stringLiteral
+              (stringLiteral | queryParam) TOK_COMMA! stringLiteral
               TOK_RPAREN! 
            )    
 	)

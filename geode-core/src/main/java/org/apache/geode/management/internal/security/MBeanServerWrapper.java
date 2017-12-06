@@ -56,7 +56,7 @@ import org.apache.geode.security.ResourcePermission.Target;
 /**
  * This class intercepts all MBean requests for GemFire MBeans and passed it to
  * ManagementInterceptor for authorization
- * 
+ *
  * @since Geode 1.0
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {

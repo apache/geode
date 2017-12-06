@@ -26,7 +26,7 @@ The next tables describe file names and extensions; they are followed by example
 
 ## <a id="file_names_and_extensions__section_C99ABFDB1AEA4FE4B38F5D4F1D612F71" class="no-quick-link"></a>File Names
 
-File names have three parts:
+File names have three parts: usage identifier, disk store name, and oplog sequence number.
 
 **First Part of File Name: Usage Identifier**
 
@@ -62,35 +62,28 @@ File names have three parts:
 Example files for disk stores persistDS1 and overflowDS1:
 
 ``` pre
-bash-2.05$ ls -tlra persistData1/
+bash-2.05$ ls -tlr persistData1/
 total 8
 -rw-rw-r--   1 person users        188 Mar  4 06:17 BACKUPpersistDS1.if
-drwxrwxr-x   2 person users        512 Mar  4 06:17 .
 -rw-rw-r--   1 person users          0 Mar  4 06:18 BACKUPpersistDS1_1.drf
 -rw-rw-r--   1 person users         38 Mar  4 06:18 BACKUPpersistDS1_1.crf
-drwxrwxr-x   8 person users        512 Mar  4 06:20 ..
-bash-2.05$
  
-bash-2.05$ ls -ltra overflowData1/
+bash-2.05$ ls -tlr overflowData1/
 total 1028
-drwxrwxr-x   8 person users        512 Mar  4 06:20 ..
 -rw-rw-r--   1 person users          0 Mar  4 06:21 DRLK_IFoverflowDS1.lk
 -rw-rw-r--   1 person users          0 Mar  4 06:21 BACKUPoverflowDS1.if
 -rw-rw-r--   1 person users 1073741824 Mar  4 06:21 OVERFLOWoverflowDS1_1.crf
-drwxrwxr-x   2 person users        512 Mar  4 06:21 .
 ```
 
 Example default disk store files for a persistent region:
 
 ``` pre
-bash-2.05$ ls -tlra
+bash-2.05$ ls -tlr
 total 106
-drwxrwxr-x   8 person users       1024 Mar  8 14:51 ..
 -rw-rw-r--   1 person users       1010 Mar  8 15:01 defTest.xml
 drwxrwxr-x   2 person users        512 Mar  8 15:01 backupDirectory
 -rw-rw-r--   1 person users          0 Mar  8 15:01 DRLK_IFDEFAULT.lk
 -rw-rw-r--   1 person users  107374183 Mar  8 15:01 BACKUPDEFAULT_1.drf
 -rw-rw-r--   1 person users  966367641 Mar  8 15:01 BACKUPDEFAULT_1.crf
 -rw-rw-r--   1 person users        172 Mar  8 15:01 BACKUPDEFAULT.if
-drwxrwxr-x   3 person users        512 Mar  8 15:01 .           
 ```

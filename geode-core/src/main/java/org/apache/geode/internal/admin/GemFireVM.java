@@ -32,7 +32,7 @@ import org.apache.geode.internal.Config;
 
 /**
  * Represents one java vm connected to a GemFire distributed system
- * 
+ *
  */
 public interface GemFireVM {
 
@@ -82,7 +82,7 @@ public interface GemFireVM {
 
   /**
    * Returns a String describing the vm's gemfire version info
-   * 
+   *
    * @since GemFire 3.5
    */
   public String getVersionInfo();
@@ -117,7 +117,7 @@ public interface GemFireVM {
   /**
    * Adds a {@link HealthListener} with the given configuration to the vm. If a health listener has
    * already been added it will be removed and a new one added.
-   * 
+   *
    * @param cfg determines how and when the health will be checked.
    * @since GemFire 3.5
    */
@@ -125,14 +125,14 @@ public interface GemFireVM {
 
   /**
    * Removes an added health listener.
-   * 
+   *
    * @since GemFire 3.5
    */
   public void removeHealthListener();
 
   /**
    * Resets the current health status to "good".
-   * 
+   *
    * @since GemFire 3.5
    */
   public void resetHealthStatus();
@@ -157,7 +157,7 @@ public interface GemFireVM {
    * Returns the runtime {@link org.apache.geode.admin.GemFireMemberStatus} from the vm The idea is
    * this snapshot is similar to stats that represent the current state of a running VM. However,
    * this is a bit higher level than a stat
-   * 
+   *
    * @since GemFire 5.7
    */
   public GemFireMemberStatus getSnapshot();
@@ -165,7 +165,7 @@ public interface GemFireVM {
   /**
    * Returns the runtime {@link org.apache.geode.admin.RegionSubRegionSnapshot} from the vm The idea
    * is this snapshot is quickly salvageable to present a cache's region's info
-   * 
+   *
    * @since GemFire 5.7
    */
   public RegionSubRegionSnapshot getRegionSnapshot();
@@ -242,7 +242,7 @@ public interface GemFireVM {
   /**
    * Sets the cache inspection mode to {@link #LIGHTWEIGHT_CACHE_VALUE},
    * {@link #LOGICAL_CACHE_VALUE}, or {@link #PHYSICAL_CACHE_VALUE}.
-   * 
+   *
    * @throws IllegalArgumentException if the type is not one of the appropriate constants
    */
   public void setCacheInspectionMode(int mode);
@@ -256,7 +256,7 @@ public interface GemFireVM {
   /**
    * Causes a snapshot of the given region to be taken. Results are streamed back to any
    * SnapshotListeners registered with this <code>GemFireVM</code>'s parent {@link GfManagerAgent}.
-   * 
+   *
    * @param regionName the region to snapshot
    */
   public void takeRegionSnapshot(String regionName, int snapshotId);
@@ -340,11 +340,11 @@ public interface GemFireVM {
    * This method should be used to set the Alerts Manager for the member agent. Stat Alerts
    * Aggregator would use this method to set stat Alerts Manager with the available alert
    * definitions and the refresh interval set for each member joining the distributed system.
-   * 
+   *
    * @param alertDefs Stat Alert Definitions to set for the Alerts Manager
    * @param refreshInterval refresh interval to be used by the Alerts Manager
    * @param setRemotely whether to be set on remote VM
-   * 
+   *
    * @since GemFire 5.7
    */
   public void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval,
@@ -353,9 +353,9 @@ public interface GemFireVM {
   /**
    * This method would be used to set refresh interval for the GemFireVM. This method would mostly
    * be called on each member after initial set up whenever the refresh interval is changed.
-   * 
+   *
    * @param refreshInterval refresh interval to set (in milliseconds)
-   * 
+   *
    * @since GemFire 5.7
    */
   public void setRefreshInterval(long refreshInterval);
@@ -364,12 +364,12 @@ public interface GemFireVM {
    * This method would be used to set Sta Alert Definitions for the GemFireVM. This method would
    * mostly be called on each member after initial set up whenever one or more Stat Alert
    * Definitions get added/updated/removed.
-   * 
+   *
    * @param alertDefs an array of StaAlertDefinition objects
    * @param actionCode one of UpdateAlertDefinitionRequest.ADD_ALERT_DEFINITION,
    *        UpdateAlertDefinitionRequestUPDATE_ALERT_DEFINITION,
    *        UpdateAlertDefinitionRequest.REMOVE_ALERT_DEFINITION
-   * 
+   *
    * @since GemFire 5.7
    */
   public void updateAlertDefinitions(StatAlertDefinition[] alertDefs, int actionCode);

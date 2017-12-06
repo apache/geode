@@ -15,16 +15,16 @@
 
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
-
 import java.io.*;
+
+import org.apache.geode.*;
 
 /**
  * A StatisticsFactory that creates disconnected statistics
  */
 public class DummyStatisticsFactory implements StatisticsFactory {
 
-  private final static StatisticsTypeFactoryImpl tf =
+  private static final StatisticsTypeFactoryImpl tf =
       (StatisticsTypeFactoryImpl) StatisticsTypeFactoryImpl.singleton();
 
   /** Creates a new instance of DummyStatisticsFactory */

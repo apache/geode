@@ -203,7 +203,7 @@ public class IndexStats {
 
   /**
    * Returns the Statistics instance that stores the cache perf stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public Statistics getStats() {

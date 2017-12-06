@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Arrays;
@@ -25,8 +27,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryDestroyedException;
@@ -59,19 +59,19 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     testId++;
   }
 
-  private final static int ITERATIONS = 4;
-  private final static long MAX_OPLOG_SIZE_IN_BYTES = 1024 * 16;
+  private static final int ITERATIONS = 4;
+  private static final long MAX_OPLOG_SIZE_IN_BYTES = 1024 * 16;
   /**
    * Need to limit he max open oplogs so that we don't run out of file descriptors
    */
-  private final static int MAX_OPEN_OPLOGS = 400;
-  private final static long RECORDS_PER_OPLOG =
+  private static final int MAX_OPEN_OPLOGS = 400;
+  private static final long RECORDS_PER_OPLOG =
       MAX_OPLOG_SIZE_IN_BYTES / (ENTRY_SIZE + 24/* for key and record overhead */);
   /**
    * Maximum number of ops a test can do w/o running out of file descriptors due to open oplogs
    */
-  private final static long OPS_PER_TEST = RECORDS_PER_OPLOG * MAX_OPEN_OPLOGS;
-  private final static long OPS_PER_ITERATION = OPS_PER_TEST / ITERATIONS;
+  private static final long OPS_PER_TEST = RECORDS_PER_OPLOG * MAX_OPEN_OPLOGS;
+  private static final long OPS_PER_ITERATION = OPS_PER_TEST / ITERATIONS;
 
   @Test
   public void testRollingDisabledRecoverValuesFalsePersistOnly() throws Exception {
@@ -614,7 +614,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
    * Create cache. Create Region. Put entries. Close cache. STEP 2: Create cache. Create Region with
    * the same name as that of in STEP 1. Delete some entries. 3) Recreate the deleted entries Close
    * the Cache * 3: Again Create cache. 4) check if the region creation is successful
-   * 
+   *
    */
   public int startOperations(final int startKey, final Object value) throws Exception {
 

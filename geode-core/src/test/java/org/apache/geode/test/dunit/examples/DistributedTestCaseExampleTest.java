@@ -33,4 +33,3 @@ public class DistributedTestCaseExampleTest extends DistributedTestCase {
     assertThat(system.isConnected()).isTrue();
   }
 }
-

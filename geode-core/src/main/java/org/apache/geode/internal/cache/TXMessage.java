@@ -158,7 +158,7 @@ public abstract class TXMessage extends SerialDistributionMessage
 
   /**
    * Transaction operations override this method to do actual work
-   * 
+   *
    * @param txId The transaction Id to operate on
    * @return true if TXMessage should send a reply false otherwise
    */

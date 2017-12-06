@@ -18,12 +18,12 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 
 /**
  * The contract for a list of temporary results for a query. This set may be persisted on disk.
- * 
+ *
  * This class is threadsafe. Iterators will reflect all entries added to the set up until the time
  * that the iterator was obtained. After that they may or may not reflect modifications to the set
  * while the iteration is in progress. They will guarantee that entries will be returned in the
  * correct order.
- * 
+ *
  * @since GemFire cedar
  */
 public interface ResultList {

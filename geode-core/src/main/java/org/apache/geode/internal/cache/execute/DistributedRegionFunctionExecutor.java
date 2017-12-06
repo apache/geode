@@ -34,15 +34,15 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Executes Function on Distributed Regions.
- * 
+ *
  * For DistributedRegions with DataPolicy.NORMAL, it throws UnsupportedOperationException. <br>
  * For DistributedRegions with DataPolicy.EMPTY, execute the function on any random member which has
  * DataPolicy.REPLICATE <br>
  * For DistributedRegions with DataPolicy.REPLICATE, execute the function locally.
- * 
- * 
+ *
+ *
  * @since GemFire 5.8 LA
- * 
+ *
  */
 public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
@@ -291,7 +291,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.
    * cache.execute.Function, java.util.Set)

@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link AbstractLauncher.ServiceState}. Tests marshalling of ServiceState to and
  * from JSON.
- * 
+ *
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)

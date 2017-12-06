@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.IntStream;
 
 import org.junit.After;
@@ -43,6 +44,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.PortfolioPdx.Day;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -78,6 +80,15 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     closeClient(vm1);
     closeClient(client);
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.dunit.**");
+    return properties;
+  }
+
 
   protected void startBridgeServer(int port, boolean notifyBySubscription) throws IOException {
 

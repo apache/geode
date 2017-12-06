@@ -32,7 +32,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  *
  * <p>
  * UseJacksonForJsonPathRule can be used in tests that need to use json-path-assert:
- * 
+ *
  * <pre>
  * {@literal @}ClassRule
  * public static UseJacksonForJsonPathRule useJacksonForJsonPathRule = new UseJacksonForJsonPathRule();

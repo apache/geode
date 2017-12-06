@@ -22,9 +22,9 @@ import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management functionality for a {@link DiskStore}.
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface DiskStoreMXBean {
@@ -36,7 +36,7 @@ public interface DiskStoreMXBean {
 
   /**
    * Returns whether disk files are to be automatically compacted.
-   * 
+   *
    * @return True if disk files are automatically compacted, false otherwise
    */
   boolean isAutoCompact();
@@ -49,7 +49,7 @@ public interface DiskStoreMXBean {
 
   /**
    * Returns whether manual compaction of disk files is allowed.
-   * 
+   *
    * @return True if manual compaction is allowed, false otherwise.
    */
   boolean isForceCompactionAllowed();
@@ -88,7 +88,7 @@ public interface DiskStoreMXBean {
   /**
    * Returns the average latency of disk reads in nanoseconds Its the average latency required to
    * read a byte from disk.
-   * 
+   *
    * Each entry in region has some overhead in terms of number of extra bytes while persisting data.
    * So this rate won't match the number of bytes put in all regions.This is rate of actual bytes
    * system is persisting.
@@ -98,7 +98,7 @@ public interface DiskStoreMXBean {
   /**
    * Returns the average latency of disk writes in nanoseconds. Its the average latency required to
    * write a byte to disk.
-   * 
+   *
    * Each entry in region has some overhead in terms of number of extra bytes while persisting data.
    * So this rate won't match the number of bytes put in all regions. This is rate of actual bytes
    * system is persisting.
@@ -159,7 +159,7 @@ public interface DiskStoreMXBean {
    * is not configured. If the current, active op-log has had data written to it, and may be
    * compacted, then an implicit call to forceRoll will be made so that the active op-log can be
    * compacted. This method will block until compaction finishes.
-   * 
+   *
    * @return True if one or more op-logs were compacted or false to indicate that no op-logs were
    *         ready to be compacted or that a compaction was already in progress.
    */
@@ -177,7 +177,7 @@ public interface DiskStoreMXBean {
 
   /**
    * Returns the warning threshold for disk usage as a percentage of the total disk volume.
-   * 
+   *
    * @return the warning percent
    * @since GemFire 8.0
    */
@@ -185,7 +185,7 @@ public interface DiskStoreMXBean {
 
   /**
    * Returns the critical threshold for disk usage as a percentage of the total disk volume.
-   * 
+   *
    * @return the critical percent
    * @since GemFire 8.0
    */
@@ -193,7 +193,7 @@ public interface DiskStoreMXBean {
 
   /**
    * Sets the value of the disk usage warning percentage.
-   * 
+   *
    * @param warningPercent the warning percent
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
@@ -202,7 +202,7 @@ public interface DiskStoreMXBean {
 
   /**
    * Sets the value of the disk usage critical percentage.
-   * 
+   *
    * @param criticalPercent the critical percent
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,

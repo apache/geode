@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.query.facets.lang;
 
+import java.util.*;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -22,7 +24,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.QueryService;
-import java.util.*;
 
 
 
@@ -88,19 +89,19 @@ class Utils {
 
   /*
    * static void checkpoint(GsSession gsSession) throws Exception { try { gsSession.commit();
-   * 
+   *
    * } catch (GsTransactionConflictException ex) { gsSession.abort(); throw new
    * GsException("Commit Failed"); }
-   * 
+   *
    * gsSession.begin(); }
-   * 
+   *
    * static void canonicalize() throws Exception { // this step won't be necessary when we have a
    * query layer filein GsSession gsSession = SessionManagerImpl.getDefault().createSession();
    * gsSession.begin(); // load the QueryService interface
    * Class.forName("org.apache.persistence.query.QueryService");
    * org.apache.persistence.vm.VMFactory.getCurrentVM().commitReposCanonicalObjs(gsSession); try {
    * gsSession.commit();
-   * 
+   *
    * } catch (GsTransactionConflictException ex) { System.err.println("Commit Failed"); return; }
    * ((GsSession)gsSession).shutdown(); }
    */

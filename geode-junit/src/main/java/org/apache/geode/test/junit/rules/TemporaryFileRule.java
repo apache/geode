@@ -33,7 +33,7 @@ import org.junit.rules.ExternalResource;
  *
  * <p>
  * Example of usage:
- * 
+ *
  * <pre>
  * public static class HasTemporaryFile {
  *   &#064;Rule

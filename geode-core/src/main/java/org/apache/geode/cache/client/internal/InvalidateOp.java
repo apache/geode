@@ -25,7 +25,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Does a region invalidate on a server
- * 
+ *
  * @since GemFire 6.6
  */
 public class InvalidateOp {
@@ -37,7 +37,7 @@ public class InvalidateOp {
   /**
    * Does a region invalidate on a server using connections from the given pool to communicate with
    * the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the entry keySet on
    */

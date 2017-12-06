@@ -201,7 +201,7 @@ public class Portfolio implements Serializable, DataSerializable {
 
   /**
    * Getter for property type.S
-   * 
+   *
    * @return Value of property type.
    */
   public String getType() {
@@ -307,5 +307,3 @@ public class Portfolio implements Serializable, DataSerializable {
   }
 
 }
-
-

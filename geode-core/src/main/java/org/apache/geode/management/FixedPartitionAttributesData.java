@@ -20,7 +20,7 @@ import org.apache.geode.cache.Region;
 
 /**
  * Composite date type used to distribute the fixed partition attributes for a {@link Region}.
- * 
+ *
  * @since GemFire 7.0
  */
 public class FixedPartitionAttributesData {
@@ -41,7 +41,7 @@ public class FixedPartitionAttributesData {
   private int numBucket;
 
   /**
-   * 
+   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
    */
@@ -63,7 +63,7 @@ public class FixedPartitionAttributesData {
 
   /**
    * Returns whether this member is the primary for the partition.
-   * 
+   *
    * @return True if this member is the primary, false otherwise.
    */
   public boolean isPrimary() {

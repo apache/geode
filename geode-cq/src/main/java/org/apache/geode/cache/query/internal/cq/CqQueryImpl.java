@@ -36,12 +36,12 @@ import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.QueryExecutionContext;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.i18n.StringId;
 
 /**
  * Represents the CqQuery object. Implements CqQuery API and CqAttributeMutator.
@@ -248,7 +248,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Return the query after replacing region names with parameters
-   * 
+   *
    * @return the Query for the query string
    */
   @Override
@@ -281,7 +281,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Return the state of this query. Should not modify this state without first locking it.
-   * 
+   *
    * @return STOPPED RUNNING or CLOSED
    */
   @Override
@@ -313,7 +313,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Update CQ stats
-   * 
+   *
    * @param cqEvent object
    */
   void updateStats(CqEvent cqEvent) {
@@ -322,7 +322,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Return true if the CQ is in running state
-   * 
+   *
    * @return true if running, false otherwise
    */
   @Override
@@ -332,7 +332,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Return true if the CQ is in stopped state
-   * 
+   *
    * @return true if stopped, false otherwise
    */
   @Override
@@ -342,7 +342,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Return true if the CQ is closed
-   * 
+   *
    * @return true if closed, false otherwise
    */
   @Override
@@ -352,7 +352,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Return true if the CQ is in closing state.
-   * 
+   *
    * @return true if close in progress, false otherwise
    */
   public boolean isClosing() {
@@ -361,7 +361,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Return true if the CQ is durable
-   * 
+   *
    * @return true if durable, false otherwise
    */
   @Override
@@ -371,7 +371,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   /**
    * Returns a reference to VSD stats of the CQ
-   * 
+   *
    * @return VSD stats of the CQ
    */
   @Override

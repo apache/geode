@@ -202,21 +202,21 @@ public class MessageType {
 
   /**
    * A message to make primary server
-   * 
+   *
    * @since GemFire 5.1
    */
   public static final int MAKE_PRIMARY = 31;
 
   /**
    * Response message type from primary server
-   * 
+   *
    * @since GemFire 5.1
    */
   public static final int RESPONSE_FROM_PRIMARY = 32;
 
   /**
    * Response message type from secondary server
-   * 
+   *
    * @since GemFire 5.1
    */
   public static final int RESPONSE_FROM_SECONDARY = 33;
@@ -226,7 +226,7 @@ public class MessageType {
    *
    * <p>
    * author gregp
-   * 
+   *
    * @since GemFire 4.1.1
    */
   public static final int QUERY = 34;
@@ -265,7 +265,7 @@ public class MessageType {
 
   /**
    * A message to register the Instantiators.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static final int REGISTER_INSTANTIATORS = 51;

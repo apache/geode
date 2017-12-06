@@ -17,19 +17,20 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
@@ -40,7 +41,7 @@ public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
   @Override
   public void connectIfNeeded() throws Exception {
     if (!connector.isConnected())
-      connector.connect(httpPort, GfshShellConnectionRule.PortType.http);
+      connector.connect(httpPort, GfshCommandRule.PortType.http);
   }
 
   @Test

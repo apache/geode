@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
-import org.junit.Test;
-import org.junit.Before;
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;

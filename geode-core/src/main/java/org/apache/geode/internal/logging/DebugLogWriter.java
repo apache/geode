@@ -20,7 +20,7 @@ import org.apache.geode.i18n.StringId;
 /**
  * A log writer that logs all types of log messages as a warning. Intended usage was for individual
  * classes that had their own logger reference and switched it for debugging purposes. e.g.
- * 
+ *
  * <pre>
  * Foo() { // constructor for class Foo
  *   if (Boolean.getBoolean(getClass().getName() + "-logging")) {
@@ -30,10 +30,10 @@ import org.apache.geode.i18n.StringId;
  *   }
  * }
  * </pre>
- * 
+ *
  * @since GemFire 5.0
  */
-final public class DebugLogWriter extends LogWriterImpl {
+public final class DebugLogWriter extends LogWriterImpl {
   private final LogWriterImpl realLogWriter;
   private final String prefix;
 
@@ -62,7 +62,7 @@ final public class DebugLogWriter extends LogWriterImpl {
 
   /**
    * Handles internationalized log messages.
-   * 
+   *
    * @param params each Object has toString() called and substituted into the msg
    * @see org.apache.geode.i18n.StringId
    * @since GemFire 6.0

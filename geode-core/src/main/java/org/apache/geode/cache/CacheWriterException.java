@@ -40,7 +40,7 @@ public class CacheWriterException extends OperationAbortedException {
 
   /**
    * Constructs an instance of <code>CacheWriterException</code> with the specified detail message.
-   * 
+   *
    * @param msg the detail message
    */
   public CacheWriterException(String msg) {
@@ -50,7 +50,7 @@ public class CacheWriterException extends OperationAbortedException {
   /**
    * Constructs an instance of <code>CacheWriterException</code> with the specified detail message
    * and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -60,7 +60,7 @@ public class CacheWriterException extends OperationAbortedException {
 
   /**
    * Constructs an instance of <code>CacheWriterException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public CacheWriterException(Throwable cause) {

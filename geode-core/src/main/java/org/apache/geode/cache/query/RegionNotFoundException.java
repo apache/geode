@@ -25,7 +25,7 @@ public class RegionNotFoundException extends NameResolutionException {
 
   /**
    * Construct an instance of RegionNotFoundException
-   * 
+   *
    * @param msg the error message
    */
   public RegionNotFoundException(String msg) {
@@ -34,7 +34,7 @@ public class RegionNotFoundException extends NameResolutionException {
 
   /**
    * Constructs an instance of RegionNotFoundException
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable that is a cause of this exception
    */

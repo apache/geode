@@ -678,4 +678,3 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
 
 }
-

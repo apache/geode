@@ -23,7 +23,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 /**
  * Base interface for {@link MsgStreamer} and {@link MsgStreamerList} to send a message over a list
  * of connections to one or more peers.
- * 
+ *
  * @since GemFire 7.1
  */
 public interface BaseMsgStreamer {
@@ -44,14 +44,14 @@ public interface BaseMsgStreamer {
 
   /**
    * Writes the message to the connected streams and returns the number of bytes written.
-   * 
+   *
    * @throws IOException if serialization failure
    */
   public int writeMessage() throws IOException;
 
   /**
    * Close this streamer.
-   * 
+   *
    * @throws IOException on exception
    */
   public void close() throws IOException;

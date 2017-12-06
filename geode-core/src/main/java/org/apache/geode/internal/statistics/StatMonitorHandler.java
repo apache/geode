@@ -14,15 +14,16 @@
  */
 package org.apache.geode.internal.statistics;
 
+import java.util.List;
+import java.util.concurrent.SynchronousQueue;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.logging.log4j.Logger;
-
-import java.util.List;
-import java.util.concurrent.SynchronousQueue;
 
 /**
  * @since GemFire 7.0

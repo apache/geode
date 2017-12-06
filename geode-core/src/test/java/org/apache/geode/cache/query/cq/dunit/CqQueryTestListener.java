@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.client.Pool;
@@ -31,7 +33,6 @@ import org.apache.geode.cache.query.CqStatusListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.awaitility.Awaitility;
 
 /**
  *
@@ -57,15 +58,15 @@ public class CqQueryTestListener implements CqStatusListener {
   protected volatile boolean eventRegionClear = false;
   protected volatile boolean eventRegionInvalidate = false;
 
-  final public Set destroys = Collections.synchronizedSet(new HashSet());
-  final public Set creates = Collections.synchronizedSet(new HashSet());
-  final public Set invalidates = Collections.synchronizedSet(new HashSet());
-  final public Set updates = Collections.synchronizedSet(new HashSet());
-  final public Set errors = Collections.synchronizedSet(new HashSet());
+  public final Set destroys = Collections.synchronizedSet(new HashSet());
+  public final Set creates = Collections.synchronizedSet(new HashSet());
+  public final Set invalidates = Collections.synchronizedSet(new HashSet());
+  public final Set updates = Collections.synchronizedSet(new HashSet());
+  public final Set errors = Collections.synchronizedSet(new HashSet());
 
-  static private final String WAIT_PROPERTY = "CqQueryTestListener.maxWaitTime";
+  private static final String WAIT_PROPERTY = "CqQueryTestListener.maxWaitTime";
 
-  static private final int WAIT_DEFAULT = (20 * 1000);
+  private static final int WAIT_DEFAULT = (20 * 1000);
 
   public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();;
 
@@ -74,7 +75,7 @@ public class CqQueryTestListener implements CqStatusListener {
 
   // This is to avoid reference to PerUserRequestSecurityTest which will fail to
   // initialize in a non Hydra environment.
-  static public boolean usedForUnitTests = true;
+  public static boolean usedForUnitTests = true;
 
   public ConcurrentLinkedQueue events = new ConcurrentLinkedQueue();
 

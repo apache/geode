@@ -34,7 +34,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
- * 
+ *
  *
  */
 public abstract class GroupByDUnitImpl extends JUnit4CacheTestCase implements GroupByTestInterface {

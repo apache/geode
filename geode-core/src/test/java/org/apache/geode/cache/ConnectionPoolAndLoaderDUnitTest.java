@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -35,6 +34,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -54,7 +54,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests that we can have both a connection pool and a bridge loader. The expected order of
    * operations for get is. get from server load from loader.
-   * 
+   *
    * Anything that is loaded on the client is put on the server..
    */
   @Test
@@ -131,7 +131,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test the we can have both a connection pool and a cache writer.
-   * 
+   *
    * The expected order of operations for put is: local writer put on server
    */
   @Test
@@ -228,7 +228,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test that we can have a peer, a server, and a bridge loader for the same region.
-   * 
+   *
    * Expected order 1 localCache 2 peer 3 server 4 loader
    */
   @Test

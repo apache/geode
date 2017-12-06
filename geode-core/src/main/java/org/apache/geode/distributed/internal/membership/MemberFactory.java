@@ -14,6 +14,9 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import java.io.File;
+import java.net.InetAddress;
+
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.LocatorStats;
@@ -22,13 +25,10 @@ import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.security.SecurityService;
 
-import java.io.File;
-import java.net.InetAddress;
-
 /**
  * Create a new Member based on the given inputs. TODO: need to implement a real factory
  * implementation based on gemfire.properties
- * 
+ *
  * @see org.apache.geode.distributed.internal.membership.NetMember
  */
 public class MemberFactory {
@@ -37,7 +37,7 @@ public class MemberFactory {
 
   /**
    * Return a new NetMember, possibly for a different host
-   * 
+   *
    * @param i the name of the host for the specified NetMember, the current host (hopefully) if
    *        there are any problems.
    * @param p the membership port
@@ -53,7 +53,7 @@ public class MemberFactory {
 
   /**
    * Return a new NetMember representing current host
-   * 
+   *
    * @param i an InetAddress referring to the current host
    * @param p the membership port being used
    * @return the new NetMember
@@ -65,7 +65,7 @@ public class MemberFactory {
 
   /**
    * Return a new NetMember representing current host
-   * 
+   *
    * @param s a String referring to the current host
    * @param p the membership port being used
    * @return the new member
@@ -77,7 +77,7 @@ public class MemberFactory {
   /**
    * Create a new MembershipManager. Be sure to send the manager a postConnect() message before you
    * start using it.
-   * 
+   *
    * @param listener the listener to notify for callbacks
    * @param config the configuration of connection to distributed system
    * @param transport holds configuration information that can be used by the manager to configure

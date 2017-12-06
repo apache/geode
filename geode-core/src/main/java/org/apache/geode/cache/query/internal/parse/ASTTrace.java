@@ -13,14 +13,14 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal.parse;
 
 import org.apache.geode.cache.query.internal.QCompiler;
 
 /**
- * 
+ *
  * @since GemFire 6.6.2
  *
  */

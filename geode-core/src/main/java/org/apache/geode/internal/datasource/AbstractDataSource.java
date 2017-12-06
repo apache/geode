@@ -29,7 +29,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * AbstractDataSource implements the Datasource interface. This is base class for the datasouce
  * types. The class also implements the Serializable and Referenceable behavior.
- * 
+ *
  * This class now contains only those paramaters which are needed by the Gemfire DataSource
  * configuration. This maps to those paramaters which are specified as attributes of
  * <jndi-binding>tag. Those parameters which are specified as attributes of <property>tag are not
@@ -51,11 +51,11 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * Constructor for the AbstractDataSource.
-   * 
+   *
    * @param configs ConfiguredDataSourceProperties object containing all the data required to
    *        construct the datasource object.
    * @throws SQLException
-   * 
+   *
    */
   public AbstractDataSource(ConfiguredDataSourceProperties configs) throws SQLException {
     loginTimeOut = configs.getLoginTimeOut();
@@ -70,7 +70,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   /**
    * Behavior from the dataSource interface. This is an abstract function which will implemented in
    * the Datasource classes.
-   * 
+   *
    * @throws SQLException
    * @return Connection Connection object for the Database connection.
    */
@@ -79,7 +79,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   /**
    * Behavior from the dataSource interface. This is an abstract function which will be implemented
    * in the Datasource classes.
-   * 
+   *
    * @param username Username used for making database connection.
    * @param password Passowrd used for making database connection.
    * @throws SQLException
@@ -90,7 +90,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   // DataSource Interface functions
   /**
    * Returns the writer for logging
-   * 
+   *
    * @throws SQLException
    * @return PrintWriter for logs.
    */
@@ -101,7 +101,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   /**
    * Returns the amount of time that login will wait for the connection to happen before it gets
    * time out.
-   * 
+   *
    * @throws SQLException
    * @return int login time out.
    */
@@ -111,7 +111,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * sets the log writer for the datasource.
-   * 
+   *
    * @param out PrintWriter for writing the logs.
    * @throws SQLException
    */
@@ -121,7 +121,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * Sets the login time out for the database connection
-   * 
+   *
    * @param seconds login time out in seconds.
    * @throws SQLException
    */
@@ -153,7 +153,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   // Get Methods for DataSource Properties
   /**
    * Returns the default user for the database.
-   * 
+   *
    * @return String
    */
   public String getUser() {
@@ -162,7 +162,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * Returns the default password for the database.
-   * 
+   *
    * @return String
    */
   public String getPassword() {
@@ -171,7 +171,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * The name of the JDBC driver for the database.
-   * 
+   *
    * @return String
    */
   public String getJDBCDriver() {
@@ -181,7 +181,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   // Set Method for Datasource Properties
   /**
    * Sets the default username for the database
-   * 
+   *
    * @param usr
    */
   public void setUser(String usr) {
@@ -190,7 +190,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * Sets the default passord for the database user.
-   * 
+   *
    * @param passwd Password for the user
    */
   public void setPassword(String passwd) {
@@ -199,7 +199,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * Sets the JDBC driver name of the datasource
-   * 
+   *
    * @param confDriver
    */
   public void setJDBCDriver(String confDriver) {
@@ -208,7 +208,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
 
   /**
    * Authenticates the username and password for the database connection.
-   * 
+   *
    * @param clUser The username for the database connection
    * @param clPass The password for the database connection
    * @throws SQLException
@@ -223,7 +223,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource {
   }
 
   /**
-   *  
+   *
    */
   public void clearUp() {
     isActive = false;

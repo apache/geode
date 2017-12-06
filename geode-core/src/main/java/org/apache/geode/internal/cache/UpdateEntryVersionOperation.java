@@ -38,8 +38,8 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 /**
  * This operation updates Version stamp of an entry if entry is available and entry version stamp
  * has same DSID as in event's version tag.
- * 
- * 
+ *
+ *
  */
 public class UpdateEntryVersionOperation extends DistributedCacheOperation {
   private static final Logger logger = LogService.getLogger();
@@ -53,7 +53,7 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.DistributedCacheOperation#createMessage()
    */
   @Override

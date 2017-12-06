@@ -31,10 +31,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -44,7 +45,7 @@ public class ExportConfigCommandDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -58,9 +59,9 @@ public class ExportConfigCommandDUnitTest {
     MemberVM server0 = startupRule.startServerAsEmbededLocator(0, props);
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     // start server1 and server2 in group2
@@ -73,7 +74,7 @@ public class ExportConfigCommandDUnitTest {
 
     // export all members' config into a folder
     File tempDir = temporaryFolder.newFolder("all-members");
-    gfsh.executeAndVerifyCommand("export config --dir=" + tempDir.getAbsolutePath());
+    gfsh.executeAndAssertThat("export config --dir=" + tempDir.getAbsolutePath()).statusIsSuccess();
 
     List<String> expectedFiles = Arrays.asList("server-0-cache.xml", "server-1-cache.xml",
         "server-2-cache.xml", "server-3-cache.xml", "server-0-gf.properties",
@@ -86,8 +87,8 @@ public class ExportConfigCommandDUnitTest {
 
     // export just one member's config
     tempDir = temporaryFolder.newFolder("member0");
-    gfsh.executeAndVerifyCommand(
-        "export config --member=server-0 --dir=" + tempDir.getAbsolutePath());
+    gfsh.executeAndAssertThat("export config --member=server-0 --dir=" + tempDir.getAbsolutePath())
+        .statusIsSuccess();
 
     expectedFiles = Arrays.asList("server-0-cache.xml", "server-0-gf.properties");
 
@@ -98,7 +99,8 @@ public class ExportConfigCommandDUnitTest {
 
     // export group2 config into a folder
     tempDir = temporaryFolder.newFolder("group2");
-    gfsh.executeAndVerifyCommand("export config --group=Group2 --dir=" + tempDir.getAbsolutePath());
+    gfsh.executeAndAssertThat("export config --group=Group2 --dir=" + tempDir.getAbsolutePath())
+        .statusIsSuccess();
 
     expectedFiles = Arrays.asList("server-1-cache.xml", "server-2-cache.xml",
         "server-1-gf.properties", "server-2-gf.properties");

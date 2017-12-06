@@ -14,15 +14,15 @@
  */
 package org.apache.geode.test.dunit;
 
+import java.net.UnknownHostException;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.net.SocketCreator;
-
-import java.net.UnknownHostException;
 
 /**
  * <code>NetworkUtils</code> provides static utility methods to perform network DNS lookups or
  * similar actions.
- * 
+ *
  * These methods can be used directly: <code>NetworkUtils.getIPLiteral()</code>, however, they are
  * intended to be referenced through static import:
  *
@@ -41,7 +41,7 @@ public class NetworkUtils {
   /**
    * Get the IP literal name for the current host. Use this instead of "localhost" to avoid IPv6
    * name resolution bugs in the JDK/machine config. This method honors java.net.preferIPvAddresses
-   * 
+   *
    * @return an IP literal which honors java.net.preferIPvAddresses
    */
   public static String getIPLiteral() {
@@ -54,7 +54,7 @@ public class NetworkUtils {
 
   /**
    * Get the host name to use for a server cache in client/server dunit testing.
-   * 
+   *
    * @param host the dunit Host to get a machine host name for
    * @return the host name
    */

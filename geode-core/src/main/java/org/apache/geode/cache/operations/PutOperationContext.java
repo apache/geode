@@ -21,7 +21,7 @@ import org.apache.geode.cache.Region;
  * Encapsulates an {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUT}
  * region operation having both key and value objects for for both the pre-operation case and for
  * post-operation updates.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -51,7 +51,7 @@ public class PutOperationContext extends KeyValueOperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param key the key for this operation
    * @param value the value for this operation
    * @param isObject true when the value is an object; false when it is a raw byte array
@@ -64,7 +64,7 @@ public class PutOperationContext extends KeyValueOperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param key the key for this operation
    * @param value the value for this operation
    * @param isObject true when the value is an object; false when it is a raw byte array
@@ -78,7 +78,7 @@ public class PutOperationContext extends KeyValueOperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param key the key for this operation
    * @param value the value for this operation
    * @param isObject true when the value is an object; false when it is a raw byte array
@@ -94,7 +94,7 @@ public class PutOperationContext extends KeyValueOperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.PUT</code>.
    */
   @Override
@@ -104,12 +104,12 @@ public class PutOperationContext extends KeyValueOperationContext {
 
   /**
    * Return whether the operation is a create or update or unknown.
-   * 
+   *
    * The user should check against {@link PutOperationContext#CREATE},
    * {@link PutOperationContext#UPDATE}, {@link PutOperationContext#UNKNOWN}. For the
    * {@link PutOperationContext#UNKNOWN} case, the authorization callback should explicitly invoke
    * {@link Region#containsKey} to determine if it is create or update when required.
-   * 
+   *
    * @return one of {@link PutOperationContext#CREATE}, {@link PutOperationContext#UPDATE},
    *         {@link PutOperationContext#UNKNOWN}
    */

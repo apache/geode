@@ -24,16 +24,16 @@ import org.apache.geode.internal.cache.snapshot.SnapshotFileMapper;
  * <dt>filter</dt>
  * <dd>null</dd>
  * </dl>
- * 
+ *
  * @param <K> the cache entry key type
  * @param <V> the cache entry value type
- * 
+ *
  * @since GemFire 7.0
  */
 public interface SnapshotOptions<K, V> extends Serializable {
   /**
    * Defines the available snapshot file formats.
-   * 
+   *
    * @since GemFire 7.0
    */
   enum SnapshotFormat {
@@ -44,7 +44,7 @@ public interface SnapshotOptions<K, V> extends Serializable {
   /**
    * Sets a filter to apply to snapshot entries. Entries that are accepted by the filter will be
    * included in import and export operations.
-   * 
+   *
    * @param filter the filter to apply, or null to remove the filter
    * @return the snapshot options
    */
@@ -53,7 +53,7 @@ public interface SnapshotOptions<K, V> extends Serializable {
   /**
    * Returns the filter to be applied to snapshot entries. Entries that are accepted by the filter
    * will be included in import and export operations.
-   * 
+   *
    * @return the filter, or null if the filter is not set
    */
   SnapshotFilter<K, V> getFilter();

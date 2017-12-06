@@ -15,7 +15,7 @@
 /**
  * The LoaderHelperFactory inspiration came from a need to allow Partitioned Regions to generate a
  * LoaderHelper that was outside the context of the Region the loader invoked from.
- * 
+ *
  * @since GemFire 5.0
  */
 package org.apache.geode.internal.cache;
@@ -25,7 +25,7 @@ import org.apache.geode.cache.LoaderHelper;
 /**
  * The LoaderHelperFactory creates a LoaderHelper class which is used by a
  * {@link org.apache.geode.cache.CacheLoader}.
- * 
+ *
  * @since GemFire 5.0
  */
 public interface LoaderHelperFactory {

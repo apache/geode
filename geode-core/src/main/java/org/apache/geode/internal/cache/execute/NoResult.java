@@ -16,8 +16,8 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.io.Serializable;
-
 import java.util.concurrent.TimeUnit;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -28,13 +28,13 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * A Special ResultCollector implementation. Functions having {@link Function#hasResult()} false,
  * this ResultCollector will be returned. <br>
  * Calling getResult on this NoResult will throw {@link FunctionException}
- * 
- * 
- * 
+ *
+ *
+ *
  * @since GemFire 5.8 Beta
- * 
+ *
  * @see Function#hasResult()
- * 
+ *
  */
 public class NoResult implements ResultCollector, Serializable {
 

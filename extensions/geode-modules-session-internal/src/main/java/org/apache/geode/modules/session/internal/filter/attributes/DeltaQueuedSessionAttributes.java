@@ -15,10 +15,11 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.Instantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 
 /**
  * This class implements delayed attribute delta propagation. Updates to attributes are only

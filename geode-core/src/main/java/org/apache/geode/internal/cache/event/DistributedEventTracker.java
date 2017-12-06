@@ -62,7 +62,7 @@ public class DistributedEventTracker implements EventTracker {
    * a mapping of originator to bulkOperation's last version tags. This map differs from
    * {@link #recordedBulkOps} in that the thread identifier used here is the base member id and
    * thread id of the bulk op, as opposed to the fake thread id which is assigned for each bucket.
-   * 
+   *
    * recordedBulkOps are also only tracked on the secondary for partitioned regions
    * recordedBulkOpVersionTags are tracked on both the primary and secondary.
    *
@@ -101,7 +101,7 @@ public class DistributedEventTracker implements EventTracker {
 
   /**
    * Create an event tracker
-   * 
+   *
    * @param cache the cache of the region to associate with this tracker
    * @param stopper the CancelCriterion for the region
    * @param regionName name of the region
@@ -178,7 +178,7 @@ public class DistributedEventTracker implements EventTracker {
   /**
    * Record an event sequence id if it is higher than what we currently have. This is intended for
    * use during initial image transfer.
-   * 
+   *
    * @param membershipID the key of an entry in the map obtained from getEventState()
    * @param evhObj the value of an entry in the map obtained from getEventState()
    */

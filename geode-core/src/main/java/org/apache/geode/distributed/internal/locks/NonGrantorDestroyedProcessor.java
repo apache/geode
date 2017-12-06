@@ -31,10 +31,7 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-// import java.util.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-// import org.apache.geode.distributed.internal.DistributionAdvisor;
-// import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -53,7 +50,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
   ////////// Public static entry point /////////
 
   /**
-   * 
+   *
    * Send a message to grantor telling him that we've shutdown the named lock service for this
    * member.
    * <p>
@@ -286,4 +283,3 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
     }
   }
 }
-

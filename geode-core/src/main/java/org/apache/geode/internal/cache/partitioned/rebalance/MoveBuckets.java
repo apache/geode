@@ -43,7 +43,7 @@ public class MoveBuckets extends RebalanceDirectorAdapter {
 
   /**
    * Move a single bucket from one member to another.
-   * 
+   *
    * @return true if we could move the bucket
    */
   private boolean moveBuckets() {

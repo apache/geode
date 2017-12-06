@@ -15,16 +15,15 @@
 package org.apache.geode.distributed.internal.locks;
 
 import java.io.Serializable;
-
-import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.locks.DLockService.ThreadRequestState;
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.locks.DLockService.ThreadRequestState;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Distributed lock which is owned by a member rather than a single thread. Any thread within the
@@ -33,10 +32,10 @@ import java.util.concurrent.locks.Lock;
  *
  * While this member holds the lock, another member will not be able to acquire it. Any thread
  * within this member may reenter or unlock the lock.
- * 
+ *
  * Operations delegate to {@link org.apache.geode.distributed.DistributedLockService} and may throw
  * LockNotHeldException or LockServiceDestroyedException.
- * 
+ *
  * @since GemFire 5.1
  */
 public class DistributedMemberLock implements Lock {
@@ -46,7 +45,7 @@ public class DistributedMemberLock implements Lock {
 
   /**
    * Defines the behavior when attempting to reenter a held lock.
-   * 
+   *
    */
   public enum LockReentryPolicy {
     /** Allows lock reentry */
@@ -58,7 +57,7 @@ public class DistributedMemberLock implements Lock {
 
     /**
      * Returns true if lock reentry should be rejected.
-     * 
+     *
      * @param lock the lock that reentry is being attempted on
      * @return true if lock reentry should be rejected
      * @throws IllegalStateException if reentry policy is NONREENTRANT_ERROR
@@ -112,7 +111,7 @@ public class DistributedMemberLock implements Lock {
 
   /**
    * Constructs a new <code>DistributedMemberLock</code>.
-   * 
+   *
    * @param dls the instance of <code>DistributedLockService</code> to use
    * @param key name of the key for this lock
    * @throws NullPointerException if dls or key is null
@@ -123,7 +122,7 @@ public class DistributedMemberLock implements Lock {
 
   /**
    * Constructs a new <code>DistributedMemberLock</code>.
-   * 
+   *
    * @param dls the instance of <code>DistributedLockService</code> to use
    * @param key name of the key for this lock
    * @param leaseTimeout number of milliseconds to hold a lock before automatically releasing it

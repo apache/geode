@@ -15,10 +15,10 @@
 
 package org.apache.geode.i18n;
 
+import java.util.logging.Handler;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystem;
-
-import java.util.logging.Handler;
 
 /**
  * Defines methods available to clients that want to write a log message to their GemFire
@@ -88,42 +88,42 @@ public interface LogWriterI18n {
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "severe".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void severe(StringId msgID);
@@ -140,42 +140,42 @@ public interface LogWriterI18n {
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "error".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void error(StringId msgID);
@@ -192,42 +192,42 @@ public interface LogWriterI18n {
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "warning".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void warning(StringId msgID);
@@ -244,42 +244,42 @@ public interface LogWriterI18n {
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "info".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void info(StringId msgID);
@@ -296,42 +296,42 @@ public interface LogWriterI18n {
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "config".
-   * 
+   *
    * @since GemFire 6.0
    */
   public void config(StringId msgID);
@@ -381,7 +381,7 @@ public interface LogWriterI18n {
    * <p>
    * The logging is done using the <code>finer</code> level. The string message will start with
    * <code>"ENTRY"</code> and include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
@@ -392,7 +392,7 @@ public interface LogWriterI18n {
    * <p>
    * The logging is done using the <code>finer</code> level. The string message will start with
    * <code>"RETURN"</code> and include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
@@ -407,7 +407,7 @@ public interface LogWriterI18n {
    * This is a convenience method that could be done instead by calling
    * {@link #finer(String, Throwable)}. The string message will start with <code>"THROW"</code> and
    * include the class and method names.
-   * 
+   *
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    * @param thrown The Throwable that is being thrown.
@@ -443,7 +443,7 @@ public interface LogWriterI18n {
 
   /**
    * A mechanism for accessing the abstraction layer used for a plain logger.
-   * 
+   *
    * @return LogWriter
    */
   public LogWriter convertToLogWriter();

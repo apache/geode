@@ -75,6 +75,12 @@ public class MemoryIndexStoreJUnitTest {
   }
 
   @Test
+  public void createIteratorWhenCacheNulledWhenShuttingDownShouldNotThrowNPE() {
+    GemFireCacheImpl.setInstanceForTests(null);
+    store.get("T");
+  }
+
+  @Test
   public void testSizeOfStoreReturnsNumberOfKeysAndNotActualNumberOfValues() {
     IntStream.range(0, 150).forEach(i -> {
       try {

@@ -68,7 +68,7 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 
 /**
  * The base PartitionedRegion message type upon which other messages should be based.
- * 
+ *
  * @since GemFire 5.0
  */
 public abstract class PartitionMessage extends DistributionMessage
@@ -96,7 +96,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * these bit masks are used for encoding the bits of a short on the wire instead of transmitting
    * booleans. Any subclasses interested in saving bits on the wire should add a mask here and then
    * override computeCompressedShort and setBooleans
-   * 
+   *
    */
   /** flag to indicate notification message */
   protected static final short NOTIFICATION_ONLY = DistributionMessage.UNRESERVED_FLAGS_START;
@@ -200,7 +200,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * Severe alert processing enables suspect processing at the ack-wait-threshold and issuing of a
    * severe alert at the end of the ack-severe-alert-threshold. Some messages should not support
    * this type of processing (e.g., GII, or DLockRequests)
-   * 
+   *
    * @return whether severe-alert processing may be performed on behalf of this message
    */
   @Override
@@ -261,7 +261,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   /**
    * check to see if the distributed system is closing
-   * 
+   *
    * @return true if the distributed system is closing
    */
   public boolean checkDSClosing(DistributionManager dm) {
@@ -290,7 +290,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * Upon receipt of the message, both process the message and send an acknowledgement, not
    * necessarily in that order. Note: Any hang in this message may cause a distributed deadlock for
    * those threads waiting for an acknowledgement.
-   * 
+   *
    * @throws PartitionedRegionException if the region does not exist (typically, if it has been
    *         destroyed)
    */
@@ -421,7 +421,7 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * Send a generic ReplyMessage. This is in a method so that subclasses can override the reply
    * message type
-   * 
+   *
    * @param pr the Partitioned Region for the message whose statistics are incremented
    * @param startTime the start time of the operation in nanoseconds
    * @see PutMessage#sendReply
@@ -439,7 +439,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * Allow classes that over-ride to choose whether a RegionDestroyException is thrown if no
    * partitioned region is found (typically occurs if the message will be sent before the
    * PartitionedRegion has been fully constructed.
-   * 
+   *
    * @return true if throwing a {@link RegionDestroyedException} is acceptable
    */
   protected boolean failIfRegionMissing() {
@@ -448,7 +448,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   /**
    * relay this message to another set of recipients for event notification
-   * 
+   *
    * @param cacheOpRecipients recipients of associated bucket CacheOperationMessage
    * @param adjunctRecipients recipients who unconditionally get the message
    * @param filterRoutingInfo routing information for all recipients
@@ -494,7 +494,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   /**
    * An operation upon the messages partitioned region which each subclassing message must implement
-   * 
+   *
    * @param dm the manager that received the message
    * @param pr the partitioned region that should be modified
    * @param startTime the start time of the operation
@@ -568,7 +568,7 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * Sets the bits of a short by using the bit masks. A subclass must override this method if it is
    * using bits in the compressed short.
-   * 
+   *
    * @return short with appropriate bits set
    */
   protected short computeCompressedShort(short s) {
@@ -585,7 +585,7 @@ public abstract class PartitionMessage extends DistributionMessage
     return s;
   }
 
-  public final static String PN_TOKEN = ".cache.";
+  public static final String PN_TOKEN = ".cache.";
 
   @Override
   public String toString() {
@@ -647,7 +647,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   /**
    * added to support old value to be written on wire.
-   * 
+   *
    * @param value true or false
    * @since GemFire 5.5
    */
@@ -700,7 +700,7 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * A processor on which to await a response from the {@link PartitionMessage} recipient, capturing
    * any CacheException thrown by the recipient and handle it as an expected exception.
-   * 
+   *
    * @since GemFire 5.0
    * @see #waitForCacheException()
    */
@@ -770,7 +770,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
     /**
      * Waits for the response from the {@link PartitionMessage}'s recipient
-     * 
+     *
      * @throws CacheException if the recipient threw a cache exception during message processing
      * @throws ForceReattemptException if the recipient left the distributed system before the
      *         response was received.

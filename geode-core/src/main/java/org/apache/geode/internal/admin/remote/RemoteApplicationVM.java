@@ -16,8 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.internal.admin.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.admin.*;
 
 /**
  * Represents an application VM (member of the distributed system).
@@ -32,7 +32,7 @@ public class RemoteApplicationVM extends RemoteGemFireVM implements ApplicationV
    * <p/>
    * You MUST invoke {@link RemoteGemFireVM#startStatDispatcher()} immediately after constructing an
    * instance.
-   * 
+   *
    * @param alertLevel The level of {@link Alert}s that this administration console should receive
    *        from this member of the distributed system.
    */

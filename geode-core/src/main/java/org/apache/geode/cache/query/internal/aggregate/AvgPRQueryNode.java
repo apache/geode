@@ -17,7 +17,7 @@ package org.apache.geode.cache.query.internal.aggregate;
 /**
  * Computes the final non distinct average for a partitioned region based query. This aggregator is
  * instantiated on the PR query node.
- * 
+ *
  *
  */
 public class AvgPRQueryNode extends Sum {

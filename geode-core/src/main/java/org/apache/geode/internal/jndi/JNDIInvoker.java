@@ -14,6 +14,16 @@
  */
 package org.apache.geode.internal.jndi;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.*;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -26,15 +36,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
-
-import javax.naming.*;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -53,7 +54,7 @@ import java.util.Map;
  * available JNDI tree. The transactional datasource (XADataSource) will make use of available
  * TransactionManager.
  * </p>
- * 
+ *
  */
 public class JNDIInvoker {
 
@@ -112,7 +113,7 @@ public class JNDIInvoker {
    * UserTransaction is not available, the GemFire TransactionManager / UserTransaction will be
    * bound to the JNDI tree.
    * </p>
-   * 
+   *
    */
   public static void mapTransactions(DistributedSystem distSystem) {
     try {
@@ -290,7 +291,7 @@ public class JNDIInvoker {
 
   /**
    * Initialises the GemFire context. This is called when no external JNDI Context is found.
-   * 
+   *
    * @throws NamingException
    */
   private static void initializeGemFireContext() throws NamingException {
@@ -304,7 +305,7 @@ public class JNDIInvoker {
    * Binds a single Datasource to the existing JNDI tree. The JNDI tree may be The Datasource
    * properties are contained in the map. The Datasource implementation class is populated based on
    * properties in the map.
-   * 
+   *
    * @param map contains Datasource configuration properties.
    */
   public static void mapDatasource(Map map, List props) {
@@ -367,7 +368,7 @@ public class JNDIInvoker {
 
   /**
    * returns the GemFire TransactionManager.
-   * 
+   *
    * @return TransactionManager
    */
   public static TransactionManager getTransactionManager() {

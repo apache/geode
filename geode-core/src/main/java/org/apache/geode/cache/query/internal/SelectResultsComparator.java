@@ -22,7 +22,7 @@ import org.apache.geode.cache.query.SelectResults;
  * Comparator used by the sorted set for storing the results obtained from evaluation of various
  * filter operands in an increasing order of the size , which will ensure that the intersection of
  * the results for evaluation of AND junction is optimum in performance.
- * 
+ *
  */
 
 class SelectResultsComparator implements Comparator {

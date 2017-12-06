@@ -232,7 +232,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   /**
    * The Region this index is on
-   * 
+   *
    * @return the Region for this index
    */
   @Override
@@ -427,7 +427,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   /**
    * Get the projectionAttributes for this expression.
-   * 
+   *
    * @return the projectionAttributes, or "*" if there were none specified at index creation.
    */
   @Override
@@ -437,7 +437,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   /**
    * Get the projectionAttributes for this expression.
-   * 
+   *
    * @return the projectionAttributes, or "*" if there were none specified at index creation.
    */
   @Override
@@ -1296,7 +1296,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    * Checks the limit for the resultset for distinct and non-distinct queries separately. In case of
    * non-distinct distinct elements size of result-set is matched against limit passed in as an
    * argument.
-   * 
+   *
    * @return true if limit is satisfied.
    */
   boolean verifyLimit(Collection result, int limit) {
@@ -1306,21 +1306,21 @@ public abstract class AbstractIndex implements IndexProtocol {
   /**
    * This will verify the consistency between RegionEntry and IndexEntry. RangeIndex has following
    * entry structure,
-   * 
+   *
    * IndexKey --> [RegionEntry, [Iterator1, Iterator2....., IteratorN]]
    *
    * Where Iterator1 to IteratorN are iterators defined in index from clause.
    *
    * For example: "/portfolio p, p.positions.values pos" from clause has two iterators where p is
    * independent iterator and pos is dependent iterator.
-   * 
+   *
    * Query iterators can be a subset, superset or exact match of index iterators. But we take query
    * iterators which are matching with index iterators to evaluate RegionEntry for new value and
    * compare it with index value which could be a plain object or a Struct.
    *
    * Note: Struct evaluated from RegionEntry can NOT have more field values than Index Value Struct
    * as we filter out iterators in query context before evaluating Struct from RegionEntry.
-   * 
+   *
    * @return True if Region and Index entries are consistent.
    */
   // package-private to avoid synthetic accessor
@@ -1477,7 +1477,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    * Note: This Index contains its own from clause definition which corresponds to a region
    * collection reference in given context and must be contained at 0th index in
    * {@link AbstractIndex#canonicalizedDefinitions}.
-   * 
+   *
    * @return {@link RuntimeIterator} this should not be null ever.
    */
   RuntimeIterator getRuntimeIteratorForThisIndex(ExecutionContext context) {
@@ -1499,7 +1499,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   /**
    * Similar to {@link #getRuntimeIteratorForThisIndex(ExecutionContext)} except that this one also
    * matches the iterator name if present with alias used in the {@link IndexInfo}
-   * 
+   *
    * @return {@link RuntimeIterator}
    */
   RuntimeIterator getRuntimeIteratorForThisIndex(ExecutionContext context, IndexInfo info) {
@@ -1568,7 +1568,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   /**
    * This map is not thread-safe. We rely on the fact that every thread which is trying to update
    * this kind of map (In Indexes), must have RegionEntry lock before adding OR removing elements.
-   * 
+   *
    * This map does NOT provide an iterator. To iterate over its element caller has to get inside the
    * map itself through addValuesToCollection() calls.
    */
@@ -2017,7 +2017,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   /**
    * Converts Strings to PdxStrings and vice-versa based on the isIndexedPdxKeys flag
-   * 
+   *
    * @return PdxString or String based on isIndexedPdxKeys flag
    */
   Object getPdxStringForIndexedPdxKeys(Object key) {

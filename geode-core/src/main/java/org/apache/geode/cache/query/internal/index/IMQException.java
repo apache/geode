@@ -30,7 +30,7 @@ public class IMQException extends QueryException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause of this exception
    */
@@ -40,7 +40,7 @@ public class IMQException extends QueryException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param msg the error message
    */
   public IMQException(String msg) {
@@ -49,7 +49,7 @@ public class IMQException extends QueryException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param cause a Throwable cause of this exception
    */
   public IMQException(Throwable cause) {

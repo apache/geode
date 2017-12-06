@@ -16,13 +16,14 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.logging.log4j.Level;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.Level;
+
+import org.apache.geode.internal.logging.log4j.LogLevel;
 
 /**
  * this will extract convert the deprecated InternalLogWriter's level into log4j level as well.
@@ -68,4 +69,3 @@ public class LogLevelExtractor {
 
   }
 }
-

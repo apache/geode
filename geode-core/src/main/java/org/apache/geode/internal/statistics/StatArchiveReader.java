@@ -64,7 +64,7 @@ public class StatArchiveReader implements StatArchiveFormat {
 
   /**
    * Creates a StatArchiveReader that will read the named archive file.
-   * 
+   *
    * @param autoClose if its <code>true</code> then the reader will close input files as soon as it
    *        finds their end.
    * @throws IOException if <code>archiveName</code> could not be opened read, or closed.
@@ -86,7 +86,7 @@ public class StatArchiveReader implements StatArchiveFormat {
 
   /**
    * Creates a StatArchiveReader that will read the named archive file.
-   * 
+   *
    * @throws IOException if <code>archiveName</code> could not be opened read, or closed.
    */
   public StatArchiveReader(String archiveName) throws IOException {
@@ -127,7 +127,7 @@ public class StatArchiveReader implements StatArchiveFormat {
    * maintained by the reader are updated.
    * <p>
    * Once closed a reader can no longer be updated.
-   * 
+   *
    * @return true if update read some new data.
    * @throws IOException if an archive could not be opened read, or closed.
    */
@@ -527,7 +527,7 @@ public class StatArchiveReader implements StatArchiveFormat {
      * Sets the current filter used to calculate this statistic's values. The default filter is
      * {@link #FILTER_NONE} unless the statistic is a counter,
      * {@link StatArchiveReader.StatDescriptor#isCounter}, in which case its {@link #FILTER_PERSEC}.
-     * 
+     *
      * @param filter It must be one of these values:
      *        <ul>
      *        <li>{@link #FILTER_NONE}
@@ -544,7 +544,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     StatDescriptor getDescriptor();
   }
 
-  protected static abstract class AbstractValue implements StatValue {
+  protected abstract static class AbstractValue implements StatValue {
     protected StatDescriptor descriptor;
     protected int filter;
 
@@ -1226,7 +1226,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     }
   }
 
-  private static abstract class BitInterval {
+  private abstract static class BitInterval {
     /** Returns number of items added to values */
     abstract int fill(double[] values, int valueOffset, int typeCode, int skipCount);
 
@@ -1287,7 +1287,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     }
   }
 
-  private static abstract class BitNonZeroInterval extends BitInterval {
+  private abstract static class BitNonZeroInterval extends BitInterval {
     @Override
     int getMemoryUsed() {
       return super.getMemoryUsed() + 4;
@@ -1447,7 +1447,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     }
   }
 
-  private static abstract class BitZeroInterval extends BitInterval {
+  private abstract static class BitZeroInterval extends BitInterval {
     @Override
     int getMemoryUsed() {
       return super.getMemoryUsed() + 4;
@@ -1982,7 +1982,7 @@ public class StatArchiveReader implements StatArchiveFormat {
   }
 
   private static class TimeStampSeries {
-    static private final int GROW_SIZE = 256;
+    private static final int GROW_SIZE = 256;
     int count; // number of items in this series
     long base; // millis since midnight, Jan 1, 1970 UTC.
     long[] timeStamps = new long[GROW_SIZE]; // elapsed millis from base
@@ -2161,7 +2161,7 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     /**
      * Gets a stat descriptor contained in this type given the stats name.
-     * 
+     *
      * @param name the name of the stat to find in the current type
      * @return the descriptor that matches the name or null if the type does not have a stat of the
      *         given name
@@ -2531,7 +2531,7 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     /**
      * Gets the value of the stat in the current instance given the stat name.
-     * 
+     *
      * @param name the name of the stat to find in the current instance
      * @return the value that matches the name or null if the instance does not have a stat of the
      *         given name
@@ -2709,7 +2709,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     private ResourceType[] resourceTypeTable = null;
     private final TimeStampSeries timeSeries = new TimeStampSeries();
     private final DateFormat timeFormatter = new SimpleDateFormat(DateFormatter.FORMAT_STRING);
-    private final static int BUFFER_SIZE = 1024 * 1024;
+    private static final int BUFFER_SIZE = 1024 * 1024;
     private final ArrayList fileComboValues = new ArrayList();
 
 
@@ -2792,7 +2792,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     /**
      * Formats an archive timestamp in way consistent with GemFire log dates. It will also be
      * formatted to reflect the time zone the archive was created in.
-     * 
+     *
      * @param ts The difference, measured in milliseconds, between the time marked by this time
      *        stamp and midnight, January 1, 1970 UTC.
      */
@@ -2822,7 +2822,7 @@ public class StatArchiveReader implements StatArchiveFormat {
      * instances maintained by the reader are updated.
      * <p>
      * Once closed a reader can no longer be updated.
-     * 
+     *
      * @return true if update read some new data.
      * @throws IOException if <code>archiveName</code> could not be opened read, or closed.
      */

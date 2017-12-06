@@ -33,10 +33,10 @@ import org.apache.geode.internal.offheap.annotations.Retained;
  * <p>
  * The internal implementation of the {@link TransactionEvent}interface used by the remote commit
  * code.
- * 
- * 
+ *
+ *
  * @since GemFire 4.0
- * 
+ *
  */
 public class TXRmtEvent implements TransactionEvent {
   private final TransactionId txId;

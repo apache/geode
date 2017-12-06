@@ -14,10 +14,10 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-// import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.FunctionDomainException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.util.*;
+
 import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryException;
@@ -29,7 +29,7 @@ import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.RegionEntry;
-import java.util.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public interface IndexProtocol extends Index {
   /**
@@ -57,7 +57,7 @@ public interface IndexProtocol extends Index {
    * This method gets invoked only if the where clause contains multiple 'NOT EQUAL' conditions only
    * , for a given index expression ( i.e something like a != 5 and a != 7 ). This will be invoked
    * only from RangeJunction.NotEqualConditionEvaluator
-   * 
+   *
    * @param results The Collection object used for fetching the index results
    * @param keysToRemove Set containing Index key which should not be included in the results being
    *        fetched
@@ -71,7 +71,7 @@ public interface IndexProtocol extends Index {
 
   /**
    * This can be invoked only from RangeJunction.SingleCondnEvaluator
-   * 
+   *
    * @param key Index Key Object for which the Index results need to be fetched
    * @param operator Integer specifying the criteria relative to the key , which defines the index
    *        resultset
@@ -89,7 +89,7 @@ public interface IndexProtocol extends Index {
       NameResolutionException, QueryInvocationTargetException;
 
   /**
-   * 
+   *
    * @param key Index Key Object for which the Index results need to be fetched
    * @param operator Integer specifying the criteria relative to the key , which defines the index
    *        resultset
@@ -102,7 +102,7 @@ public interface IndexProtocol extends Index {
       QueryInvocationTargetException;
 
   /**
-   * 
+   *
    * @param key
    * @param operator
    * @param results
@@ -121,7 +121,7 @@ public interface IndexProtocol extends Index {
 
   /**
    * This will be queried from RangeJunction.DoubleCondnRangeJunctionEvaluator
-   * 
+   *
    * @param lowerBoundKey Object representing the lower Bound Key
    * @param lowerBoundOperator integer identifying the lower bound ( > or >= )
    * @param upperBoundKey Object representing the Upper Bound Key
@@ -141,7 +141,7 @@ public interface IndexProtocol extends Index {
    * Asif: Gets the data for an equi join condition across the region. The function iterates over
    * this Range Index's keys & also runs an inner iteration for the Range Index passed as parameter.
    * If the two keys match the resultant data of both the indexes is collected.
-   * 
+   *
    * @param index RangeIndex object for the other operand
    * @param context TODO
    * @return A List object whose elements are a two dimensional Object Array. Each element of the
@@ -168,7 +168,7 @@ public interface IndexProtocol extends Index {
   /**
    * Asif : This function returns the canonicalized definitions of the from clauses used in Index
    * creation
-   * 
+   *
    * @return String array containing canonicalized definitions
    */
   public String[] getCanonicalizedIteratorDefinitions();
@@ -176,7 +176,7 @@ public interface IndexProtocol extends Index {
   /**
    * Asif: Object type of the data ( tuple ) contained in the Index Results . It will be either of
    * type ObjectType or StructType
-   * 
+   *
    * @return ObjectType
    */
   public ObjectType getResultSetType();

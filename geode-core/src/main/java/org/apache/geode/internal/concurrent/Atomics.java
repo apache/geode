@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.concurrent;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -22,8 +24,6 @@ import org.apache.geode.internal.statistics.LocalStatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeImpl;
 import org.apache.geode.internal.stats50.Atomic50StatisticsImpl;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 public class Atomics {
   private Atomics() {}

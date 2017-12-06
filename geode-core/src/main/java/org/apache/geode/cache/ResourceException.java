@@ -18,7 +18,7 @@ package org.apache.geode.cache;
 /**
  * A Generic exception to indicate that a resource exception has occurred. This class is abstract so
  * that only subclasses can be instantiated.
- * 
+ *
  * @since GemFire 6.0
  */
 public abstract class ResourceException extends CacheRuntimeException {
@@ -32,7 +32,7 @@ public abstract class ResourceException extends CacheRuntimeException {
 
   /**
    * Constructs an instance of <code>ResourceException</code> with the specified detail message.
-   * 
+   *
    * @param msg the detail message
    */
   public ResourceException(String msg) {
@@ -42,7 +42,7 @@ public abstract class ResourceException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>ResourceException</code> with the specified detail message and
    * cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -52,7 +52,7 @@ public abstract class ResourceException extends CacheRuntimeException {
 
   /**
    * Constructs an instance of <code>ResourceException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public ResourceException(Throwable cause) {

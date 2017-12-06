@@ -14,16 +14,16 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
+import java.net.InetAddress;
+import java.util.Properties;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.net.InetAddress;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Provides an implementation of <code>DistributionLocatorConfig</code>.

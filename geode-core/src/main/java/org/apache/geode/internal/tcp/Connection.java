@@ -16,6 +16,37 @@ package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
+import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.ClosedSelectorException;
+import java.nio.channels.SocketChannel;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
@@ -53,36 +84,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.MsgReader.Header;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
-import org.apache.logging.log4j.Logger;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.net.ConnectException;
-import java.net.Inet6Address;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SocketChannel;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Connection is a socket holder that sends and receives serialized message objects. A Connection
@@ -98,10 +99,10 @@ public class Connection implements Runnable {
   private static int P2P_CONNECT_TIMEOUT;
   private static boolean IS_P2P_CONNECT_TIMEOUT_INITIALIZED = false;
 
-  public final static int NORMAL_MSG_TYPE = 0x4c;
-  public final static int CHUNKED_MSG_TYPE = 0x4d; // a chunk of one logical msg
-  public final static int END_CHUNKED_MSG_TYPE = 0x4e; // last in a series of chunks
-  public final static int DIRECT_ACK_BIT = 0x20;
+  public static final int NORMAL_MSG_TYPE = 0x4c;
+  public static final int CHUNKED_MSG_TYPE = 0x4d; // a chunk of one logical msg
+  public static final int END_CHUNKED_MSG_TYPE = 0x4e; // last in a series of chunks
+  public static final int DIRECT_ACK_BIT = 0x20;
 
   public static final int MSG_HEADER_SIZE_OFFSET = 0;
   public static final int MSG_HEADER_TYPE_OFFSET = 4;
@@ -112,7 +113,7 @@ public class Connection implements Runnable {
    * Small buffer used for send socket buffer on receiver connections and receive buffer on sender
    * connections.
    */
-  public final static int SMALL_BUFFER_SIZE =
+  public static final int SMALL_BUFFER_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SMALL_BUFFER_SIZE", 4096).intValue();
 
   /** counter to give connections a unique id */
@@ -143,7 +144,7 @@ public class Connection implements Runnable {
   /** The idle timeout timer task for this connection */
   private SystemTimerTask idleTask;
 
-  private final static ThreadLocal isReaderThread = new ThreadLocal();
+  private static final ThreadLocal isReaderThread = new ThreadLocal();
 
   public static void makeReaderThread() {
     // mark this thread as a reader thread
@@ -184,7 +185,7 @@ public class Connection implements Runnable {
   private static final boolean DOMINO_THREAD_OWNED_SOCKETS =
       Boolean.getBoolean("p2p.ENABLE_DOMINO_THREAD_OWNED_SOCKETS");
 
-  private final static ThreadLocal isDominoThread = new ThreadLocal();
+  private static final ThreadLocal isDominoThread = new ThreadLocal();
 
   // return true if this thread is a reader thread
   public static boolean tipDomino() {
@@ -247,7 +248,7 @@ public class Connection implements Runnable {
 
   /**
    * How long to wait if receiver will not accept a message before we go into queue mode.
-   * 
+   *
    * @since GemFire 4.2.2
    */
   private int asyncDistributionTimeout = 0;
@@ -255,7 +256,7 @@ public class Connection implements Runnable {
   /**
    * How long to wait, with the receiver not accepting any messages, before kicking the receiver out
    * of the distributed system. Ignored if asyncDistributionTimeout is zero.
-   * 
+   *
    * @since GemFire 4.2.2
    */
   private int asyncQueueTimeout = 0;
@@ -264,7 +265,7 @@ public class Connection implements Runnable {
    * How much queued data we can have, with the receiver not accepting any messages, before kicking
    * the receiver out of the distributed system. Ignored if asyncDistributionTimeout is zero.
    * Canonicalized to bytes (property file has it as megabytes
-   * 
+   *
    * @since GemFire 4.2.2
    */
   private long asyncMaxQueueSize = 0;
@@ -296,7 +297,7 @@ public class Connection implements Runnable {
   /**
    * The maximum number of concurrent senders sending a message to a single recipient.
    */
-  private final static int MAX_SENDERS = Integer
+  private static final int MAX_SENDERS = Integer
       .getInteger("p2p.maxConnectionSenders", DirectChannel.DEFAULT_CONCURRENCY_LEVEL).intValue();
   /**
    * This semaphore is used to throttle how many threads will try to do sends on this connection
@@ -618,8 +619,8 @@ public class Connection implements Runnable {
     return isIdle;
   }
 
-  static private byte[] okHandshakeBytes;
-  static private ByteBuffer okHandshakeBuf;
+  private static byte[] okHandshakeBytes;
+  private static ByteBuffer okHandshakeBuf;
   static {
     int msglen = 1; // one byte for reply code
     byte[] bytes = new byte[MSG_HEADER_BYTES + msglen];
@@ -829,7 +830,7 @@ public class Connection implements Runnable {
 
   /**
    * asynchronously close this connection
-   * 
+   *
    * @param beingSick test hook to simulate sickness in communications & membership
    */
   private void asyncClose(boolean beingSick) {
@@ -2524,7 +2525,7 @@ public class Connection implements Runnable {
   /**
    * sends a serialized message to the other end of this connection. This is used by the
    * DirectChannel in GemFire when the message is going to be sent to multiple recipients.
-   * 
+   *
    * @throws ConnectionException if the conduit has stopped
    */
   public void sendPreserialized(ByteBuffer buffer, boolean cacheContentChanges,
@@ -2575,7 +2576,7 @@ public class Connection implements Runnable {
   /**
    * If <code>use</code> is true then "claim" the connection for our use. If <code>use</code> is
    * false then "release" the connection. Fixes bug 37657.
-   * 
+   *
    * @return true if connection was already in use at time of call; false if not.
    */
   public boolean setInUse(boolean use, long startTime, long ackWaitThreshold, long ackSAThreshold,
@@ -2710,7 +2711,7 @@ public class Connection implements Runnable {
     return false;
   }
 
-  static private byte[] getBytesToWrite(ByteBuffer buffer) {
+  private static byte[] getBytesToWrite(ByteBuffer buffer) {
     byte[] bytesToWrite = new byte[buffer.limit()];
     buffer.get(bytesToWrite);
     return bytesToWrite;
@@ -2833,7 +2834,7 @@ public class Connection implements Runnable {
   /**
    * Return true if it was able to handle a block write of the given buffer. Return false if it is
    * still the caller is still responsible for writing it.
-   * 
+   *
    * @throws ConnectionException if the conduit has stopped
    */
   private boolean handleBlockedWrite(ByteBuffer buffer, DistributionMessage msg)
@@ -3128,7 +3129,7 @@ public class Connection implements Runnable {
    */
   public static volatile boolean FORCE_ASYNC_QUEUE = false;
 
-  static private final int MAX_WAIT_TIME = (1 << 5); // ms (must be a power of 2)
+  private static final int MAX_WAIT_TIME = (1 << 5); // ms (must be a power of 2)
 
   private void writeAsync(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
       DistributionMessage p_msg, final DMStats stats) throws IOException {
@@ -3287,7 +3288,7 @@ public class Connection implements Runnable {
 
   /**
    * nioWriteFully implements a blocking write on a channel that is in non-blocking mode.
-   * 
+   *
    * @param forceAsync true if we need to force a blocking async write.
    * @throws ConnectionException if the conduit has stopped
    */
@@ -4030,7 +4031,7 @@ public class Connection implements Runnable {
 
   /**
    * answers whether this connection was initiated in this vm
-   * 
+   *
    * @return true if the connection was initiated here
    * @since GemFire 5.1
    */

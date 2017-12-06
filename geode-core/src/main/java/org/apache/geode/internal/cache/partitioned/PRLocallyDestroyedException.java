@@ -19,7 +19,7 @@ import org.apache.geode.internal.cache.DataLocationException;
 
 /**
  * An exception indicating that a PartitionedRegion was found to be Locally Destroyed
- * 
+ *
  * @since GemFire 5.1
  *
  */

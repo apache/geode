@@ -25,11 +25,11 @@ import org.xml.sax.ext.EntityResolver2;
 /**
  * Resolves entities for XSDs or DTDs with SYSTEM IDs rooted at http://www.pivotal.io/xml/ns from
  * the classpath at /META-INF/schemas/schema.pivotal.io/.
- * 
+ *
  * Loaded by {@link ServiceLoader} on {@link EntityResolver2} class. See file
  * <code>META-INF/services/org.xml.sax.ext.EntityResolver2</code>
- * 
- * 
+ *
+ *
  * @since GemFire 8.1
  */
 public class PivotalEntityResolver extends DefaultEntityResolver2 {

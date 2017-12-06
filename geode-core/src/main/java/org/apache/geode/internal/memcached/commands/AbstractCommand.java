@@ -32,13 +32,13 @@ import org.apache.geode.internal.memcached.CommandProcessor;
 import org.apache.geode.internal.memcached.KeyWrapper;
 import org.apache.geode.internal.memcached.RequestReader;
 import org.apache.geode.internal.memcached.ResponseStatus;
+import org.apache.geode.internal.memcached.ValueWrapper;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
-import org.apache.geode.internal.memcached.ValueWrapper;
 
 /**
  * Abstract class with utility methods for all Command classes.
- * 
+ *
  *
  */
 public abstract class AbstractCommand implements CommandProcessor {

@@ -1,0 +1,81 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+/*
+* These ProtoBuf files are part of an experimental interface.
+* Use this interface at your own risk.
+*/
+
+
+syntax = "proto3";
+package org.apache.geode.internal.protocol.protobuf.v1;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+
+message Entry {
+    EncodedValue key = 1;
+    EncodedValue value = 2;
+}
+
+message EncodedValue {
+    oneof value{
+        int32 intResult = 1;
+        int64 longResult = 2;
+        int32 shortResult = 3;
+        int32 byteResult = 4;
+        bool booleanResult = 5;
+        double doubleResult = 6;
+        float floatResult = 7;
+        bytes binaryResult = 8;
+        string stringResult = 9;
+        CustomEncodedValue customEncodedValue = 50;
+    }
+}
+
+message CustomEncodedValue {
+    EncodingType encodingType = 1;
+    bytes value = 2;
+}
+
+enum EncodingType {
+    INVALID = 0;
+    JSON = 10;
+}
+
+message Region {
+    string name = 1;
+    string dataPolicy = 2;
+    string scope = 3;
+    string keyConstraint = 4;
+    string valueConstraint = 5;
+    bool persisted = 6;
+    int64 size = 7;
+}
+
+message Server {
+    string hostname = 1;
+    int32 port = 2;
+}
+
+message Error {
+    int32 errorCode = 1;
+    string message = 2;
+}
+
+message KeyedError {
+    EncodedValue key = 1;
+    Error error = 2;
+}

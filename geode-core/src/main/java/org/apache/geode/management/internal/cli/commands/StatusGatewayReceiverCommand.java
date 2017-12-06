@@ -32,7 +32,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -56,43 +55,39 @@ public class StatusGatewayReceiverCommand implements GfshCommand {
 
     Result result;
 
-    try {
-      InternalCache cache = getCache();
-      SystemManagementService service =
-          (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    InternalCache cache = getCache();
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
-      CompositeResultData crd = ResultBuilder.createCompositeResultData();
-      TabularResultData availableReceiverData =
-          crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
-              .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+    CompositeResultData crd = ResultBuilder.createCompositeResultData();
+    TabularResultData availableReceiverData =
+        crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
+            .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
 
-      TabularResultData notAvailableReceiverData =
-          crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
-              .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+    TabularResultData notAvailableReceiverData =
+        crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
+            .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
 
-      Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
 
-      if (dsMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      for (DistributedMember member : dsMembers) {
-        ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
-        if (gatewayReceiverObjectName != null) {
-          GatewayReceiverMXBean receiverBean =
-              service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
-          if (receiverBean != null) {
-            buildReceiverStatus(member.getId(), receiverBean, availableReceiverData);
-            continue;
-          }
-        }
-        buildReceiverStatus(member.getId(), null, notAvailableReceiverData);
-      }
-      result = ResultBuilder.buildResult(crd);
-    } catch (Exception e) {
-      LogWrapper.getInstance().warning(CliStrings.GATEWAY_ERROR + CliUtil.stackTraceAsString(e));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings.GATEWAY_ERROR + e.getMessage());
+    if (dsMembers.isEmpty()) {
+      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
+
+    for (DistributedMember member : dsMembers) {
+      ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
+      if (gatewayReceiverObjectName != null) {
+        GatewayReceiverMXBean receiverBean =
+            service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
+        if (receiverBean != null) {
+          buildReceiverStatus(member.getId(), receiverBean, availableReceiverData);
+          continue;
+        }
+      }
+      buildReceiverStatus(member.getId(), null, notAvailableReceiverData);
+    }
+    result = ResultBuilder.buildResult(crd);
+
     return result;
   }
 

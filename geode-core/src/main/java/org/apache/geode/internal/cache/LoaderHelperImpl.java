@@ -15,12 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-// import org.apache.geode.*;
 import org.apache.geode.cache.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-// import java.io.*;
-// import java.util.Set;
 import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides a set of APIs to help the implementation of the <code>CacheLoader</code> load method. An
@@ -149,7 +146,7 @@ public class LoaderHelperImpl implements LoaderHelper {
   /**
    * Return the argument object for the load method that was passed in from application code. This
    * object is passed in as <i>aLoaderArgument</i> in {@link Region#get(Object, Object) get}.
-   * 
+   *
    * @return the argument or null if one was not supplied
    */
   public Object getArgument() {
@@ -162,4 +159,3 @@ public class LoaderHelperImpl implements LoaderHelper {
         + getArgument();
   }
 }
-

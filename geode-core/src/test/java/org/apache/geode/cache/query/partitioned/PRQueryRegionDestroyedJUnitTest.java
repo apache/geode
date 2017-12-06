@@ -38,8 +38,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Test verifies Region#query()for PartitionedRegion on a single VM with Region#destroyRegion()
  * being called on the same with some delay.
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class PRQueryRegionDestroyedJUnitTest {
@@ -73,8 +73,8 @@ public class PRQueryRegionDestroyedJUnitTest {
    * 2. Puts some test Objects in cache.<br>
    * 3. Create a Thread and fire queries on the data and verifies the result.<br>
    * 4. Create another Thread and call Region#destroyRegion() on the PR region.<br>
-   * 
-   * 
+   *
+   *
    * @throws Exception
    */
   @Test
@@ -221,7 +221,7 @@ public class PRQueryRegionDestroyedJUnitTest {
 
   /**
    * Populates the region with the Objects stores in the data Object array.
-   * 
+   *
    * @param region
    * @param data
    */

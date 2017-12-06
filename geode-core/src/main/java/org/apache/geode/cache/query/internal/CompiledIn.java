@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
@@ -41,6 +40,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
@@ -240,7 +240,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
   /**
    * specialized optimization for doing a bulk get on a region.
-   * 
+   *
    * @return a List of entries if optimization was performed, null if no match
    */
   List optimizeBulkGet(CompiledRegion cRgn, ExecutionContext context)
@@ -361,7 +361,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * passed will be null except if a GroupJunction has only one filter evaluatable condition & rest
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
-   * 
+   *
    * @return SelectResults
    */
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,
@@ -633,7 +633,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * is no index available. The boolean true implies that CompiledComparison when existing on its
    * own always requires a CompleteExpansion to top level iterators. This flag can get toggled to
    * false only from inside a GroupJunction
-   * 
+   *
    * @param intermediateResults if this parameter is provided, and we have to iterate, then iterate
    *        over this result set instead of the entire base collection.
    */

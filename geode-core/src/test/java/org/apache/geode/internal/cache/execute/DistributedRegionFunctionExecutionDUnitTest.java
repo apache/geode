@@ -46,6 +46,7 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -106,6 +107,16 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     // so we need to close it and null out the cache variable
     disconnectAllFromDS();
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.functions.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
+    return result;
+  }
+
+
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty() {
@@ -422,13 +433,13 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
      * AsyncInvocationArrSize = 1; AsyncInvocation[] async = new
      * AsyncInvocation[AsyncInvocationArrSize]; async[0] = empty.invokeAsync(() ->
      * DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
-     * 
+     *
      * replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.closeCache());
-     * 
+     *
      * replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
      * replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(
      * DataPolicy.REPLICATE ));
-     * 
+     *
      * DistributedTestCase.join(async[0], 50 * 1000, getLogWriter()); if (async[0].getException() !=
      * null) { fail("UnExpected Exception Occurred : ", async[0].getException()); } List l =
      * (List)async[0].getReturnValue();
@@ -1280,6 +1291,8 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   private void createCache(Properties props) {
     try {
+      props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.internal.cache.functions.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
       DistributedSystem ds = getSystem(props);
       assertNotNull(ds);
       ds.disconnect();

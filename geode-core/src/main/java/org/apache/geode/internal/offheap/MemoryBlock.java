@@ -18,7 +18,7 @@ package org.apache.geode.internal.offheap;
 /**
  * Basic size and usage information about an off-heap memory block under inspection. For test
  * validation only.
- * 
+ *
  * @since Geode 1.0
  */
 public interface MemoryBlock {

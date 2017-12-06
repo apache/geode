@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -29,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
@@ -63,7 +62,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  * Handles distribution of a Region.putall operation.
- * 
+ *
  * @since GemFire 5.0
  */
 public class DistributedPutAllOperation extends AbstractUpdateOperation {
@@ -633,7 +632,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      * from a server may have null IDs because they were operations performed by that server. We
      * transmit them as nulls to cut costs, but have to do the swap on the receiving end (in the
      * client)
-     * 
+     *
      * @param sender
      */
     public void replaceNullIDs(DistributedMember sender) {
@@ -828,7 +827,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
   /**
    * Create PutAllPRMessage for notify only (to adjunct nodes)
-   * 
+   *
    * @param bucketId create message to send to this bucket
    * @return PutAllPRMessage
    */
@@ -850,7 +849,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
   /**
    * Create PutAllPRMessages for primary buckets out of dpao
-   * 
+   *
    * @return a HashMap contain PutAllPRMessages, key is bucket id
    */
   public HashMap createPRMessages() {
@@ -1017,7 +1016,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
   /**
    * version tags are gathered from local operations and remote operation responses. This method
    * gathers all of them and stores them in the given list.
-   * 
+   *
    * @param list
    */
   protected void fillVersionedObjectList(VersionedObjectList list) {
@@ -1085,7 +1084,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     /**
      * Does the "put" of one entry for a "putall" operation. Note it calls back to
      * AbstractUpdateOperation.UpdateMessage#basicOperationOnRegion
-     * 
+     *
      * @param entry the entry being put
      * @param rgn the region the entry is put in
      */
@@ -1109,7 +1108,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
     /**
      * create an event for a PutAllEntryData element
-     * 
+     *
      * @param entry
      * @param sender
      * @param context

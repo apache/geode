@@ -71,7 +71,7 @@ public abstract class AbstractConfig implements Config {
 
   protected abstract Map<String, ConfigSource> getAttSourceMap();
 
-  public final static String sourceHeader = "PropertiesSourceHeader";
+  public static final String sourceHeader = "PropertiesSourceHeader";
 
   /**
    * Set to true if most of the attributes can be modified. Set to false if most of the attributes
@@ -110,7 +110,7 @@ public abstract class AbstractConfig implements Config {
 
   /***
    * Gets the Map of GemFire properties and values from a given ConfigSource
-   * 
+   *
    * @param source
    *
    * @return map of GemFire properties and values
@@ -136,7 +136,7 @@ public abstract class AbstractConfig implements Config {
 
   /****
    * Gets all the GemFire properties defined using file(s)
-   * 
+   *
    * @return Map of GemFire properties and values set using property files
    */
   public Map<String, String> getConfigPropsDefinedUsingFiles() {

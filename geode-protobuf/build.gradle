@@ -28,6 +28,7 @@ buildscript {
 }
 
 dependencies {
+    provided project(':geode-client-protocol')
     provided project(':geode-core')
     testCompile project(':geode-junit')
     testCompile files(project(':geode-core').sourceSets.test.output)
@@ -60,3 +61,11 @@ idea {
         sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
     }
 }
+
+task zip(type: Zip) {
+    from 'src/main/proto'
+    baseName = "${project.name}-definitions"
+    destinationDir = file("$buildDir/libs")
+}
+
+assemble.dependsOn 'zip'

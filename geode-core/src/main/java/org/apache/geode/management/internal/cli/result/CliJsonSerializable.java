@@ -19,8 +19,8 @@ import java.util.Map;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public interface CliJsonSerializable extends CliJsonSerializableIds {

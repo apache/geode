@@ -30,10 +30,11 @@ Each machine that will run <%=vars.product_name_long%> must meet the following r
     -   Aggregate product-level and application-level time statistics. 
     -   Accurate monitoring of the Geode system with scripts and other tools that read the system statistics and log files.
 -   The host name and host files are properly configured for the machine. The host name and host file configuration can affect `gfsh` and Pulse functionality.
--   Many default Linux installations use SYN cookies to protect the 
-system against malicious attacks that flood TCP SYN packets.
-The use of SYN cookies dramatically reduces network bandwidth,
-and can be triggered by a running distributed system.
+-   Disable TCP SYN cookies. Most default Linux installations use SYN cookies to protect the 
+system against malicious attacks that flood TCP SYN packets, but this feature 
+is not compatible with stable and busy <%=vars.product_name%> clusters. 
+Security implementations should instead seek to prevent attacks by placing <%=vars.product_name%> 
+server clusters behind advanced firewall protection.
 
     To disable SYN cookies permanently:
     1. Edit the `/etc/sysctl.conf` file to include the following line:
@@ -47,3 +48,5 @@ and can be triggered by a running distributed system.
         ``` pre
         sysctl -p
         ```
+
+    See [Disabling TCP SYN Cookies](../../managing/monitor_tune/disabling_tcp_syn_cookies.html) for details.

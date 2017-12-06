@@ -333,7 +333,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
     public void init(Properties props) {}
   }
 
-  public final static String BridgeServerKey = "BridgeServerKey";
+  public static final String BridgeServerKey = "BridgeServerKey";
 
   /**
    * Create a server that has a value for every key queried and a unique key/value in the specified
@@ -374,4 +374,3 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   }
 
 }
-

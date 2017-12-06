@@ -19,7 +19,7 @@ package org.apache.geode.internal;
  * A timer class that reports current or elapsed time in nanonseconds. The static method
  * {@link #getTime} reports the current time. The instance methods support basic stop-watch-style
  * functions that are convenient for simple performance measurements. For example:
- * 
+ *
  * <pre>
  * class Example {
  *   void example() {
@@ -36,7 +36,7 @@ package org.apache.geode.internal;
  *   }
  * }
  * </pre>
- * 
+ *
  */
 public class NanoTimer {
 
@@ -54,7 +54,7 @@ public class NanoTimer {
 
   private final TimeService timeService;
 
-  private final static TimeService systemTimeService = new TimeService() {
+  private static final TimeService systemTimeService = new TimeService() {
     @Override
     public long getTime() {
       return java.lang.System.nanoTime();
@@ -81,7 +81,7 @@ public class NanoTimer {
 
   /**
    * Converts nanoseconds to milliseconds by dividing nanos by {@link #NANOS_PER_MILLISECOND}.
-   * 
+   *
    * @param nanos value in nanoseconds
    * @return value converted to milliseconds
    */
@@ -91,7 +91,7 @@ public class NanoTimer {
 
   /**
    * Converts milliseconds to nanoseconds by multiplying millis by {@link #NANOS_PER_MILLISECOND}.
-   * 
+   *
    * @param millis value in milliseconds
    * @return value converted to nanoseconds
    */
@@ -110,7 +110,7 @@ public class NanoTimer {
 
   /**
    * Return the construction time in nanoseconds since some arbitrary time in the past.
-   * 
+   *
    * @return timestamp in nanoseconds since construction.
    */
   public long getConstructionTime() {
@@ -123,7 +123,7 @@ public class NanoTimer {
    * The time rolls over to zero every 2^64 nanosecs (approx 584 years). Interval computations
    * spanning periods longer than this will be wrong. If the timer has not yet been reset then the
    * construction time is returned.
-   * 
+   *
    * @return timestamp in nanoseconds of construction or the last reset.
    */
   public long getLastResetTime() {
@@ -133,7 +133,7 @@ public class NanoTimer {
   /**
    * Compute and return the time in nanoseconds since the last reset or construction of this timer,
    * and reset the timer to the current {@link #getTime}.
-   * 
+   *
    * @return time in nanoseconds since construction or last reset.
    */
   public long reset() {
@@ -145,7 +145,7 @@ public class NanoTimer {
   /**
    * Compute and return the time in nanoseconds since the last reset or construction of this Timer,
    * but does not reset this timer.
-   * 
+   *
    * @return time in nanoseconds since construction or last reset.
    */
   public long getTimeSinceReset() {
@@ -154,7 +154,7 @@ public class NanoTimer {
 
   /**
    * Compute and return the time in nanoseconds since this timer was constructed.
-   * 
+   *
    * @return time in nanoseconds since construction.
    */
   public long getTimeSinceConstruction() {
@@ -171,4 +171,3 @@ public class NanoTimer {
     public long getTime();
   }
 }
-

@@ -14,6 +14,19 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.jgroups.protocols.pbcast.GMS;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -29,18 +42,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.jgroups.protocols.pbcast.GMS;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
 
 /**
  * Tests the functionality of the {@link DistributedMember} class.
@@ -272,7 +273,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
    *
    * This test ensures that the membership manager can detect and replace a partial ID with one that
    * is not partial
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -450,5 +451,3 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   }
 
 }
-
-

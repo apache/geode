@@ -14,7 +14,7 @@
  */
 /*
  * InOperatorTest.java
- * 
+ *
  * Created on March 24, 2005, 5:08 PM
  */
 package org.apache.geode.cache.query.functional;
@@ -78,7 +78,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests simple % terminated pattern with atleast one preceding character
-   * 
+   *
    * @throws Exception
    */
   private void likePercentageTerminated_1(boolean useBindParam) throws Exception {
@@ -171,7 +171,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests a pattern which just contains a single % indicating all match
-   * 
+   *
    * @throws Exception
    */
   private void likePercentageTerminated_2(boolean useBindParam) throws Exception {
@@ -264,7 +264,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests a simple % terminated like predicate with an OR condition
-   * 
+   *
    * @throws Exception
    */
   private void likePercentageTerminated_3(boolean useBindPrm) throws Exception {
@@ -387,7 +387,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests a simple % terminated like predicate with an AND condition
-   * 
+   *
    * @throws Exception
    */
   private void likePercentageTerminated_4(boolean useBindPrm) throws Exception {
@@ -617,7 +617,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests simple non % or non _ terminated string which in effect means equality
-   * 
+   *
    * @throws Exception
    */
   private void equalityForm_1(boolean useBindPrms) throws Exception {
@@ -710,7 +710,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests simple \% or \ _ terminated string which in effect means equality
-   * 
+   *
    * @throws Exception
    */
   private void equalityForm_2(boolean useBindPrms) throws Exception {
@@ -833,7 +833,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests for regular expression meta chars. This has no special meaning with Like.
-   * 
+   *
    * @throws Exception
    */
   private void regexMetaChar(boolean useBindPrms) throws Exception {
@@ -906,7 +906,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests with combination of % and _ Supported from 6.6
-   * 
+   *
    * @throws Exception
    */
   private void enhancedLike(boolean useBindPrms) throws Exception {
@@ -1039,7 +1039,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Query with index on other fields.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1130,7 +1130,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Query with index on other fields.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1537,7 +1537,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Tests with combination of % and _ and NOT with LIKE Supported from 6.6
-   * 
+   *
    * @throws Exception
    */
   private void enhancedNotLike(boolean useBindPrms, boolean useIndex) throws Exception {
@@ -1693,7 +1693,7 @@ public class LikePredicateJUnitTest {
 
   /**
    * Query with index on other fields.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1884,7 +1884,7 @@ public class LikePredicateJUnitTest {
   /**
    * Test to verify that query executes using index even when the index is being removed during the
    * execution
-   * 
+   *
    * @throws Exception
    */
 

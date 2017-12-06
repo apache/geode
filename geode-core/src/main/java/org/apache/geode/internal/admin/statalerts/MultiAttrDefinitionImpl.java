@@ -14,21 +14,20 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
-
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
  * Implementation of {@link StatAlertDefinition} This provides the definition for multiple statistic
- * 
+ *
  */
 public class MultiAttrDefinitionImpl implements StatAlertDefinition {
   private static final long serialVersionUID = 2508805676076940969L;
@@ -116,7 +115,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   /**
    * This method returns the name of this stat alert definition.
-   * 
+   *
    * @return Name of the StatAlertDefinition
    */
   public String getName() {
@@ -125,7 +124,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   /**
    * This method sets the name of this stat alert definition.
-   * 
+   *
    * @param name name to be set for this StatAlertDefinition.
    */
   public void setName(String name) {

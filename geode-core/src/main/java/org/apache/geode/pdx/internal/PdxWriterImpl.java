@@ -40,7 +40,7 @@ import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
  * A new instance of this class is created for each (nested) instance of {@link PdxSerializable}.
  * But it may share the underlying instance of {@link HeapDataOutputStream} with other instances of
  * this class.
- * 
+ *
  * @since GemFire 6.6
  * @see InternalDataSerializer#basicWriteObject(Object, java.io.DataOutput, boolean)
  */
@@ -491,7 +491,7 @@ public class PdxWriterImpl implements PdxWriter {
 
   /**
    * Must be invoked only after {@link PdxSerializable#toData(PdxWriter)}
-   * 
+   *
    * @return total number of bytes serialized for this pdx
    */
   public int completeByteStreamGeneration() {
@@ -592,7 +592,7 @@ public class PdxWriterImpl implements PdxWriter {
 
   /**
    * This is required while writing the byte stream.
-   * 
+   *
    * @param offsetCount Number of offsets to appended in this byte stream.
    * @param size Size of the byte stream (excluding DSCODE, length int and the offsets.)
    * @return size of each offset

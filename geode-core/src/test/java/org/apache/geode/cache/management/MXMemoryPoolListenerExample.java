@@ -14,14 +14,8 @@
  */
 package org.apache.geode.cache.management;
 
-import org.apache.geode.LogWriter;
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedSystem;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationListener;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
@@ -31,22 +25,29 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import javax.management.Notification;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationListener;
+
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * An test class for exploring the various notification listener behaviors
- * 
+ *
  * Run it like this:
- * 
+ *
  * java -cp geode-dependencies.jar:. -Dgemfire.log-file=system.log
  * -Dgemfire.statistic-archive-file=statsArchive.gfs
  * org.apache.geode.cache.control.MXMemoryPoolListenerExample
- * 
+ *
  * @since GemFire 6.0
  */
 public class MXMemoryPoolListenerExample implements NotificationListener {
   private AtomicBoolean critical = new AtomicBoolean();
-  final private LogWriter logger;
+  private final LogWriter logger;
 
   /**
    * @param ds
@@ -57,7 +58,7 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see javax.management.NotificationListener#handleNotification(javax.management.Notification,
    * java.lang.Object)
    */

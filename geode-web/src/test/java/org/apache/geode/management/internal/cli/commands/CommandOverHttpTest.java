@@ -26,12 +26,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
 public class CommandOverHttpTest {
@@ -41,14 +41,14 @@ public class CommandOverHttpTest {
       new ServerStarterRule().withWorkingDir().withLogFile().withJMXManager().withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfshRule = new GfshShellConnectionRule();
+  public GfshCommandRule gfshRule = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void before() throws Exception {
-    gfshRule.connectAndVerify(server.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    gfshRule.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);
   }
 
   @Test
@@ -67,8 +67,8 @@ public class CommandOverHttpTest {
 
   @Test
   public void exportLogs() throws Exception {
-    CommandResult result = gfshRule.executeAndVerifyCommand("export logs");
-    assertThat(result.getContent().toString()).contains("Logs exported to:");
+    gfshRule.executeAndAssertThat("export logs").statusIsSuccess()
+        .containsOutput("Logs exported to:");
   }
 
   @Test
@@ -77,15 +77,14 @@ public class CommandOverHttpTest {
     String jarName = "deployCommand.jar";
     File jar = temporaryFolder.newFile(jarName);
     new ClassBuilder().writeJarFromName(className, jar);
-    gfshRule.executeAndVerifyCommand("deploy --jar=" + jar);
+    gfshRule.executeAndAssertThat("deploy --jar=" + jar).statusIsSuccess();
   }
 
   @Test
   public void exportConfig() throws Exception {
     String dir = temporaryFolder.getRoot().getAbsolutePath();
-    gfshRule.executeAndVerifyCommand("export config --dir=" + dir);
-    String result = gfshRule.getGfshOutput();
-    assertThat(result).contains("Downloading Cache XML file: " + dir + "/server-cache.xml");
-    assertThat(result).contains("Downloading properties file: " + dir + "/server-gf.properties");
+    gfshRule.executeAndAssertThat("export config --dir=" + dir).statusIsSuccess()
+        .containsOutput("Downloading Cache XML file: " + dir + "/server-cache.xml")
+        .containsOutput("Downloading properties file: " + dir + "/server-gf.properties");
   }
 }

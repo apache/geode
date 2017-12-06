@@ -59,7 +59,7 @@ import org.apache.geode.internal.net.*;
 
 /**
  * A connection source which uses locators to find the least loaded server.
- * 
+ *
  * @since GemFire 5.7
  *
  */
@@ -237,7 +237,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    * If connecting to the locator fails with an IOException, this may be because the locator's IP
    * has changed. Add the locator back to the list of locators using host address rather than IP.
    * This will cause another DNS lookup, hopefully finding the locator.
-   * 
+   *
    * @param locator
    */
   protected void updateLocatorInLocatorList(HostAddress locator) {
@@ -463,7 +463,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     /**
      * An iterator which iterates all of the controllers, starting at the last known good
      * controller.
-     * 
+     *
      */
     protected class LocatorIterator implements Iterator<HostAddress> {
       private int startLocator = currentLocatorIndex.get();

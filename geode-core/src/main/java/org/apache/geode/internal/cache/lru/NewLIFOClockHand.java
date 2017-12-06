@@ -16,12 +16,12 @@ package org.apache.geode.internal.cache.lru;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.cache.AbstractRegionEntry;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 
 /**
  * NewLIFOClockHand holds the behavior for LIFO logic , Overwriting getLRUEntry() to return most
  * recently added Entry
- * 
+ *
  * @since GemFire 5.7
  */
 

@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.internal.index;
 import static junit.framework.TestCase.assertFalse;
 import static org.apache.geode.internal.Assert.assertTrue;
 
-import org.apache.geode.pdx.internal.PdxString;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,6 +31,7 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)

@@ -33,12 +33,12 @@ import java.util.concurrent.TimeUnit;
  * A ScheduledThreadPoolExecutor which allows threads to time out after the keep alive time. With
  * the normal ScheduledThreadPoolExecutor, there is no way to configure it such that it only add
  * threads as needed.
- * 
+ *
  * This executor is not very useful if you only want to have 1 thread. Use the
  * ScheduledThreadPoolExecutor in that case. This class with throw an exception if you try to
  * configure it with one thread.
- * 
- * 
+ *
+ *
  */
 @SuppressWarnings("synthetic-access")
 public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
@@ -135,7 +135,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * returned by ScheduledThreadPoolExecutor. In particular, they don't match the future returned by
    * the {{@link #submit(Runnable)} method, and the run method won't do anything useful. This list
    * should only be used as a count of the number of tasks that didn't execute.
-   * 
+   *
    * @see ScheduledThreadPoolExecutor#shutdownNow()
    */
   @Override

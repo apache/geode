@@ -38,10 +38,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExportLogsWithMemberGroupDUnitTest {
@@ -50,7 +50,7 @@ public class ExportLogsWithMemberGroupDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @ClassRule
-  public static GfshShellConnectionRule connector = new GfshShellConnectionRule();
+  public static GfshCommandRule connector = new GfshCommandRule();
 
   protected static int jmxPort, httpPort;
   protected static Set<String> expectedZipEntries = new HashSet<>();
@@ -91,7 +91,7 @@ public class ExportLogsWithMemberGroupDUnitTest {
   @Test
   public void testExportLogsWithMemberName() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --member=server-1");
+    connector.executeAndAssertThat("export logs --member=server-1").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
@@ -102,14 +102,14 @@ public class ExportLogsWithMemberGroupDUnitTest {
   @Test
   public void testExportLogsWithGroupName() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --group=group1");
+    connector.executeAndAssertThat("export logs --group=group1").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
     Set<String> expectedFiles = Sets.newHashSet("server-1/server-1.log", "server-2/server-2.log");
     assertThat(actualZipEntries).isEqualTo(expectedFiles);
 
-    connector.executeAndVerifyCommand("export logs --group=group2");
+    connector.executeAndAssertThat("export logs --group=group2").statusIsSuccess();
     zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     actualZipEntries = getZipEntries(zipPath);
 

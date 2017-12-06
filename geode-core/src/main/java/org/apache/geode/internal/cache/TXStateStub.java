@@ -24,10 +24,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.TXRegionStub;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * TXStateStub lives on the accessor node when we are remoting a transaction. It is a stub for
@@ -107,7 +108,7 @@ public abstract class TXStateStub implements TXStateInterface {
   /**
    * Get or create a TXRegionStub for the given region. For regions that are new to the tx, we
    * validate their eligibility.
-   * 
+   *
    * @param region The region to involve in the tx.
    * @return existing or new stub for region
    */
@@ -139,7 +140,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry(org.apache.geode.internal
    * .cache.EntryEventImpl, boolean, java.lang.Object)
@@ -157,7 +158,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getBeginTime()
    */
   public long getBeginTime() {
@@ -167,7 +168,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getCache()
    */
   public Cache getCache() {
@@ -176,7 +177,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getChanges()
    */
   public int getChanges() {
@@ -186,7 +187,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getDeserializedValue(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -206,7 +207,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getEntry(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -222,7 +223,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getEvent()
    */
   public TXEvent getEvent() {
@@ -231,7 +232,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getEvents()
    */
   public List getEvents() {
@@ -240,7 +241,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getRegions()
    */
   public Collection<LocalRegion> getRegions() {
@@ -249,7 +250,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getTransactionId()
    */
   public TransactionId getTransactionId() {
@@ -258,7 +259,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry(org.apache.geode.
    * internal.cache.EntryEventImpl, boolean, boolean)
    */
@@ -276,7 +277,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#isInProgress()
    */
   public boolean isInProgress() {
@@ -285,7 +286,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#isInProgressAndSameAs(org.apache.geode.
    * internal.cache.TXStateInterface)
    */
@@ -295,7 +296,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#needsLargeModCount()
    */
   public boolean needsLargeModCount() {
@@ -305,7 +306,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#nextModSerialNum()
    */
   public int nextModSerialNum() {
@@ -315,7 +316,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#readRegion(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -326,7 +327,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#rmRegion(org.apache.geode.internal.cache.
    * LocalRegion)
    */
@@ -349,7 +350,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#txPutEntry(org.apache.geode.internal.cache.
    * EntryEventImpl, boolean, boolean, boolean)
@@ -361,7 +362,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#txReadEntry(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -373,7 +374,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#txReadRegion(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -385,7 +386,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#txWriteRegion(org.apache.geode.internal.cache.
    * LocalRegion, java.lang.Object)
@@ -397,7 +398,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.TXStateInterface#writeRegion(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -409,7 +410,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#containsKey(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -419,7 +420,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#containsValueForKey(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -429,7 +430,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#entryCount(org.apache.geode.internal.cache.
    * LocalRegion)
@@ -440,7 +441,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#findObject(org.apache.geode.internal.cache.
    * LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
@@ -455,7 +456,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getAdditionalKeysForIterator(org.apache.geode.
    * internal.cache.LocalRegion)
@@ -467,7 +468,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getEntryForIterator(org.apache.geode.internal.
    * cache.LocalRegion, java.lang.Object, boolean)
@@ -479,18 +480,22 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getKeyForIterator(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
   public Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
-    return keyInfo.getKey();
+    Object key = keyInfo.getKey();
+    if (key instanceof RegionEntry) {
+      return ((RegionEntry) key).getKey();
+    }
+    return key;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getValueInVM(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion, boolean)
    */
@@ -501,7 +506,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#isDeferredStats()
    */
   public boolean isDeferredStats() {
@@ -510,7 +515,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#putEntry(org.apache.geode.internal.cache.
    * EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
    */
@@ -523,7 +528,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getSerializedValue(org.apache.geode.internal.
    * cache.LocalRegion, java.lang.Object, java.lang.Object)
@@ -536,7 +541,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#putEntryOnRemote(org.apache.geode.internal.
    * cache.EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
@@ -553,7 +558,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#destroyOnRemote(java.lang.Integer,
    * org.apache.geode.internal.cache.EntryEventImpl, java.lang.Object)
    */
@@ -564,7 +569,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote(org.apache.geode.internal.
    * cache.EntryEventImpl, boolean, boolean)
@@ -593,7 +598,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getBucketKeys(org.apache.geode.internal.cache.
    * LocalRegion, int)
@@ -608,7 +613,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#getEntryOnRemote(java.lang.Object,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -619,7 +624,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#getSemaphore()
    */
   public ReentrantLock getLock() {
@@ -628,7 +633,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.InternalDataView#getRegionKeysForIteration(org.apache.geode.
    * internal.cache.LocalRegion)

@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,6 +46,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -54,7 +54,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * been created. After that if a region is created and the new region gets data from another
  * mirrored node, it should propagate to the client which registered interest before the region was
  * created.
- * 
+ *
  * The scenario is: - 2 servers 2 clients - client1 connected to server1 - client2 connected to
  * server2 - client2 registers interest for region1 on server2 before region1 is created - data is
  * put on region1 in server1 - mirrored region1 is created on server2 - data will come to region1 on

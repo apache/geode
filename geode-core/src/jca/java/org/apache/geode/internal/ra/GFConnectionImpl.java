@@ -22,7 +22,7 @@ import org.apache.geode.internal.ra.spi.JCAManagedConnection;
 import org.apache.geode.ra.GFConnection;
 
 /**
- * 
+ *
  *
  */
 public class GFConnectionImpl implements GFConnection {

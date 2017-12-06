@@ -17,12 +17,13 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
 /**
  * Integration tests for SecurityService using shiro-ini.json.

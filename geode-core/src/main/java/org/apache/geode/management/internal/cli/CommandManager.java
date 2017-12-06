@@ -27,6 +27,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.springframework.shell.converters.EnumConverter;
 import org.springframework.shell.converters.SimpleFileConverter;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Converter;
@@ -45,7 +46,7 @@ import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 /**
  *
  * this only takes care of loading all available command markers and converters from the application
- * 
+ *
  * @since GemFire 7.0
  */
 public class CommandManager {
@@ -245,6 +246,8 @@ public class CommandManager {
   static {
     // skip springs SimpleFileConverter to use our own FilePathConverter
     SHL_CONVERTERS_TOSKIP.add(SimpleFileConverter.class);
+    // skip spring's EnumConverter to use our own EnumConverter
+    SHL_CONVERTERS_TOSKIP.add(EnumConverter.class);
   }
 
   public List<Converter<?>> getConverters() {

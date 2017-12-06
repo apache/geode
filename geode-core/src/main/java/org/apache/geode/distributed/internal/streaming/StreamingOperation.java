@@ -83,7 +83,7 @@ public abstract class StreamingOperation {
 
   /**
    * Returns normally if succeeded to get data, otherwise throws an exception
-   * 
+   *
    * @throws InterruptedException TODO-javadocs
    */
   public void getDataFromAll(Set recipients)
@@ -118,7 +118,7 @@ public abstract class StreamingOperation {
 
   /**
    * Called from separate thread when reply is processed.
-   * 
+   *
    * @return false if should abort (region was destroyed or cache was closed)
    */
   public boolean processChunk(List objects, InternalDistributedMember sender, int sequenceNum,
@@ -128,7 +128,7 @@ public abstract class StreamingOperation {
 
   /**
    * Override in subclass to do something useful with the data.
-   * 
+   *
    * @param sequenceNum the sequence of this data (0-based), in case ordering matters
    * @param lastInSequence true if this is the last chunk in the sequence
    * @return false to abort
@@ -267,7 +267,7 @@ public abstract class StreamingOperation {
 
   }
 
-  public static abstract class RequestStreamingMessage extends PooledDistributionMessage
+  public abstract static class RequestStreamingMessage extends PooledDistributionMessage
       implements MessageWithReply {
 
     protected int processorId;

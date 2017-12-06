@@ -29,7 +29,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 
 public class TXEntry implements Region.Entry {
   /**
-   * 
+   *
    */
   private final LocalRegion localRegion;
 

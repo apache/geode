@@ -241,7 +241,7 @@ public class BasicI18nJUnitTest {
 
   /**
    * Get all of the StringId instances via reflection.
-   * 
+   *
    * @return a set of all StringId declarations within the product
    */
   private Set<StringId> getAllStringIds() {
@@ -270,7 +270,7 @@ public class BasicI18nJUnitTest {
 
   /**
    * Lists all of the classes that define StringId instances
-   * 
+   *
    * @return a set of all classes that contain StringId declarations
    */
   private Set<String> getStringIdDefiningClasses() {

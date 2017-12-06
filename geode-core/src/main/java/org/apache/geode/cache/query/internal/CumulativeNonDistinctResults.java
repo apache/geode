@@ -43,7 +43,7 @@ import org.apache.geode.internal.Version;
 
 /**
  * This is used as a wrapper over all the results of PR which are of non distinct type
- * 
+ *
  *
  */
 public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSerializableFixedID {
@@ -215,7 +215,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       protected final Iterator<E>[] iterators;
       protected int currentIterator = 0;
       private Boolean cachedHasNext = null;
-      final private boolean isStruct;
+      private final boolean isStruct;
       private final boolean[] objectChangedMarker = new boolean[1];
 
       protected CumulativeCollectionIterator() {

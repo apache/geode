@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests PartitionedRegion localMaxMemory with Off-Heap memory.
- * 
+ *
  * @since Geode 1.0
  */
 @SuppressWarnings({"deprecation", "serial"})

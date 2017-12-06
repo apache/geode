@@ -14,14 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import org.awaitility.Awaitility;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
@@ -40,6 +36,7 @@ import org.apache.geode.internal.cache.wan.MyGatewaySenderEventListener2;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
@@ -380,4 +377,3 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     }
   }
 }
-

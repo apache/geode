@@ -16,14 +16,15 @@ package org.apache.geode.cache;
 
 import static org.junit.Assert.fail;
 
-import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class RegionNameValidationJUnitTest {

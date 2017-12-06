@@ -45,7 +45,7 @@ public class MBeanUtil {
 
   /**
    * Utility Method to obtain MemberMXBean proxy reference for a particular Member
-   * 
+   *
    * @param member
    * @return a reference to MemberMXBean
    * @throws Exception
@@ -85,7 +85,7 @@ public class MBeanUtil {
 
   /**
    * Utility Method to obtain CacheServerMXBean proxy reference for a particular Member
-   * 
+   *
    * @param member
    * @return a reference to CacheServerMXBean
    * @throws Exception
@@ -131,7 +131,7 @@ public class MBeanUtil {
   /**
    * Utility Method to obtain LockServiceMXBean proxy reference for a particular lock service on a
    * Member
-   * 
+   *
    * @param member
    * @return a reference to LockServiceMXBean
    * @throws Exception
@@ -176,7 +176,7 @@ public class MBeanUtil {
 
   /**
    * Utility Method to obtain RegionMXBean proxy reference for a particular region on a member
-   * 
+   *
    * @param member
    * @return a reference to RegionMXBean
    * @throws Exception
@@ -224,7 +224,7 @@ public class MBeanUtil {
   /**
    * Utility Method to obtain GatewaySenderMXBean proxy reference for a particular sender id on a
    * member
-   * 
+   *
    * @param member distributed member
    * @param gatwaySenderId sender id
    * @return a reference to GatewaySenderMXBean
@@ -272,7 +272,7 @@ public class MBeanUtil {
   /**
    * Utility Method to obtain AsyncEventQueueMXBean proxy reference for a particular queue id on a
    * member
-   * 
+   *
    * @param member distributed member
    * @param queueId Queue id
    * @return a reference to AsyncEventQueueMXBean
@@ -319,7 +319,7 @@ public class MBeanUtil {
 
   /**
    * Utility Method to obtain GatewayReceiverMXBean proxy reference for a member
-   * 
+   *
    * @param member distributed member
    * @return a reference to GatewayReceiverMXBean
    * @throws Exception
@@ -365,7 +365,7 @@ public class MBeanUtil {
 
   /**
    * Utility Method to obtain DistributedRegionMXBean proxy reference for a particular region
-   * 
+   *
    * @param regionName name of the region
    * @return a reference to DistributedRegionMXBean
    * @throws Exception
@@ -401,7 +401,7 @@ public class MBeanUtil {
 
   /**
    * Utility Method to obtain DistributedRegionMXBean proxy reference for a particular region
-   * 
+   *
    * @param lockServiceName name of the lock service
    * @return a reference to DistributedLockServiceMXBean
    * @throws Exception
@@ -435,7 +435,7 @@ public class MBeanUtil {
 
   /**
    * Utility Method to obtain GatewayReceiverMXBean proxy reference for a member
-   * 
+   *
    * @param member distributed member
    * @return a reference to GatewayReceiverMXBean
    * @throws Exception

@@ -25,7 +25,7 @@ import org.apache.geode.pdx.internal.EnumInfo;
 
 /**
  * Retrieve all known PDX types.
- * 
+ *
  * @since GemFire 7.0
  */
 public class GetPDXEnumsOp {

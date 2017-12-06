@@ -15,6 +15,14 @@
 
 package org.apache.geode.modules.session.internal.common;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -29,13 +37,6 @@ import org.apache.geode.modules.util.CreateRegionFunction;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionStatus;
 import org.apache.geode.modules.util.SessionCustomExpiry;
-
-import java.util.List;
-import java.util.Map;
-import javax.servlet.http.HttpSession;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class which defines a client/server cache.

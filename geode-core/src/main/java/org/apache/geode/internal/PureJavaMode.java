@@ -24,14 +24,14 @@ public class PureJavaMode {
   /**
    * System property to set to true to force pure java mode
    */
-  public final static String PURE_MODE_PROPERTY =
+  public static final String PURE_MODE_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "pureJavaMode";
   /**
    * System property to set to true enable debug information regarding native library loading.
-   * 
+   *
    * @since GemFire 5.1
    */
-  public final static String LOADLIBRARY_DEBUG_PROPERTY =
+  public static final String LOADLIBRARY_DEBUG_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "loadLibrary.debug";
 
   private static final boolean debug = Boolean.getBoolean(LOADLIBRARY_DEBUG_PROPERTY);

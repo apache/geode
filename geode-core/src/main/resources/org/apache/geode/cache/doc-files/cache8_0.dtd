@@ -144,7 +144,7 @@ contains, if any.
     dynamic-region-factory?,
     gateway-hub*,
     gateway-sender*,
-    gateway-receiver*,
+    gateway-receiver?,
     gateway-conflict-resolver?,
     async-event-queue*,
     cache-server*,

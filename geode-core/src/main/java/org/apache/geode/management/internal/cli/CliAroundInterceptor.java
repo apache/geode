@@ -14,17 +14,17 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import java.nio.file.Path;
+
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 
-import java.nio.file.Path;
-
 /**
  * Interceptor interface which {@link GfshExecutionStrategy} can use to intercept before & after
  * actual command execution.
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public interface CliAroundInterceptor {
@@ -38,7 +38,7 @@ public interface CliAroundInterceptor {
 
   /**
    * called by the OperationInvoker after the command is executed
-   * 
+   *
    * @param tempFile if the command's isFileDownloadOverHttp is true, the is the File downloaded
    *        after the http response is processed.
    */

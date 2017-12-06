@@ -70,12 +70,8 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
@@ -94,6 +90,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEventImpl;
@@ -103,12 +100,15 @@ import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
@@ -1202,7 +1202,7 @@ public class CacheClientNotifier {
 
   /**
    * Store region and delta relation
-   * 
+   *
    * @param regionDataPolicy (0==empty)
    * @since GemFire 6.1
    */
@@ -1297,7 +1297,7 @@ public class CacheClientNotifier {
    * If the conflatable is an instance of HAEventWrapper, and if the corresponding entry is present
    * in the haContainer, set the reference to the clientUpdateMessage to null and putInProgress flag
    * to false. Also, if the ref count is zero, then remove the entry from the haContainer.
-   * 
+   *
    * @since GemFire 5.7
    */
   private void checkAndRemoveFromClientMsgsRegion(Conflatable conflatable) {
@@ -1358,7 +1358,7 @@ public class CacheClientNotifier {
 
   /**
    * Returns the <code>CacheClientProxy</code> associated to the durableClientId
-   * 
+   *
    * @return the <code>CacheClientProxy</code> associated to the durableClientId
    */
   public CacheClientProxy getClientProxy(String durableClientId) {
@@ -1368,7 +1368,7 @@ public class CacheClientNotifier {
   /**
    * Returns the <code>CacheClientProxy</code> associated to the durableClientId. This version of
    * the method can check for initializing proxies as well as fully initialized proxies.
-   * 
+   *
    * @return the <code>CacheClientProxy</code> associated to the durableClientId
    */
   public CacheClientProxy getClientProxy(String durableClientId, boolean proxyInInitMode) {
@@ -1415,7 +1415,7 @@ public class CacheClientNotifier {
 
   /**
    * Returns the <code>CacheClientProxySameDS</code> associated to the membershipID *
-   * 
+   *
    * @return the <code>CacheClientProxy</code> associated to the same distributed system
    */
   public CacheClientProxy getClientProxySameDS(ClientProxyMembershipID membershipID) {
@@ -1563,7 +1563,7 @@ public class CacheClientNotifier {
 
   /**
    * Return (possibly stale) list of all clients and their status
-   * 
+   *
    * @return Map, with CacheClientProxy as a key and CacheClientStatus as a value
    */
   public Map getAllClients() {
@@ -1578,10 +1578,10 @@ public class CacheClientNotifier {
 
   /**
    * Checks if there is any proxy present for the given durable client
-   * 
+   *
    * @param durableId - id for the durable-client
    * @return - true if a proxy is present for the given durable client
-   * 
+   *
    * @since GemFire 5.6
    */
   public boolean hasDurableClient(String durableId) {
@@ -1597,10 +1597,10 @@ public class CacheClientNotifier {
 
   /**
    * Checks if there is any proxy which is primary for the given durable client
-   * 
+   *
    * @param durableId - id for the durable-client
    * @return - true if a primary proxy is present for the given durable client
-   * 
+   *
    * @since GemFire 5.6
    */
   public boolean hasPrimaryForDurableClient(String durableId) {
@@ -1772,9 +1772,9 @@ public class CacheClientNotifier {
   /**
    * Registers a new <code>InterestRegistrationListener</code> with the set of
    * <code>InterestRegistrationListener</code>s.
-   * 
+   *
    * @param listener The <code>InterestRegistrationListener</code> to register
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
@@ -1784,9 +1784,9 @@ public class CacheClientNotifier {
   /**
    * Unregisters an existing <code>InterestRegistrationListener</code> from the set of
    * <code>InterestRegistrationListener</code>s.
-   * 
+   *
    * @param listener The <code>InterestRegistrationListener</code> to unregister
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
@@ -1796,10 +1796,10 @@ public class CacheClientNotifier {
   /**
    * Returns a read-only collection of <code>InterestRegistrationListener</code>s registered with
    * this notifier.
-   * 
+   *
    * @return a read-only collection of <code>InterestRegistrationListener</code>s registered with
    *         this notifier
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   public Set getInterestRegistrationListeners() {
@@ -1807,7 +1807,7 @@ public class CacheClientNotifier {
   }
 
   /**
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   protected boolean containsInterestRegistrationListeners() {
@@ -1815,7 +1815,7 @@ public class CacheClientNotifier {
   }
 
   /**
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   protected void notifyInterestRegistrationListeners(InterestRegistrationEvent event) {
@@ -1840,7 +1840,7 @@ public class CacheClientNotifier {
 
   /**
    * Returns this <code>CacheClientNotifier</code>'s <code>InternalCache</code>.
-   * 
+   *
    * @return this <code>CacheClientNotifier</code>'s <code>InternalCache</code>
    */
   protected InternalCache getCache() { // TODO:SYNC: looks wrong
@@ -1857,7 +1857,7 @@ public class CacheClientNotifier {
 
   /**
    * Returns this <code>CacheClientNotifier</code>'s maximum message count.
-   * 
+   *
    * @return this <code>CacheClientNotifier</code>'s maximum message count
    */
   protected int getMaximumMessageCount() {
@@ -1866,7 +1866,7 @@ public class CacheClientNotifier {
 
   /**
    * Returns this <code>CacheClientNotifier</code>'s message time-to-live.
-   * 
+   *
    * @return this <code>CacheClientNotifier</code>'s message time-to-live
    */
   protected int getMessageTimeToLive() {
@@ -2135,7 +2135,7 @@ public class CacheClientNotifier {
    * The size of the server-to-client communication socket buffers. This can be modified using the
    * BridgeServer.SOCKET_BUFFER_SIZE system property.
    */
-  static final private int socketBufferSize =
+  private static final int socketBufferSize =
       Integer.getInteger("BridgeServer.SOCKET_BUFFER_SIZE", 32768).intValue();
 
   /**
@@ -2268,4 +2268,3 @@ public class CacheClientNotifier {
     }
   }
 }
-

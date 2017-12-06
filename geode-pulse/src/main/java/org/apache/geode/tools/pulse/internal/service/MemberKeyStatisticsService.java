@@ -19,22 +19,23 @@ package org.apache.geode.tools.pulse.internal.service;
 
 import static org.apache.geode.tools.pulse.internal.util.NameUtil.makeCompliantName;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
  * Class MemberKeyStatisticsService
- * 
+ *
  * This class contains implementations of getting Member's CPU, Memory and Read Write details
- * 
+ *
  * @since GemFire version 7.5
  */
 @Component

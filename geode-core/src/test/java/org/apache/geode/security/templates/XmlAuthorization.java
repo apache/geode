@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -50,18 +51,18 @@ import org.apache.geode.security.NotAuthorizedException;
 /**
  * An implementation of the {@link AccessControl} interface that allows authorization using the
  * permissions as specified in the given XML file.
- * 
+ *
  * The format of the XML file is specified in <a href="authz5_5.dtd"/>. It implements a role-based
  * authorization at the operation level for each region. Each principal name may be associated with
  * a set of roles. The name of the principal is obtained using the {@link Principal#getName()}
  * method and no other information of the principal is utilized. Each role can be provided
  * permissions to execute operations for each region.
- * 
+ *
  * The top-level element in the XML is "acl" tag that contains the "role" and "permission" tags. The
  * "role" tag contains the list of users that have been given that role. The name of the role is
  * specified in the "role" attribute and the users are contained in the "user" tags insided the
  * "role" tag.
- * 
+ *
  * The "permissions" tag contains the list of operations allowed for a particular region. The role
  * name is specified as the "role" attribute, the list of comma separated region names as the
  * optional "regions" attribute and the operation names are contained in the "operation" tags inside
@@ -69,7 +70,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * REGISTER_INTEREST, UNREGISTER_INTEREST, CONTAINS_KEY, KEY_SET, QUERY, EXECUTE_CQ, STOP_CQ,
  * CLOSE_CQ, REGION_CLEAR, REGION_CREATE, REGION_DESTROY. These correspond to the operations in the
  * {@link OperationCode} enumeration with the same name.
- * 
+ *
  * When no region name is specified then the operation is allowed for all regions in the cache. Any
  * permissions specified for regions using the "regions" attribute override these permissions. This
  * allows users to provide generic permissions without any region name, and override for specific
@@ -79,15 +80,15 @@ import org.apache.geode.security.NotAuthorizedException;
  * {@link OperationCode#QUERY} operation is permitted when either the {@code QUERY} permission is
  * provided at the cache-level for the user or when {@code QUERY} permission is provided for all the
  * regions that are part of the query string.
- * 
+ *
  * Any roles specified in the "user" tag that do not have a specified permission set using the
  * "permission" tags are ignored. When no {@link Principal} is associated with the current
  * connection, then empty user name is used to search for the roles so an empty user name can be
  * used to specify roles of unauthenticated clients (i.e. {@code Everyone}).
- * 
+ *
  * This sample implementation is useful only for pre-operation checks and should not be used for
  * post-operation authorization since it does nothing useful for post-operation case.
- * 
+ *
  * @since GemFire 5.5
  */
 public class XmlAuthorization implements AccessControl {
@@ -210,18 +211,18 @@ public class XmlAuthorization implements AccessControl {
 
   /**
    * Initialize the {@code XmlAuthorization} callback for a client having the given principal.
-   * 
+   *
    * This method caches the full XML authorization file the first time it is invoked and caches all
    * the permissions for the provided {@code principal} to speed up lookup the
    * {@code authorizeOperation} calls. The permissions for the principal are maintained as a
    * {@link Map} of region name to the {@link HashSet} of operations allowed for that region. A
    * global entry with region name as empty string is also made for permissions provided for all the
    * regions.
-   * 
+   *
    * @param principal the principal associated with the authenticated client
    * @param cache reference to the cache object
    * @param remoteMember the {@link DistributedMember} object for the remote authenticated client
-   * 
+   *
    * @throws NotAuthorizedException if some exception condition happens during the initialization
    *         while reading the XML; in such a case all subsequent client operations will throw
    *         {@code NotAuthorizedException}
@@ -267,15 +268,15 @@ public class XmlAuthorization implements AccessControl {
 
   /**
    * Return true if the given operation is allowed for the cache/region.
-   * 
+   *
    * This looks up the cached permissions of the principal in the map for the provided region name.
    * If none are found then the global permissions with empty region name are looked up. The
    * operation is allowed if it is found this permission list.
-   * 
+   *
    * @param regionName When null then it indicates a cache-level operation, else the name of the
    *        region for the operation.
    * @param context the data required by the operation
-   * 
+   *
    * @return true if the operation is authorized and false otherwise
    */
   @Override

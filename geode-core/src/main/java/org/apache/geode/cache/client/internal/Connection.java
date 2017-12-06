@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 /**
  * Represents a connection from a client to a server. Instances are created, kept, and used by
  * {@link PoolImpl}.
- * 
+ *
  * @since GemFire 5.7
  */
 public interface Connection {
@@ -52,7 +52,7 @@ public interface Connection {
   /**
    * Gracefully close the connection by notifying the server. It is not necessary to call destroy
    * after closing the connection.
-   * 
+   *
    * @param keepAlive What do do this server to client connection proxy on this server.
    * @throws Exception if there was an error notifying the server. The connection will still be
    *         destroyed.

@@ -14,6 +14,34 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.io.NotSerializableException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
@@ -25,6 +53,7 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
@@ -58,33 +87,6 @@ import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
-import org.apache.logging.log4j.Logger;
-
-import java.io.NotSerializableException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The <code>DistributionManager</code> uses a {@link MembershipManager} to distribute
@@ -195,7 +197,7 @@ public class DistributionManager implements DM {
   /**
    * Whether or not to include link local addresses in the list of addresses we use to determine if
    * two members are no the same host.
-   * 
+   *
    * Added for normura issue 7033 - they have duplicate link local addresses on different boxes
    */
   public static volatile boolean INCLUDE_LINK_LOCAL_ADDRESSES =
@@ -206,7 +208,7 @@ public class DistributionManager implements DM {
 
   /**
    * The DM type for locator distribution managers
-   * 
+   *
    * @since GemFire 7.0
    */
   public static final int LOCATOR_DM_TYPE = 11;
@@ -218,7 +220,7 @@ public class DistributionManager implements DM {
 
   /**
    * an NIO priority type
-   * 
+   *
    * @see org.apache.geode.distributed.internal.PooledDistributionMessage
    * @see #SERIAL_EXECUTOR
    * @see #HIGH_PRIORITY_EXECUTOR
@@ -228,7 +230,7 @@ public class DistributionManager implements DM {
 
   /**
    * an NIO priority type
-   * 
+   *
    * @see org.apache.geode.distributed.internal.SerialDistributionMessage
    * @see #STANDARD_EXECUTOR
    */
@@ -236,7 +238,7 @@ public class DistributionManager implements DM {
 
   /**
    * an NIO priority type
-   * 
+   *
    * @see org.apache.geode.distributed.internal.HighPriorityDistributionMessage
    * @see #STANDARD_EXECUTOR
    */
@@ -246,7 +248,7 @@ public class DistributionManager implements DM {
 
   /**
    * an NIO priority type
-   * 
+   *
    * @see org.apache.geode.internal.cache.InitialImageOperation
    * @see #STANDARD_EXECUTOR
    */
@@ -254,7 +256,7 @@ public class DistributionManager implements DM {
 
   /**
    * an NIO priority type
-   * 
+   *
    * @see org.apache.geode.internal.cache.InitialImageOperation
    * @see #STANDARD_EXECUTOR
    */
@@ -263,7 +265,7 @@ public class DistributionManager implements DM {
 
   /**
    * Executor for view related messages
-   * 
+   *
    * @see org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage
    * @see #STANDARD_EXECUTOR
    */
@@ -290,7 +292,7 @@ public class DistributionManager implements DM {
    * Is this admin agent used for a command line console. This flag controls whether connect will
    * throw an exception or just wait for a DS if one is not available. If true, we will throw an
    * exception.
-   * 
+   *
    */
   public static volatile boolean isCommandLineAdminVM = false;
 
@@ -299,7 +301,7 @@ public class DistributionManager implements DM {
   ///////////////////// Instance Fields //////////////////////
 
   /** The id of this distribution manager */
-  final protected InternalDistributedMember myid;
+  protected final InternalDistributedMember myid;
 
   /**
    * The distribution manager type of this dm; set in its constructor.
@@ -317,13 +319,13 @@ public class DistributionManager implements DM {
   protected final Object membershipListenersLock = new MembershipListenersLock();
   /**
    * The <code>MembershipListener</code>s that are registered on this manager for ALL members.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected volatile Set allMembershipListeners = Collections.EMPTY_SET;
   /**
    * A lock to hold while adding and removing all membership listeners.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected final Object allMembershipListenersLock = new MembershipListenersLock();
@@ -438,7 +440,7 @@ public class DistributionManager implements DM {
   /**
    * Thread used to decouple {@link org.apache.geode.internal.cache.partitioned.PartitionMessage}s
    * from {@link org.apache.geode.internal.cache.DistributedCacheOperation}s </b>
-   * 
+   *
    * @see #SERIAL_EXECUTOR
    */
   private ThreadPoolExecutor partitionedRegionThread;
@@ -451,7 +453,7 @@ public class DistributionManager implements DM {
 
   /**
    * Message processing executor for view messages
-   * 
+   *
    * @see org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage
    */
   private ThreadPoolExecutor viewThread;
@@ -530,7 +532,7 @@ public class DistributionManager implements DM {
 
   /**
    * Given two DistributionManager ids, check to see if they are from the same host address.
-   * 
+   *
    * @param id1 a DistributionManager id
    * @param id2 a DistributionManager id
    * @return true if id1 and id2 are from the same host, false otherwise
@@ -542,7 +544,7 @@ public class DistributionManager implements DM {
   /**
    * Creates a new distribution manager and discovers the other members of the distributed system.
    * Note that it does not check to see whether or not this VM already has a distribution manager.
-   * 
+   *
    * @param system The distributed system to which this distribution manager will send messages.
    */
   public static DistributionManager create(InternalDistributedSystem system) {
@@ -1259,7 +1261,7 @@ public class DistributionManager implements DM {
   /**
    * Returns true if the two members are on the same equivalent host based on overlapping IP
    * addresses collected for all NICs during exchange of startup messages.
-   * 
+   *
    * @param member1 First member
    * @param member2 Second member
    */
@@ -1272,7 +1274,7 @@ public class DistributionManager implements DM {
   /**
    * Set the host equivalencies for a given host. This overrides any previous information in the
    * tables.
-   * 
+   *
    * @param equivs list of InetAddress's that all point at same host
    */
   public void setEquivalentHosts(Set<InetAddress> equivs) {
@@ -1292,7 +1294,7 @@ public class DistributionManager implements DM {
 
   /**
    * Return all of the InetAddress's that are equivalent to the given one (same host)
-   * 
+   *
    * @param in host to match up
    * @return all the addresses thus equivalent
    */
@@ -1407,11 +1409,11 @@ public class DistributionManager implements DM {
 
   /**
    * Print a membership view (list of {@link InternalDistributedMember}s)
-   * 
+   *
    * @param v the list
    * @return String
    */
-  static public String printView(NetView v) {
+  public static String printView(NetView v) {
     if (v == null)
       return "null";
 
@@ -1515,7 +1517,7 @@ public class DistributionManager implements DM {
 
   /**
    * Return when DM is ready to send out messages.
-   * 
+   *
    * @param msg the messsage that is currently being sent
    */
   protected void waitUntilReadyToSendMsgs(DistributionMessage msg) {
@@ -1694,7 +1696,7 @@ public class DistributionManager implements DM {
    * Gets the value in {@link #hostedLocatorsAll} for a member with one or more hosted locators. The
    * value is a collection of host[port] strings. If a bind-address was used for a locator then the
    * form is bind-addr[port].
-   * 
+   *
    * @since GemFire 6.6.3
    */
   public Collection<String> getHostedLocators(InternalDistributedMember member) {
@@ -1715,7 +1717,7 @@ public class DistributionManager implements DM {
    * The keyset of the map are the locator vms in this cluster.
    *
    * the value is a collection of strings in case one vm can have multiple locators ????
-   * 
+   *
    * @since GemFire 6.6.3
    */
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocators() {
@@ -1728,7 +1730,7 @@ public class DistributionManager implements DM {
    * Returns a copy of the map of all members hosting locators with shared configuration. The key is
    * the member, and the value is a collection of host[port] strings. If a bind-address was used for
    * a locator then the form is bind-addr[port].
-   * 
+   *
    * @since GemFire 8.0
    */
   @Override
@@ -1864,7 +1866,7 @@ public class DistributionManager implements DM {
 
   /**
    * Send outgoing data; message is guaranteed to be serialized.
-   * 
+   *
    * @return list of recipients who did not receive the message
    * @throws InternalGemFireException if message is not serializable
    */
@@ -2066,21 +2068,21 @@ public class DistributionManager implements DM {
   /**
    * maximum time, in milliseconds, to wait for all threads to exit
    */
-  static private final int MAX_STOP_TIME = 20000;
+  private static final int MAX_STOP_TIME = 20000;
 
   /**
    * Time to sleep, in milliseconds, while polling to see if threads have finished
    */
-  static private final int STOP_PAUSE_TIME = 1000;
+  private static final int STOP_PAUSE_TIME = 1000;
 
   /**
    * Maximum number of interrupt attempts to stop a thread
    */
-  static private final int MAX_STOP_ATTEMPTS = 10;
+  private static final int MAX_STOP_ATTEMPTS = 10;
 
   /**
    * Cheap tool to kill a referenced thread
-   * 
+   *
    * @param t the thread to kill
    */
   private void clobberThread(Thread t) {
@@ -2115,7 +2117,7 @@ public class DistributionManager implements DM {
 
   /**
    * Cheap tool to examine an executor to see if it is still working
-   * 
+   *
    * @param tpe
    * @return true if executor is still active
    */
@@ -2314,7 +2316,7 @@ public class DistributionManager implements DM {
 
   /**
    * Returns the transport configuration for this distribution manager
-   * 
+   *
    * @since GemFire 5.0
    */
   public RemoteTransportConfig getTransport() {
@@ -2340,7 +2342,7 @@ public class DistributionManager implements DM {
 
   /**
    * Adds a <code>MembershipListener</code> to this distribution manager.
-   * 
+   *
    * @since GemFire 5.7
    */
   public void addAllMembershipListener(MembershipListener l) {
@@ -2423,7 +2425,7 @@ public class DistributionManager implements DM {
 
   /**
    * This thread processes member events as they occur.
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DistributionManager.MemberCrashedEvent
    * @see org.apache.geode.distributed.internal.DistributionManager.MemberJoinedEvent
    * @see org.apache.geode.distributed.internal.DistributionManager.MemberDepartedEvent
@@ -2613,7 +2615,7 @@ public class DistributionManager implements DM {
   /**
    * Add a membership listener for all members and return other DistribtionManagerIds as an atomic
    * operation
-   * 
+   *
    * @since GemFire 5.7
    */
   public Set addAllMembershipListenerAndGetAllIds(MembershipListener l) {
@@ -2890,7 +2892,7 @@ public class DistributionManager implements DM {
 
   /**
    * Based on a recent JGroups view, return a member that might be the next elder.
-   * 
+   *
    * @return the elder candidate, possibly this VM.
    */
   private InternalDistributedMember getElderCandidate() {
@@ -3188,7 +3190,7 @@ public class DistributionManager implements DM {
 
   /**
    * Makes note of a console that has shut down.
-   * 
+   *
    * @param theId The id of the console shutting down
    * @param crashed only true if we detect this id to be gone from a javagroup view
    *
@@ -3434,7 +3436,7 @@ public class DistributionManager implements DM {
 
   /**
    * Send a message that is guaranteed to be serialized
-   * 
+   *
    * @param msg
    * @return the recipients who did not receive the message
    */
@@ -3540,7 +3542,7 @@ public class DistributionManager implements DM {
 
   /**
    * Schedule a given message appropriately, depending upon its executor kind.
-   * 
+   *
    * @param message
    */
   protected void scheduleIncomingMessage(DistributionMessage message) {
@@ -3559,7 +3561,7 @@ public class DistributionManager implements DM {
 
   /**
    * Must be read/written while holding {@link #elderMonitor}
-   * 
+   *
    * @see #elderChangeWait()
    */
   private boolean waitingForElderChange = false;
@@ -3572,9 +3574,9 @@ public class DistributionManager implements DM {
   /**
    * This is the "elder" member of the distributed system, responsible for certain types of
    * arbitration.
-   * 
+   *
    * Must hold {@link #elderMonitor} in order to change this.
-   * 
+   *
    * @see #getElderId()
    */
   protected volatile InternalDistributedMember elder = null;
@@ -3697,7 +3699,7 @@ public class DistributionManager implements DM {
 
   /**
    * Waits until elder if newElder or newElder is no longer a member
-   * 
+   *
    * @return true if newElder is the elder; false if he is no longer a member or we are the elder.
    */
   public boolean waitForElder(final InternalDistributedMember desiredElder) {
@@ -3910,7 +3912,7 @@ public class DistributionManager implements DM {
 
   /**
    * Returns the agent that owns this distribution manager. (in ConsoleDistributionManager)
-   * 
+   *
    * @since GemFire 3.5
    */
   public RemoteGfManagerAgent getAgent() {
@@ -3938,11 +3940,11 @@ public class DistributionManager implements DM {
   /* -----------------------------Health Monitor------------------------------ */
   private final ConcurrentMap hmMap = new ConcurrentHashMap();
 
-  private InternalCache cache;
+  private volatile InternalCache cache;
 
   /**
    * Returns the health monitor for this distribution manager and owner.
-   * 
+   *
    * @param owner the agent that owns the returned monitor
    * @return the health monitor created by the owner; <code>null</code> if the owner has now created
    *         a monitor.
@@ -3979,7 +3981,7 @@ public class DistributionManager implements DM {
 
   /**
    * Remove a monitor that was previously created.
-   * 
+   *
    * @param owner the agent that owns the monitor to remove
    */
   public void removeHealthMonitor(InternalDistributedMember owner, int theId) {
@@ -4073,7 +4075,7 @@ public class DistributionManager implements DM {
    * multiple serial thread. This class takes care of executing messages related to a sender using
    * the same thread.
    */
-  static private class SerialQueuedExecutorPool {
+  private static class SerialQueuedExecutorPool {
     /** To store the serial threads */
     ConcurrentMap serialQueuedExecutorMap = new ConcurrentHashMap(MAX_SERIAL_QUEUE_THREAD);
 
@@ -4096,7 +4098,7 @@ public class DistributionManager implements DM {
 
     /**
      * Constructor.
-     * 
+     *
      * @param group thread group to which the threads will belog to.
      * @param stats
      */
@@ -4109,9 +4111,9 @@ public class DistributionManager implements DM {
 
     /*
      * Returns an id of the thread in serialQueuedExecutorMap, thats mapped to the given seder.
-     * 
+     *
      * @param sender
-     * 
+     *
      * @param createNew boolean flag to indicate whether to create a new id, if id doesnot exists.
      */
     private Integer getQueueId(InternalDistributedMember sender, boolean createNew) {
@@ -4156,7 +4158,7 @@ public class DistributionManager implements DM {
      * Returns the serial queue executor, before returning the thread this applies throttling, based
      * on the total serial queue size (total - sum of all the serial queue size). The throttling is
      * applied during put event, this doesnt block the extract operation on the queue.
-     * 
+     *
      */
     public SerialQueuedExecutorWithDMStats getThrottledSerialExecutor(
         InternalDistributedMember sender) {
@@ -4421,7 +4423,7 @@ public class DistributionManager implements DM {
   }
 
 
-  private static abstract class MemberEvent {
+  private abstract static class MemberEvent {
 
     private InternalDistributedMember id;
 
@@ -4477,7 +4479,7 @@ public class DistributionManager implements DM {
 
   /**
    * This is an event reflecting that a InternalDistributedMember has joined the system.
-   * 
+   *
    *
    */
   private static class MemberJoinedEvent extends MemberEvent {
@@ -4522,7 +4524,7 @@ public class DistributionManager implements DM {
   /**
    * This is an event reflecting that a InternalDistributedMember has left the system in an
    * unexpected way.
-   * 
+   *
    *
    */
   private static class MemberCrashedEvent extends MemberEvent {
@@ -4639,7 +4641,7 @@ public class DistributionManager implements DM {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DM#getRootCause()
    */
   public Throwable getRootCause() {
@@ -4648,7 +4650,7 @@ public class DistributionManager implements DM {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DM#setRootCause(java.lang.Throwable)
    */
   public void setRootCause(Throwable t) {
@@ -4657,9 +4659,9 @@ public class DistributionManager implements DM {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DM#getMembersOnThisHost()
-   * 
+   *
    * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {
@@ -4818,5 +4820,20 @@ public class DistributionManager implements DM {
   @Override
   public InternalCache getCache() {
     return this.cache;
+  }
+
+  @Override
+  public InternalCache getExistingCache() {
+    InternalCache result = this.cache;
+    if (result == null) {
+      throw new CacheClosedException(
+          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+    }
+    result.getCancelCriterion().checkCancelInProgress(null);
+    if (result.isClosed()) {
+      throw result.getCacheClosedException(
+          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+    }
+    return result;
   }
 }

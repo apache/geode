@@ -16,6 +16,7 @@ package org.apache.geode.internal.tcp;
 
 import java.io.*;
 import java.nio.*;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -23,9 +24,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * MsgOutputStream should no longer be used except in Connection to do the handshake. Otherwise
  * MsgStreamer should always be used.
- * 
+ *
  * @since GemFire 3.0
- * 
+ *
  */
 public class MsgOutputStream extends OutputStream implements ObjToByteArraySerializer {
   private final ByteBuffer buffer;
@@ -114,7 +115,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * Writes two bytes to the output stream to represent the value of the argument. The byte values
    * to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 8))
@@ -137,7 +138,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * Writes a <code>char</code> value, wich is comprised of two bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 8))
@@ -160,7 +161,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * Writes an <code>int</code> value, which is comprised of four bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 24))
@@ -184,7 +185,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * Writes a <code>long</code> value, which is comprised of eight bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 56))
@@ -302,7 +303,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * If a character <code>c</code> is in the range <code>&#92;u0001</code> through
    * <code>&#92;u007f</code>, it is represented by one byte:
    * <p>
-   * 
+   *
    * <pre>
    * (byte) c
    * </pre>
@@ -311,7 +312,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * <code>&#92;u0080</code> through <code>&#92;u07ff</code>, then it is represented by two bytes,
    * to be written in the order shown:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xc0 | (0x1f &amp; (c &gt;&gt; 6)))
@@ -322,7 +323,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * If a character <code>c</code> is in the range <code>&#92;u0800</code> through
    * <code>uffff</code>, then it is represented by three bytes, to be written in the order shown:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xe0 | (0x0f &amp; (c &gt;&gt; 12)))

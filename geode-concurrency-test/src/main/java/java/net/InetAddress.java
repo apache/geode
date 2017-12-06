@@ -153,4 +153,3 @@ public class InetAddress implements java.io.Serializable {
     return getLoopbackAddress();
   }
 }
-

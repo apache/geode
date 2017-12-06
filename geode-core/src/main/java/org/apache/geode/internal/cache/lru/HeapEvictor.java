@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache.lru;
 
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -27,19 +34,13 @@ import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event
  * for on-heap regions. This is registered with the ResourceManager.
- * 
+ *
  * @since GemFire 6.0
- * 
+ *
  */
 public class HeapEvictor implements ResourceListener<MemoryEvent> {
   private static final Logger logger = LogService.getLogger();
@@ -218,7 +219,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   /**
    * returns the total number of tasks that are currently being executed or queued for execution
-   * 
+   *
    * @return sum of scheduled and running tasks
    */
   public int getRunningAndScheduledTasks() {

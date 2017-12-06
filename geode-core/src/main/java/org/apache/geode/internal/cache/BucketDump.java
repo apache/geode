@@ -26,8 +26,8 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 /**
  * This class is used for getting the contents of buckets and then optionally compare them. It may
  * contain the region version vector for the bucket as well as all of the entries.
- * 
- * 
+ *
+ *
  */
 public class BucketDump {
   /**

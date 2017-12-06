@@ -20,8 +20,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import org.junit.Assert;
 import org.junit.*;
+import org.junit.Assert;
 import org.junit.experimental.categories.*;
 
 import org.apache.geode.cache.*;

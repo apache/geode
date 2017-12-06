@@ -234,9 +234,8 @@ public class AlterRuntimeConfigCommand implements GfshCommand {
   public static class AlterRuntimeInterceptor extends AbstractCliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> arguments = parseResult.getParamValueStrings();
       // validate log level
-      String logLevel = arguments.get("log-level");
+      String logLevel = parseResult.getParamValueAsString("log-level");
       if (StringUtils.isNotBlank(logLevel) && (LogLevel.getLevel(logLevel) == null)) {
         return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
       }

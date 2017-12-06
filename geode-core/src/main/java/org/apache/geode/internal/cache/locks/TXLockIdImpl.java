@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.locks;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.DataSerializer;
 import java.io.*;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 /**
  * Identifies a group of transaction locks.
@@ -133,4 +133,3 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
     return null;
   }
 }
-

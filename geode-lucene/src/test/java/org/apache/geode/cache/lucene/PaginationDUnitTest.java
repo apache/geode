@@ -20,29 +20,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
-  protected final static int PAGE_SIZE = 2;
-  protected final static int FLUSH_WAIT_TIME_MS = 60000;
+  protected static final int PAGE_SIZE = 2;
+  protected static final int FLUSH_WAIT_TIME_MS = 60000;
 
   @Override
   protected RegionTestableType[] getListOfRegionTestTypes() {
@@ -151,5 +152,3 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
   }
 
 }
-
-

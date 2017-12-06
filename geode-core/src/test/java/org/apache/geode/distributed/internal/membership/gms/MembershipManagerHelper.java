@@ -29,7 +29,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * This helper class provides access to membership manager information that is not otherwise public
- * 
+ *
  * @since GemFire 5.5
  */
 public class MembershipManagerHelper {
@@ -48,7 +48,7 @@ public class MembershipManagerHelper {
    * <p>
    * Note that part of beSickMember's processing is to interrupt and stop any reader threads. A slow
    * listener in a reader thread should eat this interrupt.
-   * 
+   *
    * @param sys
    */
   public static void beSickMember(DistributedSystem sys) {

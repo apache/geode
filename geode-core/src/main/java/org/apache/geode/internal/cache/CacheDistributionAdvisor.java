@@ -136,7 +136,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Returns a the set of members that either want all events or are caching data.
-   * 
+   *
    * @param excludeInRecovery if true then members in recovery are excluded
    */
   private Set adviseAllEventsOrCached(final boolean excludeInRecovery)
@@ -180,7 +180,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide recipient information for TX lock and commit.
-   * 
+   *
    * @return Set of Serializable members that the current transaction will be distributed to.
    *         Currently this is any other member who has this region defined. No reference to Set
    *         kept by advisor so caller is free to modify it
@@ -224,7 +224,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide recipient information for netLoad
-   * 
+   *
    * @return Set of Serializable members that have a CacheLoader installed; no reference to Set kept
    *         by advisor so caller is free to modify it
    */
@@ -262,7 +262,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Same as adviseCacheOp but only includes members that are playing the specified role.
-   * 
+   *
    * @since GemFire 5.0
    */
   public Set adviseCacheOpRole(final Role role) {
@@ -306,7 +306,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide recipient information for netWrite
-   * 
+   *
    * @return Set of Serializable member ids that have a CacheWriter installed; no reference to Set
    *         kept by advisor so caller is free to modify it
    */
@@ -340,7 +340,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide recipient information for netSearch
-   * 
+   *
    * @return Set of Serializable member ids that have the region and are have storage (no need to
    *         search an empty cache)
    */
@@ -448,7 +448,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
   /**
    * returns the set of all the members in the system which requires old values and are not yet
    * finished with initialization (including GII).
-   * 
+   *
    * @since GemFire 5.5
    */
   public Set adviseRequiresOldValueInCacheOp() {
@@ -534,7 +534,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
      * Whether the region has completed initialization, including GII. This information may be
      * incorrect for a PartitionedRegion, but may be relied upon for DistributedRegions (including
      * BucketRegions)
-     * 
+     *
      * @since GemFire prpersist this field is now overloaded for partitioned regions with
      *        persistence. In the case of pr persistence, this field indicates that the region has
      *        finished recovery from disk.
@@ -701,7 +701,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
     /**
      * Sets the SubscriptionAttributes for the region that this profile is on
-     * 
+     *
      * @since GemFire 5.0
      */
     public void setSubscriptionAttributes(SubscriptionAttributes sa) {
@@ -797,7 +797,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
     /**
      * Attempts to process this message with the specified <code>CacheDistributionAdvisee</code>.
-     * 
+     *
      * @param cda the CacheDistributionAdvisee to apply this profile to
      * @param isRealRegion true if CacheDistributionAdvisee is a real region
      */
@@ -998,7 +998,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide only the new replicates given a set of existing memberIds
-   * 
+   *
    * @param oldRecipients the <code>Set</code> of memberIds that have received the message
    * @return the set of new replicate's memberIds
    * @since GemFire 5.1
@@ -1023,7 +1023,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide all the replicates including persistent replicates.
-   * 
+   *
    * @return the set of replicate's memberIds
    * @since GemFire 5.8
    */
@@ -1042,7 +1042,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide only the preloadeds given a set of existing memberIds
-   * 
+   *
    * @return the set of preloaded's memberIds
    * @since GemFire prPersistSprint1
    */
@@ -1061,7 +1061,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide only the empty's (having DataPolicy.EMPTY) given a set of existing memberIds
-   * 
+   *
    * @return the set of replicate's memberIds
    * @since GemFire 5.8
    */
@@ -1080,7 +1080,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   /**
    * Provide only the normals (having DataPolicy.NORMAL) given a set of existing memberIds
-   * 
+   *
    * @return the set of normal's memberIds
    * @since GemFire 5.8
    */

@@ -97,7 +97,6 @@ public class AvailablePidTest {
     assertThat(availablePid.findAvailablePids(2)).hasSize(2);
     assertThat(availablePid.findAvailablePids(3)).hasSize(3);
     assertThat(availablePid.findAvailablePids(5)).hasSize(5);
-    assertThat(availablePid.findAvailablePids(8)).hasSize(8);
   }
 
   @Test
@@ -106,7 +105,6 @@ public class AvailablePidTest {
     assertThatNoPidIsDuplicated(availablePid.findAvailablePids(2));
     assertThatNoPidIsDuplicated(availablePid.findAvailablePids(3));
     assertThatNoPidIsDuplicated(availablePid.findAvailablePids(5));
-    assertThatNoPidIsDuplicated(availablePid.findAvailablePids(8));
   }
 
   @Test

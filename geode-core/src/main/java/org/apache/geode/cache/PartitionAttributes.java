@@ -22,37 +22,37 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.partition.PartitionListener;
 
 /**
- * 
+ *
  * Attributes that define the partitioned character of a Partitioned Region. This interface allows
  * for the discovery of Partitioned Region attributes using
  * {@link org.apache.geode.cache.RegionAttributes#getPartitionAttributes()} as well as the
  * configuration of a Partitioned Region using
  * {@link org.apache.geode.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)}.
- * 
+ *
  * PartitionAttributes are created using the
  * {@link org.apache.geode.cache.PartitionAttributesFactory}
- * 
+ *
  * The default PartitionAttributes can be determined using
  * {@link org.apache.geode.cache.PartitionAttributesFactory#create()} with out calling any of its
  * mutator methods e.g.
  * {@link org.apache.geode.cache.PartitionAttributesFactory#setLocalMaxMemory(int)}
  *
  * Also see {@link org.apache.geode.cache.DataPolicy#PARTITION}.
- * 
+ *
  * @since GemFire 5.0
- * 
+ *
  */
 public interface PartitionAttributes<K, V> {
   /**
    * returns entryTimeToLive in ExpirationAttributes.
-   * 
+   *
    * @return expirationAttributes
    */
   // public ExpirationAttributes getEntryTimeToLive();
 
   /**
    * returns entryIdleTimeout in ExpirationAttributes.
-   * 
+   *
    * @return expirationAttributes
    */
   // public ExpirationAttributes getEntryIdleTimeout();
@@ -60,14 +60,14 @@ public interface PartitionAttributes<K, V> {
   /**
    * The number of Backups for an entry in PartitionedRegion. This value should be between 0 and 3
    * (for a total of 1 to 4 instances of the data). The default value is 0.
-   * 
+   *
    * @return redundantCopies.
    */
   public int getRedundantCopies();
 
   /**
    * This method returns the maximum total size of the region in megabytes.
-   * 
+   *
    * @deprecated use getTotalMaxMemory() instead
    * @return total size in megabytes.
    */
@@ -77,7 +77,7 @@ public interface PartitionAttributes<K, V> {
   /**
    * This method returns the maximum total size of the region, in megabytes. Default value is
    * Integer.MAX_VALUE.
-   * 
+   *
    * @return maximum size of the partitioned region, in megabytes
    *
    * @deprecated since Geode 1.3.0
@@ -88,7 +88,7 @@ public interface PartitionAttributes<K, V> {
   /**
    * This method returns total number of buckets for a PartitionedRegion. Default number of buckets
    * for a PartitionedRegion is 113.
-   * 
+   *
    * @return total number of buckets for a PartitionedRegion.
    */
   public int getTotalNumBuckets();
@@ -101,7 +101,7 @@ public interface PartitionAttributes<K, V> {
 
   /**
    * Returns name of the colocated PartitionedRegion's name
-   * 
+   *
    * @since GemFire 6.0
    */
   public String getColocatedWith();
@@ -109,7 +109,7 @@ public interface PartitionAttributes<K, V> {
   /**
    * This method returns local properties. There are currently no local properties defined that are
    * not also deprecated.
-   * 
+   *
    * @deprecated use {@link #getLocalMaxMemory()} in GemFire 5.1 and later releases
    * @return localProperties
    */
@@ -119,7 +119,7 @@ public interface PartitionAttributes<K, V> {
   /**
    * This method returns global properties. There are currently no global properties defined that
    * are not also deprecated.
-   * 
+   *
    * @deprecated use {@link #getTotalMaxMemory()} and {@link #getTotalNumBuckets()} in GemFire 5.1
    *             and later releases
    * @return globalProperties
@@ -129,7 +129,7 @@ public interface PartitionAttributes<K, V> {
 
   /**
    * Returns the PartitionResolver set for custom partitioning
-   * 
+   *
    * @return <code>PartitionResolver</code> for the PartitionedRegion
    * @since GemFire 6.0
    */
@@ -139,7 +139,7 @@ public interface PartitionAttributes<K, V> {
    * Returns the delay in milliseconds that existing members will wait before satisfying redundancy
    * after another member crashes. Default value of recoveryDelay is -1 which indicates that
    * redundancy won't be recovered if a member crashes.
-   * 
+   *
    * @since GemFire 6.0
    */
   public long getRecoveryDelay();
@@ -148,14 +148,14 @@ public interface PartitionAttributes<K, V> {
    * Returns the delay in milliseconds that a new member will wait before trying to satisfy
    * redundancy of data hosted on other members. Default value is 0 which is to recover redundancy
    * immediately when a new member is added.
-   * 
+   *
    * @since GemFire 6.0
    */
   public long getStartupRecoveryDelay();
 
   /**
    * Returns array of PartitionListener{s} configured on this partitioned region
-   * 
+   *
    * @see PartitionListener
    * @return PartitionListener configured on this partitioned region
    * @since GemFire 6.5
@@ -165,7 +165,7 @@ public interface PartitionAttributes<K, V> {
   /**
    * Returns <code>FixedPartitionAttributes</code>'s list of local partitions defined on this
    * Partitioned Region
-   * 
+   *
    * @since GemFire 6.6
    */
   public List<FixedPartitionAttributes> getFixedPartitionAttributes();

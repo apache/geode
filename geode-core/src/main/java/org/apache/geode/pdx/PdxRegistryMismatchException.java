@@ -26,7 +26,7 @@ public class PdxRegistryMismatchException extends GemFireException {
 
   /**
    * Constructs a new exception with the given message
-   * 
+   *
    * @param message the message of the new exception
    */
   public PdxRegistryMismatchException(String message) {

@@ -73,6 +73,10 @@ public class HttpClientRule extends ExternalResource {
         .contains("/pulse/clusterDetail.html");
   }
 
+  public HttpResponse logoutFromPulse() throws Exception {
+    return get("/pulse/clusterLogout");
+  }
+
   public HttpResponse get(String uri, String... params) throws Exception {
     return httpClient.execute(host, buildHttpGet(uri, params));
   }

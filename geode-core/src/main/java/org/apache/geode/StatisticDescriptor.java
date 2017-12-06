@@ -14,8 +14,6 @@
  */
 package org.apache.geode;
 
-// import org.apache.geode.internal.Assert;
-// import org.apache.geode.internal.FieldInfo;
 
 /**
  * Describes an individual statistic whose value is updated by an application and may be archived by

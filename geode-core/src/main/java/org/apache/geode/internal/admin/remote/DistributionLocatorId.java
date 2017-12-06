@@ -15,13 +15,6 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -31,6 +24,13 @@ import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
+
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Identifies the host, port, and bindAddress a distribution locator is listening on.
@@ -43,7 +43,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   private InetAddress host;
   private final int port;
   private final String bindAddress;
-  transient private SSLConfig sslConfig;
+  private transient SSLConfig sslConfig;
   // the following two fields are not used but are retained for backward compatibility
   // as this class is Serializable and is used in WAN locator information exchange
   private boolean peerLocator = true;
@@ -219,7 +219,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   /**
    * Returns the resolved InetSocketAddress of the locator We cache the InetAddress if hostname is
    * ipString Otherwise we create InetAddress each time.
-   * 
+   *
    **/
   public InetSocketAddress getHost() throws UnknownHostException {
     if (this.hostname != null) {
@@ -286,7 +286,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -359,7 +359,7 @@ public class DistributionLocatorId implements java.io.Serializable {
    * Converts a collection of {@link Locator} instances to a collection of DistributionLocatorId
    * instances. Note this will use {@link SocketCreator#getLocalHost()} as the host for
    * DistributionLocatorId. This is because all instances of Locator are local only.
-   * 
+   *
    * @param locators collection of Locator instances
    * @return collection of DistributionLocatorId instances
    * @throws UnknownHostException
@@ -383,7 +383,7 @@ public class DistributionLocatorId implements java.io.Serializable {
    * Marshals a collection of {@link Locator} instances to a collection of DistributionLocatorId
    * instances. Note this will use {@link SocketCreator#getLocalHost()} as the host for
    * DistributionLocatorId. This is because all instances of Locator are local only.
-   * 
+   *
    * @param locatorIds collection of DistributionLocatorId instances
    * @return collection of String instances
    * @see #marshal()

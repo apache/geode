@@ -39,7 +39,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
- * 
+ *
  */
 public class ExecuteFunction70 extends ExecuteFunction66 {
 

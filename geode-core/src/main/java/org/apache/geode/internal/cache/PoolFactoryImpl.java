@@ -45,7 +45,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Implementation of PoolFactory.
- * 
+ *
  * @since GemFire 5.7
  */
 public class PoolFactoryImpl implements PoolFactory {
@@ -320,7 +320,7 @@ public class PoolFactoryImpl implements PoolFactory {
   /**
    * Create a new Pool for connecting a client to a set of GemFire Cache Servers. using this
    * factory's settings for attributes.
-   * 
+   *
    * @param name the name of the connection pool, used when connecting regions to it
    * @throws IllegalStateException if the connection pool name already exists
    * @throws IllegalStateException if this factory does not have any locators or servers

@@ -21,12 +21,12 @@ package org.apache.geode.cache.execute;
  * each piece back to the calling thread's {@link ResultCollector}. For each result sent using this
  * method, {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)}
  * is called, making that result available to the calling thread immediately.
- * 
+ *
  * <p>
  * Example:
- * 
+ *
  * <pre>
- *   
+ *
  *      execute(FunctionContext context){
  *              ResultSender rs = context.getResultSender();
  *              int lastResult = -1;
@@ -35,24 +35,24 @@ package org.apache.geode.cache.execute;
  *              }
  *              rs.lastResult(lastResult);
  *      }
- *      
+ *
  *  Application can receive the results as they are sent using ResultSender in the above for loop.
  *  It is very important to send a last result as it informs {@link ResultCollector}
  *  to stop waiting for the result.
  * <br>
  * </pre>
- * 
- * 
+ *
+ *
  * @since GemFire 6.0
- * 
+ *
  * @see ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)
- * 
+ *
  */
 public interface ResultSender<T> {
   /**
    * Sends a result back to the FunctionService calling thread and invokes
    * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)}.
-   * 
+   *
    * @param oneResult
    */
   public void sendResult(T oneResult);
@@ -63,9 +63,9 @@ public interface ResultSender<T> {
    * then {@link ResultCollector#endResults()} if it is the last instance of the Function to report
    * results. The ResultCollector will keep waiting for results until it receives last result.
    * Therefore, it is very important to use this method to indicate end of function execution.
-   * 
+   *
    * @throws IllegalStateException if called more than once
-   * 
+   *
    * @see ResultCollector#endResults()
    */
   public void lastResult(T lastResult);
@@ -75,9 +75,9 @@ public interface ResultSender<T> {
    * ResultCollector as a result. If sendException is called then {@link ResultCollector#getResult}
    * will not throw exception but will have exception as a part of results received. Calling
    * sendException will act as a lastResult.
-   * 
+   *
    * @param t
-   * 
+   *
    * @see #lastResult(Object)
    * @since GemFire 6.3
    */

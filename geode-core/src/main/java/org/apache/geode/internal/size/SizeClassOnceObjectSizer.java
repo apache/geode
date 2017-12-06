@@ -28,21 +28,21 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
  * An implementation of {@link ObjectSizer} that calculates an accurate, in memory size of for the
  * first instance of each class that it sees. After the first size calculation, it will return the
  * same size for every instance of that class.
- * 
+ *
  * This sizer is a compromise between generating accurate sizes for every object and performance. It
  * should work well for objects that are fairly constant in size. For completely accurate sizing,
  * use {@link ReflectionObjectSizer}
- * 
- * 
+ *
+ *
  */
 public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Declarable {
 
   private static final SizeClassOnceObjectSizer INSTANCE = new SizeClassOnceObjectSizer();
 
-  private transient final Map<Class, Integer> savedSizes =
+  private final transient Map<Class, Integer> savedSizes =
       new CopyOnWriteWeakHashMap<Class, Integer>();
 
-  private transient final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
+  private final transient ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
   public int sizeof(Object o) {
     if (o == null) {

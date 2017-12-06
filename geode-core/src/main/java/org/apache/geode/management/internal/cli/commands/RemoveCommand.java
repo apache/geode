@@ -16,14 +16,12 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
 import static org.apache.geode.management.internal.cli.result.ResultBuilder.createUserErrorResult;
 
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -57,10 +55,6 @@ public class RemoveCommand implements GfshCommand {
           help = CliStrings.REMOVE__KEYCLASS__HELP) String keyClass) {
     InternalCache cache = getCache();
 
-    if (StringUtils.isEmpty(regionPath)) {
-      return createUserErrorResult(CliStrings.REMOVE__MSG__REGIONNAME_EMPTY);
-    }
-
     if (!removeAllKeys && (key == null)) {
       return createUserErrorResult(CliStrings.REMOVE__MSG__KEY_EMPTY);
     }
@@ -75,7 +69,7 @@ public class RemoveCommand implements GfshCommand {
     DataCommandFunction removefn = new DataCommandFunction();
     DataCommandResult dataResult;
     if (region == null) {
-      Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
+      Set<DistributedMember> memberList = findAnyMembersForRegion(getCache(), regionPath);
 
       if (CollectionUtils.isEmpty(memberList)) {
         return createUserErrorResult(String.format(REGION_NOT_FOUND, regionPath));
@@ -89,7 +83,7 @@ public class RemoveCommand implements GfshCommand {
       request.setRegionName(regionPath);
       dataResult = callFunctionForRegion(request, removefn, memberList);
     } else {
-      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null);
+      dataResult = removefn.remove(key, keyClass, regionPath, removeAllKeys ? "ALL" : null, cache);
     }
 
     dataResult.setKeyClass(keyClass);

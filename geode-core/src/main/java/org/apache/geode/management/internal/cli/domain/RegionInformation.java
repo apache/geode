@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.domain;
 
+import java.io.Serializable;
+import java.util.*;
+
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-
-import java.io.Serializable;
-import java.util.*;
 
 /***
  * Gives the most basic common information of a region Used by the GetRegionsFunction for 'list

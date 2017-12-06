@@ -17,27 +17,28 @@
  */
 package org.apache.geode.internal.datasource;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.test.TestUtil;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.fail;
+
+import java.sql.Connection;
+import java.util.Properties;
+
+import javax.naming.Context;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.naming.Context;
-import java.sql.Connection;
-import java.util.Properties;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.util.test.TestUtil;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.fail;
-
-// import javax.sql.PooledConnection;
 
 /**
- * 
+ *
  * To change the template for this generated type comment go to Window - Preferences - Java - Code
  * Generation - Code and Comments
  */

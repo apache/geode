@@ -22,8 +22,8 @@ import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatsKey;
 
 /**
- * 
- * 
+ *
+ *
  */
 public class AsyncEventQueueMBeanBridge {
 

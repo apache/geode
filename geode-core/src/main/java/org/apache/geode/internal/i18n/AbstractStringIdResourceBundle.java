@@ -15,22 +15,22 @@
 
 package org.apache.geode.internal.i18n;
 
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.ClassPathLoader;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.ClassPathLoader;
+
 
 /**
  * Baseclass for all {@link StringId} based ResourceBundles
- * 
+ *
  * @see java.util.ResourceBundle
  *
  * @since GemFire 5.7

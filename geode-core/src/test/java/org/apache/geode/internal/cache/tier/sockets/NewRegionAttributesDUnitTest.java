@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -37,6 +36,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -59,7 +59,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates the server cache on test-VMs
-   * 
+   *
    * @throws Exception thrown if any problem occurs in set-up
    */
   @Override
@@ -86,7 +86,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Closes the cache on test VMs
-   * 
+   *
    * @throws Exception thrown if any problem occurs while closing the cache
    */
   @Override
@@ -97,13 +97,13 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates the cache and the region on the test VM with given parameters
-   * 
+   *
    * @param enableWan boolean to make test-region wan-enabled
    * @param setPublisher boolean to make test-region as publisher
    * @param enableConflation boolean to enable conflation for test-region
    * @param enableAsyncConflation boolean to enable async conflation on test-region
    * @throws Exception thrown if any problem occurs while creating cache or test-region
-   * 
+   *
    * @see AttributesFactory#setPublisher(boolean)
    * @see AttributesFactory#setEnableConflation(boolean)
    * @see AttributesFactory#setEnableAsyncConflation(boolean)
@@ -124,7 +124,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates cache instance
-   * 
+   *
    * @param props - properties of the distributed system
    * @return cache
    * @throws Exception - thrown if any problem occurs while connecting to distributed system or
@@ -157,7 +157,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * 2)Perform PUTs from one VM and verify that all of them reach the other VM<br>
    * 3)Perform PUTs,INVALIDATEs and DESTROYs from one VM and verify at the end that all are
    * destroyed in the other VM also<br>
-   * 
+   *
    * @see AttributesFactory#setPublisher(boolean)
    * @see AttributesFactory#setEnableConflation(boolean)
    * @see AttributesFactory#setEnableAsyncConflation(boolean)
@@ -246,7 +246,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Gets the total number of entries in the test region
-   * 
+   *
    * @return total entries
    */
   public static Object getEntryCount() {
@@ -259,7 +259,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * This method invokes all the registerInterest related API's for the test-region and verifies
    * that <code>UnsupportedOperationException</code> is thrown in all the cases since test-region
    * does not have bridge-server or bridge-client.
-   * 
+   *
    * @see Region#registerInterest(Object)
    * @see Region#registerInterest(Object, InterestResultPolicy)
    * @see Region#registerInterestRegex(String)
@@ -350,7 +350,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * This method invokes all the unregisterInterest related API's for the test-region and verifies
    * that <code>UnsupportedOperationException</code> is thrown in all the cases since test-region
    * does not have bridge-server or bridge-client.
-   * 
+   *
    * @see Region#unregisterInterest(Object)
    * @see Region#unregisterInterestRegex(String)
    */
@@ -403,7 +403,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    * This method invokes all the getter API's for interest-list on the test-region and verifies that
    * <code>UnsupportedOperationException</code> is thrown in all the cases since test-region does
    * not have bridge-server or bridge-client.
-   * 
+   *
    * @see Region#getInterestList()
    * @see Region#getInterestListRegex()
    */

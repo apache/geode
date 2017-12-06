@@ -29,7 +29,7 @@ import org.apache.geode.security.NotAuthorizedException;
 /**
  * Test authorization class for testing the accessibility of query bind parameters from
  * QueryOperationContext
- * 
+ *
  * Used by test:
  *
  * <li/>QueryParamsAuthorizationDUnitTest (via reflection)

@@ -26,7 +26,7 @@ public class GetEntryOp {
 
   /**
    * Does a region.getEntry on the server using the given pool
-   * 
+   *
    * @param pool
    * @param region
    * @param key

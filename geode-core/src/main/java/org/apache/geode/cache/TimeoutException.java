@@ -44,7 +44,7 @@ public class TimeoutException extends OperationAbortedException {
 
   /**
    * Constructs an instance of <code>TimeoutException</code> with the specified detail message.
-   * 
+   *
    * @param msg the detail message
    */
   public TimeoutException(String msg) {
@@ -54,7 +54,7 @@ public class TimeoutException extends OperationAbortedException {
   /**
    * Constructs an instance of <code>TimeoutException</code> with the specified detail message and
    * cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -64,7 +64,7 @@ public class TimeoutException extends OperationAbortedException {
 
   /**
    * Constructs an instance of <code>TimeoutException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public TimeoutException(Throwable cause) {

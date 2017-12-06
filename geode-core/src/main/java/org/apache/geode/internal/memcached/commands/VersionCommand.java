@@ -23,7 +23,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * Sends current version of gemcached server to the client
- * 
+ *
  *
  */
 public class VersionCommand extends AbstractCommand {

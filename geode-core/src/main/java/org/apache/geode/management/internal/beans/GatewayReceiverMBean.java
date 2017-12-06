@@ -19,8 +19,8 @@ import javax.management.NotificationBroadcasterSupport;
 import org.apache.geode.management.GatewayReceiverMXBean;
 
 /**
- * 
- * 
+ *
+ *
  */
 public class GatewayReceiverMBean extends NotificationBroadcasterSupport
     implements GatewayReceiverMXBean {

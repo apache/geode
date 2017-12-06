@@ -30,24 +30,24 @@ public class ExpirationAction implements Serializable {
   private static final long serialVersionUID = 658925707882047900L;
 
   /** When the region or cached object expires, it is invalidated. */
-  public final static ExpirationAction INVALIDATE = new ExpirationAction("INVALIDATE");
+  public static final ExpirationAction INVALIDATE = new ExpirationAction("INVALIDATE");
   /** When expired, invalidated locally only. Not supported for partitioned regions. */
-  public final static ExpirationAction LOCAL_INVALIDATE = new ExpirationAction("LOCAL_INVALIDATE");
+  public static final ExpirationAction LOCAL_INVALIDATE = new ExpirationAction("LOCAL_INVALIDATE");
 
   /** When the region or cached object expires, it is destroyed. */
-  public final static ExpirationAction DESTROY = new ExpirationAction("DESTROY");
+  public static final ExpirationAction DESTROY = new ExpirationAction("DESTROY");
   /**
    * When expired, destroyed locally only. Not supported for partitioned regions. Use DESTROY
    * instead.
    */
-  public final static ExpirationAction LOCAL_DESTROY = new ExpirationAction("LOCAL_DESTROY");
+  public static final ExpirationAction LOCAL_DESTROY = new ExpirationAction("LOCAL_DESTROY");
 
   /** The name of this action */
   private final transient String name;
 
   /**
    * Creates a new instance of ExpirationAction.
-   * 
+   *
    * @param name the name of the expiration action
    * @see #toString
    */
@@ -57,7 +57,7 @@ public class ExpirationAction implements Serializable {
 
   /**
    * Returns whether this is the action for distributed invalidate.
-   * 
+   *
    * @return true if this in INVALIDATE
    */
   public boolean isInvalidate() {
@@ -66,7 +66,7 @@ public class ExpirationAction implements Serializable {
 
   /**
    * Returns whether this is the action for local invalidate.
-   * 
+   *
    * @return true if this is LOCAL_INVALIDATE
    */
   public boolean isLocalInvalidate() {
@@ -75,7 +75,7 @@ public class ExpirationAction implements Serializable {
 
   /**
    * Returns whether this is the action for distributed destroy.
-   * 
+   *
    * @return true if this is DESTROY
    */
   public boolean isDestroy() {
@@ -84,7 +84,7 @@ public class ExpirationAction implements Serializable {
 
   /**
    * Returns whether this is the action for local destroy.
-   * 
+   *
    * @return true if thisis LOCAL_DESTROY
    */
   public boolean isLocalDestroy() {
@@ -93,7 +93,7 @@ public class ExpirationAction implements Serializable {
 
   /**
    * Returns whether this action is local.
-   * 
+   *
    * @return true if this is LOCAL_INVALIDATE or LOCAL_DESTROY
    */
   public boolean isLocal() {
@@ -102,7 +102,7 @@ public class ExpirationAction implements Serializable {
 
   /**
    * Returns whether this action is distributed.
-   * 
+   *
    * @return true if this is INVALIDATE or DESTROY
    */
   public boolean isDistributed() {
@@ -111,7 +111,7 @@ public class ExpirationAction implements Serializable {
 
   /**
    * Returns a string representation for this action
-   * 
+   *
    * @return the name of this action
    */
   @Override

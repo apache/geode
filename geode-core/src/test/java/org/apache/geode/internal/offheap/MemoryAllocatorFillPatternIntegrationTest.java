@@ -14,12 +14,8 @@
  */
 package org.apache.geode.internal.offheap;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -29,8 +25,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
@@ -107,7 +108,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
    * This test hammers a MemoryAllocatorImpl with multiple threads exercising the fill validation of
    * tiny Chunks for one minute. This, of course, exercises many aspects of the MemoryAllocatorImpl
    * and its helper classes.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -129,7 +130,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
    * This test hammers a MemoryAllocatorImpl with multiple threads exercising the fill validation of
    * huge Chunks for one minute. This, of course, exercises many aspects of the MemoryAllocatorImpl
    * and its helper classes.
-   * 
+   *
    * @throws Exception
    */
   @Test

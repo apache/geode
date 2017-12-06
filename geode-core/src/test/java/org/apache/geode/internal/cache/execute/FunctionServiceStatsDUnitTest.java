@@ -44,6 +44,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -178,7 +179,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
    * 1-client 3-Servers Function : TEST_FUNCTION2 Function : TEST_FUNCTION3 Execution of the
    * function on serverRegion with set multiple keys as the routing object and using the name of the
    * function
-   * 
+   *
    * On server side, function execution calls should be equal to the no of function executions
    * completed.
    */
@@ -338,7 +339,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
    * 1-client 3-Servers server1 : Replicate server2 : Replicate server3 : Replicate client : Empty
    * Function : TEST_FUNCTION2 Execution of the function on serverRegion with set multiple keys as
    * the routing object and using the name of the function
-   * 
+   *
    * On server side, function execution calls should be equal to the no of function executions
    * completed.
    */
@@ -702,7 +703,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
 
   /**
    * Ensure that the execution is happening all the PR as a whole
-   * 
+   *
    * Function Execution will not take place on accessor, accessor will onlu receive the
    * resultsReceived. On datastore, no of function execution calls should be equal to the no of
    * function execution calls from the accessor.
@@ -995,7 +996,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
 
   /**
    * Test the execution of function on all memebers haveResults = true
-   * 
+   *
    * member1 calls for the function executions sp the results received on memeber 1 should be equal
    * to the no of function execution calls. Function Execution should happen on all other members
    * too. so the no of function execution calls and no of function executions completed should be
@@ -1143,9 +1144,17 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
     member4.invoke(closeDistributedSystem);
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.MyFunctionExecutionException");
+    return properties;
+  }
+
   /**
    * Test the exception occurred while invoking the function execution on all members of DS
-   * 
+   *
    * Function throws the Exception, The check is added to for the no of function execution execption
    * in datatostore1
    */

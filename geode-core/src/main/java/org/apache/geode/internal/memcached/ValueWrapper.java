@@ -26,7 +26,7 @@ import org.apache.geode.DataSerializer;
  * For CAS operation, we have to store a unique long with all the values being stored. This class
  * encapsulates the version and the value. Instances of this class can be obtained by using
  * {@link #getWrappedValue(byte[], int)}
- * 
+ *
  *
  */
 public class ValueWrapper implements DataSerializable {
@@ -64,7 +64,7 @@ public class ValueWrapper implements DataSerializable {
 
   /**
    * This method should be used to obtain instances of ValueWrapper.
-   * 
+   *
    * @param value the value to be wrapped
    * @param flags the flags sent by the client
    * @return an instance of ValueWrapper that includes a version along with the given value.
@@ -77,7 +77,7 @@ public class ValueWrapper implements DataSerializable {
    * For binary protocol we always have to compare the cas version. To avoid turning each put into a
    * get and replace, use ValueWrapper instances from this method which only uses cas version. note
    * that equals and hashCode of this class have also been changed to only use the cas version.
-   * 
+   *
    * @param cas
    * @return an instance with null value
    */

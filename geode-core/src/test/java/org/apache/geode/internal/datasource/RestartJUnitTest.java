@@ -17,26 +17,27 @@
  */
 package org.apache.geode.internal.datasource;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
+
+import java.util.Properties;
+
+import javax.transaction.TransactionManager;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import javax.transaction.TransactionManager;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
-
-// import org.apache.geode.internal.jta.CacheUtils;
 
 /**
- * 
+ *
  * This test check the graceful removal of all the resource (DataSources , TransactionManager and
  * UserTransaction and its associated thread) before we reconnect to the distributed syatem.
  */
@@ -74,4 +75,3 @@ public class RestartJUnitTest {
     }
   }
 }
-

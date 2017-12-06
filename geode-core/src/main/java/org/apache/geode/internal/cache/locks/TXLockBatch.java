@@ -15,19 +15,18 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-// import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
-import org.apache.geode.internal.cache.IdentityArrayList;
+import java.io.*;
+import java.util.*;
+
 import org.apache.geode.distributed.internal.locks.DLockBatch;
 import org.apache.geode.distributed.internal.locks.DLockBatchId;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
-
-import java.io.*;
-import java.util.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.IdentityArrayList;
+import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
 
 /**
  * Adapts multiple TXRegionLockRequests to one DLockBatch for DLock to use.
@@ -89,7 +88,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
   /**
    * Each lock batch contains a set of distributed system member ids that are participating in the
    * transaction. Public access for testing purposes.
-   * 
+   *
    * @return participants in the transaction
    */
   public Set getParticipants() {
@@ -141,4 +140,3 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
   }
 
 }
-

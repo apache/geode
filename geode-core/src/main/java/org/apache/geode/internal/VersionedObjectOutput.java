@@ -21,7 +21,7 @@ import java.io.ObjectOutput;
 /**
  * An extension to {@link ObjectOutput} that implements {@link VersionedDataStream} wrapping given
  * {@link ObjectOutput} for a stream directed to a different product version.
- * 
+ *
  * @since GemFire 7.1
  */
 public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream {
@@ -31,7 +31,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
 
   /**
    * Creates a VersionedObjectOutput that wraps the specified underlying ObjectOutput.
-   * 
+   *
    * @param out the underlying {@link ObjectOutput}
    * @param version the product version that serialized object on the given {@link ObjectOutput}
    */

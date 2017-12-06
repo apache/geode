@@ -14,10 +14,11 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import org.apache.geode.internal.logging.LogService;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.logging.log4j.Logger;
 
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.internal.logging.LogService;
 
 public abstract class WaitUntilGatewaySenderFlushedCoordinator {
 

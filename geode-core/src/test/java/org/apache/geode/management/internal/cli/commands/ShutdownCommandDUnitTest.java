@@ -17,9 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.management.internal.cli.commands.CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -31,6 +30,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -39,12 +40,12 @@ import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
 @Category(DistributedTest.class)
+@RunWith(Parameterized.class)
 public class ShutdownCommandDUnitTest {
-  private static final boolean CONNECT_OVER_HTTP = Boolean.getBoolean(USE_HTTP_SYSTEM_PROPERTY);
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
   private static final String SERVER2_NAME = "Server2";
@@ -56,11 +57,20 @@ public class ShutdownCommandDUnitTest {
   private MemberVM server1;
   private MemberVM server2;
 
+
+  @Parameterized.Parameter
+  public static boolean useHttp;
+
+  @Parameterized.Parameters
+  public static Object[] data() {
+    return new Object[] {true, false};
+  }
+
   @Rule
   public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
 
   @Before
@@ -82,7 +92,7 @@ public class ShutdownCommandDUnitTest {
     server2Props.setProperty(GROUPS, GROUP2);
     server2 = locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
 
-    if (CONNECT_OVER_HTTP) {
+    if (useHttp) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);
     } else {
       gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
@@ -93,13 +103,13 @@ public class ShutdownCommandDUnitTest {
   public void testShutdownServers() {
     String command = "shutdown";
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
 
     verifyShutDown(server1, server2);
 
     // Make sure the locator is still running
-    gfsh.executeAndVerifyCommand("list members");
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(MANAGER_NAME);
   }
 
@@ -107,7 +117,7 @@ public class ShutdownCommandDUnitTest {
   public void testShutdownAll() {
     String command = "shutdown --include-locators=true";
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Shutdown is triggered");
 
     verifyShutDown(server1, server2, manager);

@@ -16,19 +16,18 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
-// import org.apache.geode.internal.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.*;
 import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.distributed.internal.*;
-import java.io.*;
-// import java.util.*;
-import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * Responds to {@link RegionResponse}.
- * 
+ *
  * @since GemFire 3.5
  */
 public class RegionResponse extends AdminResponse {
@@ -49,7 +48,7 @@ public class RegionResponse extends AdminResponse {
    * Returns a <code>RegionResponse</code> that will be returned to the specified recipient. The
    * message will contains a copy of the local manager's system config.
    */
-  public static RegionResponse create(DistributionManager dm, InternalDistributedMember recipient,
+  public static RegionResponse create(DM dm, InternalDistributedMember recipient,
       RegionRequest request) {
     RegionResponse m = new RegionResponse();
 

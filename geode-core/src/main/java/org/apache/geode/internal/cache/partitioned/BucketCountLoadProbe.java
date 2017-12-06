@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 
 /**
  * A load probe which calculates the load of a pr using the just the number of buckets on a member.
- * 
+ *
  */
 public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID {
   private static final long serialVersionUID = 7040814060882774875L;

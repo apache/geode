@@ -25,7 +25,7 @@ import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 /**
  * Figure out the size of an object using reflection. This class does not follow any object
  * references, it just calculates the size of a flat object.
- * 
+ *
  *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {

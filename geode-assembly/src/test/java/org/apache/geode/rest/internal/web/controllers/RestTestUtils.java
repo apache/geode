@@ -18,6 +18,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
@@ -31,7 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * The RestTestUtils class contains core functionality for Spring REST Template
  * <p/>
- * 
+ *
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @since GemFire 8.0
@@ -88,12 +89,12 @@ public class RestTestUtils {
   /*
    * protected static HttpMessageConverter<Object> createMarshallingHttpMessageConverter() { final
    * Jaxb2Marshaller jaxbMarshaller = new Jaxb2Marshaller();
-   * 
+   *
    * jaxbMarshaller.setContextPaths("org.apache.geode.web.rest.domain",
    * "org.apache.geode.web.controllers.support");
    * jaxbMarshaller.setMarshallerProperties(Collections.singletonMap( "jaxb.formatted.output",
    * Boolean.TRUE));
-   * 
+   *
    * return new MarshallingHttpMessageConverter(jaxbMarshaller); }
    */
 

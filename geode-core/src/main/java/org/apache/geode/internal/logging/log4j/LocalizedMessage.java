@@ -21,7 +21,7 @@ import org.apache.geode.i18n.StringId;
 
 /**
  * An implementation of a Log4j {@link Message} that wraps a {@link StringId}.
- * 
+ *
  */
 public class LocalizedMessage implements Message {
   private static final long serialVersionUID = -8893339995741536401L;

@@ -37,10 +37,10 @@ import java.lang.annotation.Target;
  * that is neither retained or released by containing object.</li>
  * <li>Use this annotation on a constructor that does not retain off-heap field members.</li>
  * </ul>
- * 
+ *
  * One or more OffHeapIdentifiers may be supplied if the developer wishes to link this annotation
  * with other off-heap annotations.
- * 
+ *
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.FIELD,

@@ -14,22 +14,23 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A TreeSet constrained to contain Structs of all the same type. To conserve on objects, we store
  * the StructType once and reuse it to generate Struct instances on demand.
- * 
+ *
  * The values in this set are stored as Object[] and get wrapped in Structs as necessary.
- * 
+ *
  * @since GemFire 4.0
  */
 public class SortedStructSet extends TreeSet
@@ -106,7 +107,7 @@ public class SortedStructSet extends TreeSet
 
   /**
    * For internal use. Just add the Object[] values for a struct with same type
-   * 
+   *
    * public boolean addFieldValues(Object[] fieldValues) { //return super.add(fieldValues);
    * StructImpl s = new StructImpl(this.structType, fieldValues); return super.add(s); }
    */
@@ -133,7 +134,7 @@ public class SortedStructSet extends TreeSet
 
   /**
    * Does this set contain a Struct of the correct type with the specified values?
-   * 
+   *
    * public boolean containsFieldValues(Object[] fieldValues) { return super.contains(fieldValues);
    * }
    */
@@ -272,7 +273,7 @@ public class SortedStructSet extends TreeSet
 
   /**
    * Getter for property modifiable.
-   * 
+   *
    * @return Value of property modifiable.
    */
   public boolean isModifiable() {
@@ -285,7 +286,7 @@ public class SortedStructSet extends TreeSet
 
   /**
    * Setter for property modifiable.
-   * 
+   *
    * @param modifiable New value of property modifiable.
    */
   public void setModifiable(boolean modifiable) {

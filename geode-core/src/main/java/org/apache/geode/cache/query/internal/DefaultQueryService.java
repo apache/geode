@@ -14,6 +14,12 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.Map.Entry;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -37,11 +43,6 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * @version $Revision: 1.2 $
@@ -99,7 +100,7 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Constructs a new <code>Query</code> object. Uses the default namespace, which is the Objects
    * Context of the current application.
-   * 
+   *
    * @return The new <code>Query</code> object.
    * @throws IllegalArgumentException if the query syntax is invalid.
    * @see org.apache.geode.cache.query.Query
@@ -262,7 +263,7 @@ public class DefaultQueryService implements InternalQueryService {
 
   /**
    * Asif : Gets an exact match index ( match level 0)
-   * 
+   *
    * @param regionPath String containing the region name
    * @param definitions An array of String objects containing canonicalized definitions of
    *        RuntimeIterators. A Canonicalized definition of a RuntimeIterator is the canonicalized
@@ -319,7 +320,7 @@ public class DefaultQueryService implements InternalQueryService {
    * match level greater than 0 will definitely mean expansion of index results but may also require
    * a cut down of results . The order of preference is match level 0 , less than 0 and lastly
    * greater than 0
-   * 
+   *
    * @param regionPath String containing the region name
    * @param definitions An array of String objects containing canonicalized definitions of
    *        RuntimeIterators. A Canonicalized definition of a RuntimeIterator is the canonicalized
@@ -473,7 +474,7 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Constructs a new continuous query, represented by an instance of CqQuery. The CqQuery is not
    * executed until the execute method is invoked on the CqQuery.
-   * 
+   *
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @return the newly created CqQuery object
@@ -503,7 +504,7 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Constructs a new continuous query, represented by an instance of CqQuery. The CqQuery is not
    * executed until the execute method is invoked on the CqQuery.
-   * 
+   *
    * @param queryString the OQL query
    * @param cqAttributes the CqAttributes
    * @param isDurable true if the CQ is durable
@@ -610,7 +611,7 @@ public class DefaultQueryService implements InternalQueryService {
 
   /**
    * Retrieve a CqQuery by name.
-   * 
+   *
    * @return the CqQuery or null if not found
    */
   public CqQuery getCq(String cqName) {
@@ -627,7 +628,7 @@ public class DefaultQueryService implements InternalQueryService {
 
   /**
    * Retrieve all CqQuerys created by this VM.
-   * 
+   *
    * @return null if there are no cqs.
    */
   public CqQuery[] getCqs() {
@@ -658,9 +659,9 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Starts execution of all the registered continuous queries for this client. This is
    * complementary to stopCqs.
-   * 
+   *
    * @see QueryService#stopCqs()
-   * 
+   *
    * @throws CqException if failure to execute CQ.
    */
   public void executeCqs() throws CqException {
@@ -677,9 +678,9 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Stops execution of all the continuous queries for this client to become inactive. This is
    * useful when client needs to control the incoming cq messages during bulk region operations.
-   * 
+   *
    * @see QueryService#executeCqs()
-   * 
+   *
    * @throws CqException if failure to execute CQ.
    */
   public void stopCqs() throws CqException {
@@ -695,9 +696,9 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Starts execution of all the continuous queries registered on the specified region for this
    * client. This is complementary method to stopCQs().
-   * 
+   *
    * @see QueryService#stopCqs()
-   * 
+   *
    * @throws CqException if failure to stop CQs.
    */
   public void executeCqs(String regionName) throws CqException {
@@ -715,9 +716,9 @@ public class DefaultQueryService implements InternalQueryService {
    * Stops execution of all the continuous queries registered on the specified region for this
    * client. This is useful when client needs to control the incoming cq messages during bulk region
    * operations.
-   * 
+   *
    * @see QueryService#executeCqs()
-   * 
+   *
    * @throws CqException if failure to execute CQs.
    */
   public void stopCqs(String regionName) throws CqException {
@@ -733,7 +734,7 @@ public class DefaultQueryService implements InternalQueryService {
 
   /**
    * Get statistics information for this query.
-   * 
+   *
    * @return CQ statistics null if the continuous query object not found for the given cqName.
    */
   public CqServiceStatistics getCqStatistics() {
@@ -750,7 +751,7 @@ public class DefaultQueryService implements InternalQueryService {
 
   /**
    * Is the CQ service in a cache server environment
-   * 
+   *
    * @return true if cache server, false otherwise
    */
   public boolean isServer() {

@@ -24,7 +24,7 @@ import org.apache.geode.DataSerializer;
 
 /**
  * A class which holds the load for a partitioned region on a given VM.
- * 
+ *
  * @since GemFire 6.0
  */
 public class PRLoad implements DataSerializable {
@@ -37,7 +37,7 @@ public class PRLoad implements DataSerializable {
   /**
    * Creates a new immutable instance of PRLoad from the provided DataInput. Actually
    * {@link #addBucket(int, float, float)} will allow the bucket loads to be mutated.
-   * 
+   *
    * @param in the input stream to gather state from
    * @return new immutable instance of PRLoad
    * @throws IOException if DataSerializer failed to read object from input stream
@@ -60,7 +60,7 @@ public class PRLoad implements DataSerializable {
 
   /**
    * Constructs a new PRLoad. Please use {@link #addBucket(int, float, float)} to add bucket loads.
-   * 
+   *
    * @param numBuckets the number of buckets in the the PR
    * @param weight the weight of the PR
    */
@@ -73,7 +73,7 @@ public class PRLoad implements DataSerializable {
   /**
    * Constructs a new PRLoad. The bucket read and writes loads are backed by the provided arrays
    * which will be owned and potentially modified by this instance.
-   * 
+   *
    * @param weight the weight of the PR
    * @param bucketReadLoads the read loads for all buckets
    * @param bucketWriteLoads the write loads for all buckets
@@ -94,7 +94,7 @@ public class PRLoad implements DataSerializable {
 
   /**
    * Get the read load for a bucket
-   * 
+   *
    * @param bucketId the id of a bucket
    */
   public float getReadLoad(int bucketId) {
@@ -103,7 +103,7 @@ public class PRLoad implements DataSerializable {
 
   /**
    * Get the write load for a bucket
-   * 
+   *
    * @param bucketId the id of a bucket
    */
   public float getWriteLoad(int bucketId) {

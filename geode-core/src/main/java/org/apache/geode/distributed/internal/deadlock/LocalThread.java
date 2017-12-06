@@ -22,7 +22,7 @@ import java.lang.management.ThreadInfo;
 /**
  * This class is serializable version of the java 1.6 ThreadInfo class. It also holds a locality
  * field to identify the VM where the thread exists.
- * 
+ *
  *
  */
 public class LocalThread implements Serializable, ThreadReference {

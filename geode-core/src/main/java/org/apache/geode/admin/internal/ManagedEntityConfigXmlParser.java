@@ -14,16 +14,18 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.*;
+import java.util.*;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
-import java.io.*;
-import java.util.*;
+
+import org.apache.geode.admin.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Parses an XML file and configures a {@link DistributedSystemConfig} from it.

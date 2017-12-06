@@ -15,15 +15,15 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.IOException;
+import java.net.Socket;
+
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
-import java.net.Socket;
 
 /**
  * Handles everything but the new client protocol.

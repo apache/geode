@@ -30,8 +30,8 @@ import org.apache.geode.internal.cache.tier.MessageType;
  * Class <code>ClientInstantiatorMessage</code> represents a message that is to be sent to the
  * client from a server , when a new <code>Instantiator</code>. object is registerd on Server. This
  * message contains array of serailized instantiators along with the unique <code>EventID</code>
- * 
- * 
+ *
+ *
  * @since GemFire 5.0
  */
 public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
@@ -43,7 +43,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   /**
    * Constructor.
-   * 
+   *
    * @param operation The operation performed (e.g. AFTER_CREATE, AFTER_UPDATE, AFTER_DESTROY,
    *        AFTER_INVALIDATE, AFTER_REGION_DESTROY)
    * @param instantiator Serialized 2D array of the instantiators
@@ -58,7 +58,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   /*
    * (non-Javadoc) reimplemented to state that all clients are interested in this message.
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl#isClientInterested(org.
    * apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID)
@@ -75,7 +75,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   /**
    * default constructor
-   * 
+   *
    */
   public ClientInstantiatorMessage() {
 
@@ -93,7 +93,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   /**
    * Determines whether or not to conflate this message.
-   * 
+   *
    * @return Whether to conflate this message
    */
   @Override
@@ -140,7 +140,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   /**
    * Writes an object to a <code>Datautput</code>.
-   * 
+   *
    * @throws IOException If this serializer cannot write an object to <code>out</code>.
    * @see #fromData
    */
@@ -159,7 +159,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
 
   /**
    * Reads an object from a <code>DataInput</code>.
-   * 
+   *
    * @throws IOException If this serializer cannot read an object from <code>in</code>.
    * @throws ClassNotFoundException If the class for an object being restored cannot be found.
    * @see #toData
@@ -206,4 +206,3 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
   }
 
 }
-

@@ -14,15 +14,15 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.util.Properties;
 
 import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Factory for getting DiskWriteAttribute objects
- * 
+ *
  * @since GemFire 5.1
  * @deprecated as of 6.5 use {@link DiskStoreFactory} instead
  */
@@ -35,7 +35,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
   //////////// *** Methods to get instances of DWA *** //////////////
 
   /**
-   * 
+   *
    * Creates a new instance of DiskWriteAttributesFactory ready to create a
    * <code>DiskWriteAttributes</code> with default settings. The default
    * <code>DiskWriteAttributes</code> thus created will have following behaviour.
@@ -46,7 +46,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    * <li>max-oplog-size = 1024 MB
    * <li>time-interval = 1 sec
    * <li>byte-threshold = 0 bytes
-   * 
+   *
    * </ul>
    */
   public DiskWriteAttributesFactory() {
@@ -57,7 +57,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    * Creates a new instance of DiskWriteAttributesFactory Factory ready to create a
    * <code>DiskWriteAttributes</code> with the same settings as those in the specified
    * <code>DiskWriteAttributes</code>.
-   * 
+   *
    * @param dwa the <code>DiskWriteAttributes</code> used to initialize this
    *        DiskWriteAttributesFactory
    */
@@ -77,7 +77,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
 
   /**
    * Sets whether or not the writing to the disk is synchronous.
-   * 
+   *
    * @param isSynchronous boolean if true indicates synchronous writes
    * @deprecated as of 6.5 use {@link AttributesFactory#setDiskSynchronous} instead
    */
@@ -89,7 +89,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
 
   /**
    * Sets whether or not the rolling of Oplog is enabled .
-   * 
+   *
    * @param rollingEnabled true if oplogs are to be compacted automatically; false if no compaction.
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setAutoCompact} instead
    */
@@ -109,7 +109,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    * compactable. A threshold of 0 causes only oplogs that have no live records to be compactable in
    * which case the compact can simply remove the oplog file. A threshold of 50 causes an oplog to
    * become compactable when half of its live records become dead.
-   * 
+   *
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setCompactionThreshold} instead
    */
   @Deprecated
@@ -134,7 +134,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    * <P>
    * Note that this method sets the same attribute as {@link #setMaxOplogSize}. The last set of the
    * attribute determines its value.
-   * 
+   *
    * @param maxOplogSize the maximum size of the oplog in bytes.
    * @throws IllegalArgumentException if the value specified is a negative number
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setMaxOplogSize} instead
@@ -156,7 +156,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    * <P>
    * Note that this method sets the same attribute as {@link #setMaxOplogSizeInBytes}. The last set
    * of the attribute determines its value.
-   * 
+   *
    * @param maxOplogSize the maximum size of the oplog in megabytes.
    * @throws IllegalArgumentException if the value specified is a negative number
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setMaxOplogSize} instead
@@ -176,7 +176,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
   /**
    * Takes an int which is supposed to be in megabytes and converts it to a long. This conversion
    * takes into account that multiplication can lead to Integer.MAX_VALUE being exceeded
-   * 
+   *
    * @param megaBytes
    * @return the converted value
    */
@@ -189,7 +189,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
   /**
    * Sets the number of milliseconds that can elapse before unwritten data is written to disk. It
    * has significance only in case of asynchronous mode of writing.
-   * 
+   *
    * @param timeInterval Time interval in milliseconds
    * @throws IllegalArgumentException if the value specified is a negative number
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setTimeInterval} instead
@@ -208,7 +208,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
   /**
    * Sets the number of unwritten bytes of data that can be enqueued before being written to disk.
    * It has significance only in case of asynchronous mode of writing.
-   * 
+   *
    * @param bytesThreshold the maximum number of bytes to enqueue before async data is flushed.
    * @throws IllegalArgumentException if the value specified is a negative number
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setQueueSize} instead
@@ -226,7 +226,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
 
   /**
    * Creates a <code>DiskWriteAttributes</code> with the current settings.
-   * 
+   *
    * @return the newly created <code>DiskWriteAttributes</code>
    * @throws IllegalStateException if the current settings has compaction enabled with maximum Oplog
    *         Size specified as infinite ( represented by 0 ) *

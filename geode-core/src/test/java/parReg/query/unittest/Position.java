@@ -14,8 +14,9 @@
  */
 package parReg.query.unittest;
 
-import java.util.*;
 import java.io.Serializable;
+import java.util.*;
+
 import org.apache.geode.cache.Declarable;
 
 /**
@@ -155,5 +156,3 @@ public class Position implements Declarable, Serializable, Comparable {
     }
   }
 }
-
-

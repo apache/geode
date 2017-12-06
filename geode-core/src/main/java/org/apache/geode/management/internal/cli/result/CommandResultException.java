@@ -18,7 +18,7 @@ import org.apache.geode.management.cli.Result;
 
 /**
  * Exception wrapper around a command result.
- * 
+ *
  * @since GemFire 7.0
  */
 public class CommandResultException extends Exception {

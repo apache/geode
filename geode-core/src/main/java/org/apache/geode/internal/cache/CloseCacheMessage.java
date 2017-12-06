@@ -108,4 +108,3 @@ public class CloseCacheMessage extends HighPriorityDistributionMessage implement
     out.writeInt(this.processorId);
   }
 }
-

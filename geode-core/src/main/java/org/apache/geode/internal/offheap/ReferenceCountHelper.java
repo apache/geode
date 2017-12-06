@@ -15,10 +15,10 @@
 
 package org.apache.geode.internal.offheap;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * This class provides static methods to help debug off-heap reference count problems. To enable

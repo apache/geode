@@ -43,7 +43,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * Moves the bucket to the recipient's PartitionedRegionDataStore. The recipient will create an
  * extra redundant copy of the bucket and then send a {@link RemoveBucketMessage} to the specified
  * source for the bucket.
- * 
+ *
  * Usage: MoveBucketResponse response = MoveBucketMessage.send( InternalDistributedMember,
  * PartitionedRegion, int bucketId); if (response != null && response.waitForResponse()) { // bucket
  * was moved }
@@ -69,7 +69,7 @@ public class MoveBucketMessage extends PartitionMessage {
   /**
    * Sends a message to move the bucket from <code>source</code> member to the
    * <code>recipient</code> member.
-   * 
+   *
    * @param recipient the member to move the bucket to
    * @param region the PartitionedRegion of the bucket
    * @param bucketId the bucket to move

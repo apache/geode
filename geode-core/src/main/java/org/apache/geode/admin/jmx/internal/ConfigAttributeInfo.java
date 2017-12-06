@@ -14,12 +14,11 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-// import org.apache.geode.admin.ConfigurationParameter;
-import org.apache.geode.internal.Assert;
-
 import javax.management.Descriptor;
 import javax.management.modelmbean.DescriptorSupport;
 import javax.management.modelmbean.ModelMBeanAttributeInfo;
+
+import org.apache.geode.internal.Assert;
 
 /**
  * Subclass of AttributeInfo with {@link org.apache.geode.admin.ConfigurationParameter} added for
@@ -63,4 +62,3 @@ class ConfigAttributeInfo extends org.apache.commons.modeler.AttributeInfo {
     return info;
   }
 }
-

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.admin.internal;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.geode.admin.DistributedSystemHealthConfig;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -21,9 +24,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Contains the logic for evaluating the health of an entire GemFire distributed system according to

@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * A locator discovery callback that does nothing.
- * 
+ *
  * @since GemFire 5.7
  *
  */

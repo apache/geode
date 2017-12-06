@@ -22,7 +22,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 
 /**
- * 
+ *
  *
  */
 public class RemoteLocatorRequest implements DataSerializableFixedID {

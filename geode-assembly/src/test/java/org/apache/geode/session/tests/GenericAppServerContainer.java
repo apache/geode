@@ -15,6 +15,7 @@
 package org.apache.geode.session.tests;
 
 import static org.apache.geode.session.tests.ContainerInstall.GEODE_BUILD_HOME;
+import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class GenericAppServerContainer extends ServerContainer {
   private final File modifyWarScript;
   private final File modifyWarScriptLog;
 
-  private static final String DEFAULT_GENERIC_APPSERVER_WAR_DIR = "/tmp/cargo_wars/";
+  private static final String DEFAULT_GENERIC_APPSERVER_WAR_DIR = TMP_DIR + "/cargo_wars/";
 
   /**
    * Setup the generic appserver container

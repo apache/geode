@@ -30,74 +30,74 @@ public class DLockStats implements DistributedLockStats {
   // Statistic "Id" Fields
   // -------------------------------------------------------------------------
 
-  private final static StatisticsType type;
+  private static final StatisticsType type;
 
-  private final static int grantorsId;
-  private final static int servicesId;
-  private final static int tokensId;
-  private final static int grantTokensId;
-  private final static int requestQueuesId;
-  private final static int serialQueueSizeId;
-  private final static int serialThreadsId;
-  private final static int waitingQueueSizeId;
-  private final static int waitingThreadsId;
-  private final static int lockWaitsInProgressId;
-  private final static int lockWaitsCompletedId;
-  private final static int lockWaitTimeId;
-  private final static int lockWaitsFailedId;
-  private final static int lockWaitFailedTimeId;
-  private final static int grantWaitsInProgressId;
-  private final static int grantWaitsCompletedId;
-  private final static int grantWaitTimeId;
-  private final static int grantWaitsNotGrantorId;
-  private final static int grantWaitNotGrantorTimeId;
-  private final static int grantWaitsTimeoutId;
-  private final static int grantWaitTimeoutTimeId;
-  private final static int grantWaitsNotHolderId;
-  private final static int grantWaitNotHolderTimeId;
-  private final static int grantWaitsFailedId;
-  private final static int grantWaitFailedTimeId;
-  private final static int grantWaitsSuspendedId;
-  private final static int grantWaitSuspendedTimeId;
-  private final static int grantWaitsDestroyedId;
-  private final static int grantWaitDestroyedTimeId;
-  private final static int createGrantorsInProgressId;
-  private final static int createGrantorsCompletedId;
-  private final static int createGrantorTimeId;
-  private final static int serviceCreatesInProgressId;
-  private final static int serviceCreatesCompletedId;
-  private final static int serviceCreateLatchTimeId;
-  private final static int serviceInitLatchTimeId;
-  private final static int grantorWaitsInProgressId;
-  private final static int grantorWaitsCompletedId;
-  private final static int grantorWaitTimeId;
-  private final static int grantorWaitsFailedId;
-  private final static int grantorWaitFailedTimeId;
-  private final static int grantorThreadsInProgressId;
-  private final static int grantorThreadsCompletedId;
-  private final static int grantorThreadExpireAndGrantLocksTimeId;
-  private final static int grantorThreadHandleRequestTimeoutsTimeId;
-  private final static int grantorThreadRemoveUnusedTokensTimeId;
-  private final static int grantorThreadTimeId;
-  private final static int pendingRequestsId;
-  private final static int destroyReadWaitsInProgressId;
-  private final static int destroyReadWaitsCompletedId;
-  private final static int destroyReadWaitTimeId;
-  private final static int destroyReadWaitsFailedId;
-  private final static int destroyReadWaitFailedTimeId;
-  private final static int destroyWriteWaitsInProgressId;
-  private final static int destroyWriteWaitsCompletedId;
-  private final static int destroyWriteWaitTimeId;
-  private final static int destroyWriteWaitsFailedId;
-  private final static int destroyWriteWaitFailedTimeId;
-  private final static int destroyReadsId;
-  private final static int destroyWritesId;
-  private final static int lockReleasesInProgressId;
-  private final static int lockReleasesCompletedId;
-  private final static int lockReleaseTimeId;
-  private final static int becomeGrantorRequestsId;
-  private final static int freeResourcesCompletedId;
-  private final static int freeResourcesFailedId;
+  private static final int grantorsId;
+  private static final int servicesId;
+  private static final int tokensId;
+  private static final int grantTokensId;
+  private static final int requestQueuesId;
+  private static final int serialQueueSizeId;
+  private static final int serialThreadsId;
+  private static final int waitingQueueSizeId;
+  private static final int waitingThreadsId;
+  private static final int lockWaitsInProgressId;
+  private static final int lockWaitsCompletedId;
+  private static final int lockWaitTimeId;
+  private static final int lockWaitsFailedId;
+  private static final int lockWaitFailedTimeId;
+  private static final int grantWaitsInProgressId;
+  private static final int grantWaitsCompletedId;
+  private static final int grantWaitTimeId;
+  private static final int grantWaitsNotGrantorId;
+  private static final int grantWaitNotGrantorTimeId;
+  private static final int grantWaitsTimeoutId;
+  private static final int grantWaitTimeoutTimeId;
+  private static final int grantWaitsNotHolderId;
+  private static final int grantWaitNotHolderTimeId;
+  private static final int grantWaitsFailedId;
+  private static final int grantWaitFailedTimeId;
+  private static final int grantWaitsSuspendedId;
+  private static final int grantWaitSuspendedTimeId;
+  private static final int grantWaitsDestroyedId;
+  private static final int grantWaitDestroyedTimeId;
+  private static final int createGrantorsInProgressId;
+  private static final int createGrantorsCompletedId;
+  private static final int createGrantorTimeId;
+  private static final int serviceCreatesInProgressId;
+  private static final int serviceCreatesCompletedId;
+  private static final int serviceCreateLatchTimeId;
+  private static final int serviceInitLatchTimeId;
+  private static final int grantorWaitsInProgressId;
+  private static final int grantorWaitsCompletedId;
+  private static final int grantorWaitTimeId;
+  private static final int grantorWaitsFailedId;
+  private static final int grantorWaitFailedTimeId;
+  private static final int grantorThreadsInProgressId;
+  private static final int grantorThreadsCompletedId;
+  private static final int grantorThreadExpireAndGrantLocksTimeId;
+  private static final int grantorThreadHandleRequestTimeoutsTimeId;
+  private static final int grantorThreadRemoveUnusedTokensTimeId;
+  private static final int grantorThreadTimeId;
+  private static final int pendingRequestsId;
+  private static final int destroyReadWaitsInProgressId;
+  private static final int destroyReadWaitsCompletedId;
+  private static final int destroyReadWaitTimeId;
+  private static final int destroyReadWaitsFailedId;
+  private static final int destroyReadWaitFailedTimeId;
+  private static final int destroyWriteWaitsInProgressId;
+  private static final int destroyWriteWaitsCompletedId;
+  private static final int destroyWriteWaitTimeId;
+  private static final int destroyWriteWaitsFailedId;
+  private static final int destroyWriteWaitFailedTimeId;
+  private static final int destroyReadsId;
+  private static final int destroyWritesId;
+  private static final int lockReleasesInProgressId;
+  private static final int lockReleasesCompletedId;
+  private static final int lockReleaseTimeId;
+  private static final int becomeGrantorRequestsId;
+  private static final int freeResourcesCompletedId;
+  private static final int freeResourcesFailedId;
 
   /** returns the current nano time, if time stats are enabled */
   static long getStatTime() {
@@ -972,7 +972,7 @@ public class DLockStats implements DistributedLockStats {
   /**
    * Returns a helper object so that the serial queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public QueueStatHelper getSerialQueueHelper() {
@@ -994,7 +994,7 @@ public class DLockStats implements DistributedLockStats {
   /**
    * Returns a helper object so that the waiting pool can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public PoolStatHelper getWaitingPoolHelper() {
@@ -1012,7 +1012,7 @@ public class DLockStats implements DistributedLockStats {
   /**
    * Returns a helper object so that the waiting queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public QueueStatHelper getWaitingQueueHelper() {
@@ -1036,4 +1036,3 @@ public class DLockStats implements DistributedLockStats {
   }
 
 }
-

@@ -14,14 +14,15 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 public class JvmRouteBinderValve extends ValveBase {
 

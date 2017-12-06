@@ -27,8 +27,8 @@ import org.apache.geode.management.OSMetrics;
 
 /**
  * This MBean is a gateway to cache and a member
- * 
- * 
+ *
+ *
  */
 public class MemberMBean extends NotificationBroadcasterSupport implements MemberMXBean {
 

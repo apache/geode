@@ -14,6 +14,15 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import org.jgroups.util.UUID;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -23,30 +32,22 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.jgroups.util.UUID;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.EOFException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
- * 
+ *
  * Unfortunately, this class serves two distinct functions. First, it is the fundamental element of
  * membership in the GemFire distributed system. As such, it is used in enumerations and properly
  * responds to hashing and equals() comparisons.
- * 
+ *
  * Second, it is used as a cheap way of representing an address. This is unfortunate, because as a
  * NetMember, it holds two separate port numbers: the "membership" descriptor as well as a direct
  * communication channel.
- * 
+ *
  */
 public class GMSMember implements NetMember, DataSerializableFixedID {
   // whether to show UUID info in toString()
-  private final static boolean SHOW_UUIDS =
+  private static final boolean SHOW_UUIDS =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_UUIDs");
 
   private int udpPort = 0;
@@ -91,7 +92,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   /**
    * Create a CacheMember referring to the current host (as defined by the given string).
-   * 
+   *
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
    */
@@ -106,7 +107,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   /**
    * Create a CacheMember referring to the current host (as defined by the given string).
-   * 
+   *
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
    * @param networkPartitionDetectionEnabled whether the member has network partition detection
@@ -141,7 +142,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   /**
    * Clone a GMSMember
-   * 
+   *
    * @param other the member to create a copy of
    */
   public GMSMember(GMSMember other) {
@@ -215,14 +216,14 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   /*
    * implements the java.lang.Comparable interface
-   * 
+   *
    * @see java.lang.Comparable
-   * 
+   *
    * @param o - the Object to be compared
-   * 
+   *
    * @return a negative integer, zero, or a positive integer as this object is less than, equal to,
    * or greater than the specified object.
-   * 
+   *
    * @exception java.lang.ClassCastException - if the specified object's type prevents it from being
    * compared to this Object.
    */

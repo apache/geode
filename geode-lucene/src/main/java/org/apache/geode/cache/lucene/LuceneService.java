@@ -14,14 +14,15 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.GemFireCache;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.GemFireCache;
 
 /**
  *
@@ -38,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  * Lucene index with the java API. The Lucene index should be created on each member that has the
  * region that is being indexed.
  * </p>
- * 
+ *
  * <pre>
  * {
  *   &#64;code
@@ -54,7 +55,7 @@ import java.util.concurrent.TimeUnit;
  * being tokenized with the KeywordAnalyzer so it is treated as a single word. The default analyzer
  * if none is specified is the {@link StandardAnalyzer}.
  * </p>
- * 
+ *
  *
  * Indexes should be created on all peers that host the region being indexed. Clients do not need to
  * define the index, they can directly execute queries using this service.
@@ -91,7 +92,7 @@ import java.util.concurrent.TimeUnit;
  * Currently, only partitioned regions are supported. Creating an index on a region with
  * {@link DataPolicy#REPLICATE} will fail.
  * </p>
- * 
+ *
  */
 public interface LuceneService {
 
@@ -124,7 +125,7 @@ public interface LuceneService {
 
   /**
    * Get the Lucene index object specified by region name and index name
-   * 
+   *
    * @param indexName index name
    * @param regionPath region name
    * @return LuceneIndex object
@@ -133,7 +134,7 @@ public interface LuceneService {
 
   /**
    * get all the Lucene indexes.
-   * 
+   *
    * @return all index objects in a Collection
    */
   public Collection<LuceneIndex> getAllIndexes();
@@ -161,13 +162,13 @@ public interface LuceneService {
    * This method is an expensive operation, so using it before every query is highly discouraged.
    *
    * @param indexName index name
-   * 
+   *
    * @param regionPath region name
-   * 
+   *
    * @param timeout max wait time
-   * 
+   *
    * @param unit Time unit associated with the max wait time
-   * 
+   *
    * @return true if entries are flushed within timeout, false if the timeout has elapsed
    */
   public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)

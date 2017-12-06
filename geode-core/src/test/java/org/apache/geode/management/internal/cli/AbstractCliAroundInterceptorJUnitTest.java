@@ -17,13 +17,13 @@ package org.apache.geode.management.internal.cli;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
+import java.nio.file.Path;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.UnitTest;
-
-import java.nio.file.Path;
 
 /**
  * AbstractCliAroundInterceptor Tester.

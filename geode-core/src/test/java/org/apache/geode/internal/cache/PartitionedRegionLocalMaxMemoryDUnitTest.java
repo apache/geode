@@ -174,7 +174,7 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends PartitionedRegionD
    * Object used for the put() operation as key and object. The objectIdentifier is used to provide
    * a predetermined hashcode for the object.
    */
-  static public class TestObject1 implements DataSerializable, Sizeable {
+  public static class TestObject1 implements DataSerializable, Sizeable {
     String name;
 
     byte arr[] = new byte[1024 * 4];

@@ -14,18 +14,18 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.admin.internal.InetAddressUtil;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 
 /**
  * Creates <code>ServerSockets</code> for JMX adaptors.
@@ -57,7 +57,7 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
 
   /**
    * Constructs new instance of MX4JServerSocketFactory.
-   * 
+   *
    * @param useSSL true if ssl is to be enabled
    * @param needClientAuth true if client authentication is required
    * @param protocols space-delimited list of ssl protocols to use
@@ -78,7 +78,7 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
 
   /**
    * Constructs new instance of MX4JServerSocketFactory.
-   * 
+   *
    * @param useSSL true if ssl is to be enabled
    * @param needClientAuth true if client authentication is required
    * @param protocols space-delimited list of ssl protocols to use
@@ -133,4 +133,3 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
   }
 
 }
-

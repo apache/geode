@@ -18,8 +18,8 @@ package org.apache.geode.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -28,8 +28,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-import java.io.IOException;
+import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class DeployedJarJUnitTest {

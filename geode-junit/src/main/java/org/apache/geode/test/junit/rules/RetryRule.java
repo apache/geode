@@ -27,11 +27,11 @@ import org.apache.geode.test.junit.Retry;
  * </p>
  * RetryRule can be used globally for all tests in a test case by specifying a retryCount when
  * instantiating it:
- * 
+ *
  * <pre>
  * {@literal @}Rule
  * public final RetryRule retryRule = new RetryRule(3);
- * 
+ *
  * {@literal @}Test
  * public void shouldBeRetriedUntilPasses() {
  *   ...
@@ -42,11 +42,11 @@ import org.apache.geode.test.junit.Retry;
  * </p>
  * RetryRule can be used locally for specific tests by annotating the test method with
  * {@literal @}Rule and specifying a retryCount for that test:
- * 
+ *
  * <pre>
  * {@literal @}Rule
  * public final RetryRule retryRule = new RetryRule();
- * 
+ *
  * {@literal @}Test
  * {@literal @}Retry(3)
  * public void shouldBeRetriedUntilPasses() {

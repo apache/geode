@@ -80,7 +80,7 @@ public class StatisticImpl implements org.apache.geode.admin.Statistic {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -89,4 +89,3 @@ public class StatisticImpl implements org.apache.geode.admin.Statistic {
   }
 
 }
-

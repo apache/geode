@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.pdx;
 
@@ -29,7 +29,7 @@ import org.apache.geode.GemFireException;
  * <p>
  * It can also be caused by {@link PdxWriter#writeUnreadFields(PdxUnreadFields) writeUnreadFields}
  * being called after a field is written.
- * 
+ *
  * @since GemFire 6.6
  *
  */
@@ -38,7 +38,7 @@ public class PdxFieldAlreadyExistsException extends GemFireException {
 
   /**
    * Constructs a new exception with the given message.
-   * 
+   *
    * @param message the message of the new exception
    */
   public PdxFieldAlreadyExistsException(String message) {
