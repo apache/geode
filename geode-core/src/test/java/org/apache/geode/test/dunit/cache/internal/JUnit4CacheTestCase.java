@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit.cache.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -220,20 +221,30 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   public final InternalCache getCache(final boolean client, final CacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
-      InternalCache gemFireCache = GemFireCacheImpl.getInstance();
-      if (gemFireCache != null && !gemFireCache.isClosed()
-          && gemFireCache.getCancelCriterion().isCancelInProgress()) {
-        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
-            .until(gemFireCache::isClosed);
+      if (!(cache instanceof GemFireCacheImpl) && cache != null) {
+        addIgnoreExceptionIfClient(client);
+        return cache;
       }
-      if (cache == null || cache.isClosed()) {
+
+      InternalCache gemFireCache = GemFireCacheImpl.getInstance();
+      if (gemFireCache != null && gemFireCache.getCancelCriterion().isCancelInProgress()) {
+        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
+            .until(() -> assertNull(GemFireCacheImpl.getInstance()));
+      }
+
+      if (GemFireCacheImpl.getInstance() == null) {
         cache = null;
         createCache(client, factory);
       }
-      if (client && cache != null) {
-        IgnoredException.addIgnoredException("java.net.ConnectException");
-      }
+
+      addIgnoreExceptionIfClient(client);
       return cache;
+    }
+  }
+
+  private void addIgnoreExceptionIfClient(boolean client) {
+    if (client && cache != null) {
+      IgnoredException.addIgnoredException("java.net.ConnectException");
     }
   }
 
@@ -245,19 +256,15 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   public final ClientCache getClientCache(final ClientCacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
-      if (gemFireCache != null && !gemFireCache.isClosed()
-          && gemFireCache.getCancelCriterion().isCancelInProgress()) {
+      if (gemFireCache != null && gemFireCache.getCancelCriterion().isCancelInProgress()) {
         Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
-            .until(gemFireCache::isClosed);
+            .until(() -> assertNull(GemFireCacheImpl.getInstance()));
       }
-      if (cache == null || cache.isClosed()) {
-        cache = null;
+      if (cache == null) {
         disconnectFromDS();
         cache = (InternalCache) factory.create();
       }
-      if (cache != null) {
-        IgnoredException.addIgnoredException("java.net.ConnectException");
-      }
+      IgnoredException.addIgnoredException("java.net.ConnectException");
       return (ClientCache) cache;
     }
   }
