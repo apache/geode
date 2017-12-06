@@ -39,6 +39,7 @@ include 'extensions/geode-modules-session-internal'
 include 'extensions/geode-modules-session'
 include 'extensions/geode-modules-assembly'
 include 'geode-protobuf'
+include 'geode-protobuf-messages'
 include 'extensions/session-testing-war'
 include 'geode-concurrency-test'
 
